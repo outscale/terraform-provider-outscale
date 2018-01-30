@@ -16,28 +16,28 @@ Requirements
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-cloudscale`
+Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-outscale`
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-cloudscale
+$ git clone git@github.com:terraform-providers/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-cloudscale
+$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
 $ make build
 ```
 
 Using the provider
 ----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-2. Move `terraform-provider-cloudscale` executable to the root folder where main.tf is. 
+2. Move `terraform-provider-outscale` executable to the root folder where main.tf is.
 
 ```shell
-  $ mv terraform-provider-cloudscale /path/to/main.tf/folder
-``` 
+  $ mv terraform-provider-outscale /path/to/main.tf/folder
+```
 
 3. Execute `terraform plan`
 4. `terraform init`
@@ -52,7 +52,7 @@ To compile the provider, run `make build`. This will build the provider and put 
 ```sh
 $ make build
 ...
-$ $GOPATH/bin/terraform-provider-cloudscale
+$ $GOPATH/bin/terraform-provider-outscale
 ...
 ```
 
