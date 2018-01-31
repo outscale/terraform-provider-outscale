@@ -140,8 +140,8 @@ func getVMSchema() map[string]*schema.Schema {
                     "private_ip_address":{
                       Type: schema.TypeString,
                     },
-                  }
-                }
+                  },
+                },
               },
              "secondary_private_ip_address_count":{
                Type: schema.TypeString,
@@ -153,8 +153,8 @@ func getVMSchema() map[string]*schema.Schema {
                Type: schema.TypeString,
                Required: true,
              },
-           }
-        }
+           },
+        },
     },
     "placement":{
       Type: schema.TypeSet,
@@ -175,8 +175,8 @@ func getVMSchema() map[string]*schema.Schema {
             "tenancy":{
               Type: schema.TypeString,
             },
-          }
-        }
+          },
+        },
     },
     "private_ip_address":{
       Type: schema.TypeString,
