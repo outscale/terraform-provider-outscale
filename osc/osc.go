@@ -1,22 +1,28 @@
-//Outscale Client
+// Package osc ...
 package osc
 
 import (
+	"io"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws/signer/v4"
 )
 
 const (
-	libraryVersion = "1.0"
-	defaultBaseURL = "https://%s.%s.outscale.com"
-	userAgent      = "osc/" + libraryVersion
-	mediaTypeJSON  = "application/json"
-	mediaTypeWSDL  = "application/wsdl+xml"
+	libraryVersion   = "1.0"
+	defaultBaseURL   = "https://%s.%s.outscale.com"
+	userAgent        = "osc/" + libraryVersion
+	mediaTypeJSON    = "application/json"
+	mediaTypeWSDL    = "application/wsdl+xml"
+	signatureVersion = "4&SnapshotId"
 )
 
 // Client manages the communication between the Outscale API's
 type Client struct {
 	Config Config
+	signer *v4.Signer
 }
 
 // Config Configuration of the client
@@ -49,3 +55,8 @@ type Credentials struct {
 
 // RequestCompletionCallback defines the type of the request callback function.
 type RequestCompletionCallback func(*http.Request, *http.Response)
+
+// Sign ...
+func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time, service string) (http.Header, error) {
+	return c.signer.Sign(req, body, service, c.Config.Credentials.Region, timestamp)
+}
