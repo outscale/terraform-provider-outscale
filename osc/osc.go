@@ -56,7 +56,7 @@ type Credentials struct {
 // RequestCompletionCallback defines the type of the request callback function.
 type RequestCompletionCallback func(*http.Request, *http.Response)
 
-// Sign ...
+// Sign HTTP Request for authentication
 func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time, service string) (http.Header, error) {
 	return c.signer.Sign(req, body, service, c.Config.Credentials.Region, timestamp)
 }
