@@ -5,15 +5,15 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func datasourceOutscaleInstance() *schema.Resource {
+func datasourceOutscaleVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleInstanceRead,
+		Read: dataSourceOutscaleVMSRead,
 
-		Schema: datasourceOutscaleInstanceSchema(),
+		Schema: datasourceOutscaleVMSSchema(),
 	}
 }
 
-func datasourceOutscaleInstanceSchema() map[string]*schema.Schema {
+func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 
 		// Optional attributes
@@ -554,6 +554,7 @@ func datasourceOutscaleInstanceSchema() map[string]*schema.Schema {
 	}
 }
 
+<<<<<<< Updated upstream
 func dataSourceOutscaleInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	//conn := meta.(*osc.Client)
 
@@ -573,6 +574,9 @@ func dataSourceOutscaleInstanceRead(d *schema.ResourceData, meta interface{}) er
 	// 	params.InstanceIds = []*string{String(instanceID.(string))}
 	// }
 
+=======
+func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
+>>>>>>> Stashed changes
 	return nil
 }
 
