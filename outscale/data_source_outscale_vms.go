@@ -554,29 +554,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 	}
 }
 
-<<<<<<< Updated upstream
-func dataSourceOutscaleInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	//conn := meta.(*osc.Client)
-
-	// filters, filtersOk := d.GetOk("filter")
-	// instanceID, instanceIDOk := d.GetOk("instance_id")
-
-	// if filtersOk == false && instanceIDOk == false {
-	// 	return fmt.Errorf("One of filters, instance_tags, or instance_id must be assigned")
-	// }
-
-	// Build up search parameters
-	// params := &DescribeInstancesInput{}
-	// if filtersOk {
-	// 	params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	// }
-	// if instanceIDOk {
-	// 	params.InstanceIds = []*string{String(instanceID.(string))}
-	// }
-
-=======
 func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
->>>>>>> Stashed changes
 	return nil
 }
 
