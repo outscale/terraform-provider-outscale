@@ -10,8 +10,8 @@ import (
 )
 
 func TestError(t *testing.T) {
-	if err := SendError(ErrMsg["HTTP"], errors.New("Testing Error Message")); err != nil {
-		//t.Fatalf("err: %s", err)
+	if err := SendError(ErrMsg["HTTP"], errors.New("Testing Error Message")); err == nil {
+		t.Fatalf("err: %s", err)
 		t.Log(err)
 	}
 
@@ -27,8 +27,8 @@ func TestUnmarshallErrorHandler(t *testing.T) {
 
 	fmt.Println(buff)
 
-	if err := UnmarshalErrorHandler(test); err != nil {
-		//t.Fatalf("err: %s", err)
+	if err := UnmarshalErrorHandler(test); err == nil {
+		t.Fatalf("err: %s", err)
 		t.Log(err)
 	}
 }
