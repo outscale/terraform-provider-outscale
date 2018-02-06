@@ -19,7 +19,7 @@ const (
 	userAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
-	mediaTypeURLEncoded = "application/wsdl+xml"
+	mediaTypeURLEncoded = "application/x-www-form-urlencoded"
 	signatureVersion    = "4"
 )
 
@@ -102,7 +102,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 // SetHeaders sets the headers for the request
 func (c Client) SetHeaders(req *http.Request, target, operation string) {
-	req.Header.Add("Content-Type", mediaTypeURLEncoded)
 	req.Header.Add("User-Agent", c.Config.UserAgent)
 	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", target, operation))
 }

@@ -85,6 +85,9 @@ func buildClient() *Client {
 func buildTestHandler(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error) {
 	reader := strings.NewReader("{}")
 	req, _ := http.NewRequest(method, url, reader)
+
+	req.Header.Add("Content-Type", mediaTypeURLEncoded)
+
 	return req, reader, nil
 }
 
@@ -121,9 +124,6 @@ func TestSetHeaders(t *testing.T) {
 	targetExpected := "fcu.DescribeInstances"
 	agentExpected := "test"
 
-	if e, a := mediaTypeURLEncoded, q.Get("Content-Type"); e != a {
-		t.Errorf("expect %v, got %v", e, a)
-	}
 	if e, a := agentExpected, q.Get("User-Agent"); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
