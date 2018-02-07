@@ -14,9 +14,9 @@ import (
 
 const (
 	libraryVersion      = "1.0"
-	defaultBaseURL      = "https://%s.%s.outscale.com"
+	DefaultBaseURL      = "https://%s.%s.outscale.com"
 	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
-	userAgent           = "osc/" + libraryVersion
+	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
 	mediaTypeURLEncoded = "application/x-www-form-urlencoded"
@@ -38,7 +38,7 @@ type UnmarshalErrorHandler func(r *http.Response) error
 // Client manages the communication between the Outscale API's
 type Client struct {
 	Config Config
-	signer *v4.Signer
+	Signer *v4.Signer
 
 	// Handlers
 	MarshalHander         MarshalHander
@@ -49,21 +49,17 @@ type Client struct {
 
 // Config Configuration of the client
 type Config struct {
-	Endpoint    string
 	Target      string
 	Credentials *Credentials
 
 	// HTTP client used to communicate with the Outscale API.
-	client *http.Client
+	Client *http.Client
 
 	// Base URL for API requests.
 	BaseURL *url.URL
 
 	// User agent for client
 	UserAgent string
-
-	// Services used for communicating with the API
-	// To be implemented
 
 	// Optional function called after every successful request made to the DO APIs
 	onRequestCompleted RequestCompletionCallback
@@ -81,7 +77,7 @@ type RequestCompletionCallback func(*http.Request, *http.Response)
 
 // Sign HTTP Request for authentication
 func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time, service string) (http.Header, error) {
-	return c.signer.Sign(req, body, c.Config.Target, c.Config.Credentials.Region, timestamp)
+	return c.Signer.Sign(req, body, c.Config.Target, c.Config.Credentials.Region, timestamp)
 }
 
 // NewRequest creates a request and signs it
@@ -124,7 +120,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 
 	req = req.WithContext(ctx)
 
-	resp, err := c.Config.client.Do(req)
+	resp, err := c.Config.Client.Do(req)
 	if err != nil {
 		return err
 	}

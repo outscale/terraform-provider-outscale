@@ -64,11 +64,11 @@ func buildSigner() *v4.Signer {
 
 func buildClient() *Client {
 
-	baseURL, _ := url.Parse(fmt.Sprintf(defaultBaseURL, "fcu", "eu-west-2"))
+	baseURL, _ := url.Parse(fmt.Sprintf(DefaultBaseURL, "fcu", "eu-west-2"))
 	fmt.Println(baseURL.Opaque)
 
 	return &Client{
-		signer:                buildSigner(),
+		Signer:                buildSigner(),
 		BuildRequestHandler:   buildTestHandler,
 		MarshalHander:         testBuildRequestHandler,
 		UnmarshalHandler:      unmarshalTestHandler,
@@ -77,7 +77,7 @@ func buildClient() *Client {
 			UserAgent: "test",
 			Target:    "fcu",
 			BaseURL:   baseURL,
-			client:    &http.Client{},
+			Client:    &http.Client{},
 			Credentials: &Credentials{
 				Region: "eu-west-1",
 			},
@@ -146,7 +146,7 @@ func TestSetHeaders(t *testing.T) {
 func TestNewRequest(t *testing.T) {
 	c := buildClient()
 
-	inURL, outURL := "foo", fmt.Sprintf(defaultBaseURL+"/foo", "fcu", "eu-west-2")
+	inURL, outURL := "foo", fmt.Sprintf(DefaultBaseURL+"/foo", "fcu", "eu-west-2")
 	inBody, outBody := "{}", "{}"
 	req, _ := c.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
 	fmt.Println(req.URL.Opaque)
