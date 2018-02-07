@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -556,22 +555,6 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 
 func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
-}
-
-func buildOutscaleDataSourceFilters(set *schema.Set) []*Filter {
-	var filters []*Filter
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []*string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, aws.String(e.(string)))
-		}
-		filters = append(filters, &Filter{
-			Name:   String(m["name"].(string)),
-			Values: filterValues,
-		})
-	}
-	return filters
 }
 
 func dataSourceFiltersSchema() *schema.Schema {
