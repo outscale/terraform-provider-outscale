@@ -32,7 +32,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vm": resourceOutscaleVM(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"outscale_vm": dataSourceOutscaleVM(),
+			"outscale_vm":  dataSourceOutscaleVM(),
+			"outscale_vms": dataSourceOutscaleVM(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
