@@ -26,8 +26,14 @@ const (
 // BuildRequestHandler creates a new request and marshals the body depending on the implementation
 type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
 
+// MarshalHander marshals the incoming body to a desired format
+type MarshalHander func(v interface{}, action, version string) (string, error)
+
 // UnmarshalHandler unmarshals the body request depending on different implementations
 type UnmarshalHandler func(v interface{}, req *http.Response) error
+
+// UnmarshalErrorHandler unmarshals the errors coming from an http respose
+type UnmarshalErrorHandler func(r *http.Response) error
 
 // Client manages the communication between the Outscale API's
 type Client struct {
@@ -35,8 +41,10 @@ type Client struct {
 	signer *v4.Signer
 
 	// Handlers
-	BuildRequestHandler BuildRequestHandler
-	UnmarshalHandler    UnmarshalHandler
+	MarshalHander         MarshalHander
+	BuildRequestHandler   BuildRequestHandler
+	UnmarshalHandler      UnmarshalHandler
+	UnmarshalErrorHandler UnmarshalErrorHandler
 }
 
 // Config Configuration of the client
@@ -83,9 +91,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
+	b, err := c.MarshalHander(body, operation, "")
+	if err != nil {
+		return nil, err
+	}
+
 	u := c.Config.BaseURL.ResolveReference(rel)
 
-	req, reader, err := c.BuildRequestHandler(body, method, u.String())
+	req, reader, err := c.BuildRequestHandler(b, method, u.String())
 	if err != nil {
 		return nil, err
 	}
@@ -116,5 +129,19 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
+	err = c.checkResponse(resp)
+	if err != nil {
+		return err
+	}
+
 	return c.UnmarshalHandler(v, resp)
+}
+
+func (c Client) checkResponse(r *http.Response) error {
+	if c := r.StatusCode; c >= 200 && c <= 299 {
+		return nil
+	}
+
+	return c.UnmarshalErrorHandler(r)
+
 }

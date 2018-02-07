@@ -3,6 +3,7 @@ package osc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -67,9 +68,11 @@ func buildClient() *Client {
 	fmt.Println(baseURL.Opaque)
 
 	return &Client{
-		signer:              buildSigner(),
-		BuildRequestHandler: buildTestHandler,
-		UnmarshalHandler:    unmarshalTestHandler,
+		signer:                buildSigner(),
+		BuildRequestHandler:   buildTestHandler,
+		MarshalHander:         testBuildRequestHandler,
+		UnmarshalHandler:      unmarshalTestHandler,
+		UnmarshalErrorHandler: testUnmarshalErrorHandler,
 		Config: Config{
 			UserAgent: "test",
 			Target:    "fcu",
@@ -91,8 +94,16 @@ func buildTestHandler(v interface{}, method, url string) (*http.Request, io.Read
 	return req, reader, nil
 }
 
+func testBuildRequestHandler(v interface{}, action, version string) (string, error) {
+	return "{}", nil
+}
+
 func unmarshalTestHandler(v interface{}, req *http.Response) error {
 	return nil
+}
+
+func testUnmarshalErrorHandler(r *http.Response) error {
+	return errors.New("This is an error")
 }
 
 func TestSign(t *testing.T) {
@@ -169,6 +180,28 @@ func TestDo(t *testing.T) {
 	req, _ := client.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
 	err := client.Do(context.Background(), req, nil)
 	if err != nil {
+		t.Fatalf("Do(): %v", err)
+	}
+}
+
+func TestDo_ErrorResponse(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodGet; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, `{}`)
+	})
+
+	inURL := "/"
+	inBody := "{}"
+
+	req, _ := client.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
+	err := client.Do(context.Background(), req, nil)
+	if err == nil {
 		t.Fatalf("Do(): %v", err)
 	}
 }
