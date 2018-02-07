@@ -28,7 +28,13 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 
-		ResourcesMap:  map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"outscale_vm": resourceOutscaleVM(),
+		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"outscale_vm": dataSourceOutscaleVM(),
+		},
+
 		ConfigureFunc: providerConfigureClient,
 	}
 }
