@@ -2,6 +2,8 @@
 package osc
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -11,27 +13,36 @@ import (
 )
 
 const (
-	libraryVersion   = "1.0"
-	defaultBaseURL   = "https://%s.%s.outscale.com"
-	userAgent        = "osc/" + libraryVersion
-	mediaTypeJSON    = "application/json"
-	mediaTypeWSDL    = "application/wsdl+xml"
-	signatureVersion = "4&SnapshotId"
+	libraryVersion      = "1.0"
+	defaultBaseURL      = "https://%s.%s.outscale.com"
+	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
+	userAgent           = "osc/" + libraryVersion
+	mediaTypeJSON       = "application/json"
+	mediaTypeWSDL       = "application/wsdl+xml"
+	mediaTypeURLEncoded = "application/x-www-form-urlencoded"
+	signatureVersion    = "4"
 )
 
-// UnmarshalErrorHandler unmarshals the body request depending on different implementations
-type UnmarshalErrorHandler func(req *http.Response) error
+// BuildRequestHandler creates a new request and marshals the body depending on the implementation
+type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
+
+// UnmarshalHandler unmarshals the body request depending on different implementations
+type UnmarshalHandler func(v interface{}, req *http.Response) error
 
 // Client manages the communication between the Outscale API's
 type Client struct {
-	Config                Config
-	signer                *v4.Signer
-	UnmarshalErrorHandler UnmarshalErrorHandler
+	Config Config
+	signer *v4.Signer
+
+	// Handlers
+	BuildRequestHandler BuildRequestHandler
+	UnmarshalHandler    UnmarshalHandler
 }
 
 // Config Configuration of the client
 type Config struct {
 	Endpoint    string
+	Target      string
 	Credentials *Credentials
 
 	// HTTP client used to communicate with the Outscale API.
@@ -62,5 +73,48 @@ type RequestCompletionCallback func(*http.Request, *http.Response)
 
 // Sign HTTP Request for authentication
 func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time, service string) (http.Header, error) {
-	return c.signer.Sign(req, body, service, c.Config.Credentials.Region, timestamp)
+	return c.signer.Sign(req, body, c.Config.Target, c.Config.Credentials.Region, timestamp)
+}
+
+// NewRequest creates a request and signs it
+func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr string, body interface{}) (*http.Request, error) {
+	rel, err := url.Parse(urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	u := c.Config.BaseURL.ResolveReference(rel)
+
+	req, reader, err := c.BuildRequestHandler(body, method, u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(rel.Opaque)
+
+	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// SetHeaders sets the headers for the request
+func (c Client) SetHeaders(req *http.Request, target, operation string) {
+	req.Header.Add("User-Agent", c.Config.UserAgent)
+	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", target, operation))
+}
+
+// Do sends the request to the API's
+func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error {
+
+	req = req.WithContext(ctx)
+
+	resp, err := c.Config.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	return c.UnmarshalHandler(v, resp)
 }
