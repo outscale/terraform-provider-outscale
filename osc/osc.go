@@ -87,7 +87,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	b, err := c.MarshalHander(body, operation, "")
+	b, err := c.MarshalHander(body, operation, "2017-12-15")
 	if err != nil {
 		return nil, err
 	}

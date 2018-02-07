@@ -48,7 +48,7 @@ func NewFCUClient(config osc.Config) (*Client, error) {
 	}
 
 	f := &Client{client: &c,
-		VM: VMOperations{},
+		VM: VMOperations{client: &c},
 	}
 	return f, nil
 }
