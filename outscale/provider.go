@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+// Provider ...
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -32,7 +33,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vm": resourceOutscaleVM(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"outscale_vm": dataSourceOutscaleVM(),
+			"outscale_vm":  dataSourceOutscaleVM(),
+			"outscale_vms": datasourceOutscaleVMS(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
@@ -41,8 +43,8 @@ func Provider() terraform.ResourceProvider {
 
 func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		AccessKeyId: d.Get("access_key_id").(string),
-		SecretKeyId: d.Get("secret_key_id").(string),
+		AccessKeyID: d.Get("access_key_id").(string),
+		SecretKeyID: d.Get("secret_key_id").(string),
 		OApi:        d.Get("oapi").(bool),
 	}
 	return config.Client()
