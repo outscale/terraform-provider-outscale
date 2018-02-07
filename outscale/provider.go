@@ -36,5 +36,11 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
-	return nil, nil
+	config := Config{
+		AccessKeyId: d.Get("access_key_id").(string),
+		SecretKeyId: d.Get("secret_key_id").(string),
+		OApi:        d.Get("oapi").(bool),
+	}
+	return config.Client()
+	//	return nil, nil
 }
