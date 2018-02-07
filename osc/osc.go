@@ -19,10 +19,14 @@ const (
 	signatureVersion = "4&SnapshotId"
 )
 
+// UnmarshalErrorHandler unmarshals the body request depending on different implementations
+type UnmarshalErrorHandler func(req *http.Response) error
+
 // Client manages the communication between the Outscale API's
 type Client struct {
-	Config Config
-	signer *v4.Signer
+	Config                Config
+	signer                *v4.Signer
+	UnmarshalErrorHandler UnmarshalErrorHandler
 }
 
 // Config Configuration of the client
