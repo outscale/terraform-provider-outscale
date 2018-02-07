@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
+<<<<<<< HEAD
 func datasourceOutscaleInstance() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleInstanceRead,
@@ -14,6 +15,17 @@ func datasourceOutscaleInstance() *schema.Resource {
 }
 
 func datasourceOutscaleInstanceSchema() map[string]*schema.Schema {
+=======
+func datasourceOutscaleVMS() *schema.Resource {
+	return &schema.Resource{
+		Read: dataSourceOutscaleVMSRead,
+
+		Schema: datasourceOutscaleVMSSchema(),
+	}
+}
+
+func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
+>>>>>>> develop
 	return map[string]*schema.Schema{
 
 		// Optional attributes
@@ -554,7 +566,11 @@ func datasourceOutscaleInstanceSchema() map[string]*schema.Schema {
 	}
 }
 
+<<<<<<< HEAD
 func dataSourceOutscaleInstanceRead(d *schema.ResourceData, meta interface{}) error {
+=======
+func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
+>>>>>>> develop
 	return nil
 }
 

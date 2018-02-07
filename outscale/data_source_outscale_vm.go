@@ -4,233 +4,39 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceOutscaleVM() *schema.Resource {
+func dataSourceOutscaleVM() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVMCreate,
-		Read:   resourceVMRead,
-		Update: resourceVMUpdate,
-		Delete: resourceVMDelete,
-
-		Schema: getVMSchema(),
+		Read:   dataSourceOutscaleVMRead,
+		Schema: getDataSourceVMSchemas(),
 	}
 }
-
-func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getVMSchema() map[string]*schema.Schema {
+func getDataSourceVMSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// Attributes
-		"block_device_mapping": {
-			Type: schema.TypeSet,
-			Elem: schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Type: schema.TypeString,
-					},
-					"ebs": {
-						Type: schema.TypeSet,
-						Elem: schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"delete_on_termination": {
-									Type: schema.TypeBool,
-								},
-								"iops": {
-									Type: schema.TypeString,
-								},
-								"snapshot_id": {
-									Type:     schema.TypeInt,
-									Required: true,
-								},
-								"volume_size": {
-									Type: schema.TypeFloat,
-								},
-								"volume_type": {
-									Type: schema.TypeString,
-								},
-							},
-						},
-					},
-					"no_device": {
-						Type: schema.TypeBool,
-					},
-					"virtual_name": {
-						Type: schema.TypeString,
-					},
-				},
-			},
-			Optional: true,
-		},
-
-		"client_token": {
+		//Attributes
+		"instance_id": {
 			Type:     schema.TypeString,
 			Required: true,
 		},
-		"disable_api_termination": {
-			Type:     schema.TypeBool,
-			Required: true,
-		},
-		"ebs_optimized": {
-			Type:     schema.TypeBool,
-			Required: true,
-		},
-		"image_id": {
-			Type:     schema.TypeInt,
-			Required: true,
-		},
-		"instance_initiated_shutdown_behavior": {
-			Type:     schema.TypeBool,
-			Required: true,
-		},
-		"instance_type": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"key_name": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"max_count": {
-			Type:     schema.TypeInt,
-			Optional: true,
-		},
-		"min_count": {
-			Type:     schema.TypeInt,
-			Required: true,
-		},
-		"network_interface": {
-
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"delete_on_termination": {
-						Type: schema.TypeBool,
-					},
-					"description": {
-						Type: schema.TypeString,
-					},
-					"device_index": {
-						Type:     schema.TypeInt,
-						Required: true,
-					},
-					"network_interface_id": {
-						Type:     schema.TypeInt,
-						Required: true,
-					},
-					"private_ip_address": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"private_ip_addresses_set": {
-						Type: schema.TypeSet,
-						Elem: schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"primary": {
-									Type: schema.TypeString,
-								},
-								"private_ip_address": {
-									Type: schema.TypeString,
-								},
-							},
-						},
-					},
-					"secondary_private_ip_address_count": {
-						Type: schema.TypeString,
-					},
-					"security_group_id": {
-						Type:     schema.TypeSet,
-						Optional: true,
-						Elem:     &schema.Schema{Type: schema.TypeString},
-					},
-					"subnet_id": {
-						Type:     schema.TypeString,
-						Required: true,
-					},
-				},
-			},
-		},
-		"placement": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"affinity": {
-						Type: schema.TypeString,
-					},
-					"availability_zone": {
-						Type: schema.TypeString,
-					},
-					"group_name": {
-						Type: schema.TypeString,
-					},
-					"host_id": {
-						Type: schema.TypeInt,
-					},
-					"tenancy": {
-						Type: schema.TypeString,
-					},
-				},
-			},
-		},
-		"private_ip_address": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"private_ip_addresses": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"security_group": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
-		},
-		"security_group_id": {
-
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"subnet_id": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"user_data": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		//Attributes reference:
 		"group_set": {
-			Type: schema.TypeSet,
+
+			Type:     schema.TypeSet,
+			Optional: true,
 			Elem: schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"group_id": {
-						Type:     schema.TypeInt,
-						Computed: true,
+						Type:     schema.TypeString,
+						Required: true,
 					},
 					"group_name": {
 						Type:     schema.TypeString,
-						Computed: true,
+						Required: true,
 					},
 				},
 			},
-			Computed: true,
 		},
 		"instance_set": {
 			Type:     schema.TypeSet,
@@ -268,7 +74,6 @@ func getVMSchema() map[string]*schema.Schema {
 											"volume_id": {
 												Type:     schema.TypeString,
 												Computed: true,
-												Required: true,
 											},
 										},
 									},
@@ -277,7 +82,6 @@ func getVMSchema() map[string]*schema.Schema {
 							},
 						},
 						Computed: true,
-						Required: true,
 					},
 					"client_token": {
 						Type:     schema.TypeString,
@@ -290,7 +94,6 @@ func getVMSchema() map[string]*schema.Schema {
 					"ebs_optimised": {
 						Type:     schema.TypeBool,
 						Computed: true,
-						Required: true,
 					},
 					"group_set": {
 						Type: schema.TypeSet,
@@ -306,7 +109,6 @@ func getVMSchema() map[string]*schema.Schema {
 								},
 							},
 						},
-						Required: true,
 					},
 					"hypervisor": {
 						Type:     schema.TypeString,
@@ -331,12 +133,14 @@ func getVMSchema() map[string]*schema.Schema {
 					"image_id": {
 						Type:     schema.TypeInt,
 						Computed: true,
-						Required: true,
 					},
 					"instance_id": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
+					},
+					"instance_lifecycle": {
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 					"instance_state": {
 						Type: schema.TypeSet,
@@ -349,7 +153,6 @@ func getVMSchema() map[string]*schema.Schema {
 								"name": {
 									Type:     schema.TypeString,
 									Computed: true,
-									Required: true,
 								},
 							},
 						},
@@ -358,12 +161,10 @@ func getVMSchema() map[string]*schema.Schema {
 					"instance_type": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
 					},
 					"ip_address": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
 					},
 					"kernel_id": {
 						Type:     schema.TypeString,
@@ -371,7 +172,7 @@ func getVMSchema() map[string]*schema.Schema {
 					},
 					"key_name": {
 						Type:     schema.TypeString,
-						Required: true,
+						Computed: true,
 					},
 					"monitoring": {
 						Type: schema.TypeSet,
@@ -416,7 +217,6 @@ func getVMSchema() map[string]*schema.Schema {
 											"attachement_id": {
 												Type:     schema.TypeString,
 												Computed: true,
-												Required: true,
 											},
 											"delete_on_termination": {
 												Type:     schema.TypeBool,
@@ -425,7 +225,6 @@ func getVMSchema() map[string]*schema.Schema {
 											"device_index": {
 												Type:     schema.TypeInt,
 												Computed: true,
-												Required: true,
 											},
 											"status": {
 												Type:     schema.TypeString,
@@ -433,7 +232,6 @@ func getVMSchema() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"description": {
 									Type:     schema.TypeString,
@@ -454,7 +252,6 @@ func getVMSchema() map[string]*schema.Schema {
 										},
 									},
 									Computed: true,
-									Required: true,
 								},
 								"mac_address": {
 									Type:     schema.TypeString,
@@ -463,7 +260,6 @@ func getVMSchema() map[string]*schema.Schema {
 								"network_interface_id": {
 									Type:     schema.TypeString,
 									Computed: true,
-									Required: true,
 								},
 								"owner_id": {
 									Type:     schema.TypeString,
@@ -478,8 +274,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"private_ip_addresses_set": {
-									Type:     schema.TypeSet,
-									Required: true,
+									Type: schema.TypeSet,
 									Elem: schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
@@ -515,12 +310,10 @@ func getVMSchema() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"source_dest_check": {
 									Type:     schema.TypeBool,
 									Computed: true,
-									Required: true,
 								},
 								"status": {
 									Type:     schema.TypeString,
@@ -529,12 +322,10 @@ func getVMSchema() map[string]*schema.Schema {
 								"subnet_id": {
 									Type:     schema.TypeString,
 									Computed: true,
-									Required: true,
 								},
 								"vpc_id": {
 									Type:     schema.TypeInt,
 									Computed: true,
-									Required: true,
 								},
 							},
 						},
@@ -565,7 +356,6 @@ func getVMSchema() map[string]*schema.Schema {
 								},
 							},
 						},
-						Computed: true,
 					},
 					"platform": {
 						Type:     schema.TypeString,
@@ -576,8 +366,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"private_ip_address": {
-						Type: schema.TypeString,
-
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"product_codes": {
@@ -591,7 +380,6 @@ func getVMSchema() map[string]*schema.Schema {
 								"type": {
 									Type:     schema.TypeString,
 									Computed: true,
-									Required: true,
 								},
 							},
 						},
@@ -600,7 +388,6 @@ func getVMSchema() map[string]*schema.Schema {
 					"ramdisk_id": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
 					},
 					"reason": {
 						Type:     schema.TypeString,
@@ -609,14 +396,16 @@ func getVMSchema() map[string]*schema.Schema {
 					"root_device_name": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
+					},
+					"root_device_type": {
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 					"source_dest_check": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
 					},
-					"spot_instance_request_id": {
+					"sopt_instance_request_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -642,7 +431,7 @@ func getVMSchema() map[string]*schema.Schema {
 					},
 					"subnet_id": {
 						Type:     schema.TypeString,
-						Required: true,
+						Computed: true,
 					},
 					"tag_set": {
 						Type: schema.TypeSet,
@@ -667,7 +456,6 @@ func getVMSchema() map[string]*schema.Schema {
 					"vpc_id": {
 						Type:     schema.TypeString,
 						Computed: true,
-						Required: true,
 					},
 				},
 			},
@@ -688,6 +476,6 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		//instance set is closed here
+		//End of Attributes
 	}
 }
