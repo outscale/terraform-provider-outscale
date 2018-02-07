@@ -47,6 +47,8 @@ func NewFCUClient(config osc.Config) (*Client, error) {
 		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
 	}
 
-	f := &Client{client: &c}
+	f := &Client{client: &c,
+		VM: VMOperations{},
+	}
 	return f, nil
 }
