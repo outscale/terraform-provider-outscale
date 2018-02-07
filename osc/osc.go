@@ -139,5 +139,4 @@ func (c Client) checkResponse(r *http.Response) error {
 	}
 
 	return c.UnmarshalErrorHandler(r)
-
 }

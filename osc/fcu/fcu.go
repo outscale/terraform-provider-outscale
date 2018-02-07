@@ -1,6 +1,7 @@
 package fcu
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -51,4 +52,27 @@ func NewFCUClient(config osc.Config) (*Client, error) {
 		VM: VMOperations{client: &c},
 	}
 	return f, nil
+}
+
+// DescribeInstances method
+func (c *Client) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstances"
+	output := &DescribeInstancesOutput{}
+
+	if input == nil {
+		input = &DescribeInstancesInput{}
+	}
+
+	req, err := c.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if req != nil {
+		return nil, nil
+	}
+
+	return output, nil
 }

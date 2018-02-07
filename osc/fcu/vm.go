@@ -174,63 +174,6 @@ type BlockDeviceMapping struct {
 	VirtualName *string `locationName:"virtualName" type:"string"`
 }
 
-//InstanceNetworkInterfaceSpecification ...
-type InstanceNetworkInterfaceSpecification struct {
-	_ struct{} `type:"structure"`
-
-	// Indicates whether to assign a public IPv4 address to an instance you launch
-	// in a VPC. The public IP address can only be assigned to a network interface
-	// for eth0, and can only be assigned to a new network interface, not an existing
-	// one. You cannot specify more than one network interface in the request. If
-	// launching into a default subnet, the default value is true.
-	AssociatePublicIPAddress *bool `locationName:"associatePublicIpAddress" type:"boolean"`
-
-	// If set to true, the interface is deleted when the instance is terminated.
-	// You can specify true only if creating a new network interface when launching
-	// an instance.
-	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
-
-	// The description of the network interface. Applies only if creating a network
-	// interface when launching an instance.
-	Description *string `locationName:"description" type:"string"`
-
-	// The index of the device on the instance for the network interface attachment.
-	// If you are specifying a network interface in a RunInstances request, you
-	// must provide the device index.
-	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer"`
-
-	// The Ids of the security groups for the network interface. Applies only if
-	// creating a network interface when launching an instance.
-	Groups []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
-
-	// A number of IPv6 addresses to assign to the network interface. Amazon EC2
-	// chooses the IPv6 addresses from the range of the subnet. You cannot specify
-	// this option and the option to assign specific IPv6 addresses in the same
-	// request. You can specify this option if you've specified a minimum number
-	// of instances to launch.
-	IPv6AddressCount *int64 `locationName:"ipv6AddressCount" type:"integer"`
-
-	// The Id of the network interface.
-	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
-
-	// The private IPv4 address of the network interface. Applies only if creating
-	// a network interface when launching an instance. You cannot specify this option
-	// if you're launching more than one instance in a RunInstances request.
-	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string"`
-
-	// One or more private IPv4 addresses to assign to the network interface. Only
-	// one private IPv4 address can be designated as primary. You cannot specify
-	// this option if you're launching more than one instance in a RunInstances
-	// request.
-	PrivateIPAddresses []*PrivateIPAddressSpecification `locationName:"privateIpAddressesSet" queryName:"PrivateIpAddresses" locationNameList:"item" type:"list"`
-
-	// The Id of the subnet associated with the network string. Applies only if
-	// creating a network interface when launching an instance.
-	SubnetId *string `locationName:"subnetId" type:"string"`
-
-	SecondaryPrivateIPAddressCount string `locationName:"privateIpAddress" type:"string"`
-}
-
 //PrivateIPAddressSpecification ...
 type PrivateIPAddressSpecification struct {
 	_ struct{} `type:"structure"`
@@ -243,31 +186,6 @@ type PrivateIPAddressSpecification struct {
 	//
 	// PrivateIpAddress is a required field
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
-}
-
-//Placement ...
-type Placement struct {
-	_ struct{} `type:"structure"`
-
-	// The affinity setting for the instance on the Dedicated Host. This parameter
-	// is not supported for the ImportInstance command.
-	Affinity *string `locationName:"affinity" type:"string"`
-
-	// The Availability Zone of the instance.
-	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
-
-	// The name of the placement group the instance is in (for cluster compute instances).
-	GroupName *string `locationName:"groupName" type:"string"`
-
-	HostId *string `locationName:"hostId" type:"string"`
-
-	// The tenancy of the instance (if the instance is running in a VPC). An instance
-	// with a tenancy of dedicated runs on single-tenant hardware. The host tenancy
-	// is not supported for the ImportInstance command.
-	Tenancy *string `locationName:"tenancy" type:"string" enum:"Tenancy"`
-}
-
-type Reservation struct {
 }
 
 const opRunInstances = "RunInstances"
