@@ -1,4 +1,4 @@
-package osc
+package handler
 
 import (
 	"bytes"
