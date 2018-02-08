@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
@@ -57,6 +58,9 @@ func testSweepServers(region string) error {
 func TestAccOutscaleServer_Basic(t *testing.T) {
 	var server fcu.Instance
 
+	var before fcu.Instance
+	var after fcu.Instance
+
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -79,8 +83,68 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 						"outscale_vm.basic", "interfaces.0.type", "public"),
 				),
 			},
+			{
+				Config: testAccInstanceConfigUpdateVMKey,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInstanceExists("outscale_vm.basic", &after),
+					testAccCheckInstanceNotRecreated(
+						t, &before, &after),
+				),
+			},
 		},
 	})
+}
+
+func testAccCheckInstanceExists(n string, i *fcu.Instance) resource.TestCheckFunc {
+	providers := []*schema.Provider{testAccProvider}
+	return testAccCheckInstanceExistsWithProviders(n, i, &providers)
+}
+
+func testAccCheckInstanceExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+		for _, provider := range *providers {
+			// Ignore if Meta is empty, this can happen for validation providers
+			if provider.Meta() == nil {
+				continue
+			}
+
+			client := provider.Meta().(*OutscaleClient)
+			resp, err := client.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+				InstanceIds: []*string{aws.String(rs.Primary.ID)},
+			})
+			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
+				continue
+			}
+			if err != nil {
+				return err
+			}
+
+			if len(resp.Reservations) > 0 {
+				*i = *resp.Reservations[0].Instances[0]
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Instance not found")
+	}
+}
+
+func testAccCheckInstanceNotRecreated(t *testing.T,
+	before, after *fcu.Instance) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if *before.InstanceId != *after.InstanceId {
+			t.Fatalf("Outscale VM IDs have changed. Before %s. After %s", *before.InstanceId, *after.InstanceId)
+		}
+		return nil
+	}
 }
 
 func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
@@ -204,3 +268,10 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 }`
 }
+
+const testAccInstanceConfigUpdateVMKey = `
+resource "outscale_vm" "basic" {
+	image_id = "ami-5ad76458"
+	instance_type = "t2.micro"
+	key_name = "TestKey"
+}`
