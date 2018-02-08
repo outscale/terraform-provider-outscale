@@ -14,9 +14,9 @@ import (
 
 const (
 	libraryVersion      = "1.0"
-	defaultBaseURL      = "https://%s.%s.outscale.com"
+	DefaultBaseURL      = "https://%s.%s.outscale.com"
 	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
-	userAgent           = "osc/" + libraryVersion
+	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
 	mediaTypeURLEncoded = "application/x-www-form-urlencoded"
@@ -26,36 +26,40 @@ const (
 // BuildRequestHandler creates a new request and marshals the body depending on the implementation
 type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
 
+// MarshalHander marshals the incoming body to a desired format
+type MarshalHander func(v interface{}, action, version string) (string, error)
+
 // UnmarshalHandler unmarshals the body request depending on different implementations
 type UnmarshalHandler func(v interface{}, req *http.Response) error
+
+// UnmarshalErrorHandler unmarshals the errors coming from an http respose
+type UnmarshalErrorHandler func(r *http.Response) error
 
 // Client manages the communication between the Outscale API's
 type Client struct {
 	Config Config
-	signer *v4.Signer
+	Signer *v4.Signer
 
 	// Handlers
-	BuildRequestHandler BuildRequestHandler
-	UnmarshalHandler    UnmarshalHandler
+	MarshalHander         MarshalHander
+	BuildRequestHandler   BuildRequestHandler
+	UnmarshalHandler      UnmarshalHandler
+	UnmarshalErrorHandler UnmarshalErrorHandler
 }
 
 // Config Configuration of the client
 type Config struct {
-	Endpoint    string
 	Target      string
 	Credentials *Credentials
 
 	// HTTP client used to communicate with the Outscale API.
-	client *http.Client
+	Client *http.Client
 
 	// Base URL for API requests.
 	BaseURL *url.URL
 
 	// User agent for client
 	UserAgent string
-
-	// Services used for communicating with the API
-	// To be implemented
 
 	// Optional function called after every successful request made to the DO APIs
 	onRequestCompleted RequestCompletionCallback
@@ -73,7 +77,7 @@ type RequestCompletionCallback func(*http.Request, *http.Response)
 
 // Sign HTTP Request for authentication
 func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time, service string) (http.Header, error) {
-	return c.signer.Sign(req, body, c.Config.Target, c.Config.Credentials.Region, timestamp)
+	return c.Signer.Sign(req, body, c.Config.Target, c.Config.Credentials.Region, timestamp)
 }
 
 // NewRequest creates a request and signs it
@@ -83,9 +87,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
+	b, err := c.MarshalHander(body, operation, "2017-12-15")
+	if err != nil {
+		return nil, err
+	}
+
 	u := c.Config.BaseURL.ResolveReference(rel)
 
-	req, reader, err := c.BuildRequestHandler(body, method, u.String())
+	req, reader, err := c.BuildRequestHandler(b, method, u.String())
 	if err != nil {
 		return nil, err
 	}
@@ -111,10 +120,23 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 
 	req = req.WithContext(ctx)
 
-	resp, err := c.Config.client.Do(req)
+	resp, err := c.Config.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	err = c.checkResponse(resp)
 	if err != nil {
 		return err
 	}
 
 	return c.UnmarshalHandler(v, resp)
+}
+
+func (c Client) checkResponse(r *http.Response) error {
+	if c := r.StatusCode; c >= 200 && c <= 299 {
+		return nil
+	}
+
+	return c.UnmarshalErrorHandler(r)
 }

@@ -1,4 +1,4 @@
-package osc
+package handler
 
 import (
 	"bytes"
@@ -12,7 +12,6 @@ import (
 func TestError(t *testing.T) {
 	if err := SendError(ErrMsg["HTTP"], errors.New("Testing Error Message")); err == nil {
 		t.Fatalf("err: %s", err)
-		t.Log(err)
 	}
 
 }
@@ -29,6 +28,5 @@ func TestUnmarshallErrorHandler(t *testing.T) {
 
 	if err := UnmarshalErrorHandler(test); err == nil {
 		t.Fatalf("err: %s", err)
-		t.Log(err)
 	}
 }

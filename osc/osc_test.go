@@ -3,6 +3,7 @@ package osc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -63,18 +64,20 @@ func buildSigner() *v4.Signer {
 
 func buildClient() *Client {
 
-	baseURL, _ := url.Parse(fmt.Sprintf(defaultBaseURL, "fcu", "eu-west-2"))
+	baseURL, _ := url.Parse(fmt.Sprintf(DefaultBaseURL, "fcu", "eu-west-2"))
 	fmt.Println(baseURL.Opaque)
 
 	return &Client{
-		signer:              buildSigner(),
-		BuildRequestHandler: buildTestHandler,
-		UnmarshalHandler:    unmarshalTestHandler,
+		Signer:                buildSigner(),
+		BuildRequestHandler:   buildTestHandler,
+		MarshalHander:         testBuildRequestHandler,
+		UnmarshalHandler:      unmarshalTestHandler,
+		UnmarshalErrorHandler: testUnmarshalErrorHandler,
 		Config: Config{
 			UserAgent: "test",
 			Target:    "fcu",
 			BaseURL:   baseURL,
-			client:    &http.Client{},
+			Client:    &http.Client{},
 			Credentials: &Credentials{
 				Region: "eu-west-1",
 			},
@@ -91,8 +94,16 @@ func buildTestHandler(v interface{}, method, url string) (*http.Request, io.Read
 	return req, reader, nil
 }
 
+func testBuildRequestHandler(v interface{}, action, version string) (string, error) {
+	return "{}", nil
+}
+
 func unmarshalTestHandler(v interface{}, req *http.Response) error {
 	return nil
+}
+
+func testUnmarshalErrorHandler(r *http.Response) error {
+	return errors.New("This is an error")
 }
 
 func TestSign(t *testing.T) {
@@ -135,7 +146,7 @@ func TestSetHeaders(t *testing.T) {
 func TestNewRequest(t *testing.T) {
 	c := buildClient()
 
-	inURL, outURL := "foo", fmt.Sprintf(defaultBaseURL+"/foo", "fcu", "eu-west-2")
+	inURL, outURL := "foo", fmt.Sprintf(DefaultBaseURL+"/foo", "fcu", "eu-west-2")
 	inBody, outBody := "{}", "{}"
 	req, _ := c.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
 	fmt.Println(req.URL.Opaque)
@@ -169,6 +180,28 @@ func TestDo(t *testing.T) {
 	req, _ := client.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
 	err := client.Do(context.Background(), req, nil)
 	if err != nil {
+		t.Fatalf("Do(): %v", err)
+	}
+}
+
+func TestDo_ErrorResponse(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if m := http.MethodGet; m != r.Method {
+			t.Errorf("Request method = %v, expected %v", r.Method, m)
+		}
+		w.WriteHeader(http.StatusForbidden)
+		fmt.Fprint(w, `{}`)
+	})
+
+	inURL := "/"
+	inBody := "{}"
+
+	req, _ := client.NewRequest(context.TODO(), "operation", http.MethodGet, inURL, inBody)
+	err := client.Do(context.Background(), req, nil)
+	if err == nil {
 		t.Fatalf("Do(): %v", err)
 	}
 }

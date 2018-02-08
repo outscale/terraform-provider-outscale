@@ -1,7 +1,14 @@
 package outscale
 
 import (
+	"errors"
+	"fmt"
+	"log"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func dataSourceOutscaleVM() *schema.Resource {
@@ -11,7 +18,124 @@ func dataSourceOutscaleVM() *schema.Resource {
 	}
 }
 func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*fcu.Client)
+
+	filters, filtersOk := d.GetOk("filter")
+	instanceID, instanceIDOk := d.GetOk("instance_id")
+
+	if filtersOk == false && instanceIDOk == false {
+		return fmt.Errorf("One of filters, or instance_id must be assigned")
+	}
+
+	// Build up search parameters
+	params := &fcu.DescribeInstancesInput{}
+	if filtersOk {
+		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if instanceIDOk {
+		params.InstanceIds = []*string{aws.String(instanceID.(string))}
+	}
+
+	// Perform the lookup
+	resp, err := client.DescribeInstances(params)
+	if err != nil {
+		return err
+	}
+
+	// If no instances were returned, return
+	if len(resp.Reservations) == 0 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	var filteredInstances []*fcu.Instance
+
+	// loop through reservations, and remove terminated instances, populate instance slice
+	for _, res := range resp.Reservations {
+		for _, instance := range res.Instances {
+			if instance.State != nil && *instance.State.Name != "terminated" {
+				filteredInstances = append(filteredInstances, instance)
+			}
+		}
+	}
+
+	var instance *fcu.Instance
+	if len(filteredInstances) < 1 {
+		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	// (TODO: Support a list of instances to be returned)
+	// Possibly with a different data source that returns a list of individual instance data sources
+	if len(filteredInstances) > 1 {
+		return errors.New("Your query returned more than one result. Please try a more " +
+			"specific search criteria")
+	}
+
+	instance = filteredInstances[0]
+
+	log.Printf("[DEBUG] aws_instance - Single Instance ID found: %s", *instance.InstanceId)
+
+	return instanceDescriptionAttributes(d, instance, client)
+}
+
+// Populate instance attribute fields with the returned instance
+func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance, conn *fcu.Client) error {
+	d.SetId(*instance.InstanceId)
+	// Set the easy attributes
+	d.Set("instance_state", instance.State.Name)
+	if instance.Placement != nil {
+		d.Set("availability_zone", instance.Placement.AvailabilityZone)
+	}
+	if instance.Placement.Tenancy != nil {
+		d.Set("tenancy", instance.Placement.Tenancy)
+	}
+	d.Set("ami", instance.ImageId)
+	d.Set("instance_type", instance.InstanceType)
+	d.Set("key_name", instance.KeyName)
+	d.Set("private_dns", instance.PrivateDnsName)
+	d.Set("private_ip", instance.PrivateIpAddress)
+	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
+
+	// iterate through network interfaces, and set subnet, network_interface, public_addr
+	if len(instance.NetworkInterfaces) > 0 {
+		for _, ni := range instance.NetworkInterfaces {
+			if *ni.Attachment.DeviceIndex == 0 {
+				d.Set("subnet_id", ni.SubnetId)
+				d.Set("network_interface_id", ni.NetworkInterfaceId)
+				d.Set("associate_public_ip_address", ni.Association != nil)
+			}
+		}
+	} else {
+		d.Set("subnet_id", instance.SubnetId)
+		d.Set("network_interface_id", "")
+	}
+
+	d.Set("ebs_optimized", instance.EbsOptimized)
+	if instance.SubnetId != nil && *instance.SubnetId != "" {
+		d.Set("source_dest_check", instance.SourceDestCheck)
+	}
+
+	if instance.Monitoring != nil && instance.Monitoring.State != nil {
+		monitoringState := *instance.Monitoring.State
+		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
+	}
+
 	return nil
+}
+
+func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
+	var filters []*fcu.Filter
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []*string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, aws.String(e.(string)))
+		}
+		filters = append(filters, &fcu.Filter{
+			Name:   aws.String(m["name"].(string)),
+			Values: filterValues,
+		})
+	}
+	return filters
 }
 
 func getDataSourceVMSchemas() map[string]*schema.Schema {
@@ -478,4 +602,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 		},
 		//End of Attributes
 	}
+}
+
+func iamInstanceProfileArnToName(ip *fcu.IamInstanceProfile) string {
+	if ip == nil || ip.Arn == nil {
+		return ""
+	}
+	parts := strings.Split(*ip.Arn, "/")
+	return parts[len(parts)-1]
 }
