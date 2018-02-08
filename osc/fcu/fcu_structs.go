@@ -831,3 +831,12 @@ type PrivateIPAddressSpecification struct {
 	// PrivateIpAddress is a required field
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
 }
+
+type ModifyInstanceKeyPairInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	KeyName *string `locationName:"keyName" type:"string"`
+}
