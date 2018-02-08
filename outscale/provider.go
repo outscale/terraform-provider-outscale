@@ -21,6 +21,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_SECRETKEYID", nil),
 				Description: "The Secret Key ID for API operations.",
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_REGION", nil),
+				Description: "The Region for API operations.",
+			},
 			"oapi": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -45,8 +51,8 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
 		AccessKeyID: d.Get("access_key_id").(string),
 		SecretKeyID: d.Get("secret_key_id").(string),
+		Region:      d.Get("region").(string),
 		OApi:        d.Get("oapi").(bool),
 	}
 	return config.Client()
-	//	return nil, nil
 }

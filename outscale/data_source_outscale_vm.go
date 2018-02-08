@@ -18,7 +18,7 @@ func dataSourceOutscaleVM() *schema.Resource {
 	}
 }
 func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*fcu.Client)
+	client := meta.(*OutscaleClient).FCU.VM
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("instance_id")
@@ -78,7 +78,7 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 // Populate instance attribute fields with the returned instance
-func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance, conn *fcu.Client) error {
+func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance, conn fcu.VMService) error {
 	d.SetId(*instance.InstanceId)
 	// Set the easy attributes
 	d.Set("instance_state", instance.State.Name)
