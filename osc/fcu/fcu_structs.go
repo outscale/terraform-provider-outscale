@@ -834,42 +834,6 @@ type PrivateIPAddressSpecification struct {
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
 }
 
-type TerminateInstancesInput struct {
-	_ struct{} `type:"structure"`
-
-	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
-}
-
-type TerminateInstancesOutput struct {
-	_ struct{} `type:"structure"`
-
-	// Information about one or more terminated instances.
-	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
-}
-
-type GetPasswordDataInput struct {
-	_ struct{} `type:"structure"`
-
-	// The ID of the Windows instance.
-	//
-	// InstanceId is a required field
-	InstanceId *string `type:"string" required:"true"`
-}
-
-type GetPasswordDataOutput struct {
-	_ struct{} `type:"structure"`
-
-	// The ID of the Windows instance.
-	InstanceId *string `locationName:"instanceId" type:"string"`
-
-	// The password of the instance. Returns an empty string if the password is
-	// not available.
-	PasswordData *string `locationName:"passwordData" type:"string"`
-
-	// The time the data was last updated.
-	Timestamp *time.Time `locationName:"timestamp" type:"timestamp" timestampFormat:"iso8601"`
-}
-
 type ModifyInstanceKeyPairInput struct {
 	_ struct{} `type:"structure"`
 
@@ -933,4 +897,27 @@ type EbsBlockDevice struct {
 	//
 	// Default: standard
 	VolumeType *string `locationName:"volumeType" type:"string" enum:"VolumeType"`
+}
+
+type GetPasswordDataInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+}
+
+type GetPasswordDataOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The password of the instance. Returns an empty string if the password is
+	// not available.
+	PasswordData *string `locationName:"passwordData" type:"string"`
+
+	// The time the data was last updated.
+	Timestamp *time.Time `locationName:"timestamp" type:"timestamp" timestampFormat:"iso8601"`
 }

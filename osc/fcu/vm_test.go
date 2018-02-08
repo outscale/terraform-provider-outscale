@@ -139,3 +139,26 @@ func TestVM_GetPasswordData(t *testing.T) {
 		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
 	}
 }
+
+func TestVM_ModifyInstanceKeyPair(t *testing.T) {
+	setup()
+	defer teardown()
+
+	instanceID := "i-484e76e2"
+	keypair := "testkey"
+
+	input := ModifyInstanceKeyPairInput{
+		InstanceId: &instanceID,
+		KeyName:    &keypair,
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Fprintf(w, ``)
+	})
+
+	err := client.VM.ModifyInstanceKeyPair(&input)
+	if err != nil {
+		t.Errorf("VM.ModifyInstanceKeyPair returned error: %v", err)
+	}
+}

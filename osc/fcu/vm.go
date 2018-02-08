@@ -17,6 +17,7 @@ type VMService interface {
 	RunInstance(input *RunInstancesInput) (*Reservation, error)
 	DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error)
 	GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error)
+	ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error
 }
 
 const opRunInstances = "RunInstances"
@@ -64,6 +65,28 @@ func (v VMOperations) DescribeInstances(input *DescribeInstancesInput) (*Describ
 }
 
 // DescribeInstances method
+func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error {
+	inURL := "/?Action=ModifyInstanceKeypair"
+	endpoint := "ModifyInstanceKeypair"
+
+	if input == nil {
+		input = &ModifyInstanceKeyPairInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return err
+	}
+
+	err = v.client.Do(context.TODO(), req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (v VMOperations) GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error) {
 	inURL := "/"
 	endpoint := "GetPasswordData"
