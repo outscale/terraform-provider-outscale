@@ -1,11 +1,9 @@
 package fcu
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
-	"github.com/aws/aws-sdk-go/aws/request"
 )
 
 const (
@@ -964,31 +962,6 @@ func (s InstanceNetworkInterfaceSpecification) String() string {
 	return awsutil.Prettify(s)
 }
 
-// GoString returns the string representation
-func (s InstanceNetworkInterfaceSpecification) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *InstanceNetworkInterfaceSpecification) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "InstanceNetworkInterfaceSpecification"}
-	if s.PrivateIpAddresses != nil {
-		for i, v := range s.PrivateIpAddresses {
-			if v == nil {
-				continue
-			}
-			if err := v.Validate(); err != nil {
-				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PrivateIpAddresses", i), err.(request.ErrInvalidParams))
-			}
-		}
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
 // SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
 func (s *InstanceNetworkInterfaceSpecification) SetAssociatePublicIpAddress(v bool) *InstanceNetworkInterfaceSpecification {
 	s.AssociatePublicIpAddress = &v
@@ -1642,28 +1615,6 @@ type Tag struct {
 	Value *string `locationName:"value" type:"string"`
 }
 
-// String returns the string representation
-func (s Tag) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Tag) GoString() string {
-	return s.String()
-}
-
-// SetKey sets the Key field's value.
-func (s *Tag) SetKey(v string) *Tag {
-	s.Key = &v
-	return s
-}
-
-// SetValue sets the Value field's value.
-func (s *Tag) SetValue(v string) *Tag {
-	s.Value = &v
-	return s
-}
-
 // Describes a secondary private IPv4 address for a network interface.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/PrivateIpAddressSpecification
 type PrivateIpAddressSpecification struct {
@@ -1677,41 +1628,6 @@ type PrivateIpAddressSpecification struct {
 	//
 	// PrivateIpAddress is a required field
 	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
-}
-
-// String returns the string representation
-func (s PrivateIpAddressSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s PrivateIpAddressSpecification) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *PrivateIpAddressSpecification) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "PrivateIpAddressSpecification"}
-	if s.PrivateIpAddress == nil {
-		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddress"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetPrimary sets the Primary field's value.
-func (s *PrivateIpAddressSpecification) SetPrimary(v bool) *PrivateIpAddressSpecification {
-	s.Primary = &v
-	return s
-}
-
-// SetPrivateIpAddress sets the PrivateIpAddress field's value.
-func (s *PrivateIpAddressSpecification) SetPrivateIpAddress(v string) *PrivateIpAddressSpecification {
-	s.PrivateIpAddress = &v
-	return s
 }
 
 // Contains the parameters for DescribeInstanceAttribute.
@@ -1736,50 +1652,6 @@ type DescribeInstanceAttributeInput struct {
 	//
 	// InstanceId is a required field
 	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
-}
-
-// String returns the string representation
-func (s DescribeInstanceAttributeInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeInstanceAttributeInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DescribeInstanceAttributeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DescribeInstanceAttributeInput"}
-	if s.Attribute == nil {
-		invalidParams.Add(request.NewErrParamRequired("Attribute"))
-	}
-	if s.InstanceId == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetAttribute sets the Attribute field's value.
-func (s *DescribeInstanceAttributeInput) SetAttribute(v string) *DescribeInstanceAttributeInput {
-	s.Attribute = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DescribeInstanceAttributeInput) SetDryRun(v bool) *DescribeInstanceAttributeInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *DescribeInstanceAttributeInput) SetInstanceId(v string) *DescribeInstanceAttributeInput {
-	s.InstanceId = &v
-	return s
 }
 
 // Describes an instance attribute.
@@ -1838,106 +1710,6 @@ type DescribeInstanceAttributeOutput struct {
 	UserData *AttributeValue `locationName:"userData" type:"structure"`
 }
 
-// String returns the string representation
-func (s DescribeInstanceAttributeOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeInstanceAttributeOutput) GoString() string {
-	return s.String()
-}
-
-// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
-func (s *DescribeInstanceAttributeOutput) SetBlockDeviceMappings(v []*InstanceBlockDeviceMapping) *DescribeInstanceAttributeOutput {
-	s.BlockDeviceMappings = v
-	return s
-}
-
-// SetDisableApiTermination sets the DisableApiTermination field's value.
-func (s *DescribeInstanceAttributeOutput) SetDisableApiTermination(v *AttributeBooleanValue) *DescribeInstanceAttributeOutput {
-	s.DisableApiTermination = v
-	return s
-}
-
-// SetEbsOptimized sets the EbsOptimized field's value.
-func (s *DescribeInstanceAttributeOutput) SetEbsOptimized(v *AttributeBooleanValue) *DescribeInstanceAttributeOutput {
-	s.EbsOptimized = v
-	return s
-}
-
-// SetEnaSupport sets the EnaSupport field's value.
-func (s *DescribeInstanceAttributeOutput) SetEnaSupport(v *AttributeBooleanValue) *DescribeInstanceAttributeOutput {
-	s.EnaSupport = v
-	return s
-}
-
-// SetGroups sets the Groups field's value.
-func (s *DescribeInstanceAttributeOutput) SetGroups(v []*GroupIdentifier) *DescribeInstanceAttributeOutput {
-	s.Groups = v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *DescribeInstanceAttributeOutput) SetInstanceId(v string) *DescribeInstanceAttributeOutput {
-	s.InstanceId = &v
-	return s
-}
-
-// SetInstanceInitiatedShutdownBehavior sets the InstanceInitiatedShutdownBehavior field's value.
-func (s *DescribeInstanceAttributeOutput) SetInstanceInitiatedShutdownBehavior(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.InstanceInitiatedShutdownBehavior = v
-	return s
-}
-
-// SetInstanceType sets the InstanceType field's value.
-func (s *DescribeInstanceAttributeOutput) SetInstanceType(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.InstanceType = v
-	return s
-}
-
-// SetKernelId sets the KernelId field's value.
-func (s *DescribeInstanceAttributeOutput) SetKernelId(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.KernelId = v
-	return s
-}
-
-// SetProductCodes sets the ProductCodes field's value.
-func (s *DescribeInstanceAttributeOutput) SetProductCodes(v []*ProductCode) *DescribeInstanceAttributeOutput {
-	s.ProductCodes = v
-	return s
-}
-
-// SetRamdiskId sets the RamdiskId field's value.
-func (s *DescribeInstanceAttributeOutput) SetRamdiskId(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.RamdiskId = v
-	return s
-}
-
-// SetRootDeviceName sets the RootDeviceName field's value.
-func (s *DescribeInstanceAttributeOutput) SetRootDeviceName(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.RootDeviceName = v
-	return s
-}
-
-// SetSourceDestCheck sets the SourceDestCheck field's value.
-func (s *DescribeInstanceAttributeOutput) SetSourceDestCheck(v *AttributeBooleanValue) *DescribeInstanceAttributeOutput {
-	s.SourceDestCheck = v
-	return s
-}
-
-// SetSriovNetSupport sets the SriovNetSupport field's value.
-func (s *DescribeInstanceAttributeOutput) SetSriovNetSupport(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.SriovNetSupport = v
-	return s
-}
-
-// SetUserData sets the UserData field's value.
-func (s *DescribeInstanceAttributeOutput) SetUserData(v *AttributeValue) *DescribeInstanceAttributeOutput {
-	s.UserData = v
-	return s
-}
-
 // Describes a value for a resource attribute that is a Boolean value.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttributeBooleanValue
 type AttributeBooleanValue struct {
@@ -1945,22 +1717,6 @@ type AttributeBooleanValue struct {
 
 	// The attribute value. The valid values are true or false.
 	Value *bool `locationName:"value" type:"boolean"`
-}
-
-// String returns the string representation
-func (s AttributeBooleanValue) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s AttributeBooleanValue) GoString() string {
-	return s.String()
-}
-
-// SetValue sets the Value field's value.
-func (s *AttributeBooleanValue) SetValue(v bool) *AttributeBooleanValue {
-	s.Value = &v
-	return s
 }
 
 // Describes a value for a resource attribute that is a String.
@@ -1972,18 +1728,173 @@ type AttributeValue struct {
 	Value *string `locationName:"value" type:"string"`
 }
 
-// String returns the string representation
-func (s AttributeValue) String() string {
-	return awsutil.Prettify(s)
+//RunInstancesInput is the specification to run the an instance
+type RunInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more block device mapping entries. You can't specify both a snapshot
+	// Id and an encryption value. This is because only blank volumes can be encrypted
+	// on creation. If a snapshot is the basis for a volume, it is not blank and
+	// its encryption status is used for the volume encryption status.
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"BlockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
+
+	// Unique, case-sensitive identifier you provide to ensure the idempotency of
+	// the request. For more information, see Ensuring Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	//
+	// Constraints: Maximum 64 ASCII characters
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// If you set this parameter to true, you can't terminate the instance using
+	// the Amazon EC2 console, CLI, or API; otherwise, you can. To change this attribute
+	// to false after launch, use ModifyInstanceAttribute. Alternatively, if you
+	// set InstanceInitiatedShutdownBehavior to terminate, you can terminate the
+	// instance by running the shutdown command from the instance.
+	//
+	// Default: false
+	DisableAPITermination *bool `locationName:"disableApiTermination" type:"boolean"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Indicates whether the instance is optimized for Amazon EBS I/O. This optimization
+	// provides dedicated throughput to Amazon EBS and an optimized configuration
+	// stack to provide optimal Amazon EBS I/O performance. This optimization isn't
+	// available with all instance types. Additional usage charges apply when using
+	// an EBS-optimized instance.
+	//
+	// Default: false
+	EbsOptimized *bool `locationName:"ebsOptimized" type:"boolean"`
+
+	// The Id of the AMI, which you can get by calling DescribeImages. An AMI is
+	// required to launch an instance and must be specified here or in a launch
+	// template.
+	ImageId *string `type:"string"`
+
+	// Indicates whether an instance stops or terminates when you initiate shutdown
+	// from the instance (using the operating system command for system shutdown).
+	//
+	// Default: stop
+	InstanceInitiatedShutdownBehavior *string `locationName:"instanceInitiatedShutdownBehavior" type:"string" enum:"ShutdownBehavior"`
+
+	// The instance type. For more information, see Instance Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Default: m1.small
+	InstanceType *string `type:"string" enum:"InstanceType"`
+
+	// The name of the key pair. You can create a key pair using CreateKeyPair or
+	// ImportKeyPair.
+	//
+	// If you do not specify a key pair, you can't connect to the instance unless
+	// you choose an AMI that is configured to allow users another way to log in.
+	KeyName *string `type:"string"`
+
+	// The maximum number of instances to launch. If you specify more instances
+	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
+	// the largest possible number of instances above MinCount.
+	//
+	// Constraints: Between 1 and the maximum number you're allowed for the specified
+	// instance type. For more information about the default limits, and how to
+	// request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2)
+	// in the Amazon EC2 FAQ.
+	//
+	// MaxCount is a required field
+	MaxCount *int64 `type:"integer" required:"true"`
+
+	// The minimum number of instances to launch. If you specify a minimum that
+	// is more instances than Amazon EC2 can launch in the target Availability Zone,
+	// Amazon EC2 launches no instances.
+	//
+	// Constraints: Between 1 and the maximum number you're allowed for the specified
+	// instance type. For more information about the default limits, and how to
+	// request an increase, see How many instances can I run in Amazon EC2 (http://aws.amazon.com/ec2/faqs/#How_many_instances_can_I_run_in_Amazon_EC2)
+	// in the Amazon EC2 General FAQ.
+	//
+	// MinCount is a required field
+	MinCount *int64 `type:"integer" required:"true"`
+
+	// One or more network interfaces.
+	NetworkInterfaces []*InstanceNetworkInterfaceSpecification `locationName:"networkInterface" locationNameList:"item" type:"list"`
+
+	// The placement for the instance.
+	Placement *Placement `type:"structure"`
+
+	// [EC2-VPC] The primary IPv4 address. You must specify a value from the IPv4
+	// address range of the subnet.
+	//
+	// Only one private IP address can be designated as primary. You can't specify
+	// this option if you've specified the option to designate a private IP address
+	// as the primary IP address in a network interface specification. You cannot
+	// specify this option if you're launching more than one instance in the request.
+	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string"`
+
+	// The Id of the RAM disk.
+	//
+	// We recommend that you use PV-GRUB instead of kernels and RAM disks. For more
+	// information, see  PV-GRUB (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/UserProvidedkernels.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	RamdiskId *string `type:"string"`
+
+	// One or more security group Ids. You can create a security group using CreateSecurityGroup.
+	//
+	// Default: Amazon EC2 uses the default security group.
+	SecurityGroupIds []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
+
+	// [EC2-Classic, default VPC] One or more security group names. For a nondefault
+	// VPC, you must use security group Ids instead.
+	//
+	// Default: Amazon EC2 uses the default security group.
+	SecurityGroups []*string `locationName:"SecurityGroup" locationNameList:"SecurityGroup" type:"list"`
+
+	// [EC2-VPC] The Id of the subnet to launch the instance into.
+	SubnetId *string `type:"string"`
+
+	// The user data to make available to the instance. For more information, see
+	// Running Commands on Your Linux Instance at Launch (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
+	// (Linux) and Adding User Data (http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data)
+	// (Windows). If you are using a command line tool, base64-encoding is performed
+	// for you, and you can load the text from a file. Otherwise, you must provide
+	// base64-encoded text.
+	UserData *string `type:"string"`
 }
 
-// GoString returns the string representation
-func (s AttributeValue) GoString() string {
-	return s.String()
+//BlockDeviceMapping input to specify the mapping
+type BlockDeviceMapping struct {
+	_ struct{} `type:"structure"`
+
+	// The device name (for example, /dev/sdh or xvdh).
+	DeviceName *string `locationName:"deviceName" type:"string"`
+
+	// Suppresses the specified device included in the block device mapping of the
+	// AMI.
+	NoDevice *string `locationName:"noDevice" type:"string"`
+
+	// The virtual device name (ephemeralN). Instance store volumes are numbered
+	// starting from 0. An instance type with 2 available instance store volumes
+	// can specify mappings for ephemeral0 and ephemeral1.The number of available
+	// instance store volumes depends on the instance type. After you connect to
+	// the instance, you must mount the volume.
+	//
+	// Constraints: For M3 instances, you must specify instance store volumes in
+	// the block device mapping for the instance. When you launch an M3 instance,
+	// we ignore any instance store volumes specified in the block device mapping
+	// for the AMI.
+	VirtualName *string `locationName:"virtualName" type:"string"`
 }
 
-// SetValue sets the Value field's value.
-func (s *AttributeValue) SetValue(v string) *AttributeValue {
-	s.Value = &v
-	return s
+//PrivateIPAddressSpecification ...
+type PrivateIPAddressSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the private IPv4 address is the primary private IPv4 address.
+	// Only one IPv4 address can be designated as primary.
+	Primary *bool `locationName:"primary" type:"boolean"`
+
+	// The private IPv4 addresses.
+	//
+	// PrivateIpAddress is a required field
+	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
 }
