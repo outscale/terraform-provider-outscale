@@ -801,6 +801,8 @@ type BlockDeviceMapping struct {
 	// The device name (for example, /dev/sdh or xvdh).
 	DeviceName *string `locationName:"deviceName" type:"string"`
 
+	Ebs *EbsBlockDevice `locationName:"ebs" type:"structure"`
+
 	// Suppresses the specified device included in the block device mapping of the
 	// AMI.
 	NoDevice *string `locationName:"noDevice" type:"string"`
@@ -830,4 +832,105 @@ type PrivateIPAddressSpecification struct {
 	//
 	// PrivateIpAddress is a required field
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
+}
+
+type TerminateInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
+}
+
+type TerminateInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more terminated instances.
+	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}
+
+type GetPasswordDataInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+}
+
+type GetPasswordDataOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The password of the instance. Returns an empty string if the password is
+	// not available.
+	PasswordData *string `locationName:"passwordData" type:"string"`
+
+	// The time the data was last updated.
+	Timestamp *time.Time `locationName:"timestamp" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+type ModifyInstanceKeyPairInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Windows instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	KeyName *string `locationName:"keyName" type:"string"`
+}
+
+type EbsBlockDevice struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the EBS volume is deleted on instance termination.
+	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
+
+	// Indicates whether the EBS volume is encrypted. Encrypted volumes can only
+	// be attached to instances that support Amazon EBS encryption. If you are creating
+	// a volume from a snapshot, you can't specify an encryption value. This is
+	// because only blank volumes can be encrypted on creation.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The number of I/O operations per second (IOPS) that the volume supports.
+	// For io1, this represents the number of IOPS that are provisioned for the
+	// volume. For gp2, this represents the baseline performance of the volume and
+	// the rate at which the volume accumulates I/O credits for bursting. For more
+	// information about General Purpose SSD baseline performance, I/O credits,
+	// and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
+	// gp2 volumes.
+	//
+	// Condition: This parameter is required for requests to create io1 volumes;
+	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
+	Iops *int64 `locationName:"iops" type:"integer"`
+
+	// ID for a user-managed CMK under which the EBS volume is encrypted.
+	//
+	// Note: This parameter is only supported on BlockDeviceMapping objects called
+	// by RunInstances (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RunInstances.html),
+	// RequestSpotFleet (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotFleet.html),
+	// and RequestSpotInstances (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html).
+	KmsKeyId *string `type:"string"`
+
+	// The ID of the snapshot.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// The size of the volume, in GiB.
+	//
+	// Constraints: 1-16384 for General Purpose SSD (gp2), 4-16384 for Provisioned
+	// IOPS SSD (io1), 500-16384 for Throughput Optimized HDD (st1), 500-16384 for
+	// Cold HDD (sc1), and 1-1024 for Magnetic (standard) volumes. If you specify
+	// a snapshot, the volume size must be equal to or larger than the snapshot
+	// size.
+	//
+	// Default: If you're creating the volume from a snapshot and don't specify
+	// a volume size, the default is the snapshot size.
+	VolumeSize *int64 `locationName:"volumeSize" type:"integer"`
+
+	// The volume type: gp2, io1, st1, sc1, or standard.
+	//
+	// Default: standard
+	VolumeType *string `locationName:"volumeType" type:"string" enum:"VolumeType"`
 }
