@@ -16,6 +16,8 @@ type VMOperations struct {
 type VMService interface {
 	RunInstance(input *RunInstancesInput) (*Reservation, error)
 	DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error)
+	GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error)
+	ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error
 	TerminateInstances(input *TerminateInstancesInput) (*TerminateInstancesOutput, error)
 }
 
@@ -64,13 +66,35 @@ func (v VMOperations) DescribeInstances(input *DescribeInstancesInput) (*Describ
 }
 
 // DescribeInstances method
-func (v VMOperations) TerminateInstances(input *TerminateInstancesInput) (*TerminateInstancesOutput, error) {
-	inURL := "/"
-	endpoint := "TerminateInstances"
-	output := &TerminateInstancesOutput{}
+func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error {
+	inURL := "/?Action=ModifyInstanceKeypair"
+	endpoint := "ModifyInstanceKeypair"
 
 	if input == nil {
-		input = &TerminateInstancesInput{}
+		input = &ModifyInstanceKeyPairInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return err
+	}
+
+	err = v.client.Do(context.TODO(), req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v VMOperations) GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error) {
+	inURL := "/"
+	endpoint := "GetPasswordData"
+	output := &GetPasswordDataOutput{}
+
+	if input == nil {
+		input = &GetPasswordDataInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
@@ -86,3 +110,5 @@ func (v VMOperations) TerminateInstances(input *TerminateInstancesInput) (*Termi
 
 	return output, nil
 }
+
+
