@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -90,8 +91,6 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 	d.Set("ami", instance.ImageId)
 	d.Set("instance_type", instance.InstanceType)
 	d.Set("key_name", instance.KeyName)
-	d.Set("public_dns", instance.PublicDnsName)
-	d.Set("public_ip", instance.PublicIpAddress)
 	d.Set("private_dns", instance.PrivateDnsName)
 	d.Set("private_ip", instance.PrivateIpAddress)
 	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
@@ -603,4 +602,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 		},
 		//End of Attributes
 	}
+}
+
+func iamInstanceProfileArnToName(ip *fcu.IamInstanceProfile) string {
+	if ip == nil || ip.Arn == nil {
+		return ""
+	}
+	parts := strings.Split(*ip.Arn, "/")
+	return parts[len(parts)-1]
 }
