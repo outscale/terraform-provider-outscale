@@ -31,6 +31,8 @@ type Filter struct {
 
 // DescribeInstancesOutput struct
 type DescribeInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`

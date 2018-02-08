@@ -15,6 +15,7 @@ type VMOperations struct {
 //VMService all the necessary actions for them VM service
 type VMService interface {
 	RunInstance(input *RunInstancesInput) (*Reservation, error)
+	DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -38,7 +39,7 @@ func (v VMOperations) RunInstance(input *RunInstancesInput) (*Reservation, error
 const opDescribeInstances = "DescribeInstances"
 
 // DescribeInstances method
-func (c *Client) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
+func (v VMOperations) DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeInstances"
 	output := &DescribeInstancesOutput{}
@@ -47,13 +48,13 @@ func (c *Client) DescribeInstances(input *DescribeInstancesInput) (*DescribeInst
 		input = &DescribeInstancesInput{}
 	}
 
-	req, err := c.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.client.Do(context.TODO(), req, &output)
+	err = v.client.Do(context.TODO(), req, output)
 	if err != nil {
 		return nil, err
 	}
