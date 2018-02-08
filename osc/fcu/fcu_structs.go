@@ -831,3 +831,16 @@ type PrivateIPAddressSpecification struct {
 	// PrivateIpAddress is a required field
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string" required:"true"`
 }
+
+type TerminateInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
+}
+
+type TerminateInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more terminated instances.
+	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}
