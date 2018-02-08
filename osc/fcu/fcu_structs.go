@@ -710,7 +710,7 @@ type RunInstancesInput struct {
 	// from the instance (using the operating system command for system shutdown).
 	//
 	// Default: stop
-	InstanceInitiatedShutdownBehavior *string `locationName:"instanceInitiatedShutdownBehavior" type:"string" enum:"ShutdownBehavior"`
+	InstanceInitiatedShutdownBehavior *bool `locationName:"instanceInitiatedShutdownBehavior" type:"bool" enum:"ShutdownBehavior"`
 
 	// The instance type. For more information, see Instance Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
@@ -923,7 +923,7 @@ type GetPasswordDataOutput struct {
 }
 
 type TerminateInstancesInput struct {
-	_ struct{} `type:"structure"`
+	// _ struct{} `type:"structure"`
 
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
 }
