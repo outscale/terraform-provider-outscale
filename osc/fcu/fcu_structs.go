@@ -22,40 +22,6 @@ type DescribeInstancesInput struct {
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
-// String returns the string representation
-func (s DescribeInstancesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeInstancesInput) GoString() string {
-	return s.String()
-}
-
-// SetFilters sets the Filters field's value.
-func (s *DescribeInstancesInput) SetFilters(v []*Filter) *DescribeInstancesInput {
-	s.Filters = v
-	return s
-}
-
-// SetInstanceIds sets the InstanceIds field's value.
-func (s *DescribeInstancesInput) SetInstanceIds(v []*string) *DescribeInstancesInput {
-	s.InstanceIds = v
-	return s
-}
-
-// SetMaxResults sets the MaxResults field's value.
-func (s *DescribeInstancesInput) SetMaxResults(v int64) *DescribeInstancesInput {
-	s.MaxResults = &v
-	return s
-}
-
-// SetNextToken sets the NextToken field's value.
-func (s *DescribeInstancesInput) SetNextToken(v string) *DescribeInstancesInput {
-	s.NextToken = &v
-	return s
-}
-
 // Filter can be used to match a set of resources by various criteria.
 type Filter struct {
 	Name *string `type:"string"`
@@ -63,55 +29,11 @@ type Filter struct {
 	Values []*string `locationName:"Value" locationNameList:"item" type:"list"`
 }
 
-// String returns the string representation
-func (s Filter) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Filter) GoString() string {
-	return s.String()
-}
-
-// SetName sets the Name field's value.
-func (s *Filter) SetName(v string) *Filter {
-	s.Name = &v
-	return s
-}
-
-// SetValues sets the Values field's value.
-func (s *Filter) SetValues(v []*string) *Filter {
-	s.Values = v
-	return s
-}
-
 // DescribeInstancesOutput struct
 type DescribeInstancesOutput struct {
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`
-}
-
-// String returns the string representation
-func (s DescribeInstancesOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeInstancesOutput) GoString() string {
-	return s.String()
-}
-
-// SetNextToken sets the NextToken field's value.
-func (s *DescribeInstancesOutput) SetNextToken(v string) *DescribeInstancesOutput {
-	s.NextToken = &v
-	return s
-}
-
-// SetReservations sets the Reservations field's value.
-func (s *DescribeInstancesOutput) SetReservations(v []*Reservation) *DescribeInstancesOutput {
-	s.Reservations = v
-	return s
 }
 
 // Reservation struct
@@ -127,73 +49,11 @@ type Reservation struct {
 	ReservationId *string `locationName:"reservationId" type:"string"`
 }
 
-// String returns the string representation
-func (s Reservation) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Reservation) GoString() string {
-	return s.String()
-}
-
-// SetGroups sets the Groups field's value.
-func (s *Reservation) SetGroups(v []*GroupIdentifier) *Reservation {
-	s.Groups = v
-	return s
-}
-
-// SetInstances sets the Instances field's value.
-func (s *Reservation) SetInstances(v []*Instance) *Reservation {
-	s.Instances = v
-	return s
-}
-
-// SetOwnerId sets the OwnerId field's value.
-func (s *Reservation) SetOwnerId(v string) *Reservation {
-	s.OwnerId = &v
-	return s
-}
-
-// SetRequesterId sets the RequesterId field's value.
-func (s *Reservation) SetRequesterId(v string) *Reservation {
-	s.RequesterId = &v
-	return s
-}
-
-// SetReservationId sets the ReservationId field's value.
-func (s *Reservation) SetReservationId(v string) *Reservation {
-	s.ReservationId = &v
-	return s
-}
-
 // GroupIdentifier stuct
 type GroupIdentifier struct {
 	GroupId *string `locationName:"groupId" type:"string"`
 
 	GroupName *string `locationName:"groupName" type:"string"`
-}
-
-// String returns the string representation
-func (s GroupIdentifier) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s GroupIdentifier) GoString() string {
-	return s.String()
-}
-
-// SetGroupId sets the GroupId field's value.
-func (s *GroupIdentifier) SetGroupId(v string) *GroupIdentifier {
-	s.GroupId = &v
-	return s
-}
-
-// SetGroupName sets the GroupName field's value.
-func (s *GroupIdentifier) SetGroupName(v string) *GroupIdentifier {
-	s.GroupName = &v
-	return s
 }
 
 // Instance struct
@@ -271,229 +131,11 @@ type Instance struct {
 	VpcId *string `locationName:"vpcId" type:"string"`
 }
 
-// String returns the string representation
-func (s Instance) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Instance) GoString() string {
-	return s.String()
-}
-
-// SetAmiLaunchIndex sets the AmiLaunchIndex field's value.
-func (s *Instance) SetAmiLaunchIndex(v int64) *Instance {
-	s.AmiLaunchIndex = &v
-	return s
-}
-
-// SetArchitecture sets the Architecture field's value.
-func (s *Instance) SetArchitecture(v string) *Instance {
-	s.Architecture = &v
-	return s
-}
-
-// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
-func (s *Instance) SetBlockDeviceMappings(v []*InstanceBlockDeviceMapping) *Instance {
-	s.BlockDeviceMappings = v
-	return s
-}
-
-// SetClientToken sets the ClientToken field's value.
-func (s *Instance) SetClientToken(v string) *Instance {
-	s.ClientToken = &v
-	return s
-}
-
-// SetEbsOptimized sets the EbsOptimized field's value.
-func (s *Instance) SetEbsOptimized(v bool) *Instance {
-	s.EbsOptimized = &v
-	return s
-}
-
-// SetHypervisor sets the Hypervisor field's value.
-func (s *Instance) SetHypervisor(v string) *Instance {
-	s.Hypervisor = &v
-	return s
-}
-
-// SetIamInstanceProfile sets the IamInstanceProfile field's value.
-func (s *Instance) SetIamInstanceProfile(v *IamInstanceProfile) *Instance {
-	s.IamInstanceProfile = v
-	return s
-}
-
-// SetImageId sets the ImageId field's value.
-func (s *Instance) SetImageId(v string) *Instance {
-	s.ImageId = &v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *Instance) SetInstanceId(v string) *Instance {
-	s.InstanceId = &v
-	return s
-}
-
-// SetInstanceLifecycle sets the InstanceLifecycle field's value.
-func (s *Instance) SetInstanceLifecycle(v string) *Instance {
-	s.InstanceLifecycle = &v
-	return s
-}
-
-// SetInstanceType sets the InstanceType field's value.
-func (s *Instance) SetInstanceType(v string) *Instance {
-	s.InstanceType = &v
-	return s
-}
-
-// SetKernelId sets the KernelId field's value.
-func (s *Instance) SetKernelId(v string) *Instance {
-	s.KernelId = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *Instance) SetKeyName(v string) *Instance {
-	s.KeyName = &v
-	return s
-}
-
-// SetMonitoring sets the Monitoring field's value.
-func (s *Instance) SetMonitoring(v *Monitoring) *Instance {
-	s.Monitoring = v
-	return s
-}
-
-// SetNetworkInterfaces sets the NetworkInterfaces field's value.
-func (s *Instance) SetNetworkInterfaces(v []*InstanceNetworkInterface) *Instance {
-	s.NetworkInterfaces = v
-	return s
-}
-
-// SetPlacement sets the Placement field's value.
-func (s *Instance) SetPlacement(v *Placement) *Instance {
-	s.Placement = v
-	return s
-}
-
-// SetPlatform sets the Platform field's value.
-func (s *Instance) SetPlatform(v string) *Instance {
-	s.Platform = &v
-	return s
-}
-
-// SetPrivateDnsName sets the PrivateDnsName field's value.
-func (s *Instance) SetPrivateDnsName(v string) *Instance {
-	s.PrivateDnsName = &v
-	return s
-}
-
-// SetPrivateIpAddress sets the PrivateIpAddress field's value.
-func (s *Instance) SetPrivateIpAddress(v string) *Instance {
-	s.PrivateIpAddress = &v
-	return s
-}
-
-// SetProductCodes sets the ProductCodes field's value.
-func (s *Instance) SetProductCodes(v []*ProductCode) *Instance {
-	s.ProductCodes = v
-	return s
-}
-
-// SetRamdiskId sets the RamdiskId field's value.
-func (s *Instance) SetRamdiskId(v string) *Instance {
-	s.RamdiskId = &v
-	return s
-}
-
-// SetRootDeviceName sets the RootDeviceName field's value.
-func (s *Instance) SetRootDeviceName(v string) *Instance {
-	s.RootDeviceName = &v
-	return s
-}
-
-// SetRootDeviceType sets the RootDeviceType field's value.
-func (s *Instance) SetRootDeviceType(v string) *Instance {
-	s.RootDeviceType = &v
-	return s
-}
-
-// SetSourceDestCheck sets the SourceDestCheck field's value.
-func (s *Instance) SetSourceDestCheck(v bool) *Instance {
-	s.SourceDestCheck = &v
-	return s
-}
-
-// SetSpotInstanceRequestId sets the SpotInstanceRequestId field's value.
-func (s *Instance) SetSpotInstanceRequestId(v string) *Instance {
-	s.SpotInstanceRequestId = &v
-	return s
-}
-
-// SetSriovNetSupport sets the SriovNetSupport field's value.
-func (s *Instance) SetSriovNetSupport(v string) *Instance {
-	s.SriovNetSupport = &v
-	return s
-}
-
-// SetStateReason sets the StateReason field's value.
-func (s *Instance) SetStateReason(v *StateReason) *Instance {
-	s.StateReason = v
-	return s
-}
-
-// SetSubnetId sets the SubnetId field's value.
-func (s *Instance) SetSubnetId(v string) *Instance {
-	s.SubnetId = &v
-	return s
-}
-
-// SetTags sets the Tags field's value.
-func (s *Instance) SetTags(v []*Tag) *Instance {
-	s.Tags = v
-	return s
-}
-
-// SetVirtualizationType sets the VirtualizationType field's value.
-func (s *Instance) SetVirtualizationType(v string) *Instance {
-	s.VirtualizationType = &v
-	return s
-}
-
-// SetVpcId sets the VpcId field's value.
-func (s *Instance) SetVpcId(v string) *Instance {
-	s.VpcId = &v
-	return s
-}
-
 // InstanceBlockDeviceMapping struct
 type InstanceBlockDeviceMapping struct {
 	DeviceName *string `locationName:"deviceName" type:"string"`
 
 	Ebs *EbsInstanceBlockDevice `locationName:"ebs" type:"structure"`
-}
-
-// String returns the string representation
-func (s InstanceBlockDeviceMapping) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceBlockDeviceMapping) GoString() string {
-	return s.String()
-}
-
-// SetDeviceName sets the DeviceName field's value.
-func (s *InstanceBlockDeviceMapping) SetDeviceName(v string) *InstanceBlockDeviceMapping {
-	s.DeviceName = &v
-	return s
-}
-
-// SetEbs sets the Ebs field's value.
-func (s *InstanceBlockDeviceMapping) SetEbs(v *EbsInstanceBlockDevice) *InstanceBlockDeviceMapping {
-	s.Ebs = v
-	return s
 }
 
 // InstanceBlockDeviceMappingSpecification struct
@@ -514,40 +156,6 @@ type InstanceBlockDeviceMappingSpecification struct {
 	VirtualName *string `locationName:"virtualName" type:"string"`
 }
 
-// String returns the string representation
-func (s InstanceBlockDeviceMappingSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceBlockDeviceMappingSpecification) GoString() string {
-	return s.String()
-}
-
-// SetDeviceName sets the DeviceName field's value.
-func (s *InstanceBlockDeviceMappingSpecification) SetDeviceName(v string) *InstanceBlockDeviceMappingSpecification {
-	s.DeviceName = &v
-	return s
-}
-
-// SetEbs sets the Ebs field's value.
-func (s *InstanceBlockDeviceMappingSpecification) SetEbs(v *EbsInstanceBlockDeviceSpecification) *InstanceBlockDeviceMappingSpecification {
-	s.Ebs = v
-	return s
-}
-
-// SetNoDevice sets the NoDevice field's value.
-func (s *InstanceBlockDeviceMappingSpecification) SetNoDevice(v string) *InstanceBlockDeviceMappingSpecification {
-	s.NoDevice = &v
-	return s
-}
-
-// SetVirtualName sets the VirtualName field's value.
-func (s *InstanceBlockDeviceMappingSpecification) SetVirtualName(v string) *InstanceBlockDeviceMappingSpecification {
-	s.VirtualName = &v
-	return s
-}
-
 // InstanceCapacity struct
 type InstanceCapacity struct {
 	_ struct{} `type:"structure"`
@@ -562,34 +170,6 @@ type InstanceCapacity struct {
 	TotalCapacity *int64 `locationName:"totalCapacity" type:"integer"`
 }
 
-// String returns the string representation
-func (s InstanceCapacity) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceCapacity) GoString() string {
-	return s.String()
-}
-
-// SetAvailableCapacity sets the AvailableCapacity field's value.
-func (s *InstanceCapacity) SetAvailableCapacity(v int64) *InstanceCapacity {
-	s.AvailableCapacity = &v
-	return s
-}
-
-// SetInstanceType sets the InstanceType field's value.
-func (s *InstanceCapacity) SetInstanceType(v string) *InstanceCapacity {
-	s.InstanceType = &v
-	return s
-}
-
-// SetTotalCapacity sets the TotalCapacity field's value.
-func (s *InstanceCapacity) SetTotalCapacity(v int64) *InstanceCapacity {
-	s.TotalCapacity = &v
-	return s
-}
-
 // InstanceCount struct
 type InstanceCount struct {
 	_ struct{} `type:"structure"`
@@ -599,28 +179,6 @@ type InstanceCount struct {
 
 	// The states of the listed Reserved Instances.
 	State *string `locationName:"state" type:"string" enum:"ListingState"`
-}
-
-// String returns the string representation
-func (s InstanceCount) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceCount) GoString() string {
-	return s.String()
-}
-
-// SetInstanceCount sets the InstanceCount field's value.
-func (s *InstanceCount) SetInstanceCount(v int64) *InstanceCount {
-	s.InstanceCount = &v
-	return s
-}
-
-// SetState sets the State field's value.
-func (s *InstanceCount) SetState(v string) *InstanceCount {
-	s.State = &v
-	return s
 }
 
 // InstanceExportDetails struct
@@ -634,28 +192,6 @@ type InstanceExportDetails struct {
 	TargetEnvironment *string `locationName:"targetEnvironment" type:"string" enum:"ExportEnvironment"`
 }
 
-// String returns the string representation
-func (s InstanceExportDetails) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceExportDetails) GoString() string {
-	return s.String()
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *InstanceExportDetails) SetInstanceId(v string) *InstanceExportDetails {
-	s.InstanceId = &v
-	return s
-}
-
-// SetTargetEnvironment sets the TargetEnvironment field's value.
-func (s *InstanceExportDetails) SetTargetEnvironment(v string) *InstanceExportDetails {
-	s.TargetEnvironment = &v
-	return s
-}
-
 // InstanceMonitoring struct
 type InstanceMonitoring struct {
 	_ struct{} `type:"structure"`
@@ -665,28 +201,6 @@ type InstanceMonitoring struct {
 
 	// The monitoring for the instance.
 	Monitoring *Monitoring `locationName:"monitoring" type:"structure"`
-}
-
-// String returns the string representation
-func (s InstanceMonitoring) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceMonitoring) GoString() string {
-	return s.String()
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *InstanceMonitoring) SetInstanceId(v string) *InstanceMonitoring {
-	s.InstanceId = &v
-	return s
-}
-
-// SetMonitoring sets the Monitoring field's value.
-func (s *InstanceMonitoring) SetMonitoring(v *Monitoring) *InstanceMonitoring {
-	s.Monitoring = v
-	return s
 }
 
 // InstanceNetworkInterface struct
@@ -720,100 +234,6 @@ type InstanceNetworkInterface struct {
 	VpcId *string `locationName:"vpcId" type:"string"`
 }
 
-// String returns the string representation
-func (s InstanceNetworkInterface) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceNetworkInterface) GoString() string {
-	return s.String()
-}
-
-// SetAssociation sets the Association field's value.
-func (s *InstanceNetworkInterface) SetAssociation(v *InstanceNetworkInterfaceAssociation) *InstanceNetworkInterface {
-	s.Association = v
-	return s
-}
-
-// SetAttachment sets the Attachment field's value.
-func (s *InstanceNetworkInterface) SetAttachment(v *InstanceNetworkInterfaceAttachment) *InstanceNetworkInterface {
-	s.Attachment = v
-	return s
-}
-
-// SetDescription sets the Description field's value.
-func (s *InstanceNetworkInterface) SetDescription(v string) *InstanceNetworkInterface {
-	s.Description = &v
-	return s
-}
-
-// SetGroups sets the Groups field's value.
-func (s *InstanceNetworkInterface) SetGroups(v []*GroupIdentifier) *InstanceNetworkInterface {
-	s.Groups = v
-	return s
-}
-
-// SetMacAddress sets the MacAddress field's value.
-func (s *InstanceNetworkInterface) SetMacAddress(v string) *InstanceNetworkInterface {
-	s.MacAddress = &v
-	return s
-}
-
-// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
-func (s *InstanceNetworkInterface) SetNetworkInterfaceId(v string) *InstanceNetworkInterface {
-	s.NetworkInterfaceId = &v
-	return s
-}
-
-// SetOwnerId sets the OwnerId field's value.
-func (s *InstanceNetworkInterface) SetOwnerId(v string) *InstanceNetworkInterface {
-	s.OwnerId = &v
-	return s
-}
-
-// SetPrivateDnsName sets the PrivateDnsName field's value.
-func (s *InstanceNetworkInterface) SetPrivateDnsName(v string) *InstanceNetworkInterface {
-	s.PrivateDnsName = &v
-	return s
-}
-
-// SetPrivateIpAddress sets the PrivateIpAddress field's value.
-func (s *InstanceNetworkInterface) SetPrivateIpAddress(v string) *InstanceNetworkInterface {
-	s.PrivateIpAddress = &v
-	return s
-}
-
-// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
-func (s *InstanceNetworkInterface) SetPrivateIpAddresses(v []*InstancePrivateIpAddress) *InstanceNetworkInterface {
-	s.PrivateIpAddresses = v
-	return s
-}
-
-// SetSourceDestCheck sets the SourceDestCheck field's value.
-func (s *InstanceNetworkInterface) SetSourceDestCheck(v bool) *InstanceNetworkInterface {
-	s.SourceDestCheck = &v
-	return s
-}
-
-// SetStatus sets the Status field's value.
-func (s *InstanceNetworkInterface) SetStatus(v string) *InstanceNetworkInterface {
-	s.Status = &v
-	return s
-}
-
-// SetSubnetId sets the SubnetId field's value.
-func (s *InstanceNetworkInterface) SetSubnetId(v string) *InstanceNetworkInterface {
-	s.SubnetId = &v
-	return s
-}
-
-// SetVpcId sets the VpcId field's value.
-func (s *InstanceNetworkInterface) SetVpcId(v string) *InstanceNetworkInterface {
-	s.VpcId = &v
-	return s
-}
-
 // InstanceNetworkInterfaceAssociation struct
 type InstanceNetworkInterfaceAssociation struct {
 	IpOwnerId *string `locationName:"ipOwnerId" type:"string"`
@@ -821,34 +241,6 @@ type InstanceNetworkInterfaceAssociation struct {
 	PublicDnsName *string `locationName:"publicDnsName" type:"string"`
 
 	PublicIp *string `locationName:"publicIp" type:"string"`
-}
-
-// String returns the string representation
-func (s InstanceNetworkInterfaceAssociation) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceNetworkInterfaceAssociation) GoString() string {
-	return s.String()
-}
-
-// SetIpOwnerId sets the IpOwnerId field's value.
-func (s *InstanceNetworkInterfaceAssociation) SetIpOwnerId(v string) *InstanceNetworkInterfaceAssociation {
-	s.IpOwnerId = &v
-	return s
-}
-
-// SetPublicDnsName sets the PublicDnsName field's value.
-func (s *InstanceNetworkInterfaceAssociation) SetPublicDnsName(v string) *InstanceNetworkInterfaceAssociation {
-	s.PublicDnsName = &v
-	return s
-}
-
-// SetPublicIp sets the PublicIp field's value.
-func (s *InstanceNetworkInterfaceAssociation) SetPublicIp(v string) *InstanceNetworkInterfaceAssociation {
-	s.PublicIp = &v
-	return s
 }
 
 // InstanceNetworkInterfaceAttachment struct
@@ -860,40 +252,6 @@ type InstanceNetworkInterfaceAttachment struct {
 	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer"`
 
 	Status *string `locationName:"status" type:"string" enum:"AttachmentStatus"`
-}
-
-// String returns the string representation
-func (s InstanceNetworkInterfaceAttachment) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceNetworkInterfaceAttachment) GoString() string {
-	return s.String()
-}
-
-// SetAttachmentId sets the AttachmentId field's value.
-func (s *InstanceNetworkInterfaceAttachment) SetAttachmentId(v string) *InstanceNetworkInterfaceAttachment {
-	s.AttachmentId = &v
-	return s
-}
-
-// SetDeleteOnTermination sets the DeleteOnTermination field's value.
-func (s *InstanceNetworkInterfaceAttachment) SetDeleteOnTermination(v bool) *InstanceNetworkInterfaceAttachment {
-	s.DeleteOnTermination = &v
-	return s
-}
-
-// SetDeviceIndex sets the DeviceIndex field's value.
-func (s *InstanceNetworkInterfaceAttachment) SetDeviceIndex(v int64) *InstanceNetworkInterfaceAttachment {
-	s.DeviceIndex = &v
-	return s
-}
-
-// SetStatus sets the Status field's value.
-func (s *InstanceNetworkInterfaceAttachment) SetStatus(v string) *InstanceNetworkInterfaceAttachment {
-	s.Status = &v
-	return s
 }
 
 // InstanceNetworkInterfaceSpecification struct
@@ -957,77 +315,6 @@ type InstanceNetworkInterfaceSpecification struct {
 	SubnetId *string `locationName:"subnetId" type:"string"`
 }
 
-// String returns the string representation
-func (s InstanceNetworkInterfaceSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-// SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetAssociatePublicIpAddress(v bool) *InstanceNetworkInterfaceSpecification {
-	s.AssociatePublicIpAddress = &v
-	return s
-}
-
-// SetDeleteOnTermination sets the DeleteOnTermination field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetDeleteOnTermination(v bool) *InstanceNetworkInterfaceSpecification {
-	s.DeleteOnTermination = &v
-	return s
-}
-
-// SetDescription sets the Description field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetDescription(v string) *InstanceNetworkInterfaceSpecification {
-	s.Description = &v
-	return s
-}
-
-// SetDeviceIndex sets the DeviceIndex field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetDeviceIndex(v int64) *InstanceNetworkInterfaceSpecification {
-	s.DeviceIndex = &v
-	return s
-}
-
-// SetGroups sets the Groups field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetGroups(v []*string) *InstanceNetworkInterfaceSpecification {
-	s.Groups = v
-	return s
-}
-
-// SetIpv6AddressCount sets the Ipv6AddressCount field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetIpv6AddressCount(v int64) *InstanceNetworkInterfaceSpecification {
-	s.Ipv6AddressCount = &v
-	return s
-}
-
-// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetNetworkInterfaceId(v string) *InstanceNetworkInterfaceSpecification {
-	s.NetworkInterfaceId = &v
-	return s
-}
-
-// SetPrivateIpAddress sets the PrivateIpAddress field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetPrivateIpAddress(v string) *InstanceNetworkInterfaceSpecification {
-	s.PrivateIpAddress = &v
-	return s
-}
-
-// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetPrivateIpAddresses(v []*PrivateIpAddressSpecification) *InstanceNetworkInterfaceSpecification {
-	s.PrivateIpAddresses = v
-	return s
-}
-
-// SetSecondaryPrivateIpAddressCount sets the SecondaryPrivateIpAddressCount field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetSecondaryPrivateIpAddressCount(v int64) *InstanceNetworkInterfaceSpecification {
-	s.SecondaryPrivateIpAddressCount = &v
-	return s
-}
-
-// SetSubnetId sets the SubnetId field's value.
-func (s *InstanceNetworkInterfaceSpecification) SetSubnetId(v string) *InstanceNetworkInterfaceSpecification {
-	s.SubnetId = &v
-	return s
-}
-
 // InstancePrivateIpAddress struct
 type InstancePrivateIpAddress struct {
 	Association *InstanceNetworkInterfaceAssociation `locationName:"association" type:"structure"`
@@ -1039,67 +326,11 @@ type InstancePrivateIpAddress struct {
 	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
 }
 
-// String returns the string representation
-func (s InstancePrivateIpAddress) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstancePrivateIpAddress) GoString() string {
-	return s.String()
-}
-
-// SetAssociation sets the Association field's value.
-func (s *InstancePrivateIpAddress) SetAssociation(v *InstanceNetworkInterfaceAssociation) *InstancePrivateIpAddress {
-	s.Association = v
-	return s
-}
-
-// SetPrimary sets the Primary field's value.
-func (s *InstancePrivateIpAddress) SetPrimary(v bool) *InstancePrivateIpAddress {
-	s.Primary = &v
-	return s
-}
-
-// SetPrivateDnsName sets the PrivateDnsName field's value.
-func (s *InstancePrivateIpAddress) SetPrivateDnsName(v string) *InstancePrivateIpAddress {
-	s.PrivateDnsName = &v
-	return s
-}
-
-// SetPrivateIpAddress sets the PrivateIpAddress field's value.
-func (s *InstancePrivateIpAddress) SetPrivateIpAddress(v string) *InstancePrivateIpAddress {
-	s.PrivateIpAddress = &v
-	return s
-}
-
 // InstanceState struct
 type InstanceState struct {
 	Code *int64 `locationName:"code" type:"integer"`
 
 	Name *string `locationName:"name" type:"string" enum:"InstanceStateName"`
-}
-
-// String returns the string representation
-func (s InstanceState) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceState) GoString() string {
-	return s.String()
-}
-
-// SetCode sets the Code field's value.
-func (s *InstanceState) SetCode(v int64) *InstanceState {
-	s.Code = &v
-	return s
-}
-
-// SetName sets the Name field's value.
-func (s *InstanceState) SetName(v string) *InstanceState {
-	s.Name = &v
-	return s
 }
 
 // InstanceStateChange struct
@@ -1114,34 +345,6 @@ type InstanceStateChange struct {
 
 	// The previous state of the instance.
 	PreviousState *InstanceState `locationName:"previousState" type:"structure"`
-}
-
-// String returns the string representation
-func (s InstanceStateChange) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceStateChange) GoString() string {
-	return s.String()
-}
-
-// SetCurrentState sets the CurrentState field's value.
-func (s *InstanceStateChange) SetCurrentState(v *InstanceState) *InstanceStateChange {
-	s.CurrentState = v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *InstanceStateChange) SetInstanceId(v string) *InstanceStateChange {
-	s.InstanceId = &v
-	return s
-}
-
-// SetPreviousState sets the PreviousState field's value.
-func (s *InstanceStateChange) SetPreviousState(v *InstanceState) *InstanceStateChange {
-	s.PreviousState = v
-	return s
 }
 
 // Describes the status of an instance.
@@ -1172,52 +375,6 @@ type InstanceStatus struct {
 	SystemStatus *InstanceStatusSummary `locationName:"systemStatus" type:"structure"`
 }
 
-// String returns the string representation
-func (s InstanceStatus) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceStatus) GoString() string {
-	return s.String()
-}
-
-// SetAvailabilityZone sets the AvailabilityZone field's value.
-func (s *InstanceStatus) SetAvailabilityZone(v string) *InstanceStatus {
-	s.AvailabilityZone = &v
-	return s
-}
-
-// SetEvents sets the Events field's value.
-func (s *InstanceStatus) SetEvents(v []*InstanceStatusEvent) *InstanceStatus {
-	s.Events = v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *InstanceStatus) SetInstanceId(v string) *InstanceStatus {
-	s.InstanceId = &v
-	return s
-}
-
-// SetInstanceState sets the InstanceState field's value.
-func (s *InstanceStatus) SetInstanceState(v *InstanceState) *InstanceStatus {
-	s.InstanceState = v
-	return s
-}
-
-// SetInstanceStatus sets the InstanceStatus field's value.
-func (s *InstanceStatus) SetInstanceStatus(v *InstanceStatusSummary) *InstanceStatus {
-	s.InstanceStatus = v
-	return s
-}
-
-// SetSystemStatus sets the SystemStatus field's value.
-func (s *InstanceStatus) SetSystemStatus(v *InstanceStatusSummary) *InstanceStatus {
-	s.SystemStatus = v
-	return s
-}
-
 // Describes the instance status.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/InstanceStatusDetails
 type InstanceStatusDetails struct {
@@ -1232,34 +389,6 @@ type InstanceStatusDetails struct {
 
 	// The status.
 	Status *string `locationName:"status" type:"string" enum:"StatusType"`
-}
-
-// String returns the string representation
-func (s InstanceStatusDetails) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceStatusDetails) GoString() string {
-	return s.String()
-}
-
-// SetImpairedSince sets the ImpairedSince field's value.
-func (s *InstanceStatusDetails) SetImpairedSince(v time.Time) *InstanceStatusDetails {
-	s.ImpairedSince = &v
-	return s
-}
-
-// SetName sets the Name field's value.
-func (s *InstanceStatusDetails) SetName(v string) *InstanceStatusDetails {
-	s.Name = &v
-	return s
-}
-
-// SetStatus sets the Status field's value.
-func (s *InstanceStatusDetails) SetStatus(v string) *InstanceStatusDetails {
-	s.Status = &v
-	return s
 }
 
 // Describes a scheduled event for an instance.
@@ -1282,40 +411,6 @@ type InstanceStatusEvent struct {
 
 	// The earliest scheduled start time for the event.
 	NotBefore *time.Time `locationName:"notBefore" type:"timestamp" timestampFormat:"iso8601"`
-}
-
-// String returns the string representation
-func (s InstanceStatusEvent) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s InstanceStatusEvent) GoString() string {
-	return s.String()
-}
-
-// SetCode sets the Code field's value.
-func (s *InstanceStatusEvent) SetCode(v string) *InstanceStatusEvent {
-	s.Code = &v
-	return s
-}
-
-// SetDescription sets the Description field's value.
-func (s *InstanceStatusEvent) SetDescription(v string) *InstanceStatusEvent {
-	s.Description = &v
-	return s
-}
-
-// SetNotAfter sets the NotAfter field's value.
-func (s *InstanceStatusEvent) SetNotAfter(v time.Time) *InstanceStatusEvent {
-	s.NotAfter = &v
-	return s
-}
-
-// SetNotBefore sets the NotBefore field's value.
-func (s *InstanceStatusEvent) SetNotBefore(v time.Time) *InstanceStatusEvent {
-	s.NotBefore = &v
-	return s
 }
 
 // Describes the status of an instance.
@@ -1363,40 +458,6 @@ type EbsInstanceBlockDevice struct {
 	VolumeId *string `locationName:"volumeId" type:"string"`
 }
 
-// String returns the string representation
-func (s EbsInstanceBlockDevice) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s EbsInstanceBlockDevice) GoString() string {
-	return s.String()
-}
-
-// SetAttachTime sets the AttachTime field's value.
-func (s *EbsInstanceBlockDevice) SetAttachTime(v time.Time) *EbsInstanceBlockDevice {
-	s.AttachTime = &v
-	return s
-}
-
-// SetDeleteOnTermination sets the DeleteOnTermination field's value.
-func (s *EbsInstanceBlockDevice) SetDeleteOnTermination(v bool) *EbsInstanceBlockDevice {
-	s.DeleteOnTermination = &v
-	return s
-}
-
-// SetStatus sets the Status field's value.
-func (s *EbsInstanceBlockDevice) SetStatus(v string) *EbsInstanceBlockDevice {
-	s.Status = &v
-	return s
-}
-
-// SetVolumeId sets the VolumeId field's value.
-func (s *EbsInstanceBlockDevice) SetVolumeId(v string) *EbsInstanceBlockDevice {
-	s.VolumeId = &v
-	return s
-}
-
 // Describes information used to set up an EBS volume specified in a block device
 // mapping.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EbsInstanceBlockDeviceSpecification
@@ -1410,55 +471,11 @@ type EbsInstanceBlockDeviceSpecification struct {
 	VolumeId *string `locationName:"volumeId" type:"string"`
 }
 
-// String returns the string representation
-func (s EbsInstanceBlockDeviceSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s EbsInstanceBlockDeviceSpecification) GoString() string {
-	return s.String()
-}
-
-// SetDeleteOnTermination sets the DeleteOnTermination field's value.
-func (s *EbsInstanceBlockDeviceSpecification) SetDeleteOnTermination(v bool) *EbsInstanceBlockDeviceSpecification {
-	s.DeleteOnTermination = &v
-	return s
-}
-
-// SetVolumeId sets the VolumeId field's value.
-func (s *EbsInstanceBlockDeviceSpecification) SetVolumeId(v string) *EbsInstanceBlockDeviceSpecification {
-	s.VolumeId = &v
-	return s
-}
-
 // IamInstanceProfile struct
 type IamInstanceProfile struct {
 	Arn *string `locationName:"arn" type:"string"`
 
 	Id *string `locationName:"id" type:"string"`
-}
-
-// String returns the string representation
-func (s IamInstanceProfile) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s IamInstanceProfile) GoString() string {
-	return s.String()
-}
-
-// SetArn sets the Arn field's value.
-func (s *IamInstanceProfile) SetArn(v string) *IamInstanceProfile {
-	s.Arn = &v
-	return s
-}
-
-// SetId sets the Id field's value.
-func (s *IamInstanceProfile) SetId(v string) *IamInstanceProfile {
-	s.Id = &v
-	return s
 }
 
 // Describes the monitoring of an instance.
@@ -1469,22 +486,6 @@ type Monitoring struct {
 	// Indicates whether detailed monitoring is enabled. Otherwise, basic monitoring
 	// is enabled.
 	State *string `locationName:"state" type:"string" enum:"MonitoringState"`
-}
-
-// String returns the string representation
-func (s Monitoring) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Monitoring) GoString() string {
-	return s.String()
-}
-
-// SetState sets the State field's value.
-func (s *Monitoring) SetState(v string) *Monitoring {
-	s.State = &v
-	return s
 }
 
 // Placement struct
@@ -1500,46 +501,6 @@ type Placement struct {
 	Tenancy *string `locationName:"tenancy" type:"string" enum:"Tenancy"`
 }
 
-// String returns the string representation
-func (s Placement) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s Placement) GoString() string {
-	return s.String()
-}
-
-// SetAffinity sets the Affinity field's value.
-func (s *Placement) SetAffinity(v string) *Placement {
-	s.Affinity = &v
-	return s
-}
-
-// SetAvailabilityZone sets the AvailabilityZone field's value.
-func (s *Placement) SetAvailabilityZone(v string) *Placement {
-	s.AvailabilityZone = &v
-	return s
-}
-
-// SetGroupName sets the GroupName field's value.
-func (s *Placement) SetGroupName(v string) *Placement {
-	s.GroupName = &v
-	return s
-}
-
-// SetHostId sets the HostId field's value.
-func (s *Placement) SetHostId(v string) *Placement {
-	s.HostId = &v
-	return s
-}
-
-// SetTenancy sets the Tenancy field's value.
-func (s *Placement) SetTenancy(v string) *Placement {
-	s.Tenancy = &v
-	return s
-}
-
 // ProductCode struct.
 type ProductCode struct {
 	ProductCode *string `locationName:"productCode" type:"string"`
@@ -1547,54 +508,10 @@ type ProductCode struct {
 	Type *string `locationName:"type" type:"string" enum:"ProductCodeValues"`
 }
 
-// String returns the string representation
-func (s ProductCode) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ProductCode) GoString() string {
-	return s.String()
-}
-
-// SetProductCode sets the ProductCode field's value.
-func (s *ProductCode) SetProductCode(v string) *ProductCode {
-	s.ProductCode = &v
-	return s
-}
-
-// SetType sets the Type field's value.
-func (s *ProductCode) SetType(v string) *ProductCode {
-	s.Type = &v
-	return s
-}
-
 // StateReason struct
 type StateReason struct {
 	Code    *string `locationName:"code" type:"string"`
 	Message *string `locationName:"message" type:"string"`
-}
-
-// String returns the string representation
-func (s StateReason) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s StateReason) GoString() string {
-	return s.String()
-}
-
-// SetCode sets the Code field's value.
-func (s *StateReason) SetCode(v string) *StateReason {
-	s.Code = &v
-	return s
-}
-
-// SetMessage sets the Message field's value.
-func (s *StateReason) SetMessage(v string) *StateReason {
-	s.Message = &v
-	return s
 }
 
 // Describes a tag.
