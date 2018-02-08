@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_instance"
 sidebar_current: "docs-outscale-resource-instance"
 description: |-
-  Provides an EC2 instance resource. This allows instances to be created, updated, and deleted. Instances also support provisioning.
+  Provides an Outscale instance resource. This allows instances to be created, updated, and deleted. Instances also support provisioning.
 ---
 
 # outscale_instance
@@ -14,24 +14,7 @@ and deleted. Instances also support [provisioning](/docs/provisioners/index.html
 ## Example Usage
 
 ```hcl
-data "outscale_image" "centos73" { 
-	most_recent = true 
-	executable_by = ["self"] 
 
-	filter {
-		name = "owner" 
-		values = ["Outscale"] 
-	}
-
-	filter {
-	name = "description" values = ["Centos 7.3*"] 
-	} 
-} 
-/* instance creation */
-resource "outscale_vm" "web" { 
-	ami = "${data.outscale_image.centos73.image_id}"
-	instance_type = "t2.micro" 
-}
 ```
 
 ## Argument Reference
