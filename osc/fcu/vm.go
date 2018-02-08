@@ -25,14 +25,14 @@ func (v VMOperations) RunInstance(input *RunInstancesInput) (*Reservation, error
 		return nil, err
 	}
 
-	output := &Reservation{}
+	output := Reservation{}
 
-	err = v.client.Do(context.Background(), req, output)
+	err = v.client.Do(context.Background(), req, &output)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, err
+	return &output, nil
 }
 
 const opDescribeInstances = "DescribeInstances"

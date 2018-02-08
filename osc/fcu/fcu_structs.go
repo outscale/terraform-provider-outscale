@@ -36,24 +36,36 @@ type DescribeInstancesOutput struct {
 	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`
 }
 
-// Reservation struct
-type Reservation struct {
-	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
-
-	Instances []*Instance `locationName:"instancesSet" locationNameList:"item" type:"list"`
-
-	OwnerId *string `locationName:"ownerId" type:"string"`
-
-	RequesterId *string `locationName:"requesterId" type:"string"`
-
-	ReservationId *string `locationName:"reservationId" type:"string"`
-}
-
-// GroupIdentifier stuct
 type GroupIdentifier struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the security group.
 	GroupId *string `locationName:"groupId" type:"string"`
 
+	// The name of the security group.
 	GroupName *string `locationName:"groupName" type:"string"`
+}
+
+// Describes a reservation.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/Reservation
+type Reservation struct {
+	_ struct{} `type:"structure"`
+
+	// [EC2-Classic only] One or more security groups.
+	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
+
+	// One or more instances.
+	Instances []*Instance `locationName:"instancesSet" locationNameList:"item" type:"list"`
+
+	// The ID of the AWS account that owns the reservation.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The ID of the requester that launched the instances on your behalf (for example,
+	// AWS Management Console or Auto Scaling).
+	RequesterId *string `locationName:"requesterId" type:"string"`
+
+	// The ID of the reservation.
+	ReservationId *string `locationName:"reservationId" type:"string"`
 }
 
 // Instance struct
@@ -119,6 +131,8 @@ type Instance struct {
 	SpotInstanceRequestId *string `locationName:"spotInstanceRequestId" type:"string"`
 
 	SriovNetSupport *string `locationName:"sriovNetSupport" type:"string"`
+
+	State *InstanceState `locationName:"instanceState" type:"structure"`
 
 	StateReason *StateReason `locationName:"stateReason" type:"structure"`
 
