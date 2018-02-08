@@ -921,3 +921,16 @@ type GetPasswordDataOutput struct {
 	// The time the data was last updated.
 	Timestamp *time.Time `locationName:"timestamp" type:"timestamp" timestampFormat:"iso8601"`
 }
+
+type TerminateInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
+}
+
+type TerminateInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more terminated instances.
+	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}

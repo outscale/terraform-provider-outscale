@@ -162,3 +162,33 @@ func TestVM_ModifyInstanceKeyPair(t *testing.T) {
 		t.Errorf("VM.ModifyInstanceKeyPair returned error: %v", err)
 	}
 }
+
+func TestVM_TerminateInstances(t *testing.T) {
+	setup()
+	defer teardown()
+
+	instanceID := "i-484e76e2"
+
+	input := TerminateInstancesInput{
+		InstanceIds: []*string{&instanceID},
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
+		<TerminateInstancesResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>f508de7e-fe4b-4572-a977-e74efb9f3b76</requestId><instancesSet><item><instanceId>i-484e76e2</instanceId><currentState><code>32</code><name>shutting-down</name></currentState><previousState><code>0</code><name>pending</name></previousState></item></instancesSet></TerminateInstancesResponse>
+		`)
+	})
+
+	term, err := client.VM.TerminateInstances(&input)
+	if err != nil {
+		t.Errorf("VM.RunInstance returned error: %v", err)
+	}
+
+	expectedID := "i-484e76e2"
+	outputInstanceID := *term.TerminatingInstances[0].InstanceId
+
+	if outputInstanceID != expectedID {
+		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
+	}
+}
