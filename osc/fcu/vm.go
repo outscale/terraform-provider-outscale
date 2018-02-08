@@ -16,6 +16,7 @@ type VMOperations struct {
 type VMService interface {
 	RunInstance(input *RunInstancesInput) (*Reservation, error)
 	DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error)
+	GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error)
 	ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error
 }
 
@@ -84,4 +85,27 @@ func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) e
 	}
 
 	return nil
+}
+
+func (v VMOperations) GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error) {
+	inURL := "/"
+	endpoint := "GetPasswordData"
+	output := &GetPasswordDataOutput{}
+
+	if input == nil {
+		input = &GetPasswordDataInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }

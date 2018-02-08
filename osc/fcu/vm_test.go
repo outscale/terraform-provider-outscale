@@ -110,6 +110,36 @@ func TestDescribe_Instance(t *testing.T) {
 
 }
 
+func TestVM_GetPasswordData(t *testing.T) {
+	setup()
+	defer teardown()
+
+	instanceID := "i-9c1b9711"
+
+	input := GetPasswordDataInput{
+		InstanceId: &instanceID,
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
+		<GetPasswordDataResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>ce00bd1d-9f3f-4bfd-be6b-1b7b73454c20</requestId><instanceId>i-9c1b9711</instanceId><timestamp>2018-02-08T02:46:15.789Z</timestamp><passwordData></passwordData></GetPasswordDataResponse>
+		`)
+	})
+
+	term, err := client.VM.GetPasswordData(&input)
+	if err != nil {
+		t.Errorf("VM.GetPasswordData returned error: %v", err)
+	}
+
+	expectedID := "i-9c1b9711"
+	outputInstanceID := *term.InstanceId
+
+	if outputInstanceID != expectedID {
+		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
+	}
+}
+
 func TestVM_ModifyInstanceKeyPair(t *testing.T) {
 	setup()
 	defer teardown()
