@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -22,7 +23,6 @@ func init() {
 }
 
 func testSweepServers(region string) error {
-
 	meta, err := sharedConfigForRegion(region)
 	if err != nil {
 		return err
@@ -30,12 +30,24 @@ func testSweepServers(region string) error {
 
 	client := meta.(*OutscaleClient)
 
-	vms, err := client.FCU.VM.DescribeInstances(nil)
+	var vms *fcu.DescribeInstancesOutput
+	for {
+		vms, err = client.FCU.VM.DescribeInstances(nil)
+		if err != nil {
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
+	}
+
 	if err != nil {
 		return err
 	}
 
 	var instanceids []*string
+
+	fmt.Println("Before terminating sleep!")
+	time.Sleep(1 * time.Second)
 
 	for _, r := range vms.Reservations {
 		for _, i := range r.Instances {
@@ -45,11 +57,14 @@ func testSweepServers(region string) error {
 		}
 	}
 
-	if _, err := client.FCU.VM.TerminateInstances(&fcu.TerminateInstancesInput{InstanceIds: instanceids}); err != nil {
-		return err
+	for {
+		_, err := client.FCU.VM.TerminateInstances(&fcu.TerminateInstancesInput{InstanceIds: instanceids})
+		if err != nil {
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
 	}
-
-	fmt.Println("test SWEEP SERVER")
 
 	return nil
 }
@@ -70,13 +85,11 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleServerAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "name", fmt.Sprintf("terraform-%d", rInt)),
+						"outscale_vm.basic", "instance_name", fmt.Sprintf("terraform-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "flavor_slug", "flex-2"),
+						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_slug", "debian-8"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "interfaces.0.type", "public"),
+						"outscale_vm.basic", "instance_type", "t2.micro"),
 				),
 			},
 		},
@@ -105,14 +118,24 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 	conn := provider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "aws_instance" {
+		if rs.Type != "outscale_vm" {
 			continue
 		}
 
-		// Try to find the resource
-		resp, err := conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-			InstanceIds: []*string{&rs.Primary.ID},
-		})
+		var resp *fcu.DescribeInstancesOutput
+		var err error
+		for {
+			// Try to find the resource
+			resp, err = conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+				InstanceIds: []*string{&rs.Primary.ID},
+			})
+			if err != nil {
+				time.Sleep(10 * time.Second)
+			} else {
+				break
+			}
+		}
+
 		if err == nil {
 			for _, r := range resp.Reservations {
 				for _, i := range r.Instances {
@@ -127,13 +150,6 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidInstanceID.NotFound" {
 			continue
 		}
-
-		fmt.Println("TEST DESTROY VM")
-
-		fmt.Println("ERROR =>")
-
-		fmt.Println(err)
-
 		return err
 	}
 
@@ -162,9 +178,20 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, provid
 			}
 
 			conn := provider.Meta().(*OutscaleClient)
-			resp, err := conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-				InstanceIds: []*string{&rs.Primary.ID},
-			})
+			var resp *fcu.DescribeInstancesOutput
+			var err error
+
+			for {
+				resp, err = conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+					InstanceIds: []*string{&rs.Primary.ID},
+				})
+				if err != nil {
+					time.Sleep(10 * time.Second)
+				} else {
+					break
+				}
+			}
+
 			if fcuErr, ok := err.(awserr.Error); ok && fcuErr.Code() == "InvalidInstanceID.NotFound" {
 				continue
 			}
@@ -185,12 +212,8 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, provid
 func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if *server.ImageId != "debian-8" {
-			return fmt.Errorf("Bad image_slug_slug: %s", *server.ImageId)
-		}
-
-		if len(server.BlockDeviceMappings) > 0 {
-			return fmt.Errorf("Bad volumes: %d", len(server.BlockDeviceMappings))
+		if *server.ImageId != "ami-8a6a0120" {
+			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
 		}
 
 		return nil
@@ -198,9 +221,10 @@ func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestChe
 }
 
 func testAccCheckOutscaleServerConfig_basic(rInt int) string {
-	return `
+	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
-	image_id = "ami-5ad76458"
+	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-}`
+	instance_name = "terraform-%d"
+}`, rInt)
 }

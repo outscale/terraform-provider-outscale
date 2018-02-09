@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,6 +20,12 @@ func resourceOutscaleVM() *schema.Resource {
 		Read:   resourceVMRead,
 		Update: resourceVMUpdate,
 		Delete: resourceVMDelete,
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: getVMSchema(),
 	}
@@ -64,7 +71,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		var err error
 		runResp, err = conn.VM.RunInstance(runOpts)
 
-		return resource.NonRetryableError(err)
+		return resource.RetryableError(err)
 	})
 
 	if err != nil {
@@ -112,9 +119,23 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	resp, err := conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+	input := &fcu.DescribeInstancesInput{
 		InstanceIds: []*string{aws.String(d.Id())},
+	}
+
+	var resp *fcu.DescribeInstancesOutput
+	var err error
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeInstances(input)
+
+		return resource.RetryableError(err)
 	})
+
+	if err != nil {
+		return fmt.Errorf("Error deleting the instance %s", err)
+	}
+
 	if err != nil {
 		// If the instance was not found, return nil so that we can show
 		// that the instance is gone.
@@ -259,6 +280,7 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	return resourceVMRead(d, meta)
 }
+
 func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
@@ -268,8 +290,23 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 	req := &fcu.TerminateInstancesInput{
 		InstanceIds: []*string{aws.String(id)},
 	}
-	if _, err := conn.VM.TerminateInstances(req); err != nil {
-		return fmt.Errorf("Error terminating instance: %s", err)
+
+	var err error
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		_, err = conn.VM.TerminateInstances(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				log.Printf("[INFO] Request limit exceeded")
+				return resource.RetryableError(err)
+			}
+		}
+
+		return resource.RetryableError(err)
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error deleting the instance")
 	}
 
 	log.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
@@ -283,7 +320,7 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 		MinTimeout: 3 * time.Second,
 	}
 
-	_, err := stateConf.WaitForState()
+	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for instance (%s) to terminate: %s", id, err)
@@ -1218,9 +1255,52 @@ func readBlockDeviceMappingsFromConfig(
 
 func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, err := conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-			InstanceIds: []*string{aws.String(instanceID)},
+		var resp *fcu.DescribeInstancesOutput
+		var err error
+
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+				InstanceIds: []*string{aws.String(instanceID)},
+			})
+			return resource.RetryableError(err)
 		})
+
+		if err != nil {
+			log.Printf("Error on InstanceStateRefresh: %s", err)
+
+			return nil, "", err
+		}
+
+		if resp == nil || len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
+			return nil, "", nil
+		}
+
+		i := resp.Reservations[0].Instances[0]
+		state := *i.State.Name
+
+		if state == failState {
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
+				*i.StateReason)
+
+		}
+
+		return i, state, nil
+	}
+}
+
+func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var resp *fcu.DescribeInstancesOutput
+		var err error
+
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+				InstanceIds: []*string{aws.String(instanceID)},
+			})
+
+			return resource.RetryableError(err)
+		})
+
 		if err != nil {
 			log.Printf("Error on InstanceStateRefresh: %s", err)
 
