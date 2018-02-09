@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_instance"
-sidebar_current: "docs-outscale-resource-instance"
+page_title: "OUTSCALE: outscale_vms"
+sidebar_current: "docs-outscale-resource-vms"
 description: |-
   Provides an Outscale instance resource. This allows instances to be created, updated, and deleted. Instances also support provisioning.
 ---
