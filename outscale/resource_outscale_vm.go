@@ -178,6 +178,9 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("ami", instance.ImageId)
 	d.Set("instance_type", instance.InstanceType)
+
+	fmt.Printf("[DEBUG] key %s", *instance.KeyName)
+
 	d.Set("key_name", instance.KeyName)
 	d.Set("public_ip", instance.IpAddress)
 	d.Set("private_dns", instance.PrivateDnsName)
@@ -266,11 +269,12 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 }
 func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	d.Partial(true)
+	fmt.Printf("[DEBUG] updating the instance %s", d.Id())
 
 	if d.HasChange("key_name") {
 		input := &fcu.ModifyInstanceKeyPairInput{
-			KeyName: aws.String(d.Get("key_name").(string)),
+			InstanceId: aws.String(d.Id()),
+			KeyName:    aws.String(d.Get("key_name").(string)),
 		}
 
 		err := conn.VM.ModifyInstanceKeyPair(input)

@@ -73,9 +73,6 @@ func testSweepServers(region string) error {
 func TestAccOutscaleServer_Basic(t *testing.T) {
 	var server fcu.Instance
 
-	var before fcu.Instance
-	var after fcu.Instance
-
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -96,8 +93,38 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 						"outscale_vm.basic", "instance_type", "t2.micro"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccOutscaleServer_Update(t *testing.T) {
+	// var server fcu.Instance
+
+	var before fcu.Instance
+	var after fcu.Instance
+
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		Steps: []resource.TestStep{
 			{
-				Config: testAccInstanceConfigUpdateVMKey,
+				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
+					testAccCheckOutscaleServerAttributes(&before),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "instance_name", fmt.Sprintf("terraform-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "instance_type", "t2.micro"),
+				),
+			},
+			{
+				Config: testAccInstanceConfigUpdateVMKey(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckInstanceExists("outscale_vm.basic", &after),
 					testAccCheckInstanceNotRecreated(
@@ -130,14 +157,19 @@ func testAccCheckInstanceExistsWithProviders(n string, i *fcu.Instance, provider
 			}
 
 			client := provider.Meta().(*OutscaleClient)
-			resp, err := client.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-				InstanceIds: []*string{aws.String(rs.Primary.ID)},
-			})
-			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
-				continue
-			}
-			if err != nil {
-				return err
+
+			var resp *fcu.DescribeInstancesOutput
+			var err error
+			for {
+				resp, err = client.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
+					InstanceIds: []*string{aws.String(rs.Primary.ID)},
+				})
+				if err != nil {
+					time.Sleep(10 * time.Second)
+				} else {
+					break
+				}
+
 			}
 
 			if len(resp.Reservations) > 0 {
@@ -194,7 +226,11 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 				InstanceIds: []*string{&rs.Primary.ID},
 			})
 			if err != nil {
-				time.Sleep(10 * time.Second)
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					time.Sleep(10 * time.Second)
+				} else {
+					break
+				}
 			} else {
 				break
 			}
@@ -293,9 +329,12 @@ resource "outscale_vm" "basic" {
 }`, rInt)
 }
 
-const testAccInstanceConfigUpdateVMKey = `
+func testAccInstanceConfigUpdateVMKey(rInt int) string {
+	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
-	image_id = "ami-5ad76458"
+	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
+	instance_name = "terraform-%d"
 	key_name = "TestKey"
-}`
+}`, rInt)
+}
