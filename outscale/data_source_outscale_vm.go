@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
@@ -37,9 +39,21 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Perform the lookup
-	resp, err := client.DescribeInstances(params)
-	if err != nil {
-		return err
+	// resp, err := client.DescribeInstances(params)
+	// if err != nil {
+	// 	return err
+	// }
+
+	var resp *fcu.DescribeInstancesOutput
+	var err error
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		resp, err = client.DescribeInstances(params)
+		return resource.RetryableError(err)
+	})
+
+	if resp.Reservations == nil {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
 	// If no instances were returned, return
@@ -72,7 +86,7 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance = filteredInstances[0]
 
-	log.Printf("[DEBUG] aws_instance - Single Instance ID found: %s", *instance.InstanceId)
+	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", *instance.InstanceId)
 
 	return instanceDescriptionAttributes(d, instance, client)
 }
@@ -88,7 +102,7 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 	if instance.Placement.Tenancy != nil {
 		d.Set("tenancy", instance.Placement.Tenancy)
 	}
-	d.Set("ami", instance.ImageId)
+	d.Set("image_id", instance.ImageId)
 	d.Set("instance_type", instance.InstanceType)
 	d.Set("key_name", instance.KeyName)
 	d.Set("private_dns", instance.PrivateDnsName)
@@ -141,31 +155,39 @@ func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
 func getDataSourceVMSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//Attributes
+		"filter": dataSourceFiltersSchema(),
 		"instance_id": {
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
+		},
+		"image_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"instance_type": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"group_set": {
-
 			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: schema.Resource{
+			Computed: true,
+			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"group_id": {
 						Type:     schema.TypeString,
-						Required: true,
+						Computed: true,
 					},
 					"group_name": {
 						Type:     schema.TypeString,
-						Required: true,
+						Computed: true,
 					},
 				},
 			},
 		},
 		"instance_set": {
 			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: schema.Resource{
+			Computed: true,
+			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ami_launch_index": {
 						Type:     schema.TypeInt,
@@ -177,7 +199,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"block_device_mapping": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"device_name": {
 									Type:     schema.TypeString,
@@ -185,7 +207,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 								},
 								"ebs": {
 									Type: schema.TypeSet,
-									Elem: schema.Resource{
+									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"delete_on_termination": {
 												Type:     schema.TypeBool,
@@ -220,8 +242,9 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"group_set": {
-						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"group_id": {
 									Type:     schema.TypeInt,
@@ -240,7 +263,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"iam_instance_profile": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"arn": {
 									Type:     schema.TypeString,
@@ -268,7 +291,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"instance_state": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
 									Type:     schema.TypeString,
@@ -300,7 +323,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"monitoring": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"state": {
 									Type:     schema.TypeString,
@@ -313,11 +336,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					"network_interface_set": {
 						Type:     schema.TypeSet,
 						Computed: true,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"association": {
-									Type: schema.TypeSet,
-									Elem: schema.Resource{
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"ip_owner_id": {
 												Type:     schema.TypeString,
@@ -335,8 +359,9 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									},
 								},
 								"attachment": {
-									Type: schema.TypeSet,
-									Elem: schema.Resource{
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"attachement_id": {
 												Type:     schema.TypeString,
@@ -362,8 +387,9 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"group_set": {
-									Type: schema.TypeSet,
-									Elem: schema.Resource{
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"group_id": {
 												Type:     schema.TypeString,
@@ -375,7 +401,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"mac_address": {
 									Type:     schema.TypeString,
@@ -398,12 +423,14 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"private_ip_addresses_set": {
-									Type: schema.TypeSet,
-									Elem: schema.Resource{
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
-												Type: schema.TypeSet,
-												Elem: schema.Resource{
+												Type:     schema.TypeSet,
+												Computed: true,
+												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
 														"ip_owner_id": {
 															Type:     schema.TypeString,
@@ -455,8 +482,9 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 					},
 					"placement": {
-						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"affinity": {
 									Type:     schema.TypeString,
@@ -494,8 +522,9 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"product_codes": {
-						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"product_code": {
 									Type:     schema.TypeString,
@@ -507,7 +536,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 								},
 							},
 						},
-						Computed: true,
 					},
 					"ramdisk_id": {
 						Type:     schema.TypeString,
@@ -539,7 +567,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"state_reason": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
 									Type:     schema.TypeInt,
@@ -559,7 +587,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 					},
 					"tag_set": {
 						Type: schema.TypeSet,
-						Elem: schema.Resource{
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
 									Type:     schema.TypeString,
