@@ -8,7 +8,7 @@ func datasourceOutscaleOApiVMS() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleVMSRead,
 
-		Schema: datasourceOutscaleVMSSchema(),
+		Schema: datasourceOutscaleOApiVMSSchema(),
 	}
 }
 
@@ -17,7 +17,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 		// Optional attributes
 		"filter": dataSourceFiltersSchema(),
-		"ami_launch_index": &schema.Schema{
+		"launch_sort_number": &schema.Schema{
 			Type: schema.TypeInt,
 
 			Computed: true,
@@ -37,17 +37,17 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ebs": &schema.Schema{
+					"bsu": &schema.Schema{
 						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"delete_on_termination": &schema.Schema{
+								"delete_on_vm_deletion": &schema.Schema{
 									Type: schema.TypeBool,
 
 									Computed: true,
 								},
-								"status": &schema.Schema{
+								"state": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
@@ -63,33 +63,33 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"client_token": &schema.Schema{
+		"token": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"dns_name": &schema.Schema{
+		"public_dns_name": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"ebs_optimized": &schema.Schema{
+		"bsu_optimised": &schema.Schema{
 			Type: schema.TypeBool,
 
 			Computed: true,
 		},
-		"group_set": &schema.Schema{
+		"firewall_rules_set": &schema.Schema{
 			Type: schema.TypeList,
 
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": &schema.Schema{
+					"firewall_rules_set_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"group_name": &schema.Schema{
+					"firewall_rules_set_name": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -102,18 +102,18 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"iam_instance_profile": &schema.Schema{
+		"vm_profile": &schema.Schema{
 			Type: schema.TypeSet,
 
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"arn": &schema.Schema{
+					"resource_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"id": &schema.Schema{
+					"vm_profile_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -126,30 +126,30 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"instance_id": &schema.Schema{
+		"vm_id": &schema.Schema{
 			Type:     schema.TypeSet,
 			Optional: true,
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
 		},
-		"instance_lifecycle": &schema.Schema{
+		"spot_vm": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"instance_state": &schema.Schema{
+		"state": &schema.Schema{
 			Type: schema.TypeSet,
 
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"code": &schema.Schema{
+					"stae_code": &schema.Schema{
 						Type: schema.TypeInt,
 
 						Computed: true,
 					},
-					"name": &schema.Schema{
+					"state_name": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -157,12 +157,12 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"instance_type": &schema.Schema{
+		"type": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"ip_address": &schema.Schema{
+		"public_ip": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
@@ -172,7 +172,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"key_name": &schema.Schema{
+		"keypair_name": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
@@ -191,18 +191,18 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"network_interface_set": &schema.Schema{
+		"nic": &schema.Schema{
 			Type: schema.TypeList,
 
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"association": &schema.Schema{
+					"public_ip_link": &schema.Schema{
 						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"ip_owner_id": &schema.Schema{
+								"public_ip_account_id": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
@@ -220,28 +220,28 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"attachment": &schema.Schema{
+					"nic_link": &schema.Schema{
 						Type: schema.TypeSet,
 
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"attachment_id": &schema.Schema{
+								"nic_link_id": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
 								},
-								"delete_on_termination": &schema.Schema{
+								"delete_on_vm_deletion": &schema.Schema{
 									Type: schema.TypeBool,
 
 									Computed: true,
 								},
-								"device_index": &schema.Schema{
+								"nic_sort_number": &schema.Schema{
 									Type: schema.TypeInt,
 
 									Computed: true,
 								},
-								"status": &schema.Schema{
+								"state": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
@@ -254,18 +254,18 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"group_set": &schema.Schema{
+					"firewall_rules_set": &schema.Schema{
 						Type: schema.TypeList,
 
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"group_id": &schema.Schema{
+								"firewall_rules_set_id": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
 								},
-								"group_name": &schema.Schema{
+								"firewall_rules_set_name": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
@@ -278,12 +278,12 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"network_interface_id": &schema.Schema{
+					"nic_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"owner_id": &schema.Schema{
+					"account_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -293,23 +293,23 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"private_ip_address": &schema.Schema{
+					"private_ip": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"private_ip_address_set": &schema.Schema{
+					"private_ips": &schema.Schema{
 						Type: schema.TypeSet,
 
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"association": &schema.Schema{
+								"public_ip_link": &schema.Schema{
 									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"ip_owner_id": &schema.Schema{
+											"public_ip_account_id": &schema.Schema{
 												Type: schema.TypeString,
 
 												Computed: true,
@@ -327,17 +327,17 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 										},
 									},
 								},
-								"primary": &schema.Schema{
+								"primary_ip": &schema.Schema{
 									Type: schema.TypeBool,
 
 									Computed: true,
 								},
-								"private_dns": &schema.Schema{
+								"private_dns_name": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
 								},
-								"private_ip_address": &schema.Schema{
+								"private_ip": &schema.Schema{
 									Type: schema.TypeString,
 
 									Computed: true,
@@ -345,12 +345,12 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"source_dest_check": &schema.Schema{
+					"nat_check": &schema.Schema{
 						Type: schema.TypeBool,
 
 						Computed: true,
 					},
-					"status": &schema.Schema{
+					"state": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -360,7 +360,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"vpc_id": &schema.Schema{
+					"lin_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -379,17 +379,17 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"availability_zone": &schema.Schema{
+					"sub_region_name": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"group_name": &schema.Schema{
+					"firewall_rules_set_name": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"host_id": &schema.Schema{
+					"dedicated_host_id": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -402,12 +402,17 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"platform": &schema.Schema{
+		"system": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
 		"private_dns_name": &schema.Schema{
+			Type: schema.TypeString,
+
+			Computed: true,
+		},
+		"private_ip": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
@@ -431,15 +436,20 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"randisk_id": &schema.Schema{
-			Type: schema.TypeString,
+
+		"ramdisk_id": &schema.Schema{
+			Type: schema.TypeList,
 
 			Computed: true,
-		},
-		"reason": &schema.Schema{
-			Type: schema.TypeString,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"comment": &schema.Schema{
+						Type: schema.TypeString,
 
-			Computed: true,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"root_device_name": &schema.Schema{
 			Type: schema.TypeString,
@@ -451,12 +461,12 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"source_dest_check": &schema.Schema{
+		"nat_check": &schema.Schema{
 			Type: schema.TypeBool,
 
 			Computed: true,
 		},
-		"spot_instance_request_id": &schema.Schema{
+		"spot_vm_request_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
@@ -466,18 +476,18 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"state_reason": &schema.Schema{
+		"comment": &schema.Schema{
 			Type: schema.TypeSet,
 
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"code": &schema.Schema{
+					"state_code": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
 					},
-					"message": &schema.Schema{
+					"comment": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -513,39 +523,29 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"vpc_id": &schema.Schema{
+		"lin_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
 		// Computed attributes
 
-		"allocation_id": &schema.Schema{
+		"account_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"association_id": &schema.Schema{
+		"requester_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"network_interface_id": &schema.Schema{
+		"reservation_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
 		},
-		"network_interface_owner_id": &schema.Schema{
-			Type: schema.TypeString,
-
-			Computed: true,
-		},
-		"private_ip_address": &schema.Schema{
-			Type: schema.TypeString,
-
-			Computed: true,
-		},
-		"public_ip": &schema.Schema{
+		"admin_password_id": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
