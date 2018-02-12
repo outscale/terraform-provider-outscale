@@ -133,7 +133,9 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	return nil
+	err := d.Set("instance_set", getInstanceSet(instance))
+
+	return err
 }
 
 func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
@@ -278,7 +280,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"image_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"instance_id": {

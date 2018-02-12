@@ -18,6 +18,8 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_vm.basic_web", "instance_type", "t2.micro"),
+					resource.TestCheckResourceAttr(
+						"data.outscale_vm.basic_web", "instance_set.0.ip_address", "t2.micro"),
 				),
 			},
 		},
