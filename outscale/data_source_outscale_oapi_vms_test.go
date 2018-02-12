@@ -29,9 +29,9 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 				Config: testAccOAPIVMSDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "image_id", "ami-8a6a0120"),
+						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "instance_type", "t2.micro"),
+						"data.outscale_vm.basic_web", "instance_type", "t2.micro"),
 				),
 			},
 		},
@@ -40,14 +40,14 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 
 // Lookup based on InstanceID
 const testAccOAPIVMSDataSourceConfig = `
-resource "outscale_vms" "basic" {
+resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 }
 
-data "outscale_vms" "basic_web" {
+data "outscale_vm" "basic_web" {
 	filter {
     name = "instance-id"
-    values = ["${outscale_vms.basic.id}"]
+    values = ["${outscale_vm.basic.id}"]
   }
 }`

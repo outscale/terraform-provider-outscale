@@ -12,7 +12,7 @@ import (
 
 func datasourceOutscaleOApiVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVMSRead,
+		Read: dataSourceOutscaleOApiVMSRead,
 
 		Schema: datasourceOutscaleOApiVMSSchema(),
 	}
