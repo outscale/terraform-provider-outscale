@@ -41,6 +41,7 @@ The following arguments are supported:
 * `filter` - (Optional) One or more filters.
 * `instance_id` - (Optional)The ID of the instance.
 
+See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Filters
 
@@ -136,3 +137,5 @@ The following attributes are exported:
 * `password_data` - (Computed) Password for windows environments.
 * `requester_id` - (Optional) The ID of the requester.
 * `reservation_id` - (Optional) Zero or more reservations, giving you information about your request.
+
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).

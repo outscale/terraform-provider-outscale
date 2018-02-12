@@ -58,6 +58,8 @@ The following arguments are supported:
 * `subnet_id` - (Optional) In a VPC, the ID of the subnet in which you want to launch the instance.
 * `user_data` - (Optional) Data or a script used to add a specific configuration to the instance when launching it. If you are not using a command line tool, this must be base64-encoded.
 
+See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+
 
 ## Attributes Reference
 
@@ -69,3 +71,5 @@ The following attributes are exported:
 * `password_data` - (Computed) Pas.sword for windows environments.
 * `requester_id` - (Optional) The ID of the requester.
 * `reservation_id` - (Optional) Zero or more reservations, giving you information about your request.
+
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).

@@ -41,6 +41,8 @@ The following arguments are supported:
 * `filter` - (Optional) One or more filters.
 * `instance_id` - (Optional )The ID of the instance.
 
+See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+
 ## Filters
 
 Use the Filter.N parameter to filter the described instances on the following properties:
@@ -129,3 +131,5 @@ Use the Filter.N parameter to filter the described instances on the following pr
 The following attributes are exported:
 
 * `reservation_set` - Zero or more reservations.
+
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).
