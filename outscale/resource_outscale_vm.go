@@ -567,6 +567,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"security_group": {
 			Type:     schema.TypeSet,
 			Optional: true,
+			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"security_group_id": {
