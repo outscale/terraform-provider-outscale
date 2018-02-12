@@ -12,12 +12,15 @@ var testAccProviders map[string]terraform.ResourceProvider
 
 var testAccProvider *schema.Provider
 
+var oapi bool
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"outscale": testAccProvider,
 	}
+
 }
 
 func TestProvider(t *testing.T) {
