@@ -144,7 +144,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"stae_code": &schema.Schema{
+					"state_code": &schema.Schema{
 						Type: schema.TypeInt,
 
 						Computed: true,
@@ -298,7 +298,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"private_ips": &schema.Schema{
+					"private_ip_set": &schema.Schema{
 						Type: schema.TypeSet,
 
 						Computed: true,
@@ -428,7 +428,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 						Computed: true,
 					},
-					"type": &schema.Schema{
+					"product_type": &schema.Schema{
 						Type: schema.TypeString,
 
 						Computed: true,
@@ -545,7 +545,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 
 			Computed: true,
 		},
-		"admin_password_id": &schema.Schema{
+		"admin_password__": &schema.Schema{
 			Type: schema.TypeString,
 
 			Computed: true,
