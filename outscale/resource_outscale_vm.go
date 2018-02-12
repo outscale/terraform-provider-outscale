@@ -20,6 +20,9 @@ func resourceOutscaleVM() *schema.Resource {
 		Read:   resourceVMRead,
 		Update: resourceVMUpdate,
 		Delete: resourceVMDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -64,7 +67,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	log.Printf("[DEBUG] Run configuration: %s", runOpts)
+	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
@@ -176,10 +179,8 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("tenancy", instance.Placement.Tenancy)
 	}
 
-	d.Set("ami", instance.ImageId)
+	d.Set("image_id", instance.ImageId)
 	d.Set("instance_type", instance.InstanceType)
-
-	fmt.Printf("[DEBUG] key %s", *instance.KeyName)
 
 	d.Set("key_name", instance.KeyName)
 	d.Set("public_ip", instance.IpAddress)
@@ -187,6 +188,17 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("private_ip", instance.PrivateIpAddress)
 
 	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
+
+	if instance.GroupSet != nil {
+		groups := []string{}
+		for _, g := range instance.GroupSet {
+			groups = append(groups, *g.GroupId)
+		}
+		err = d.Set("security_group", groups)
+		if err != nil {
+			return err
+		}
+	}
 
 	var configuredDeviceIndexes []int
 	if v, ok := d.GetOk("network_interface"); ok {
@@ -227,9 +239,9 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		// Set primary network interface details
 		// If an instance is shutting down, network interfaces are detached, and attributes may be nil,
 		// need to protect against nil pointer dereferences
-		if primaryNetworkInterface.SubnetId != nil {
-			d.Set("subnet_id", primaryNetworkInterface.SubnetId)
-		}
+		// if primaryNetworkInterface.SubnetId != nil {
+		// 	d.Set("subnet_id", primaryNetworkInterface.SubnetId)
+		// }
 		if primaryNetworkInterface.NetworkInterfaceId != nil {
 			d.Set("network_interface_id", primaryNetworkInterface.NetworkInterfaceId) // TODO: Deprecate me v0.10.0
 			d.Set("primary_network_interface_id", primaryNetworkInterface.NetworkInterfaceId)
@@ -245,7 +257,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("subnet_id", instance.SubnetId)
 	}
 
-	d.Set("ebs_optimized", instance.EbsOptimized)
 	if instance.SubnetId != nil && *instance.SubnetId != "" {
 		d.Set("source_dest_check", instance.SourceDestCheck)
 	}
@@ -255,7 +266,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	d.Set("ebs_optimized", instance.EbsOptimized)
 	if instance.SubnetId != nil && *instance.SubnetId != "" {
 		d.Set("source_dest_check", instance.SourceDestCheck)
 	}
@@ -265,11 +275,45 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("monitoring", &monitoringState)
 	}
 
+	if instance.GroupSet != nil {
+		res := []map[string]interface{}{}
+		for _, g := range instance.GroupSet {
+
+			r := map[string]interface{}{
+				"group_id":   *g.GroupId,
+				"group_name": *g.GroupName,
+			}
+			res = append(res, r)
+		}
+
+		err = d.Set("group_set", res)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = d.Set("instance_set", getInstanceSet(instance))
+	if err != nil {
+		return err
+	}
+
+	// instanceSet["block_device_mapping"] = getBlockDeviceMapping(instance.BlockDeviceMappings)
+	// instanceSet["group_set"] = getGroupSet(instance.GroupSet)
+	// instanceSet["iam_instance_profile"] = getIAMInstanceProfile(instance.IamInstanceProfile)
+	// instanceSet["instance_state"] = getInstanceState(instance.State)
+	// instanceSet["monitoring"] = getMonitoring(instance.Monitoring)
+	// instanceSet["network_interface_set"] = getNetworkInterfaceSet(instance.NetworkInterfaces)
+	// instanceSet["placement"] = getPlacement(instance.Placement)
+	// instanceSet["state_reason"] = getStateReason(instance.StateReason)
+	// instanceSet["product_codes"] = getProductCodes(instance.ProductCodes)
+	// instanceSet["tag_set"] = getTagSet(instance.Tags)
+
 	return nil
 }
+
 func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	fmt.Printf("[DEBUG] updating the instance %s", d.Id())
+	log.Printf("[DEBUG] updating the instance %s", d.Id())
 
 	if d.HasChange("key_name") {
 		input := &fcu.ModifyInstanceKeyPairInput{
@@ -345,7 +389,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"ebs": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Optional: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -484,7 +528,7 @@ func getVMSchema() map[string]*schema.Schema {
 			},
 		},
 		"placement": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeMap,
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -523,6 +567,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"security_group": {
 			Type:     schema.TypeSet,
 			Optional: true,
+			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"security_group_id": {
@@ -540,11 +585,12 @@ func getVMSchema() map[string]*schema.Schema {
 		},
 		//Attributes reference:
 		"group_set": {
-			Type: schema.TypeSet,
+			Type:     schema.TypeSet,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"group_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"group_name": {
@@ -553,11 +599,10 @@ func getVMSchema() map[string]*schema.Schema {
 					},
 				},
 			},
-			Computed: true,
 		},
 		"instance_set": {
 			Type:     schema.TypeSet,
-			Optional: true,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ami_launch_index": {
@@ -577,7 +622,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"ebs": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"delete_on_termination": {
@@ -602,18 +647,19 @@ func getVMSchema() map[string]*schema.Schema {
 					},
 					"client_token": {
 						Type:     schema.TypeString,
-						Optional: true,
+						Computed: true,
 					},
 					"dns_name": {
 						Type:     schema.TypeString,
-						Optional: true,
+						Computed: true,
 					},
 					"ebs_optimised": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
 					"group_set": {
-						Type: schema.TypeSet,
+						Type:     schema.TypeSet,
+						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"group_id": {
@@ -626,14 +672,13 @@ func getVMSchema() map[string]*schema.Schema {
 								},
 							},
 						},
-						Required: true,
 					},
 					"hypervisor": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"iam_instance_profile": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"arn": {
@@ -657,7 +702,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"instance_state": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
@@ -689,7 +734,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"monitoring": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"state": {
@@ -706,7 +751,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"association": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeMap,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -726,7 +771,7 @@ func getVMSchema() map[string]*schema.Schema {
 									},
 								},
 								"attachment": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"attachement_id": {
@@ -754,7 +799,8 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"group_set": {
-									Type: schema.TypeSet,
+									Type:     schema.TypeSet,
+									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"group_id": {
@@ -767,7 +813,6 @@ func getVMSchema() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"mac_address": {
 									Type:     schema.TypeString,
@@ -795,7 +840,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeMap,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -815,7 +860,7 @@ func getVMSchema() map[string]*schema.Schema {
 												},
 											},
 											"primary": {
-												Type:     schema.TypeString,
+												Type:     schema.TypeBool,
 												Computed: true,
 											},
 											"private_dns_name": {
@@ -849,7 +894,7 @@ func getVMSchema() map[string]*schema.Schema {
 						},
 					},
 					"placement": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"affinity": {
@@ -885,8 +930,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"private_ip_address": {
-						Type: schema.TypeString,
-
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"product_codes": {
@@ -930,7 +974,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"state_reason": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
@@ -1057,7 +1101,7 @@ func buildAwsInstanceOpts(
 	}
 
 	var groups []*string
-	if v := d.Get("security_groups"); v != nil {
+	if v := d.Get("security_group"); v != nil {
 
 		sgs := v.(*schema.Set).List()
 		for _, v := range sgs {
@@ -1066,13 +1110,13 @@ func buildAwsInstanceOpts(
 		}
 	}
 
+	opts.SecurityGroups = groups
+
 	networkInterfaces, interfacesOk := d.GetOk("network_interface")
 	if interfacesOk {
 		opts.NetworkInterfaces = buildNetworkInterfaceOpts(d, groups, networkInterfaces)
 
 	}
-
-	opts.SecurityGroups = groups
 
 	if v, ok := d.GetOk("private_ip"); ok {
 		opts.PrivateIPAddress = aws.String(v.(string))
@@ -1088,9 +1132,9 @@ func buildAwsInstanceOpts(
 		opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
 	}
 
-	if v, ok := d.GetOk("key_name"); ok {
-		opts.KeyName = aws.String(v.(string))
-	}
+	// if v, ok := d.GetOk("key_name"); ok {
+	// 	opts.KeyName = aws.String(v.(string))
+	// }
 
 	blockDevices, err := readBlockDeviceMappingsFromConfig(d, conn)
 	if err != nil {
@@ -1326,4 +1370,248 @@ func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRe
 
 		return i, state, nil
 	}
+}
+
+func getInstanceSet(instance *fcu.Instance) []map[string]interface{} {
+
+	instanceSet := map[string]interface{}{}
+
+	instanceSet["ami_launch_index"] = *instance.AmiLaunchIndex
+	instanceSet["ebs_optimised"] = *instance.EbsOptimized
+	instanceSet["architecture"] = *instance.Architecture
+	instanceSet["client_token"] = *instance.ClientToken
+	instanceSet["hypervisor"] = *instance.Hypervisor
+	instanceSet["image_id"] = *instance.ImageId
+	instanceSet["instance_id"] = *instance.InstanceId
+	instanceSet["instance_type"] = *instance.InstanceType
+	instanceSet["kernel_id"] = *instance.KernelId
+	instanceSet["key_name"] = *instance.KeyName
+	instanceSet["private_dns_name"] = *instance.PrivateDnsName
+	instanceSet["private_ip_address"] = *instance.PrivateIpAddress
+	instanceSet["root_device_name"] = *instance.RootDeviceName
+
+	if instance.DnsName != nil {
+		instanceSet["dns_name"] = *instance.DnsName
+	}
+	if instance.IpAddress != nil {
+		fmt.Println(*instance.IpAddress)
+		instanceSet["ip_address"] = *instance.IpAddress
+	}
+	if instance.Platform != nil {
+		instanceSet["platform"] = *instance.Platform
+	}
+	if instance.RamdiskId != nil {
+		instanceSet["ramdisk_id"] = *instance.RamdiskId
+	}
+	if instance.Reason != nil {
+		instanceSet["reason"] = *instance.Reason
+	}
+	if instance.SourceDestCheck != nil {
+		instanceSet["source_dest_check"] = *instance.SourceDestCheck
+	}
+	if instance.SpotInstanceRequestId != nil {
+		instanceSet["spot_instance_request_id"] = *instance.SpotInstanceRequestId
+	}
+	if instance.SriovNetSupport != nil {
+		instanceSet["sriov_net_support"] = *instance.SriovNetSupport
+	}
+	if instance.SubnetId != nil {
+		instanceSet["subnet_id"] = *instance.SubnetId
+	}
+	if instance.VirtualizationType != nil {
+		instanceSet["virtualization_type"] = *instance.VirtualizationType
+	}
+	if instance.VpcId != nil {
+		instanceSet["vpc_id"] = *instance.VpcId
+	}
+
+	return []map[string]interface{}{instanceSet}
+}
+
+func getBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping) []map[string]interface{} {
+	blockDeviceMapping := []map[string]interface{}{}
+
+	if blockDeviceMapping != nil {
+		for _, mapping := range blockDeviceMappings {
+			r := map[string]interface{}{}
+			r["block_device_mapping"] = *mapping.DeviceName
+
+			e := map[string]interface{}{}
+
+			e["delete_on_termination"] = *mapping.Ebs.DeleteOnTermination
+			e["status"] = *mapping.Ebs.Status
+			e["volume_id"] = *mapping.Ebs.Status
+
+			r["ebs"] = e
+
+			blockDeviceMapping = append(blockDeviceMapping, r)
+		}
+	}
+
+	return blockDeviceMapping
+}
+
+func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, g := range groupSet {
+
+		r := map[string]interface{}{
+			"group_id":   *g.GroupId,
+			"group_name": *g.GroupName,
+		}
+		res = append(res, r)
+	}
+
+	return res
+}
+
+func getIAMInstanceProfile(profile *fcu.IamInstanceProfile) map[string]interface{} {
+	iam := map[string]interface{}{}
+
+	if profile != nil {
+		iam["arn"] = *profile.Arn
+		if profile.Id != nil {
+			iam["id"] = *profile.Id
+		}
+	}
+
+	return iam
+}
+
+func getInstanceState(state *fcu.InstanceState) map[string]interface{} {
+	statem := map[string]interface{}{}
+
+	statem["code"] = *state.Code
+	statem["name"] = *state.Name
+
+	return statem
+}
+
+func getMonitoring(monitoring *fcu.Monitoring) map[string]interface{} {
+	monitoringm := map[string]interface{}{}
+
+	monitoringm["state"] = *monitoring.State
+
+	return monitoringm
+}
+
+func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if interfaces != nil {
+		for _, i := range interfaces {
+			var inter map[string]interface{}
+
+			assoc := map[string]interface{}{}
+			assoc["ip_owner_id"] = *i.Association.IpOwnerId
+			assoc["public_dns_name"] = *i.Association.PublicDnsName
+			assoc["public_ip"] = *i.Association.PublicIp
+
+			attch := map[string]interface{}{}
+			assoc["attachement_id"] = *i.Attachment.AttachmentId
+			assoc["delete_on_termination"] = *i.Attachment.DeleteOnTermination
+			assoc["device_index"] = *i.Attachment.DeviceIndex
+			assoc["status"] = *i.Attachment.Status
+
+			inter["association"] = assoc
+			inter["attachment"] = attch
+
+			inter["description"] = *i.Description
+			inter["group_set"] = getGroupSet(i.Groups)
+			inter["mac_address"] = *i.MacAddress
+			inter["network_interface_id"] = *i.NetworkInterfaceId
+			inter["owner_id"] = *i.OwnerId
+			inter["private_dns_name"] = *i.PrivateDnsName
+			inter["private_ip_address"] = *i.PrivateIpAddress
+			inter["private_ip_addresses_set"] = getPrivateIPAddressSet(i.PrivateIpAddresses)
+			inter["source_dest_check"] = *i.SourceDestCheck
+			inter["status"] = *i.Status
+			inter["vpc_id"] = *i.VpcId
+
+			res = append(res, inter)
+		}
+	}
+
+	return res
+}
+
+func getPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	if privateIPs != nil {
+		for _, p := range privateIPs {
+			var inter map[string]interface{}
+
+			assoc := map[string]interface{}{}
+			assoc["ip_owner_id"] = *p.Association.IpOwnerId
+			assoc["public_dns_name"] = *p.Association.PublicDnsName
+			assoc["public_ip"] = *p.Association.PublicIp
+
+			inter["association"] = assoc
+			inter["private_dns_name"] = *p.Primary
+			inter["private_ip_address"] = *p.PrivateIpAddress
+
+		}
+	}
+	return res
+}
+
+func getPlacement(placement *fcu.Placement) map[string]interface{} {
+	res := map[string]interface{}{}
+
+	if placement != nil {
+		if placement.Affinity != nil {
+			res["affinity"] = *placement.Affinity
+		}
+		res["availability_zone"] = *placement.AvailabilityZone
+		res["group_name"] = *placement.GroupName
+		if placement.HostId != nil {
+			res["host_id"] = *placement.HostId
+		}
+		res["tenancy"] = *placement.Tenancy
+	}
+
+	return res
+}
+
+func getProductCodes(codes []*fcu.ProductCode) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if codes != nil {
+		for _, c := range codes {
+			code := map[string]interface{}{}
+
+			code["product_code"] = *c.ProductCode
+			code["type"] = *c.Type
+
+			res = append(res, code)
+		}
+	}
+
+	return res
+}
+
+func getStateReason(reason *fcu.StateReason) map[string]interface{} {
+	res := map[string]interface{}{}
+	if reason != nil {
+		res["code"] = reason.Code
+		res["message"] = reason.Message
+	}
+	return res
+}
+
+func getTagSet(tags []*fcu.Tag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
 }

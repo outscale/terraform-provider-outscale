@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -73,7 +72,7 @@ func testSweepServers(region string) error {
 func TestAccOutscaleServer_Basic(t *testing.T) {
 	var server fcu.Instance
 
-	rInt := acctest.RandInt()
+	// rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -81,12 +80,10 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Config: testAccCheckOutscaleServerConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleServerAttributes(&server),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_name", fmt.Sprintf("terraform-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
@@ -103,7 +100,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 	var before fcu.Instance
 	var after fcu.Instance
 
-	rInt := acctest.RandInt()
+	// rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -111,12 +108,10 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Config: testAccCheckOutscaleServerConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleServerAttributes(&before),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_name", fmt.Sprintf("terraform-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
@@ -124,7 +119,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccInstanceConfigUpdateVMKey(rInt),
+				Config: testAccInstanceConfigUpdateVMKey(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckInstanceExists("outscale_vm.basic", &after),
 					testAccCheckInstanceNotRecreated(
@@ -299,6 +294,10 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, provid
 				return err
 			}
 
+			if resp.Reservations == nil {
+				return fmt.Errorf("Instance not found")
+			}
+
 			if len(resp.Reservations) > 0 {
 				*i = *resp.Reservations[0].Instances[0]
 				return nil
@@ -320,21 +319,21 @@ func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestChe
 	}
 }
 
-func testAccCheckOutscaleServerConfig_basic(rInt int) string {
-	return fmt.Sprintf(`
+func testAccCheckOutscaleServerConfig_basic() string {
+	return `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	instance_name = "terraform-%d"
-}`, rInt)
+	security_group = ["sg-6ed31f3e"]
+}`
 }
 
-func testAccInstanceConfigUpdateVMKey(rInt int) string {
+func testAccInstanceConfigUpdateVMKey() string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	instance_name = "terraform-%d"
+	security_group = ["sg-6ed31f3e"]
 	key_name = "TestKey"
-}`, rInt)
+}`)
 }

@@ -100,7 +100,7 @@ type Instance struct {
 
 	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
 
-	IpAddress *string `type:"string"`
+	IpAddress *string `locationName:"ipAddress" type:"string"`
 
 	KernelId *string `locationName:"kernelId" type:"string"`
 
