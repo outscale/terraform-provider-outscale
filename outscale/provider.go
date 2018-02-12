@@ -1,12 +1,29 @@
 package outscale
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 // Provider ...
 func Provider() terraform.ResourceProvider {
+
+	fcu := "fcu"
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isoapi, err := strconv.ParseBool(o)
+	if err != nil {
+		isoapi = false
+	}
+
+	if isoapi {
+		fcu = "oapi"
+	}
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"access_key_id": {
@@ -36,11 +53,11 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"outscale_vm": resourceOutscaleVM(),
+			"outscale_vm": GetResource(fcu, "outscale_vm")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"outscale_vm":  dataSourceOutscaleVM(),
-			"outscale_vms": datasourceOutscaleVMS(),
+			"outscale_vm":  GetDatasource(fcu, "outscale_vm")(),
+			"outscale_vms": GetDatasource(fcu, "outscale_vms")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccOutscaleVMDataSource_basic(t *testing.T) {
+func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -25,7 +26,7 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVMDataSourceConfig,
+				Config: testAccOAPIVMSDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
@@ -38,7 +39,7 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 }
 
 // Lookup based on InstanceID
-const testAccVMDataSourceConfig = `
+const testAccOAPIVMSDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,7 @@ import (
 )
 
 func init() {
+
 	resource.AddTestSweepers("outscale_vm", &resource.Sweeper{
 		Name: "outscale_vm",
 		F:    testSweepServers,
@@ -70,6 +73,18 @@ func testSweepServers(region string) error {
 }
 
 func TestAccOutscaleServer_Basic(t *testing.T) {
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
+
 	var server fcu.Instance
 
 	// rInt := acctest.RandInt()
@@ -96,6 +111,17 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 
 func TestAccOutscaleServer_Update(t *testing.T) {
 	// var server fcu.Instance
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 
 	var before fcu.Instance
 	var after fcu.Instance
@@ -179,6 +205,17 @@ func testAccCheckInstanceExistsWithProviders(n string, i *fcu.Instance, provider
 
 func testAccCheckInstanceNotRecreated(t *testing.T,
 	before, after *fcu.Instance) resource.TestCheckFunc {
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	return func(s *terraform.State) error {
 		if *before.InstanceId != *after.InstanceId {
 			t.Fatalf("Outscale VM IDs have changed. Before %s. After %s", *before.InstanceId, *after.InstanceId)
