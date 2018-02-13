@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"bytes"
-	"errors"
+	"encoding/xml"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -14,22 +13,39 @@ var ErrMsg = map[string]string{
 	"HTTP":               "HTTP Error",
 }
 
+type Error struct {
+	Code    string `xml:"Code"`
+	Message string `xml:Message`
+}
+type XMLError struct {
+	XMLName   xml.Name `xml:"Response"`
+	Errors    []Error  `xml:"Errors>Error"`
+	RequestID string   `xml:"RequestID"`
+}
+
 // UnmarshalErrorHandler for HTTP Response
 func UnmarshalErrorHandler(r *http.Response) error {
 	defer r.Body.Close()
-	b := &bytes.Buffer{}
-	if _, err := io.Copy(b, r.Body); err != nil {
-		return SendError(ErrMsg["SerializationError"], err)
+	v := XMLError{}
 
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("Read body: %v", err)
+	}
+
+	err = xml.Unmarshal(data, &v)
+	if err != nil {
+		return fmt.Errorf("error: %v", err)
 	}
 
 	// Response body format is not consistent between metadata endpoints.
 	// Grab the error message as a string and include that as the source error
-	return SendError(ErrMsg["HTTP"], errors.New(b.String()))
+	return SendError(v)
 
 }
 
 // SendError method which receives the message and the error
-func SendError(msg string, err error) error {
-	return errors.New(msg + " - " + fmt.Sprint(err))
+func SendError(msg XMLError) error {
+
+	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
 }
