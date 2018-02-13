@@ -81,7 +81,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -119,7 +119,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -142,12 +142,16 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "instance_type", "t2.micro"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "key_name", "terraform-basic"),
 				),
 			},
 			{
 				Config: testAccInstanceConfigUpdateVMKey(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckInstanceExists("outscale_vm.basic", &after),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "key_name", "terraform-update"),
 					testAccCheckInstanceNotRecreated(
 						t, &before, &after),
 				),
@@ -361,6 +365,7 @@ func testAccCheckOutscaleServerConfig_basic() string {
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 	security_group = ["sg-6ed31f3e"]
 }`
 }
@@ -371,6 +376,6 @@ resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	security_group = ["sg-6ed31f3e"]
-	key_name = "TestKey"
+	key_name = "terraform-update"
 }`)
 }

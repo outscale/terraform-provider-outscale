@@ -1132,9 +1132,9 @@ func buildAwsInstanceOpts(
 		opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
 	}
 
-	// if v, ok := d.GetOk("key_name"); ok {
-	// 	opts.KeyName = aws.String(v.(string))
-	// }
+	if v, ok := d.GetOk("key_name"); ok {
+		opts.KeyName = aws.String(v.(string))
+	}
 
 	blockDevices, err := readBlockDeviceMappingsFromConfig(d, conn)
 	if err != nil {

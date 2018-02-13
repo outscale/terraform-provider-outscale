@@ -723,7 +723,7 @@ type RunInstancesInput struct {
 	//
 	// If you do not specify a key pair, you can't connect to the instance unless
 	// you choose an AMI that is configured to allow users another way to log in.
-	KeyName *string `type:"string"`
+	KeyName *string `locationName:"keyName" type:"string"`
 
 	// The maximum number of instances to launch. If you specify more instances
 	// than Amazon EC2 can launch in the target Availability Zone, Amazon EC2 launches
