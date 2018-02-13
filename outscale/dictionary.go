@@ -29,7 +29,7 @@ func init() {
 			"outscale_vms": datasourceOutscaleVMS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":  dataSourceOutscaleVM,
+			"outscale_vm":  dataSourceOutscaleOAPIVM,
 			"outscale_vms": datasourceOutscaleOApiVMS,
 		},
 	}
