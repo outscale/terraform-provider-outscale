@@ -32,7 +32,6 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 		}
 
 		if instance.IpAddress != nil {
-			fmt.Printf("IP Adds: %s", *instance.IpAddress)
 			flattened[i]["ip_address"] = *instance.IpAddress
 		}
 		if instance.Platform != nil {

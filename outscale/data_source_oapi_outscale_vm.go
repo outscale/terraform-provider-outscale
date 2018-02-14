@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVM() *schema.Resource {
+func dataSourceOApiOutscaleVM() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleVMRead,
-		Schema: getDataSourceVMSchemas(),
+		Read:   dataSourceOApiOutscaleVMRead,
+		Schema: getDataSourceOApiVMSchemas(),
 	}
 }
-func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOApiOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU.VM
 
 	filters, filtersOk := d.GetOk("filter")
@@ -32,28 +30,16 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	// Build up search parameters
 	params := &fcu.DescribeInstancesInput{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOApiOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if instanceIDOk {
 		params.InstanceIds = []*string{aws.String(instanceID.(string))}
 	}
 
 	// Perform the lookup
-	// resp, err := client.DescribeInstances(params)
-	// if err != nil {
-	// 	return err
-	// }
-
-	var resp *fcu.DescribeInstancesOutput
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = client.DescribeInstances(params)
-		return resource.RetryableError(err)
-	})
-
-	if resp.Reservations == nil {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	resp, err := client.DescribeInstances(params)
+	if err != nil {
+		return err
 	}
 
 	// If no instances were returned, return
@@ -86,13 +72,13 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance = filteredInstances[0]
 
-	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", *instance.InstanceId)
+	log.Printf("[DEBUG] aws_instance - Single Instance ID found: %s", *instance.InstanceId)
 
-	return instanceDescriptionAttributes(d, instance, client)
+	return instanceDescriptionOApiAttributes(d, instance, client)
 }
 
 // Populate instance attribute fields with the returned instance
-func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance, conn fcu.VMService) error {
+func instanceDescriptionOApiAttributes(d *schema.ResourceData, instance *fcu.Instance, conn fcu.VMService) error {
 	d.SetId(*instance.InstanceId)
 	// Set the easy attributes
 	d.Set("instance_state", instance.State.Name)
@@ -102,12 +88,12 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 	if instance.Placement.Tenancy != nil {
 		d.Set("tenancy", instance.Placement.Tenancy)
 	}
-	d.Set("image_id", instance.ImageId)
+	d.Set("ami", instance.ImageId)
 	d.Set("instance_type", instance.InstanceType)
 	d.Set("key_name", instance.KeyName)
 	d.Set("private_dns", instance.PrivateDnsName)
 	d.Set("private_ip", instance.PrivateIpAddress)
-	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
+	d.Set("iam_instance_profile", iamInstanceOApiProfileArnToName(instance.IamInstanceProfile))
 
 	// iterate through network interfaces, and set subnet, network_interface, public_addr
 	if len(instance.NetworkInterfaces) > 0 {
@@ -133,12 +119,10 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err := d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
-
-	return err
+	return nil
 }
 
-func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
+func buildOApiOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
 	var filters []*fcu.Filter
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -154,45 +138,35 @@ func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
 	return filters
 }
 
-func getDataSourceVMSchemas() map[string]*schema.Schema {
+func getDataSourceOApiVMSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//Attributes
-		"filter": dataSourceFiltersSchema(),
 		"instance_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Required: true,
 		},
-		"image_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"instance_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"group_set": {
-			Type:     schema.TypeSet,
-			Computed: true,
+		"firewall_rules_sets": {
+			Type: schema.TypeSet,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": {
-						Type:     schema.TypeString,
+					"firewall_rules_set_id": {
+						Type:     schema.TypeInt,
 						Computed: true,
 					},
-					"group_name": {
+					"firewall_rules_set_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
-		},
-		"instances_set": {
-			Type:     schema.TypeSet,
 			Computed: true,
-			Set:      resourceInstancSetHash,
+		},
+		"vm": {
+			Type:     schema.TypeSet,
+			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"ami_launch_index": {
+					"launch_sort_number": {
 						Type:     schema.TypeInt,
 						Computed: true,
 					},
@@ -201,19 +175,23 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"block_device_mapping": {
-						Type: schema.TypeList,
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"device_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ebs": {
-									Type: schema.TypeMap,
+								"bsu": {
+									Type: schema.TypeSet,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"delete_on_termination": {
+											"delete_on_vm_deleti": {
 												Type:     schema.TypeBool,
+												Computed: true,
+											},
+											"on": {
+												Type:     schema.TypeString,
 												Computed: true,
 											},
 											"status": {
@@ -232,47 +210,47 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 						Computed: true,
 					},
-					"client_token": {
+					"token": {
 						Type:     schema.TypeString,
-						Computed: true,
+						Optional: true,
 					},
-					"dns_name": {
+					"public_dns_name": {
 						Type:     schema.TypeString,
-						Computed: true,
+						Optional: true,
 					},
-					"ebs_optimised": {
+					"bsu_optimized": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
-					"group_set": {
-						Type:     schema.TypeList,
-						Computed: true,
+					"firewall_rules_set": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"group_id": {
-									Type:     schema.TypeString,
+								"firewall_rules_set_id": {
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
-								"group_name": {
+								"firewall_rules_set_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
+						Required: true,
 					},
 					"hypervisor": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"iam_instance_profile": {
-						Type: schema.TypeMap,
+					"vm_profile": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"arn": {
+								"resource_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"id": {
+								"vm_profile_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -284,19 +262,19 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_id": {
+					"vm_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_lifecycle": {
+					"spot_vm": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_state": {
-						Type: schema.TypeMap,
+					"state": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"code": {
+								"state_code": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -308,11 +286,11 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 						Computed: true,
 					},
-					"instance_type": {
+					"type": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ip_address": {
+					"public_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -320,12 +298,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"key_name": {
+					"keypair_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"monitoring": {
-						Type: schema.TypeMap,
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"state": {
@@ -336,17 +314,17 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 						Computed: true,
 					},
-					"network_interface_set": {
-						Type:     schema.TypeList,
+					"nic": {
+						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"association": {
+								"public_ip_link": {
 									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"ip_owner_id": {
+											"public_ip_account_id": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
@@ -361,59 +339,99 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 										},
 									},
 								},
-								"attachment": {
-									Type:     schema.TypeSet,
-									Computed: true,
+								"nic_link": {
+									Type: schema.TypeSet,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"attachement_id": {
+											"nic_link_id": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
-											"delete_on_termination": {
+											"delete_on_vm_deletion": {
 												Type:     schema.TypeBool,
 												Computed: true,
 											},
-											"device_index": {
+											"nic_sort_number": {
 												Type:     schema.TypeInt,
 												Computed: true,
 											},
-											"status": {
+											"state": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
 										},
 									},
+									Computed: true,
 								},
-								"description": {
+							},
+						},
+					},
+					"description": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"firewall_rules_sets": {
+						Type: schema.TypeSet,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"firewall_rules_set_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"group_set": {
+								"firewall_rules_set_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+						Computed: true,
+					},
+					"mac_address": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_dns_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_ip": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"public_ip": {
 									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"group_id": {
+											"public_ip_account_id": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
-											"group_name": {
+											"public_dns_name": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
 										},
 									},
 								},
-								"mac_address": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"network_interface_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"owner_id": {
+								"primary_ip": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -421,87 +439,46 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"private_ip_address": {
+								"private_ip": {
 									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"private_ip_addresses_set": {
-									Type:     schema.TypeSet,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"association": {
-												Type:     schema.TypeSet,
-												Computed: true,
-												Elem: &schema.Resource{
-													Schema: map[string]*schema.Schema{
-														"ip_owner_id": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-														"public_dns_name": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-														"public_ip": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-													},
-												},
-											},
-											"primary": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"private_dns_name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"private_ip_address": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"source_dest_check": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"status": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"subnet_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"vpc_id": {
-									Type:     schema.TypeInt,
 									Computed: true,
 								},
 							},
 						},
 					},
-					"placement": {
-						Type:     schema.TypeMap,
+					"activated_check": {
+						Type:     schema.TypeBool,
 						Computed: true,
+					},
+					// "state": {
+					// 	Type:     schema.TypeString,
+					// 	Computed: true,
+					// },
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"lin_id": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"placement": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"affinity": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"availability_zone": {
+								"sub_regio_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"group_name": {
+								"firewall_rules_set_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"host_id": {
+								"dedicated_host_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -511,22 +488,22 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 								},
 							},
 						},
+						Computed: true,
 					},
-					"platform": {
+					"system": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"private_dns_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_ip_address": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
+					// "private_dns_name": {
+					// 	Type:     schema.TypeString,
+					// 	Computed: true,
+					// },
+					// "private_ip": {
+					// 	Type:     schema.TypeString,
+					// 	Computed: true,
+					// },
 					"product_codes": {
-						Type:     schema.TypeList,
-						Computed: true,
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"product_code": {
@@ -539,12 +516,13 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 								},
 							},
 						},
+						Computed: true,
 					},
 					"ramdisk_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"reason": {
+					"comment": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -556,11 +534,11 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"source_dest_check": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"sopt_instance_request_id": {
+					// "activated_check": {
+					// 	Type:     schema.TypeString,
+					// 	Computed: true,
+					// },
+					"spot_vm_request_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -568,11 +546,11 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"state_reason": {
-						Type: schema.TypeMap,
+					"comments": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"code": {
+								"state_code": {
 									Type:     schema.TypeInt,
 									Computed: true,
 								},
@@ -584,12 +562,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 						Computed: true,
 					},
-					"subnet_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"tag_set": {
-						Type: schema.TypeList,
+					// "subnet_id": {
+					// 	Type:     schema.TypeString,
+					// 	Computed: true,
+					// },
+					"tags": {
+						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
@@ -608,14 +586,14 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"vpc_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
+					//					"lin_id": {
+					//						Type:     schema.TypeString,
+					//						Computed: true,
+					//					},
 				},
 			},
 		},
-		"owner_id": {
+		"account_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -627,7 +605,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"password_data": {
+		"admin_password": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -635,7 +613,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 	}
 }
 
-func iamInstanceProfileArnToName(ip *fcu.IamInstanceProfile) string {
+func iamInstanceOApiProfileArnToName(ip *fcu.IamInstanceProfile) string {
 	if ip == nil || ip.Arn == nil {
 		return ""
 	}

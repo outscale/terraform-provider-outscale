@@ -17,62 +17,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func init() {
-
-	resource.AddTestSweepers("outscale_vm", &resource.Sweeper{
-		Name: "outscale_vm",
-		F:    testSweepServers,
-	})
-}
-
-func testSweepServers(region string) error {
-	meta, err := sharedConfigForRegion(region)
-	if err != nil {
-		return err
-	}
-
-	client := meta.(*OutscaleClient)
-
-	var vms *fcu.DescribeInstancesOutput
-	for {
-		vms, err = client.FCU.VM.DescribeInstances(nil)
-		if err != nil {
-			time.Sleep(10 * time.Second)
-		} else {
-			break
-		}
-	}
-
-	if err != nil {
-		return err
-	}
-
-	var instanceids []*string
-
-	fmt.Println("Before terminating sleep!")
-	time.Sleep(1 * time.Second)
-
-	for _, r := range vms.Reservations {
-		for _, i := range r.Instances {
-			if strings.HasPrefix(*i.KeyName, "terraform-") {
-				instanceids = append(instanceids, i.KeyName)
-			}
-		}
-	}
-
-	for {
-		_, err := client.FCU.VM.TerminateInstances(&fcu.TerminateInstancesInput{InstanceIds: instanceids})
-		if err != nil {
-			time.Sleep(10 * time.Second)
-		} else {
-			break
-		}
-	}
-
-	return nil
-}
-
-func TestAccOutscaleServer_Basic(t *testing.T) {
+func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -81,7 +26,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi == false {
 		t.Skip()
 	}
 
@@ -92,24 +37,24 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(),
+				Config: testAccCheckOutscaleOAPIVMConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleServerAttributes(&server),
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(&server),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "t2.micro"),
+						"outscale_vm.basic", "type", "t2.micro"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleServer_Update(t *testing.T) {
+func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	// var server fcu.Instance
 
 	o := os.Getenv("OUTSCALE_OAPI")
@@ -119,7 +64,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi == false {
 		t.Skip()
 	}
 
@@ -131,28 +76,24 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(),
+				Config: testAccCheckOutscaleOAPIVMConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleServerAttributes(&before),
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
+					testAccCheckOutscaleOAPIVMAttributes(&before),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "t2.micro"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "key_name", "terraform-basic"),
+						"outscale_vm.basic", "type", "t2.micro"),
 				),
 			},
 			{
-				Config: testAccInstanceConfigUpdateVMKey(),
+				Config: testAccInstanceConfigUpdateOAPIVMKey(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceExists("outscale_vm.basic", &after),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "key_name", "terraform-update"),
-					testAccCheckInstanceNotRecreated(
+					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
+					testAccCheckOAPIVMNotRecreated(
 						t, &before, &after),
 				),
 			},
@@ -160,12 +101,12 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckInstanceExists(n string, i *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOAPIVMExists(n string, i *fcu.Instance) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckInstanceExistsWithProviders(n, i, &providers)
+	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckInstanceExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -207,7 +148,7 @@ func testAccCheckInstanceExistsWithProviders(n string, i *fcu.Instance, provider
 	}
 }
 
-func testAccCheckInstanceNotRecreated(t *testing.T,
+func testAccCheckOAPIVMNotRecreated(t *testing.T,
 	before, after *fcu.Instance) resource.TestCheckFunc {
 
 	o := os.Getenv("OUTSCALE_OAPI")
@@ -228,17 +169,17 @@ func testAccCheckInstanceNotRecreated(t *testing.T,
 	}
 }
 
-func testAccCheckOutscaleVMDestroy(s *terraform.State) error {
-	return testAccCheckOutscaleVMDestroyWithProvider(s, testAccProvider)
+func testAccCheckOutscaleOAPIVMDestroy(s *terraform.State) error {
+	return testAccCheckOutscaleOAPIVMDestroyWithProvider(s, testAccProvider)
 }
 
-func testAccCheckOutscaleVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, provider := range *providers {
 			if provider.Meta() == nil {
 				continue
 			}
-			if err := testAccCheckOutscaleVMDestroyWithProvider(s, provider); err != nil {
+			if err := testAccCheckOutscaleOAPIVMDestroyWithProvider(s, provider); err != nil {
 				return err
 			}
 		}
@@ -246,7 +187,7 @@ func testAccCheckOutscaleVMDestroyWithProviders(providers *[]*schema.Provider) r
 	}
 }
 
-func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
+func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
 	conn := provider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
@@ -292,12 +233,12 @@ func testAccCheckOutscaleVMDestroyWithProvider(s *terraform.State, provider *sch
 	return nil
 }
 
-func testAccCheckOutscaleVMExists(n string, i *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExists(n string, i *fcu.Instance) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOutscaleVMExistsWithProviders(n, i, &providers)
+	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -349,41 +290,30 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, provid
 	}
 }
 
-func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(server *fcu.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		if *server.ImageId != "ami-8a6a0120" {
 			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
 		}
 
-		if server.IpAddress == nil {
-			return fmt.Errorf("No IP address found")
-		}
-
-		if len(*server.IpAddress) == 0 {
-			return fmt.Errorf("Empty IP Address")
-		}
-
 		return nil
 	}
 }
 
-func testAccCheckOutscaleServerConfig_basic() string {
+func testAccCheckOutscaleOAPIVMConfig_basic() string {
 	return `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
+	type = "t2.micro"
 }`
 }
 
-func testAccInstanceConfigUpdateVMKey() string {
+func testAccInstanceConfigUpdateOAPIVMKey() string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	security_group = ["sg-6ed31f3e"]
-	key_name = "terraform-update"
+	type = "t2.micro"
+	keypair_name = "TestKey"
 }`)
 }

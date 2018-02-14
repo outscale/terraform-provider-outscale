@@ -37,8 +37,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
-		"instance_set": {
+		"instances_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Set:      resourceInstancSetHash,
@@ -522,7 +521,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 
 // Populate instance attribute fields with the returned instance
 func vmsDescriptionAttributes(d *schema.ResourceData, instances []*fcu.Instance, conn fcu.VMService) error {
-	return d.Set("instance_set", flattenedInstanceSet(instances))
+	return d.Set("instances_set", flattenedInstanceSet(instances))
 }
 
 func dataSourceInstance(i []*fcu.Instance) *schema.Set {
