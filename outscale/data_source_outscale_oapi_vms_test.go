@@ -42,7 +42,7 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 const testAccOAPIVMSDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
+	type = "t2.micro"
 }
 
 data "outscale_vm" "basic_web" {
