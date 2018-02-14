@@ -36,6 +36,8 @@ type DescribeInstancesOutput struct {
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`
+
+	GroupSet []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
 }
 
 type GroupIdentifier struct {
