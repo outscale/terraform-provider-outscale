@@ -8,8 +8,7 @@ description: |-
 
 # outscale_vms
 
-Provides an Outscale instance resource. This allows instances to be created, updated,
-and deleted. Instances also support [provisioning](/docs/provisioners/index.html).
+  Provides Outscale instances resource attributes. It can be used to recover attributes of instances not managed in the current configuration file.
 
 ## Example Usage
 
@@ -39,9 +38,9 @@ resource "outscale_vms" "web" {
 The following arguments are supported:
 
 * `filter` - (Optional) One or more filters.
-* `instance_id` - (Optional )The ID of the instance.
+* `instance_id` - (Optional) One or more instance IDs.
 
-See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Filters
 
@@ -132,4 +131,4 @@ The following attributes are exported:
 
 * `reservation_set` - Zero or more reservations.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).

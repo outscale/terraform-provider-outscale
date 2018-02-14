@@ -14,23 +14,23 @@ and deleted. Instances also support [provisioning](/docs/provisioners/index.html
 ## Example Usage
 
 ```hcl
-data "outscale_image" "centos73" { 
-  most_recent = true 
-  executable_by = ["self"] 
+data "outscale_image" "centos73" {
+  most_recent = true
+  executable_by = ["self"]
 
   filter {
-    name = "owner" 
-    values = ["Outscale"] 
+    name = "owner"
+    values = ["Outscale"]
   }
 
   filter {
-  name = "description" values = ["Centos 7.3*"] 
-  } 
+  name = "description" values = ["Centos 7.3*"]
+  }
 } 
 /* instance creation */
-resource "outscale_vm" "web" { 
+resource "outscale_vm" "web" {
   image_id = "${data.outscale_image.centos73.image_id}"
-  instance_type = "t2.micro" 
+  instance_type = "t2.micro"
 }
 ```
 
@@ -41,14 +41,11 @@ The following arguments are supported:
 * `block_device_mapping` - (Optional) The block device mapping of the instance.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `disable_api_termination` - (Optional) If true, you cannot terminate the instance using Cockpit, the CLI or the API. If false, you can.
-* `dry_run` - (Optional) If true, checks whether you have the required permissions to perform the action.
 * `ebs_optimized` - (Optional) If true, the instance is created with optimized BSU I/O. All Outscale instances have optimized BSU I/O.
 * `image_id` - (Required) The ID of the OMI. You can find the list of OMIs by calling the DescribeImages method.
 * `instance_initiated_shutdown_behavior` - (Optional) The instance behavior when you stop or terminate it. By default or if set to stop, the instance stops. If set to restart, the instance stops then automatically restarts. If set to terminate, the instance stops and is terminated.
 * `instance_type` - (Optional) The type of instance. For more information, see Instance Types.
 * `key_name` - (Optional) The name of the keypair.
-* `max_count` - (Required) The maximum number of instances you want to launch. If all the instances cannot be created, the largest possible number of instances above MinCount are created and launched.
-* `min_count` - (Required) The minimum number of instances you want to launch. If this number of instances cannot be created, FCU does not create and launch any instance.
 * `network_interface` - (Optional) One or more network interfaces.
 * `placement` - (Optional) A specific placement where you want to create the instances (for example, Availability Zone, dedicated host, affinity criteria and so on).
 * `private_ip_address` - (Optional) In a VPC, the unique primary IP address. The IP address must come from the IP address range of the subnet.
@@ -58,18 +55,18 @@ The following arguments are supported:
 * `subnet_id` - (Optional) In a VPC, the ID of the subnet in which you want to launch the instance.
 * `user_data` - (Optional) Data or a script used to add a specific configuration to the instance when launching it. If you are not using a command line tool, this must be base64-encoded.
 
-See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `group_set` - (Optional) One or more security groups.
-* `instances_set` - (Optional) One or more instances.
-* `owner_id` - (Optional) The ID of the account which has reserved the instances.
-* `password_data` - (Computed) Pas.sword for windows environments.
-* `requester_id` - (Optional) The ID of the requester.
-* `reservation_id` - (Optional) Zero or more reservations, giving you information about your request.
+* `group_set` - One or more security groups.
+* `instances_set` - One or more instances.
+* `owner_id` - The ID of the account which has reserved the instances.
+* `password_data` - Password for windows environments.
+* `requester_id` - The ID of the requester.
+* `reservation_id` - Zero or more reservations, giving you information about your request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/definitions/Reservation.html#_api_fcu-reservation).

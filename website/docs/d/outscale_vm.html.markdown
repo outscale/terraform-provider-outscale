@@ -9,7 +9,7 @@ description: |-
 # outscale_vm
 
 Provides an Outscale instance resource. This allows instances to be created, updated,
-and deleted. Instances also support [provisioning](/docs/provisioners/index.html).
+and deleted. Instances also support provisioning.
 
 ## Example Usage
 
@@ -131,11 +131,11 @@ Use the Filter.N parameter to filter the described instances on the following pr
 
 The following attributes are exported:
 
-* `group_set` - (Optional) One or more security groups.
-* `instances_set` - (Optional) One or more instances.
-* `owner_id` - (Optional) The ID of the account which has reserved the instances.
-* `password_data` - (Computed) Password for windows environments.
-* `requester_id` - (Optional) The ID of the requester.
-* `reservation_id` - (Optional) Zero or more reservations, giving you information about your request.
+* `group_set` - One or more security groups.
+* `instances_set` - One or more instances.
+* `owner_id` - The ID of the account which has reserved the instances.
+* `password_data` - Password for windows environments.
+* `requester_id` - The ID of the requester.
+* `reservation_id` - Zero or more reservations, giving you information about your request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_post.html#_api_fcu-action_describeinstances_post).
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).
