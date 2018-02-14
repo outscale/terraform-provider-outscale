@@ -20,7 +20,7 @@ func init() {
 			"outscale_vm": resourceOutscaleVM,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm": resourceOutscaleVM,
+			"outscale_vm": resourceOutscaleOApiVM,
 		},
 	}
 	datasources = Dictionary{
