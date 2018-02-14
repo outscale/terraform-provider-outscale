@@ -3,34 +3,48 @@ package outscale
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func datasourceOutscaleVMS() *schema.Resource {
+func dataSourceOutscaleVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVMSRead,
-
-		Schema: datasourceOutscaleVMSSchema(),
+		Read:   dataSourceOutscaleVMSRead,
+		Schema: getDataSourceVMSSchemas(),
 	}
 }
 
-func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
+func getDataSourceVMSSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		//Attributes
 		"filter": dataSourceFiltersSchema(),
+		"instance_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"image_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"instance_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"group_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": &schema.Schema{
+					"group_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"group_name": &schema.Schema{
+					"group_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -213,7 +227,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									},
 								},
 								"attachment": {
-									Type:     schema.TypeMap,
+									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -241,7 +255,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"group_set": {
-									Type:     schema.TypeList,
+									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -277,7 +291,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"private_ip_addresses_set": {
-									Type:     schema.TypeList,
+									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -411,7 +425,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"spot_instance_request_id": {
+					"sopt_instance_request_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -466,6 +480,23 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"owner_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"requester_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"reservation_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"password_data": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		//End of Attributes
 	}
 }
 
@@ -473,9 +504,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU.VM
 
 	filters, filtersOk := d.GetOk("filter")
+	instanceID, instanceIDOk := d.GetOk("instance_id")
 
-	if filtersOk == false {
-		return fmt.Errorf("One of filters must be assigned")
+	if filtersOk == false && instanceIDOk == false {
+		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
 	// Build up search parameters
@@ -483,6 +515,15 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
+	if instanceIDOk {
+		params.InstanceIds = []*string{aws.String(instanceID.(string))}
+	}
+
+	// Perform the lookup
+	// resp, err := client.DescribeInstances(params)
+	// if err != nil {
+	// 	return err
+	// }
 
 	var resp *fcu.DescribeInstancesOutput
 	var err error
@@ -512,61 +553,23 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	var instance *fcu.Instance
 	if len(filteredInstances) < 1 {
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	return vmsDescriptionAttributes(d, filteredInstances, client)
-}
-
-// Populate instance attribute fields with the returned instance
-func vmsDescriptionAttributes(d *schema.ResourceData, instances []*fcu.Instance, conn fcu.VMService) error {
-	return d.Set("instances_set", flattenedInstanceSet(instances))
-}
-
-func dataSourceInstance(i []*fcu.Instance) *schema.Set {
-	s := &schema.Set{}
-	for _, v := range i {
-		instance := map[string]interface{}{
-			"ami_launch_index":         v.AmiLaunchIndex,
-			"architecture":             v.Architecture,
-			"blocking_device_mapping":  v.BlockDeviceMappings,
-			"client_token":             v.ClientToken,
-			"dns_name":                 v.DnsName,
-			"ebs_optimized":            v.EbsOptimized,
-			"group_set":                v.GroupSet,
-			"hypervisor":               v.Hypervisor,
-			"iam_instance_profile":     iamInstanceProfileArnToName(v.IamInstanceProfile),
-			"image_id":                 v.ImageId,
-			"instance_id":              v.InstanceId,
-			"instance_lifecycle":       v.InstanceLifecycle,
-			"instance_state":           v.InstanceState,
-			"ip_address":               v.IpAddress,
-			"kernel_id":                v.KernelId,
-			"key_name":                 v.KeyName,
-			"monitoring":               v.Monitoring,
-			"network_interfaces":       v.NetworkInterfaces,
-			"placement":                v.Placement,
-			"platform":                 v.Platform,
-			"private_dns":              v.PrivateDnsName,
-			"private_ip_address":       v.PrivateIpAddress,
-			"product_codes":            v.ProductCodes,
-			"ramdisk_id":               v.RamdiskId,
-			"reason":                   v.Reason,
-			"root_device_type":         v.RootDeviceType,
-			"source_dest_check":        v.SourceDestCheck,
-			"spot_instance_request_id": v.SpotInstanceRequestId,
-			"sriov_net_support":        v.SriovNetSupport,
-			"state":                    v.State,
-			"state_reason":             v.StateReason,
-			"subnet_id":                v.SubnetId,
-			"tags":                     v.Tags,
-			"virtualization_type":      v.VirtualizationType,
-			"vpc_id":                   v.VpcId,
-		}
-		s.Add(instance)
+	// (TODO: Support a list of instances to be returned)
+	// Possibly with a different data source that returns a list of individual instance data sources
+	if len(filteredInstances) > 1 {
+		return errors.New("Your query returned more than one result. Please try a more " +
+			"specific search criteria")
 	}
-	return s
+
+	instance = filteredInstances[0]
+
+	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", *instance.InstanceId)
+
+	return instanceDescriptionAttributes(d, instance, client)
 }
 
 func dataSourceFiltersSchema() *schema.Schema {

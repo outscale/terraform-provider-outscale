@@ -19,13 +19,19 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 	if oapi {
 		t.Skip()
 	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVMSDataSourceConfig,
-				Check:  resource.ComposeTestCheckFunc(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.outscale_vms.basic_web", "image_id", "ami-8a6a0120"),
+					resource.TestCheckResourceAttr(
+						"data.outscale_vms.basic_web", "instance_type", "t2.micro"),
+				),
 			},
 		},
 	})
