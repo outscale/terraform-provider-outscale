@@ -119,6 +119,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	return resourceVMRead(d, meta)
 }
+
 func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
