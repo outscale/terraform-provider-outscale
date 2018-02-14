@@ -139,7 +139,7 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	// TODO: Add to struct for OAPI
 	// d.Set("system", instance.System)
 
-	// d.Set("product_codes", getOAPIVMProductCodes(instance.ProductCodes))
+	d.Set("product_codes", getOAPIVMProductCodes(instance.ProductCodes))
 	d.Set("ramdisk_id", map[string]interface{}{
 		"comment": instance.RamdiskId,
 	})
@@ -153,15 +153,15 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	// "message": instance.StateReason.Message,
 	})
 	d.Set("subnet_id", instance.SubnetId)
-	// d.Set("tags", getOAPIVMTagSet(instance.Tags))
+	d.Set("tags", getOAPIVMTagSet(instance.Tags))
 	d.Set("virtualization_type", instance.VirtualizationType)
 	d.Set("lin_id", instance.VpcId)
 
 	return nil
 }
 
-func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping) *schema.Set {
-	s := &schema.Set{}
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping) []map[string]interface{} {
+	s := []map[string]interface{}{}
 	for _, mapping := range blockDeviceMappings {
 		r := map[string]interface{}{
 			"device_name": mapping.DeviceName,
@@ -171,13 +171,13 @@ func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceM
 				"volume_id":             mapping.Ebs.VolumeId,
 			},
 		}
-		s.Add(r)
+		s = append(s, r)
 	}
 	return s
 }
 
-func getOAPIVMNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) *schema.Set {
-	res := &schema.Set{}
+func getOAPIVMNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[string]interface{} {
+	res := []map[string]interface{}{}
 
 	if interfaces != nil {
 		for _, i := range interfaces {
@@ -239,57 +239,57 @@ func getOAPIVMNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) *s
 			assoc["subnet_id"] = i.SubnetId
 			assoc["lin_id"] = i.VpcId
 
-			res.Add(assoc)
+			res = append(res, assoc)
 		}
 	}
 
 	return res
 }
 
-func getOAPIVMGroupSet(groupSet []*fcu.GroupIdentifier) *schema.Set {
-	res := &schema.Set{}
+func getOAPIVMGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
+	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 
 		r := map[string]interface{}{
 			"group_id":   g.GroupId,
 			"group_name": g.GroupName,
 		}
-		res.Add(r)
+		res = append(res, r)
 	}
 
 	return res
 }
 
-func getOAPIVMTagSet(tagSet []*fcu.Tag) *schema.Set {
-	res := &schema.Set{}
+func getOAPIVMTagSet(tagSet []*fcu.Tag) []map[string]interface{} {
+	res := []map[string]interface{}{}
 	for _, t := range tagSet {
 
 		r := map[string]interface{}{
 			"key":   t.Key,
 			"value": t.Value,
 		}
-		res.Add(r)
+		res = append(res, r)
 	}
 
 	return res
 }
 
-func getOAPIVMProductCodes(productCode []*fcu.ProductCode) *schema.Set {
-	res := &schema.Set{}
+func getOAPIVMProductCodes(productCode []*fcu.ProductCode) []map[string]interface{} {
+	res := []map[string]interface{}{}
 	for _, p := range productCode {
 
 		r := map[string]interface{}{
 			"product_code": p.ProductCode,
 			"product_type": p.Type,
 		}
-		res.Add(r)
+		res = append(res, r)
 	}
 
 	return res
 }
 
-func getOAPIVMPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) *schema.Set {
-	res := &schema.Set{}
+func getOAPIVMPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) []map[string]interface{} {
+	res := []map[string]interface{}{}
 	if privateIPs != nil {
 		for _, p := range privateIPs {
 			var inter map[string]interface{}
@@ -303,7 +303,7 @@ func getOAPIVMPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) *s
 			inter["private_dns_name"] = p.Primary
 			inter["private_ip_address"] = p.PrivateIpAddress
 
-			res.Add(inter)
+			res = append(res, inter)
 		}
 	}
 	return res
@@ -326,7 +326,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"block_device_mapping": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -335,7 +335,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"bsu": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -370,7 +370,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"firewall_rules_set": {
-			Type: schema.TypeSet,
+			Type: schema.TypeMap,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"firewall_rules_set_id": {
@@ -459,12 +459,12 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"nics": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"public_ip_link": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -484,7 +484,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 						},
 					},
 					"nic_link": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"nic_link_id": {
@@ -512,7 +512,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"firewall_rules_set": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"firewall_rules_set_id": {
@@ -548,12 +548,12 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"private_ips": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"public_ip_link": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeMap,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -647,7 +647,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"product_codes": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -715,7 +715,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"tags": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
