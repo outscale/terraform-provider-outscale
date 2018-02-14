@@ -293,21 +293,10 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	err = d.Set("instance_set", getInstanceSet(instance))
+	err = d.Set("instances_set", getInstanceSet(instance))
 	if err != nil {
 		return err
 	}
-
-	// instanceSet["block_device_mapping"] = getBlockDeviceMapping(instance.BlockDeviceMappings)
-	// instanceSet["group_set"] = getGroupSet(instance.GroupSet)
-	// instanceSet["iam_instance_profile"] = getIAMInstanceProfile(instance.IamInstanceProfile)
-	// instanceSet["instance_state"] = getInstanceState(instance.State)
-	// instanceSet["monitoring"] = getMonitoring(instance.Monitoring)
-	// instanceSet["network_interface_set"] = getNetworkInterfaceSet(instance.NetworkInterfaces)
-	// instanceSet["placement"] = getPlacement(instance.Placement)
-	// instanceSet["state_reason"] = getStateReason(instance.StateReason)
-	// instanceSet["product_codes"] = getProductCodes(instance.ProductCodes)
-	// instanceSet["tag_set"] = getTagSet(instance.Tags)
 
 	return nil
 }
@@ -601,7 +590,7 @@ func getVMSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"instance_set": {
+		"instances_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
