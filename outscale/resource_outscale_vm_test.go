@@ -81,7 +81,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -119,7 +119,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -350,6 +350,14 @@ func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestChe
 
 		if *server.ImageId != "ami-8a6a0120" {
 			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
+		}
+
+		if server.IpAddress == nil {
+			return fmt.Errorf("No IP address found")
+		}
+
+		if len(*server.IpAddress) == 0 {
+			return fmt.Errorf("Empty IP Address")
 		}
 
 		return nil

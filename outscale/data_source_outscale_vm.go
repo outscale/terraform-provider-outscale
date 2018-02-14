@@ -133,7 +133,7 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err := d.Set("instance_set", getInstanceSet(instance))
+	err := d.Set("instance_set", flattenedInstanceSet([]*fcu.Instance{instance}))
 
 	return err
 }
@@ -189,6 +189,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 		"instance_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
+			Set:      resourceInstancSetHash,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ami_launch_index": {
@@ -200,7 +201,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"block_device_mapping": {
-						Type: schema.TypeSet,
+						Type: schema.TypeList,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"device_name": {
@@ -208,7 +209,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"ebs": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"delete_on_termination": {
@@ -244,12 +245,12 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"group_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"group_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"group_name": {
@@ -264,7 +265,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"iam_instance_profile": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"arn": {
@@ -292,7 +293,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"instance_state": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
@@ -324,7 +325,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"monitoring": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"state": {
@@ -336,7 +337,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"network_interface_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -484,7 +485,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						},
 					},
 					"placement": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -524,7 +525,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"product_codes": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -568,7 +569,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"state_reason": {
-						Type: schema.TypeSet,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
@@ -588,7 +589,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeSet,
+						Type: schema.TypeList,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {

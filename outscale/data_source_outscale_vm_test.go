@@ -16,7 +16,7 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -49,4 +49,8 @@ data "outscale_vm" "basic_web" {
     name = "instance-id"
     values = ["${outscale_vm.basic.id}"]
   }
+}
+
+output "datasource_ip" {
+  value = "${data.outscale_vm.basic_web.*.instance_set}"
 }`

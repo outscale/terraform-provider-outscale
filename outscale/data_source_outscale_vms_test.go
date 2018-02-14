@@ -16,7 +16,7 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -25,12 +25,7 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVMSDataSourceConfig,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "instance_type", "t2.micro"),
-				),
+				Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
@@ -43,7 +38,7 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 }
 
-data "outscale_vm" "basic_web" {
+data "outscale_vms" "basic_web" {
 	filter {
     name = "instance-id"
     values = ["${outscale_vm.basic.id}"]
