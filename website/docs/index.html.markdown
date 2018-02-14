@@ -18,12 +18,12 @@ Use the navigation to the left to read about the available resources.
 
 ```hcl
 provider "outscale" {
-  region     = "us-west-2"
+  region     = "eu-west-2"
   access_key_id = "anaccesskey"
   secret_key_id = "asecretkey"
 }
 ```
-available regions are: eu-west-2, us-east-2, us-west-1, cn-southeast-1
+Available regions are: eu-west-2, us-east-2, us-west-1, cn-southeast-1
 
 
 ## Authentication
@@ -37,14 +37,14 @@ explained below:
 
 ### Static credentials ###
 
-Static credentials can be provided by adding an `access_key` and `secret_key` in-line in the
+Static credentials can be provided by adding an `access_key_id` and `secret_key_id` in-line in the
 Outscale provider block:
 
 Usage:
 
 ```hcl
 provider "outscale" {
-  region     = "us-west-2"
+  region     = "eu-west-2"
   access_key_id = "anaccesskey"
   secret_key_id = "asecretkey"
 }
@@ -65,7 +65,7 @@ Usage:
 ```hcl
 $ export ACCESS_KEY_ID="anaccesskey"
 $ export SECRET_ACCESS_KEY="asecretkey"
-$ export DEFAULT_REGION="us-west-2"
+$ export DEFAULT_REGION="eu-west-2"
 $ terraform plan
 ```
 
@@ -77,7 +77,7 @@ Usage:
 
 ```hcl
 provider "outscale" {
-  region                  = "us-west-2"
+  region                  = "eu-west-2"
   shared_credentials_file = "/Users/tf_user/.outscale/creds"
   profile                 = "customprofile"
 }

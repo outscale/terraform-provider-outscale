@@ -8,8 +8,7 @@ description: |-
 
 # outscale_vm
 
-Provides an Outscale instance resource. This allows instances to be created, updated,
-and deleted. Instances also support provisioning.
+Provides an Outscale instance resource attributes. It can be used to recover attritudes of an instance not managed in the current configuration file.
 
 ## Example Usage
 
@@ -41,7 +40,7 @@ The following arguments are supported:
 * `filter` - (Optional) One or more filters.
 * `instance_id` - (Optional)The ID of the instance.
 
-See detailed information in [Outscale Instacnes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Filters
 
