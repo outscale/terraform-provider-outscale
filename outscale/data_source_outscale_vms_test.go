@@ -44,9 +44,16 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 }
 
+resource "outscale_vm" "basic2" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+}
+
 data "outscale_vms" "basic_web" {
 	filter {
     name = "instance-id"
     values = ["${outscale_vm.basic.id}"]
-  }
+	}
+	
+	instance_ids = ["${outscale_vm.basic.id}", "${outscale_vm.basic2.id}"]
 }`
