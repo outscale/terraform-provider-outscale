@@ -88,7 +88,7 @@ type Instance struct {
 
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	DnsName *string `type:"string"`
+	DnsName *string `locationName:"dnsName" type:"string"`
 
 	EbsOptimized *bool `locationName:"ebsOptimized" type:"boolean"`
 
@@ -130,7 +130,7 @@ type Instance struct {
 
 	RamdiskId *string `locationName:"ramdiskId" type:"string"`
 
-	Reason *string `locationName:"ramdiskId" type:"string"`
+	Reason *string `locationName:"reason" type:"string"`
 
 	RootDeviceName *string `locationName:"rootDeviceName" type:"string"`
 
