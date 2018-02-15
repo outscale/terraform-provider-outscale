@@ -35,6 +35,12 @@ type DescribeInstancesOutput struct {
 
 	NextToken *string `locationName:"nextToken" type:"string"`
 
+	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
+
+	RequesterId *string `locationName:"requesterId" locationNameList:"item" type:"string"`
+
+	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
+
 	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`
 
 	GroupSet []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
