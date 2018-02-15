@@ -188,7 +188,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("network_interface", getNetworkInterfaceSet(instance.NetworkInterfaces))
 
-	d.Set("placement", getPlacement(instance.Placement))
+	// d.Set("placement", getPlacement(instance.Placement))
 
 	d.Set("private_ip", instance.PrivateIpAddress)
 
