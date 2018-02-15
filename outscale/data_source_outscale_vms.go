@@ -570,9 +570,9 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	d.Set("owner_id", resp.OwnerId)
-	d.Set("requester_id", resp.RequesterId)
-	d.Set("reservation_id", resp.ReservationId)
+	d.Set("owner_id", resp.Reservations[0].OwnerId)
+	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	flattenedReservations := []map[string]interface{}{}
 
