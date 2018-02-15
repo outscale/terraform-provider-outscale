@@ -27,6 +27,9 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 			"root_device_name":   *instance.RootDeviceName,
 		}
 
+		if instance.InstanceLifecycle != nil {
+			flattened[i]["instance_lifecycle"] = *instance.InstanceLifecycle
+		}
 		if instance.RootDeviceType != nil {
 			flattened[i]["root_device_type"] = *instance.RootDeviceType
 		}
