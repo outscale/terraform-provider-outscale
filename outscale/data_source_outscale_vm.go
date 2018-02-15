@@ -52,6 +52,10 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 		return resource.RetryableError(err)
 	})
 
+	if err != nil {
+		return err
+	}
+
 	if resp.Reservations == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
