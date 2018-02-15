@@ -211,12 +211,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("reservation_id", resp.ReservationId)
 
-	// if p := instance.PasswordData; p != nil {
-	// 	d.Set("password_data", instance.PasswordData)
-	// } else {
-	// 	d.Set("password_data", aws.String("none"))
-	// }
-
 	err = d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
 	if err != nil {
 		return err
@@ -235,8 +229,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 					return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
 				}
 			}
-
-			fmt.Printf("Pass %s, Id %s", *passRes.PasswordData, *passRes.InstanceId)
 
 			if passRes.PasswordData == nil || *passRes.PasswordData == "" {
 				return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
