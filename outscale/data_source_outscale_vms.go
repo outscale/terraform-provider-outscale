@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -22,7 +21,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//Attributes
 		"filter": dataSourceFiltersSchema(),
-		"instance_ids": {
+		"instance_id": {
 			Type:     schema.TypeList,
 			Optional: true,
 			ForceNew: false,
@@ -49,8 +48,16 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"owner_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"requester_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					"group_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -66,9 +73,9 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 						},
 					},
 					"instances_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
-						Set:      resourceInstancSetHash,
+						// Set:      resourceInstancSetHash,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"ami_launch_index": {
@@ -221,7 +228,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -241,7 +248,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												},
 											},
 											"attachment": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -269,7 +276,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"group_set": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -305,12 +312,12 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"private_ip_addresses_set": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
 														"association": {
-															Type:     schema.TypeSet,
+															Type:     schema.TypeList,
 															Computed: true,
 															Elem: &schema.Resource{
 																Schema: map[string]*schema.Schema{
@@ -439,7 +446,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"sopt_instance_request_id": {
+								"spot_instance_request_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -508,7 +515,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 
 	filters, filtersOk := d.GetOk("filter")
 
-	instancesIds, instancesIdsOk := d.GetOk("instance_ids")
+	instancesIds, instancesIdsOk := d.GetOk("instance_id")
 
 	if instancesIdsOk {
 		var ids []*string
@@ -533,6 +540,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return resource.RetryableError(err)
 	})
 
+	if err != nil {
+		return err
+	}
+
 	if resp.Reservations == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
@@ -553,17 +564,30 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	var instance *fcu.Instance
-	if len(filteredInstances) < 1 {
-		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	d.SetId(resource.UniqueId())
+
+	err = d.Set("group_set", getGroupSet(resp.GroupSet))
+	if err != nil {
+		return err
+	}
+	d.Set("owner_id", resp.OwnerId)
+	d.Set("requester_id", resp.RequesterId)
+	d.Set("reservation_id", resp.ReservationId)
+
+	flattenedReservations := []map[string]interface{}{}
+
+	for _, r := range resp.Reservations {
+		f := map[string]interface{}{
+			"owner_id":      *r.OwnerId,
+			"group_set":     getGroupSet(r.Groups),
+			"instances_set": flattenedInstanceSet(r.Instances),
+		}
+		flattenedReservations = append(flattenedReservations, f)
 	}
 
-	d.Set("reservation_set", resp.Reservations)
-	d.Set("group_set", resp.GroupSet)
+	err = d.Set("reservation_set", flattenedReservations)
 
-	// return vmsDescriptionAttributes(d, filteredInstances, client)
-
-	return instanceDescriptionAttributes(d, instance, client)
+	return err
 }
 
 func dataSourceFiltersSchema() *schema.Schema {

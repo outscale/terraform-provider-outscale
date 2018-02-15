@@ -28,9 +28,9 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 				Config: testAccVMSDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "image_id", "ami-8a6a0120"),
+						"data.outscale_vms.basic_web", "instance_id.#", "2"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "instance_type", "t2.micro"),
+						"data.outscale_vms.basic_web", "reservation_set.#", "1"),
 				),
 			},
 		},
@@ -42,18 +42,15 @@ const testAccVMSDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 }
 
 resource "outscale_vm" "basic2" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 }
 
 data "outscale_vms" "basic_web" {
-	filter {
-    name = "instance-id"
-    values = ["${outscale_vm.basic.id}"]
-	}
-	
-	instance_ids = ["${outscale_vm.basic.id}", "${outscale_vm.basic2.id}"]
+	instance_id = ["${outscale_vm.basic.id}", "${outscale_vm.basic2.id}"]
 }`
