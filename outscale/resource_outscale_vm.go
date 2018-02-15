@@ -952,6 +952,10 @@ func getVMSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"root_device_type": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					"source_dest_check": {
 						Type:     schema.TypeString,
 						Computed: true,

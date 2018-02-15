@@ -27,6 +27,10 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 			"root_device_name":   *instance.RootDeviceName,
 		}
 
+		if instance.RootDeviceType != nil {
+			flattened[i]["root_device_type"] = *instance.RootDeviceType
+		}
+
 		if instance.DnsName != nil {
 			flattened[i]["dns_name"] = *instance.DnsName
 		}
