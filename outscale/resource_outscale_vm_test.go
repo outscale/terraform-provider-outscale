@@ -217,7 +217,7 @@ func testAccCheckInstanceNotRecreated(t *testing.T,
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 	return func(s *terraform.State) error {
