@@ -196,14 +196,13 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("ramdisk_id", instance.RamdiskId)
 
-	// d.Set("security_group", )
-	// d.Set("security_group_id", )
-
 	d.Set("subnet_id", instance.SubnetId)
 
-	// d.Set("user_date",instance.UserData)
+	err = d.Set("group_set", getGroupSet(resp.GroupSet))
+	if err != nil {
+		fmt.Println(getGroupSet(resp.GroupSet))
 
-	d.Set("group_set", getGroupSet(resp.GroupSet))
+	}
 
 	d.Set("owner_id", resp.OwnerId)
 

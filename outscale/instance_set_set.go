@@ -22,8 +22,8 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 			"instance_type":      *instance.InstanceType,
 			"kernel_id":          *instance.KernelId,
 			"key_name":           *instance.KeyName,
+			"private_ip_address": *instance.PrivateDnsName,
 			"private_dns_name":   *instance.PrivateDnsName,
-			"private_ip_address": *instance.PrivateIpAddress,
 			"root_device_name":   *instance.RootDeviceName,
 		}
 

@@ -553,17 +553,6 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	var filteredInstances []*fcu.Instance
-
-	// loop through reservations, and remove terminated instances, populate instance slice
-	for _, res := range resp.Reservations {
-		for _, instance := range res.Instances {
-			if instance.State != nil && *instance.State.Name != "terminated" {
-				filteredInstances = append(filteredInstances, instance)
-			}
-		}
-	}
-
 	d.SetId(resource.UniqueId())
 
 	err = d.Set("group_set", getGroupSet(resp.GroupSet))
@@ -577,10 +566,17 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	flattenedReservations := []map[string]interface{}{}
 
 	for _, r := range resp.Reservations {
+		var filteredInstances []*fcu.Instance
+		for _, instance := range r.Instances {
+			if instance.State != nil && *instance.State.Name != "terminated" {
+				filteredInstances = append(filteredInstances, instance)
+			}
+		}
+
 		f := map[string]interface{}{
 			"owner_id":      *r.OwnerId,
 			"group_set":     getGroupSet(r.Groups),
-			"instances_set": flattenedInstanceSet(r.Instances),
+			"instances_set": flattenedInstanceSet(filteredInstances),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}
