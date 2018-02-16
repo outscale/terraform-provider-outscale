@@ -1,41 +1,71 @@
 package outscale
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func datasourceOutscaleVMS() *schema.Resource {
+func dataSourceOutscaleVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVMSRead,
-
-		Schema: datasourceOutscaleVMSSchema(),
+		Read:   dataSourceOutscaleVMSRead,
+		Schema: getDataSourceVMSSchemas(),
 	}
 }
 
-func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
+func getDataSourceVMSSchemas() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		//Attributes
 		"filter": dataSourceFiltersSchema(),
-		"reservation_set": &schema.Schema{
+		"instance_id": {
+			Type:     schema.TypeList,
+			Optional: true,
+			ForceNew: false,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"group_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_set": &schema.Schema{
-						Type:     schema.TypeSet,
+					"group_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"group_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"reservation_set": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"owner_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"requester_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"group_set": {
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"group_id": &schema.Schema{
+								"group_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"group_name": &schema.Schema{
+								"group_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -43,8 +73,9 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 						},
 					},
 					"instances_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
+						// Set:      resourceInstancSetHash,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"ami_launch_index": {
@@ -56,7 +87,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"block_device_mapping": {
-									Type: schema.TypeSet,
+									Type: schema.TypeList,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"device_name": {
@@ -64,7 +95,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"ebs": {
-												Type: schema.TypeSet,
+												Type: schema.TypeMap,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
 														"delete_on_termination": {
@@ -100,12 +131,12 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"group_set": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"group_id": {
-												Type:     schema.TypeInt,
+												Type:     schema.TypeString,
 												Computed: true,
 											},
 											"group_name": {
@@ -120,7 +151,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"iam_instance_profile": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"arn": {
@@ -136,7 +167,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"image_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"instance_id": {
@@ -148,7 +179,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"instance_state": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"code": {
@@ -180,7 +211,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"monitoring": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"state": {
@@ -192,12 +223,12 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"network_interface_set": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -217,7 +248,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 												},
 											},
 											"attachment": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -245,7 +276,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"group_set": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -281,12 +312,12 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"private_ip_addresses_set": {
-												Type:     schema.TypeSet,
+												Type:     schema.TypeList,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
 														"association": {
-															Type:     schema.TypeSet,
+															Type:     schema.TypeList,
 															Computed: true,
 															Elem: &schema.Resource{
 																Schema: map[string]*schema.Schema{
@@ -340,7 +371,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									},
 								},
 								"placement": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeMap,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -380,7 +411,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"product_codes": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -415,7 +446,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"sopt_instance_request_id": {
+								"spot_instance_request_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -424,7 +455,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"state_reason": {
-									Type: schema.TypeSet,
+									Type: schema.TypeMap,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"code": {
@@ -444,7 +475,7 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"tag_set": {
-									Type: schema.TypeSet,
+									Type: schema.TypeList,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"key": {
@@ -473,20 +504,30 @@ func datasourceOutscaleVMSSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		//End of Attributes
 	}
 }
 
 func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU.VM
 
+	params := &fcu.DescribeInstancesInput{}
+
 	filters, filtersOk := d.GetOk("filter")
 
-	if filtersOk == false {
-		return fmt.Errorf("One of filters must be assigned")
+	instancesIds, instancesIdsOk := d.GetOk("instance_id")
+
+	if instancesIdsOk {
+		var ids []*string
+
+		for _, id := range instancesIds.([]interface{}) {
+			ids = append(ids, aws.String(id.(string)))
+		}
+
+		params.InstanceIds = ids
 	}
 
 	// Build up search parameters
-	params := &fcu.DescribeInstancesInput{}
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
@@ -498,6 +539,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		resp, err = client.DescribeInstances(params)
 		return resource.RetryableError(err)
 	})
+
+	if err != nil {
+		return err
+	}
 
 	if resp.Reservations == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
@@ -519,62 +564,30 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if len(filteredInstances) < 1 {
-		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	d.SetId(resource.UniqueId())
+
+	err = d.Set("group_set", getGroupSet(resp.GroupSet))
+	if err != nil {
+		return err
 	}
+	d.Set("owner_id", resp.OwnerId)
+	d.Set("requester_id", resp.RequesterId)
+	d.Set("reservation_id", resp.ReservationId)
 
-	return vmsDescriptionAttributes(d, filteredInstances, client)
-}
+	flattenedReservations := []map[string]interface{}{}
 
-// Populate instance attribute fields with the returned instance
-func vmsDescriptionAttributes(d *schema.ResourceData, instances []*fcu.Instance, conn fcu.VMService) error {
-	d.Set("instances_set", dataSourceInstance(instances))
-	return nil
-}
-
-func dataSourceInstance(i []*fcu.Instance) *schema.Set {
-	s := &schema.Set{}
-	for _, v := range i {
-		instance := map[string]interface{}{
-			"ami_launch_index":         v.AmiLaunchIndex,
-			"architecture":             v.Architecture,
-			"blocking_device_mapping":  v.BlockDeviceMappings,
-			"client_token":             v.ClientToken,
-			"dns_name":                 v.DnsName,
-			"ebs_optimized":            v.EbsOptimized,
-			"group_set":                v.GroupSet,
-			"hypervisor":               v.Hypervisor,
-			"iam_instance_profile":     iamInstanceProfileArnToName(v.IamInstanceProfile),
-			"image_id":                 v.ImageId,
-			"instance_id":              v.InstanceId,
-			"instance_lifecycle":       v.InstanceLifecycle,
-			"instance_state":           v.InstanceState,
-			"ip_address":               v.IpAddress,
-			"kernel_id":                v.KernelId,
-			"key_name":                 v.KeyName,
-			"monitoring":               v.Monitoring,
-			"network_interfaces":       v.NetworkInterfaces,
-			"placement":                v.Placement,
-			"platform":                 v.Platform,
-			"private_dns":              v.PrivateDnsName,
-			"private_ip_address":       v.PrivateIpAddress,
-			"product_codes":            v.ProductCodes,
-			"ramdisk_id":               v.RamdiskId,
-			"reason":                   v.Reason,
-			"root_device_type":         v.RootDeviceType,
-			"source_dest_check":        v.SourceDestCheck,
-			"spot_instance_request_id": v.SpotInstanceRequestId,
-			"sriov_net_support":        v.SriovNetSupport,
-			"state":                    v.State,
-			"state_reason":             v.StateReason,
-			"subnet_id":                v.SubnetId,
-			"tags":                     v.Tags,
-			"virtualization_type":      v.VirtualizationType,
-			"vpc_id":                   v.VpcId,
+	for _, r := range resp.Reservations {
+		f := map[string]interface{}{
+			"owner_id":      *r.OwnerId,
+			"group_set":     getGroupSet(r.Groups),
+			"instances_set": flattenedInstanceSet(r.Instances),
 		}
-		s.Add(instance)
+		flattenedReservations = append(flattenedReservations, f)
 	}
-	return s
+
+	err = d.Set("reservation_set", flattenedReservations)
+
+	return err
 }
 
 func dataSourceFiltersSchema() *schema.Schema {

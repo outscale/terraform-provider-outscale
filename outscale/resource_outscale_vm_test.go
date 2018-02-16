@@ -356,6 +356,14 @@ func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestChe
 			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
 		}
 
+		if server.IpAddress == nil {
+			return fmt.Errorf("No IP address found")
+		}
+
+		if len(*server.IpAddress) == 0 {
+			return fmt.Errorf("Empty IP Address")
+		}
+
 		return nil
 	}
 }
