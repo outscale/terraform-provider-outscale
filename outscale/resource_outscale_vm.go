@@ -556,7 +556,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"instances_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			Set:      resourceInstancSetHash,
+			// Set:      resourceInstancSetHash,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ami_launch_index": {
