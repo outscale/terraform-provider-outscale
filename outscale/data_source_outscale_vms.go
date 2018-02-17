@@ -86,6 +86,10 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
+								"password_data": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
 								"block_device_mapping": {
 									Type: schema.TypeList,
 									Elem: &schema.Resource{
@@ -576,7 +580,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		f := map[string]interface{}{
 			"owner_id":      *r.OwnerId,
 			"group_set":     getGroupSet(r.Groups),
-			"instances_set": flattenedInstanceSet(filteredInstances),
+			"instances_set": flattenedInstanceSetPassword(filteredInstances, client),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}

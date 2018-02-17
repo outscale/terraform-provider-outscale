@@ -137,7 +137,7 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err := d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
+	err := d.Set("instances_set", flattenedInstanceSetPassword([]*fcu.Instance{instance}, conn))
 
 	return err
 }
@@ -201,6 +201,10 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"architecture": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"password_data": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},

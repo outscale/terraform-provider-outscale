@@ -215,7 +215,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if instance.Platform != nil && *instance.Platform == "windows" {
+	if instance.Platform != nil && *instance.Platform == "windows" && len(*instance.KeyName) > 0 {
 		var passRes *fcu.GetPasswordDataOutput
 		err = resource.Retry(500*time.Second, func() *resource.RetryError {
 			var err error
