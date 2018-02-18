@@ -30,7 +30,9 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.outscale_vms.basic_web", "instance_id.#", "2"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vms.basic_web", "reservation_set.#", "1"),
+						"data.outscale_vms.basic_web", "reservation_set.#", "2"),
+					resource.TestCheckResourceAttr(
+						"data.outscale_vms.basic_web", "reservation_set.0.instances_set.0.group_set.#", "1"),
 				),
 			},
 		},
@@ -43,12 +45,14 @@ resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
+	security_group = ["sg-6ed31f3e"]
 }
 
 resource "outscale_vm" "basic2" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
+	security_group = ["sg-6ed31f3e"]
 }
 
 data "outscale_vms" "basic_web" {

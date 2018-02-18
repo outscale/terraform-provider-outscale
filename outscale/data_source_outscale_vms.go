@@ -27,24 +27,8 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 			ForceNew: false,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"group_set": {
-			Type:     schema.TypeSet,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"group_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"group_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
 		"reservation_set": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -559,10 +543,6 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(resource.UniqueId())
 
-	err = d.Set("group_set", getGroupSet(resp.GroupSet))
-	if err != nil {
-		return err
-	}
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 	d.Set("requester_id", resp.Reservations[0].RequesterId)
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
