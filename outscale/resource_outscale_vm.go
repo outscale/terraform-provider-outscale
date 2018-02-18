@@ -166,39 +166,23 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("client_token", instance.ClientToken)
 
-	// d.Set("disable_api_termination", instance.DisableApiTermination)
-
-	// d.Set("dry_run", instance.DryRun)
-
 	d.Set("ebs_optimized", instance.EbsOptimized)
 
 	d.Set("image_id", instance.ImageId)
 
-	// d.Set("instance_initiated_shutdown_behavior", instance.InstanceInitiatedShutdownBehavior)
-
 	d.Set("instance_type", instance.InstanceType)
-
-	// d.Set("instance_name", instance.InstanceName)
 
 	d.Set("key_name", instance.KeyName)
 
-	// d.Set("max_count", instance.MaxCount)
-
-	// d.Set("min_count", instance.MinCount)
-
 	d.Set("network_interface", getNetworkInterfaceSet(instance.NetworkInterfaces))
 
-	// d.Set("placement", getPlacement(instance.Placement))
-
 	d.Set("private_ip", instance.PrivateIpAddress)
-
-	// d.Set("private_ips", getPrivateIPAddressSet(instance.PrivateIpAddresses))
 
 	d.Set("ramdisk_id", instance.RamdiskId)
 
 	d.Set("subnet_id", instance.SubnetId)
 
-	err = d.Set("group_set", getGroupSet(resp.GroupSet))
+	err = d.Set("group_set", getGroupSet(resp.Reservations[0].Groups))
 	if err != nil {
 		fmt.Println(getGroupSet(resp.GroupSet))
 

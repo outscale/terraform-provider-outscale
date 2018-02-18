@@ -103,13 +103,17 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "instance_type", "t2.micro"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "group_set.#", "1"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "instances_set.0.group_set.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleServer_Basic_Windows(t *testing.T) {
+func TestAccOutscaleServer_Windows_Password(t *testing.T) {
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
