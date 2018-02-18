@@ -113,6 +113,11 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 	d.Set("private_ip", instance.PrivateIpAddress)
 	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
 
+	err := d.Set("group_set", getGroupSet(instance.GroupSet))
+	if err != nil {
+		return err
+	}
+
 	// iterate through network interfaces, and set subnet, network_interface, public_addr
 	if len(instance.NetworkInterfaces) > 0 {
 		for _, ni := range instance.NetworkInterfaces {
@@ -137,7 +142,7 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err := d.Set("instances_set", flattenedInstanceSetPassword([]*fcu.Instance{instance}, conn))
+	err = d.Set("instances_set", flattenedInstanceSetPassword([]*fcu.Instance{instance}, conn))
 
 	return err
 }
@@ -568,7 +573,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"sopt_instance_request_id": {
+					"spot_instance_request_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
