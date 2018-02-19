@@ -72,7 +72,7 @@ type Reservation struct {
 
 	// The ID of the requester that launched the instances on your behalf (for example,
 	// AWS Management Console or Auto Scaling).
-	RequesterId *string `locationName:"requesterId" type:"string"`
+	RequesterId *string `locationName:"requestId" type:"string"`
 
 	// The ID of the reservation.
 	ReservationId *string `locationName:"reservationId" type:"string"`
