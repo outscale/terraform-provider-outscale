@@ -50,5 +50,9 @@ data "outscale_vm" "basic_web" {
 	filter {
     name = "instance-id"
     values = ["${outscale_vm.basic.id}"]
-  }
+	}
+}
+
+output "datasource_arch" {
+	value = "${data.outscale_vm.basic_web.owner_id}"
 }`

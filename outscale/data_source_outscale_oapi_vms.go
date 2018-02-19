@@ -555,8 +555,8 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 				filteredInstances = append(filteredInstances, instance)
 			}
 		}
-		d.Set("requester_id", res.RequesterId)
-		d.Set("reservation_id", res.ReservationId)
+		d.Set("requester_id", resp.Reservations[0].RequesterId)
+		d.Set("reservation_id", resp.Reservations[0].ReservationId)
 		// TODO: add the following in the struct
 		// account_id & admin_password__
 	}
