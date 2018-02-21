@@ -19,6 +19,8 @@ type VMService interface {
 	GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error)
 	ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error
 	TerminateInstances(input *TerminateInstancesInput) (*TerminateInstancesOutput, error)
+	AllocateAddress(input *AllocateAddressInput) (*AllocateAddressOutput, error)
+	DescribeAddressesRequest(input *DescribeAddressesInput) (*DescribeAddressesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -119,6 +121,53 @@ func (v VMOperations) TerminateInstances(input *TerminateInstancesInput) (*Termi
 
 	if input == nil {
 		input = &TerminateInstancesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AllocateAddress(input *AllocateAddressInput) (*AllocateAddressOutput, error) {
+	inURL := "/"
+	endpoint := "AllocateAddress"
+	output := &AllocateAddressOutput{}
+
+	if input == nil {
+		input = &AllocateAddressInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//DescribeAddresses
+func (v VMOperations) DescribeAddressesRequest(input *DescribeAddressesInput) (*DescribeAddressesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeAddresses"
+	output := &DescribeAddressesOutput{}
+
+	if input == nil {
+		input = &DescribeAddressesInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

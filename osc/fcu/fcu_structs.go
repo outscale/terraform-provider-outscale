@@ -942,3 +942,286 @@ type TerminateInstancesOutput struct {
 	// Information about one or more terminated instances.
 	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
 }
+
+type PublicIP struct {
+	AllocationId             *string `locationName:"allocationId" type:"string"`
+	AssociationId            *string `locationName:"associationId" type:"string"`
+	Domain                   *string `locationName:"domain" type:"string"`
+	InstanceId               *string `locationName:"instanceId" type:"string"`
+	NetworkInterfaceId       *string `locationName:"networkInterfaceId" type:"string"`
+	NetworkInterface_ownerId *string `locationName:"networkInterface_ownerId" type:"string"`
+	PrivateIpAddress         *string `locationName:"privateIpAddress" type:"string"`
+	PublicIp                 *string `locationName:"publicIp" type:"string"`
+}
+
+type AllocateAddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// Set to vpc to allocate the address for use with instances in a VPC.
+	//
+	// Default: The address is for use with instances in EC2-Classic.
+	Domain *string `type:"string" enum:"DomainType"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s AllocateAddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AllocateAddressInput) GoString() string {
+	return s.String()
+}
+
+// SetDomain sets the Domain field's value.
+func (s *AllocateAddressInput) SetDomain(v string) *AllocateAddressInput {
+	s.Domain = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AllocateAddressInput) SetDryRun(v bool) *AllocateAddressInput {
+	s.DryRun = &v
+	return s
+}
+
+// Contains the output of AllocateAddress.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AllocateAddressResult
+type AllocateAddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// [EC2-VPC] The ID that AWS assigns to represent the allocation of the Elastic
+	// IP address for use with instances in a VPC.
+	AllocationId *string `locationName:"allocationId" type:"string"`
+
+	// Indicates whether this Elastic IP address is for use with instances in EC2-Classic
+	// (standard) or instances in a VPC (vpc).
+	Domain *string `locationName:"domain" type:"string" enum:"DomainType"`
+
+	// The Elastic IP address.
+	PublicIp *string `locationName:"publicIp" type:"string"`
+}
+
+// String returns the string representation
+func (s AllocateAddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AllocateAddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *AllocateAddressOutput) SetAllocationId(v string) *AllocateAddressOutput {
+	s.AllocationId = &v
+	return s
+}
+
+// SetDomain sets the Domain field's value.
+func (s *AllocateAddressOutput) SetDomain(v string) *AllocateAddressOutput {
+	s.Domain = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *AllocateAddressOutput) SetPublicIp(v string) *AllocateAddressOutput {
+	s.PublicIp = &v
+	return s
+}
+
+type DescribeAddressesInput struct {
+	_ struct{} `type:"structure"`
+
+	// [EC2-VPC] One or more allocation IDs.
+	//
+	// Default: Describes all your Elastic IP addresses.
+	AllocationIds []*string `locationName:"AllocationId" locationNameList:"AllocationId" type:"list"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters. Filter names and values are case-sensitive.
+	//
+	//    * allocation-id - [EC2-VPC] The allocation ID for the address.
+	//
+	//    * association-id - [EC2-VPC] The association ID for the address.
+	//
+	//    * domain - Indicates whether the address is for use in EC2-Classic (standard)
+	//    or in a VPC (vpc).
+	//
+	//    * instance-id - The ID of the instance the address is associated with,
+	//    if any.
+	//
+	//    * network-interface-id - [EC2-VPC] The ID of the network interface that
+	//    the address is associated with, if any.
+	//
+	//    * network-interface-owner-id - The AWS account ID of the owner.
+	//
+	//    * private-ip-address - [EC2-VPC] The private IP address associated with
+	//    the Elastic IP address.
+	//
+	//    * public-ip - The Elastic IP address.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	//
+	// Default: Describes all your Elastic IP addresses.
+	PublicIps []*string `locationName:"PublicIp" locationNameList:"PublicIp" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeAddressesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAddressesInput) GoString() string {
+	return s.String()
+}
+
+// SetAllocationIds sets the AllocationIds field's value.
+func (s *DescribeAddressesInput) SetAllocationIds(v []*string) *DescribeAddressesInput {
+	s.AllocationIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeAddressesInput) SetDryRun(v bool) *DescribeAddressesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeAddressesInput) SetFilters(v []*Filter) *DescribeAddressesInput {
+	s.Filters = v
+	return s
+}
+
+// SetPublicIps sets the PublicIps field's value.
+func (s *DescribeAddressesInput) SetPublicIps(v []*string) *DescribeAddressesInput {
+	s.PublicIps = v
+	return s
+}
+
+// Contains the output of DescribeAddresses
+type DescribeAddressesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more Elastic IP addresses.
+	Addresses []*Address `locationName:"addressesSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeAddressesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAddressesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAddresses sets the Addresses field's value.
+func (s *DescribeAddressesOutput) SetAddresses(v []*Address) *DescribeAddressesOutput {
+	s.Addresses = v
+	return s
+}
+
+// Describes an Elastic IP address.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/Address
+type Address struct {
+	_ struct{} `type:"structure"`
+
+	// The ID representing the allocation of the address for use with EC2-VPC.
+	AllocationId *string `locationName:"allocationId" type:"string"`
+
+	// The ID representing the association of the address with an instance in a
+	// VPC.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// Indicates whether this Elastic IP address is for use with instances in EC2-Classic
+	// (standard) or instances in a VPC (vpc).
+	Domain *string `locationName:"domain" type:"string" enum:"DomainType"`
+
+	// The ID of the instance that the address is associated with (if any).
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The ID of the AWS account that owns the network interface.
+	NetworkInterfaceOwnerId *string `locationName:"networkInterfaceOwnerId" type:"string"`
+
+	// The private IP address associated with the Elastic IP address.
+	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
+
+	// The Elastic IP address.
+	PublicIp *string `locationName:"publicIp" type:"string"`
+}
+
+// String returns the string representation
+func (s Address) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Address) GoString() string {
+	return s.String()
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *Address) SetAllocationId(v string) *Address {
+	s.AllocationId = &v
+	return s
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *Address) SetAssociationId(v string) *Address {
+	s.AssociationId = &v
+	return s
+}
+
+// SetDomain sets the Domain field's value.
+func (s *Address) SetDomain(v string) *Address {
+	s.Domain = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Address) SetInstanceId(v string) *Address {
+	s.InstanceId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *Address) SetNetworkInterfaceId(v string) *Address {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetNetworkInterfaceOwnerId sets the NetworkInterfaceOwnerId field's value.
+func (s *Address) SetNetworkInterfaceOwnerId(v string) *Address {
+	s.NetworkInterfaceOwnerId = &v
+	return s
+}
+
+// SetPrivateIpAddress sets the PrivateIpAddress field's value.
+func (s *Address) SetPrivateIpAddress(v string) *Address {
+	s.PrivateIpAddress = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *Address) SetPublicIp(v string) *Address {
+	s.PublicIp = &v
+	return s
+}
