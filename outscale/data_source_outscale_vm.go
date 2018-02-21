@@ -3,7 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -37,12 +36,6 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	if instanceIDOk {
 		params.InstanceIds = []*string{aws.String(instanceID.(string))}
 	}
-
-	// Perform the lookup
-	// resp, err := client.DescribeInstances(params)
-	// if err != nil {
-	// 	return err
-	// }
 
 	var resp *fcu.DescribeInstancesOutput
 	var err error
@@ -90,7 +83,17 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance = filteredInstances[0]
 
-	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", *instance.InstanceId)
+	fmt.Println("OWNER ID =>", resp.Reservations[0].OwnerId)
+
+	fmt.Println("REQUESTER ID =>", resp.Reservations[0].RequesterId)
+
+	fmt.Println("RESERVATION ID =>", resp.Reservations[0].ReservationId)
+
+	d.Set("owner_id", resp.Reservations[0].OwnerId)
+
+	d.Set("requester_id", resp.Reservations[0].RequesterId)
+
+	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	return instanceDescriptionAttributes(d, instance, client)
 }

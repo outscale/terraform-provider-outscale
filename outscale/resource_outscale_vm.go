@@ -188,11 +188,11 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
-	d.Set("owner_id", resp.OwnerId)
+	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("requester_id", resp.RequesterId)
+	d.Set("requester_id", resp.Reservations[0].RequesterId)
 
-	d.Set("reservation_id", resp.ReservationId)
+	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	err = d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
 	if err != nil {
