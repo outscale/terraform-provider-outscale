@@ -10,15 +10,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
-
-var instanceId *string
 
 func init() {
 
@@ -114,122 +111,6 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func getCredentials() *fcu.Client {
-	config := osc.Config{
-		Credentials: &osc.Credentials{
-			AccessKey: "7E4U4AQ0CGLTWB78Q38V",
-			SecretKey: "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K",
-			Region:    "eu-west-2",
-		},
-	}
-
-	c, err := fcu.NewFCUClient(config)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return c
-}
-
-func TestAccOutscaleServer_StopVM(t *testing.T) {
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	c := getCredentials()
-
-	keyname := "TestKey"
-	var maxC int64
-	imageID := "ami-8a6a0120"
-	maxC = 1
-	instanceType := "t2.micro"
-	input := fcu.RunInstancesInput{
-		ImageId:      &imageID,
-		MaxCount:     &maxC,
-		MinCount:     &maxC,
-		KeyName:      &keyname,
-		InstanceType: &instanceType,
-	}
-	output, err := c.VM.RunInstance(&input)
-	fmt.Println(err)
-	fmt.Println(output)
-
-	time.Sleep(120 * time.Second)
-
-	instanceId = output.Instances[0].InstanceId
-
-	output3, err := c.VM.StopInstances(&fcu.StopInstancesInput{
-		InstanceIds: []*string{instanceId},
-	})
-
-	fmt.Println(output3)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-func TestAccOutscaleServer_StartVM(t *testing.T) {
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	c := getCredentials()
-
-	output3, err := c.VM.StartInstances(&fcu.StartInstancesInput{
-		InstanceIds: []*string{instanceId},
-	})
-
-	fmt.Println(output3)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestAccOutscaleServer_UpdateVM(t *testing.T) {
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	c := getCredentials()
-
-	output3, err := c.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-		InstanceId: instanceId,
-		DisableApiTermination: &fcu.AttributeBooleanValue{
-			Value: aws.Bool(false),
-		},
-	})
-	fmt.Println(output3)
-
-	if err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestAccOutscaleServer_Windows_Password(t *testing.T) {
