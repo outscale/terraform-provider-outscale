@@ -27,24 +27,8 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 			ForceNew: false,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"group_set": {
-			Type:     schema.TypeSet,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"group_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"group_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
 		"reservation_set": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -83,6 +67,10 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"architecture": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"password_data": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -553,34 +541,26 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	var filteredInstances []*fcu.Instance
-
-	// loop through reservations, and remove terminated instances, populate instance slice
-	for _, res := range resp.Reservations {
-		for _, instance := range res.Instances {
-			if instance.State != nil && *instance.State.Name != "terminated" {
-				filteredInstances = append(filteredInstances, instance)
-			}
-		}
-	}
-
 	d.SetId(resource.UniqueId())
 
-	err = d.Set("group_set", getGroupSet(resp.GroupSet))
-	if err != nil {
-		return err
-	}
-	d.Set("owner_id", resp.OwnerId)
-	d.Set("requester_id", resp.RequesterId)
-	d.Set("reservation_id", resp.ReservationId)
+	d.Set("owner_id", resp.Reservations[0].OwnerId)
+	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	flattenedReservations := []map[string]interface{}{}
 
 	for _, r := range resp.Reservations {
+		var filteredInstances []*fcu.Instance
+		for _, instance := range r.Instances {
+			if instance.State != nil && *instance.State.Name != "terminated" {
+				filteredInstances = append(filteredInstances, instance)
+			}
+		}
+
 		f := map[string]interface{}{
 			"owner_id":      *r.OwnerId,
 			"group_set":     getGroupSet(r.Groups),
-			"instances_set": flattenedInstanceSet(r.Instances),
+			"instances_set": flattenedInstanceSetPassword(filteredInstances, client),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}

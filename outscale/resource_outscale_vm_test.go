@@ -103,6 +103,47 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "instance_type", "t2.micro"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "group_set.#", "1"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "instances_set.0.group_set.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleServer_Windows_Password(t *testing.T) {
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
+	var server fcu.Instance
+
+	// rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleServerConfig_basic_windows(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleVMExists("outscale_vm.basic_windows", &server),
+					testAccCheckOutscaleWindowsServerAttributes(&server),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic_windows", "image_id", "ami-e1b93f29"),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic_windows", "instance_type", "t2.micro"),
 				),
 			},
 		},
@@ -368,10 +409,39 @@ func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestChe
 	}
 }
 
+func testAccCheckOutscaleWindowsServerAttributes(server *fcu.Instance) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if *server.ImageId != "ami-e1b93f29" {
+			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
+		}
+
+		if server.IpAddress == nil {
+			return fmt.Errorf("No IP address found")
+		}
+
+		if len(*server.IpAddress) == 0 {
+			return fmt.Errorf("Empty IP Address")
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckOutscaleServerConfig_basic() string {
 	return `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+	security_group = ["sg-6ed31f3e"]
+}`
+}
+
+func testAccCheckOutscaleServerConfig_basic_windows() string {
+	return `
+resource "outscale_vm" "basic_windows" {
+	image_id = "ami-e1b93f29"
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
 	security_group = ["sg-6ed31f3e"]

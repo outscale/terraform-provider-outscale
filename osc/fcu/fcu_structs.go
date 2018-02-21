@@ -88,7 +88,7 @@ type Instance struct {
 
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	DnsName *string `type:"string"`
+	DnsName *string `locationName:"dnsName" type:"string"`
 
 	EbsOptimized *bool `locationName:"ebsOptimized" type:"boolean"`
 
@@ -130,7 +130,7 @@ type Instance struct {
 
 	RamdiskId *string `locationName:"ramdiskId" type:"string"`
 
-	Reason *string `locationName:"ramdiskId" type:"string"`
+	Reason *string `locationName:"reason" type:"string"`
 
 	RootDeviceName *string `locationName:"rootDeviceName" type:"string"`
 
@@ -692,7 +692,7 @@ type RunInstancesInput struct {
 	// instance by running the shutdown command from the instance.
 	//
 	// Default: false
-	DisableAPITermination *bool `locationName:"disableApiTermination" type:"boolean"`
+	DisableApiTermination *bool `locationName:"disableApiTermination" type:"boolean"`
 
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
@@ -800,6 +800,14 @@ type RunInstancesInput struct {
 	// for you, and you can load the text from a file. Otherwise, you must provide
 	// base64-encoded text.
 	UserData *string `type:"string"`
+
+	OwnerId *string `type:"string"`
+
+	RequesterId *string `type:"string"`
+
+	ReservationId *string `type:"string"`
+
+	PasswordData *string `type:"string"`
 }
 
 //BlockDeviceMapping input to specify the mapping
