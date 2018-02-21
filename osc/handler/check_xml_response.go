@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil"
@@ -24,17 +22,6 @@ func UnmarshalXML(v interface{}, r *http.Response) error {
 
 	decoder := xml.NewDecoder(r.Body)
 	err := xmlutil.UnmarshalXML(v, decoder, "")
-
-	// Read the content
-	var bodyBytes []byte
-	if r.Body != nil {
-		bodyBytes, _ = ioutil.ReadAll(r.Body)
-	}
-	// Restore the io.ReadCloser to its original state
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	// Use the content
-	bodyString := string(bodyBytes)
-	fmt.Println(bodyString)
 
 	if err != nil {
 		return errors.New("SerializationError" + "failed decoding EC2 Query response" + fmt.Sprint(err))
