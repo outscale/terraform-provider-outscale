@@ -38,7 +38,7 @@ type DescribeInstancesOutput struct {
 
 	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
 
-	RequesterId *string `locationName:"requesterId" locationNameList:"item" type:"string"`
+	RequesterId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
 
