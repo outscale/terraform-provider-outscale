@@ -91,7 +91,7 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	d.Set("request_id", resp.RequesterId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
@@ -429,10 +429,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"owner_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
 								"private_dns_name": {
 									Type:     schema.TypeString,
 									Computed: true,
@@ -635,7 +631,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"requester_id": {
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
