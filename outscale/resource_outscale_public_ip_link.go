@@ -62,7 +62,15 @@ func resourcePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	d.SetId(*resp.AssociationId)
+	var id *string
+
+	if resp.AssociationId != nil {
+		id = resp.AssociationId
+	} else {
+		id = request.PublicIp
+	}
+
+	d.SetId(*id)
 
 	return resourcePublicIPLinkRead(d, meta)
 
