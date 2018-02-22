@@ -1244,7 +1244,7 @@ type outscaleInstanceOpts struct {
 	EBSOptimized                      *bool
 	DryRun                            *bool
 	ImageID                           *string
-	InstanceInitiatedShutdownBehavior *bool
+	InstanceInitiatedShutdownBehavior *string
 	InstanceType                      *string
 	Ipv6AddressCount                  *int64
 	KeyName                           *string
@@ -1276,8 +1276,8 @@ func buildOutscaleVMOpts(
 		InstanceType: aws.String(d.Get("instance_type").(string)),
 	}
 
-	if v := d.Get("instance_initiated_shutdown_behavior").(bool); v {
-		opts.InstanceInitiatedShutdownBehavior = aws.Bool(v)
+	if v := d.Get("instance_initiated_shutdown_behavior").(string); v != "" {
+		opts.InstanceInitiatedShutdownBehavior = aws.String(v)
 	}
 
 	userData := d.Get("user_data").(string)

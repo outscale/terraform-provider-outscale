@@ -778,7 +778,7 @@ type RunInstancesInput struct {
 	// specify this option if you're launching more than one instance in the request.
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string"`
 
-	PrivateIPAddresses []*string `locationName:"privateIpAddresses" type:"string"`
+	PrivateIPAddresses *string `locationName:"privateIpAddresses" type:"string"`
 
 	// The Id of the RAM disk.
 	//
