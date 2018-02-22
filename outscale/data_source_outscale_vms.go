@@ -27,6 +27,10 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 			ForceNew: false,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"reservation_set": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -36,7 +40,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"requester_id": {
+					"reservation_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -544,7 +548,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(resource.UniqueId())
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
-	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	d.Set("request_id", resp.RequesterId)
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	flattenedReservations := []map[string]interface{}{}
@@ -558,9 +562,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		f := map[string]interface{}{
-			"owner_id":      *r.OwnerId,
-			"group_set":     getGroupSet(r.Groups),
-			"instances_set": flattenedInstanceSetPassword(filteredInstances, client),
+			"owner_id":       *r.OwnerId,
+			"reservation_id": *r.ReservationId,
+			"group_set":      getGroupSet(r.Groups),
+			"instances_set":  flattenedInstanceSetPassword(filteredInstances, client),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}

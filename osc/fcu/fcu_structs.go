@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
+	"github.com/aws/aws-sdk-go/aws/request"
 )
 
 const (
@@ -37,7 +38,7 @@ type DescribeInstancesOutput struct {
 
 	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
 
-	RequesterId *string `locationName:"requesterId" locationNameList:"item" type:"string"`
+	RequesterId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
 
@@ -949,4 +950,329 @@ type TerminateInstancesOutput struct {
 
 	// Information about one or more terminated instances.
 	TerminatingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}
+
+// Contains the parameters for ModifyInstanceAttribute.
+type ModifyInstanceAttributeInput struct {
+	_ struct{} `type:"structure"`
+	// The name of the attribute.
+	Attribute *string `locationName:"attribute" type:"string" enum:"InstanceAttributeName"`
+
+	BlockDeviceMappings []*InstanceBlockDeviceMappingSpecification `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+
+	DisableApiTermination *AttributeBooleanValue `locationName:"disableApiTermination" type:"structure"`
+
+	DeleteOnTermination *AttributeBooleanValue `locationName:"deleteOnTermination" type:"structure"`
+
+	EbsOptimized *AttributeBooleanValue `locationName:"ebsOptimized" type:"structure"`
+
+	Groups []*string `locationName:"GroupId" locationNameList:"groupId" type:"list"`
+
+	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
+
+	InstanceInitiatedShutdownBehavior *AttributeValue `locationName:"instanceInitiatedShutdownBehavior" type:"structure"`
+
+	InstanceType *AttributeValue `locationName:"instanceType" type:"structure"`
+
+	SourceDestCheck *AttributeBooleanValue `type:"structure"`
+
+	UserData *BlobAttributeValue `locationName:"userData" type:"structure"`
+
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s ModifyInstanceAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyInstanceAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyInstanceAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyInstanceAttributeInput"}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *ModifyInstanceAttributeInput) SetAttribute(v string) *ModifyInstanceAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*InstanceBlockDeviceMappingSpecification) *ModifyInstanceAttributeInput {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetDisableApiTermination sets the DisableApiTermination field's value.
+func (s *ModifyInstanceAttributeInput) SetDisableApiTermination(v *AttributeBooleanValue) *ModifyInstanceAttributeInput {
+	s.DisableApiTermination = v
+	return s
+}
+
+// SetEbsOptimized sets the EbsOptimized field's value.
+func (s *ModifyInstanceAttributeInput) SetEbsOptimized(v *AttributeBooleanValue) *ModifyInstanceAttributeInput {
+	s.EbsOptimized = v
+	return s
+}
+
+// SetGroups sets the Groups field's value.
+func (s *ModifyInstanceAttributeInput) SetGroups(v []*string) *ModifyInstanceAttributeInput {
+	s.Groups = v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ModifyInstanceAttributeInput) SetInstanceId(v string) *ModifyInstanceAttributeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceInitiatedShutdownBehavior sets the InstanceInitiatedShutdownBehavior field's value.
+func (s *ModifyInstanceAttributeInput) SetInstanceInitiatedShutdownBehavior(v *AttributeValue) *ModifyInstanceAttributeInput {
+	s.InstanceInitiatedShutdownBehavior = v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *ModifyInstanceAttributeInput) SetInstanceType(v *AttributeValue) *ModifyInstanceAttributeInput {
+	s.InstanceType = v
+	return s
+}
+
+// SetSourceDestCheck sets the SourceDestCheck field's value.
+func (s *ModifyInstanceAttributeInput) SetSourceDestCheck(v *AttributeBooleanValue) *ModifyInstanceAttributeInput {
+	s.SourceDestCheck = v
+	return s
+}
+
+// SetUserData sets the UserData field's value.
+func (s *ModifyInstanceAttributeInput) SetUserData(v *BlobAttributeValue) *ModifyInstanceAttributeInput {
+	s.UserData = v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ModifyInstanceAttributeInput) SetValue(v string) *ModifyInstanceAttributeInput {
+	s.Value = &v
+	return s
+}
+
+type BlobAttributeValue struct {
+	_ struct{} `type:"structure"`
+
+	// Value is automatically base64 encoded/decoded by the SDK.
+	Value []byte `locationName:"value" type:"blob"`
+}
+
+// String returns the string representation
+func (s BlobAttributeValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BlobAttributeValue) GoString() string {
+	return s.String()
+}
+
+// SetValue sets the Value field's value.
+func (s *BlobAttributeValue) SetValue(v []byte) *BlobAttributeValue {
+	s.Value = v
+	return s
+}
+
+type StopInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Forces the instances to stop. The instances do not have an opportunity to
+	// flush file system caches or file system metadata. If you use this option,
+	// you must perform file system check and repair procedures. This option is
+	// not recommended for Windows instances.
+	//
+	// Default: false
+	Force *bool `locationName:"force" type:"boolean"`
+
+	// One or more instance IDs.
+	//
+	// InstanceIds is a required field
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s StopInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StopInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StopInstancesInput"}
+	if s.InstanceIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *StopInstancesInput) SetDryRun(v bool) *StopInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetForce sets the Force field's value.
+func (s *StopInstancesInput) SetForce(v bool) *StopInstancesInput {
+	s.Force = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *StopInstancesInput) SetInstanceIds(v []*string) *StopInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+// Contains the output of StopInstances.
+type StopInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more stopped instances.
+	StoppingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s StopInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StopInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetStoppingInstances sets the StoppingInstances field's value.
+func (s *StopInstancesOutput) SetStoppingInstances(v []*InstanceStateChange) *StopInstancesOutput {
+	s.StoppingInstances = v
+	return s
+}
+
+type ModifyInstanceAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyInstanceAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyInstanceAttributeOutput) GoString() string {
+	return s.String()
+}
+
+type StartInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved.
+	AdditionalInfo *string `locationName:"additionalInfo" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more instance IDs.
+	//
+	// InstanceIds is a required field
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s StartInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartInstancesInput"}
+	if s.InstanceIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdditionalInfo sets the AdditionalInfo field's value.
+func (s *StartInstancesInput) SetAdditionalInfo(v string) *StartInstancesInput {
+	s.AdditionalInfo = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *StartInstancesInput) SetDryRun(v bool) *StartInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceIds sets the InstanceIds field's value.
+func (s *StartInstancesInput) SetInstanceIds(v []*string) *StartInstancesInput {
+	s.InstanceIds = v
+	return s
+}
+
+type StartInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more started instances.
+	StartingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s StartInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetStartingInstances sets the StartingInstances field's value.
+func (s *StartInstancesOutput) SetStartingInstances(v []*InstanceStateChange) *StartInstancesOutput {
+	s.StartingInstances = v
+	return s
 }

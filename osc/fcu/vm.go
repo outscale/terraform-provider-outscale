@@ -18,7 +18,10 @@ type VMService interface {
 	DescribeInstances(input *DescribeInstancesInput) (*DescribeInstancesOutput, error)
 	GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error)
 	ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error
+	ModifyInstanceAttribute(input *ModifyInstanceAttributeInput) (*ModifyInstanceAttributeOutput, error)
 	TerminateInstances(input *TerminateInstancesInput) (*TerminateInstancesOutput, error)
+	StopInstances(input *StopInstancesInput) (*StopInstancesOutput, error)
+	StartInstances(input *StartInstancesInput) (*StartInstancesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -88,6 +91,29 @@ func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) e
 	return nil
 }
 
+func (v VMOperations) ModifyInstanceAttribute(input *ModifyInstanceAttributeInput) (*ModifyInstanceAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyInstanceAttribute"
+	output := &ModifyInstanceAttributeOutput{}
+
+	if input == nil {
+		input = &ModifyInstanceAttributeInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) GetPasswordData(input *GetPasswordDataInput) (*GetPasswordDataOutput, error) {
 	inURL := "/"
 	endpoint := "GetPasswordData"
@@ -121,6 +147,52 @@ func (v VMOperations) TerminateInstances(input *TerminateInstancesInput) (*Termi
 		input = &TerminateInstancesInput{}
 	}
 
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) StopInstances(input *StopInstancesInput) (*StopInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "StopInstances"
+	output := &StopInstancesOutput{}
+
+	if input == nil {
+		input = &StopInstancesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) StartInstances(input *StartInstancesInput) (*StartInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "StartInstances"
+	output := &StartInstancesOutput{}
+
+	if input == nil {
+		input = &StartInstancesInput{}
+	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
