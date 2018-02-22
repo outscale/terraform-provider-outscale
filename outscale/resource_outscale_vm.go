@@ -577,19 +577,19 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_termination": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"iops": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"snapshot_id": {
 									Type:     schema.TypeInt,
 									Optional: true,
 								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
 								"volume_size": {
-									Type:     schema.TypeFloat,
+									Type:     schema.TypeInt,
 									Optional: true,
 								},
 								"volume_type": {
@@ -634,7 +634,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		"instance_initiated_shutdown_behavior": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 		},
 		"instance_type": {
@@ -677,7 +677,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"network_interface_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"private_ip_address": {
@@ -690,7 +690,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"primary": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"private_ip_address": {
@@ -701,7 +701,7 @@ func getVMSchema() map[string]*schema.Schema {
 						},
 					},
 					"secondary_private_ip_address_count": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Optional: true,
 					},
 					"security_group_id": {
@@ -734,7 +734,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"host_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"tenancy": {
@@ -749,7 +749,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"private_ip_addresses": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeString,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -900,7 +900,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"name": {
@@ -1081,7 +1081,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"vpc_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
@@ -1160,7 +1160,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"source_dest_check": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeBool,
 						Computed: true,
 					},
 					"spot_instance_request_id": {
@@ -1176,7 +1176,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"message": {
