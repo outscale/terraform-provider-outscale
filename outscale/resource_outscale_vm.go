@@ -139,7 +139,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting the instance %s", err)
+		return fmt.Errorf("Error reading the instance %s", err)
 	}
 
 	if err != nil {
@@ -190,7 +190,9 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	fmt.Println("Request id " + *resp.RequesterId)
+
+	d.Set("request_id", resp.RequesterId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
@@ -507,6 +509,56 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange("source_dest_check") {
+		log.Printf("[INFO] Modifying instance %s", d.Id())
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(d.Id()),
+			SourceDestCheck: &fcu.AttributeBooleanValue{
+				Value: aws.Bool(d.Get("source_dest_check").(bool)),
+			},
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("block_device_mapping") {
+
+		maps := d.Get("block_device_mapping").(*schema.Set).List()
+		mappings := []*fcu.InstanceBlockDeviceMappingSpecification{}
+
+		for _, m := range maps {
+			f := m.(map[string]interface{})
+			mapping := &fcu.InstanceBlockDeviceMappingSpecification{
+				DeviceName:  aws.String(f["device_name"].(string)),
+				NoDevice:    aws.String(f["no_device"].(string)),
+				VirtualName: aws.String(f["virtual_name"].(string)),
+			}
+
+			e := f["ebs"].(map[string]interface{})
+
+			ebs := &fcu.EbsInstanceBlockDeviceSpecification{
+				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
+				VolumeId:            aws.String(e["volume_id"].(string)),
+			}
+
+			mapping.Ebs = ebs
+
+			mappings = append(mappings, mapping)
+		}
+
+		log.Printf("[INFO] Modifying instance %s", d.Id())
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId:          aws.String(d.Id()),
+			BlockDeviceMappings: mappings,
+		})
+
+		if err != nil {
+			return err
+		}
+	}
+
 	d.Partial(false)
 
 	return resourceVMRead(d, meta)
@@ -531,13 +583,23 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 				log.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
+
+			if strings.Contains(err.Error(), "InvalidInstanceID.NotFound") {
+				resource.NonRetryableError(err)
+			}
 		}
 
 		return resource.RetryableError(err)
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting the instance")
+
+		if strings.Contains(err.Error(), "InvalidInstanceID.NotFound") {
+			d.SetId("")
+			return nil
+		}
+
+		return fmt.Errorf("Error deleting the instance %s", err)
 	}
 
 	log.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
@@ -1222,7 +1284,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"requester_id": {
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -1363,7 +1425,7 @@ func buildOutscaleVMOpts(
 	ownerID := d.Get("owner_id").(string)
 	opts.OwnerId = &ownerID
 
-	requesterID := d.Get("requester_id").(string)
+	requesterID := d.Get("request_id").(string)
 	opts.RequesterId = &requesterID
 
 	reservationID := d.Get("reservation_id").(string)
