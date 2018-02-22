@@ -663,10 +663,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"password_data": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
 		//End of Attributes
 	}
 }
