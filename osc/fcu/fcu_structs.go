@@ -274,7 +274,7 @@ type InstanceNetworkInterfaceAttachment struct {
 
 	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
 
-	DeviceIndex *int `locationName:"deviceIndex" type:"integer"`
+	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer"`
 
 	Status *string `locationName:"status" type:"string" enum:"AttachmentStatus"`
 }
