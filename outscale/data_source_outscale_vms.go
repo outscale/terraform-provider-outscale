@@ -74,10 +74,6 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"password_data": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
 								"block_device_mapping": {
 									Type: schema.TypeList,
 									Elem: &schema.Resource{
@@ -559,6 +555,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 			if instance.State != nil && *instance.State.Name != "terminated" {
 				filteredInstances = append(filteredInstances, instance)
 			}
+		}
+
+		if len(filteredInstances) == 0 {
+			continue
 		}
 
 		f := map[string]interface{}{
