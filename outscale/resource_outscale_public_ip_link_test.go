@@ -139,30 +139,34 @@ func testAccCheckOutscalePublicIPAssociationDestroy(s *terraform.State) error {
 }
 
 const testAccOutscalePublicIPAssociationConfig = `
-resource "outscale_vm" "foo" {
+resource "outscale_vm" "basic" {
+	count = 2
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 	subnet_id = "subnet-861fbecc"
 }
 
-resource "outscale_public_ip" "bar" {}
-
-resource "outscale_public_ip_link" "by_allocation_id" {
-	allocation_id = "${outscale_public_ip.bar.id}"
-	instance_id = "${outscale_vm.foo.id}"
-	depends_on = ["outscale_vm.foo"]
+resource "outscale_public_ip" "bar" {
+	count = 2
 }
 
-#resource "outscale_public_ip_link" "by_public_ip" {
-#	public_ip = "${outscale_public_ip.bar.1.public_ip}"
-#	instance_id = "${outscale_vm.foo.1.id}"
-#  depends_on = ["outscale_vm.foo"]
-#}`
+resource "outscale_public_ip_link" "by_allocation_id" {
+	allocation_id = "${outscale_public_ip.bar.0.id}"
+	instance_id = "${outscale_vm.basic.0.id}"
+	depends_on = ["outscale_vm.basic"]
+}
+
+resource "outscale_public_ip_link" "by_public_ip" {
+	public_ip = "${outscale_public_ip.bar.1.public_ip}"
+	instance_id = "${outscale_vm.basic.1.id}"
+  depends_on = ["outscale_vm.basic"]
+}`
 
 const testAccOutscalePublicIPAssociationConfigDisappears = `
 resource "outscale_vm" "foo" {
 	image_id = "ami-8a6a0120"
-	instance_type = "t1.micro"
+	instance_type = "t2.micro"
 	subnet_id = "subnet-861fbecc"
 }
 resource "outscale_public_ip" "bar" {
