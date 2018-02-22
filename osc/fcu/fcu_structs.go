@@ -250,7 +250,7 @@ type InstanceNetworkInterface struct {
 
 	PrivateIpAddresses []*InstancePrivateIpAddress `locationName:"privateIpAddressesSet" locationNameList:"item" type:"list"`
 
-	SourceDestCheck *string `locationName:"sourceDestCheck" type:"string"`
+	SourceDestCheck *bool `locationName:"sourceDestCheck" type:"bool"`
 
 	Status *string `locationName:"status" type:"string" enum:"NetworkInterfaceStatus"`
 
@@ -333,6 +333,9 @@ type InstanceNetworkInterfaceSpecification struct {
 	// and specify more than one private IP address using the private IP addresses
 	// option. You cannot specify this option if you're launching more than one
 	// instance in a RunInstances request.
+
+	SecurityGroupIds []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
+
 	SecondaryPrivateIpAddressCount *int64 `locationName:"secondaryPrivateIpAddressCount" type:"integer"`
 
 	// The ID of the subnet associated with the network string. Applies only if
@@ -719,13 +722,15 @@ type RunInstancesInput struct {
 	// from the instance (using the operating system command for system shutdown).
 	//
 	// Default: stop
-	InstanceInitiatedShutdownBehavior *bool `locationName:"instanceInitiatedShutdownBehavior" type:"bool" enum:"ShutdownBehavior"`
+	InstanceInitiatedShutdownBehavior *string `locationName:"instanceInitiatedShutdownBehavior" type:"string" enum:"ShutdownBehavior"`
 
 	// The instance type. For more information, see Instance Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	//
 	// Default: m1.small
 	InstanceType *string `type:"string" enum:"InstanceType"`
+
+	InstanceName *string `type:"string" enum:"InstanceName"`
 
 	// The name of the key pair. You can create a key pair using CreateKeyPair or
 	// ImportKeyPair.
@@ -772,6 +777,8 @@ type RunInstancesInput struct {
 	// as the primary IP address in a network interface specification. You cannot
 	// specify this option if you're launching more than one instance in the request.
 	PrivateIPAddress *string `locationName:"privateIpAddress" type:"string"`
+
+	PrivateIPAddresses []*string `locationName:"privateIpAddresses" type:"string"`
 
 	// The Id of the RAM disk.
 	//
