@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -63,35 +63,35 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
-// func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
-// 	var one fcu.Address
+func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
+	var one fcu.Address
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:      func() { testAccPreCheck(t) },
-// 		IDRefreshName: "outscale_public_ip.bar",
-// 		Providers:     testAccProviders,
-// 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
-// 		Steps: []resource.TestStep{
-// 			resource.TestStep{
-// 				Config: testAccOutscalePublicIPInstanceConfig_associated,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-// 					testAccCheckOutscalePublicIPAttributes(&one),
-// 					testAccCheckOutscalePublicIPAssociated(&one),
-// 				),
-// 			},
+	resource.Test(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: "outscale_public_ip.bar",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOutscalePublicIPInstanceConfig_associated,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscalePublicIPAssociated(&one),
+				),
+			},
 
-// 			resource.TestStep{
-// 				Config: testAccOutscalePublicIPInstanceConfig_associated_switch,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-// 					testAccCheckOutscalePublicIPAttributes(&one),
-// 					testAccCheckOutscalePublicIPAssociated(&one),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+			resource.TestStep{
+				Config: testAccOutscalePublicIPInstanceConfig_associated_switch,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscalePublicIPAssociated(&one),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
@@ -105,12 +105,23 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 			req := &fcu.DescribeAddressesInput{
 				AllocationIds: []*string{aws.String(rs.Primary.ID)},
 			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+
+			var describe *fcu.DescribeAddressesOutput
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				var err error
+				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+
+				return resource.RetryableError(err)
+			})
+
 			if err != nil {
 				// Verify the error is what we want
-				if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidAllocationID.NotFound" || ae.Code() == "InvalidAddress.NotFound" {
+				e := fmt.Sprint(err)
+
+				if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 					continue
 				}
+
 				return err
 			}
 
@@ -121,10 +132,19 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 			req := &fcu.DescribeAddressesInput{
 				PublicIps: []*string{aws.String(rs.Primary.ID)},
 			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+
+			var describe *fcu.DescribeAddressesOutput
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				var err error
+				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+
+				return resource.RetryableError(err)
+			})
+
 			if err != nil {
+				e := fmt.Sprint(err)
 				// Verify the error is what we want
-				if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidAllocationID.NotFound" || ae.Code() == "InvalidAddress.NotFound" {
+				if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 					continue
 				}
 				return err
@@ -208,138 +228,81 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 }
 
 const testAccOutscalePublicIPConfig = `
-resource "outscale_public_ip" "bar" {
-}
+resource "outscale_public_ip" "bar" {}
 `
 
 const testAccOutscalePublicIPInstanceConfig = `
-resource "outscale_vm" "foo" {
-	# us-west-2
-	ami = "ami-4fccb37f"
-	instance_type = "m1.small"
+resource "outscale_vm" "basic" {
+	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 }
 resource "outscale_public_ip" "bar" {
-	instance = "${outscale_vm.foo.id}"
+	instance_id = "${outscale_vm.basic.id}"
 }
 `
 
 const testAccOutscalePublicIPInstanceConfig2 = `
-resource "outscale_vm" "bar" {
-	# us-west-2
-	ami = "ami-4fccb37f"
-	instance_type = "m1.small"
+resource "outscale_vm" "basic" {
+	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
 }
 resource "outscale_public_ip" "bar" {
-	instance = "${outscale_vm.bar.id}"
+	instance_id = "${outscale_vm.basic.id}"
 }
 `
 
-// const testAccOutscalePublicIPInstanceConfig_associated = `
-// resource "aws_vpc" "default" {
-//   cidr_block           = "10.0.0.0/16"
-//   enable_dns_hostnames = true
-//   tags {
-//     Name = "default"
-//   }
-// }
-// resource "aws_internet_gateway" "gw" {
-//   vpc_id = "${aws_vpc.default.id}"
-//   tags {
-//     Name = "main"
-//   }
-// }
-// resource "aws_subnet" "tf_test_subnet" {
-//   vpc_id                  = "${aws_vpc.default.id}"
-//   cidr_block              = "10.0.0.0/24"
-//   map_public_ip_on_launch = true
-//   depends_on = ["aws_internet_gateway.gw"]
-//   tags {
-//     Name = "tf_test_subnet"
-//   }
-// }
-// resource "outscale_vm" "foo" {
-//   # us-west-2
-//   ami           = "ami-5189a661"
-//   instance_type = "t2.micro"
-//   private_ip = "10.0.0.12"
-//   subnet_id  = "${aws_subnet.tf_test_subnet.id}"
-//   tags {
-//     Name = "foo instance"
-//   }
-// }
-// resource "outscale_vm" "bar" {
-//   # us-west-2
-//   ami = "ami-5189a661"
-//   instance_type = "t2.micro"
-//   private_ip = "10.0.0.19"
-//   subnet_id  = "${aws_subnet.tf_test_subnet.id}"
-//   tags {
-//     Name = "bar instance"
-//   }
-// }
-// resource "outscale_public_ip" "bar" {
-//   vpc = true
-//   instance                  = "${outscale_vm.bar.id}"
-//   associate_with_private_ip = "10.0.0.19"
-// }
-// `
-// const testAccOutscalePublicIPInstanceConfig_associated_switch = `
-// resource "aws_vpc" "default" {
-//   cidr_block           = "10.0.0.0/16"
-//   enable_dns_hostnames = true
-//   tags {
-//     Name = "default"
-//   }
-// }
-// resource "aws_internet_gateway" "gw" {
-//   vpc_id = "${aws_vpc.default.id}"
-//   tags {
-//     Name = "main"
-//   }
-// }
-// resource "aws_subnet" "tf_test_subnet" {
-//   vpc_id                  = "${aws_vpc.default.id}"
-//   cidr_block              = "10.0.0.0/24"
-//   map_public_ip_on_launch = true
-//   depends_on = ["aws_internet_gateway.gw"]
-//   tags {
-//     Name = "tf_test_subnet"
-//   }
-// }
-// resource "outscale_vm" "foo" {
-//   # us-west-2
-//   ami           = "ami-5189a661"
-//   instance_type = "t2.micro"
-//   private_ip = "10.0.0.12"
-//   subnet_id  = "${aws_subnet.tf_test_subnet.id}"
-//   tags {
-//     Name = "foo instance"
-//   }
-// }
-// resource "outscale_vm" "bar" {
-//   # us-west-2
-//   ami = "ami-5189a661"
-//   instance_type = "t2.micro"
-//   private_ip = "10.0.0.19"
-//   subnet_id  = "${aws_subnet.tf_test_subnet.id}"
-//   tags {
-//     Name = "bar instance"
-//   }
-// }
-// resource "outscale_public_ip" "bar" {
-//   vpc = true
-//   instance                  = "${outscale_vm.foo.id}"
-//   associate_with_private_ip = "10.0.0.12"
-// }
-// `
+const testAccOutscalePublicIPInstanceConfig_associated = `
+resource "outscale_vm" "foo" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+  private_ip_address = "10.0.0.12"
+  subnet_id  = "subnet-861fbecc"
+  #tags {
+  #  Name = "foo instance"
+  #}
+}
+resource "outscale_vm" "bar" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+  private_ip_address = "10.0.0.19"
+  subnet_id  = "subnet-861fbecc"
+  #tags {
+  #  Name = "bar instance"
+  #}
+}
+resource "outscale_public_ip" "bar" {
+  instance_id                 = "${outscale_vm.bar.id}"
+  association_id = "10.0.0.19"
+}
+`
 
-// const testAccOutscalePublicIPInstanceConfig_associated_update = `
-// resource "outscale_vm" "bar" {
-// 	# us-west-2
-// 	ami = "ami-4fccb37f"
-// 	instance_type = "m1.small"
-// }
-// resource "outscale_public_ip" "bar" {
-// 	instance = "${outscale_vm.bar.id}"
-// }
-// `
+const testAccOutscalePublicIPInstanceConfig_associated_switch = `
+resource "outscale_vm" "foo" {
+ image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+  private_ip_address = "10.0.0.12"
+  subnet_id  = "subnet-861fbecc"
+  #tags {
+  #  Name = "foo instance"
+  #}
+}
+resource "outscale_vm" "bar" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+  private_ip_address = "10.0.0.19"
+  subnet_id  = "subnet-861fbecc"
+  #tags {
+  #  Name = "bar instance"
+  #}
+}
+resource "outscale_public_ip" "bar" {
+  instance_id                  = "${outscale_vm.foo.id}"
+  association_id = "10.0.0.12"
+}
+`

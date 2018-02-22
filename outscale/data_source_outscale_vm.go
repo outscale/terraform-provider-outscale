@@ -3,7 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -37,12 +36,6 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 	if instanceIDOk {
 		params.InstanceIds = []*string{aws.String(instanceID.(string))}
 	}
-
-	// Perform the lookup
-	// resp, err := client.DescribeInstances(params)
-	// if err != nil {
-	// 	return err
-	// }
 
 	var resp *fcu.DescribeInstancesOutput
 	var err error
@@ -90,7 +83,17 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance = filteredInstances[0]
 
-	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", *instance.InstanceId)
+	fmt.Println("OWNER ID =>", resp.Reservations[0].OwnerId)
+
+	fmt.Println("REQUESTER ID =>", resp.Reservations[0].RequesterId)
+
+	fmt.Println("RESERVATION ID =>", resp.Reservations[0].ReservationId)
+
+	d.Set("owner_id", resp.Reservations[0].OwnerId)
+
+	d.Set("requester_id", resp.Reservations[0].RequesterId)
+
+	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	return instanceDescriptionAttributes(d, instance, client)
 }
@@ -112,6 +115,11 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 	d.Set("private_dns", instance.PrivateDnsName)
 	d.Set("private_ip", instance.PrivateIpAddress)
 	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
+
+	err := d.Set("group_set", getGroupSet(instance.GroupSet))
+	if err != nil {
+		return err
+	}
 
 	// iterate through network interfaces, and set subnet, network_interface, public_addr
 	if len(instance.NetworkInterfaces) > 0 {
@@ -137,7 +145,7 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err := d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
+	err = d.Set("instances_set", flattenedInstanceSetPassword([]*fcu.Instance{instance}, conn))
 
 	return err
 }
@@ -201,6 +209,10 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"architecture": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"password_data": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -564,7 +576,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"sopt_instance_request_id": {
+					"spot_instance_request_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
