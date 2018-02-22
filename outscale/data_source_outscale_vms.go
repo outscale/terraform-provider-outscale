@@ -565,7 +565,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 			"owner_id":       *r.OwnerId,
 			"reservation_id": *r.ReservationId,
 			"group_set":      getGroupSet(r.Groups),
-			"instances_set":  flattenedInstanceSetPassword(filteredInstances, client),
+			"instances_set":  flattenedInstanceSet(filteredInstances),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}
