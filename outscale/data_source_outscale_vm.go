@@ -212,10 +212,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"password_data": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
 					"block_device_mapping": {
 						Type: schema.TypeList,
 						Elem: &schema.Resource{
@@ -636,10 +632,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"reservation_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"password_data": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
