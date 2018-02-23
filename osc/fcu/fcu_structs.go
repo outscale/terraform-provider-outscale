@@ -1163,6 +1163,8 @@ type Address struct {
 	// VPC.
 	AssociationId *string `locationName:"associationId" type:"string"`
 
+	AllowReassociation *bool `locationName:"allowReassociation" type:"bool"`
+
 	// Indicates whether this Elastic IP address is for use with instances in EC2-Classic
 	// (standard) or instances in a VPC (vpc).
 	Domain *string `locationName:"domain" type:"string" enum:"DomainType"`
@@ -1196,6 +1198,12 @@ func (s Address) GoString() string {
 // SetAllocationId sets the AllocationId field's value.
 func (s *Address) SetAllocationId(v string) *Address {
 	s.AllocationId = &v
+	return s
+}
+
+// SetAllowReassociation sets the AllowReassociation field's value.
+func (s *Address) SetAllowReassociation(v bool) *Address {
+	s.AllowReassociation = &v
 	return s
 }
 
@@ -1569,39 +1577,16 @@ func (s *StartInstancesOutput) SetStartingInstances(v []*InstanceStateChange) *S
 type AssociateAddressInput struct {
 	_ struct{} `type:"structure"`
 
-	// [EC2-VPC] The allocation ID. This is required for EC2-VPC.
 	AllocationId *string `type:"string"`
 
-	// [EC2-VPC] For a VPC in an EC2-Classic account, specify true to allow an Elastic
-	// IP address that is already associated with an instance or network interface
-	// to be reassociated with the specified instance or network interface. Otherwise,
-	// the operation fails. In a VPC in an EC2-VPC-only account, reassociation is
-	// automatic, therefore you can specify false to ensure the operation fails
-	// if the Elastic IP address is already associated with another resource.
 	AllowReassociation *bool `locationName:"allowReassociation" type:"boolean"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `locationName:"dryRun" type:"boolean"`
-
-	// The ID of the instance. This is required for EC2-Classic. For EC2-VPC, you
-	// can specify either the instance ID or the network interface ID, but not both.
-	// The operation fails if you specify an instance ID unless exactly one network
-	// interface is attached.
 	InstanceId *string `type:"string"`
 
-	// [EC2-VPC] The ID of the network interface. If the instance has more than
-	// one network interface, you must specify a network interface ID.
 	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
 
-	// [EC2-VPC] The primary or secondary private IP address to associate with the
-	// Elastic IP address. If no private IP address is specified, the Elastic IP
-	// address is associated with the primary private IP address.
 	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
 
-	// The Elastic IP address. This is required for EC2-Classic.
 	PublicIp *string `type:"string"`
 }
 
@@ -1624,12 +1609,6 @@ func (s *AssociateAddressInput) SetAllocationId(v string) *AssociateAddressInput
 // SetAllowReassociation sets the AllowReassociation field's value.
 func (s *AssociateAddressInput) SetAllowReassociation(v bool) *AssociateAddressInput {
 	s.AllowReassociation = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *AssociateAddressInput) SetDryRun(v bool) *AssociateAddressInput {
-	s.DryRun = &v
 	return s
 }
 
@@ -1665,6 +1644,8 @@ type AssociateAddressOutput struct {
 	// [EC2-VPC] The ID that represents the association of the Elastic IP address
 	// with an instance.
 	AssociationId *string `locationName:"associationId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -1683,19 +1664,17 @@ func (s *AssociateAddressOutput) SetAssociationId(v string) *AssociateAddressOut
 	return s
 }
 
+// SetRequestId sets the AssociationId field's value.
+func (s *AssociateAddressOutput) SetRequestId(v string) *AssociateAddressOutput {
+	s.RequestId = &v
+	return s
+}
+
 type DisassociateAddressInput struct {
 	_ struct{} `type:"structure"`
 
-	// [EC2-VPC] The association ID. Required for EC2-VPC.
 	AssociationId *string `type:"string"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
-	DryRun *bool `locationName:"dryRun" type:"boolean"`
-
-	// [EC2-Classic] The Elastic IP address. Required for EC2-Classic.
 	PublicIp *string `type:"string"`
 }
 
@@ -1715,12 +1694,6 @@ func (s *DisassociateAddressInput) SetAssociationId(v string) *DisassociateAddre
 	return s
 }
 
-// SetDryRun sets the DryRun field's value.
-func (s *DisassociateAddressInput) SetDryRun(v bool) *DisassociateAddressInput {
-	s.DryRun = &v
-	return s
-}
-
 // SetPublicIp sets the PublicIp field's value.
 func (s *DisassociateAddressInput) SetPublicIp(v string) *DisassociateAddressInput {
 	s.PublicIp = &v
@@ -1730,6 +1703,9 @@ func (s *DisassociateAddressInput) SetPublicIp(v string) *DisassociateAddressInp
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateAddressOutput
 type DisassociateAddressOutput struct {
 	_ struct{} `type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+	Return    *bool   `locationName:"return" type:"boolean"`
 }
 
 // String returns the string representation
@@ -1740,6 +1716,18 @@ func (s DisassociateAddressOutput) String() string {
 // GoString returns the string representation
 func (s DisassociateAddressOutput) GoString() string {
 	return s.String()
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DisassociateAddressOutput) SetReturn(v bool) *DisassociateAddressOutput {
+	s.Return = &v
+	return s
+}
+
+// SetRequestId sets the AssociationId field's value.
+func (s *DisassociateAddressOutput) SetRequestId(v string) *DisassociateAddressOutput {
+	s.RequestId = &v
+	return s
 }
 
 type ReleaseAddressInput struct {
