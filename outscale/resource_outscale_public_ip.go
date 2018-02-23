@@ -36,42 +36,35 @@ func getPublicIPSchema() map[string]*schema.Schema {
 		// Attributes
 		"allocation_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"association_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"domain": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
+			Optional: true,
 		},
 		"instance_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"network_interface_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"network_interface_owner_id": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"private_ip_address": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"public_ip": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 	}
@@ -148,7 +141,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify AWS returned our EIP
+	// Verify Outscale returned our EIP
 	if len(describeAddresses.Addresses) != 1 ||
 		domain == "vpc" && *describeAddresses.Addresses[0].AllocationId != id ||
 		*describeAddresses.Addresses[0].PublicIp != id {
@@ -159,7 +152,13 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 
 	address := describeAddresses.Addresses[0]
 
-	d.Set("association_id", address.AssociationId)
+	fmt.Printf("[DEBUG] EIP read configuration: %+v", *address)
+
+	if address.AssociationId != nil {
+		d.Set("association_id", address.AssociationId)
+	} else {
+		d.Set("association_id", "")
+	}
 	if address.InstanceId != nil {
 		d.Set("instance", address.InstanceId)
 	} else {
@@ -180,6 +179,8 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	if *address.Domain == "vpc" && net.ParseIP(id) != nil {
 		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.AllocationId)
 		d.SetId(*address.AllocationId)
+	} else {
+		d.SetId(*address.PublicIp)
 	}
 
 	return nil
@@ -273,16 +274,14 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if err != nil {
-			// First check if the association ID is not found. If this
-			// is the case, then it was already disassociated somehow,
-			// and that is okay. The most commmon reason for this is that
-			// the instance or ENI it was attached it was destroyed.
-			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidAssociationID.NotFound" {
-				err = nil
-			}
-		}
 
-		if err != nil {
+			e := fmt.Sprint(err)
+
+			// Verify the error is what we want
+			if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				return nil
+			}
+
 			return err
 		}
 	}
@@ -303,6 +302,12 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 			_, err = conn.VM.ReleaseAddress(&fcu.ReleaseAddressInput{
 				PublicIp: aws.String(d.Id()),
 			})
+		}
+		e := fmt.Sprint(err)
+
+		// Verify the error is what we want
+		if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+			return nil
 		}
 
 		if err == nil {
