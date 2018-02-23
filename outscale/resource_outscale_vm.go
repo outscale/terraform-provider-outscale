@@ -190,8 +190,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	fmt.Println("Request id " + *resp.RequesterId)
-
 	d.Set("request_id", resp.RequesterId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
