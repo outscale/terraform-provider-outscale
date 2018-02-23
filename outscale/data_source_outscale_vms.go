@@ -114,7 +114,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ebs_optimised": {
+								"ebs_optimized": {
 									Type:     schema.TypeBool,
 									Computed: true,
 								},

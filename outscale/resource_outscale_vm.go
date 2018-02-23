@@ -909,7 +909,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ebs_optimised": {
+					"ebs_optimized": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
@@ -1706,7 +1706,7 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 	s := schema.NewSet(nil, []interface{}{})
 
 	instanceSet["ami_launch_index"] = *instance.AmiLaunchIndex
-	instanceSet["ebs_optimised"] = *instance.EbsOptimized
+	instanceSet["ebs_optimized"] = *instance.EbsOptimized
 	instanceSet["architecture"] = *instance.Architecture
 	instanceSet["client_token"] = *instance.ClientToken
 	instanceSet["hypervisor"] = *instance.Hypervisor
