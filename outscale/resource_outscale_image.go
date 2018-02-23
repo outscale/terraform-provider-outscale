@@ -30,9 +30,9 @@ func resourceOutscaleImage() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(40 * time.Minute),
+			Update: schema.DefaultTimeout(40 * time.Minute),
+			Delete: schema.DefaultTimeout(40 * time.Minute),
 		},
 
 		Schema: getImageSchema(),
@@ -269,7 +269,7 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(30*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(10*time.Minute, func() *resource.RetryError {
 		_, err := client.VM.DeregisterImage(req)
 
 		if err != nil {

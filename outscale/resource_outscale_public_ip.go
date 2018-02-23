@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -17,6 +16,7 @@ func resourceOutscalePublicIP() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscalePublicIPCreate,
 		Read:   resourceOutscalePublicIPRead,
+		Update: resourceOutscalePublicIPUpdate,
 		Delete: resourceOutscalePublicIPDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -24,6 +24,7 @@ func resourceOutscalePublicIP() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
+			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
@@ -80,8 +81,11 @@ func resourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 		Domain: aws.String(domainOpt),
 	}
 
-	fmt.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
+	fmt.Printf("\n [DEBUG] EIP create configuration: %#v", allocOpts)
 	allocResp, err := conn.VM.AllocateAddress(allocOpts)
+
+	fmt.Printf("\n [DEBUG] resourceOutscalePublicIPCreate Error 1: %v", err)
+
 	if err != nil {
 		return fmt.Errorf("Error creating EIP: %s", err)
 	}
@@ -93,14 +97,14 @@ func resourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 	// the EIP api has a conditional unique ID (really), so
 	// if we're in a VPC we need to save the ID as such, otherwise
 	// it defaults to using the public IP
-	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
+	fmt.Printf("\n [DEBUG] EIP Allocate: %#v", allocResp)
 	if d.Get("domain").(string) == "vpc" {
 		d.SetId(*allocResp.AllocationId)
 	} else {
 		d.SetId(*allocResp.PublicIp)
 	}
 
-	fmt.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
+	fmt.Printf("\n [INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
 	return resourceOutscalePublicIPUpdate(d, meta)
 }
 
@@ -118,9 +122,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		req.PublicIps = []*string{aws.String(id)}
 	}
 
-	fmt.Printf(
-		"[DEBUG] EIP describe configuration: %s (domain: %s)",
-		req, domain)
+	fmt.Printf("\n [DEBUG] EIP describe configuration: %s (domain: %s)", req, domain)
 
 	var describeAddresses *fcu.DescribeAddressesOutput
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -129,6 +131,8 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 
 		return resource.RetryableError(err)
 	})
+
+	fmt.Printf("\n [DEBUG] resourceOutscalePublicIPRead Error 1: %v", err)
 
 	if err != nil {
 		e := fmt.Sprint(err)
@@ -152,7 +156,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 
 	address := describeAddresses.Addresses[0]
 
-	fmt.Printf("[DEBUG] EIP read configuration: %+v", *address)
+	fmt.Printf("\n [DEBUG] EIP read configuration: %+v", *address)
 
 	if address.AssociationId != nil {
 		d.Set("association_id", address.AssociationId)
@@ -177,7 +181,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	// Force ID to be an Allocation ID if we're on a VPC
 	// This allows users to import the EIP based on the IP if they are in a VPC
 	if *address.Domain == "vpc" && net.ParseIP(id) != nil {
-		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.AllocationId)
+		fmt.Printf("\n [DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.AllocationId)
 		d.SetId(*address.AllocationId)
 	} else {
 		d.SetId(*address.PublicIp)
@@ -218,20 +222,21 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 			}
 		}
 
-		fmt.Printf("[DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
+		fmt.Printf("\n [DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, err := conn.VM.AssociateAddress(assocOpts)
+
+			fmt.Printf("\n [DEBUG] INNER Error: %v", err)
+
 			if err != nil {
-				if awsErr, ok := err.(awserr.Error); ok {
-					if awsErr.Code() == "InvalidAllocationID.NotFound" {
-						return resource.RetryableError(awsErr)
-					}
-				}
 				return resource.NonRetryableError(err)
 			}
 			return nil
 		})
+
+		fmt.Printf("\n [DEBUG] OUT Error: %v", err)
+
 		if err != nil {
 			// Prevent saving instance if association failed
 			// e.g. missing internet gateway in VPC
@@ -248,8 +253,10 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).FCU
 
 	if err := resourceOutscalePublicIPRead(d, meta); err != nil {
+		fmt.Printf("\n [DEBUG] resourceOutscalePublicIPDelete Error 1: %v", err)
 		return err
 	}
+
 	if d.Id() == "" {
 		// This might happen from the read
 		return nil
@@ -260,7 +267,7 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 
 	// If we are attached to an instance or interface, detach first.
 	if (ok_instance && v_instance.(string) != "") || (ok_association_id && v_association_id.(string) != "") {
-		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
+		fmt.Printf("\n [DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscalePublicIPDomain(d) {
 		case "vpc":
@@ -273,52 +280,54 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 			})
 		}
 
+		fmt.Printf("\n [DEBUG] resourceOutscalePublicIPDelete Error 2: %v", err)
+
 		if err != nil {
-
-			e := fmt.Sprint(err)
-
-			// Verify the error is what we want
-			if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-				return nil
-			}
-
 			return err
 		}
 	}
 
 	domain := resourceOutscalePublicIPDomain(d)
-	return resource.Retry(3*time.Minute, func() *resource.RetryError {
+
+	var err error
+	err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 		var err error
 		switch domain {
 		case "vpc":
-			fmt.Printf(
-				"[DEBUG] EIP release (destroy) address allocation: %v",
-				d.Id())
+			fmt.Printf("\n[DEBUG] EIP release (destroy) address allocation: %v", d.Id())
 			_, err = conn.VM.ReleaseAddress(&fcu.ReleaseAddressInput{
 				AllocationId: aws.String(d.Id()),
 			})
 		case "standard":
-			fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
+			fmt.Printf("\n [DEBUG] EIP release (destroy) address: %v", d.Id())
 			_, err = conn.VM.ReleaseAddress(&fcu.ReleaseAddressInput{
 				PublicIp: aws.String(d.Id()),
 			})
 		}
-		e := fmt.Sprint(err)
 
-		// Verify the error is what we want
-		if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-			return nil
-		}
+		fmt.Printf("\n [DEBUG] resourceOutscalePublicIPDelete Error 3: %v", err)
 
-		if err == nil {
-			return nil
-		}
-		if _, ok := err.(awserr.Error); !ok {
+		if err != nil {
 			return resource.NonRetryableError(err)
 		}
 
 		return resource.RetryableError(err)
 	})
+
+	fmt.Printf("\n [DEBUG] resourceOutscalePublicIPDelete Error 4: %v", err)
+
+	// Verify the error is what we want
+	if strings.Contains(fmt.Sprint(err), "InvalidAllocationID.NotFound") || strings.Contains(fmt.Sprint(err), "InvalidAddress.NotFound") {
+		return nil
+	}
+
+	if err == nil {
+		return nil
+	}
+
+	fmt.Printf("\n [DEBUG] LAST Error: %v", err)
+
+	return err
 }
 
 func resourceOutscalePublicIPDomain(d *schema.ResourceData) string {

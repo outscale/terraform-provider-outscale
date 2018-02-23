@@ -20,6 +20,7 @@ func init() {
 			"outscale_vm":             resourceOutscaleVM,
 			"outscale_public_ip":      resourceOutscalePublicIP,
 			"outscale_public_ip_link": resourceOutscalePublicIPLink,
+			"outscale_image":          resourceOutscaleImage,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,

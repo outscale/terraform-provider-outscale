@@ -523,7 +523,7 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.TerminateInstances(req)
 
 		if err != nil {

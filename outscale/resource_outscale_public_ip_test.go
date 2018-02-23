@@ -77,7 +77,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
-					// testAccCheckOutscalePublicIPAssociated(&one),
+					testAccCheckOutscalePublicIPAssociated(&one),
 				),
 			},
 
@@ -86,7 +86,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
-					// testAccCheckOutscalePublicIPAssociated(&one),
+					testAccCheckOutscalePublicIPAssociated(&one),
 				),
 			},
 		},
@@ -114,6 +114,8 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 				return resource.RetryableError(err)
 			})
 
+			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPDestroy Error: %v", err)
+
 			if err != nil {
 				// Verify the error is what we want
 				e := fmt.Sprint(err)
@@ -140,6 +142,8 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 
 				return resource.RetryableError(err)
 			})
+
+			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPDestroy Error 2: %v", err)
 
 			if err != nil {
 				e := fmt.Sprint(err)
@@ -198,6 +202,9 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 				AllocationIds: []*string{aws.String(rs.Primary.ID)},
 			}
 			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+
+			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPExists Error 1: %v", err)
+
 			if err != nil {
 				return err
 			}
@@ -213,6 +220,9 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 				PublicIps: []*string{aws.String(rs.Primary.ID)},
 			}
 			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+
+			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPExists Error 2: %v", err)
+
 			if err != nil {
 				return err
 			}

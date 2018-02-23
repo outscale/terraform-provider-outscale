@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,6 +30,10 @@ func TestAccOutscalePublicIPAssociation_basic(t *testing.T) {
 						"outscale_public_ip.bar.1", &a),
 					testAccCheckOutscalePublicIPAssociationExists(
 						"outscale_public_ip_link.by_public_ip", &a),
+					testAccCheckOutscalePublicIPExists(
+						"outscale_public_ip.bar.2", &a),
+					testAccCheckOutscalePublicIPAssociationExists(
+						"outscale_public_ip_link.to_eni", &a),
 				),
 			},
 		},
@@ -65,6 +70,7 @@ func testAccCheckEIPAssociationDisappears(address *fcu.Address) resource.TestChe
 			AssociationId: address.AssociationId,
 		}
 		if _, err := conn.FCU.VM.DisassociateAddress(opts); err != nil {
+			fmt.Printf("\n [DEBUG] TEST Error 1: %v", err)
 			return err
 		}
 		return nil
@@ -93,6 +99,9 @@ func testAccCheckOutscalePublicIPAssociationExists(name string, res *fcu.Address
 			},
 		}
 		describe, err := conn.FCU.VM.DescribeAddressesRequest(request)
+
+		fmt.Printf("\n [DEBUG] TEST Error: %v", err)
+
 		if err != nil {
 			return err
 		}
@@ -127,7 +136,16 @@ func testAccCheckOutscalePublicIPAssociationDestroy(s *terraform.State) error {
 			},
 		}
 		describe, err := conn.FCU.VM.DescribeAddressesRequest(request)
+		fmt.Printf("\n [DEBUG] TEST 2 Error: %v", err)
+
 		if err != nil {
+			fmt.Printf("\n [DEBUG] TEST Error 2: %v", err)
+
+			e := fmt.Sprint(err)
+			// Verify the error is what we want
+			if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				return nil
+			}
 			return err
 		}
 
@@ -161,7 +179,11 @@ resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.1.public_ip}"
 	instance_id = "${outscale_vm.basic.1.id}"
   depends_on = ["outscale_vm.basic"]
-}`
+}
+#resource "outscale_public_ip_link" "to_eni" {
+#	allocation_id = "${outscale_public_ip.bar.0.id}"
+#	network_interface_id = "eni-f2a898a3"
+#}`
 
 const testAccOutscalePublicIPAssociationConfigDisappears = `
 resource "outscale_vm" "foo" {
