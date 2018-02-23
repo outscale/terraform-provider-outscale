@@ -14,23 +14,15 @@ NOTE: outscale_public_ip is useful in scenarios where Public IPs are either pre-
 
 ```hcl
 
-resource "outscale_public_ip" "oip_assoc" {
-  instance_id   = "${outscale_vm.web.id}"
-  allocation_id = "${outscale_public_ip.example.id}"
+resource "outscale_vm" "basic" {
+    image_id = "ami-8a6a0120"
+    instance_type = "t2.micro"
+    key_name = "terraform-basic"
+}
+resource "outscale_public_ip" "bar" {
+    instance_id = "${outscale_vm.basic.id}"
 }
 
-resource "outscale_vm" "web" {
- image_id = "ami-8a6a0120"
-instance_type = "t2.micro"
-
-  tags {
-    Name = "HelloWorld"
-  }
-}
-
-resource "outscale_public_ip" "example" {
-  vpc = true
-}
 ```
 
 ## Argument Reference
