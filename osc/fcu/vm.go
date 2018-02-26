@@ -22,6 +22,8 @@ type VMService interface {
 	TerminateInstances(input *TerminateInstancesInput) (*TerminateInstancesOutput, error)
 	StopInstances(input *StopInstancesInput) (*StopInstancesOutput, error)
 	StartInstances(input *StartInstancesInput) (*StartInstancesOutput, error)
+	ImportKeyPair(input *ImportKeyPairInput) (*ImportKeyPairOutput, error)
+	DescribeKeyPairsRequest(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -205,4 +207,49 @@ func (v VMOperations) StartInstances(input *StartInstancesInput) (*StartInstance
 	}
 
 	return output, nil
+}
+
+func (v VMOperations) ImportKeyPair(input *ImportKeyPairInput) (*ImportKeyPairOutput, error) {
+	inURL := "/"
+	endpoint := "ImportKeyPair"
+	output := &ImportKeyPairOutput{}
+
+	if input == nil {
+		input = &ImportKeyPairInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeKeyPairsRequest(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeKeyPairs"
+	output := &DescribeKeyPairsOutput{}
+
+	if input == nil {
+		input = &DescribeKeyPairsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }

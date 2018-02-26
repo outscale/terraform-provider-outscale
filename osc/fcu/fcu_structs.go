@@ -1276,3 +1276,220 @@ func (s *StartInstancesOutput) SetStartingInstances(v []*InstanceStateChange) *S
 	s.StartingInstances = v
 	return s
 }
+
+// Contains the parameters for ImportKeyPair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportKeyPairRequest
+type ImportKeyPairInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// A unique name for the key pair.
+	//
+	// KeyName is a required field
+	KeyName *string `locationName:"keyName" type:"string" required:"true"`
+
+	// The public key. For API calls, the text must be base64-encoded. For command
+	// line tools, base64 encoding is performed for you.
+	//
+	// PublicKeyMaterial is automatically base64 encoded/decoded by the SDK.
+	//
+	// PublicKeyMaterial is a required field
+	PublicKeyMaterial []byte `locationName:"publicKeyMaterial" type:"blob" required:"true"`
+}
+
+// String returns the string representation
+func (s ImportKeyPairInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ImportKeyPairInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ImportKeyPairInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ImportKeyPairInput"}
+	if s.KeyName == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyName"))
+	}
+	if s.PublicKeyMaterial == nil {
+		invalidParams.Add(request.NewErrParamRequired("PublicKeyMaterial"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ImportKeyPairInput) SetDryRun(v bool) *ImportKeyPairInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *ImportKeyPairInput) SetKeyName(v string) *ImportKeyPairInput {
+	s.KeyName = &v
+	return s
+}
+
+// SetPublicKeyMaterial sets the PublicKeyMaterial field's value.
+func (s *ImportKeyPairInput) SetPublicKeyMaterial(v []byte) *ImportKeyPairInput {
+	s.PublicKeyMaterial = v
+	return s
+}
+
+// Contains the output of ImportKeyPair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportKeyPairResult
+type ImportKeyPairOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The MD5 public key fingerprint as specified in section 4 of RFC 4716.
+	KeyFingerprint *string `locationName:"keyFingerprint" type:"string"`
+
+	// The key pair name you provided.
+	KeyName *string `locationName:"keyName" type:"string"`
+}
+
+// String returns the string representation
+func (s ImportKeyPairOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ImportKeyPairOutput) GoString() string {
+	return s.String()
+}
+
+// SetKeyFingerprint sets the KeyFingerprint field's value.
+func (s *ImportKeyPairOutput) SetKeyFingerprint(v string) *ImportKeyPairOutput {
+	s.KeyFingerprint = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *ImportKeyPairOutput) SetKeyName(v string) *ImportKeyPairOutput {
+	s.KeyName = &v
+	return s
+}
+
+// Contains the parameters for DescribeKeyPairs.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeKeyPairsRequest
+type DescribeKeyPairsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * fingerprint - The fingerprint of the key pair.
+	//
+	//    * key-name - The name of the key pair.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more key pair names.
+	//
+	// Default: Describes all your key pairs.
+	KeyNames []*string `locationName:"KeyName" locationNameList:"KeyName" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeKeyPairsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeKeyPairsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeKeyPairsInput) SetDryRun(v bool) *DescribeKeyPairsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeKeyPairsInput) SetFilters(v []*Filter) *DescribeKeyPairsInput {
+	s.Filters = v
+	return s
+}
+
+// SetKeyNames sets the KeyNames field's value.
+func (s *DescribeKeyPairsInput) SetKeyNames(v []*string) *DescribeKeyPairsInput {
+	s.KeyNames = v
+	return s
+}
+
+// Contains the output of DescribeKeyPairs.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeKeyPairsResult
+type DescribeKeyPairsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more key pairs.
+	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeKeyPairsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeKeyPairsOutput) GoString() string {
+	return s.String()
+}
+
+// SetKeyPairs sets the KeyPairs field's value.
+func (s *DescribeKeyPairsOutput) SetKeyPairs(v []*KeyPairInfo) *DescribeKeyPairsOutput {
+	s.KeyPairs = v
+	return s
+}
+
+// Describes a key pair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/KeyPairInfo
+type KeyPairInfo struct {
+	_ struct{} `type:"structure"`
+
+	// If you used CreateKeyPair to create the key pair, this is the SHA-1 digest
+	// of the DER encoded private key. If you used ImportKeyPair to provide AWS
+	// the public key, this is the MD5 public key fingerprint as specified in section
+	// 4 of RFC4716.
+	KeyFingerprint *string `locationName:"keyFingerprint" type:"string"`
+
+	// The name of the key pair.
+	KeyName *string `locationName:"keyName" type:"string"`
+}
+
+// String returns the string representation
+func (s KeyPairInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s KeyPairInfo) GoString() string {
+	return s.String()
+}
+
+// SetKeyFingerprint sets the KeyFingerprint field's value.
+func (s *KeyPairInfo) SetKeyFingerprint(v string) *KeyPairInfo {
+	s.KeyFingerprint = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *KeyPairInfo) SetKeyName(v string) *KeyPairInfo {
+	s.KeyName = &v
+	return s
+}
