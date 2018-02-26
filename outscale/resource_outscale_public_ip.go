@@ -131,9 +131,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	})
 
 	if err != nil {
-		e := fmt.Sprint(err)
-
-		if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			d.SetId("")
 			return nil
 		}
@@ -232,6 +230,7 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 			}
 			return nil
 		})
+
 		if err != nil {
 			// Prevent saving instance if association failed
 			// e.g. missing internet gateway in VPC
@@ -275,10 +274,8 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 
 		if err != nil {
 
-			e := fmt.Sprint(err)
-
 			// Verify the error is what we want
-			if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 				return nil
 			}
 
@@ -303,10 +300,9 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 				PublicIp: aws.String(d.Id()),
 			})
 		}
-		e := fmt.Sprint(err)
 
 		// Verify the error is what we want
-		if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			return nil
 		}
 
