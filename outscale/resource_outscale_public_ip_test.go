@@ -77,7 +77,6 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
-					testAccCheckOutscalePublicIPAssociated(&one),
 				),
 			},
 
@@ -86,7 +85,6 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
-					testAccCheckOutscalePublicIPAssociated(&one),
 				),
 			},
 		},
@@ -118,10 +116,8 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 
 			if err != nil {
 				// Verify the error is what we want
-				e := fmt.Sprint(err)
-
-				if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					continue
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return nil
 				}
 
 				return err
@@ -146,11 +142,11 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPDestroy Error 2: %v", err)
 
 			if err != nil {
-				e := fmt.Sprint(err)
 				// Verify the error is what we want
-				if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					continue
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return nil
 				}
+
 				return err
 			}
 
@@ -167,17 +163,6 @@ func testAccCheckOutscalePublicIPAttributes(conf *fcu.Address) resource.TestChec
 	return func(s *terraform.State) error {
 		if *conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckOutscalePublicIPAssociated(conf *fcu.Address) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-
-		if conf.AssociationId == nil {
-			return fmt.Errorf("empty association_id")
 		}
 
 		return nil
@@ -203,8 +188,6 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 			}
 			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
 
-			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPExists Error 1: %v", err)
-
 			if err != nil {
 				return err
 			}
@@ -219,11 +202,38 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 			req := &fcu.DescribeAddressesInput{
 				PublicIps: []*string{aws.String(rs.Primary.ID)},
 			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
 
-			fmt.Printf("\n [DEBUG] testAccCheckOutscalePublicIPExists Error 2: %v", err)
+			var describe *fcu.DescribeAddressesOutput
+			err := resource.Retry(120*time.Second, func() *resource.RetryError {
+				var err error
+				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+
+				if err != nil {
+					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+						return resource.RetryableError(err)
+					}
+
+					return resource.NonRetryableError(err)
+				}
+
+				return nil
+			})
 
 			if err != nil {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return nil
+				}
+
+				return err
+			}
+
+			if err != nil {
+
+				// Verify the error is what we want
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return nil
+				}
+
 				return err
 			}
 
@@ -248,9 +258,7 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
 }
-resource "outscale_public_ip" "bar" {
-	#instance_id = "${outscale_vm.basic.id}"
-}
+resource "outscale_public_ip" "bar" {}
 `
 
 const testAccOutscalePublicIPInstanceConfig2 = `
@@ -259,9 +267,7 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
 }
-resource "outscale_public_ip" "bar" {
-	#instance_id = "${outscale_vm.basic.id}"
-}
+resource "outscale_public_ip" "bar" {}
 `
 
 const testAccOutscalePublicIPInstanceConfig_associated = `
@@ -271,9 +277,6 @@ resource "outscale_vm" "foo" {
 	key_name = "terraform-basic"
   private_ip_address = "10.0.0.12"
   subnet_id  = "subnet-861fbecc"
-  #tags {
-  #  Name = "foo instance"
-  #}
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
@@ -281,14 +284,8 @@ resource "outscale_vm" "bar" {
 	key_name = "terraform-basic"
   private_ip_address = "10.0.0.19"
   subnet_id  = "subnet-861fbecc"
-  #tags {
-  #  Name = "bar instance"
-  #}
 }
-resource "outscale_public_ip" "bar" {
-  #instance_id                 = "${outscale_vm.bar.id}"
-  #association_id = "10.0.0.19"
-}
+resource "outscale_public_ip" "bar" {}
 `
 
 const testAccOutscalePublicIPInstanceConfig_associated_switch = `
@@ -298,9 +295,6 @@ resource "outscale_vm" "foo" {
 	key_name = "terraform-basic"
   private_ip_address = "10.0.0.12"
   subnet_id  = "subnet-861fbecc"
-  #tags {
-  #  Name = "foo instance"
-  #}
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
@@ -308,12 +302,6 @@ resource "outscale_vm" "bar" {
 	key_name = "terraform-basic"
   private_ip_address = "10.0.0.19"
   subnet_id  = "subnet-861fbecc"
-  #tags {
-  #  Name = "bar instance"
-  #}
 }
-resource "outscale_public_ip" "bar" {
-  #instance_id                  = "${outscale_vm.foo.id}"
-  #association_id = "10.0.0.12"
-}
+resource "outscale_public_ip" "bar" {}
 `
