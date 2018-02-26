@@ -2689,3 +2689,189 @@ func (s CreateTagsOutput) String() string {
 func (s CreateTagsOutput) GoString() string {
 	return s.String()
 }
+
+type DescribeTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * key - The tag key.
+	//
+	//    * resource-id - The resource ID.
+	//
+	//    * resource-type - The resource type (customer-gateway | dhcp-options |
+	//    image | instance | internet-gateway | network-acl | network-interface
+	//    | reserved-instances | route-table | security-group | snapshot | spot-instances-request
+	//    | subnet | volume | vpc | vpn-connection | vpn-gateway).
+	//
+	//    * value - The tag value.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return in a single call. This value can
+	// be between 5 and 1000. To retrieve the remaining results, make another call
+	// with the returned NextToken value.
+	MaxResults *int64 `locationName:"maxResults" type:"integer"`
+
+	// The token to retrieve the next page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeTagsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeTagsInput) SetDryRun(v bool) *DescribeTagsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeTagsInput) SetFilters(v []*Filter) *DescribeTagsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeTagsInput) SetMaxResults(v int64) *DescribeTagsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsInput) SetNextToken(v string) *DescribeTagsInput {
+	s.NextToken = &v
+	return s
+}
+
+// Contains the output of DescribeTags.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeTagsResult
+type DescribeTagsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return..
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// A list of tags.
+	Tags []*TagDescription `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsOutput) SetNextToken(v string) *DescribeTagsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*TagDescription) *DescribeTagsOutput {
+	s.Tags = v
+	return s
+}
+
+type TagDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The tag key.
+	Key *string `locationName:"key" type:"string"`
+
+	// The ID of the resource. For example, ami-1a2b3c4d.
+	ResourceId *string `locationName:"resourceId" type:"string"`
+
+	// The resource type.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
+
+	// The tag value.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation
+func (s TagDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagDescription) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *TagDescription) SetKey(v string) *TagDescription {
+	s.Key = &v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *TagDescription) SetResourceId(v string) *TagDescription {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *TagDescription) SetResourceType(v string) *TagDescription {
+	s.ResourceType = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *TagDescription) SetValue(v string) *TagDescription {
+	s.Value = &v
+	return s
+}
+
+// The tags to apply to a resource when the resource is being created.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/TagSpecification
+type TagSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The type of resource to tag. Currently, the resource types that support tagging
+	// on creation are instance and volume.
+	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
+
+	// The tags to apply to the resource.
+	Tags []*Tag `locationName:"Tag" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s TagSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagSpecification) GoString() string {
+	return s.String()
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *TagSpecification) SetResourceType(v string) *TagSpecification {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagSpecification) SetTags(v []*Tag) *TagSpecification {
+	s.Tags = v
+	return s
+}

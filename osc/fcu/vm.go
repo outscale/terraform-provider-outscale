@@ -33,6 +33,7 @@ type VMService interface {
 	DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error)
 	CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error)
 	DeregisterImage(input *DeregisterImageInput) (*DeregisterImageOutput, error)
+	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -447,6 +448,28 @@ func (v VMOperations) DeregisterImage(input *DeregisterImageInput) (*DeregisterI
 
 	if input == nil {
 		input = &DeregisterImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeTags"
+	output := &DescribeTagsOutput{}
+
+	if input == nil {
+		input = &DescribeTagsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

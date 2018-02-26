@@ -14,6 +14,21 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
+func tagsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+	}
+}
+
+func tagsSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+		Computed: true,
+	}
+}
+
 func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
