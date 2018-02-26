@@ -218,16 +218,18 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 
 		fmt.Printf("[DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
 
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err := conn.VM.AssociateAddress(assocOpts)
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			_, err = conn.VM.AssociateAddress(assocOpts)
+
 			if err != nil {
-				if awsErr, ok := err.(awserr.Error); ok {
-					if awsErr.Code() == "InvalidAllocationID.NotFound" {
-						return resource.RetryableError(awsErr)
-					}
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return resource.RetryableError(err)
 				}
+
 				return resource.NonRetryableError(err)
 			}
+
 			return nil
 		})
 

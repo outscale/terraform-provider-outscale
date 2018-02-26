@@ -6,16 +6,15 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscalePublicIPLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePublicIPLinkCreate,
-		Read:   resourcePublicIPLinkRead,
-		Delete: resourcePublicIPLinkDelete,
+		Create: resourceOutscalePublicIPLinkCreate,
+		Read:   resourceOutscalePublicIPLinkRead,
+		Delete: resourceOutscalePublicIPLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,7 +28,7 @@ func resourceOutscalePublicIPLink() *schema.Resource {
 	}
 }
 
-func resourcePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.AssociateAddressInput{}
@@ -53,30 +52,28 @@ func resourcePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error 
 		request.PublicIp = aws.String(v.(string))
 	}
 
+	log.Printf("[DEBUG] EIP association configuration: %#v", request)
+
 	resp, err := conn.VM.AssociateAddress(request)
 	if err != nil {
-		if awsErr, ok := err.(awserr.Error); ok {
-			return fmt.Errorf("[WARN] Error attaching public ip link, message: \"%s\", code: \"%s\"",
-				awsErr.Message(), awsErr.Code())
-		}
+		fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkCreate (%s)", err)
 		return err
 	}
 
-	var id *string
+	if resp != nil {
+		fmt.Printf("RESULTADO => #v", resp)
+		fmt.Printf("RES =>#v", resp.AssociationId)
+		d.SetId(*request.PublicIp)
 
-	if resp.AssociationId != nil {
-		id = resp.AssociationId
+		// d.SetId(*resp.AssociationId)
 	} else {
-		id = request.PublicIp
+		d.SetId(*request.PublicIp)
 	}
 
-	d.SetId(*id)
-
-	return resourcePublicIPLinkRead(d, meta)
-
+	return resourceOutscalePublicIPLinkRead(d, meta)
 }
 
-func resourcePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.DescribeAddressesInput{
@@ -89,38 +86,22 @@ func resourcePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	response, err := conn.VM.DescribeAddressesRequest(request)
+	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkRead (%s)", err)
+
 	if err != nil {
-		return fmt.Errorf("Error reading Public IP Link %s: %#v", d.Get("allocation_id").(string), err)
+		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("allocation_id").(string), err)
 	}
 
 	if response.Addresses == nil || len(response.Addresses) == 0 {
-		log.Printf("[INFO] Public IP Link Association ID Not Found. Refreshing from state")
+		log.Printf("[INFO] EIP Association ID Not Found. Refreshing from state")
 		d.SetId("")
 		return nil
 	}
 
-	address := response.Addresses[0]
-
-	if err := d.Set("allocation_id", address.AllocationId); err != nil {
-		return err
-	}
-	if err := d.Set("instance_id", address.InstanceId); err != nil {
-		return err
-	}
-	if err := d.Set("network_interface_id", address.NetworkInterfaceId); err != nil {
-		return err
-	}
-	if err := d.Set("private_ip_address", address.PrivateIpAddress); err != nil {
-		return err
-	}
-	if err := d.Set("public_ip", address.PublicIp); err != nil {
-		return err
-	}
-
-	return nil
+	return readOutscalePublicIPLink(d, response.Addresses[0])
 }
 
-func resourcePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	opts := &fcu.DisassociateAddressInput{
@@ -128,8 +109,41 @@ func resourcePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	_, err := conn.VM.DisassociateAddress(opts)
+
+	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkDelete (%s)", err)
+
 	if err != nil {
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
+	}
+
+	return nil
+}
+
+func readOutscalePublicIPLink(d *schema.ResourceData, address *fcu.Address) error {
+	if err := d.Set("allocation_id", address.AllocationId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
+
+		return err
+	}
+	if err := d.Set("instance_id", address.InstanceId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
+
+		return err
+	}
+	if err := d.Set("network_interface_id", address.NetworkInterfaceId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
+
+		return err
+	}
+	if err := d.Set("private_ip_address", address.PrivateIpAddress); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
+
+		return err
+	}
+	if err := d.Set("public_ip", address.PublicIp); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+
+		return err
 	}
 
 	return nil

@@ -14,10 +14,10 @@ func TestAccOutscalePublicIPLink_importBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscalePublicIPAssociationDestroy,
+		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPAssociationConfig,
+				Config: testAccOutscalePublicIPLinkConfig,
 			},
 
 			resource.TestStep{
