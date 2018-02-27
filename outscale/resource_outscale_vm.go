@@ -86,7 +86,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
+	fmt.Println("[DEBUG] Run configuration: %+v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -107,6 +107,13 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
+
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tags")
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -1247,6 +1254,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"tags": tagsSchema(),
 		"requester_id": {
 			Type:     schema.TypeString,
 			Computed: true,
