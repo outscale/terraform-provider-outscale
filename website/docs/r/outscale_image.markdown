@@ -3,11 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_image"
 sidebar_current: "docs-outscale-resource-image"
 description: |-
-The Outscale Image resource allows the creation and management of a completely-custom Outscale VM Image.
-
-If you just want to duplicate an existing Outscale Image, possibly copying it to another region, it's better to use outscale_image_copy instead.
-
-If you just want to share an existing Outscale Image with another Outscale account, it's better to use outscale_image_launch_permission instead.
+Creates an OMI from an existing instance which is either running or stopped.
 ---
 
 ## Example Usage
@@ -21,7 +17,7 @@ resource "outscale_vm" "basic" {
 }
 
 resource "outscale_image" "foo" {
-	name = "tf-testing-%d"
+	name = "tf-outscale-image-name"
 	instance_id = "${outscale_vm.basic.id}"
 }
 ```
@@ -30,29 +26,45 @@ resource "outscale_image" "foo" {
 
 The following arguments are supported:
 
-* `name` - (Required) A region-unique name for the Image.
-* `instance_id` - (Required) Instance ID for the Image.
-* `description` - (Optional) A longer, human-readable description for the Image.
+* `name` - (Required) A unique name for the new OMI.
+* `instance_id` - (Required) The ID of the instance from which you want to create the OMI.
+* `description` - (Optional) A description for the new OMI.
 * `root_device_name` - (Optional) The name of the root device (for example, /dev/sda1, or /dev/xvda).
 * `image_type` - (Optional) Keyword to choose what virtualization mode created instances will use. Can be either "paravirtual" (the default) or "hvm". The choice of * virtualization type changes the set of further arguments that are required, as described below.
 * `architecture` - (Optional) Machine architecture for created instances. Defaults to "x86_64".
-* `block_device_mapping` - (Optional) Nested block describing an ephemeral block device that should be attached to created instances. The structure of this block is described below.
-
+* `block_device_mapping` - (Optional) One or more block device mapping entries.
+* `dry_run` - If set to true, checks whether you have the required permissions to perform the action.
+* `no_reboot` - If set to false, the instance shuts down before creating the OMI and then reboots. If set to true, the instance does not.
+* `architecture` - The architecture of the OMI.
+* `creation_date` - The date and time at which the OMI was created.
+* `image_location` - The location where the OMI is stored on Object Storage Unit (OSU).
+* `image_owner_alias` - The account alias of the owner of the OMI.
+* `image_owner_id` - The account ID of the owner of the OMI.
+* `image_state` - The current state of the OMI (if available, the image is registered and can be used to launch an instance).
+* `image_type` - The type of the OMI.
+* `is_public` - If true, the OMI has public launch permissions.
+* `product_codes` - One or more product codes associated with the OMI.
+* `root_device_name` - The name of the device to which the root device is plugged in (for example, /dev/sda1).
+* `root_device_type` - The type of root device used by the OMI.
+* `state_reason` - The reason for the OMI state change.
+* `tag_set` - One or more tags associated with the OMI.
 
 Nested block_device_mapping blocks have the following structure:
 
-* `device_name` - (Optional) The path at which the device is exposed to created instances.
-* `virtual_name` - (Optional) A name for the ephemeral device, of the form "ephemeralN" where N is a volume number starting from zero.
-* `ebs` - (Optional) Nested block describing an EBS block device that should be attached to created instances. The structure of this block is described below.
+* `device_name` - (Optional) The name of the device.
+* `virtual_name` - (Optional) The name of the virtual device (ephemeralN).
+* `no_device` - Suppresses the device which is included in the block device mapping of the OMI.
+* `ebs` - (Optional) One or more parameters used to automatically set up volumes when the instance is launched.
 
 Nested ebs blocks have the following structure:
 
-* `delete_on_termination` - (Optional) Boolean controlling whether the EBS volumes created to support each created instance will be deleted once that instance is terminated.
-* `iops` - (Required only when volume_type is "io1") Number of I/O operations per second the created volumes will support.
-* `snapshot_id` - (Optional) The id of an EBS snapshot that will be used to initialize the created EBS volumes. If set, the volume_size attribute must be at least as large as the referenced snapshot.
-* `volume_size` - (Required unless snapshot_id is set) The size of created volumes in GiB. If snapshot_id is set and volume_size is omitted then the volume will have the same size as the selected snapshot.
-* `volume_type` - (Optional) The type of EBS volume to create. Can be one of "standard" (the default), "io1" or "gp2".
-
+* `delete_on_termination` - (Optional) By default or if true, the volume is deleted when terminating the instance. If false, the volume is not deleted when terminating the instance.
+* `iops` - The number of IOPS supported by the volume.
+* `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
+* `volume_size` - The size of the volume, in Gibibytes (GiB).
+If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.
+If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
+* `volume_type` - The type of the volume (standard | io1 | gp2 | sc1 | st1).
 ### Timeouts
 
 The timeouts block allows you to specify timeouts for certain actions:
@@ -60,10 +72,3 @@ The timeouts block allows you to specify timeouts for certain actions:
 * `create` - (Defaults to 40 mins) Used when creating the Image
 * `update` - (Defaults to 40 mins) Used when updating the Image
 * `delete` - (Defaults to 90 mins) Used when deregistering the Image
-
-## Attributes Reference
-
-The following attributes are exported:
-
-* `image_id` - The ID of the created Image.
-* `snapshot_id` - The Snapshot ID for the root volume (for EBS-backed AMIs)

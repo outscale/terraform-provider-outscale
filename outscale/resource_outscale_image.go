@@ -149,7 +149,7 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if state != "available" {
-		return fmt.Errorf("AMI has become %s", state)
+		return fmt.Errorf("OMI has become %s", state)
 	}
 
 	d.Set("name", image.Name)
@@ -291,7 +291,7 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	// No error, ami was deleted successfully
+	// No error, OMI was deleted successfully
 	d.SetId("")
 	return nil
 }
@@ -468,7 +468,7 @@ func getImageSchema() map[string]*schema.Schema {
 }
 
 func resourceOutscaleImageWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("MSG %s, Waiting for AMI %s to become available...", i, id)
+	fmt.Printf("MSG %s, Waiting for OMI %s to become available...", i, id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -481,7 +481,7 @@ func resourceOutscaleImageWaitForAvailable(id string, client *fcu.Client, i int)
 
 	info, err := stateConf.WaitForState()
 	if err != nil {
-		return nil, fmt.Errorf("Error waiting for AMI (%s) to be ready: %v", id, err)
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", id, err)
 	}
 	return info.(*fcu.Image), nil
 }
@@ -511,9 +511,6 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 			} else if resp != nil && len(resp.Images) == 0 {
 				return emptyResp, "destroyed", nil
 			} else {
-				// if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
-				// 	return emptyResp, "destroyed", nil
-				// }
 				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
 			}
 		}
@@ -522,13 +519,13 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 			return emptyResp, "destroyed", nil
 		}
 
-		// AMI is valid, so return it's state
+		// OMI is valid, so return it's state
 		return resp.Images[0], *resp.Images[0].State, nil
 	}
 }
 
 func resourceOutscaleImageWaitForDestroy(id string, client *fcu.Client) error {
-	fmt.Printf("Waiting for AMI %s to be deleted...", id)
+	fmt.Printf("Waiting for OMI %s to be deleted...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending", "failed"},
@@ -541,7 +538,7 @@ func resourceOutscaleImageWaitForDestroy(id string, client *fcu.Client) error {
 
 	_, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for AMI (%s) to be deleted: %v", id, err)
+		return fmt.Errorf("Error waiting for OMI (%s) to be deleted: %v", id, err)
 	}
 
 	return nil
