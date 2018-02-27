@@ -42,10 +42,10 @@ The following arguments are supported:
 ## Attributes Reference
 
 * `association_id` - The ID that represents the association of the EIP with an instance or a network interface.
-* `allocation_id` - As above
-* `instance_id` - As above
-* `network_interface_id` - As above
-* `private_ip_address` - As above
-* `public_ip` - As above
+* `allocation_id` - The allocation ID, required for instances in a VPC.
+* `instance_id` - (VPC only) If set to true, allows an EIP that is already associated with an instance or a network interface to be reassociated with the instance or network interface you specify.
+* `network_interface_id` - The ID of the instance or of the network interface.
+* `private_ip_address` - The primary or secondary private IP address to associate with the External IP address.
+* `public_ip` - The External IP address.
 
 See detailed information in [Describe Addresses](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
