@@ -801,6 +801,8 @@ type RunInstancesInput struct {
 	// [EC2-VPC] The Id of the subnet to launch the instance into.
 	SubnetId *string `type:"string"`
 
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The user data to make available to the instance. For more information, see
 	// Running Commands on Your Linux Instance at Launch (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html)
 	// (Linux) and Adding User Data (http://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-instance-metadata.html#instancedata-add-user-data)

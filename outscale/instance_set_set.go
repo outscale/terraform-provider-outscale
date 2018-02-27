@@ -285,6 +285,25 @@ func getTagSet(tags []*fcu.Tag) []map[string]interface{} {
 	return res
 }
 
+func getTagDescriptionSet(tags []*fcu.TagDescription) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+			tag["resourceId"] = *t.ResourceId
+			tag["resourceType"] = *t.ResourceType
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
 func flattenEBS(ebs *fcu.EbsInstanceBlockDevice) map[string]interface{} {
 
 	res := map[string]interface{}{

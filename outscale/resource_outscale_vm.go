@@ -68,6 +68,23 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		UserData:         instanceOpts.UserData,
 	}
 
+	tagsSpec := make([]*fcu.TagSpecification, 0)
+
+	if v, ok := d.GetOk("tags"); ok {
+		tags := tagsFromMap(v.(map[string]interface{}))
+
+		spec := &fcu.TagSpecification{
+			ResourceType: aws.String("instance"),
+			Tags:         tags,
+		}
+
+		tagsSpec = append(tagsSpec, spec)
+	}
+
+	if len(tagsSpec) > 0 {
+		runOpts.TagSpecifications = tagsSpec
+	}
+
 	// Create the instance
 	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
 
@@ -188,6 +205,8 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
+	d.Set("tag_set", tagsToMap(instance.Tags))
+
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
 	d.Set("requester_id", resp.Reservations[0].RequesterId)
@@ -251,6 +270,12 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		err := conn.VM.ModifyInstanceKeyPair(input)
 		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("tag_set") {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 	}
@@ -1192,7 +1217,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeList,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
@@ -1702,7 +1727,7 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 	// instanceSet["placement"] = getPlacement(instance.Placement)
 	// instanceSet["state_reason"] = getStateReason(instance.StateReason)
 	// instanceSet["product_codes"] = getProductCodes(instance.ProductCodes)
-	// instanceSet["tag_set"] = getTagSet(instance.Tags)
+	instanceSet["tag_set"] = getTagSet(instance.Tags)
 
 	return s
 }
