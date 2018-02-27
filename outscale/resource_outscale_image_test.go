@@ -39,12 +39,12 @@ func testAccCheckImageDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "aws_ami" {
+		if rs.Type != "outscale_image" {
 			continue
 		}
 
-		// Try to find the AMI
-		log.Printf("AMI-ID: %s", rs.Primary.ID)
+		// Try to find the OMI
+		log.Printf("OMI-ID: %s", rs.Primary.ID)
 		DescribeAmiOpts := &fcu.DescribeImagesInput{
 			ImageIds: []*string{aws.String(rs.Primary.ID)},
 		}
@@ -56,14 +56,17 @@ func testAccCheckImageDestroy(s *terraform.State) error {
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("[INFO] Request limit exceeded")
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
 
-			return resource.RetryableError(err)
+			return nil
 		})
+
+		if resp == nil {
+			return nil
+		}
 
 		if err != nil {
 			return err
@@ -71,7 +74,7 @@ func testAccCheckImageDestroy(s *terraform.State) error {
 
 		if len(resp.Images) > 0 {
 			state := resp.Images[0].State
-			return fmt.Errorf("AMI %s still exists in the state: %s.", *resp.Images[0].ImageId, *state)
+			return fmt.Errorf("OMI %s still exists in the state: %s.", *resp.Images[0].ImageId, *state)
 		}
 	}
 	return nil
@@ -81,11 +84,11 @@ func testAccCheckImageExists(n string, ami *fcu.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("AMI Not found: %s", n)
+			return fmt.Errorf("OMI Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No AMI ID is set")
+			return fmt.Errorf("No OMI ID is set")
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
@@ -100,20 +103,19 @@ func testAccCheckImageExists(n string, ami *fcu.Image) resource.TestCheckFunc {
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("[INFO] Request limit exceeded")
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
 
-			return resource.RetryableError(err)
+			return nil
 		})
 
 		if err != nil {
 			return err
 		}
 		if len(resp.Images) == 0 {
-			return fmt.Errorf("AMI not found")
+			return fmt.Errorf("OMI not found")
 		}
 		*ami = *resp.Images[0]
 		return nil
