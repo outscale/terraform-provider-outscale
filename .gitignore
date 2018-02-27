@@ -1,6 +1,3 @@
-examples/.terraform
-examples/terraform.tfstate
-examples/terraform.tfstate.backup
-examples/terraform-provider-outscale
-examples/main.tf
-test/main.go
+examples/
+examples/
+test/

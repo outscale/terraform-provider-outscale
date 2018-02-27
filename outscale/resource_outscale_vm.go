@@ -72,7 +72,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
 
 	var runResp *fcu.Reservation
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		runResp, err = conn.VM.RunInstance(runOpts)
 
@@ -80,10 +80,10 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source instance: %s", err)
+		return fmt.Errorf("Error launching source instance 1: %s", err)
 	}
 	if runResp == nil || len(runResp.Instances) == 0 {
-		return errors.New("Error launching source instance: no instances returned in response")
+		return errors.New("Error launching source instance 2: no instances returned in response")
 	}
 
 	instance := runResp.Instances[0]
@@ -221,7 +221,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		})
 
 		if passRes == nil {
-			return fmt.Errorf("Error launching source instance: (%s)", d.Id())
+			return fmt.Errorf("Error launching source instance 3: (%s)", d.Id())
 		}
 
 		if err != nil {
@@ -573,7 +573,7 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.TerminateInstances(req)
 
 		if err != nil {
@@ -637,19 +637,19 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_termination": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"iops": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"snapshot_id": {
 									Type:     schema.TypeInt,
 									Optional: true,
 								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
 								"volume_size": {
-									Type:     schema.TypeFloat,
+									Type:     schema.TypeInt,
 									Optional: true,
 								},
 								"volume_type": {
@@ -694,7 +694,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		"instance_initiated_shutdown_behavior": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 		},
 		"instance_type": {
@@ -737,7 +737,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"network_interface_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"private_ip_address": {
@@ -750,7 +750,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"primary": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"private_ip_address": {
@@ -761,7 +761,7 @@ func getVMSchema() map[string]*schema.Schema {
 						},
 					},
 					"secondary_private_ip_address_count": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Optional: true,
 					},
 					"security_group_id": {
@@ -794,7 +794,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"host_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"tenancy": {
@@ -809,7 +809,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"private_ip_addresses": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeString,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -960,7 +960,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"name": {
@@ -1141,7 +1141,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"vpc_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
@@ -1220,7 +1220,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"source_dest_check": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeBool,
 						Computed: true,
 					},
 					"spot_instance_request_id": {
@@ -1236,7 +1236,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"message": {
@@ -1304,7 +1304,7 @@ type outscaleInstanceOpts struct {
 	EBSOptimized                      *bool
 	DryRun                            *bool
 	ImageID                           *string
-	InstanceInitiatedShutdownBehavior *bool
+	InstanceInitiatedShutdownBehavior *string
 	InstanceType                      *string
 	Ipv6AddressCount                  *int64
 	KeyName                           *string
@@ -1336,8 +1336,8 @@ func buildOutscaleVMOpts(
 		InstanceType: aws.String(d.Get("instance_type").(string)),
 	}
 
-	if v := d.Get("instance_initiated_shutdown_behavior").(bool); v {
-		opts.InstanceInitiatedShutdownBehavior = aws.Bool(v)
+	if v := d.Get("instance_initiated_shutdown_behavior").(string); v != "" {
+		opts.InstanceInitiatedShutdownBehavior = aws.String(v)
 	}
 
 	userData := d.Get("user_data").(string)
