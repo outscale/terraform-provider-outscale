@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -59,7 +58,7 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var res *fcu.RegisterImageOutput
 	var err error
-	err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
 		res, err = conn.VM.RegisterImage(req)
 
 		if err != nil {
@@ -67,6 +66,7 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 
 		return resource.RetryableError(err)
@@ -104,7 +104,7 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	var res *fcu.DescribeImagesOutput
 	var err error
-	err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
 		res, err = client.VM.DescribeImages(req)
 
 		if err != nil {
@@ -112,18 +112,18 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 
 		return resource.RetryableError(err)
 	})
 
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidAMIID.NotFound" {
+		if strings.Contains(err.Error(), "InvalidAMIID.NotFound") {
 			fmt.Printf("[DEBUG] %s no longer exists, so we'll drop it from the state", id)
 			d.SetId("")
 			return nil
 		}
-
 		return err
 	}
 
@@ -225,9 +225,8 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("block_device_mapping", ephemeralBlockDevs)
 	d.Set("product_codes", getProductCodes(image.ProductCodes))
-	d.Set("product_codes", getStateReason(image.StateReason))
-
-	d.Set("tags", tagsToMap(image.Tags))
+	d.Set("state_reason", getStateReason(image.StateReason))
+	d.Set("tag_set", tagsToMap(image.Tags))
 
 	return nil
 }
@@ -269,7 +268,7 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var err error
-	err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
 		_, err := client.VM.DeregisterImage(req)
 
 		if err != nil {
@@ -277,6 +276,7 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 
 		return resource.RetryableError(err)
@@ -449,7 +449,7 @@ func getImageSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"tag_set": {
-			Type: schema.TypeList,
+			Type: schema.TypeMap,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -492,7 +492,7 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 
 		var resp *fcu.DescribeImagesOutput
 		var err error
-		err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 			resp, err = client.VM.DescribeImages(&fcu.DescribeImagesInput{ImageIds: []*string{aws.String(id)}})
 
 			if err != nil {
