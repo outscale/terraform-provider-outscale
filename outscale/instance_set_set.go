@@ -367,8 +367,6 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 			inter := make(map[string]interface{})
 			assoc := make(map[string]interface{})
 
-			assoc := map[string]interface{}{}
-
 			if i.Association != nil {
 				assoc["ip_owner_id"] = *i.Association.IpOwnerId
 				assoc["public_dns_name"] = *i.Association.PublicDnsName
