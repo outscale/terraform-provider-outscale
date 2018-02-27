@@ -3,7 +3,9 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -46,7 +48,23 @@ func testAccCheckImageDestroy(s *terraform.State) error {
 		DescribeAmiOpts := &fcu.DescribeImagesInput{
 			ImageIds: []*string{aws.String(rs.Primary.ID)},
 		}
-		resp, err := conn.FCU.VM.DescribeImages(DescribeAmiOpts)
+
+		var resp *fcu.DescribeImagesOutput
+		var err error
+		err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+			resp, err = conn.FCU.VM.DescribeImages(DescribeAmiOpts)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					fmt.Printf("[INFO] Request limit exceeded")
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return resource.RetryableError(err)
+		})
+
 		if err != nil {
 			return err
 		}
@@ -74,7 +92,23 @@ func testAccCheckImageExists(n string, ami *fcu.Image) resource.TestCheckFunc {
 		opts := &fcu.DescribeImagesInput{
 			ImageIds: []*string{aws.String(rs.Primary.ID)},
 		}
-		resp, err := conn.FCU.VM.DescribeImages(opts)
+
+		var resp *fcu.DescribeImagesOutput
+		var err error
+		err = resource.Retry(10*time.Minute, func() *resource.RetryError {
+			resp, err = conn.FCU.VM.DescribeImages(opts)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					fmt.Printf("[INFO] Request limit exceeded")
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return resource.RetryableError(err)
+		})
+
 		if err != nil {
 			return err
 		}
