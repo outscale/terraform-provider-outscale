@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -30,10 +29,6 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 						"outscale_public_ip.bar.1", &a),
 					testAccCheckOutscalePublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
-					testAccCheckOutscalePublicIPExists(
-						"outscale_public_ip.bar.2", &a),
-					testAccCheckOutscalePublicIPAssociationExists(
-						"outscale_public_ip_link.to_eni", &a),
 				),
 			},
 		},
@@ -141,13 +136,6 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 		fmt.Printf("\n [DEBUG] ERROR testAccCheckOutscalePublicIPLinkDestroy (%s)", err)
 
 		if err != nil {
-			fmt.Printf("\n [DEBUG] TEST Error 2: %v", err)
-
-			e := fmt.Sprint(err)
-			// Verify the error is what we want
-			if strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-				return nil
-			}
 			return err
 		}
 
@@ -182,11 +170,7 @@ resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.1.public_ip}"
 	instance_id = "${outscale_vm.basic.1.id}"
   depends_on = ["outscale_vm.basic"]
-}
-#resource "outscale_public_ip_link" "to_eni" {
-#	allocation_id = "${outscale_public_ip.bar.0.id}"
-#	network_interface_id = "eni-f2a898a3"
-#}`
+}`
 
 const testAccOutscalePublicIPLinkConfigDisappears = `
 resource "outscale_vm" "foo" {
