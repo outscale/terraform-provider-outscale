@@ -19,6 +19,7 @@ func init() {
 		"fcu": ResourceMap{
 			"outscale_vm":    resourceOutscaleVM,
 			"outscale_image": resourceOutscaleImage,
+			"outscale_tag":   resourceOutscaleTags,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,
