@@ -13,7 +13,7 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,
@@ -91,7 +91,7 @@ func flattenedInstanceSetPassword(instances []*fcu.Instance, conn fcu.VMService)
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,
@@ -366,6 +366,8 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 		for _, i := range interfaces {
 			inter := make(map[string]interface{})
 			assoc := make(map[string]interface{})
+
+			assoc := map[string]interface{}{}
 
 			if i.Association != nil {
 				assoc["ip_owner_id"] = *i.Association.IpOwnerId
