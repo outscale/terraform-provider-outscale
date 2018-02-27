@@ -23,7 +23,8 @@ type VMService interface {
 	StopInstances(input *StopInstancesInput) (*StopInstancesOutput, error)
 	StartInstances(input *StartInstancesInput) (*StartInstancesOutput, error)
 	ImportKeyPair(input *ImportKeyPairInput) (*ImportKeyPairOutput, error)
-	DescribeKeyPairsRequest(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error)
+	DescribeKeyPairs(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error)
+	DeleteKeyPairs(input *DeleteKeyPairInput) (*DeleteKeyPairOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -231,13 +232,36 @@ func (v VMOperations) ImportKeyPair(input *ImportKeyPairInput) (*ImportKeyPairOu
 	return output, nil
 }
 
-func (v VMOperations) DescribeKeyPairsRequest(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error) {
+func (v VMOperations) DescribeKeyPairs(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeKeyPairs"
 	output := &DescribeKeyPairsOutput{}
 
 	if input == nil {
 		input = &DescribeKeyPairsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) DeleteKeyPairs(input *DeleteKeyPairInput) (*DeleteKeyPairOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteKeyPair"
+	output := &DeleteKeyPairOutput{}
+
+	if input == nil {
+		input = &DeleteKeyPairInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

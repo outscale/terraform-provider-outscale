@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -36,20 +37,31 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	var keyName string
 	if v, ok := d.GetOk("key_name"); ok {
 		keyName = v.(string)
-	} else if v, ok := d.GetOk("key_name_prefix"); ok {
-		keyName = resource.PrefixedUniqueId(v.(string))
-		d.Set("key_name", keyName)
 	} else {
 		keyName = resource.UniqueId()
 		d.Set("key_name", keyName)
 	}
 
-	publicKey := d.Get("public_key").(string)
+	publicKey := d.Get("key_material").(string)
 	req := &fcu.ImportKeyPairInput{
 		KeyName:           aws.String(keyName),
 		PublicKeyMaterial: []byte(publicKey),
 	}
-	resp, err := conn.VM.ImportKeyPair(req)
+
+	var resp *fcu.ImportKeyPairOutput
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.ImportKeyPair(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+
 	if err != nil {
 		return fmt.Errorf("Error import KeyPair: %s", err)
 	}
@@ -63,7 +75,25 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	req := &fcu.DescribeKeyPairsInput{
 		KeyNames: []*string{aws.String(d.Id())},
 	}
-	resp, err := conn.FCU.VM.DescribeKeyPairs(req)
+
+	var resp *fcu.DescribeKeyPairsOutput
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.DescribeKeyPairs(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		awsErr, ok := err.(awserr.Error)
 		if ok && awsErr.Code() == "InvalidKeyPair.NotFound" {
@@ -87,9 +117,24 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	_, err := conn.DeleteKeyPair(&fcu.DeleteKeyPairInput{
-		KeyName: aws.String(d.Id()),
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		_, err = conn.VM.DeleteKeyPairs(&fcu.DeleteKeyPairInput{
+			KeyName: aws.String(d.Id()),
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
 	})
+
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -102,12 +147,12 @@ func getKeyPairSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"key_material": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
 		"key_name": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},

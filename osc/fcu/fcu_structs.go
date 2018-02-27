@@ -1493,3 +1493,70 @@ func (s *KeyPairInfo) SetKeyName(v string) *KeyPairInfo {
 	s.KeyName = &v
 	return s
 }
+
+// Contains the parameters for DeleteKeyPair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteKeyPairRequest
+type DeleteKeyPairInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The name of the key pair.
+	//
+	// KeyName is a required field
+	KeyName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteKeyPairInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteKeyPairInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteKeyPairInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteKeyPairInput"}
+	if s.KeyName == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteKeyPairInput) SetDryRun(v bool) *DeleteKeyPairInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *DeleteKeyPairInput) SetKeyName(v string) *DeleteKeyPairInput {
+	s.KeyName = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteKeyPairOutput
+type DeleteKeyPairOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteKeyPairOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteKeyPairOutput) GoString() string {
+	return s.String()
+}
