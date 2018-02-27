@@ -42,32 +42,29 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
+	if tagsOk == false && resourceIdsOk == false {
+		return fmt.Errorf("One tag and resource id, must be assigned")
+	}
+
 	if tagsOk {
-		var t []*fcu.Tag
-
-		for _, id := range tags.([]map[string]interface{}) {
-			t = append(t, &fcu.Tag{Key: aws.String(id["key"].(string)), Value: aws.String(id["value"].(string))})
-		}
-		request.Tags = t
-
-		fmt.Printf("[DEBUG] Creating tags: #v ", t)
-
+		request.Tags = tagsFromMap(tags.(map[string]interface{}))
 	}
 	if resourceIdsOk {
-		var ids []*string
-
-		for _, id := range resourceIds.([]interface{}) {
-			ids = append(ids, aws.String(id.(string)))
+		var rids []*string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, aws.String(str))
 		}
-		request.Resources = ids
+
+		request.Resources = rids
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.VM.CreateTags(request)
 		if err != nil {
-			ec2err, ok := err.(awserr.Error)
-			if ok && strings.Contains(ec2err.Code(), ".NotFound") {
-				return resource.RetryableError(err) // retry
+			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
@@ -115,8 +112,8 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("tag_set", getTagDescriptionSet(resp.Tags))
 	d.Set("next_token", *resp.NextToken)
+	d.Set("tag_set", tagsDescToMap(resp.Tags))
 
 	return nil
 }
@@ -130,24 +127,22 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
+	if tagsOk == false && resourceIdsOk == false {
+		return fmt.Errorf("One tag and resource id, must be assigned")
+	}
+
 	if tagsOk {
-		var t []*fcu.Tag
-
-		for _, id := range tags.([]map[string]interface{}) {
-			t = append(t, &fcu.Tag{Key: aws.String(id["key"].(string)), Value: aws.String(id["value"].(string))})
-		}
-		request.Tags = t
-
-		fmt.Printf("[DEBUG] Deleting tags: #v ", t)
-
+		request.Tags = tagsFromMap(tags.(map[string]interface{}))
 	}
 	if resourceIdsOk {
-		var ids []*string
-
-		for _, id := range resourceIds.([]interface{}) {
-			ids = append(ids, aws.String(id.(string)))
+		var rids []*string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, aws.String(str))
 		}
-		request.Resources = ids
+
+		request.Resources = rids
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -170,13 +165,17 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 
 func getTagsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"resource_id": {
-			Type:     schema.TypeString,
+		"filter": dataSourceFiltersSchema(),
+		"resource_ids": {
+			Type:     schema.TypeSet,
 			Optional: true,
+			ForceNew: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"tags": {
 			Type:     schema.TypeMap,
 			Optional: true,
+			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -194,6 +193,7 @@ func getTagsSchema() map[string]*schema.Schema {
 		"tag_set": {
 			Type:     schema.TypeMap,
 			Computed: true,
+			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -322,6 +322,17 @@ func tagsToMap(ts []*fcu.Tag) map[string]string {
 	return result
 }
 
+func tagsDescToMap(ts []*fcu.TagDescription) map[string]string {
+	result := make(map[string]string)
+	for _, t := range ts {
+		if !tagDescIgnored(t) {
+			result[*t.Key] = *t.Value
+		}
+	}
+
+	return result
+}
+
 // tagIgnored compares a s against a list of strings and checks if it should
 // be ignored or not
 func tagIgnored(t *fcu.Tag) bool {
@@ -334,4 +345,23 @@ func tagIgnored(t *fcu.Tag) bool {
 		}
 	}
 	return false
+}
+
+func tagDescIgnored(t *fcu.TagDescription) bool {
+	filter := []string{"^outscale:"}
+	for _, v := range filter {
+		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
+		if r, _ := regexp.MatchString(v, *t.Key); r == true {
+			log.Printf("[DEBUG] Found AWS specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
+			return true
+		}
+	}
+	return false
+}
+
+func tagsSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+	}
 }
