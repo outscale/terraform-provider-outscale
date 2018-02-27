@@ -11,6 +11,7 @@ import (
 func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 	flattened := make([]map[string]interface{}, len(instances))
 	for i, instance := range instances {
+
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
 			"ebs_optimised":      *instance.EbsOptimized,
@@ -79,7 +80,7 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 		flattened[i]["placement"] = getPlacement(instance.Placement)
 		flattened[i]["state_reason"] = getStateReason(instance.StateReason)
 		flattened[i]["product_codes"] = getProductCodes(instance.ProductCodes)
-		flattened[i]["tag_set"] = getTagSet(instance.Tags)
+		flattened[i]["tag_set"] = tagsToMap(instance.Tags)
 
 	}
 
