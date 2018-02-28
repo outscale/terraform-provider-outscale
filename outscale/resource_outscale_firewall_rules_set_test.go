@@ -230,13 +230,5 @@ func testAccOutscaleSecurityGroupRuleIngressConfig(rInt int) string {
 						Name = "tf-acc-test"
 		}
 		vpc_id = "vpc-e9d09d63"
-	}
-	#resource "aws_security_group_rule" "ingress_1" {
-	#	type = "ingress"
-	#	protocol = "tcp"
-	#	from_port = 80
-	#	to_port = 8000
-	#	cidr_blocks = ["10.0.0.0/8"]
-	#	security_group_id = "${outscale_firewall_rules_set.web.id}"
-	#}`, rInt)
+	}`, rInt)
 }
