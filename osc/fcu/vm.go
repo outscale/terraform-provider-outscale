@@ -34,6 +34,13 @@ type VMService interface {
 	CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error)
 	DeregisterImage(input *DeregisterImageInput) (*DeregisterImageOutput, error)
 	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
+	CreateSecurityGroup(input *CreateSecurityGroupInput) (*CreateSecurityGroupOutput, error)
+	DescribeSecurityGroups(input *DescribeSecurityGroupsInput) (*DescribeSecurityGroupsOutput, error)
+	RevokeSecurityGroupEgress(input *RevokeSecurityGroupEgressInput) (*RevokeSecurityGroupEgressOutput, error)
+	RevokeSecurityGroupIngress(input *RevokeSecurityGroupIngressInput) (*RevokeSecurityGroupIngressOutput, error)
+	AuthorizeSecurityGroupEgress(input *AuthorizeSecurityGroupEgressInput) (*AuthorizeSecurityGroupEgressOutput, error)
+	AuthorizeSecurityGroupIngress(input *AuthorizeSecurityGroupIngressInput) (*AuthorizeSecurityGroupIngressOutput, error)
+	DeleteSecurityGroup(input *DeleteSecurityGroupInput) (*DeleteSecurityGroupOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -470,6 +477,160 @@ func (v VMOperations) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutpu
 
 	if input == nil {
 		input = &DescribeTagsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateSecurityGroup(input *CreateSecurityGroupInput) (*CreateSecurityGroupOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSecurityGroup"
+	output := &CreateSecurityGroupOutput{}
+
+	if input == nil {
+		input = &CreateSecurityGroupInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeSecurityGroups(input *DescribeSecurityGroupsInput) (*DescribeSecurityGroupsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSecurityGroups"
+	output := &DescribeSecurityGroupsOutput{}
+
+	if input == nil {
+		input = &DescribeSecurityGroupsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) RevokeSecurityGroupEgress(input *RevokeSecurityGroupEgressInput) (*RevokeSecurityGroupEgressOutput, error) {
+	inURL := "/"
+	endpoint := "RevokeSecurityGroupEgress"
+	output := &RevokeSecurityGroupEgressOutput{}
+
+	if input == nil {
+		input = &RevokeSecurityGroupEgressInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) RevokeSecurityGroupIngress(input *RevokeSecurityGroupIngressInput) (*RevokeSecurityGroupIngressOutput, error) {
+	inURL := "/"
+	endpoint := "RevokeSecurityGroupIngress"
+	output := &RevokeSecurityGroupIngressOutput{}
+
+	if input == nil {
+		input = &RevokeSecurityGroupIngressInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AuthorizeSecurityGroupEgress(input *AuthorizeSecurityGroupEgressInput) (*AuthorizeSecurityGroupEgressOutput, error) {
+	inURL := "/"
+	endpoint := "RevokeSecurityGroupIngress"
+	output := &AuthorizeSecurityGroupEgressOutput{}
+
+	if input == nil {
+		input = &AuthorizeSecurityGroupEgressInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AuthorizeSecurityGroupIngress(input *AuthorizeSecurityGroupIngressInput) (*AuthorizeSecurityGroupIngressOutput, error) {
+	inURL := "/"
+	endpoint := "RevokeSecurityGroupIngress"
+	output := &AuthorizeSecurityGroupIngressOutput{}
+
+	if input == nil {
+		input = &AuthorizeSecurityGroupIngressInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteSecurityGroup(input *DeleteSecurityGroupInput) (*DeleteSecurityGroupOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSecurityGroup"
+	output := &DeleteSecurityGroupOutput{}
+
+	if input == nil {
+		input = &DeleteSecurityGroupInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
