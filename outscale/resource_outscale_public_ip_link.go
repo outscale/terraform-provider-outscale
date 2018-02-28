@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
@@ -35,6 +36,7 @@ func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 	request := &fcu.AssociateAddressInput{}
 
 	if v, ok := d.GetOk("allocation_id"); ok {
+		fmt.Println(v.(string))
 		request.AllocationId = aws.String(v.(string))
 	}
 	if v, ok := d.GetOk("allow_reassociation"); ok {
@@ -55,7 +57,23 @@ func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
 
-	resp, err := conn.VM.AssociateAddress(request)
+	var resp *fcu.AssociateAddressOutput
+	var err error
+
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+
+		resp, err = conn.VM.AssociateAddress(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			} else {
+				return resource.NonRetryableError(err)
+			}
+		}
+
+		return resource.NonRetryableError(err)
+	})
+
 	if err != nil {
 		fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkCreate (%s)", err)
 		return err
@@ -96,7 +114,23 @@ func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	response, err := conn.VM.DescribeAddressesRequest(request)
+	var response *fcu.DescribeAddressesOutput
+	var err error
+
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+
+		response, err = conn.VM.DescribeAddressesRequest(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			} else {
+				return resource.NonRetryableError(err)
+			}
+		}
+
+		return resource.NonRetryableError(err)
+	})
+
 	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkRead (%s)", err)
 
 	if err != nil {
@@ -121,7 +155,21 @@ func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}
 		AssociationId: aws.String(assocId.(string)),
 	}
 
-	_, err := conn.VM.DisassociateAddress(opts)
+	var err error
+
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+
+		_, err = conn.VM.DisassociateAddress(opts)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			} else {
+				return resource.NonRetryableError(err)
+			}
+		}
+
+		return resource.NonRetryableError(err)
+	})
 
 	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkDelete (%s)", err)
 

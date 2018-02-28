@@ -22,37 +22,10 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 				Config: testAccOutscalePublicIPLinkConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists(
-						"outscale_public_ip.bar.0", &a),
-					testAccCheckOutscalePublicIPLinkExists(
-						"outscale_public_ip_link.by_allocation_id", &a),
-					testAccCheckOutscalePublicIPExists(
-						"outscale_public_ip.bar.1", &a),
+						"outscale_public_ip.bar", &a),
 					testAccCheckOutscalePublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
-			},
-		},
-	})
-}
-
-func TestAccOutscalePublicIPLink_disappears(t *testing.T) {
-	var a fcu.Address
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscalePublicIPLinkConfigDisappears,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists(
-						"outscale_public_ip.bar", &a),
-					testAccCheckOutscalePublicIPLinkExists(
-						"aws_eip_Link.by_allocation_id", &a),
-					testAccCheckEIPLinkDisappears(&a),
-				),
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
@@ -75,6 +48,7 @@ func testAccCheckEIPLinkDisappears(address *fcu.Address) resource.TestCheckFunc 
 
 func testAccCheckOutscalePublicIPLinkExists(name string, res *fcu.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		fmt.Printf("%#v", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Not found: %s", name)
@@ -89,7 +63,7 @@ func testAccCheckOutscalePublicIPLinkExists(name string, res *fcu.Address) resou
 		request := &fcu.DescribeAddressesInput{
 			Filters: []*fcu.Filter{
 				&fcu.Filter{
-					Name:   aws.String("Link-id"),
+					Name:   aws.String("association-id"),
 					Values: []*string{res.AssociationId},
 				},
 			},
@@ -121,13 +95,17 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 			return fmt.Errorf("No Public IP Link ID is set")
 		}
 
+		fmt.Printf("%#v", rs.Primary.Attributes)
+
+		id := rs.Primary.Attributes["association_id"]
+
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := &fcu.DescribeAddressesInput{
 			Filters: []*fcu.Filter{
 				&fcu.Filter{
-					Name:   aws.String("Link-id"),
-					Values: []*string{aws.String(rs.Primary.ID)},
+					Name:   aws.String("association-id"),
+					Values: []*string{aws.String(id)},
 				},
 			},
 		}
@@ -148,7 +126,6 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 
 const testAccOutscalePublicIPLinkConfig = `
 resource "outscale_vm" "basic" {
-	count = 2
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
@@ -156,31 +133,10 @@ resource "outscale_vm" "basic" {
 }
 
 resource "outscale_public_ip" "bar" {
-	count = 2
-}
-
-resource "outscale_public_ip_link" "by_allocation_id" {
-	allocation_id = "${outscale_public_ip.bar.0.id}"
-	public_ip = "${outscale_public_ip.bar.0.public_ip}"
-	instance_id = "${outscale_vm.basic.0.id}"
-	depends_on = ["outscale_vm.basic"]
 }
 
 resource "outscale_public_ip_link" "by_public_ip" {
-	public_ip = "${outscale_public_ip.bar.1.public_ip}"
-	instance_id = "${outscale_vm.basic.1.id}"
-  depends_on = ["outscale_vm.basic"]
-}`
-
-const testAccOutscalePublicIPLinkConfigDisappears = `
-resource "outscale_vm" "foo" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	subnet_id = "subnet-861fbecc"
-}
-resource "outscale_public_ip" "bar" {
-}
-resource "outscale_public_ip_link" "by_allocation_id" {
-	allocation_id = "${outscale_public_ip.bar.id}"
-	instance_id = "${outscale_vm.foo.id}"
+	public_ip = "${outscale_public_ip.bar.public_ip}"
+	instance_id = "${outscale_vm.basic.id}"
+  depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
 }`

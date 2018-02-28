@@ -171,6 +171,7 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("public_ip", address.PublicIp)
 
 	d.Set("domain", address.Domain)
+	d.Set("allocation_id", address.AllocationId)
 
 	// Force ID to be an Allocation ID if we're on a VPC
 	// This allows users to import the EIP based on the IP if they are in a VPC
