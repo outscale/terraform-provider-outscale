@@ -14,7 +14,7 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,
@@ -92,7 +92,7 @@ func flattenedInstanceSetPassword(instances []*fcu.Instance, conn fcu.VMService)
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,

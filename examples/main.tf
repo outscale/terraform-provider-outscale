@@ -1,9 +1,17 @@
 resource "outscale_vm" "basic" {
-	# count = 2
-	image_id = "ami-8a6a0120"
-	instance_type = "c4.large"
-	key_name = "terraform-basic"
-	subnet_id = "subnet-861fbecc"
+  image_id = "ami-8a6a0120"
+  instance_type = "t2.micro"
+  disable_api_termination = "false"
+  key_name = "terraform-basic"
+  security_group = ["sg-6ed31f3e"]
+}
+
+resource "outscale_vm" "basic2" {
+  image_id = "ami-8a6a0120"
+  instance_type = "t2.micro"
+  disable_api_termination = "false"
+  key_name = "terraform-basic"
+  security_group = ["sg-6ed31f3e"]
 }
 
 # resource "outscale_public_ip" "bar" {
@@ -16,10 +24,15 @@ resource "outscale_vm" "basic" {
 # 	depends_on = ["outscale_vm.basic"]
 # }
 
-# resource "outscale_public_ip_link" "by_public_ip" {
-# 	public_ip = "${outscale_public_ip.bar.1.public_ip}"
-# 	instance_id = "${outscale_vm.basic.1.id}"
-#   depends_on = ["outscale_vm.basic"]
+data "outscale_vms" "basic_webs" {
+	filter {
+    name = "image-id"
+    values = ["${outscale_vm.basic.image_id}"]
+  }
+}
+
+# output "datasource_ip" {
+#   value = "${data.outscale_vm.basic_web}"
 # }
 # #resource "outscale_public_ip_link" "to_eni" {
 # #	allocation_id = "${outscale_public_ip.bar.0.id}"
