@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -17,13 +18,14 @@ import (
 func TestAccOutscaleKeyPair_basic(t *testing.T) {
 	var conf fcu.KeyPairInfo
 
+	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleKeyPairConfig,
+				Config: testAccOutscaleKeyPairConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeyPairExists("outscale_key_pair.a_key_pair", &conf),
 					testAccCheckOutscaleKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
@@ -33,6 +35,27 @@ func TestAccOutscaleKeyPair_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
+	var conf fcu.KeyPairInfo
+
+	rInt := acctest.RandInt()
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleKeyPairDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOutscaleKeyPairConfig_retrieveName(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleKeyPairExists("outscale_key_pair.a_key_pair", &conf),
+					resource.TestCheckResourceAttr(
+						"outscale_key_pair.a_key_pair", "key_name", "tf-acc-key-pair",
+					),
+				),
+			},
+		},
+	})
+}
 func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
 	var conf fcu.KeyPairInfo
 
@@ -79,7 +102,7 @@ func testAccCheckOutscaleKeyPairDestroy(s *terraform.State) error {
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.NonRetryableError(err)
+					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
@@ -87,8 +110,8 @@ func testAccCheckOutscaleKeyPairDestroy(s *terraform.State) error {
 			return resource.RetryableError(err)
 		})
 
-		if err != nil {
-			return err
+		if resp == nil {
+			return nil
 		}
 
 		if err == nil {
@@ -154,7 +177,7 @@ func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.
 			return fmt.Errorf("KeyPair not found")
 		}
 
-		*res = *resp.KeyPairs[0]
+		res = resp.KeyPairs[0]
 
 		return nil
 	}
@@ -163,6 +186,7 @@ func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.
 func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
 	var conf fcu.KeyPairInfo
 
+	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:        func() { testAccPreCheck(t) },
 		IDRefreshName:   "outscale_key_pair.a_key_pair",
@@ -171,7 +195,7 @@ func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
 		CheckDestroy:    testAccCheckOutscaleKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleKeyPairPrefixNameConfig,
+				Config: testAccCheckOutscaleKeyPairPrefixNameConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeyPairExists("outscale_key_pair.a_key_pair", &conf),
 					testAccCheckOutscaleKeyPairGeneratedNamePrefix(
@@ -200,12 +224,24 @@ func testAccCheckOutscaleKeyPairGeneratedNamePrefix(
 	}
 }
 
-const testAccOutscaleKeyPairConfig = `
+func testAccOutscaleKeyPairConfig(r int) string {
+	return fmt.Sprintf(
+		`
 resource "outscale_key_pair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair"
+	key_name   = "tf-acc-key-pair-%d"
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
-`
+`, r)
+}
+
+func testAccOutscaleKeyPairConfig_retrieveName(r int) string {
+	return fmt.Sprintf(
+		`
+resource "outscale_key_pair" "a_key_pair" {
+	key_name   = "tf-acc-key-pair"
+}
+`)
+}
 
 const testAccOutscaleKeyPairConfig_generatedName = `
 resource "outscale_key_pair" "a_key_pair" {
@@ -213,9 +249,12 @@ resource "outscale_key_pair" "a_key_pair" {
 }
 `
 
-const testAccCheckOutscaleKeyPairPrefixNameConfig = `
+func testAccCheckOutscaleKeyPairPrefixNameConfig(r int) string {
+	return fmt.Sprintf(
+		`
 resource "outscale_key_pair" "a_key_pair" {
-	key_name_prefix   = "baz-"
+	key_name_prefix   = "baz-%d"
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
-`
+`, r)
+}

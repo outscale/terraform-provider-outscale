@@ -25,6 +25,7 @@ type VMService interface {
 	ImportKeyPair(input *ImportKeyPairInput) (*ImportKeyPairOutput, error)
 	DescribeKeyPairs(input *DescribeKeyPairsInput) (*DescribeKeyPairsOutput, error)
 	DeleteKeyPairs(input *DeleteKeyPairInput) (*DeleteKeyPairOutput, error)
+	CreateKeyPair(input *CreateKeyPairInput) (*CreateKeyPairOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -276,4 +277,26 @@ func (v VMOperations) DeleteKeyPairs(input *DeleteKeyPairInput) (*DeleteKeyPairO
 
 	return output, nil
 
+}
+
+func (v VMOperations) CreateKeyPair(input *CreateKeyPairInput) (*CreateKeyPairOutput, error) {
+	inURL := "/"
+	endpoint := "CreateKeyPair"
+	output := &CreateKeyPairOutput{}
+
+	if input == nil {
+		input = &CreateKeyPairInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }

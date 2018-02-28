@@ -1560,3 +1560,103 @@ func (s DeleteKeyPairOutput) String() string {
 func (s DeleteKeyPairOutput) GoString() string {
 	return s.String()
 }
+
+// Contains the parameters for CreateKeyPair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateKeyPairRequest
+type CreateKeyPairInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// A unique name for the key pair.
+	//
+	// Constraints: Up to 255 ASCII characters
+	//
+	// KeyName is a required field
+	KeyName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateKeyPairInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateKeyPairInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateKeyPairInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateKeyPairInput"}
+	if s.KeyName == nil {
+		invalidParams.Add(request.NewErrParamRequired("KeyName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateKeyPairInput) SetDryRun(v bool) *CreateKeyPairInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *CreateKeyPairInput) SetKeyName(v string) *CreateKeyPairInput {
+	s.KeyName = &v
+	return s
+}
+
+// Describes a key pair.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/KeyPair
+type CreateKeyPairOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The SHA-1 digest of the DER encoded private key.
+	KeyFingerprint *string `locationName:"keyFingerprint" type:"string"`
+
+	// An unencrypted PEM encoded RSA private key.
+	KeyMaterial *string `locationName:"keyMaterial" type:"string"`
+
+	// The name of the key pair.
+	KeyName *string `locationName:"keyName" type:"string"`
+
+	// The name of the Request ID
+	RequestId *string `locationName:"requestId" type:"String"`
+}
+
+// String returns the string representation
+func (s CreateKeyPairOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateKeyPairOutput) GoString() string {
+	return s.String()
+}
+
+// SetKeyFingerprint sets the KeyFingerprint field's value.
+func (s *CreateKeyPairOutput) SetKeyFingerprint(v string) *CreateKeyPairOutput {
+	s.KeyFingerprint = &v
+	return s
+}
+
+// SetKeyMaterial sets the KeyMaterial field's value.
+func (s *CreateKeyPairOutput) SetKeyMaterial(v string) *CreateKeyPairOutput {
+	s.KeyMaterial = &v
+	return s
+}
+
+// SetKeyName sets the KeyName field's value.
+func (s *CreateKeyPairOutput) SetKeyName(v string) *CreateKeyPairOutput {
+	s.KeyName = &v
+	return s
+}
