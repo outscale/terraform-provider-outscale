@@ -20,6 +20,10 @@ func init() {
 			"outscale_vm":                 resourceOutscaleVM,
 			"outscale_image":              resourceOutscaleImage,
 			"outscale_firewall_rules_set": resourceOutscaleFirewallRulesSet,
+			"outscale_tag":                resourceOutscaleTags,
+			"outscale_key_pair":           resourceOutscaleKeyPair,
+			"outscale_public_ip":          resourceOutscalePublicIP,
+			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,

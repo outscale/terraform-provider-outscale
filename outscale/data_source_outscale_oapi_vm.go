@@ -153,7 +153,7 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	// "message": instance.StateReason.Message,
 	})
 	d.Set("subnet_id", instance.SubnetId)
-	d.Set("tags", getOAPIVMTagSet(instance.Tags))
+	d.Set("tag_set", getTagSet(instance.Tags))
 	d.Set("virtualization_type", instance.VirtualizationType)
 	d.Set("lin_id", instance.VpcId)
 
@@ -714,7 +714,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": {
+		"tag_set": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
