@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -60,12 +61,8 @@ func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	if resp != nil {
-		fmt.Printf("RESULTADO => #v", resp)
-		fmt.Printf("RES =>#v", resp.AssociationId)
-		d.SetId(*request.PublicIp)
-
-		// d.SetId(*resp.AssociationId)
+	if resp != nil && resp.AssociationId != nil && len(*resp.AssociationId) > 0 {
+		d.SetId(*resp.AssociationId)
 	} else {
 		d.SetId(*request.PublicIp)
 	}
@@ -76,13 +73,27 @@ func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	request := &fcu.DescribeAddressesInput{
-		Filters: []*fcu.Filter{
-			&fcu.Filter{
-				Name:   aws.String("association-id"),
-				Values: []*string{aws.String(d.Id())},
+	id := d.Id()
+	var request *fcu.DescribeAddressesInput
+
+	if strings.Contains(id, "eipassoc") {
+		request = &fcu.DescribeAddressesInput{
+			Filters: []*fcu.Filter{
+				&fcu.Filter{
+					Name:   aws.String("association-id"),
+					Values: []*string{aws.String(id)},
+				},
 			},
-		},
+		}
+	} else {
+		request = &fcu.DescribeAddressesInput{
+			Filters: []*fcu.Filter{
+				&fcu.Filter{
+					Name:   aws.String("public-ip"),
+					Values: []*string{aws.String(id)},
+				},
+			},
+		}
 	}
 
 	response, err := conn.VM.DescribeAddressesRequest(request)
@@ -104,8 +115,10 @@ func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
+	assocId := d.Get("association_id")
+
 	opts := &fcu.DisassociateAddressInput{
-		AssociationId: aws.String(d.Id()),
+		AssociationId: aws.String(assocId.(string)),
 	}
 
 	_, err := conn.VM.DisassociateAddress(opts)
@@ -146,6 +159,12 @@ func readOutscalePublicIPLink(d *schema.ResourceData, address *fcu.Address) erro
 		return err
 	}
 
+	if err := d.Set("association_id", address.AssociationId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+
+		return err
+	}
+
 	return nil
 }
 
@@ -163,19 +182,16 @@ func getPublicIPLinkSchema() map[string]*schema.Schema {
 			Computed: true,
 			ForceNew: true,
 		},
-
 		"domain": &schema.Schema{
 			Type:     schema.TypeString,
 			Computed: true,
 			ForceNew: true,
 		},
-
 		"allow_reassociation": &schema.Schema{
 			Type:     schema.TypeBool,
 			Optional: true,
 			ForceNew: true,
 		},
-
 		"instance_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
