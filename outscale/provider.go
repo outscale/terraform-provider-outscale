@@ -56,6 +56,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vm":             GetResource(fcu, "outscale_vm")(),
 			"outscale_key_pair":       GetResource(fcu, "outscale_key_pair")(),
 			"outscale_image":          GetResource(fcu, "outscale_image")(),
+			"outscale_tag":   GetResource(fcu, "outscale_tag")(),
 			"outscale_public_ip":      GetResource(fcu, "outscale_public_ip")(),
 			"outscale_public_ip_link": GetResource(fcu, "outscale_public_ip_link")(),
 		},

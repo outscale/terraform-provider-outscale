@@ -68,8 +68,25 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		UserData:         instanceOpts.UserData,
 	}
 
+	tagsSpec := make([]*fcu.TagSpecification, 0)
+
+	if v, ok := d.GetOk("tags"); ok {
+		tags := tagsFromMap(v.(map[string]interface{}))
+
+		spec := &fcu.TagSpecification{
+			ResourceType: aws.String("instance"),
+			Tags:         tags,
+		}
+
+		tagsSpec = append(tagsSpec, spec)
+	}
+
+	if len(tagsSpec) > 0 {
+		runOpts.TagSpecifications = tagsSpec
+	}
+
 	// Create the instance
-	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
+	fmt.Println("[DEBUG] Run configuration: %+v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -90,6 +107,13 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
+
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tags")
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -188,6 +212,8 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	}
 
+	d.Set("tag_set", tagsToMap(instance.Tags))
+
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
 	d.Set("request_id", resp.RequesterId)
@@ -251,6 +277,12 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		err := conn.VM.ModifyInstanceKeyPair(input)
 		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("tag_set") {
+		if err := setTags(conn, d); err != nil {
 			return err
 		}
 	}
@@ -1252,7 +1284,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeList,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
@@ -1282,6 +1314,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"tags": tagsSchema(),
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -1762,7 +1795,7 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 	// instanceSet["placement"] = getPlacement(instance.Placement)
 	// instanceSet["state_reason"] = getStateReason(instance.StateReason)
 	// instanceSet["product_codes"] = getProductCodes(instance.ProductCodes)
-	// instanceSet["tag_set"] = getTagSet(instance.Tags)
+	instanceSet["tag_set"] = getTagSet(instance.Tags)
 
 	return s
 }
