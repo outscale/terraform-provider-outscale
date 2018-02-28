@@ -177,7 +177,7 @@ func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.
 			return fmt.Errorf("KeyPair not found")
 		}
 
-		res = resp.KeyPairs[0]
+		*res = *resp.KeyPairs[0]
 
 		return nil
 	}
