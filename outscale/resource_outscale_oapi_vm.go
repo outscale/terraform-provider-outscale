@@ -904,7 +904,7 @@ type outscaleOApiInstanceOpts struct {
 	DisableAPITermination             *bool
 	EBSOptimized                      *bool
 	ImageID                           *string
-	InstanceInitiatedShutdownBehavior *bool
+	InstanceInitiatedShutdownBehavior *string
 	InstanceType                      *string
 	Ipv6AddressCount                  *int64
 	KeyName                           *string
@@ -932,8 +932,8 @@ func buildOutscaleOAPIVMOpts(
 		InstanceType:          aws.String(d.Get("type").(string)),
 	}
 
-	if v := d.Get("shutdown_automatic_behavior").(bool); v {
-		opts.InstanceInitiatedShutdownBehavior = aws.Bool(v)
+	if v := d.Get("shutdown_automatic_behavior").(string); v != "" {
+		opts.InstanceInitiatedShutdownBehavior = aws.String(v)
 	}
 
 	userData := d.Get("user_data").(string)

@@ -74,10 +74,6 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"password_data": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
 								"block_device_mapping": {
 									Type: schema.TypeList,
 									Elem: &schema.Resource{
@@ -118,7 +114,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ebs_optimised": {
+								"ebs_optimized": {
 									Type:     schema.TypeBool,
 									Computed: true,
 								},
@@ -561,11 +557,15 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
+		if len(filteredInstances) == 0 {
+			continue
+		}
+
 		f := map[string]interface{}{
 			"owner_id":       *r.OwnerId,
 			"reservation_id": *r.ReservationId,
 			"group_set":      getGroupSet(r.Groups),
-			"instances_set":  flattenedInstanceSetPassword(filteredInstances, client),
+			"instances_set":  flattenedInstanceSet(filteredInstances),
 		}
 		flattenedReservations = append(flattenedReservations, f)
 	}

@@ -13,7 +13,7 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,
@@ -91,7 +91,7 @@ func flattenedInstanceSetPassword(instances []*fcu.Instance, conn fcu.VMService)
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimised":      *instance.EbsOptimized,
+			"ebs_optimized":      *instance.EbsOptimized,
 			"architecture":       *instance.Architecture,
 			"client_token":       *instance.ClientToken,
 			"hypervisor":         *instance.Hypervisor,
@@ -206,12 +206,14 @@ func getPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) []map[st
 	res := []map[string]interface{}{}
 	if privateIPs != nil {
 		for _, p := range privateIPs {
-			var inter map[string]interface{}
+			inter := make(map[string]interface{})
+			assoc := make(map[string]interface{})
 
-			assoc := map[string]interface{}{}
-			assoc["ip_owner_id"] = *p.Association.IpOwnerId
-			assoc["public_dns_name"] = *p.Association.PublicDnsName
-			assoc["public_ip"] = *p.Association.PublicIp
+			if p.Association != nil {
+				assoc["ip_owner_id"] = *p.Association.IpOwnerId
+				assoc["public_dns_name"] = *p.Association.PublicDnsName
+				assoc["public_ip"] = *p.Association.PublicIp
+			}
 
 			inter["association"] = assoc
 			inter["private_dns_name"] = *p.Primary
@@ -362,17 +364,19 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 
 	if interfaces != nil {
 		for _, i := range interfaces {
-			var inter map[string]interface{}
+			inter := make(map[string]interface{})
+			assoc := make(map[string]interface{})
 
-			assoc := map[string]interface{}{}
-			assoc["ip_owner_id"] = *i.Association.IpOwnerId
-			assoc["public_dns_name"] = *i.Association.PublicDnsName
-			assoc["public_ip"] = *i.Association.PublicIp
+			if i.Association != nil {
+				assoc["ip_owner_id"] = *i.Association.IpOwnerId
+				assoc["public_dns_name"] = *i.Association.PublicDnsName
+				assoc["public_ip"] = *i.Association.PublicIp
+			}
 
-			attch := map[string]interface{}{}
+			attch := make(map[string]interface{})
 			assoc["attachement_id"] = *i.Attachment.AttachmentId
-			assoc["delete_on_termination"] = *i.Attachment.DeleteOnTermination
-			assoc["device_index"] = *i.Attachment.DeviceIndex
+			assoc["delete_on_termination"] = fmt.Sprint("%t", *i.Attachment.DeleteOnTermination)
+			assoc["device_index"] = fmt.Sprintf("%d", *i.Attachment.DeviceIndex)
 			assoc["status"] = *i.Attachment.Status
 
 			inter["association"] = assoc
