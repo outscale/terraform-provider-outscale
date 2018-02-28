@@ -17,8 +17,9 @@ var datasources Dictionary
 func init() {
 	resources = Dictionary{
 		"fcu": ResourceMap{
-			"outscale_vm":    resourceOutscaleVM,
-			"outscale_image": resourceOutscaleImage,
+			"outscale_vm":                 resourceOutscaleVM,
+			"outscale_image":              resourceOutscaleImage,
+			"outscale_firewall_rules_set": resourceOutscaleFirewallRulesSet,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,
