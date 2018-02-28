@@ -664,12 +664,6 @@ func expandIPPerms(
 				perm.IpRanges = append(perm.IpRanges, &fcu.IpRange{CidrIp: aws.String(v.(string))})
 			}
 		}
-		// if raw, ok := m["ipv6_cidr_blocks"]; ok {
-		// 	list := raw.([]interface{})
-		// 	for _, v := range list {
-		// 		perm.Ipv6Ranges = append(perm.Ipv6Ranges, &fcu.Ipv6Range{CidrIpv6: aws.String(v.(string))})
-		// 	}
-		// }
 
 		if raw, ok := m["prefix_list_ids"]; ok {
 			list := raw.([]interface{})
@@ -719,20 +713,6 @@ func resourceOutscaleSecurityGroupIPPermGather(groupId string, permissions []*fc
 
 			m["ip_ranges"] = list
 		}
-
-		// if len(perm.Ipv6Ranges) > 0 {
-		// 	raw, ok := m["ipv6_cidr_blocks"]
-		// 	if !ok {
-		// 		raw = make([]string, 0, len(perm.Ipv6Ranges))
-		// 	}
-		// 	list := raw.([]string)
-
-		// 	for _, ip := range perm.Ipv6Ranges {
-		// 		list = append(list, *ip.CidrIpv6)
-		// 	}
-
-		// 	m["ipv6_cidr_blocks"] = list
-		// }
 
 		if len(perm.PrefixListIds) > 0 {
 			raw, ok := m["prefix_list_ids"]
@@ -837,10 +817,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 				if ok {
 					numExpectedCidrs = len(l["ip_ranges"].([]interface{}))
 				}
-				// liRaw, ok := l["ipv6_cidr_blocks"]
-				// if ok {
-				// 	numExpectedIpv6Cidrs = len(l["ipv6_cidr_blocks"].([]interface{}))
-				// }
 				lpRaw, ok := l["prefix_list_ids"]
 				if ok {
 					numExpectedPrefixLists = len(l["prefix_list_ids"].([]interface{}))
@@ -854,10 +830,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 				if ok {
 					numRemoteCidrs = len(r["ip_ranges"].([]string))
 				}
-				// riRaw, ok := r["ipv6_cidr_blocks"]
-				// if ok {
-				// 	numRemoteIpv6Cidrs = len(r["ipv6_cidr_blocks"].([]string))
-				// }
 				rpRaw, ok := r["prefix_list_ids"]
 				if ok {
 					numRemotePrefixLists = len(r["prefix_list_ids"].([]string))
@@ -872,10 +844,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 					fmt.Printf("[DEBUG] Local rule has more IP Ranges, continuing (%d/%d)", numExpectedCidrs, numRemoteCidrs)
 					continue
 				}
-				// if numExpectedIpv6Cidrs > numRemoteIpv6Cidrs {
-				// 	fmt.Printf("[DEBUG] Local rule has more IPV6 CIDR blocks, continuing (%d/%d)", numExpectedIpv6Cidrs, numRemoteIpv6Cidrs)
-				// 	continue
-				// }
 				if numExpectedPrefixLists > numRemotePrefixLists {
 					fmt.Printf("[DEBUG] Local rule has more prefix lists, continuing (%d/%d)", numExpectedPrefixLists, numRemotePrefixLists)
 					continue
@@ -906,28 +874,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 						matchingCidrs = append(matchingCidrs, s.(string))
 					}
 				}
-
-				// var localIpv6Cidrs []interface{}
-				// if liRaw != nil {
-				// 	localIpv6Cidrs = liRaw.([]interface{})
-				// }
-				// localIpv6CidrSet := schema.NewSet(schema.HashString, localIpv6Cidrs)
-
-				// var remoteIpv6Cidrs []string
-				// if riRaw != nil {
-				// 	remoteIpv6Cidrs = riRaw.([]string)
-				// }
-				// var listIpv6 []interface{}
-				// for _, s := range remoteIpv6Cidrs {
-				// 	listIpv6 = append(listIpv6, s)
-				// }
-				// remoteIpv6CidrSet := schema.NewSet(schema.HashString, listIpv6)
-
-				// for _, s := range localIpv6CidrSet.List() {
-				// 	if remoteIpv6CidrSet.Contains(s) {
-				// 		matchingIpv6Cidrs = append(matchingIpv6Cidrs, s.(string))
-				// 	}
-				// }
 
 				var localPrefixLists []interface{}
 				if lpRaw != nil {
@@ -970,73 +916,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 						matchingSGs = append(matchingSGs, s.(string))
 					}
 				}
-
-				if numExpectedCidrs == len(matchingCidrs) {
-					// if numExpectedIpv6Cidrs == len(matchingIpv6Cidrs) {
-					// 	if numExpectedPrefixLists == len(matchingPrefixLists) {
-					// 		if numExpectedSGs == len(matchingSGs) {
-
-					// 			// var lSelf bool
-					// 			// var rSelf bool
-					// 			// if _, ok := l["self"]; ok {
-					// 			// 	lSelf = l["self"].(bool)
-					// 			// }
-					// 			// if _, ok := r["self"]; ok {
-					// 			// 	rSelf = r["self"].(bool)
-					// 			// }
-					// 			// if rSelf == lSelf {
-					// 			// 	delete(r, "self")
-
-					// 			// 	diffCidr := remoteCidrSet.Difference(localCidrSet)
-					// 			// 	var newCidr []string
-					// 			// 	for _, cRaw := range diffCidr.List() {
-					// 			// 		newCidr = append(newCidr, cRaw.(string))
-					// 			// 	}
-
-					// 			// 	if len(newCidr) > 0 {
-					// 			// 		r["ip_ranges"] = newCidr
-					// 			// 	} else {
-					// 			// 		delete(r, "ip_ranges")
-					// 			// 	}
-
-					// 			// 	// diffIpv6Cidr := remoteIpv6CidrSet.Difference(localIpv6CidrSet)
-					// 			// 	// var newIpv6Cidr []string
-					// 			// 	// for _, cRaw := range diffIpv6Cidr.List() {
-					// 			// 	// 	newIpv6Cidr = append(newIpv6Cidr, cRaw.(string))
-					// 			// 	// }
-
-					// 			// 	// if len(newIpv6Cidr) > 0 {
-					// 			// 	// 	r["ipv6_cidr_blocks"] = newIpv6Cidr
-					// 			// 	// } else {
-					// 			// 	// 	delete(r, "ipv6_cidr_blocks")
-					// 			// 	// }
-
-					// 			// 	diffPrefixLists := remotePrefixListsSet.Difference(localPrefixListsSet)
-					// 			// 	var newPrefixLists []string
-					// 			// 	for _, pRaw := range diffPrefixLists.List() {
-					// 			// 		newPrefixLists = append(newPrefixLists, pRaw.(string))
-					// 			// 	}
-
-					// 			// 	if len(newPrefixLists) > 0 {
-					// 			// 		r["prefix_list_ids"] = newPrefixLists
-					// 			// 	} else {
-					// 			// 		delete(r, "prefix_list_ids")
-					// 			// 	}
-
-					// 			// 	diffSGs := remoteSGSet.Difference(localSGSet)
-					// 			// 	if len(diffSGs.List()) > 0 {
-					// 			// 		r["security_groups"] = diffSGs
-					// 			// 	} else {
-					// 			// 		delete(r, "security_groups")
-					// 			// 	}
-
-					// 			// 	saves = append(saves, l)
-					// 			// }
-					// 		}
-					// 	}
-
-					// }
-				}
 			}
 		}
 	}
@@ -1046,9 +925,6 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 		if rCidrs, ok := r["ip_ranges"]; ok {
 			lenCidr = len(rCidrs.([]string))
 		}
-		// if rIpv6Cidrs, ok := r["ipv6_cidr_blocks"]; ok {
-		// 	lenIpv6Cidr = len(rIpv6Cidrs.([]string))
-		// }
 		if rPrefixLists, ok := r["prefix_list_ids"]; ok {
 			lenPrefixLists = len(rPrefixLists.([]string))
 		}
@@ -1100,18 +976,6 @@ func ipPermissionIDHash(sg_id, ruleType string, ip *fcu.IpPermission) string {
 			buf.WriteString(fmt.Sprintf("%s-", v))
 		}
 	}
-
-	// if len(ip.Ipv6Ranges) > 0 {
-	// 	s := make([]string, len(ip.Ipv6Ranges))
-	// 	for i, r := range ip.Ipv6Ranges {
-	// 		s[i] = *r.CidrIpv6
-	// 	}
-	// 	sort.Strings(s)
-
-	// 	for _, v := range s {
-	// 		buf.WriteString(fmt.Sprintf("%s-", v))
-	// 	}
-	// }
 
 	if len(ip.PrefixListIds) > 0 {
 		s := make([]string, len(ip.PrefixListIds))
