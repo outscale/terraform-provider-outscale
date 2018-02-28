@@ -442,40 +442,36 @@ func TestVM_CreateKeyPair(t *testing.T) {
 	}
 }
 
-// func TestVM_DescribeKeyPair(t *testing.T) {
-// 	setup()
-// 	defer teardown()
+func TestVM_DescribeKeyPair(t *testing.T) {
+	setup()
+	defer teardown()
 
-// 	keyName := "tf-acc-key-pair"
+	keyName := "tf-acc-key-pair"
 
-// 	input := &DescribeKeyPairInput{
-// 		KeyName: &keyName,
-// 	}
+	input := &DescribeKeyPairsInput{
+		KeyNames: []*string{&keyName},
+	}
 
-// 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-// 		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
-// <DescribeKeyPairsResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>4c534b1d-80dc-4778-a075-9d6f8d6ba22e</requestId><keySet><item><keyName>tf-acc-key-pair</keyName><keyFingerprint>90:f3:02:7e:00:03:c6:72:77:fd:dd:46:6f:1e:80:90</keyFingerprint></item></keySet></DescribeKeyPairsResponse>`)
-// 	})
+		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
+<DescribeKeyPairsResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>4c534b1d-80dc-4778-a075-9d6f8d6ba22e</requestId><keySet><item><keyName>tf-acc-key-pair</keyName><keyFingerprint>90:f3:02:7e:00:03:c6:72:77:fd:dd:46:6f:1e:80:90</keyFingerprint></item></keySet></DescribeKeyPairsResponse>`)
+	})
 
-// 	key, err := client.VM.CreateKeyPair(input)
-// 	if err != nil {
-// 		t.Errorf("VM.Create Key Pair returned error: %v", err)
-// 	}
+	key, err := client.VM.DescribeKeyPairs(input)
+	if err != nil {
+		t.Errorf("VM.Describe Key Pair returned error: %v", err)
+	}
 
-// 	expectedFingerPrint := "90:f3:02:7e:00:03:c6:72:77:fd:dd:46:6f:1e:80:90"
-// 	expectedKeyMaterial := "key-body"
+	expectedFingerPrint := "90:f3:02:7e:00:03:c6:72:77:fd:dd:46:6f:1e:80:90"
 
-// 	if keyName != *key.KeyName {
-// 		t.Fatalf("Expected KeyName:(%s), Got(%s)", keyName, *key.KeyName)
-// 	}
-// 	if *key.KeyFingerprint != expectedFingerPrint {
-// 		t.Fatalf("Expected FingerPrint:(%s), Got(%s)", *key.KeyFingerprint, expectedFingerPrint)
-// 	}
-// 	if *key.KeyMaterial != expectedKeyMaterial {
-// 		t.Fatalf("Expected KeyMaterial:(%s), Got(%s)", *key.KeyMaterial, expectedKeyMaterial)
-// 	}
-// }
+	if keyName != *key.KeyPairs[0].KeyName {
+		t.Fatalf("Expected KeyName:(%s), Got(%s)", keyName, *key.KeyPairs[0].KeyName)
+	}
+	if expectedFingerPrint != *key.KeyPairs[0].KeyFingerprint {
+		t.Fatalf("Expected FingerPrint:(%s), Got(%s)", expectedFingerPrint, *key.KeyPairs[0].KeyFingerprint)
+	}
+}
 
 func TestVM_DeleteKeyPair(t *testing.T) {
 	setup()
@@ -494,23 +490,9 @@ func TestVM_DeleteKeyPair(t *testing.T) {
 <DeleteKeyPairResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>476a1739-406d-48c2-8189-c5939cf617a9</requestId><return>true</return></DeleteKeyPairResponse>`)
 	})
 
-	key, err := client.VM.DeleteKeyPairs(input)
+	_, err := client.VM.DeleteKeyPairs(input)
 	if err != nil {
 		t.Errorf("VM.Delete KeyPair returned error: %v", err)
 	}
 
-	expectedFingerPrint := "90:f3:02:7e:00:03:c6:72:77:fd:dd:46:6f:1e:80:90"
-	expectedKeyMaterial := "key-body"
-
-	expectedReturn = false
-
-	if *key == true {
-		t.Fatalf("Expected Result:(%s), Got(%s)", "true", *key.GoString)
-	}
-	if *key.KeyFingerprint != expectedFingerPrint {
-		t.Fatalf("Expected FingerPrint:(%s), Got(%s)", *key.KeyFingerprint, expectedFingerPrint)
-	}
-	if *key.KeyMaterial != expectedKeyMaterial {
-		t.Fatalf("Expected KeyMaterial:(%s), Got(%s)", *key.KeyMaterial, expectedKeyMaterial)
-	}
 }
