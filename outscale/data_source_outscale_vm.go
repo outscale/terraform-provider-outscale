@@ -83,15 +83,9 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance = filteredInstances[0]
 
-	fmt.Println("OWNER ID =>", resp.Reservations[0].OwnerId)
-
-	fmt.Println("REQUESTER ID =>", resp.Reservations[0].RequesterId)
-
-	fmt.Println("RESERVATION ID =>", resp.Reservations[0].ReservationId)
-
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("requester_id", resp.Reservations[0].RequesterId)
+	d.Set("request_id", resp.RequesterId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
@@ -145,9 +139,43 @@ func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instanc
 		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
 	}
 
-	err = d.Set("instances_set", flattenedInstanceSetPassword([]*fcu.Instance{instance}, conn))
+	err = d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
+	if err != nil {
+		return err
+	}
 
-	return err
+	if instance.Platform != nil && *instance.Platform == "windows" && len(*instance.KeyName) > 0 {
+		var passRes *fcu.GetPasswordDataOutput
+		err = resource.Retry(1200*time.Second, func() *resource.RetryError {
+			passRes, err = conn.GetPasswordData(&fcu.GetPasswordDataInput{
+				InstanceId: instance.InstanceId,
+			})
+
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+					return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
+				}
+			}
+
+			if passRes.PasswordData == nil || *passRes.PasswordData == "" {
+				return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
+			}
+
+			return resource.NonRetryableError(err)
+		})
+
+		if passRes == nil {
+			return fmt.Errorf("Error reading source instance: (%s)", d.Id())
+		}
+
+		if err != nil {
+			return err
+		}
+
+		d.Set("password_data", passRes.PasswordData)
+	}
+
+	return nil
 }
 
 func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
@@ -212,10 +240,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"password_data": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
 					"block_device_mapping": {
 						Type: schema.TypeList,
 						Elem: &schema.Resource{
@@ -256,7 +280,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ebs_optimised": {
+					"ebs_optimized": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
@@ -426,10 +450,6 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"network_interface_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"owner_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -635,7 +655,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"requester_id": {
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},

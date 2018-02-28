@@ -27,6 +27,13 @@ type VMService interface {
 	AssociateAddress(input *AssociateAddressInput) (*AssociateAddressOutput, error)
 	DisassociateAddress(input *DisassociateAddressInput) (*DisassociateAddressOutput, error)
 	ReleaseAddress(input *ReleaseAddressInput) (*ReleaseAddressOutput, error)
+	RegisterImage(input *RegisterImageInput) (*RegisterImageOutput, error)
+	DescribeImages(input *DescribeImagesInput) (*DescribeImagesOutput, error)
+	ModifyImageAttribute(input *ModifyImageAttributeInput) (*ModifyImageAttributeOutput, error)
+	DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error)
+	CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error)
+	DeregisterImage(input *DeregisterImageInput) (*DeregisterImageOutput, error)
+	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -309,6 +316,160 @@ func (v VMOperations) ReleaseAddress(input *ReleaseAddressInput) (*ReleaseAddres
 
 	if input == nil {
 		input = &ReleaseAddressInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) RegisterImage(input *RegisterImageInput) (*RegisterImageOutput, error) {
+	inURL := "/"
+	endpoint := "CreateImage"
+	output := &RegisterImageOutput{}
+
+	if input == nil {
+		input = &RegisterImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeImages(input *DescribeImagesInput) (*DescribeImagesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeImages"
+	output := &DescribeImagesOutput{}
+
+	if input == nil {
+		input = &DescribeImagesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) ModifyImageAttribute(input *ModifyImageAttributeInput) (*ModifyImageAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyImageAttribute"
+	output := &ModifyImageAttributeOutput{}
+
+	if input == nil {
+		input = &ModifyImageAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteTags"
+	output := &DeleteTagsOutput{}
+
+	if input == nil {
+		input = &DeleteTagsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateTags(input *CreateTagsInput) (*CreateTagsOutput, error) {
+	inURL := "/"
+	endpoint := "CreateTags"
+	output := &CreateTagsOutput{}
+
+	if input == nil {
+		input = &CreateTagsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeregisterImage(input *DeregisterImageInput) (*DeregisterImageOutput, error) {
+	inURL := "/"
+	endpoint := "DeregisterImage"
+	output := &DeregisterImageOutput{}
+
+	if input == nil {
+		input = &DeregisterImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeTags"
+	output := &DescribeTagsOutput{}
+
+	if input == nil {
+		input = &DescribeTagsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
