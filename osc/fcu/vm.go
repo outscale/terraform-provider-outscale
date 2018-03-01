@@ -582,7 +582,7 @@ func (v VMOperations) RevokeSecurityGroupIngress(input *RevokeSecurityGroupIngre
 
 func (v VMOperations) AuthorizeSecurityGroupEgress(input *AuthorizeSecurityGroupEgressInput) (*AuthorizeSecurityGroupEgressOutput, error) {
 	inURL := "/"
-	endpoint := "RevokeSecurityGroupIngress"
+	endpoint := "AuthorizeSecurityGroupEgress"
 	output := &AuthorizeSecurityGroupEgressOutput{}
 
 	if input == nil {
@@ -604,7 +604,7 @@ func (v VMOperations) AuthorizeSecurityGroupEgress(input *AuthorizeSecurityGroup
 
 func (v VMOperations) AuthorizeSecurityGroupIngress(input *AuthorizeSecurityGroupIngressInput) (*AuthorizeSecurityGroupIngressOutput, error) {
 	inURL := "/"
-	endpoint := "RevokeSecurityGroupIngress"
+	endpoint := "AuthorizeSecurityGroupIngress"
 	output := &AuthorizeSecurityGroupIngressOutput{}
 
 	if input == nil {
