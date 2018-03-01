@@ -230,14 +230,21 @@ func testAccOutscaleOutboundRuleConfig(rInt int) string {
 		tags {
 			Name = "tf-acc-test"
 		}
+
+		vpc_id = "vpc-e9d09d63"
 	}
 	resource "outscale_outbound_rule" "egress_1" {
+		from_port = 80
+		to_port = 8000
+		cidr_ip = "10.0.0.0/8"
+			
 		ip_permissions = {
-			protocol = "tcp"
+			ip_protocol = "tcp"
 			from_port = 80
 			to_port = 8000
-			ip_ranges = ["10.0.0.0/8"]
+			ip_ranges = "10.0.0.0/8"
 		}
 		group_id = "${outscale_firewall_rules_set.web.id}"
+		source_security_group_name = "${outscale_firewall_rules_set.web.group_name}"
 	}`, rInt)
 }
