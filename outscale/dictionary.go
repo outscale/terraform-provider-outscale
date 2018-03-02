@@ -21,6 +21,7 @@ func init() {
 			"outscale_image":              resourceOutscaleImage,
 			"outscale_firewall_rules_set": resourceOutscaleFirewallRulesSet,
 			"outscale_outbound_rule":      resourceOutscaleOutboundRule,
+			"outscale_inbound_rule":       resourceOutscaleInboundRule,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,
