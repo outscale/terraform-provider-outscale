@@ -74,6 +74,8 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
+	d.SetId(resource.UniqueId())
+
 	return nil
 }
 
