@@ -18,6 +18,7 @@ func tagsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeMap,
 		Optional: true,
+		ForceNew: true,
 	}
 }
 
