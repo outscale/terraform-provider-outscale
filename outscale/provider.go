@@ -57,6 +57,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_image":              GetResource(fcu, "outscale_image")(),
 			"outscale_firewall_rules_set": GetResource(fcu, "outscale_firewall_rules_set")(),
 			"outscale_outbound_rule":      GetResource(fcu, "outscale_outbound_rule")(),
+			"outscale_inbound_rule":       GetResource(fcu, "outscale_inbound_rule")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":  GetDatasource(fcu, "outscale_vm")(),
