@@ -13,17 +13,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
+func TestAccOutscaleFirewallRulesSet(t *testing.T) {
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSecurityGroupRuleIngressConfig(rInt),
+				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
 					resource.TestCheckResourceAttr(
@@ -34,7 +34,7 @@ func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleSecurityGroupRuleDestroy(s *terraform.State) error {
+func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -128,7 +128,7 @@ func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGr
 	}
 }
 
-func testAccOutscaleSecurityGroupRuleIngressConfig(rInt int) string {
+func testAccOutscaleFirewallRulesSetConfig(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
