@@ -29,13 +29,11 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 			"cidr_ip": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"from_port": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"group_id": {
@@ -46,86 +44,95 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 			"ip_protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"source_security_group_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
 			},
 			"source_security_group_owner_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
 			},
 			"to_port": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"ip_permissions": {
-				Type:     schema.TypeMap,
-				Computed: true,
+				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"from_port": {
 							Type:     schema.TypeInt,
-							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"groups": {
 							Type:     schema.TypeMap,
-							Computed: true,
 							Optional: true,
+							ForceNew: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"group_id": {
 										Type:     schema.TypeString,
-										Computed: true,
 										Optional: true,
+										ForceNew: true,
 									},
 									"group_name": {
 										Type:     schema.TypeString,
-										Computed: true,
 										Optional: true,
+										ForceNew: true,
 									},
 									"user_id": {
 										Type:     schema.TypeString,
-										Computed: true,
 										Optional: true,
+										ForceNew: true,
 									},
 								},
 							},
 						},
 						"to_port": {
 							Type:     schema.TypeInt,
-							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"ip_protocol": {
 							Type:     schema.TypeString,
-							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"ip_ranges": {
 							Type:     schema.TypeList,
 							Optional: true,
 							ForceNew: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validateCIDRNetworkAddress,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"cidr_ip": {
+										Type:     schema.TypeString,
+										Optional: true,
+										ForceNew: true,
+									},
+								},
 							},
 						},
 						"prefix_list_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
 							ForceNew: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"prefix_list_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+										ForceNew: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -161,7 +168,6 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 
 	if err := validateOutscaleSecurityGroupRule(d); err != nil {
 		fmt.Println("\n[DEDUG] ERROR resourceOutscaleOutboundRuleCreate 3 =>", err)
-
 		return err
 	}
 
@@ -377,80 +383,77 @@ func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) (*fcu.IpPermiss
 
 	if raw, ok := d.GetOk("ip_permissions"); ok {
 
-		fmt.Printf("\n\nRAW #v", raw.(map[string]interface{}))
+		ipp := raw.([]interface{})
 
-		ipp := raw.(map[string]interface{})
+		for _, v := range ipp {
+			values := v.(map[string]interface{})
 
-		fp, fpe := strconv.Atoi(ipp["from_port"].(string))
-		if fpe != nil {
-			return nil, fpe
-		}
-		tp, tpe := strconv.Atoi(ipp["to_port"].(string))
-		if tpe != nil {
-			return nil, tpe
-		}
+			fmt.Printf("\n [DEBUG] values => #v", values)
 
-		perm.FromPort = aws.Int64(int64(fp))
-		perm.ToPort = aws.Int64(int64(tp))
-		protocol := protocolForValue(ipp["ip_protocol"].(string))
-		perm.IpProtocol = aws.String(protocol)
+			perm.FromPort = aws.Int64(int64(values["from_port"].(int)))
+			perm.ToPort = aws.Int64(int64(values["to_port"].(int)))
+			protocol := protocolForValue(values["ip_protocol"].(string))
+			perm.IpProtocol = aws.String(protocol)
 
-		groups := make(map[string]bool)
-		if raw, ok := ipp["groups"]; ok {
-			groups[raw.(string)] = true
-		}
+			if _, ok := values["groups"]; ok {
+				groups := values["groups"].(map[string]interface{})
 
-		if len(groups) > 0 {
-			perm.UserIdGroupPairs = make([]*fcu.UserIdGroupPair, len(groups))
-			var gl []string
-			for k, _ := range groups {
-				gl = append(gl, k)
-			}
+				if len(groups) > 0 {
+					perm.UserIdGroupPairs = make([]*fcu.UserIdGroupPair, len(groups))
+					var gl []string
+					for _, v := range groups {
+						gl = append(gl, v.(string))
+					}
 
-			for i, name := range gl {
-				ownerId, id := "", name
-				if items := strings.Split(id, "/"); len(items) > 1 {
-					ownerId, id = items[0], items[1]
-				}
+					for i, name := range gl {
+						ownerId, id := "", name
+						if items := strings.Split(id, "/"); len(items) > 1 {
+							ownerId, id = items[0], items[1]
+						}
 
-				perm.UserIdGroupPairs[i] = &fcu.UserIdGroupPair{
-					GroupId: aws.String(id),
-					UserId:  aws.String(ownerId),
-				}
+						perm.UserIdGroupPairs[i] = &fcu.UserIdGroupPair{
+							GroupId: aws.String(id),
+							UserId:  aws.String(ownerId),
+						}
 
-				if sg.VpcId == nil || *sg.VpcId == "" {
-					perm.UserIdGroupPairs[i].GroupId = nil
-					perm.UserIdGroupPairs[i].GroupName = aws.String(id)
-					perm.UserIdGroupPairs[i].UserId = nil
+						if sg.VpcId == nil || *sg.VpcId == "" {
+							perm.UserIdGroupPairs[i].GroupId = nil
+							perm.UserIdGroupPairs[i].GroupName = aws.String(id)
+							perm.UserIdGroupPairs[i].UserId = nil
+						}
+					}
 				}
 			}
-		}
 
-		fmt.Printf("[DEBUG] => IP_RANGES #v =>", ipp["ip_ranges"])
+			if _, ok := values["ip_ranges"]; ok {
+				list := values["ip_ranges"].([]interface{})
+				perm.IpRanges = make([]*fcu.IpRange, len(list))
 
-		if raw, ok := ipp["ip_ranges"]; ok {
-			// list := raw.([]interface{})
-			perm.IpRanges = make([]*fcu.IpRange, 1)
-			// for i, v := range list {
-			cidrIP, ok := raw.(string)
-			if !ok {
-				return nil, fmt.Errorf("empty element found in cidr_blocks - consider using the compact function")
-			}
-			perm.IpRanges[0] = &fcu.IpRange{CidrIp: aws.String(cidrIP)}
-			// }
-		}
-
-		if raw, ok := ipp["prefix_list_ids"]; ok {
-			list := raw.([]interface{})
-			perm.PrefixListIds = make([]*fcu.PrefixListId, len(list))
-			for i, v := range list {
-				prefixListID, ok := v.(string)
-				if !ok {
-					return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+				for i, v := range list {
+					ip := v.(map[string]interface{})
+					cidr_ip := ip["cidr_ip"].(string)
+					if !ok {
+						return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+					}
+					perm.IpRanges[i] = &fcu.IpRange{CidrIp: aws.String(cidr_ip)}
 				}
-				perm.PrefixListIds[i] = &fcu.PrefixListId{PrefixListId: aws.String(prefixListID)}
+			}
+
+			if raw, ok := values["prefix_list_ids"]; ok {
+				list := raw.([]interface{})
+				if len(list) > 0 {
+					perm.PrefixListIds = make([]*fcu.PrefixListId, len(list))
+					for i, v := range list {
+						prefixListID, ok := v.(string)
+						if !ok {
+							return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+						}
+						perm.PrefixListIds[i] = &fcu.PrefixListId{PrefixListId: aws.String(prefixListID)}
+					}
+				}
 			}
 		}
+
 	}
 
 	return &perm, nil
@@ -506,14 +509,18 @@ func sgProtocolIntegers() map[string]int {
 
 func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {
 	if ipp, ippemOk := d.GetOk("ip_permissions"); ippemOk {
-		ippem := ipp.(map[string]interface{})
+		ippem := ipp.([]interface{})
 
-		_, blocksOk := ippem["ip_ranges"].(string)
-		_, sourceOk := d.GetOk("source_security_group_owner_id")
-		_, prefixOk := ippem["prefix_list_ids"].(string)
-		if !blocksOk && !sourceOk && !prefixOk {
-			return fmt.Errorf(
-				"One of ['ip_ranges', 'source_security_group_owner_id', 'prefix_list_ids'] must be set to create an Outscale Security Group Rule")
+		for _, v := range ippem {
+			values := v.(map[string]interface{})
+
+			_, blocksOk := values["ip_ranges"]
+			_, sourceOk := values["source_security_group_owner_id"]
+			_, prefixOk := values["prefix_list_ids"]
+			if !blocksOk && !sourceOk && !prefixOk {
+				return fmt.Errorf(
+					"One of ['ip_ranges', 'source_security_group_owner_id', 'prefix_list_ids'] must be set to create an Outscale Security Group Rule")
+			}
 		}
 	}
 
@@ -523,16 +530,22 @@ func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {
 func findRuleMatch(p *fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *fcu.IpPermission {
 	var rule *fcu.IpPermission
 	for _, r := range rules {
-		if r.ToPort != nil && *p.ToPort != *r.ToPort {
-			continue
+		if r.ToPort != nil && p.ToPort != nil {
+			if *p.ToPort != *r.ToPort {
+				continue
+			}
 		}
 
-		if r.FromPort != nil && *p.FromPort != *r.FromPort {
-			continue
+		if r.FromPort != nil && p.FromPort != nil {
+			if *p.FromPort != *r.FromPort {
+				continue
+			}
 		}
 
-		if r.IpProtocol != nil && *p.IpProtocol != *r.IpProtocol {
-			continue
+		if r.IpProtocol != nil && p.IpProtocol != nil {
+			if *p.IpProtocol != *r.IpProtocol {
+				continue
+			}
 		}
 
 		remaining := len(p.IpRanges)
@@ -593,14 +606,13 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rule *fcu.IpPe
 	ippem["to_port"] = rule.ToPort
 	ippem["ip_protocol"] = rule.IpProtocol
 
-	var cb []string
-	for _, c := range rule.IpRanges {
-		cb = append(cb, *c.CidrIp)
+	cb := make([]*fcu.IpRange, len(rule.IpRanges))
+	for i, c := range rule.IpRanges {
+		cb[i] = &fcu.IpRange{CidrIp: c.CidrIp}
 	}
 
 	if len(cb) > 0 {
 		ippem["ip_ranges"] = cb
-		d.Set("cidr_ip", cb[0])
 	}
 
 	var g []map[string]interface{}
@@ -612,14 +624,18 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rule *fcu.IpPe
 		})
 	}
 
-	ippem["groups"] = g
-
-	var pl []string
-	for _, p := range rule.PrefixListIds {
-		pl = append(pl, *p.PrefixListId)
+	if len(g) > 0 {
+		ippem["groups"] = g
 	}
 
-	ippem["prefix_list_ids"] = pl
+	pl := make([]*fcu.PrefixListId, len(rule.PrefixListIds))
+	for i, c := range rule.PrefixListIds {
+		pl[i] = &fcu.PrefixListId{PrefixListId: c.PrefixListId}
+	}
+
+	if len(pl) > 0 {
+		ippem["prefix_list_ids"] = pl
+	}
 
 	if len(rule.UserIdGroupPairs) > 0 {
 		s := rule.UserIdGroupPairs[0]
@@ -631,9 +647,14 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rule *fcu.IpPe
 		}
 	}
 
-	d.Set("from_port", rule.FromPort)
-	d.Set("ip_protocol", rule.IpProtocol)
-	d.Set("to_port", rule.ToPort)
+	// if rule.FromPort != nil && *rule.FromPort != 0 {
+	// 	d.Set("from_port", rule.FromPort)
+	// }
+
+	// if rule.ToPort != nil && *rule.ToPort != 0 {
+	// 	d.Set("to_port", rule.ToPort)
+	// }
+
 	d.Set("ip_permissions", ippem)
 
 	return nil
