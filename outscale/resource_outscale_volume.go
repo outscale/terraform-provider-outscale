@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -113,7 +114,20 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		VolumeIds: []*string{aws.String(d.Id())},
 	}
 
-	response, err := conn.VM.DescribeVolumes(request)
+	var err error
+	var response *fcu.DescribeVolumesOutput
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		response, err = conn.VM.DescribeVolumes(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
+	})
 
 	if err != nil {
 		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVolume.NotFound" {
