@@ -113,7 +113,7 @@ func TestAccOutscaleOutboundRule(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOutboundRuleConfig(rInt),
@@ -237,13 +237,16 @@ func testAccOutscaleOutboundRuleConfig(rInt int) string {
 		from_port = 80
 		to_port = 8000
 		cidr_ip = "10.0.0.0/8"
-			
+
 		ip_permissions = {
 			ip_protocol = "tcp"
 			from_port = 80
 			to_port = 8000
-			ip_ranges = "10.0.0.0/8"
+			ip_ranges = {
+				cidr_ip = "10.0.0.0/8"
+			}
 		}
+
 		group_id = "${outscale_firewall_rules_set.web.id}"
 		source_security_group_name = "${outscale_firewall_rules_set.web.group_name}"
 	}`, rInt)
