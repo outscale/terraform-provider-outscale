@@ -20,7 +20,8 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 		Read:   resourceOutscaleFirewallRulesSetRead,
 		Delete: resourceOutscaleFirewallRulesSetDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleSecurityGroupImportState,
+			// State: resourceOutscaleSecurityGroupImportState,
+			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
