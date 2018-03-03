@@ -133,7 +133,7 @@ func testAccOutscaleFirewallRulesSetConfig(rInt int) string {
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		tags {
+		tag = {
 						Name = "tf-acc-test"
 		}
 		vpc_id = "vpc-e9d09d63"
