@@ -20,11 +20,11 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 		Read:   resourceOutscaleFirewallRulesSetRead,
 		Delete: resourceOutscaleFirewallRulesSetDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceOutscaleSecurityGroupImportState,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"tags": tagsSchema(),
+			"tag": tagsSchema(),
 			"dry_run": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -42,7 +42,7 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 			},
 			"vpc_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"group_id": {
@@ -59,24 +59,10 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 							Computed: true,
 						},
 						"groups": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"group_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"user_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      schema.HashString,
 						},
 						"to_port": {
 							Type:     schema.TypeInt,
@@ -89,30 +75,18 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 						"ip_ranges": {
 							Type:     schema.TypeList,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cidr_ip": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validateCIDRNetworkAddress,
 							},
 						},
 						"prefix_list_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"prefix_list_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
-				Set: resourceOutscaleSecurityGroupRuleHash,
 			},
 			"ip_permissions_egress": {
 				Type:     schema.TypeSet,
@@ -124,24 +98,10 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 							Computed: true,
 						},
 						"groups": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"group_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"user_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      schema.HashString,
 						},
 						"to_port": {
 							Type:     schema.TypeInt,
@@ -154,30 +114,18 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 						"ip_ranges": {
 							Type:     schema.TypeList,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cidr_ip": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
+							Elem: &schema.Schema{
+								Type:         schema.TypeString,
+								ValidateFunc: validateCIDRNetworkAddress,
 							},
 						},
 						"prefix_list_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"prefix_list_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
-				Set: resourceOutscaleSecurityGroupRuleHash,
 			},
 			"owner_id": {
 				Type:     schema.TypeString,
@@ -210,33 +158,28 @@ func resourceOutscaleFirewallRulesSetCreate(d *schema.ResourceData, meta interfa
 
 	gn, gnok := d.GetOk("group_name")
 	gd, gdok := d.GetOk("group_description")
-	vp, vpok := d.GetOk("vpc_id")
 
-	if gnok == false && gdok == false && vpok == false {
-		return fmt.Errorf("group name and group description, must be set")
+	if gnok == false && gdok == false {
+		return fmt.Errorf("group name and group description, are required attributes, and must be set")
+	}
+
+	if v, ok := d.GetOk("vpc_id"); ok {
+		securityGroupOpts.VpcId = aws.String(v.(string))
 	}
 
 	securityGroupOpts.GroupName = aws.String(gn.(string))
 	securityGroupOpts.Description = aws.String(gd.(string))
 
-	if vpok {
-		securityGroupOpts.VpcId = aws.String(vp.(string))
-	}
+	fmt.Printf(
+		"[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
-	if v, ok := d.GetOk("dry_run"); ok {
-		securityGroupOpts.DryRun = aws.Bool(v.(bool))
-	}
-
-	fmt.Printf("\n\n\n[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
-
-	var createResp *fcu.CreateSecurityGroupOutput
 	var err error
+	var createResp *fcu.CreateSecurityGroupOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		createResp, err = conn.VM.CreateSecurityGroup(securityGroupOpts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("\n[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -251,14 +194,12 @@ func resourceOutscaleFirewallRulesSetCreate(d *schema.ResourceData, meta interfa
 
 	d.SetId(*createResp.GroupId)
 
-	if err := setTags(conn, d); err != nil {
-		return err
-	}
+	fmt.Printf("[INFO] Security Group ID: %s", d.Id())
 
-	fmt.Printf("\n\n\n[INFO] Security Group ID: %s", d.Id())
-
-	fmt.Printf("\n\n\n[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
-
+	// Wait for the security group to truly exist
+	fmt.Printf(
+		"[DEBUG] Waiting for Security Group (%s) to exist",
+		d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
 		Target:  []string{"exists"},
@@ -273,9 +214,15 @@ func resourceOutscaleFirewallRulesSetCreate(d *schema.ResourceData, meta interfa
 			d.Id(), err)
 	}
 
+	if err := setTags(conn, d); err != nil {
+		return err
+	}
+
+	// defaults all Security Groups to have an ALLOW ALL egress rule. Here we
+	// revoke that rule, so users don't unknowingly have/use it.
 	group := resp.(*fcu.SecurityGroup)
 	if group.VpcId != nil && *group.VpcId != "" {
-		fmt.Printf("\n\n [DEBUG] Revoking default egress rule for Security Group for %s", d.Id())
+		fmt.Printf("[DEBUG] Revoking default egress rule for Security Group for %s", d.Id())
 
 		req := &fcu.RevokeSecurityGroupEgressInput{
 			GroupId: createResp.GroupId,
@@ -301,7 +248,7 @@ func resourceOutscaleFirewallRulesSetCreate(d *schema.ResourceData, meta interfa
 
 	}
 
-	return resourceOutscaleFirewallRulesSetRead(d, meta)
+	return resourceOutscaleSecurityGroupUpdate(d, meta)
 }
 
 func resourceOutscaleFirewallRulesSetRead(d *schema.ResourceData, meta interface{}) error {
@@ -321,29 +268,66 @@ func resourceOutscaleFirewallRulesSetRead(d *schema.ResourceData, meta interface
 	remoteIngressRules := resourceOutscaleSecurityGroupIPPermGather(d.Id(), sg.IpPermissions, sg.OwnerId)
 	remoteEgressRules := resourceOutscaleSecurityGroupIPPermGather(d.Id(), sg.IpPermissionsEgress, sg.OwnerId)
 
-	fmt.Printf("\n [DEBUG] remoteEgressRules => #v", remoteEgressRules)
-
 	localIngressRules := d.Get("ip_permissions").(*schema.Set).List()
 	localEgressRules := d.Get("ip_permissions_egress").(*schema.Set).List()
 
-	ingressRules := matchRules("ip_permissions", localIngressRules, remoteIngressRules)
-	egressRules := matchRules("ip_permissions_egress", localEgressRules, remoteEgressRules)
+	// Loop through the local state of rules, doing a match against the remote
+	// ruleSet we built above.
+	ingressRules := matchRules("ingress", localIngressRules, remoteIngressRules)
+	egressRules := matchRules("egress", localEgressRules, remoteEgressRules)
 
 	d.Set("group_description", sg.Description)
 	d.Set("group_name", sg.GroupName)
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
-	d.Set("tag_set", tagsToMap(sg.Tags))
 
 	if err := d.Set("ip_permissions", ingressRules); err != nil {
-		fmt.Printf("\n[WARN] Error setting Ingress rule set for (%s): %s", d.Id(), err)
+		fmt.Printf("[WARN] Error setting Ingress rule set for (%s): %s", d.Id(), err)
 	}
 
 	if err := d.Set("ip_permissions_egress", egressRules); err != nil {
-		fmt.Printf("\n[WARN] Error setting Egress rule set for (%s): %s", d.Id(), err)
+		fmt.Printf("[WARN] Error setting Egress rule set for (%s): %s", d.Id(), err)
 	}
 
+	d.Set("tag_set", tagsToMap(sg.Tags))
+
 	return nil
+}
+
+func resourceOutscaleSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).FCU
+
+	sgRaw, _, err := SGStateRefreshFunc(conn, d.Id())()
+	if err != nil {
+		return err
+	}
+	if sgRaw == nil {
+		d.SetId("")
+		return nil
+	}
+
+	group := sgRaw.(*fcu.SecurityGroup)
+
+	err = resourceOutscaleSecurityGroupUpdateRules(d, "ingress", meta, group)
+	if err != nil {
+		return err
+	}
+
+	if d.Get("vpc_id") != nil {
+		err = resourceOutscaleSecurityGroupUpdateRules(d, "egress", meta, group)
+		if err != nil {
+			return err
+		}
+	}
+
+	if !d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tags")
+	}
+
+	return resourceOutscaleFirewallRulesSetRead(d, meta)
 }
 
 func resourceOutscaleSecurityGroupUpdateRules(
@@ -376,10 +360,10 @@ func resourceOutscaleSecurityGroupUpdateRules(
 
 			var err error
 			if len(remove) > 0 {
-				fmt.Printf("\n[DEBUG] Revoking security group %#v %s rule: %#v",
+				fmt.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
 					group, ruleset, remove)
 
-				if ruleset == "ip_permissions_egress" {
+				if ruleset == "egress" {
 					req := &fcu.RevokeSecurityGroupEgressInput{
 						GroupId:       group.GroupId,
 						IpPermissions: remove,
@@ -420,7 +404,6 @@ func resourceOutscaleSecurityGroupUpdateRules(
 
 						return nil
 					})
-
 				}
 
 				if err != nil {
@@ -431,9 +414,10 @@ func resourceOutscaleSecurityGroupUpdateRules(
 			}
 
 			if len(add) > 0 {
-				fmt.Printf("\n[DEBUG] Authorizing security group %#v %s rule: %#v",
+				fmt.Printf("[DEBUG] Authorizing security group %#v %s rule: %#v",
 					group, ruleset, add)
-				if ruleset == "ip_permissions_egress" {
+				// Authorize the new rules
+				if ruleset == "egress" {
 					req := &fcu.AuthorizeSecurityGroupEgressInput{
 						GroupId:       group.GroupId,
 						IpPermissions: add,
@@ -607,7 +591,6 @@ func expandIPPerms(
 				perm.IpRanges = append(perm.IpRanges, &fcu.IpRange{CidrIp: aws.String(v.(string))})
 			}
 		}
-
 		if raw, ok := m["prefix_list_ids"]; ok {
 			list := raw.([]interface{})
 			for _, v := range list {
@@ -619,6 +602,7 @@ func expandIPPerms(
 	}
 
 	return perms, nil
+
 }
 
 func resourceOutscaleSecurityGroupIPPermGather(groupId string, permissions []*fcu.IpPermission, ownerId *string) []map[string]interface{} {
@@ -646,12 +630,12 @@ func resourceOutscaleSecurityGroupIPPermGather(groupId string, permissions []*fc
 		if len(perm.IpRanges) > 0 {
 			raw, ok := m["ip_ranges"]
 			if !ok {
-				raw = make([]map[string]interface{}, 0, len(perm.IpRanges))
+				raw = make([]string, 0, len(perm.IpRanges))
 			}
-			list := raw.([]map[string]interface{})
+			list := raw.([]string)
 
 			for _, ip := range perm.IpRanges {
-				list = append(list, map[string]interface{}{"cidr_ip": *ip.CidrIp})
+				list = append(list, *ip.CidrIp)
 			}
 
 			m["ip_ranges"] = list
@@ -660,12 +644,12 @@ func resourceOutscaleSecurityGroupIPPermGather(groupId string, permissions []*fc
 		if len(perm.PrefixListIds) > 0 {
 			raw, ok := m["prefix_list_ids"]
 			if !ok {
-				raw = make([]map[string]interface{}, 0, len(perm.PrefixListIds))
+				raw = make([]string, 0, len(perm.PrefixListIds))
 			}
-			list := raw.([]map[string]interface{})
+			list := raw.([]string)
 
 			for _, pl := range perm.PrefixListIds {
-				list = append(list, map[string]interface{}{"prefix_list_id": *pl.PrefixListId})
+				list = append(list, *pl.PrefixListId)
 			}
 
 			m["prefix_list_ids"] = list
@@ -711,6 +695,7 @@ func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*fcu.
 		if g.UserId != nil && *g.UserId != "" && (ownerId == nil || *ownerId != *g.UserId) {
 			userId = g.UserId
 		}
+		// userid nil here for same vpc groups
 
 		vpc := g.GroupName == nil || *g.GroupName == ""
 		var id *string
@@ -720,19 +705,23 @@ func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*fcu.
 			id = g.GroupName
 		}
 
+		// id is groupid for vpcs
+		// id is groupname for non vpc
+
+		gi := &fcu.GroupIdentifier{}
+
 		if userId != nil {
 			id = aws.String(*userId + "/" + *id)
+			gi.UserId = userId
 		}
 
 		if vpc {
-			result = append(result, &fcu.GroupIdentifier{
-				GroupId: id,
-			})
+			gi.GroupId = id
+			result = append(result, gi)
 		} else {
-			result = append(result, &fcu.GroupIdentifier{
-				GroupId:   g.GroupId,
-				GroupName: id,
-			})
+			gi.GroupId = g.GroupId
+			gi.GroupName = id
+			result = append(result, gi)
 		}
 	}
 	return result
@@ -743,12 +732,16 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 	for _, raw := range local {
 		l := raw.(map[string]interface{})
 
-		fmt.Printf("[DEBUG] => RAW #v", l)
-
+		// matching against self is required to detect rules that only include self
+		// as the rule. resourceAwsSecurityGroupIPPermGather parses the group out
+		// and replaces it with self if it's ID is found
 		localHash := idHash(rType, l["ip_protocol"].(string), int64(l["to_port"].(int)), int64(l["from_port"].(int)))
 
+		// loop remote rules, looking for a matching hash
 		for _, r := range remote {
 
+			// hash this remote rule and compare it for a match consideration with the
+			// local rule we're examining
 			rHash := idHash(rType, r["ip_protocol"].(string), r["to_port"].(int64), r["from_port"].(int64))
 			if rHash == localHash {
 				var numExpectedCidrs, numExpectedPrefixLists, numExpectedSGs, numRemoteCidrs, numRemotePrefixLists, numRemoteSGs int
@@ -756,6 +749,8 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 				var matchingSGs []string
 				var matchingPrefixLists []string
 
+				// grab the local/remote cidr and sg groups, capturing the expected and
+				// actual counts
 				lcRaw, ok := l["ip_ranges"]
 				if ok {
 					numExpectedCidrs = len(l["ip_ranges"].([]interface{}))
@@ -766,109 +761,127 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 				}
 				lsRaw, ok := l["groups"]
 				if ok {
-					numExpectedSGs = len(l["groups"].(map[string]interface{}))
+					numExpectedSGs = len(l["groups"].(*schema.Set).List())
 				}
-
 				rcRaw, ok := r["ip_ranges"]
 				if ok {
-					numRemoteCidrs = len(r["ip_ranges"].([]map[string]interface{}))
+					numRemoteCidrs = len(r["ip_ranges"].([]string))
 				}
 				rpRaw, ok := r["prefix_list_ids"]
 				if ok {
-					numRemotePrefixLists = len(r["prefix_list_ids"].([]map[string]interface{}))
+					numRemotePrefixLists = len(r["prefix_list_ids"].([]string))
 				}
-
 				rsRaw, ok := r["groups"]
 				if ok {
-					numRemoteSGs = len(r["groups"].(map[string]interface{}))
+					numRemoteSGs = len(r["groups"].(*schema.Set).List())
 				}
 
+				// check some early failures
 				if numExpectedCidrs > numRemoteCidrs {
-					fmt.Printf("\n[DEBUG] Local rule has more IP Ranges, continuing (%d/%d)", numExpectedCidrs, numRemoteCidrs)
+					fmt.Printf("[DEBUG] Local rule has more CIDR blocks, continuing (%d/%d)", numExpectedCidrs, numRemoteCidrs)
 					continue
 				}
 				if numExpectedPrefixLists > numRemotePrefixLists {
-					fmt.Printf("\n[DEBUG] Local rule has more prefix lists, continuing (%d/%d)", numExpectedPrefixLists, numRemotePrefixLists)
+					fmt.Printf("[DEBUG] Local rule has more prefix lists, continuing (%d/%d)", numExpectedPrefixLists, numRemotePrefixLists)
 					continue
 				}
 				if numExpectedSGs > numRemoteSGs {
-					fmt.Printf("\n[DEBUG] Local rule has more Security Groups, continuing (%d/%d)", numExpectedSGs, numRemoteSGs)
+					fmt.Printf("[DEBUG] Local rule has more Security Groups, continuing (%d/%d)", numExpectedSGs, numRemoteSGs)
 					continue
 				}
 
-				// var localCidrs []interface{}
+				// match CIDRs by converting both to sets, and using Set methods
+				var localCidrs []interface{}
 				if lcRaw != nil {
-					// localCidrs = lcRaw.([]interface{})
+					localCidrs = lcRaw.([]interface{})
 				}
-				// localCidrSet := schema.NewSet(schema.HashString, localCidrs)
+				localCidrSet := schema.NewSet(schema.HashString, localCidrs)
 
-				var remoteCidrs []map[string]interface{}
+				// remote cidrs are presented as a slice of strings, so we need to
+				// reformat them into a slice of interfaces to be used in creating the
+				// remote cidr set
+				var remoteCidrs []string
 				if rcRaw != nil {
-					remoteCidrs = rcRaw.([]map[string]interface{})
+					remoteCidrs = rcRaw.([]string)
 				}
+				// convert remote cidrs to a set, for easy comparisons
 				var list []interface{}
 				for _, s := range remoteCidrs {
 					list = append(list, s)
 				}
-				// remoteCidrSet := schema.NewSet(schema.HashString, list)
+				remoteCidrSet := schema.NewSet(schema.HashString, list)
 
-				// for _, s := range localCidrSet.List() {
-				// 	if remoteCidrSet.Contains(s) {
-				// 		matchingCidrs = append(matchingCidrs, s.(string))
-				// 	}
-				// }
+				// Build up a list of local cidrs that are found in the remote set
+				for _, s := range localCidrSet.List() {
+					if remoteCidrSet.Contains(s) {
+						matchingCidrs = append(matchingCidrs, s.(string))
+					}
+				}
 
+				// match prefix lists by converting both to sets, and using Set methods
 				var localPrefixLists []interface{}
 				if lpRaw != nil {
 					localPrefixLists = lpRaw.([]interface{})
 				}
 				localPrefixListsSet := schema.NewSet(schema.HashString, localPrefixLists)
 
-				var remotePrefixLists []map[string]interface{}
+				// remote prefix lists are presented as a slice of strings, so we need to
+				// reformat them into a slice of interfaces to be used in creating the
+				// remote prefix list set
+				var remotePrefixLists []string
 				if rpRaw != nil {
-					remotePrefixLists = rpRaw.([]map[string]interface{})
+					remotePrefixLists = rpRaw.([]string)
 				}
+				// convert remote prefix lists to a set, for easy comparison
 				list = nil
 				for _, s := range remotePrefixLists {
 					list = append(list, s)
 				}
 				remotePrefixListsSet := schema.NewSet(schema.HashString, list)
 
+				// Build up a list of local prefix lists that are found in the remote set
 				for _, s := range localPrefixListsSet.List() {
 					if remotePrefixListsSet.Contains(s) {
 						matchingPrefixLists = append(matchingPrefixLists, s.(string))
 					}
 				}
 
-				// var localSGSet map[string]interface{}
+				// match SGs. Both local and remote are already sets
+				var localSGSet *schema.Set
 				if lsRaw == nil {
-					// localSGSet = schema.NewSet(schema.HashString, nil)
+					localSGSet = schema.NewSet(schema.HashString, nil)
 				} else {
-					// localSGSet = lsRaw.(map[string]interface{})
+					localSGSet = lsRaw.(*schema.Set)
 				}
 
-				// var remoteSGSet map[string]interface{}
+				var remoteSGSet *schema.Set
 				if rsRaw == nil {
-					// remoteSGSet = schema.NewSet(schema.HashString, nil)
+					remoteSGSet = schema.NewSet(schema.HashString, nil)
 				} else {
-					// remoteSGSet = rsRaw.(map[string]interface{})
+					remoteSGSet = rsRaw.(*schema.Set)
 				}
 
-				// for _, s := range localSGSet.List() {
-				// 	if remoteSGSet.Contains(s) {
-				// 		matchingSGs = append(matchingSGs, s.(string))
-				// 	}
-				// }
+				// Build up a list of local security groups that are found in the remote set
+				for _, s := range localSGSet.List() {
+					if remoteSGSet.Contains(s) {
+						matchingSGs = append(matchingSGs, s.(string))
+					}
+				}
 
+				// compare equalities for matches.
+				// If we found the number of cidrs and number of sgs, we declare a
+				// match, and then remove those elements from the remote rule, so that
+				// this remote rule can still be considered by other local rules
 				if numExpectedCidrs == len(matchingCidrs) {
 					if numExpectedPrefixLists == len(matchingPrefixLists) {
 						if numExpectedSGs == len(matchingSGs) {
 
-							// diffCidr := remoteCidrSet.Difference(localCidrSet)
+							// pop local cidrs from remote
+							diffCidr := remoteCidrSet.Difference(localCidrSet)
 							var newCidr []string
-							// for _, cRaw := range diffCidr.List() {
-							// 	newCidr = append(newCidr, cRaw.(string))
-							// }
+							for _, cRaw := range diffCidr.List() {
+								newCidr = append(newCidr, cRaw.(string))
+							}
 
 							// reassigning
 							if len(newCidr) > 0 {
@@ -892,37 +905,39 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 							}
 
 							// pop local sgs from remote
-							// diffSGs := remoteSGSet.Difference(localSGSet)
-							// if len(diffSGs.List()) > 0 {
-							// 	r["groups"] = diffSGs
-							// } else {
-							// 	delete(r, "groups")
-							// }
+							diffSGs := remoteSGSet.Difference(localSGSet)
+							if len(diffSGs.List()) > 0 {
+								r["groups"] = diffSGs
+							} else {
+								delete(r, "groups")
+							}
 
 							saves = append(saves, l)
 						}
 					}
 
 				}
-
 			}
 		}
 	}
-
+	// Here we catch any remote rules that have not been stripped of all self,
+	// cidrs, and security groups. We'll add remote rules here that have not been
+	// matched locally, and let the graph sort things out. This will happen when
+	// rules are added externally to Terraform
 	for _, r := range remote {
 		var lenCidr, lenPrefixLists, lenSGs int
 		if rCidrs, ok := r["ip_ranges"]; ok {
-			lenCidr = len(rCidrs.([]map[string]interface{}))
+			lenCidr = len(rCidrs.([]string))
 		}
 		if rPrefixLists, ok := r["prefix_list_ids"]; ok {
-			lenPrefixLists = len(rPrefixLists.([]map[string]interface{}))
+			lenPrefixLists = len(rPrefixLists.([]string))
 		}
 		if rawSGs, ok := r["groups"]; ok {
 			lenSGs = len(rawSGs.(*schema.Set).List())
 		}
 
 		if lenSGs+lenCidr+lenPrefixLists > 0 {
-			fmt.Printf("\n[DEBUG] Found a remote Rule that wasn't empty: (%#v)", r)
+			fmt.Printf("[DEBUG] Found a remote Rule that wasn't empty: (%#v)", r)
 			saves = append(saves, r)
 		}
 	}
