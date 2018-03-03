@@ -25,7 +25,7 @@ func TestAccOutscaleFirewallRulesSet_importBasic(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"associate_public_ip_address", "user_data", "security_group"},
+				ImportStateVerifyIgnore: []string{"associate_public_ip_address", "user_data", "security_group", "tag"},
 			},
 		},
 	})
