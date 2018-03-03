@@ -22,9 +22,9 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 		Create: resourceOutscaleOutboundRuleCreate,
 		Read:   resourceOutscaleOutboundRuleRead,
 		Delete: resourceOutscaleOutboundRuleDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleOutboundImportState,
-		},
+		// Importer: &schema.ResourceImporter{
+		// 	State: resourceOutscaleOutboundImportState,
+		// },
 
 		Schema: map[string]*schema.Schema{
 			"cidr_ip": {
@@ -615,14 +615,6 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rule *fcu.IpPe
 			d.Set("source_security_group_name", *s.GroupName)
 		}
 	}
-
-	// if rule.FromPort != nil && *rule.FromPort != 0 {
-	// 	d.Set("from_port", rule.FromPort)
-	// }
-
-	// if rule.ToPort != nil && *rule.ToPort != 0 {
-	// 	d.Set("to_port", rule.ToPort)
-	// }
 
 	d.Set("ip_permissions", ippem)
 

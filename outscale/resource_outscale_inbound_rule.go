@@ -18,9 +18,10 @@ func resourceOutscaleInboundRule() *schema.Resource {
 		Create: resourceOutscaleInboundRuleCreate,
 		Read:   resourceOutscaleInboundRuleRead,
 		Delete: resourceOutscaleInboundRuleDelete,
-		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleInboundImportState,
-		},
+		// Importer: &schema.ResourceImporter{
+		// State: schema.ImportStatePassthrough,
+		// State: resourceOutscaleInboundImportState,
+		// },
 
 		Schema: map[string]*schema.Schema{
 			"cidr_ip": {
