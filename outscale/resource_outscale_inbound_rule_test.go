@@ -2,15 +2,19 @@ package outscale
 
 import (
 	"fmt"
+	"log"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleInboundRule_Ingress_VPC(t *testing.T) {
+func TestAccOutscaleInboundRule(t *testing.T) {
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -32,15 +36,13 @@ func TestAccOutscaleInboundRule_Ingress_VPC(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleInboundRuleIngressConfig(rInt),
+				Config: testAccOutscaleSecurityGroupRuleIngressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					testAccCheckOutscaleSecurityGroupRuleAttributes("outscale_inbound_rule.ingress_1", &group, nil, "ingress"),
-					resource.TestCheckResourceAttr(
-						"outscale_inbound_rule.ingress_1", "ip_permissions.0.from_port", "80"),
+					testAccCheckOutscaleRuleExists("outscale_firewall_rules_set.web", &group),
+					testAccCheckOutscaleRuleAttributes("outscale_inbound_rule.ingress_1", &group, nil, "ingress"),
 					testRuleCount,
 				),
 			},
@@ -48,129 +50,200 @@ func TestAccOutscaleInboundRule_Ingress_VPC(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleInboundRule_Ingress_Protocol(t *testing.T) {
-	var group fcu.SecurityGroup
-	rInt := acctest.RandInt()
+func testAccCheckOutscaleSecurityGroupRuleDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
-	testRuleCount := func(*terraform.State) error {
-		if len(group.IpPermissions) != 1 {
-			return fmt.Errorf("Wrong Security Group rule count, expected %d, got %d",
-				1, len(group.IpPermissions))
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_firewall_rules_set" {
+			continue
 		}
 
-		rule := group.IpPermissions[0]
-		if *rule.FromPort != int64(80) {
-			return fmt.Errorf("Wrong Security Group port setting, expected %d, got %d",
-				80, int(*rule.FromPort))
+		// Retrieve our group
+		req := &fcu.DescribeSecurityGroupsInput{
+			GroupIds: []*string{aws.String(rs.Primary.ID)},
+		}
+		var resp *fcu.DescribeSecurityGroupsOutput
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeSecurityGroups(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					fmt.Printf("\n\n[INFO] Request limit exceeded")
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return nil
+		})
+		if err == nil {
+			if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
+				return fmt.Errorf("Security Group (%s) still exists.", rs.Primary.ID)
+			}
+
+			return nil
 		}
 
-		return nil
+		if strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+			return nil
+		}
+
+		return err
 	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleInboundRule_protocolConfig(rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					testAccCheckOutscaleSecurityGroupRuleAttributes("outscale_inbound_rule.ingress_1", &group, nil, "ingress"),
-					resource.TestCheckResourceAttr(
-						"outscale_inbound_rule.ingress_1", "ip_permissions.0.ip_protocol", "6"),
-					testRuleCount,
-				),
-			},
-		},
-	})
+	return nil
 }
 
-func TestAccOutscaleInboundRule_Ingress_Classic(t *testing.T) {
-	var group fcu.SecurityGroup
-	rInt := acctest.RandInt()
-
-	testRuleCount := func(*terraform.State) error {
-		if len(group.IpPermissions) != 1 {
-			return fmt.Errorf("Wrong Security Group rule count, expected %d, got %d",
-				1, len(group.IpPermissions))
+func testAccCheckOutscaleRuleExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
 		}
 
-		rule := group.IpPermissions[0]
-		if *rule.FromPort != int64(80) {
-			return fmt.Errorf("Wrong Security Group port setting, expected %d, got %d",
-				80, int(*rule.FromPort))
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Security Group is set")
 		}
 
-		return nil
+		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		req := &fcu.DescribeSecurityGroupsInput{
+			GroupIds: []*string{aws.String(rs.Primary.ID)},
+		}
+
+		var resp *fcu.DescribeSecurityGroupsOutput
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeSecurityGroups(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					fmt.Printf("\n\n[INFO] Request limit exceeded")
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
+			*group = *resp.SecurityGroups[0]
+			return nil
+		}
+
+		return fmt.Errorf("Security Group not found")
 	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleInboundRuleIngressClassicConfig(rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					testAccCheckOutscaleSecurityGroupRuleAttributes("outscale_inbound_rule.ingress_1", &group, nil, "ingress"),
-					resource.TestCheckResourceAttr(
-						"outscale_inbound_rule.ingress_1", "ip_permissions.0.from_port", "80"),
-					testRuleCount,
-				),
-			},
-		},
-	})
 }
 
-func TestAccOutscaleInboundRule_MultiIngress(t *testing.T) {
-	var group fcu.SecurityGroup
-
-	testMultiRuleCount := func(*terraform.State) error {
-		if len(group.IpPermissions) != 2 {
-			return fmt.Errorf("Wrong Security Group rule count, expected %d, got %d",
-				2, len(group.IpPermissions))
+func testAccCheckOutscaleRuleAttributes(n string, group *fcu.SecurityGroup, p *fcu.IpPermission, ruleType string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Security Group Rule Not found: %s", n)
 		}
 
-		var rule *fcu.IpPermission
-		for _, r := range group.IpPermissions {
-			if *r.FromPort == int64(80) {
-				rule = r
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Security Group Rule is set")
+		}
+
+		if p == nil {
+			p = &fcu.IpPermission{
+				FromPort:   aws.Int64(80),
+				ToPort:     aws.Int64(8000),
+				IpProtocol: aws.String("tcp"),
+				IpRanges:   []*fcu.IpRange{{CidrIp: aws.String("10.0.0.0/8")}},
 			}
 		}
 
-		if *rule.ToPort != int64(8000) {
-			return fmt.Errorf("Wrong Security Group port 2 setting, expected %d, got %d",
-				8000, int(*rule.ToPort))
+		var matchingRule *fcu.IpPermission
+		var rules []*fcu.IpPermission
+		if ruleType == "ingress" {
+			rules = group.IpPermissions
+		} else {
+			rules = group.IpPermissionsEgress
 		}
 
-		return nil
-	}
+		if len(rules) == 0 {
+			return fmt.Errorf("No IPPerms")
+		}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleInboundRuleConfigMultiIngress,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					testMultiRuleCount,
-				),
-			},
-		},
-	})
+		for _, r := range rules {
+			if r.ToPort != nil && *p.ToPort != *r.ToPort {
+				continue
+			}
+
+			if r.FromPort != nil && *p.FromPort != *r.FromPort {
+				continue
+			}
+
+			if r.IpProtocol != nil && *p.IpProtocol != *r.IpProtocol {
+				continue
+			}
+
+			remaining := len(p.IpRanges)
+			for _, ip := range p.IpRanges {
+				for _, rip := range r.IpRanges {
+					if *ip.CidrIp == *rip.CidrIp {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(p.UserIdGroupPairs)
+			for _, ip := range p.UserIdGroupPairs {
+				for _, rip := range r.UserIdGroupPairs {
+					if *ip.GroupId == *rip.GroupId {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(p.PrefixListIds)
+			for _, pip := range p.PrefixListIds {
+				for _, rpip := range r.PrefixListIds {
+					if *pip.PrefixListId == *rpip.PrefixListId {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			fmt.Printf("RULES 2 %s", r)
+
+			matchingRule = r
+		}
+
+		if matchingRule != nil {
+			log.Printf("[DEBUG] Matching rule found : %s", matchingRule)
+			return nil
+		}
+
+		return fmt.Errorf("Error here\n\tlooking for %s, wasn't found in %s", p, rules)
+	}
 }
 
-func testAccOutscaleInboundRuleIngressConfig(rInt int) string {
+func testAccOutscaleSecurityGroupRuleIngressConfig(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		vpc_id = "vpc-e9d09d63"
-					tags {
+					tag = {
 									Name = "tf-acc-test"
 					}
 	}
@@ -179,92 +252,8 @@ func testAccOutscaleInboundRuleIngressConfig(rInt int) string {
 			ip_protocol = "tcp"
 			from_port = 80
 			to_port = 8000
-			ip_ranges = {
-				cidr_ip = "10.0.0.0/8"
-			}
+			ip_ranges = ["10.0.0.0/8"]
 		}
 		group_id = "${outscale_firewall_rules_set.web.id}"
-		source_security_group_name = "${outscale_firewall_rules_set.web.group_name}"
 	}`, rInt)
 }
-
-func testAccOutscaleInboundRule_protocolConfig(rInt int) string {
-	return fmt.Sprintf(`
-resource "outscale_firewall_rules_set" "web" {
-		group_name = "terraform_test_%d"
-		group_description = "Used in the terraform acceptance tests"
-		vpc_id = "vpc-e9d09d63"
-					tags {
-									Name = "tf-acc-test"
-					}
-	}
-resource "outscale_inbound_rule" "ingress_1" {
-	ip_permissions = {
-			ip_protocol    = "6"
-			from_port   = 80
-			to_port     = 8000
-			ip_ranges = {
-				cidr_ip = "10.0.0.0/8"
-			}
-		}
-		group_id = "${outscale_firewall_rules_set.web.id}"
-		source_security_group_name = "${outscale_firewall_rules_set.web.group_name}"
-}
-`, rInt)
-}
-
-func testAccOutscaleInboundRuleIngressClassicConfig(rInt int) string {
-	return fmt.Sprintf(`
-	resource "outscale_firewall_rules_set" "web" {
-		group_name = "terraform_test_%d"
-		group_description = "Used in the terraform acceptance tests"
-		vpc_id = "vpc-e9d09d63"
-					tags {
-									Name = "tf-acc-test"
-					}
-	}
-	resource "outscale_inbound_rule" "ingress_1" {
-		ip_permissions = {
-			ip_protocol = "tcp"
-			from_port = 80
-			to_port = 8000
-			ip_ranges = {
-				cidr_ip = "10.0.0.0/8"
-			}
-		}
-		group_id = "${outscale_firewall_rules_set.web.id}"
-		source_security_group_name = "${outscale_firewall_rules_set.web.group_name}"
-	}`, rInt)
-}
-
-const testAccOutscaleInboundRuleConfigMultiIngress = `
-resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_2"
-	group_description = "Used in the terraform acceptance tests"
-	vpc_id = "vpc-e9d09d63"
-}
-
-resource "outscale_inbound_rule" "ingress_1" {
-	ip_permissions = {
-			ip_protocol = "tcp"
-			from_port = 22
-			to_port = 22
-			ip_ranges = {
-					cidr_ip = "10.0.0.0/8"
-			}
-	}
-  group_id = "${outscale_firewall_rules_set.web.id}"
-}
-resource "outscale_inbound_rule" "ingress_2" {
-  
-	ip_permissions = {
-			ip_protocol = "tcp"
-  		from_port = 80
-			to_port = 8000
-			ip_ranges = {
-					cidr_ip = "10.0.0.0/8"
-			}
-		}
-  group_id = "${outscale_firewall_rules_set.web.id}"
-}
-`
