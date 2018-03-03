@@ -1,12 +1,5 @@
 package outscale
 
-// import (
-// 	"testing"
-
-// 	"github.com/hashicorp/terraform/helper/acctest"
-// 	"github.com/hashicorp/terraform/helper/resource"
-// )
-
 // func TestAccOutscaleOutboundRule_importBasic(t *testing.T) {
 // 	resourceName := "outscale_outbound_rule.egress_1"
 
@@ -18,7 +11,7 @@ package outscale
 // 		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
 // 		Steps: []resource.TestStep{
 // 			resource.TestStep{
-// 				Config: testAccOutscaleOutboundRuleConfig(rInt),
+// 				Config: testAccOutscaleSecurityGroupRuleEgressConfig(rInt),
 // 			},
 
 // 			resource.TestStep{
