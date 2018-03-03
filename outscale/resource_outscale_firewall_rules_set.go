@@ -712,7 +712,6 @@ func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*fcu.
 
 		if userId != nil {
 			id = aws.String(*userId + "/" + *id)
-			gi.UserId = userId
 		}
 
 		if vpc {
