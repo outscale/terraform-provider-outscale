@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -18,7 +17,6 @@ func resourceOutscaleVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceVolumeCreate,
 		Read:   resourceVolumeRead,
-		Update: nil,
 		Delete: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -39,17 +37,17 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	request := &fcu.CreateVolumeInput{
 		AvailabilityZone: aws.String(d.Get("availability_zone").(string)),
 	}
-	if value, ok := d.GetOk("encrypted"); ok {
-		request.Encrypted = aws.Bool(value.(bool))
-	}
-	if value, ok := d.GetOk("kms_key_id"); ok {
-		request.KmsKeyId = aws.String(value.(string))
+	if value, ok := d.GetOk("iops"); ok {
+		request.Iops = aws.Int64(int64(value.(int)))
 	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = aws.Int64(int64(value.(int)))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
 		request.SnapshotId = aws.String(value.(string))
+	}
+	if value, ok := d.GetOk("volume_type"); ok {
+		request.VolumeType = aws.String(value.(string))
 	}
 
 	// IOPs are only valid, and required for, storage type io1. The current minimu
@@ -64,21 +62,21 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
-		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
+		fmt.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
 		// We add the iops value without validating it's size, to allow AWS to
 		// enforce a size requirement (currently 100)
 		request.Iops = aws.Int64(int64(iops))
 	}
 
-	log.Printf(
+	fmt.Printf(
 		"[DEBUG] Volume create opts: %s", request)
 	result, err := conn.VM.CreateVolume(request)
 	if err != nil {
 		return fmt.Errorf("Error creating volume: %s", err)
 	}
 
-	log.Println("[DEBUG] Waiting for Volume to become available")
+	fmt.Println("[DEBUG] Waiting for Volume to become available")
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
@@ -103,8 +101,9 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 			return errwrap.Wrapf("Error setting tags for EBS Volume: {{err}}", err)
 		}
 	}
-
-	return readVolume(d, *result)
+	fmt.Printf("[DEBUG] Volume ID: %s ", *result.VolumeId)
+	//return readVolume(d, *result)
+	return resourceVolumeRead(d, meta)
 }
 
 func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
@@ -134,16 +133,18 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading EC2 volume %s: %s", d.Id(), err)
+		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
-
+	fmt.Printf("[DEBUG] Volume Read: #v", *response.Volumes[0])
 	return readVolume(d, *response.Volumes[0])
 }
 
 func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 	d.SetId(*volume.VolumeId)
 
-	d.Set("availability_zone", *volume.AvailabilityZone)
+	if volume.AvailabilityZone != nil {
+		d.Set("availability_zone", *volume.AvailabilityZone)
+	}
 	if volume.Encrypted != nil {
 		d.Set("encrypted", *volume.Encrypted)
 	}
@@ -156,10 +157,41 @@ func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 	if volume.SnapshotId != nil {
 		d.Set("snapshot_id", *volume.SnapshotId)
 	}
-	if volume.VolumeType != nil {
-		d.Set("type", *volume.VolumeType)
-	}
+	if volume.Attachments != nil {
+		res := []map[string]interface{}{}
+		for _, g := range volume.Attachments {
+			r := map[string]interface{}{
+				"delete_on_termination": *g.DeleteOnTermination,
+				"device":                *g.Device,
+				"inscance_id":           *g.InstanceId,
+				"status":                *g.State,
+				"volume_id":             *g.VolumeId,
+			}
+			res = append(res, r)
+		}
 
+		if err := d.Set("attachment_set", res); err != nil {
+			return err
+		}
+
+	}
+	if volume.Iops != nil {
+		d.Set("Iops", *volume.Iops)
+	}
+	if volume.State != nil {
+		d.Set("status", *volume.State)
+	}
+	if volume.VolumeId != nil {
+		d.Set("volume_id", *volume.VolumeId)
+	}
+	if volume.VolumeType != nil {
+		d.Set("volume_type", *volume.VolumeType)
+	}
+	if volume.Tags != nil {
+		d.Set("tag_set", tagsToMap(volume.Tags))
+		t := tagsToMap(volume.Tags)
+		fmt.Printf("DEBUG TAGS: ", t)
+	}
 	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
 		// Only set the iops attribute if the volume type is io1. Setting otherwise
 		// can trigger a refresh/plan loop based on the computed value that is given
@@ -168,10 +200,6 @@ func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 		if volume.Iops != nil {
 			d.Set("iops", *volume.Iops)
 		}
-	}
-
-	if volume.Tags != nil {
-		d.Set("tags", tagsToMap(volume.Tags))
 	}
 
 	return nil
@@ -184,14 +212,29 @@ func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		request := &fcu.DeleteVolumeInput{
 			VolumeId: aws.String(d.Id()),
 		}
-		_, err := conn.VM.DeleteVolume(request)
+
+		var err error
+		var response *fcu.DeleteVolumeOutput
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			response, err = conn.VM.DeleteVolume(request)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		})
+
 		if err == nil {
 			return nil
 		}
 
 		ebsErr, ok := err.(awserr.Error)
 		if ebsErr.Code() == "VolumeInUse" {
-			return resource.RetryableError(fmt.Errorf("EBS VolumeInUse - trying again while it detaches"))
+			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 		}
 
 		if !ok {
@@ -232,7 +275,7 @@ func getVolumeSchema() map[string]*schema.Schema {
 		},
 		// Attributes
 		"attachment_set": {
-			Type: schema.TypeMap,
+			Type: schema.TypeSet,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_termination": {
@@ -263,23 +306,8 @@ func getVolumeSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": {
-			Type: schema.TypeList,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"tags": tagsSchema(),
+		"tag_set": tagsSchemaComputed(),
+		"tags":    tagsSchema(),
 		"volume_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -291,23 +319,42 @@ func getVolumeSchema() map[string]*schema.Schema {
 // a the state of a Volume. Returns successfully when volume is available
 func volumeStateRefreshFunc(conn *fcu.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, err := conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
-			VolumeIds: []*string{aws.String(volumeID)},
+		// resp, err := conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
+		// 	VolumeIds: []*string{aws.String(volumeID)},
+		// })
+
+		var err error
+		var response *fcu.DescribeVolumesOutput
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+			response, err = conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
+				VolumeIds: []*string{aws.String(volumeID)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		})
 
 		if err != nil {
 			if ec2err, ok := err.(awserr.Error); ok {
 				// Set this to nil as if we didn't find anything.
-				log.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
-				resp = nil
+				fmt.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
+				response = nil
 				return nil, "", err
 			} else {
-				log.Printf("Error on Volume State Refresh: %s", err)
+				fmt.Printf("Error on Volume State Refresh: %s", err)
 				return nil, "", err
 			}
 		}
 
-		v := resp.Volumes[0]
+		v := response.Volumes[0]
+
+		fmt.Printf("[DEBUG] Volume #v", v)
 		return v, *v.State, nil
 	}
 }

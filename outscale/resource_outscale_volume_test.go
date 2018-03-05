@@ -3,7 +3,9 @@ package outscale
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -16,114 +18,15 @@ import (
 func TestAccOutscaleVolume_basic(t *testing.T) {
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_volume.test",
-		Providers:     testAccProviders,
+		PreCheck: func() { testAccPreCheck(t) },
+		//IDRefreshName: "outscale_volume.test",
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAwsEbsVolumeConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckVolumeExists("outscale_volume.test", &v),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleVolume_updateAttachedEbsVolume(t *testing.T) {
-	var v fcu.Volume
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_volume.test",
-		Providers:     testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAwsEbsAttachedVolumeConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "size", "10"),
-				),
-			},
-			{
-				Config: testAccAwsEbsAttachedVolumeConfigUpdateSize,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "size", "20"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleVolume_updateSize(t *testing.T) {
-	var v fcu.Volume
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_volume.test",
-		Providers:     testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAwsEbsVolumeConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "size", "1"),
-				),
-			},
-			{
-				Config: testAccAwsEbsVolumeConfigUpdateSize,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "size", "10"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleVolume_updateType(t *testing.T) {
-	var v fcu.Volume
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_volume.test",
-		Providers:     testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAwsEbsVolumeConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "volume_type", "gp2"),
-				),
-			},
-			{
-				Config: testAccAwsEbsVolumeConfigUpdateType,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "volume_type", "sc1"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleVolume_updateIops(t *testing.T) {
-	var v fcu.Volume
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_volume.test",
-		Providers:     testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAwsEbsVolumeConfigWithIops,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "iops", "100"),
-				),
-			},
-			{
-				Config: testAccAwsEbsVolumeConfigWithIopsUpdated,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVolumeExists("outscale_volume.test", &v),
-					resource.TestCheckResourceAttr("outscale_volume.test", "iops", "200"),
+					resource.TestCheckResourceAttr("outscale_volume.test", "attachment_set.#", "0"),
 				),
 			},
 		},
@@ -203,14 +106,30 @@ func testAccCheckVolumeExists(n string, v *fcu.Volume) resource.TestCheckFunc {
 			VolumeIds: []*string{aws.String(rs.Primary.ID)},
 		}
 
-		response, err := conn.VM.DescribeVolumes(request)
+		var err error
+		var response *fcu.DescribeVolumesOutput
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			response, err = conn.VM.DescribeVolumes(request)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		})
+		fmt.Printf("[DEBUG] Error Test Exists: %s", err)
+		fmt.Printf("[DEBUG] Volume Exists: #v ", *response)
 		if err == nil {
 			if response.Volumes != nil && len(response.Volumes) > 0 {
 				*v = *response.Volumes[0]
 				return nil
 			}
 		}
-		return fmt.Errorf("Error finding EC2 volume %s", rs.Primary.ID)
+
+		return fmt.Errorf("Error finding Outscale volume %s", rs.Primary.ID)
 	}
 }
 

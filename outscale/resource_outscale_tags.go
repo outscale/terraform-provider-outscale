@@ -366,3 +366,10 @@ func tagsSchema() *schema.Schema {
 		ForceNew: true,
 	}
 }
+
+func tagsSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
+	}
+}
