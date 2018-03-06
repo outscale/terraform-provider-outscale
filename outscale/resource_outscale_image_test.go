@@ -29,6 +29,12 @@ func TestAccOutscaleImage_basic(t *testing.T) {
 					testAccCheckImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "name", fmt.Sprintf("tf-testing-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"outscale_image.foo", "block_device_mappings.0.device_name", "/dev/sda1"),
+					resource.TestCheckResourceAttr(
+						"outscale_image.foo", "block_device_mappings.0.ebs.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr(
+						"outscale_image.foo", "state_reason.code", "UNSET"),
 				),
 			},
 		},
