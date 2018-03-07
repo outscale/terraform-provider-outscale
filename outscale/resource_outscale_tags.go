@@ -32,16 +32,16 @@ func tagsSchemaComputed() *schema.Schema {
 
 func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tags") {
-		oraw, nraw := d.GetChange("tags")
+	if d.HasChange("tag") {
+		oraw, nraw := d.GetChange("tag")
 		o := oraw.(map[string]interface{})
 		n := nraw.(map[string]interface{})
 		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
 
-		// Set tags
+		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Removing tags: %#v from %s", remove, d.Id())
+				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
 				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      remove,
@@ -61,7 +61,7 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Creating tags: %s for %s", create, d.Id())
+				// log.Printf("[DEBUG] Creating tag: %s for %s", create, d.Id())
 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      create,
@@ -84,8 +84,8 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 	return nil
 }
 
-// diffTags takes our tags locally and the ones remotely and returns
-// the set of tags that must be created, and the set of tags that must
+// diffTags takes our tag locally and the ones remotely and returns
+// the set of tag that must be created, and the set of tag that must
 // be destroyed.
 func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	// First, we're creating everything we have
@@ -106,7 +106,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	return tagsFromMap(create), remove
 }
 
-// tagsFromMap returns the tags for the given map of data.
+// tagsFromMap returns the tag for the given map of data.
 func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {
@@ -122,7 +122,7 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-// tagsToMap turns the list of tags into a map.
+// tagsToMap turns the list of tag into a map.
 func tagsToMap(ts []*fcu.Tag) map[string]string {
 	result := make(map[string]string)
 	for _, t := range ts {
