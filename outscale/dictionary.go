@@ -35,8 +35,9 @@ func init() {
 			"outscale_firewall_rules_set": dataSourceOutscaleFirewallRulesSets,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":  dataSourceOutscaleOAPIVM,
-			"outscale_vms": datasourceOutscaleOApiVMS,
+			"outscale_vm":                dataSourceOutscaleOAPIVM,
+			"outscale_vms":               datasourceOutscaleOApiVMS,
+			"outscale_firewall_rule_set": dataSourceOutscaleOAPIFirewallRuleSet,
 		},
 	}
 }
