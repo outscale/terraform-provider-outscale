@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -497,18 +498,23 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("[INFO] Request limit exceeded")
+					log.Printf("[INFO] Request limit exceeded")
 					return resource.RetryableError(err)
 				}
+				return resource.NonRetryableError(err)
+
 			}
 
-			return resource.RetryableError(err)
+			return resource.NonRetryableError(err)
 		})
 
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
+
 			} else if resp != nil && len(resp.Images) == 0 {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
 				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
@@ -518,6 +524,8 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 		if resp == nil || resp.Images == nil || len(resp.Images) == 0 {
 			return emptyResp, "destroyed", nil
 		}
+
+		log.Printf("[INFO] OMI %s state %s", *resp.Images[0].ImageId, *resp.Images[0].State)
 
 		// OMI is valid, so return it's state
 		return resp.Images[0], *resp.Images[0].State, nil
