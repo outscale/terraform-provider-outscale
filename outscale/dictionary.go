@@ -28,17 +28,16 @@ func init() {
 			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm": resourceOutscaleOApiVM,
+			"outscale_vm":        resourceOutscaleOApiVM,
+			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
 		},
 	}
 	datasources = Dictionary{
 		"fcu": ResourceMap{
-			"outscale_vm":   dataSourceOutscaleVM,
-			"outscale_vms":  dataSourceOutscaleVMS,
-			"outscale_tag":  dataSourceOutscaleTag,
-			"outscale_tags": dataSourceOutscaleTags,
 			"outscale_vm":         dataSourceOutscaleVM,
 			"outscale_vms":        dataSourceOutscaleVMS,
+			"outscale_tag":        dataSourceOutscaleTag,
+			"outscale_tags":       dataSourceOutscaleTags,
 			"outscale_public_ip":  dataSourceOutscalePublicIP,
 			"outscale_public_ips": dataSourceOutscalePublicIPS,
 		},
