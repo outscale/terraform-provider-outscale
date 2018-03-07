@@ -625,7 +625,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeList,
+						Type: schema.TypeMap,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {

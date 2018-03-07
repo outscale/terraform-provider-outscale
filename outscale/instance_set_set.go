@@ -11,6 +11,7 @@ import (
 func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 	flattened := make([]map[string]interface{}, len(instances))
 	for i, instance := range instances {
+
 		flattened[i] = map[string]interface{}{
 			"ami_launch_index":   *instance.AmiLaunchIndex,
 			"ebs_optimized":      *instance.EbsOptimized,
@@ -79,7 +80,7 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 		flattened[i]["placement"] = getPlacement(instance.Placement)
 		flattened[i]["state_reason"] = getStateReason(instance.StateReason)
 		flattened[i]["product_codes"] = getProductCodes(instance.ProductCodes)
-		flattened[i]["tag_set"] = getTagSet(instance.Tags)
+		flattened[i]["tag_set"] = tagsToMap(instance.Tags)
 
 	}
 
@@ -277,6 +278,25 @@ func getTagSet(tags []*fcu.Tag) []map[string]interface{} {
 
 			tag["key"] = *t.Key
 			tag["value"] = *t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
+func getTagDescriptionSet(tags []*fcu.TagDescription) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+			tag["resourceId"] = *t.ResourceId
+			tag["resourceType"] = *t.ResourceType
 
 			res = append(res, tag)
 		}
