@@ -153,25 +153,34 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", *address)
 
 	if address.AssociationId != nil {
-		d.Set("association_id", address.AssociationId)
+		d.Set("association_id", *address.AssociationId)
 	} else {
 		d.Set("association_id", "")
 	}
 	if address.InstanceId != nil {
-		d.Set("instance", address.InstanceId)
+		d.Set("instance_id", *address.InstanceId)
 	} else {
-		d.Set("instance", "")
+		d.Set("instance_id", "")
 	}
 	if address.NetworkInterfaceId != nil {
-		d.Set("network_interface", address.NetworkInterfaceId)
+		d.Set("network_interface_id", *address.NetworkInterfaceId)
 	} else {
-		d.Set("network_interface", "")
+		d.Set("network_interface_id", "")
 	}
-	d.Set("private_ip", address.PrivateIpAddress)
-	d.Set("public_ip", address.PublicIp)
+	if address.NetworkInterfaceOwnerId != nil {
+		d.Set("network_interface_owner_id", *address.NetworkInterfaceOwnerId)
+	} else {
+		d.Set("network_interface_owner_id", "")
+	}
+	if address.PrivateIpAddress != nil {
+		d.Set("private_ip", *address.PrivateIpAddress)
+	} else {
+		d.Set("private_ip", "")
+	}
+	d.Set("public_ip", *address.PublicIp)
 
-	d.Set("domain", address.Domain)
-	d.Set("allocation_id", address.AllocationId)
+	d.Set("domain", *address.Domain)
+	d.Set("allocation_id", *address.AllocationId)
 
 	// Force ID to be an Allocation ID if we're on a VPC
 	// This allows users to import the EIP based on the IP if they are in a VPC
@@ -191,8 +200,8 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 	domain := resourceOutscalePublicIPDomain(d)
 
 	// Associate to instance or interface if specified
-	v_instance, ok_instance := d.GetOk("instance")
-	v_interface, ok_interface := d.GetOk("network_interface")
+	v_instance, ok_instance := d.GetOk("instance_id")
+	v_interface, ok_interface := d.GetOk("network_interface_id")
 
 	if ok_instance || ok_interface {
 		instanceId := v_instance.(string)
@@ -237,8 +246,8 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 		if err != nil {
 			// Prevent saving instance if association failed
 			// e.g. missing internet gateway in VPC
-			d.Set("instance", "")
-			d.Set("network_interface", "")
+			d.Set("instance_id", "")
+			d.Set("network_interface_id", "")
 			return fmt.Errorf("Failure associating EIP: %s", err)
 		}
 	}
