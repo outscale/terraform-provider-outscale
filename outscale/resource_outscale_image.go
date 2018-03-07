@@ -1,14 +1,12 @@
 package outscale
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -464,154 +462,4 @@ func resourceOutscaleImageWaitForDestroy(id string, client *fcu.Client) error {
 	}
 
 	return nil
-}
-
-// Returns a set of block device mappings.
-func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{} {
-	bdm := make([]map[string]interface{}, len(m))
-	for k, v := range m {
-		mapping := map[string]interface{}{
-			"device_name": *v.DeviceName,
-		}
-		if v.Ebs != nil {
-			ebs := map[string]interface{}{
-				"delete_on_termination": fmt.Sprintf("%t", *v.Ebs.DeleteOnTermination),
-				"volume_size":           fmt.Sprintf("%d", *v.Ebs.VolumeSize),
-				"volume_type":           *v.Ebs.VolumeType,
-			}
-
-			if v.Ebs.Encrypted != nil {
-				ebs["encrypted"] = fmt.Sprintf("%t", *v.Ebs.Encrypted)
-			} else {
-				ebs["encrypted"] = "0"
-			}
-			// Iops is not always set
-			if v.Ebs.Iops != nil {
-				ebs["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
-			} else {
-				ebs["iops"] = "0"
-			}
-			// snapshot id may not be set
-			if v.Ebs.SnapshotId != nil {
-				ebs["snapshot_id"] = *v.Ebs.SnapshotId
-			}
-
-			mapping["ebs"] = ebs
-		}
-		if v.VirtualName != nil {
-			mapping["virtual_name"] = *v.VirtualName
-		}
-		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
-		bdm[k] = mapping
-	}
-	return bdm
-}
-
-// Returns a set of product codes.
-func amiProductCodes(m []*fcu.ProductCode) *schema.Set {
-	s := &schema.Set{
-		F: amiProductCodesHash,
-	}
-	for _, v := range m {
-		code := map[string]interface{}{
-			"product_code": *v.ProductCode,
-			"type":         *v.Type,
-		}
-		s.Add(code)
-	}
-	return s
-}
-
-// Returns the state reason.
-func amiStateReason(m *fcu.StateReason) map[string]interface{} {
-	s := make(map[string]interface{})
-	if m != nil {
-		s["code"] = *m.Code
-		s["message"] = *m.Message
-	} else {
-		s["code"] = "UNSET"
-		s["message"] = "UNSET"
-	}
-	return s
-}
-
-// Generates a hash for the set hash function used by the block_device_mappings
-// attribute.
-func amiBlockDeviceMappingHash(v interface{}) int {
-	var buf bytes.Buffer
-	// All keys added in alphabetical order.
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["device_name"].(string)))
-	if d, ok := m["ebs"]; ok {
-		if len(d.(map[string]interface{})) > 0 {
-			e := d.(map[string]interface{})
-			buf.WriteString(fmt.Sprintf("%s-", e["delete_on_termination"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["encrypted"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["iops"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["volume_size"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["volume_type"].(string)))
-		}
-	}
-	if d, ok := m["no_device"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["virtual_name"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["snapshot_id"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	return hashcode.String(buf.String())
-}
-
-// Generates a hash for the set hash function used by the product_codes
-// attribute.
-func amiProductCodesHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	// All keys added in alphabetical order.
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func dataSourceTagsSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"key": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"value": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-		},
-	}
-}
-
-func dataSourceTagsHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["key"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["value"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func dataSourceTags(m []*fcu.Tag) *schema.Set {
-	s := &schema.Set{
-		F: dataSourceTagsHash,
-	}
-	for _, v := range m {
-		tag := map[string]interface{}{
-			"key":   *v.Key,
-			"value": *v.Value,
-		}
-		s.Add(tag)
-	}
-	return s
 }
