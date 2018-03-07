@@ -8,14 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-// import (
-// 	"os"
-// 	"strconv"
-// 	"testing"
-
-// 	"github.com/hashicorp/terraform/helper/resource"
-// )
-
 func TestAccOutscaleTagsDataSource_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
