@@ -44,8 +44,9 @@ func init() {
 			"outscale_public_ips": dataSourceOutscalePublicIPS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":  dataSourceOutscaleOAPIVM,
-			"outscale_vms": datasourceOutscaleOApiVMS,
+			"outscale_vm":     dataSourceOutscaleOAPIVM,
+			"outscale_vms":    datasourceOutscaleOApiVMS,
+			"outscale_images": dataSourceOutscaleOAPIImages,
 		},
 	}
 }

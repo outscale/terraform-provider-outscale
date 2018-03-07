@@ -2,7 +2,9 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -10,6 +12,16 @@ import (
 )
 
 func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -17,18 +29,16 @@ func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleImagesDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImagesDataSourceID("data.outscale_image.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.architecture", "x86_64"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.description", "Debian 9 - 4.9.51"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.block_device_mappings.#", "1"),
-					// resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.hypervisor", "xen"),
-					resource.TestMatchResourceAttr("data.outscale_image.nat_ami", "image_set.0.image_id", regexp.MustCompile("^ami-")),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.image_type", "machine"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.is_public", "true"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.root_device_name", "/dev/sda1"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.root_device_type", "ebs"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.image_state", "available"),
-					// resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "image_set.0.virtualization_type", "hvm"),
+					testAccCheckOutscaleImagesDataSourceID("data.outscale_images.nat_ami"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.architecture", "x86_64"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.description", "Debian 9 - 4.9.51"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.block_device_mappings.#", "1"),
+					resource.TestMatchResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_id", regexp.MustCompile("^ami-")),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_type", "machine"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.is_public", "true"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_name", "/dev/sda1"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_type", "ebs"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_state", "available"),
 				),
 			},
 		},
@@ -51,7 +61,7 @@ func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
 }
 
 const testAccCheckOutscaleImagesDataSourceConfig = `
-data "outscale_image" "nat_ami" {
+data "outscale_images" "nat_ami" {
 	filter {
 		name = "architecture"
 		values = ["x86_64"]

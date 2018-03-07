@@ -3,6 +3,8 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +17,16 @@ import (
 )
 
 func TestAccOutscaleImage_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	var ami fcu.Image
 	rInt := acctest.RandInt()
 
