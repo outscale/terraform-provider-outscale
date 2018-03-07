@@ -3744,3 +3744,167 @@ func (s *VolumeAttachment) SetVolumeId(v string) *VolumeAttachment {
 	s.VolumeId = &v
 	return s
 }
+
+// Contains the parameters for AttachVolume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolumeRequest
+type AttachVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The device name to expose to the instance (for example, /dev/sdh or xvdh).
+	//
+	// Device is a required field
+	Device *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+
+	// The ID of the EBS volume. The volume and instance must be within the same
+	// Availability Zone.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AttachVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachVolumeInput"}
+	if s.Device == nil {
+		invalidParams.Add(request.NewErrParamRequired("Device"))
+	}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDevice sets the Device field's value.
+func (s *AttachVolumeInput) SetDevice(v string) *AttachVolumeInput {
+	s.Device = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachVolumeInput) SetDryRun(v bool) *AttachVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AttachVolumeInput) SetInstanceId(v string) *AttachVolumeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *AttachVolumeInput) SetVolumeId(v string) *AttachVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+type DetachVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The device name.
+	Device *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Forces detachment if the previous detachment attempt did not occur cleanly
+	// (for example, logging into an instance, unmounting the volume, and detaching
+	// normally). This option can lead to data loss or a corrupted file system.
+	// Use this option only as a last resort to detach a volume from a failed instance.
+	// The instance won't have an opportunity to flush file system caches or file
+	// system metadata. If you use this option, you must perform file system check
+	// and repair procedures.
+	Force *bool `type:"boolean"`
+
+	// The ID of the instance.
+	InstanceId *string `type:"string"`
+
+	// The ID of the volume.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DetachVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachVolumeInput"}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDevice sets the Device field's value.
+func (s *DetachVolumeInput) SetDevice(v string) *DetachVolumeInput {
+	s.Device = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachVolumeInput) SetDryRun(v bool) *DetachVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetForce sets the Force field's value.
+func (s *DetachVolumeInput) SetForce(v bool) *DetachVolumeInput {
+	s.Force = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DetachVolumeInput) SetInstanceId(v string) *DetachVolumeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
+	s.VolumeId = &v
+	return s
+}

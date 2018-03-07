@@ -314,9 +314,8 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 func tagsToMap(ts []*fcu.Tag) map[string]string {
 	result := make(map[string]string)
 	for _, t := range ts {
-		if !tagIgnored(t) {
-			result[*t.Key] = *t.Value
-		}
+		result["key"] = *t.Key
+		result["value"] = *t.Value
 	}
 
 	return result

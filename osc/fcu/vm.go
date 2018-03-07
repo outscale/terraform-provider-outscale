@@ -48,6 +48,8 @@ type VMService interface {
 	CreateVolume(input *CreateVolumeInput) (*Volume, error)
 	DeleteVolume(input *DeleteVolumeInput) (*DeleteVolumeOutput, error)
 	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
+	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
+	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -794,6 +796,50 @@ func (v VMOperations) DescribeVolumes(input *DescribeVolumesInput) (*DescribeVol
 
 	if input == nil {
 		input = &DescribeVolumesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error) {
+	inURL := "/"
+	endpoint := "AttachVolume"
+	output := &VolumeAttachment{}
+
+	if input == nil {
+		input = &AttachVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error) {
+	inURL := "/"
+	endpoint := "DetachVolume"
+	output := &VolumeAttachment{}
+
+	if input == nil {
+		input = &DetachVolumeInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

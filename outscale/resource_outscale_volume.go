@@ -50,10 +50,6 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		request.VolumeType = aws.String(value.(string))
 	}
 
-	// IOPs are only valid, and required for, storage type io1. The current minimu
-	// is 100. Instead of a hard validation we we only apply the IOPs to the
-	// request if the type is io1, and log a warning otherwise. This allows users
-	// to "disable" iops. See https://github.com/hashicorp/terraform/pull/4146
 	var t string
 	if value, ok := d.GetOk("type"); ok {
 		t = value.(string)
@@ -64,14 +60,27 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if t != "io1" && iops > 0 {
 		fmt.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
-		// We add the iops value without validating it's size, to allow AWS to
-		// enforce a size requirement (currently 100)
 		request.Iops = aws.Int64(int64(iops))
 	}
 
 	fmt.Printf(
 		"[DEBUG] Volume create opts: %s", request)
-	result, err := conn.VM.CreateVolume(request)
+
+	var err error
+	var result *fcu.Volume
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		result, err = conn.VM.CreateVolume(request)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
+	})
+
 	if err != nil {
 		return fmt.Errorf("Error creating volume: %s", err)
 	}
@@ -158,20 +167,34 @@ func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 		d.Set("snapshot_id", *volume.SnapshotId)
 	}
 	if volume.Attachments != nil {
-		res := []map[string]interface{}{}
-		for _, g := range volume.Attachments {
-			r := map[string]interface{}{
-				"delete_on_termination": *g.DeleteOnTermination,
-				"device":                *g.Device,
-				"inscance_id":           *g.InstanceId,
-				"status":                *g.State,
-				"volume_id":             *g.VolumeId,
+		res := make([]map[string]interface{}, len(volume.Attachments))
+		for k, g := range volume.Attachments {
+			r := make(map[string]interface{})
+			if g.DeleteOnTermination != nil {
+				r["delete_on_termination"] = *g.DeleteOnTermination
 			}
-			res = append(res, r)
+			if g.Device != nil {
+				r["device"] = *g.Device
+			}
+			if g.InstanceId != nil {
+				r["instance_id"] = *g.InstanceId
+			}
+			if g.State != nil {
+				r["status"] = *g.State
+			}
+			if g.VolumeId != nil {
+				r["volume_id"] = *g.VolumeId
+			}
+
+			res[k] = r
+
 		}
 
-		if err := d.Set("attachment_set", res); err != nil {
-			return err
+		if len(res) > 0 {
+			if err := d.Set("attachment_set", res); err != nil {
+				return err
+			}
+			fmt.Printf("[DEBUG] Attachment Set %s", res)
 		}
 
 	}
@@ -187,11 +210,11 @@ func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 	if volume.VolumeType != nil {
 		d.Set("volume_type", *volume.VolumeType)
 	}
-	if volume.Tags != nil {
-		d.Set("tag_set", tagsToMap(volume.Tags))
-		t := tagsToMap(volume.Tags)
-		fmt.Printf("DEBUG TAGS: ", t)
-	}
+	// if volume.Tags != nil {
+	// 	d.Set("tag_set", tagsToMap(volume.Tags))
+	// 	t := tagsToMap(volume.Tags)
+	// 	fmt.Printf("DEBUG TAGS: ", t)
+	// }
 	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
 		// Only set the iops attribute if the volume type is io1. Setting otherwise
 		// can trigger a refresh/plan loop based on the computed value that is given
@@ -257,57 +280,67 @@ func getVolumeSchema() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		"size": {
 			Type:     schema.TypeInt,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		"snapshot_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		"volume_type": {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
+			Computed: true,
 		},
 		// Attributes
 		"attachment_set": {
-			Type: schema.TypeSet,
+			Type: schema.TypeList,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_termination": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"device": {
 						Type:     schema.TypeBool,
 						Computed: true,
+						Optional: true,
+					},
+					"device": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
 					},
 					"instance_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
 					},
 					"status": {
 						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
 					},
 					"volume_id": {
 						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
 					},
 				},
 			},
 			Computed: true,
+			Optional: true,
 		},
 		"status": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": tagsSchemaComputed(),
-		"tags":    tagsSchema(),
+		// "tag_set": tagsSchemaComputed(),
+		"tags": tagsSchema(),
 		"volume_id": {
 			Type:     schema.TypeString,
 			Computed: true,
