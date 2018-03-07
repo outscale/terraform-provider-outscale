@@ -64,8 +64,10 @@ func Provider() terraform.ResourceProvider {
 			"outscale_public_ip_link":     GetResource(fcu, "outscale_public_ip_link")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"outscale_vm":  GetDatasource(fcu, "outscale_vm")(),
-			"outscale_vms": GetDatasource(fcu, "outscale_vms")(),
+			"outscale_vm":         GetDatasource(fcu, "outscale_vm")(),
+			"outscale_vms":        GetDatasource(fcu, "outscale_vms")(),
+			"outscale_public_ip":  GetDatasource(fcu, "outscale_public_ip")(),
+			"outscale_public_ips": GetDatasource(fcu, "outscale_public_ips")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
