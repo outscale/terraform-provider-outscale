@@ -149,8 +149,8 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	d.Set("spot_vm_request_id", instance.SpotInstanceRequestId)
 	d.Set("sriov_net_support", instance.SriovNetSupport)
 	d.Set("comment", map[string]interface{}{
-	// "state_code": instance.StateReason.Code,
-	// "message": instance.StateReason.Message,
+		// "state_code": instance.StateReason.Code,
+		// "message": instance.StateReason.Message,
 	})
 	d.Set("subnet_id", instance.SubnetId)
 	d.Set("tags", getOAPIVMTagSet(instance.Tags))
