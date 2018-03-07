@@ -20,6 +20,8 @@ func init() {
 			"outscale_vm":                 resourceOutscaleVM,
 			"outscale_image":              resourceOutscaleImage,
 			"outscale_firewall_rules_set": resourceOutscaleFirewallRulesSet,
+			"outscale_outbound_rule":      resourceOutscaleOutboundRule,
+			"outscale_inbound_rule":       resourceOutscaleInboundRule,
 			"outscale_tag":                resourceOutscaleTags,
 			"outscale_key_pair":           resourceOutscaleKeyPair,
 			"outscale_public_ip":          resourceOutscalePublicIP,

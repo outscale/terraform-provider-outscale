@@ -57,6 +57,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_key_pair":           GetResource(fcu, "outscale_key_pair")(),
 			"outscale_image":              GetResource(fcu, "outscale_image")(),
 			"outscale_firewall_rules_set": GetResource(fcu, "outscale_firewall_rules_set")(),
+			"outscale_outbound_rule":      GetResource(fcu, "outscale_outbound_rule")(),
+			"outscale_inbound_rule":       GetResource(fcu, "outscale_inbound_rule")(),
 			"outscale_tag":                GetResource(fcu, "outscale_tag")(),
 			"outscale_public_ip":          GetResource(fcu, "outscale_public_ip")(),
 			"outscale_public_ip_link":     GetResource(fcu, "outscale_public_ip_link")(),
