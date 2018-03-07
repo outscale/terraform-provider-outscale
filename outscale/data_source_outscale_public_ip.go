@@ -80,8 +80,13 @@ func dataSourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) er
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		describeAddresses, err = conn.VM.DescribeAddressesRequest(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+		}
 
-		return resource.RetryableError(err)
+		return resource.NonRetryableError(err)
 	})
 
 	if err != nil {
