@@ -36,6 +36,8 @@ func init() {
 		"fcu": ResourceMap{
 			"outscale_vm":         dataSourceOutscaleVM,
 			"outscale_vms":        dataSourceOutscaleVMS,
+			"outscale_image":      dataSourceOutscaleImage,
+			"outscale_images":     dataSourceOutscaleImages,
 			"outscale_tag":        dataSourceOutscaleTag,
 			"outscale_tags":       dataSourceOutscaleTags,
 			"outscale_public_ip":  dataSourceOutscalePublicIP,
