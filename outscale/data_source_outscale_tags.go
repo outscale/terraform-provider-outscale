@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"strings"
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -59,7 +60,13 @@ func dataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeTags(params)
-		return resource.RetryableError(err)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+		}
+
+		return resource.NonRetryableError(err)
 	})
 
 	if err != nil {
