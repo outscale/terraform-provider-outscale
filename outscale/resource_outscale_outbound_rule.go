@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/mutexkv"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -258,6 +259,10 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 			ruleType, d.Id(), sg_id)
 		d.SetId("")
 		return nil
+	}
+
+	if err := setFromIPPerm(d, sg, p); err != nil {
+		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
 	}
 
 	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)

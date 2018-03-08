@@ -9,6 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -201,6 +202,10 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 			ruleType, d.Id(), sg_id)
 		d.SetId("")
 		return nil
+	}
+
+	if err := setFromIPPerm(d, sg, p); err != nil {
+		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
 	}
 
 	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
