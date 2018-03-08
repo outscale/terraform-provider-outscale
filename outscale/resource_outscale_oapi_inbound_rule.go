@@ -14,28 +14,24 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceOutscaleInboundRule() *schema.Resource {
+func resourceOutscaleOAPIInboundRule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleInboundRuleCreate,
-		Read:   resourceOutscaleInboundRuleRead,
-		Delete: resourceOutscaleInboundRuleDelete,
-		// Importer: &schema.ResourceImporter{
-		// State: schema.ImportStatePassthrough,
-		// State: resourceOutscaleInboundImportState,
-		// },
+		Create: resourceOutscaleOAPIInboundRuleCreate,
+		Read:   resourceOutscaleOAPIInboundRuleRead,
+		Delete: resourceOutscaleOAPIInboundRuleDelete,
 
 		Schema: map[string]*schema.Schema{
-			"cidr_ip": {
+			"ip_range": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"from_port": {
+			"from_port_range": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 			},
-			"group_id": {
+			"firewall_rules_set_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -45,45 +41,45 @@ func resourceOutscaleInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"source_security_group_name": {
+			"destination_firewall_rules_set_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"source_security_group_owner_id": {
+			"destination_firewall_rules_set_account_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"to_port": {
+			"to_port_range": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 			},
-			"ip_permissions": getIpPermissionsSchema(),
+			"inbound_rule": getOAPIIpPermissionsSchema(),
 		},
 	}
 }
 
-func resourceOutscaleInboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	sg_id := d.Get("group_id").(string)
+	sg_id := d.Get("firewall_rules_set_id").(string)
 
 	awsMutexKV.Lock(sg_id)
 	defer awsMutexKV.Unlock(sg_id)
 
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sg, err := findResourceOAPISecurityGroup(conn, sg_id)
 	if err != nil {
 		return err
 	}
 
-	perm, err := expandIPPerm(d, sg)
+	perm, err := expandOAPIIPPerm(d, sg)
 	if err != nil {
 		return err
 	}
 
-	if err := validateOutscaleSecurityGroupRule(d); err != nil {
+	if err := validateOutscaleOAPISecurityGroupRule(d); err != nil {
 		return err
 	}
 
@@ -132,7 +128,7 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, err := findResourceSecurityGroup(conn, sg_id)
+		sg, err := findResourceOAPISecurityGroup(conn, sg_id)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sg_id, id, err)
@@ -142,7 +138,7 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 		var rules []*fcu.IpPermission
 		rules = sg.IpPermissions
 
-		rule := findRuleMatch(perm, rules, isVPC)
+		rule := findOAPIRuleMatch(perm, rules, isVPC)
 
 		if rule == nil {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -163,10 +159,10 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 	return nil
 }
 
-func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	sg_id := d.Get("group_id").(string)
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sg_id := d.Get("firewall_rules_set_id").(string)
+	sg, err := findResourceOAPISecurityGroup(conn, sg_id)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -183,7 +179,7 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 	ruleType := "ingress"
 	rules = sg.IpPermissions
 
-	p, err := expandIPPerm(d, sg)
+	p, err := expandOAPIIPPerm(d, sg)
 	if err != nil {
 		return err
 	}
@@ -195,7 +191,7 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	rule = findRuleMatch(p, rules, isVPC)
+	rule = findOAPIRuleMatch(p, rules, isVPC)
 
 	if rule == nil {
 		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -204,7 +200,7 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	if err := setFromIPPerm(d, sg, p); err != nil {
+	if err := setOAPIFromIPPerm(d, sg, p); err != nil {
 		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
 	}
 
@@ -213,19 +209,19 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceOutscaleInboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	sg_id := d.Get("group_id").(string)
+	sg_id := d.Get("firewall_rules_set_id").(string)
 
 	awsMutexKV.Lock(sg_id)
 	defer awsMutexKV.Unlock(sg_id)
 
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sg, err := findResourceOAPISecurityGroup(conn, sg_id)
 	if err != nil {
 		return err
 	}
 
-	perm, err := expandIPPerm(d, sg)
+	perm, err := expandOAPIIPPerm(d, sg)
 	if err != nil {
 		return err
 	}

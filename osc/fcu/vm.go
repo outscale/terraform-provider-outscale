@@ -45,6 +45,11 @@ type VMService interface {
 	AuthorizeSecurityGroupEgress(input *AuthorizeSecurityGroupEgressInput) (*AuthorizeSecurityGroupEgressOutput, error)
 	AuthorizeSecurityGroupIngress(input *AuthorizeSecurityGroupIngressInput) (*AuthorizeSecurityGroupIngressOutput, error)
 	DeleteSecurityGroup(input *DeleteSecurityGroupInput) (*DeleteSecurityGroupOutput, error)
+	CreateVolume(input *CreateVolumeInput) (*Volume, error)
+	DeleteVolume(input *DeleteVolumeInput) (*DeleteVolumeOutput, error)
+	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
+	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
+	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -724,6 +729,117 @@ func (v VMOperations) CreateKeyPair(input *CreateKeyPairInput) (*CreateKeyPairOu
 
 	if input == nil {
 		input = &CreateKeyPairInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateVolume(input *CreateVolumeInput) (*Volume, error) {
+	inURL := "/"
+	endpoint := "CreateVolume"
+	output := &Volume{}
+
+	if input == nil {
+		input = &CreateVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteVolume(input *DeleteVolumeInput) (*DeleteVolumeOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVolume"
+	output := &DeleteVolumeOutput{}
+
+	if input == nil {
+		input = &DeleteVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVolumes"
+	output := &DescribeVolumesOutput{}
+
+	if input == nil {
+		input = &DescribeVolumesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error) {
+	inURL := "/"
+	endpoint := "AttachVolume"
+	output := &VolumeAttachment{}
+
+	if input == nil {
+		input = &AttachVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error) {
+	inURL := "/"
+	endpoint := "DetachVolume"
+	output := &VolumeAttachment{}
+
+	if input == nil {
+		input = &DetachVolumeInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
