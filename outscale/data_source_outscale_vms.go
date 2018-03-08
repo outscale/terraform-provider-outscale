@@ -463,7 +463,8 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"tag_set": {
-									Type: schema.TypeList,
+									Type:     schema.TypeList,
+									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"key": {
@@ -476,7 +477,6 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"virtualization_type": {
 									Type:     schema.TypeString,

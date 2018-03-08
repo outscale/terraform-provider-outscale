@@ -13,11 +13,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscalePublicIP() *schema.Resource {
+func resourceOutscaleOAPIPublicIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscalePublicIPCreate,
-		Read:   resourceOutscalePublicIPRead,
-		Delete: resourceOutscalePublicIPDelete,
+		Create: resourceOutscaleOAPIPublicIPCreate,
+		Read:   resourceOutscaleOAPIPublicIPRead,
+		Delete: resourceOutscaleOAPIPublicIPDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,54 +27,48 @@ func resourceOutscalePublicIP() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		Schema: getPublicIPSchema(),
-	}
-}
-
-func getPublicIPSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Attributes
-		"allocation_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"association_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"domain": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Optional: true,
-		},
-		"instance_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"network_interface_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"network_interface_owner_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"private_ip_address": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"public_ip": {
-			Type:     schema.TypeString,
-			Computed: true,
+		Schema: map[string]*schema.Schema{
+			"reservation_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"link_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"placement": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+			},
+			"vm_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"nic_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"nic_account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func resourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	// By default, we're not in a VPC
-	domainOpt := resourceOutscalePublicIPDomain(d)
+	domainOpt := resourceOutscaleOAPIPublicIPDomain(d)
 
 	allocOpts := &fcu.AllocateAddressInput{
 		Domain: aws.String(domainOpt),
@@ -86,41 +80,36 @@ func resourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error creating EIP: %s", err)
 	}
 
-	// The domain tells us if we're in a VPC or not
-	d.Set("domain", allocResp.Domain)
+	d.Set("placement", allocResp.Domain)
 
-	// Assign the eips (unique) allocation id for use later
-	// the EIP api has a conditional unique ID (really), so
-	// if we're in a VPC we need to save the ID as such, otherwise
-	// it defaults to using the public IP
 	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
-	if d.Get("domain").(string) == "vpc" {
+	if d.Get("placement").(string) == "vpc" {
 		d.SetId(*allocResp.AllocationId)
 	} else {
 		d.SetId(*allocResp.PublicIp)
 	}
 
-	fmt.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
-	return resourceOutscalePublicIPUpdate(d, meta)
+	fmt.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), *allocResp.Domain)
+	return resourceOutscaleOAPIPublicIPUpdate(d, meta)
 }
 
-func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	domain := resourceOutscalePublicIPDomain(d)
+	placement := resourceOutscaleOAPIPublicIPDomain(d)
 	id := d.Id()
 
 	req := &fcu.DescribeAddressesInput{}
 
-	if domain == "vpc" {
+	if placement == "vpc" {
 		req.AllocationIds = []*string{aws.String(id)}
 	} else {
 		req.PublicIps = []*string{aws.String(id)}
 	}
 
 	fmt.Printf(
-		"[DEBUG] EIP describe configuration: %s (domain: %s)",
-		req, domain)
+		"[DEBUG] EIP describe configuration: %s (placement: %s)",
+		req, placement)
 
 	var describeAddresses *fcu.DescribeAddressesOutput
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -139,9 +128,8 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
-	// Verify Outscale returned our EIP
 	if len(describeAddresses.Addresses) != 1 ||
-		domain == "vpc" && *describeAddresses.Addresses[0].AllocationId != id ||
+		placement == "vpc" && *describeAddresses.Addresses[0].AllocationId != id ||
 		*describeAddresses.Addresses[0].PublicIp != id {
 		if err != nil {
 			return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.Addresses)
@@ -153,37 +141,31 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", *address)
 
 	if address.AssociationId != nil {
-		d.Set("association_id", *address.AssociationId)
+		d.Set("link_id", address.AssociationId)
 	} else {
-		d.Set("association_id", "")
+		d.Set("link_id", "")
 	}
 	if address.InstanceId != nil {
-		d.Set("instance_id", *address.InstanceId)
+		d.Set("vm_id", address.InstanceId)
 	} else {
-		d.Set("instance_id", "")
+		d.Set("vm_id", "")
 	}
 	if address.NetworkInterfaceId != nil {
-		d.Set("network_interface_id", *address.NetworkInterfaceId)
+		d.Set("nic_id", address.NetworkInterfaceId)
 	} else {
-		d.Set("network_interface_id", "")
+		d.Set("nic_id", "")
 	}
 	if address.NetworkInterfaceOwnerId != nil {
-		d.Set("network_interface_owner_id", *address.NetworkInterfaceOwnerId)
+		d.Set("nic_account_id", address.NetworkInterfaceOwnerId)
 	} else {
-		d.Set("network_interface_owner_id", "")
+		d.Set("nic_account_id", "")
 	}
-	if address.PrivateIpAddress != nil {
-		d.Set("private_ip", *address.PrivateIpAddress)
-	} else {
-		d.Set("private_ip", "")
-	}
-	d.Set("public_ip", *address.PublicIp)
+	d.Set("private_ip", address.PrivateIpAddress)
+	d.Set("public_ip", address.PublicIp)
 
-	d.Set("domain", *address.Domain)
-	d.Set("allocation_id", *address.AllocationId)
+	d.Set("placement", address.Domain)
+	d.Set("reservation_id", address.AllocationId)
 
-	// Force ID to be an Allocation ID if we're on a VPC
-	// This allows users to import the EIP based on the IP if they are in a VPC
 	if *address.Domain == "vpc" && net.ParseIP(id) != nil {
 		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.AllocationId)
 		d.SetId(*address.AllocationId)
@@ -194,14 +176,13 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	domain := resourceOutscalePublicIPDomain(d)
+	placement := resourceOutscaleOAPIPublicIPDomain(d)
 
-	// Associate to instance or interface if specified
-	v_instance, ok_instance := d.GetOk("instance_id")
-	v_interface, ok_interface := d.GetOk("network_interface_id")
+	v_instance, ok_instance := d.GetOk("vm_id")
+	v_interface, ok_interface := d.GetOk("nic_id")
 
 	if ok_instance || ok_interface {
 		instanceId := v_instance.(string)
@@ -212,10 +193,9 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 			PublicIp:   aws.String(d.Id()),
 		}
 
-		// more unique ID conditionals
-		if domain == "vpc" {
+		if placement == "vpc" {
 			var privateIpAddress *string
-			if v := d.Get("associate_with_private_ip").(string); v != "" {
+			if v := d.Get("private_ip").(string); v != "" {
 				privateIpAddress = aws.String(v)
 			}
 			assocOpts = &fcu.AssociateAddressInput{
@@ -226,7 +206,7 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 			}
 		}
 
-		fmt.Printf("[DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
+		fmt.Printf("[DEBUG] EIP associate configuration: %s (placement: %s)", assocOpts, placement)
 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
@@ -244,39 +224,35 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 		})
 
 		if err != nil {
-			// Prevent saving instance if association failed
-			// e.g. missing internet gateway in VPC
-			d.Set("instance_id", "")
-			d.Set("network_interface_id", "")
+			d.Set("vm_id", "")
+			d.Set("nic_id", "")
 			return fmt.Errorf("Failure associating EIP: %s", err)
 		}
 	}
 
-	return resourceOutscalePublicIPRead(d, meta)
+	return resourceOutscaleOAPIPublicIPRead(d, meta)
 }
 
-func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	if err := resourceOutscalePublicIPRead(d, meta); err != nil {
+	if err := resourceOutscaleOAPIPublicIPRead(d, meta); err != nil {
 		return err
 	}
 	if d.Id() == "" {
-		// This might happen from the read
 		return nil
 	}
 
-	v_instance, ok_instance := d.GetOk("instance")
-	v_association_id, ok_association_id := d.GetOk("association_id")
+	v_instance, ok_instance := d.GetOk("vm_id")
+	v_association_id, ok_association_id := d.GetOk("link_id")
 
-	// If we are attached to an instance or interface, detach first.
 	if (ok_instance && v_instance.(string) != "") || (ok_association_id && v_association_id.(string) != "") {
 		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
-		switch resourceOutscalePublicIPDomain(d) {
+		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
 			_, err = conn.VM.DisassociateAddress(&fcu.DisassociateAddressInput{
-				AssociationId: aws.String(d.Get("association_id").(string)),
+				AssociationId: aws.String(d.Get("link_id").(string)),
 			})
 		case "standard":
 			_, err = conn.VM.DisassociateAddress(&fcu.DisassociateAddressInput{
@@ -285,20 +261,17 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if err != nil {
-
-			// Verify the error is what we want
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 				return nil
 			}
-
 			return err
 		}
 	}
 
-	domain := resourceOutscalePublicIPDomain(d)
+	placement := resourceOutscaleOAPIPublicIPDomain(d)
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
 		var err error
-		switch domain {
+		switch placement {
 		case "vpc":
 			fmt.Printf(
 				"[DEBUG] EIP release (destroy) address allocation: %v",
@@ -313,7 +286,6 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 			})
 		}
 
-		// Verify the error is what we want
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			return nil
 		}
@@ -329,12 +301,10 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 	})
 }
 
-func resourceOutscalePublicIPDomain(d *schema.ResourceData) string {
-	if v, ok := d.GetOk("domain"); ok {
+func resourceOutscaleOAPIPublicIPDomain(d *schema.ResourceData) string {
+	if v, ok := d.GetOk("placement"); ok {
 		return v.(string)
 	} else if strings.Contains(d.Id(), "eipalloc") {
-		// We have to do this for backwards compatibility since TF 0.1
-		// didn't have the "domain" computed attribute.
 		return "vpc"
 	}
 

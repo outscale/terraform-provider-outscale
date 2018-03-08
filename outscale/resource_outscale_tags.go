@@ -74,31 +74,53 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	return nil
+	d.SetId(resource.UniqueId())
+
+	return resourceOutscaleTagsRead(d, meta)
 }
 
 func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	filters, filtersOk := d.GetOk("filter")
-	maxResults, maxResultsOk := d.GetOk("max_results")
-	nextToken, nextTokenOk := d.GetOk("next_token")
-
-	if filtersOk == false {
-		return fmt.Errorf("One of filters, must be assigned")
-	}
-
 	// Build up search parameters
 	params := &fcu.DescribeTagsInput{}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	filters := []*fcu.Filter{}
+
+	tags, tagsOk := d.GetOk("tags")
+	if tagsOk {
+		tgs := tagsFromMap(tags.(map[string]interface{}))
+		ts := make([]*string, 0, len(tgs))
+		for _, t := range tgs {
+			ts = append(ts, t.Key)
+		}
+
+		f := &fcu.Filter{
+			Name:   aws.String("key"),
+			Values: ts,
+		}
+
+		filters = append(filters, f)
+
 	}
-	if maxResultsOk {
-		params.MaxResults = aws.Int64(maxResults.(int64))
+
+	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
+	if resourceIdsOk {
+		var rids []*string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, aws.String(str))
+		}
+
+		f := &fcu.Filter{
+			Name:   aws.String("resource-id"),
+			Values: rids,
+		}
+
+		filters = append(filters, f)
 	}
-	if nextTokenOk {
-		params.NextToken = aws.String(nextToken.(string))
-	}
+
+	params.Filters = filters
 
 	var resp *fcu.DescribeTagsOutput
 	var err error
@@ -112,10 +134,10 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("next_token", *resp.NextToken)
-	d.Set("tag_set", tagsDescToMap(resp.Tags))
+	tg := tagsDescToList(resp.Tags)
+	err = d.Set("tag_set", tg)
 
-	return nil
+	return err
 }
 
 func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error {
@@ -165,7 +187,6 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 
 func getTagsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
 		"resource_ids": {
 			Type:     schema.TypeSet,
 			Optional: true,
@@ -191,9 +212,8 @@ func getTagsSchema() map[string]*schema.Schema {
 			},
 		},
 		"tag_set": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeList,
 			Computed: true,
-			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
@@ -220,13 +240,13 @@ func getTagsSchema() map[string]*schema.Schema {
 
 func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tags") {
-		oraw, nraw := d.GetChange("tags")
+	if d.HasChange("tag") {
+		oraw, nraw := d.GetChange("tag")
 		o := oraw.(map[string]interface{})
 		n := nraw.(map[string]interface{})
 		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
 
-		// Set tags
+		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				log.Printf("[DEBUG] Removing tags: %#v from %s", remove, d.Id())
@@ -272,8 +292,8 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 	return nil
 }
 
-// diffTags takes our tags locally and the ones remotely and returns
-// the set of tags that must be created, and the set of tags that must
+// diffTags takes our tag locally and the ones remotely and returns
+// the set of tag that must be created, and the set of tag that must
 // be destroyed.
 func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	// First, we're creating everything we have
@@ -294,7 +314,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	return tagsFromMap(create), remove
 }
 
-// tagsFromMap returns the tags for the given map of data.
+// tagsFromMap returns the tag for the given map of data.
 func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {
@@ -320,6 +340,8 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 		result[k] = tag
 	}
 
+	fmt.Printf("[DEBUG] TAG_SET %s", result)
+
 	return result
 }
 
@@ -334,6 +356,23 @@ func tagsDescToMap(ts []*fcu.TagDescription) map[string]string {
 	return result
 }
 
+func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
+	result := []map[string]string{}
+	for _, t := range ts {
+		if !tagDescIgnored(t) {
+			r := map[string]string{}
+			r["key"] = *t.Value
+			r["value"] = *t.Value
+			r["resource_id"] = *t.ResourceId
+			r["resource_type"] = *t.ResourceType
+
+			result = append(result, r)
+		}
+	}
+
+	return result
+}
+
 // tagIgnored compares a s against a list of strings and checks if it should
 // be ignored or not
 func tagIgnored(t *fcu.Tag) bool {
@@ -341,7 +380,7 @@ func tagIgnored(t *fcu.Tag) bool {
 	for _, v := range filter {
 		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
 		if r, _ := regexp.MatchString(v, *t.Key); r == true {
-			log.Printf("[DEBUG] Found AWS specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
+			log.Printf("[DEBUG] Found Outscale specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
 			return true
 		}
 	}

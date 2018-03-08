@@ -17,31 +17,11 @@ To add or remove rules, use the (AuthorizeSecurityGroupIngress)[http://docs.outs
 resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		tags {
+		tag = {
 						Name = "tf-acc-test"
 		}
 		vpc_id = "vpc-e9d09d63"
 	}
-```
-
-Basic usage with tags:
-
-```hcl
-resource "aws_security_group" "allow_all" {
-  name        = "allow_all"
-  description = "Allow all inbound traffic"
-
-  ingress {
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags {
-    Name = "allow_all"
-  }
-}
 ```
 
 ## Argument Reference
