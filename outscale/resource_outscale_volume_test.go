@@ -121,7 +121,7 @@ func testAccCheckVolumeExists(n string, v *fcu.Volume) resource.TestCheckFunc {
 			return resource.NonRetryableError(err)
 		})
 		fmt.Printf("[DEBUG] Error Test Exists: %s", err)
-		fmt.Printf("[DEBUG] Volume Exists: #v ", *response)
+		fmt.Printf("[DEBUG] Volume Exists: %v ", *response)
 		if err == nil {
 			if response.Volumes != nil && len(response.Volumes) > 0 {
 				*v = *response.Volumes[0]
