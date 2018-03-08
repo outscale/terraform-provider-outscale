@@ -34,8 +34,10 @@ func init() {
 	}
 	datasources = Dictionary{
 		"fcu": ResourceMap{
-			"outscale_vm":         dataSourceOutscaleVM,
-			"outscale_vms":        dataSourceOutscaleVMS,
+			"outscale_vm":                 dataSourceOutscaleVM,
+			"outscale_vms":                dataSourceOutscaleVMS,
+			"outscale_firewall_rule_set":  dataSourceOutscaleFirewallRuleSet,
+			"outscale_firewall_rules_set": dataSourceOutscaleFirewallRulesSets,
 			"outscale_image":      dataSourceOutscaleImage,
 			"outscale_images":     dataSourceOutscaleImages,
 			"outscale_tag":        dataSourceOutscaleTag,
@@ -44,8 +46,9 @@ func init() {
 			"outscale_public_ips": dataSourceOutscalePublicIPS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":  dataSourceOutscaleOAPIVM,
-			"outscale_vms": datasourceOutscaleOApiVMS,
+			"outscale_vm":                dataSourceOutscaleOAPIVM,
+			"outscale_vms":               datasourceOutscaleOApiVMS,
+			"outscale_firewall_rule_set": dataSourceOutscaleOAPIFirewallRuleSet,
 		},
 	}
 }

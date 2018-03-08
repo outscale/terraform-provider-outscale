@@ -240,13 +240,13 @@ func getTagsSchema() map[string]*schema.Schema {
 
 func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tags") {
-		oraw, nraw := d.GetChange("tags")
+	if d.HasChange("tag") {
+		oraw, nraw := d.GetChange("tag")
 		o := oraw.(map[string]interface{})
 		n := nraw.(map[string]interface{})
 		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
 
-		// Set tags
+		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				log.Printf("[DEBUG] Removing tags: %#v from %s", remove, d.Id())
@@ -292,8 +292,8 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 	return nil
 }
 
-// diffTags takes our tags locally and the ones remotely and returns
-// the set of tags that must be created, and the set of tags that must
+// diffTags takes our tag locally and the ones remotely and returns
+// the set of tag that must be created, and the set of tag that must
 // be destroyed.
 func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	// First, we're creating everything we have
@@ -314,7 +314,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	return tagsFromMap(create), remove
 }
 
-// tagsFromMap returns the tags for the given map of data.
+// tagsFromMap returns the tag for the given map of data.
 func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {

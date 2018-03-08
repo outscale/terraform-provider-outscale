@@ -1651,8 +1651,7 @@ func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) re
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
 
 		}
 
@@ -1722,8 +1721,7 @@ func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRe
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
 
 		}
 
