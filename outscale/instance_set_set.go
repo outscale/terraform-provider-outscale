@@ -395,7 +395,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 
 			attch := make(map[string]interface{})
 			assoc["attachement_id"] = *i.Attachment.AttachmentId
-			assoc["delete_on_termination"] = fmt.Sprint("%t", *i.Attachment.DeleteOnTermination)
+			assoc["delete_on_termination"] = fmt.Sprintf("%t", *i.Attachment.DeleteOnTermination)
 			assoc["device_index"] = fmt.Sprintf("%d", *i.Attachment.DeviceIndex)
 			assoc["status"] = *i.Attachment.Status
 

@@ -1,30 +1,25 @@
 package outscale
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-const (
-	OutscaleImageRetryTimeout       = 40 * time.Minute
-	OutscaleImageDeleteRetryTimeout = 90 * time.Minute
-	OutscaleImageRetryDelay         = 5 * time.Second
-	OutscaleImageRetryMinTimeout    = 3 * time.Second
-)
-
-func resourceOutscaleImage() *schema.Resource {
+func resourceOutscaleOAPIImage() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceImageCreate,
-		Read:   resourceImageRead,
-		Update: resourceImageUpdate,
-		Delete: resourceImageDelete,
+		Create: resourceOAPIImageCreate,
+		Read:   resourceOAPIImageRead,
+		Update: resourceOAPIImageUpdate,
+		Delete: resourceOAPIImageDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -36,17 +31,13 @@ func resourceOutscaleImage() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"vm_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
-			},
-			"dry_run": {
-				Type:     schema.TypeBool,
-				Optional: true,
 			},
 			"no_reboot": {
 				Type:     schema.TypeBool,
@@ -55,6 +46,7 @@ func resourceOutscaleImage() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 
 			"architecture": {
@@ -69,23 +61,23 @@ func resourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_location": {
+			"osu_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_alias": {
+			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_id": {
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_state": {
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -115,11 +107,11 @@ func resourceOutscaleImage() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"virtual_name": {
+						"virtual_device_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"ebs": {
+						"bsu": {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
@@ -129,7 +121,7 @@ func resourceOutscaleImage() *schema.Resource {
 			"product_codes": {
 				Type:     schema.TypeSet,
 				Computed: true,
-				Set:      amiProductCodesHash,
+				Set:      omiOAPIProductCodesHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"product_code": {
@@ -143,28 +135,25 @@ func resourceOutscaleImage() *schema.Resource {
 					},
 				},
 			},
-			"state_reason": {
+			"state_comment": {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
-			"tag_set": dataSourceTagsSchema(),
+			"tag": dataSourceTagsSchema(),
 		},
 	}
 }
 
-func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.RegisterImageInput{
 		Name:       aws.String(d.Get("name").(string)),
-		InstanceId: aws.String(d.Get("instance_id").(string)),
+		InstanceId: aws.String(d.Get("vm_id").(string)),
 	}
 
 	if a, aok := d.GetOk("description"); aok {
 		req.Description = aws.String(a.(string))
-	}
-	if a, aok := d.GetOk("dry_run"); aok {
-		req.DryRun = aws.Bool(a.(bool))
 	}
 	if a, aok := d.GetOk("no_reboot"); aok {
 		req.NoReboot = aws.Bool(a.(bool))
@@ -198,16 +187,16 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetPartial("id")
 	d.Partial(false)
 
-	_, err = resourceOutscaleImageWaitForAvailable(id, conn, 1)
+	_, err = resourceOutscaleOAPIImageWaitForAvailable(id, conn, 1)
 	if err != nil {
 		return err
 	}
 
-	return resourceImageUpdate(d, meta)
+	return resourceOAPIImageUpdate(d, meta)
 
 }
 
-func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU
 	id := d.Id()
 
@@ -249,7 +238,7 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	state := *image.State
 
 	if state == "pending" {
-		image, err = resourceOutscaleImageWaitForAvailable(id, client, 2)
+		image, err = resourceOutscaleOAPIImageWaitForAvailable(id, client, 2)
 		if err != nil {
 			return err
 		}
@@ -275,37 +264,37 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("hypervisor", *image.Hypervisor)
 	d.Set("image_id", *image.ImageId)
-	d.Set("image_location", *image.ImageLocation)
+	d.Set("osu_location", *image.ImageLocation)
 	if image.ImageOwnerAlias != nil {
-		d.Set("image_owner_alias", *image.ImageOwnerAlias)
+		d.Set("account_alias", *image.ImageOwnerAlias)
 	}
-	d.Set("image_owner_id", *image.OwnerId)
-	d.Set("image_type", *image.ImageType)
+	d.Set("account_id", *image.OwnerId)
+	d.Set("type", *image.ImageType)
 	d.Set("name", *image.Name)
 	d.Set("is_public", *image.Public)
 	if image.RootDeviceName != nil {
 		d.Set("root_device_name", *image.RootDeviceName)
 	}
 	d.Set("root_device_type", *image.RootDeviceType)
-	d.Set("image_state", *image.State)
+	d.Set("state", *image.State)
 
-	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
-	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
+	if err := d.Set("product_codes", omiOAPIProductCodes(image.ProductCodes)); err != nil {
 		return err
 	}
-	if err := d.Set("state_reason", amiStateReason(image.StateReason)); err != nil {
+	if err := d.Set("state_comment", omiOAPIStateReason(image.StateReason)); err != nil {
 		return err
 	}
-	if err := d.Set("tag_set", dataSourceTags(image.Tags)); err != nil {
+	if err := d.Set("tag", dataSourceTags(image.Tags)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceImageUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	d.Partial(true)
@@ -314,7 +303,7 @@ func resourceImageUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetPartial("tag_set")
+	d.SetPartial("tag")
 
 	if d.Get("description").(string) != "" {
 		_, err := conn.VM.ModifyImageAttribute(&fcu.ModifyImageAttributeInput{
@@ -331,10 +320,10 @@ func resourceImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
-	return resourceImageRead(d, meta)
+	return resourceOAPIImageRead(d, meta)
 }
 
-func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU
 
 	req := &fcu.DeregisterImageInput{
@@ -360,23 +349,21 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the image")
 	}
 
-	// Verify that the image is actually removed, if not we need to wait for it to be removed
-	if err := resourceOutscaleImageWaitForDestroy(d.Id(), client); err != nil {
+	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), client); err != nil {
 		return err
 	}
 
-	// No error, OMI was deleted successfully
 	d.SetId("")
 	return nil
 }
 
-func resourceOutscaleImageWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("Waiting for OMI %s to become available...", id)
+func resourceOutscaleOAPIImageWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
+	fmt.Printf("MSG %s, Waiting for OMI %s to become available...", i, id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    ImageStateRefreshFunc(client, id),
+		Refresh:    ImageOAPIStateRefreshFunc(client, id),
 		Timeout:    OutscaleImageRetryTimeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -389,7 +376,7 @@ func resourceOutscaleImageWaitForAvailable(id string, client *fcu.Client, i int)
 	return info.(*fcu.Image), nil
 }
 
-func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
+func ImageOAPIStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := &fcu.DescribeImagesOutput{}
 
@@ -434,13 +421,13 @@ func ImageStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshF
 	}
 }
 
-func resourceOutscaleImageWaitForDestroy(id string, client *fcu.Client) error {
+func resourceOutscaleOAPIImageWaitForDestroy(id string, client *fcu.Client) error {
 	fmt.Printf("Waiting for OMI %s to be deleted...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending", "failed"},
 		Target:     []string{"destroyed"},
-		Refresh:    ImageStateRefreshFunc(client, id),
+		Refresh:    ImageOAPIStateRefreshFunc(client, id),
 		Timeout:    OutscaleImageDeleteRetryTimeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryTimeout,
@@ -452,4 +439,74 @@ func resourceOutscaleImageWaitForDestroy(id string, client *fcu.Client) error {
 	}
 
 	return nil
+}
+
+// Returns a set of block device mappings.
+func omiOAPIBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{} {
+	bdm := make([]map[string]interface{}, len(m))
+	for k, v := range m {
+		mapping := map[string]interface{}{
+			"device_name": *v.DeviceName,
+		}
+		if v.Ebs != nil {
+			bsu := map[string]interface{}{
+				"delete_on_vm_termination": fmt.Sprintf("%t", *v.Ebs.DeleteOnTermination),
+				"volume_size":              fmt.Sprintf("%d", *v.Ebs.VolumeSize),
+				"type":                     *v.Ebs.VolumeType,
+			}
+
+			if v.Ebs.Iops != nil {
+				bsu["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
+			} else {
+				bsu["iops"] = "0"
+			}
+			if v.Ebs.SnapshotId != nil {
+				bsu["snapshot_id"] = *v.Ebs.SnapshotId
+			}
+
+			mapping["bsu"] = bsu
+		}
+		if v.VirtualName != nil {
+			mapping["virtual_device_name"] = *v.VirtualName
+		}
+		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
+		bdm[k] = mapping
+	}
+	return bdm
+}
+
+// Returns a set of product codes.
+func omiOAPIProductCodes(m []*fcu.ProductCode) *schema.Set {
+	s := &schema.Set{
+		F: omiOAPIProductCodesHash,
+	}
+	for _, v := range m {
+		code := map[string]interface{}{
+			"product_code": *v.ProductCode,
+			"type":         *v.Type,
+		}
+		s.Add(code)
+	}
+	return s
+}
+
+// Returns the state reason.
+func omiOAPIStateReason(m *fcu.StateReason) map[string]interface{} {
+	s := make(map[string]interface{})
+	if m != nil {
+		s["state_code"] = *m.Code
+		s["message"] = *m.Message
+	} else {
+		s["state_code"] = "UNSET"
+		s["message"] = "UNSET"
+	}
+	return s
+}
+
+func omiOAPIProductCodesHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
+	return hashcode.String(buf.String())
 }

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,110 +15,27 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestIpPermissionIDHash(t *testing.T) {
-	simple := &fcu.IpPermission{
-		IpProtocol: aws.String("tcp"),
-		FromPort:   aws.Int64(int64(80)),
-		ToPort:     aws.Int64(int64(8000)),
-		IpRanges: []*fcu.IpRange{
-			{
-				CidrIp: aws.String("10.0.0.0/8"),
-			},
-		},
+func TestAccOutscaleFirewallRulesSet(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
 	}
 
-	egress := &fcu.IpPermission{
-		IpProtocol: aws.String("tcp"),
-		FromPort:   aws.Int64(int64(80)),
-		ToPort:     aws.Int64(int64(8000)),
-		IpRanges: []*fcu.IpRange{
-			{
-				CidrIp: aws.String("10.0.0.0/8"),
-			},
-		},
+	if oapi == false {
+		t.Skip()
 	}
-
-	egress_all := &fcu.IpPermission{
-		IpProtocol: aws.String("-1"),
-		IpRanges: []*fcu.IpRange{
-			{
-				CidrIp: aws.String("10.0.0.0/8"),
-			},
-		},
-	}
-
-	vpc_security_group_source := &fcu.IpPermission{
-		IpProtocol: aws.String("tcp"),
-		FromPort:   aws.Int64(int64(80)),
-		ToPort:     aws.Int64(int64(8000)),
-		UserIdGroupPairs: []*fcu.UserIdGroupPair{
-			{
-				UserId:  aws.String("987654321"),
-				GroupId: aws.String("sg-12345678"),
-			},
-			{
-				UserId:  aws.String("123456789"),
-				GroupId: aws.String("sg-987654321"),
-			},
-			{
-				UserId:  aws.String("123456789"),
-				GroupId: aws.String("sg-12345678"),
-			},
-		},
-	}
-
-	security_group_source := &fcu.IpPermission{
-		IpProtocol: aws.String("tcp"),
-		FromPort:   aws.Int64(int64(80)),
-		ToPort:     aws.Int64(int64(8000)),
-		UserIdGroupPairs: []*fcu.UserIdGroupPair{
-			{
-				UserId:    aws.String("987654321"),
-				GroupName: aws.String("my-security-group"),
-			},
-			{
-				UserId:    aws.String("123456789"),
-				GroupName: aws.String("my-security-group"),
-			},
-			{
-				UserId:    aws.String("123456789"),
-				GroupName: aws.String("my-other-security-group"),
-			},
-		},
-	}
-
-	// hardcoded hashes, to detect future change
-	cases := []struct {
-		Input  *fcu.IpPermission
-		Type   string
-		Output string
-	}{
-		{simple, "ingress", "sgrule-3403497314"},
-		{egress, "egress", "sgrule-1173186295"},
-		{egress_all, "egress", "sgrule-766323498"},
-		{vpc_security_group_source, "egress", "sgrule-351225364"},
-		{security_group_source, "egress", "sgrule-2198807188"},
-	}
-
-	for _, tc := range cases {
-		actual := ipPermissionIDHash("sg-12345", tc.Type, tc.Input)
-		if actual != tc.Output {
-			t.Errorf("input: %s - %s\noutput: %s", tc.Type, tc.Input, actual)
-		}
-	}
-}
-
-func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSecurityGroupRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSecurityGroupRuleIngressConfig(rInt),
+				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
 					resource.TestCheckResourceAttr(
@@ -127,7 +46,7 @@ func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleSecurityGroupRuleDestroy(s *terraform.State) error {
+func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -221,12 +140,12 @@ func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGr
 	}
 }
 
-func testAccOutscaleSecurityGroupRuleIngressConfig(rInt int) string {
+func testAccOutscaleFirewallRulesSetConfig(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		tags {
+		tag = {
 						Name = "tf-acc-test"
 		}
 		vpc_id = "vpc-e9d09d63"

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -10,6 +12,16 @@ import (
 )
 
 func TestAccOutscaleVM_tags(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	var v fcu.Instance
 
 	resource.Test(t, resource.TestCase{
@@ -34,7 +46,7 @@ func testAccCheckTags(
 	ts *[]*fcu.Tag, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		m := tagsToMap(*ts)
-		v, ok := m[key]
+		v, ok := m[0]["Key"]
 		if value != "" && !ok {
 			return fmt.Errorf("Missing tag: %s", key)
 		} else if value == "" && ok {
