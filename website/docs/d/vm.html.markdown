@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_vm"
 sidebar_current: "docs-outscale-datasource-vm"
 description: |-
-  Provides an Outscale instance resource attributes. It can be used to recover attritudes of an instance not managed in the current configuration file.
+  Provides an Outscale instance resource attributes. It can be used to recover attributes of an instance not managed in the current configuration file.
 ---
 
 # outscale_vm
 
-Provides an Outscale instance resource attributes. It can be used to recover attritudes of an instance not managed in the current configuration file.
+Provides an Outscale instance resource attributes. It can be used to recover attributes of an instance not managed in the current configuration file.
 
 ## Example Usage
 
@@ -25,7 +25,7 @@ data "outscale_image" "centos73" { 
   filter {
   name = "description" values = ["Centos 7.3*"] 
   } 
-} 
+}
 /* instance creation */
 resource "outscale_vm" "web" { 
   image_id = "${data.outscale_image.centos73.image_id}"
