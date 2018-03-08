@@ -26,7 +26,8 @@ func init() {
 			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm": resourceOutscaleOApiVM,
+			"outscale_vm":       resourceOutscaleOApiVM,
+			"outscale_key_pair": resourceOutscaleOAPIKeyPair,
 		},
 	}
 	datasources = Dictionary{
