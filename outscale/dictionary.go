@@ -28,7 +28,8 @@ func init() {
 			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm": resourceOutscaleOApiVM,
+			"outscale_vm":                 resourceOutscaleOApiVM,
+			"outscale_firewall_rules_set": resourceOutscaleOAPIFirewallRulesSet,
 		},
 	}
 	datasources = Dictionary{
@@ -43,8 +44,9 @@ func init() {
 			"outscale_public_ips": dataSourceOutscalePublicIPS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":  dataSourceOutscaleOAPIVM,
-			"outscale_vms": datasourceOutscaleOApiVMS,
+			"outscale_vm":                 dataSourceOutscaleOAPIVM,
+			"outscale_vms":                datasourceOutscaleOApiVMS,
+			"outscale_firewall_rules_set": dataSourceOutscaleOAPIFirewallRulesSets,
 		},
 	}
 }
