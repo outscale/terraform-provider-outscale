@@ -20,7 +20,6 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 		Read:   resourceOutscaleFirewallRulesSetRead,
 		Delete: resourceOutscaleFirewallRulesSetDelete,
 		Importer: &schema.ResourceImporter{
-			// State: resourceOutscaleSecurityGroupImportState,
 			State: schema.ImportStatePassthrough,
 		},
 
@@ -275,8 +274,6 @@ func resourceOutscaleFirewallRulesSetRead(d *schema.ResourceData, meta interface
 	localIngressRules := d.Get("ip_permissions").(*schema.Set).List()
 	localEgressRules := d.Get("ip_permissions_egress").(*schema.Set).List()
 
-	// Loop through the local state of rules, doing a match against the remote
-	// ruleSet we built above.
 	ingressRules := matchRules("ingress", localIngressRules, remoteIngressRules)
 	egressRules := matchRules("egress", localEgressRules, remoteEgressRules)
 
@@ -973,54 +970,57 @@ func idHash(rType, protocol string, toPort, fromPort int64) string {
 
 type ByGroupPair []*fcu.UserIdGroupPair
 
-func ipPermissionIDHash(sg_id, ruleType string, ip *fcu.IpPermission) string {
+func ipPermissionIDHash(sg_id, ruleType string, ips []*fcu.IpPermission) string {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s-", sg_id))
-	if ip.FromPort != nil && *ip.FromPort > 0 {
-		buf.WriteString(fmt.Sprintf("%d-", *ip.FromPort))
-	}
-	if ip.ToPort != nil && *ip.ToPort > 0 {
-		buf.WriteString(fmt.Sprintf("%d-", *ip.ToPort))
-	}
-	buf.WriteString(fmt.Sprintf("%s-", *ip.IpProtocol))
-	buf.WriteString(fmt.Sprintf("%s-", ruleType))
 
-	if len(ip.IpRanges) > 0 {
-		s := make([]string, len(ip.IpRanges))
-		for i, r := range ip.IpRanges {
-			s[i] = *r.CidrIp
+	for _, ip := range ips {
+		if ip.FromPort != nil && *ip.FromPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.FromPort))
 		}
-		sort.Strings(s)
-
-		for _, v := range s {
-			buf.WriteString(fmt.Sprintf("%s-", v))
+		if ip.ToPort != nil && *ip.ToPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.ToPort))
 		}
-	}
+		buf.WriteString(fmt.Sprintf("%s-", *ip.IpProtocol))
+		buf.WriteString(fmt.Sprintf("%s-", ruleType))
 
-	if len(ip.PrefixListIds) > 0 {
-		s := make([]string, len(ip.PrefixListIds))
-		for i, pl := range ip.PrefixListIds {
-			s[i] = *pl.PrefixListId
-		}
-		sort.Strings(s)
-
-		for _, v := range s {
-			buf.WriteString(fmt.Sprintf("%s-", v))
-		}
-	}
-
-	if len(ip.UserIdGroupPairs) > 0 {
-		sort.Sort(ByGroupPair(ip.UserIdGroupPairs))
-		for _, pair := range ip.UserIdGroupPairs {
-			if pair.GroupId != nil {
-				buf.WriteString(fmt.Sprintf("%s-", *pair.GroupId))
-			} else {
-				buf.WriteString("-")
+		if len(ip.IpRanges) > 0 {
+			s := make([]string, len(ip.IpRanges))
+			for i, r := range ip.IpRanges {
+				s[i] = *r.CidrIp
 			}
-			if pair.GroupName != nil {
-				buf.WriteString(fmt.Sprintf("%s-", *pair.GroupName))
-			} else {
-				buf.WriteString("-")
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.PrefixListIds) > 0 {
+			s := make([]string, len(ip.PrefixListIds))
+			for i, pl := range ip.PrefixListIds {
+				s[i] = *pl.PrefixListId
+			}
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.UserIdGroupPairs) > 0 {
+			sort.Sort(ByGroupPair(ip.UserIdGroupPairs))
+			for _, pair := range ip.UserIdGroupPairs {
+				if pair.GroupId != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupId))
+				} else {
+					buf.WriteString("-")
+				}
+				if pair.GroupName != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupName))
+				} else {
+					buf.WriteString("-")
+				}
 			}
 		}
 	}
