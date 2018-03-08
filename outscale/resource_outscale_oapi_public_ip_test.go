@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscalePublicIP_basic(t *testing.T) {
+func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -26,47 +26,48 @@ func TestAccOutscalePublicIP_basic(t *testing.T) {
 	if oapi == false {
 		t.Skip()
 	}
+
 	var conf fcu.Address
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPConfig,
+				Config: testAccOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscalePublicIP_instance(t *testing.T) {
+func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	var conf fcu.Address
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOutscalePublicIPInstanceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 
 			resource.TestStep{
 				Config: testAccOutscalePublicIPInstanceConfig2,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 		},
@@ -75,35 +76,35 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
-func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
+func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	var one fcu.Address
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig_associated,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated_switch,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig_associated_switch,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
@@ -111,7 +112,7 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 			continue
 		}
 
-		if strings.Contains(rs.Primary.ID, "allocation") {
+		if strings.Contains(rs.Primary.ID, "reservation") {
 			req := &fcu.DescribeAddressesInput{
 				AllocationIds: []*string{aws.String(rs.Primary.ID)},
 			}
@@ -167,7 +168,7 @@ func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscalePublicIPAttributes(conf *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPAttributes(conf *fcu.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
@@ -177,7 +178,7 @@ func testAccCheckOutscalePublicIPAttributes(conf *fcu.Address) resource.TestChec
 	}
 }
 
-func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPExists(n string, res *fcu.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -190,7 +191,7 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		if strings.Contains(rs.Primary.ID, "allocation") {
+		if strings.Contains(rs.Primary.ID, "link") {
 			req := &fcu.DescribeAddressesInput{
 				AllocationIds: []*string{aws.String(rs.Primary.ID)},
 			}
@@ -256,11 +257,11 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 	}
 }
 
-const testAccOutscalePublicIPConfig = `
+const testAccOutscaleOAPIPublicIPConfig = `
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscalePublicIPInstanceConfig = `
+const testAccOutscaleOAPIPublicIPInstanceConfig = `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
@@ -269,7 +270,7 @@ resource "outscale_vm" "basic" {
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscalePublicIPInstanceConfig2 = `
+const testAccOutscaleOAPIPublicIPInstanceConfig2 = `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
@@ -278,7 +279,7 @@ resource "outscale_vm" "basic" {
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscalePublicIPInstanceConfig_associated = `
+const testAccOutscaleOAPIPublicIPInstanceConfig_associated = `
 resource "outscale_vm" "foo" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
@@ -296,7 +297,7 @@ resource "outscale_vm" "bar" {
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscalePublicIPInstanceConfig_associated_switch = `
+const testAccOutscaleOAPIPublicIPInstanceConfig_associated_switch = `
 resource "outscale_vm" "foo" {
  image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"

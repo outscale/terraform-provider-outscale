@@ -1,6 +1,9 @@
 package outscale
 
 import (
+	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -8,6 +11,16 @@ import (
 )
 
 func TestAccOutscaleVM_tags(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	var v fcu.Instance
 
 	resource.Test(t, resource.TestCase{
@@ -19,35 +32,35 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 				Config: testAccCheckInstanceConfigTags,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.foo", &v),
-					// testAccCheckTags(&v.Tags, "foo", "bar"),
-					// testAccCheckTags(&v.Tags, "#", ""),
+					testAccCheckTags(&v.Tags, "foo", "bar"),
+					testAccCheckTags(&v.Tags, "#", ""),
 				),
 			},
 		},
 	})
 }
 
-// func testAccCheckTags(
-// 	ts *[]*fcu.Tag, key string, value string) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		m := tagsToMap(*ts)
-// 		v, ok := m[key]
-// 		if value != "" && !ok {
-// 			return fmt.Errorf("Missing tag: %s", key)
-// 		} else if value == "" && ok {
-// 			return fmt.Errorf("Extra tag: %s", key)
-// 		}
-// 		if value == "" {
-// 			return nil
-// 		}
+func testAccCheckTags(
+	ts *[]*fcu.Tag, key string, value string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		m := tagsToMap(*ts)
+		v, ok := m[0]["Key"]
+		if value != "" && !ok {
+			return fmt.Errorf("Missing tag: %s", key)
+		} else if value == "" && ok {
+			return fmt.Errorf("Extra tag: %s", key)
+		}
+		if value == "" {
+			return nil
+		}
 
-// 		if v != value {
-// 			return fmt.Errorf("%s: bad value: %s", key, v)
-// 		}
+    	if v != value {
+ 			return fmt.Errorf("%s: bad value: %s", key, v)
+ 		}
 
-// 		return nil
-// 	}
-// }
+ 		return nil
+ 	}
+ }
 
 const testAccCheckInstanceConfigTags = `
 resource "outscale_vm" "foo" {
