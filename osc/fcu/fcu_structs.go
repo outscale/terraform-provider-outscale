@@ -3166,3 +3166,745 @@ func (s DeleteSecurityGroupOutput) String() string {
 func (s DeleteSecurityGroupOutput) GoString() string {
 	return s.String()
 }
+
+// Contains the parameters for CreateVolume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVolumeRequest
+type CreateVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone in which to create the volume. Use DescribeAvailabilityZones
+	// to list the Availability Zones that are currently available to you.
+	//
+	// AvailabilityZone is a required field
+	AvailabilityZone *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the volume should be encrypted. Encrypted Amazon EBS volumes
+	// may only be attached to instances that support Amazon EBS encryption. Volumes
+	// that are created from encrypted snapshots are automatically encrypted. There
+	// is no way to create an encrypted volume from an unencrypted snapshot or vice
+	// versa. If your AMI uses encrypted volumes, you can only launch it on supported
+	// instance types. For more information, see Amazon EBS Encryption (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// Only valid for Provisioned IOPS SSD volumes. The number of I/O operations
+	// per second (IOPS) to provision for the volume, with a maximum ratio of 50
+	// IOPS/GiB.
+	//
+	// Constraint: Range is 100 to 20000 for Provisioned IOPS SSD volumes
+	Iops *int64 `type:"integer"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
+	// key (CMK) to use when creating the encrypted volume. This parameter is only
+	// required if you want to use a non-default CMK; if this parameter is not specified,
+	// the default CMK for EBS is used. The ARN contains the arn:aws:kms namespace,
+	// followed by the region of the CMK, the AWS account ID of the CMK owner, the
+	// key namespace, and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `type:"string"`
+
+	// The size of the volume, in GiBs.
+	//
+	// Constraints: 1-16384 for gp2, 4-16384 for io1, 500-16384 for st1, 500-16384
+	// for sc1, and 1-1024 for standard. If you specify a snapshot, the volume size
+	// must be equal to or larger than the snapshot size.
+	//
+	// Default: If you're creating the volume from a snapshot and don't specify
+	// a volume size, the default is the snapshot size.
+	Size *int64 `type:"integer"`
+
+	// The snapshot from which to create the volume.
+	SnapshotId *string `type:"string"`
+
+	// The tags to apply to the volume during creation.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
+	// The volume type. This can be gp2 for General Purpose SSD, io1 for Provisioned
+	// IOPS SSD, st1 for Throughput Optimized HDD, sc1 for Cold HDD, or standard
+	// for Magnetic volumes.
+	//
+	// Default: standard
+	VolumeType *string `type:"string" enum:"VolumeType"`
+}
+
+// String returns the string representation
+func (s CreateVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVolumeInput"}
+	if s.AvailabilityZone == nil {
+		invalidParams.Add(request.NewErrParamRequired("AvailabilityZone"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *CreateVolumeInput) SetAvailabilityZone(v string) *CreateVolumeInput {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVolumeInput) SetDryRun(v bool) *CreateVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *CreateVolumeInput) SetEncrypted(v bool) *CreateVolumeInput {
+	s.Encrypted = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *CreateVolumeInput) SetIops(v int64) *CreateVolumeInput {
+	s.Iops = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *CreateVolumeInput) SetKmsKeyId(v string) *CreateVolumeInput {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *CreateVolumeInput) SetSize(v int64) *CreateVolumeInput {
+	s.Size = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *CreateVolumeInput) SetSnapshotId(v string) *CreateVolumeInput {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVolumeInput) SetTagSpecifications(v []*TagSpecification) *CreateVolumeInput {
+	s.TagSpecifications = v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *CreateVolumeInput) SetVolumeType(v string) *CreateVolumeInput {
+	s.VolumeType = &v
+	return s
+}
+
+// Contains the parameters for DeleteVolume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVolumeRequest
+type DeleteVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the volume.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVolumeInput"}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVolumeInput) SetDryRun(v bool) *DeleteVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *DeleteVolumeInput) SetVolumeId(v string) *DeleteVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVolumeOutput
+type DeleteVolumeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteVolumeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVolumeOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for DescribeVolumes.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVolumesRequest
+type DescribeVolumesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * attachment.attach-time - The time stamp when the attachment initiated.
+	//
+	//    * attachment.delete-on-termination - Whether the volume is deleted on
+	//    instance termination.
+	//
+	//    * attachment.device - The device name that is exposed to the instance
+	//    (for example, /dev/sda1).
+	//
+	//    * attachment.instance-id - The ID of the instance the volume is attached
+	//    to.
+	//
+	//    * attachment.status - The attachment state (attaching | attached | detaching
+	//    | detached).
+	//
+	//    * availability-zone - The Availability Zone in which the volume was created.
+	//
+	//    * create-time - The time stamp when the volume was created.
+	//
+	//    * encrypted - The encryption status of the volume.
+	//
+	//    * size - The size of the volume, in GiB.
+	//
+	//    * snapshot-id - The snapshot from which the volume was created.
+	//
+	//    * status - The status of the volume (creating | available | in-use | deleting
+	//    | deleted | error).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * volume-id - The volume ID.
+	//
+	//    * volume-type - The Amazon EBS volume type. This can be gp2 for General
+	//    Purpose SSD, io1 for Provisioned IOPS SSD, st1 for Throughput Optimized
+	//    HDD, sc1 for Cold HDD, or standard for Magnetic volumes.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of volume results returned by DescribeVolumes in paginated
+	// output. When this parameter is used, DescribeVolumes only returns MaxResults
+	// results in a single page along with a NextToken response element. The remaining
+	// results of the initial request can be seen by sending another DescribeVolumes
+	// request with the returned NextToken value. This value can be between 5 and
+	// 500; if MaxResults is given a value larger than 500, only 500 results are
+	// returned. If this parameter is not used, then DescribeVolumes returns all
+	// results. You cannot specify this parameter and the volume IDs parameter in
+	// the same request.
+	MaxResults *int64 `locationName:"maxResults" type:"integer"`
+
+	// The NextToken value returned from a previous paginated DescribeVolumes request
+	// where MaxResults was used and the results exceeded the value of that parameter.
+	// Pagination continues from the end of the previous results that returned the
+	// NextToken value. This value is null when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// One or more volume IDs.
+	VolumeIds []*string `locationName:"VolumeId" locationNameList:"VolumeId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVolumesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVolumesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVolumesInput) SetDryRun(v bool) *DescribeVolumesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVolumesInput) SetFilters(v []*Filter) *DescribeVolumesInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeVolumesInput) SetMaxResults(v int64) *DescribeVolumesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVolumesInput) SetNextToken(v string) *DescribeVolumesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVolumeIds sets the VolumeIds field's value.
+func (s *DescribeVolumesInput) SetVolumeIds(v []*string) *DescribeVolumesInput {
+	s.VolumeIds = v
+	return s
+}
+
+type DescribeVolumesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The NextToken value to include in a future DescribeVolumes request. When
+	// the results of a DescribeVolumes request exceed MaxResults, this value can
+	// be used to retrieve the next page of results. This value is null when there
+	// are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Information about the volumes.
+	Volumes []*Volume `locationName:"volumeSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVolumesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVolumesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVolumesOutput) SetNextToken(v string) *DescribeVolumesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVolumes sets the Volumes field's value.
+func (s *DescribeVolumesOutput) SetVolumes(v []*Volume) *DescribeVolumesOutput {
+	s.Volumes = v
+	return s
+}
+
+// Describes a volume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/Volume
+type Volume struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the volume attachments.
+	Attachments []*VolumeAttachment `locationName:"attachmentSet" locationNameList:"item" type:"list"`
+
+	// The Availability Zone for the volume.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The time stamp when volume creation was initiated.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Indicates whether the volume will be encrypted.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The number of I/O operations per second (IOPS) that the volume supports.
+	// For Provisioned IOPS SSD volumes, this represents the number of IOPS that
+	// are provisioned for the volume. For General Purpose SSD volumes, this represents
+	// the baseline performance of the volume and the rate at which the volume accumulates
+	// I/O credits for bursting. For more information on General Purpose SSD baseline
+	// performance, I/O credits, and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	//
+	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
+	// gp2 volumes.
+	//
+	// Condition: This parameter is required for requests to create io1 volumes;
+	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
+	Iops *int64 `locationName:"iops" type:"integer"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
+	// key (CMK) that was used to protect the volume encryption key for the volume.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The size of the volume, in GiBs.
+	Size *int64 `locationName:"size" type:"integer"`
+
+	// The snapshot from which the volume was created, if applicable.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// The volume state.
+	State *string `locationName:"status" type:"string" enum:"VolumeState"`
+
+	// Any tags assigned to the volume.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the volume.
+	VolumeId *string `locationName:"volumeId" type:"string"`
+
+	// The volume type. This can be gp2 for General Purpose SSD, io1 for Provisioned
+	// IOPS SSD, st1 for Throughput Optimized HDD, sc1 for Cold HDD, or standard
+	// for Magnetic volumes.
+	VolumeType *string `locationName:"volumeType" type:"string" enum:"VolumeType"`
+}
+
+// String returns the string representation
+func (s Volume) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Volume) GoString() string {
+	return s.String()
+}
+
+// SetAttachments sets the Attachments field's value.
+func (s *Volume) SetAttachments(v []*VolumeAttachment) *Volume {
+	s.Attachments = v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *Volume) SetAvailabilityZone(v string) *Volume {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *Volume) SetCreateTime(v time.Time) *Volume {
+	s.CreateTime = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *Volume) SetEncrypted(v bool) *Volume {
+	s.Encrypted = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *Volume) SetIops(v int64) *Volume {
+	s.Iops = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *Volume) SetKmsKeyId(v string) *Volume {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetSize sets the Size field's value.
+func (s *Volume) SetSize(v int64) *Volume {
+	s.Size = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *Volume) SetSnapshotId(v string) *Volume {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Volume) SetState(v string) *Volume {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Volume) SetTags(v []*Tag) *Volume {
+	s.Tags = v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *Volume) SetVolumeId(v string) *Volume {
+	s.VolumeId = &v
+	return s
+}
+
+// SetVolumeType sets the VolumeType field's value.
+func (s *Volume) SetVolumeType(v string) *Volume {
+	s.VolumeType = &v
+	return s
+}
+
+// Describes volume attachment details.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/VolumeAttachment
+type VolumeAttachment struct {
+	_ struct{} `type:"structure"`
+
+	// The time stamp when the attachment initiated.
+	AttachTime *time.Time `locationName:"attachTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Indicates whether the EBS volume is deleted on instance termination.
+	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
+
+	// The device name.
+	Device *string `locationName:"device" type:"string"`
+
+	// The ID of the instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The attachment state of the volume.
+	State *string `locationName:"status" type:"string" enum:"VolumeAttachmentState"`
+
+	// The ID of the volume.
+	VolumeId *string `locationName:"volumeId" type:"string"`
+}
+
+// String returns the string representation
+func (s VolumeAttachment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VolumeAttachment) GoString() string {
+	return s.String()
+}
+
+// SetAttachTime sets the AttachTime field's value.
+func (s *VolumeAttachment) SetAttachTime(v time.Time) *VolumeAttachment {
+	s.AttachTime = &v
+	return s
+}
+
+// SetDeleteOnTermination sets the DeleteOnTermination field's value.
+func (s *VolumeAttachment) SetDeleteOnTermination(v bool) *VolumeAttachment {
+	s.DeleteOnTermination = &v
+	return s
+}
+
+// SetDevice sets the Device field's value.
+func (s *VolumeAttachment) SetDevice(v string) *VolumeAttachment {
+	s.Device = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *VolumeAttachment) SetInstanceId(v string) *VolumeAttachment {
+	s.InstanceId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *VolumeAttachment) SetState(v string) *VolumeAttachment {
+	s.State = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *VolumeAttachment) SetVolumeId(v string) *VolumeAttachment {
+	s.VolumeId = &v
+	return s
+}
+
+// Contains the parameters for AttachVolume.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolumeRequest
+type AttachVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The device name to expose to the instance (for example, /dev/sdh or xvdh).
+	//
+	// Device is a required field
+	Device *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `type:"string" required:"true"`
+
+	// The ID of the EBS volume. The volume and instance must be within the same
+	// Availability Zone.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AttachVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachVolumeInput"}
+	if s.Device == nil {
+		invalidParams.Add(request.NewErrParamRequired("Device"))
+	}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDevice sets the Device field's value.
+func (s *AttachVolumeInput) SetDevice(v string) *AttachVolumeInput {
+	s.Device = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachVolumeInput) SetDryRun(v bool) *AttachVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AttachVolumeInput) SetInstanceId(v string) *AttachVolumeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *AttachVolumeInput) SetVolumeId(v string) *AttachVolumeInput {
+	s.VolumeId = &v
+	return s
+}
+
+type DetachVolumeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The device name.
+	Device *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Forces detachment if the previous detachment attempt did not occur cleanly
+	// (for example, logging into an instance, unmounting the volume, and detaching
+	// normally). This option can lead to data loss or a corrupted file system.
+	// Use this option only as a last resort to detach a volume from a failed instance.
+	// The instance won't have an opportunity to flush file system caches or file
+	// system metadata. If you use this option, you must perform file system check
+	// and repair procedures.
+	Force *bool `type:"boolean"`
+
+	// The ID of the instance.
+	InstanceId *string `type:"string"`
+
+	// The ID of the volume.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DetachVolumeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachVolumeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachVolumeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachVolumeInput"}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDevice sets the Device field's value.
+func (s *DetachVolumeInput) SetDevice(v string) *DetachVolumeInput {
+	s.Device = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachVolumeInput) SetDryRun(v bool) *DetachVolumeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetForce sets the Force field's value.
+func (s *DetachVolumeInput) SetForce(v bool) *DetachVolumeInput {
+	s.Force = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *DetachVolumeInput) SetInstanceId(v string) *DetachVolumeInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
+	s.VolumeId = &v
+	return s
+}

@@ -299,7 +299,7 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(true)
 
-	if err := setTags(conn, d); err != nil {
+	if err := setOAPITags(conn, d); err != nil {
 		return err
 	}
 

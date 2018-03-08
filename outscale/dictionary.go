@@ -26,11 +26,18 @@ func init() {
 			"outscale_key_pair":           resourceOutscaleKeyPair,
 			"outscale_public_ip":          resourceOutscalePublicIP,
 			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
+			"outscale_volume":             resourceOutscaleVolume,
+			"outscale_volume_link":        resourceOutscaleVolumeLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":        resourceOutscaleOApiVM,
-			"outscale_image":     resourceOutscaleOAPIImage,
-			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
+			"outscale_vm":                 resourceOutscaleOApiVM,
+			"outscale_firewall_rules_set": resourceOutscaleOAPIFirewallRulesSet,
+			"outscale_image":              resourceOutscaleOAPIImage,
+			"outscale_key_pair":           resourceOutscaleOAPIKeyPair,
+			"outscale_public_ip":          resourceOutscaleOAPIPublicIP,
+			"outscale_inbound_rule":       resourceOutscaleOAPIInboundRule,
+			"outscale_outbound_rule":      resourceOutscaleOAPIOutboundRule,
+			"outscale_tag":                resourceOutscaleOAPITags,
 		},
 	}
 	datasources = Dictionary{
@@ -47,10 +54,13 @@ func init() {
 			"outscale_public_ips":         dataSourceOutscalePublicIPS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":                dataSourceOutscaleOAPIVM,
-			"outscale_vms":               datasourceOutscaleOApiVMS,
-			"outscale_images":            dataSourceOutscaleOAPIImages,
-			"outscale_firewall_rule_set": dataSourceOutscaleOAPIFirewallRuleSet,
+			"outscale_vm":                 dataSourceOutscaleOAPIVM,
+			"outscale_vms":                datasourceOutscaleOApiVMS,
+			"outscale_firewall_rules_set": dataSourceOutscaleOAPIFirewallRulesSets,
+			"outscale_images":             dataSourceOutscaleOAPIImages,
+			"outscale_firewall_rule_set":  dataSourceOutscaleOAPIFirewallRuleSet,
+			"outscale_tag":                dataSourceOutscaleOAPITag,
+			"outscale_tags":               dataSourceOutscaleOAPITags,
 		},
 	}
 }

@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"strings"
 	"time"
 
@@ -15,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceOutscaleTags() *schema.Resource {
+func resourceOutscaleOAPITags() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleTagsCreate,
-		Read:   resourceOutscaleTagsRead,
-		Delete: resourceOutscaleTagsDelete,
+		Create: resourceOutscaleOAPITagsCreate,
+		Read:   resourceOutscaleOAPITagsRead,
+		Delete: resourceOutscaleOAPITagsDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,16 +28,16 @@ func resourceOutscaleTags() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getTagsSchema(),
+		Schema: getOAPITagsSchema(),
 	}
 }
 
-func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.CreateTagsInput{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
@@ -47,7 +46,7 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromMap(tags.(map[string]interface{}))
+		request.Tags = tagsFromMap(tag.(map[string]interface{}))
 	}
 	if resourceIdsOk {
 		var rids []*string
@@ -76,19 +75,19 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetId(resource.UniqueId())
 
-	return resourceOutscaleTagsRead(d, meta)
+	return resourceOutscaleOAPITagsRead(d, meta)
 }
 
-func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	// Build up search parameters
 	params := &fcu.DescribeTagsInput{}
 	filters := []*fcu.Filter{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 	if tagsOk {
-		tgs := tagsFromMap(tags.(map[string]interface{}))
+		tgs := tagsFromMap(tag.(map[string]interface{}))
 		ts := make([]*string, 0, len(tgs))
 		for _, t := range tgs {
 			ts = append(ts, t.Key)
@@ -135,17 +134,17 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	tg := tagsDescToList(resp.Tags)
-	err = d.Set("tag_set", tg)
+	err = d.Set("tags", tg)
 
 	return err
 }
 
-func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.DeleteTagsInput{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
@@ -154,7 +153,7 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromMap(tags.(map[string]interface{}))
+		request.Tags = tagsFromMap(tag.(map[string]interface{}))
 	}
 	if resourceIdsOk {
 		var rids []*string
@@ -185,7 +184,7 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func getTagsSchema() map[string]*schema.Schema {
+func getOAPITagsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"resource_ids": {
 			Type:     schema.TypeSet,
@@ -193,7 +192,7 @@ func getTagsSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"tags": {
+		"tag": {
 			Type:     schema.TypeMap,
 			Optional: true,
 			ForceNew: true,
@@ -211,7 +210,7 @@ func getTagsSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"tag_set": {
+		"tags": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -238,7 +237,7 @@ func getTagsSchema() map[string]*schema.Schema {
 	}
 }
 
-func setTags(conn *fcu.Client, d *schema.ResourceData) error {
+func setOAPITags(conn *fcu.Client, d *schema.ResourceData) error {
 
 	if d.HasChange("tag") {
 		oraw, nraw := d.GetChange("tag")
@@ -249,7 +248,7 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Removing tags: %#v from %s", remove, d.Id())
+				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
 				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      remove,
@@ -269,7 +268,7 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				fmt.Printf("[DEBUG] Creating tags: %v for %s", create, d.Id())
+				log.Printf("[DEBUG] Creating tag: %v for %s", create, d.Id())
 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      create,
@@ -290,126 +289,4 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 	}
 
 	return nil
-}
-
-// diffTags takes our tag locally and the ones remotely and returns
-// the set of tag that must be created, and the set of tag that must
-// be destroyed.
-func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
-	// First, we're creating everything we have
-	create := make(map[string]interface{})
-	for _, t := range newTags {
-		create[*t.Key] = *t.Value
-	}
-
-	// Build the list of what to remove
-	var remove []*fcu.Tag
-	for _, t := range oldTags {
-		old, ok := create[*t.Key]
-		if !ok || old != *t.Value {
-			remove = append(remove, t)
-		}
-	}
-
-	return tagsFromMap(create), remove
-}
-
-// tagsFromMap returns the tag for the given map of data.
-func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
-	result := make([]*fcu.Tag, 0, len(m))
-	for k, v := range m {
-		t := &fcu.Tag{
-			Key:   aws.String(k),
-			Value: aws.String(v.(string)),
-		}
-		if !tagIgnored(t) {
-			result = append(result, t)
-		}
-	}
-
-	return result
-}
-
-// tagsToMap turns the list of tags into a map.
-func tagsToMap(ts []*fcu.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	for k, t := range ts {
-		tag := make(map[string]string)
-		tag["key"] = *t.Key
-		tag["value"] = *t.Value
-		result[k] = tag
-	}
-
-	fmt.Printf("[DEBUG] TAG_SET %s", result)
-
-	return result
-}
-
-func tagsDescToMap(ts []*fcu.TagDescription) map[string]string {
-	result := make(map[string]string)
-	for _, t := range ts {
-		if !tagDescIgnored(t) {
-			result[*t.Key] = *t.Value
-		}
-	}
-
-	return result
-}
-
-func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
-	result := []map[string]string{}
-	for _, t := range ts {
-		if !tagDescIgnored(t) {
-			r := map[string]string{}
-			r["key"] = *t.Value
-			r["value"] = *t.Value
-			r["resource_id"] = *t.ResourceId
-			r["resource_type"] = *t.ResourceType
-
-			result = append(result, r)
-		}
-	}
-
-	return result
-}
-
-// tagIgnored compares a s against a list of strings and checks if it should
-// be ignored or not
-func tagIgnored(t *fcu.Tag) bool {
-	filter := []string{"^outscale:"}
-	for _, v := range filter {
-		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
-		if r, _ := regexp.MatchString(v, *t.Key); r == true {
-			log.Printf("[DEBUG] Found Outscale specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
-			return true
-		}
-	}
-	return false
-}
-
-func tagDescIgnored(t *fcu.TagDescription) bool {
-	filter := []string{"^outscale:"}
-	for _, v := range filter {
-		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
-		if r, _ := regexp.MatchString(v, *t.Key); r == true {
-			log.Printf("[DEBUG] Found AWS specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
-			return true
-		}
-	}
-	return false
-}
-
-func tagsSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Optional: true,
-		ForceNew: true,
-	}
-}
-
-func tagsSchemaComputed() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Computed: true,
-	}
 }

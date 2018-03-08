@@ -7,10 +7,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleVM_tags(t *testing.T) {
+func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -29,18 +30,19 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckInstanceConfigTags,
+				Config: testAccCheckOAPIInstanceConfigTags,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.foo", &v),
-					testAccCheckTags(&v.Tags, "foo", "bar"),
-					testAccCheckTags(&v.Tags, "#", ""),
+					testAccCheckOAPITags(&v.Tags, "foo", "bar"),
+					// Guard against regression of https://github.com/hashicorp/terraform/issues/914
+					testAccCheckOAPITags(&v.Tags, "#", ""),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckTags(
+func testAccCheckOAPITags(
 	ts *[]*fcu.Tag, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		m := tagsToMap(*ts)
@@ -54,26 +56,26 @@ func testAccCheckTags(
 			return nil
 		}
 
-    	if v != value {
- 			return fmt.Errorf("%s: bad value: %s", key, v)
- 		}
+		if v != value {
+			return fmt.Errorf("%s: bad value: %s", key, v)
+		}
 
- 		return nil
- 	}
- }
+		return nil
+	}
+}
 
-const testAccCheckInstanceConfigTags = `
+const testAccCheckOAPIInstanceConfigTags = `
 resource "outscale_vm" "foo" {
 	image_id = "ami-8a6a0120"
 	instance_type = "m1.small"
-	tags = {
+	tag = {
 		foo = "bar"
 	}
 }
 
 resource "outscale_tag" "foo" {
 	resource_ids = ["${outscale_vm.foo.id}"]
-	tags = {
+	tag = {
 		faz = "baz"
 	}
 }
