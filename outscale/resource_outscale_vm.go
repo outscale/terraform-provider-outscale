@@ -86,7 +86,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	fmt.Println("[DEBUG] Run configuration: %+v", runOpts)
+	fmt.Printf("[DEBUG] Run configuration: %v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -1284,7 +1284,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeMap,
+						Type: schema.TypeList,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
@@ -1651,8 +1651,7 @@ func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) re
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v", *i.StateReason)
 
 		}
 
@@ -1722,8 +1721,7 @@ func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRe
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v", *i.StateReason)
 
 		}
 
