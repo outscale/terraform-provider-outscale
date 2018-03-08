@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
+func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -27,25 +27,25 @@ func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleImagesDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImagesDataSourceID("data.outscale_images.nat_ami"),
+					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.architecture", "x86_64"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.description", "Debian 9 - 4.9.51"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.block_device_mappings.#", "1"),
 					resource.TestMatchResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_id", regexp.MustCompile("^ami-")),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_type", "machine"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.type", "machine"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.is_public", "true"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_name", "/dev/sda1"),
 					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_type", "ebs"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_state", "available"),
+					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.state", "available"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -60,7 +60,7 @@ func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckOutscaleImagesDataSourceConfig = `
+const testAccCheckOutscaleOAPIImagesDataSourceConfig = `
 data "outscale_images" "nat_ami" {
 	filter {
 		name = "architecture"
