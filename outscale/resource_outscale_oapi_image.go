@@ -299,7 +299,7 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(true)
 
-	if err := setTags(conn, d); err != nil {
+	if err := setOAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -358,7 +358,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOutscaleOAPIImageWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("MSG %s, Waiting for OMI %s to become available...", i, id)
+	fmt.Printf("Waiting for OMI %s to become available...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
