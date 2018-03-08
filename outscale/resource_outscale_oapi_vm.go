@@ -3,7 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -64,7 +63,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	log.Printf("[DEBUG] Run configuration: %s", runOpts)
+	fmt.Printf("[DEBUG] Run configuration: %+v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
@@ -82,7 +81,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	instance := runResp.Instances[0]
-	log.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
+	fmt.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
 
@@ -195,7 +194,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	log.Printf("[DEBUG] updating the instance %s", d.Id())
+	fmt.Printf("[DEBUG] updating the instance %s", d.Id())
 
 	if d.HasChange("key_name") {
 		input := &fcu.ModifyInstanceKeyPairInput{
@@ -216,7 +215,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 
-	log.Printf("[INFO] Terminating instance: %s", id)
+	fmt.Printf("[INFO] Terminating instance: %s", id)
 	req := &fcu.TerminateInstancesInput{
 		InstanceIds: []*string{aws.String(id)},
 	}
@@ -227,7 +226,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				log.Printf("[INFO] Request limit exceeded")
+				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 		}
@@ -239,7 +238,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the instance")
 	}
 
-	log.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
+	fmt.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
@@ -1073,7 +1072,7 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 		})
 
 		if err != nil {
-			log.Printf("Error on InstanceStateRefresh: %s", err)
+			fmt.Printf("Error on InstanceStateRefresh: %s", err)
 
 			return nil, "", err
 		}
@@ -1086,8 +1085,7 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
 
 		}
 
@@ -1109,7 +1107,7 @@ func InstanceOApiPa(conn *fcu.Client, instanceID, failState string) resource.Sta
 		})
 
 		if err != nil {
-			log.Printf("Error on InstanceStateRefresh: %s", err)
+			fmt.Printf("Error on InstanceStateRefresh: %s", err)
 
 			return nil, "", err
 		}
@@ -1122,8 +1120,7 @@ func InstanceOApiPa(conn *fcu.Client, instanceID, failState string) resource.Sta
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %s",
-				*i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
 
 		}
 
