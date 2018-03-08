@@ -9,6 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -18,10 +19,6 @@ func resourceOutscaleInboundRule() *schema.Resource {
 		Create: resourceOutscaleInboundRuleCreate,
 		Read:   resourceOutscaleInboundRuleRead,
 		Delete: resourceOutscaleInboundRuleDelete,
-		// Importer: &schema.ResourceImporter{
-		// State: schema.ImportStatePassthrough,
-		// State: resourceOutscaleInboundImportState,
-		// },
 
 		Schema: map[string]*schema.Schema{
 			"cidr_ip": {
@@ -95,7 +92,7 @@ func resourceOutscaleInboundRuleCreate(d *schema.ResourceData, meta interface{})
 
 	req := &fcu.AuthorizeSecurityGroupIngressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -203,6 +200,10 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
+	if err := setFromIPPerm(d, sg, p); err != nil {
+		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
+	}
+
 	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
 	return nil
@@ -228,7 +229,7 @@ func resourceOutscaleInboundRuleDelete(d *schema.ResourceData, meta interface{})
 		sg_id, "ingress", perm)
 	req := &fcu.RevokeSecurityGroupIngressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
