@@ -100,13 +100,16 @@ const testAccVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags {
+	tags = {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
 	size = 1
 	availability_zone = "eu-west-2a"
+	tags = {
+		Name = "HelloWorld Volume"
+	}
 }
 resource "outscale_volume_link" "ebs_att" {
   device = "/dev/sdh"
@@ -119,13 +122,13 @@ const testAccVolumeAttachmentConfigSkipDestroy = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags {
+	tags = {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
 	size = 1
-	tags {
+	tags = {
 		Name = "TestVolume"
 	}
 }
