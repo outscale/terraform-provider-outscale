@@ -133,7 +133,7 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 				Computed: true,
 			},
 			"tag_set": {
-				Type: schema.TypeMap,
+				Type: schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -215,8 +215,11 @@ func resourceOutscaleFirewallRulesSetCreate(d *schema.ResourceData, meta interfa
 			d.Id(), err)
 	}
 
-	if err := setTags(conn, d); err != nil {
-		return err
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
 	}
 
 	// defaults all Security Groups to have an ALLOW ALL egress rule. Here we
@@ -290,7 +293,20 @@ func resourceOutscaleFirewallRulesSetRead(d *schema.ResourceData, meta interface
 		fmt.Printf("[WARN] Error setting Egress rule set for (%s): %s", d.Id(), err)
 	}
 
-	d.Set("tag_set", tagsToMap(sg.Tags))
+	if sg.Tags != nil {
+		if err := d.Set("tag_set", tagsToMap(sg.Tags)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("tag_set", []map[string]string{
+			map[string]string{
+				"key":   "",
+				"value": "",
+			},
+		}); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
