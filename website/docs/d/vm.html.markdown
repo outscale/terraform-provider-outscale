@@ -13,23 +13,15 @@ Provides an Outscale instance resource attributes. It can be used to recover att
 ## Example Usage
 
 ```hcl
-data "outscale_image" "centos73" { 
-  most_recent = true 
-  executable_by = ["self"] 
-
-  filter {
-    name = "owner" 
-    values = ["Outscale"] 
-  }
-
-  filter {
-  name = "description" values = ["Centos 7.3*"] 
-  } 
+resource "outscale_vm" "basic" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+	security_group = ["sg-6ed31f3e"]
 }
-/* instance creation */
-resource "outscale_vm" "web" { 
-  image_id = "${data.outscale_image.centos73.image_id}"
-  instance_type = "t2.micro" 
+
+data "outscale_vms" "basic_web" {
+	instance_id = ["${outscale_vm.basic.id}"]
 }
 ```
 
