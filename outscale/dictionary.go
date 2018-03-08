@@ -28,7 +28,8 @@ func init() {
 			"outscale_public_ip_link":     resourceOutscalePublicIPLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":        resourceOutscaleOApiVM,
+			"outscale_vm":    resourceOutscaleOApiVM,
+			"outscale_image": resourceOutscaleOAPIImage,
 			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
 		},
 	}
@@ -46,8 +47,9 @@ func init() {
 			"outscale_public_ips":         dataSourceOutscalePublicIPS,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":                dataSourceOutscaleOAPIVM,
-			"outscale_vms":               datasourceOutscaleOApiVMS,
+			"outscale_vm":     dataSourceOutscaleOAPIVM,
+			"outscale_vms":    datasourceOutscaleOApiVMS,
+			"outscale_images": dataSourceOutscaleOAPIImages,
 			"outscale_firewall_rule_set": dataSourceOutscaleOAPIFirewallRuleSet,
 		},
 	}

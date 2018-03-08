@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +16,16 @@ import (
 )
 
 func TestAccOutscalePublicIP_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 	var conf fcu.Address
 
 	resource.Test(t, resource.TestCase{
