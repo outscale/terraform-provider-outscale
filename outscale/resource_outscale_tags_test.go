@@ -68,14 +68,14 @@ const testAccCheckInstanceConfigTags = `
 resource "outscale_vm" "foo" {
 	image_id = "ami-8a6a0120"
 	instance_type = "m1.small"
-	tags {
+	tags = {
 		foo = "bar"
 	}
 }
 
 resource "outscale_tag" "foo" {
 	resource_ids = ["${outscale_vm.foo.id}"]
-	tags {
+	tags = {
 		faz = "baz"
 	}
 }
