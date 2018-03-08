@@ -63,6 +63,23 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		UserData:         instanceOpts.UserData,
 	}
 
+	tagsSpec := make([]*fcu.TagSpecification, 0)
+
+	if v, ok := d.GetOk("tags"); ok {
+		tags := tagsFromMap(v.(map[string]interface{}))
+
+		spec := &fcu.TagSpecification{
+			ResourceType: aws.String("instance"),
+			Tags:         tags,
+		}
+
+		tagsSpec = append(tagsSpec, spec)
+	}
+
+	if len(tagsSpec) > 0 {
+		runOpts.TagSpecifications = tagsSpec
+	}
+
 	// Create the instance
 	// log.Printf("[DEBUG] Run configuration: %s", runOpts)
 
@@ -85,6 +102,13 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
+
+	if d.IsNewResource() {
+		if err := setOAPITags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag")
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
