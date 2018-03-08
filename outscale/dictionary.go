@@ -33,6 +33,7 @@ func init() {
 			"outscale_public_ip":     resourceOutscaleOAPIPublicIP,
 			"outscale_inbound_rule":  resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
+			"outscale_tag":       resourceOutscaleOAPITags,
 		},
 	}
 	datasources = Dictionary{
@@ -53,6 +54,8 @@ func init() {
 			"outscale_vms":               datasourceOutscaleOApiVMS,
 			"outscale_images":            dataSourceOutscaleOAPIImages,
 			"outscale_firewall_rule_set": dataSourceOutscaleOAPIFirewallRuleSet,
+			"outscale_tag":               dataSourceOutscaleOAPITag,
+			"outscale_tags":              dataSourceOutscaleOAPITags,
 		},
 	}
 }
