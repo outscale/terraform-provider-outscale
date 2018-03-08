@@ -86,7 +86,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	fmt.Println("[DEBUG] Run configuration: %+v", runOpts)
+	fmt.Printf("[DEBUG] Run configuration: %v", runOpts)
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {

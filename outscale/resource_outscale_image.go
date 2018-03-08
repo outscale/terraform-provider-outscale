@@ -288,16 +288,6 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("root_device_type", *image.RootDeviceType)
 	d.Set("image_state", *image.State)
-	// Complex types get their own functions
-
-	r1 := amiBlockDeviceMappings(image.BlockDeviceMappings)
-	fmt.Printf("\n\n[DEBUG] R1 %s", r1)
-
-	r2 := amiProductCodes(image.ProductCodes)
-	fmt.Printf("\n\n[DEBUG] R2 %s", r2)
-
-	r3 := amiStateReason(image.StateReason)
-	fmt.Printf("\n\n[DEBUG] R3 %s", r3)
 
 	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
