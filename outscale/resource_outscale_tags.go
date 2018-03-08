@@ -269,7 +269,7 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Creating tags: %v for %s", create, d.Id())
+				fmt.Printf("[DEBUG] Creating tags: %v for %s", create, d.Id())
 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      create,
@@ -334,11 +334,10 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 func tagsToMap(ts []*fcu.Tag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	for k, t := range ts {
-		r := map[string]string{}
-		r["key"] = *t.Value
-		r["value"] = *t.Value
-
-		result[k] = r
+		tag := make(map[string]string)
+		tag["key"] = *t.Key
+		tag["value"] = *t.Value
+		result[k] = tag
 	}
 
 	fmt.Printf("[DEBUG] TAG_SET %s", result)
@@ -405,5 +404,12 @@ func tagsSchema() *schema.Schema {
 		Type:     schema.TypeMap,
 		Optional: true,
 		ForceNew: true,
+	}
+}
+
+func tagsSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
 	}
 }

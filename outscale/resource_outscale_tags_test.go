@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
@@ -34,7 +33,6 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.foo", &v),
 					testAccCheckTags(&v.Tags, "foo", "bar"),
-					// Guard against regression of https://github.com/hashicorp/terraform/issues/914
 					testAccCheckTags(&v.Tags, "#", ""),
 				),
 			},
@@ -56,13 +54,13 @@ func testAccCheckTags(
 			return nil
 		}
 
-		if v != value {
-			return fmt.Errorf("%s: bad value: %s", key, v)
-		}
+    	if v != value {
+ 			return fmt.Errorf("%s: bad value: %s", key, v)
+ 		}
 
-		return nil
-	}
-}
+ 		return nil
+ 	}
+ }
 
 const testAccCheckInstanceConfigTags = `
 resource "outscale_vm" "foo" {
