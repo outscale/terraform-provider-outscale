@@ -2,12 +2,12 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -21,13 +21,92 @@ func resourceOutscaleVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+		Schema: map[string]*schema.Schema{
+			// Arguments
+			"availability_zone": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"iops": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"size": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"snapshot_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"volume_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			// Attributes
+			"attachment_set": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_on_termination": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"device": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"instance_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"status": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tag_set": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+				Computed: true,
+			},
+			"tags": tagsSchema(),
+			"volume_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
-
-		Schema: getVolumeSchema(),
 	}
 }
 
@@ -37,41 +116,51 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	request := &fcu.CreateVolumeInput{
 		AvailabilityZone: aws.String(d.Get("availability_zone").(string)),
 	}
-	if value, ok := d.GetOk("iops"); ok {
-		request.Iops = aws.Int64(int64(value.(int)))
-	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = aws.Int64(int64(value.(int)))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
 		request.SnapshotId = aws.String(value.(string))
 	}
-	if value, ok := d.GetOk("volume_type"); ok {
-		request.VolumeType = aws.String(value.(string))
-	}
 
 	var t string
-	if value, ok := d.GetOk("type"); ok {
+	if value, ok := d.GetOk("volume_type"); ok {
 		t = value.(string)
 		request.VolumeType = aws.String(t)
 	}
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
-		fmt.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
+		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
 		request.Iops = aws.Int64(int64(iops))
 	}
 
-	fmt.Printf(
-		"[DEBUG] Volume create opts: %s", request)
+	tagsSpec := make([]*fcu.TagSpecification, 0)
 
-	var err error
+	if v, ok := d.GetOk("tags"); ok {
+		tags := tagsFromMap(v.(map[string]interface{}))
+
+		spec := &fcu.TagSpecification{
+			ResourceType: aws.String("volume"),
+			Tags:         tags,
+		}
+
+		tagsSpec = append(tagsSpec, spec)
+	}
+
+	if len(tagsSpec) > 0 {
+		request.TagSpecifications = tagsSpec
+	}
+
+	log.Printf(
+		"[DEBUG] Outscale Volume create opts: %s", request)
+
 	var result *fcu.Volume
+	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		result, err = conn.VM.CreateVolume(request)
-
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -82,10 +171,10 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating volume: %s", err)
+		return fmt.Errorf("Error creating Outscale VM volume: %s", err)
 	}
 
-	fmt.Println("[DEBUG] Waiting for Volume to become available")
+	log.Println("[DEBUG] Waiting for Volume to become available")
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
@@ -105,28 +194,28 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*result.VolumeId)
 
-	if _, ok := d.GetOk("tags"); ok {
+	if d.IsNewResource() {
 		if err := setTags(conn, d); err != nil {
-			return errwrap.Wrapf("Error setting tags for EBS Volume: {{err}}", err)
+			return err
 		}
+		d.SetPartial("tag_set")
 	}
-	fmt.Printf("[DEBUG] Volume ID: %s ", *result.VolumeId)
-	//return readVolume(d, *result)
-	return resourceVolumeRead(d, meta)
+
+	return readVolume(d, result)
 }
 
 func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
+
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.DescribeVolumesInput{
 		VolumeIds: []*string{aws.String(d.Id())},
 	}
 
-	var err error
 	var response *fcu.DescribeVolumesOutput
+	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
 		response, err = conn.VM.DescribeVolumes(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -138,33 +227,86 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVolume.NotFound" {
+		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
-	fmt.Printf("[DEBUG] Volume Read: #v", *response.Volumes[0])
-	return readVolume(d, *response.Volumes[0])
+
+	return readVolume(d, response.Volumes[0])
 }
 
-func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
+func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).FCU
+
+	return resource.Retry(5*time.Minute, func() *resource.RetryError {
+		request := &fcu.DeleteVolumeInput{
+			VolumeId: aws.String(d.Id()),
+		}
+		_, err := conn.VM.DeleteVolume(request)
+		if err == nil {
+			return nil
+		}
+
+		if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
+			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
+		}
+
+		return resource.NonRetryableError(err)
+	})
+
+}
+
+func volumeStateRefreshFunc(conn *fcu.Client, volumeID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		resp, err := conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
+			VolumeIds: []*string{aws.String(volumeID)},
+		})
+
+		if err != nil {
+			if ec2err, ok := err.(awserr.Error); ok {
+				log.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
+				resp = nil
+				return nil, "", err
+			} else {
+				log.Printf("Error on Volume State Refresh: %s", err)
+				return nil, "", err
+			}
+		}
+
+		v := resp.Volumes[0]
+		return v, *v.State, nil
+	}
+}
+
+func readVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 	d.SetId(*volume.VolumeId)
 
-	if volume.AvailabilityZone != nil {
-		d.Set("availability_zone", *volume.AvailabilityZone)
-	}
-	if volume.Encrypted != nil {
-		d.Set("encrypted", *volume.Encrypted)
-	}
-	if volume.KmsKeyId != nil {
-		d.Set("kms_key_id", *volume.KmsKeyId)
-	}
+	d.Set("availability_zone", *volume.AvailabilityZone)
 	if volume.Size != nil {
 		d.Set("size", *volume.Size)
 	}
 	if volume.SnapshotId != nil {
 		d.Set("snapshot_id", *volume.SnapshotId)
+	}
+	if volume.VolumeType != nil {
+		d.Set("volume_type", *volume.VolumeType)
+	}
+
+	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
+		if volume.Iops != nil {
+			d.Set("iops", *volume.Iops)
+		}
+	}
+	if volume.State != nil {
+		d.Set("status", *volume.State)
+	}
+	if volume.VolumeId != nil {
+		d.Set("volume_id", *volume.VolumeId)
+	}
+	if volume.VolumeType != nil {
+		d.Set("volume_type", *volume.VolumeType)
 	}
 	if volume.Attachments != nil {
 		res := make([]map[string]interface{}, len(volume.Attachments))
@@ -190,204 +332,36 @@ func readVolume(d *schema.ResourceData, volume fcu.Volume) error {
 
 		}
 
-		if len(res) > 0 {
-			if err := d.Set("attachment_set", res); err != nil {
-				return err
-			}
-			fmt.Printf("[DEBUG] Attachment Set %s", res)
+		if err := d.Set("attachment_set", res); err != nil {
+			return err
 		}
-
+	} else {
+		if err := d.Set("attachment_set", []map[string]interface{}{
+			map[string]interface{}{
+				"delete_on_termination": false,
+				"device":                "none",
+				"instance_id":           "none",
+				"status":                "none",
+				"volume_id":             "none",
+			},
+		}); err != nil {
+			return err
+		}
 	}
-	if volume.Iops != nil {
-		d.Set("Iops", *volume.Iops)
-	}
-	if volume.State != nil {
-		d.Set("status", *volume.State)
-	}
-	if volume.VolumeId != nil {
-		d.Set("volume_id", *volume.VolumeId)
-	}
-	if volume.VolumeType != nil {
-		d.Set("volume_type", *volume.VolumeType)
-	}
-	// if volume.Tags != nil {
-	// 	d.Set("tag_set", tagsToMap(volume.Tags))
-	// 	t := tagsToMap(volume.Tags)
-	// 	fmt.Printf("DEBUG TAGS: ", t)
-	// }
-	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
-		// Only set the iops attribute if the volume type is io1. Setting otherwise
-		// can trigger a refresh/plan loop based on the computed value that is given
-		// from AWS, and prevent us from specifying 0 as a valid iops.
-		//   See https://github.com/hashicorp/terraform/pull/4146
-		if volume.Iops != nil {
-			d.Set("iops", *volume.Iops)
+	if volume.Tags != nil {
+		if err := d.Set("tag_set", tagsToMap(volume.Tags)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("tag_set", []map[string]string{
+			map[string]string{
+				"key":   "",
+				"value": "",
+			},
+		}); err != nil {
+			return err
 		}
 	}
 
 	return nil
-}
-
-func resourceVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		request := &fcu.DeleteVolumeInput{
-			VolumeId: aws.String(d.Id()),
-		}
-
-		var err error
-		var response *fcu.DeleteVolumeOutput
-
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			response, err = conn.VM.DeleteVolume(request)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		})
-
-		if err == nil {
-			return nil
-		}
-
-		ebsErr, ok := err.(awserr.Error)
-		if ebsErr.Code() == "VolumeInUse" {
-			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
-		}
-
-		if !ok {
-			return resource.NonRetryableError(err)
-		}
-
-		return resource.NonRetryableError(err)
-	})
-}
-
-func getVolumeSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Arguments
-		"availability_zone": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		"iops": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
-		},
-		"size": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
-		},
-		"snapshot_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
-		},
-		"volume_type": {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
-		},
-		// Attributes
-		"attachment_set": {
-			Type: schema.TypeList,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"delete_on_termination": {
-						Type:     schema.TypeBool,
-						Computed: true,
-						Optional: true,
-					},
-					"device": {
-						Type:     schema.TypeString,
-						Computed: true,
-						Optional: true,
-					},
-					"instance_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-						Optional: true,
-					},
-					"status": {
-						Type:     schema.TypeString,
-						Computed: true,
-						Optional: true,
-					},
-					"volume_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-						Optional: true,
-					},
-				},
-			},
-			Computed: true,
-			Optional: true,
-		},
-		"status": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		// "tag_set": tagsSchemaComputed(),
-		"tags": tagsSchema(),
-		"volume_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-	}
-}
-
-// volumeStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
-// a the state of a Volume. Returns successfully when volume is available
-func volumeStateRefreshFunc(conn *fcu.Client, volumeID string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		// resp, err := conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
-		// 	VolumeIds: []*string{aws.String(volumeID)},
-		// })
-
-		var err error
-		var response *fcu.DescribeVolumesOutput
-
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			response, err = conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
-				VolumeIds: []*string{aws.String(volumeID)},
-			})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		})
-
-		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok {
-				// Set this to nil as if we didn't find anything.
-				fmt.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
-				response = nil
-				return nil, "", err
-			} else {
-				fmt.Printf("Error on Volume State Refresh: %s", err)
-				return nil, "", err
-			}
-		}
-
-		v := response.Volumes[0]
-
-		fmt.Printf("[DEBUG] Volume #v", v)
-		return v, *v.State, nil
-	}
 }
