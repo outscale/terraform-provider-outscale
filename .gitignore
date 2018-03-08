@@ -1,3 +1,7 @@
-examples/
-examples/
+examples/terraform-provider-outscale
+examples/.terraform
+examples/terraform.tfstate
+examples/terraform.tfstate.backup
+
 test/
+terraform-provider-outscale
