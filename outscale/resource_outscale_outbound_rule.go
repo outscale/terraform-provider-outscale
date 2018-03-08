@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/mutexkv"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -135,10 +136,6 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	// Verify that either 'cidr_blocks', 'self', or 'source_security_group_id' is set
-	// If they are not set the AWS API will silently fail. This causes TF to hit a timeout
-	// at 5-minutes waiting for the security group rule to appear, when it was never actually
-	// created.
 	if err := validateOutscaleSecurityGroupRule(d); err != nil {
 		return err
 	}
@@ -152,7 +149,7 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 
 	req := &fcu.AuthorizeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -260,6 +257,10 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
+	if err := setFromIPPerm(d, sg, p); err != nil {
+		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
+	}
+
 	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
 	return nil
@@ -285,7 +286,7 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 		sg_id, "egress", perm)
 	req := &fcu.RevokeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -350,13 +351,14 @@ func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup,
 	return resp.SecurityGroups[0], nil
 }
 
-func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) (*fcu.IpPermission, error) {
-	var perm fcu.IpPermission
-
+func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
 	ipp := d.Get("ip_permissions")
 	ippem := ipp.(*schema.Set).List()
 
-	for _, v := range ippem {
+	perms := make([]*fcu.IpPermission, len(ippem))
+
+	for i, v := range ippem {
+		perm := fcu.IpPermission{}
 		values := v.(map[string]interface{})
 
 		if raw, ok := values["from_port"]; ok {
@@ -395,43 +397,43 @@ func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) (*fcu.IpPermiss
 				}
 			}
 		}
-	}
 
-	// build a group map that behaves like a set
-	groups := make(map[string]bool)
-	if raw, ok := d.GetOk("source_security_group_owner_id"); ok {
-		groups[raw.(string)] = true
-	}
-
-	if len(groups) > 0 {
-		perm.UserIdGroupPairs = make([]*fcu.UserIdGroupPair, len(groups))
-		// build string list of group name/ids
-		var gl []string
-		for k, _ := range groups {
-			gl = append(gl, k)
+		groups := make(map[string]bool)
+		if raw, ok := d.GetOk("source_security_group_owner_id"); ok {
+			groups[raw.(string)] = true
 		}
 
-		for i, name := range gl {
-			ownerId, id := "", name
-			if items := strings.Split(id, "/"); len(items) > 1 {
-				ownerId, id = items[0], items[1]
+		if len(groups) > 0 {
+			perm.UserIdGroupPairs = make([]*fcu.UserIdGroupPair, len(groups))
+			// build string list of group name/ids
+			var gl []string
+			for k, _ := range groups {
+				gl = append(gl, k)
 			}
 
-			perm.UserIdGroupPairs[i] = &fcu.UserIdGroupPair{
-				GroupId: aws.String(id),
-				UserId:  aws.String(ownerId),
-			}
+			for i, name := range gl {
+				ownerId, id := "", name
+				if items := strings.Split(id, "/"); len(items) > 1 {
+					ownerId, id = items[0], items[1]
+				}
 
-			if sg.VpcId == nil || *sg.VpcId == "" {
-				perm.UserIdGroupPairs[i].GroupId = nil
-				perm.UserIdGroupPairs[i].GroupName = aws.String(id)
-				perm.UserIdGroupPairs[i].UserId = nil
+				perm.UserIdGroupPairs[i] = &fcu.UserIdGroupPair{
+					GroupId: aws.String(id),
+					UserId:  aws.String(ownerId),
+				}
+
+				if sg.VpcId == nil || *sg.VpcId == "" {
+					perm.UserIdGroupPairs[i].GroupId = nil
+					perm.UserIdGroupPairs[i].GroupName = aws.String(id)
+					perm.UserIdGroupPairs[i].UserId = nil
+				}
 			}
 		}
+
+		perms[i] = &perm
 	}
 
-	return &perm, nil
-
+	return perms, nil
 }
 
 type securityGroupNotFound struct {
@@ -502,23 +504,25 @@ func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {
 	return nil
 }
 
-func findRuleMatch(p *fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *fcu.IpPermission {
+func findRuleMatch(p []*fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *fcu.IpPermission {
 	var rule *fcu.IpPermission
+
 	for _, r := range rules {
-		if r.ToPort != nil && *p.ToPort != *r.ToPort {
+
+		if r.ToPort != nil && *p[0].ToPort != *r.ToPort {
 			continue
 		}
 
-		if r.FromPort != nil && *p.FromPort != *r.FromPort {
+		if r.FromPort != nil && *p[0].FromPort != *r.FromPort {
 			continue
 		}
 
-		if r.IpProtocol != nil && *p.IpProtocol != *r.IpProtocol {
+		if r.IpProtocol != nil && *p[0].IpProtocol != *r.IpProtocol {
 			continue
 		}
 
-		remaining := len(p.IpRanges)
-		for _, ip := range p.IpRanges {
+		remaining := len(p[0].IpRanges)
+		for _, ip := range p[0].IpRanges {
 			for _, rip := range r.IpRanges {
 				if *ip.CidrIp == *rip.CidrIp {
 					remaining--
@@ -530,8 +534,8 @@ func findRuleMatch(p *fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *
 			continue
 		}
 
-		remaining = len(p.PrefixListIds)
-		for _, pl := range p.PrefixListIds {
+		remaining = len(p[0].PrefixListIds)
+		for _, pl := range p[0].PrefixListIds {
 			for _, rpl := range r.PrefixListIds {
 				if *pl.PrefixListId == *rpl.PrefixListId {
 					remaining--
@@ -543,8 +547,8 @@ func findRuleMatch(p *fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *
 			continue
 		}
 
-		remaining = len(p.UserIdGroupPairs)
-		for _, ip := range p.UserIdGroupPairs {
+		remaining = len(p[0].UserIdGroupPairs)
+		for _, ip := range p[0].UserIdGroupPairs {
 			for _, rip := range r.UserIdGroupPairs {
 				if isVPC {
 					if *ip.GroupId == *rip.GroupId {
@@ -567,56 +571,62 @@ func findRuleMatch(p *fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *
 	return rule
 }
 
-func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rule *fcu.IpPermission) error {
+func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rules []*fcu.IpPermission) error {
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
 
-	ippem := make(map[string]interface{})
-	ippem["from_port"] = rule.FromPort
-	ippem["to_port"] = rule.ToPort
-	ippem["ip_protocol"] = rule.IpProtocol
+	ippems := make([]map[string]interface{}, len(rules))
 
-	cb := make([]*fcu.IpRange, len(rule.IpRanges))
-	for i, c := range rule.IpRanges {
-		cb[i] = &fcu.IpRange{CidrIp: c.CidrIp}
-	}
+	for i, rule := range rules {
+		ippem := make(map[string]interface{})
+		ippem["from_port"] = *rule.FromPort
+		ippem["to_port"] = *rule.ToPort
+		ippem["ip_protocol"] = *rule.IpProtocol
 
-	if len(cb) > 0 {
-		ippem["ip_ranges"] = cb
-	}
-
-	var g []map[string]interface{}
-	for _, v := range rule.UserIdGroupPairs {
-		g = append(g, map[string]interface{}{
-			"group_name": v.GroupName,
-			"group_id":   v.GroupId,
-			"user_id":    v.UserId,
-		})
-	}
-
-	if len(g) > 0 {
-		ippem["groups"] = g
-	}
-
-	pl := make([]*fcu.PrefixListId, len(rule.PrefixListIds))
-	for i, c := range rule.PrefixListIds {
-		pl[i] = &fcu.PrefixListId{PrefixListId: c.PrefixListId}
-	}
-
-	if len(pl) > 0 {
-		ippem["prefix_list_ids"] = pl
-	}
-
-	if len(rule.UserIdGroupPairs) > 0 {
-		s := rule.UserIdGroupPairs[0]
-
-		if isVPC {
-			d.Set("source_security_group_owner_id", *s.GroupId)
-		} else {
-			d.Set("source_security_group_name", *s.GroupName)
+		cb := make([]*fcu.IpRange, len(rule.IpRanges))
+		for i, c := range rule.IpRanges {
+			cb[i] = &fcu.IpRange{CidrIp: c.CidrIp}
 		}
+
+		if len(cb) > 0 {
+			ippem["ip_ranges"] = cb
+		}
+
+		var g []map[string]interface{}
+		for _, v := range rule.UserIdGroupPairs {
+			g = append(g, map[string]interface{}{
+				"group_name": *v.GroupName,
+				"group_id":   *v.GroupId,
+				"user_id":    *v.UserId,
+			})
+		}
+
+		if len(g) > 0 {
+			ippem["groups"] = g
+		}
+
+		pl := make([]*fcu.PrefixListId, len(rule.PrefixListIds))
+		for i, c := range rule.PrefixListIds {
+			pl[i] = &fcu.PrefixListId{PrefixListId: c.PrefixListId}
+		}
+
+		if len(pl) > 0 {
+			ippem["prefix_list_ids"] = pl
+		}
+
+		if len(rule.UserIdGroupPairs) > 0 {
+			s := rule.UserIdGroupPairs[0]
+
+			if isVPC {
+				d.Set("source_security_group_owner_id", *s.GroupId)
+			} else {
+				d.Set("source_security_group_name", *s.GroupName)
+			}
+		}
+
+		ippems[i] = ippem
 	}
 
-	d.Set("ip_permissions", ippem)
+	d.Set("ip_permissions", ippems)
 
 	return nil
 }
