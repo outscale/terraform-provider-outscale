@@ -30,9 +30,10 @@ func init() {
 			"outscale_volume_link":        resourceOutscaleVolumeLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm":            resourceOutscaleOApiVM,
-			"outscale_image":         resourceOutscaleOAPIImage,
-			"outscale_public_ip":     resourceOutscaleOAPIPublicIP,
+			"outscale_vm":       resourceOutscaleOApiVM,
+			"outscale_key_pair": resourceOutscaleOAPIKeyPair,
+			"outscale_image": resourceOutscaleOAPIImage,
+			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
 			"outscale_inbound_rule":  resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":       resourceOutscaleOAPITags,
