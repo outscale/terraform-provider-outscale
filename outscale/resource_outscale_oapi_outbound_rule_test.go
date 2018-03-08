@@ -33,8 +33,8 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIOutscaleRuleExists("outscale_firewall_rules_set.web", &group),
-					testAccCheckOAPIOutscaleRuleAttributes("outscale_outbound_rule.egress_1", &group, nil, "egress"),
+					testAccCheckOutscaleOAPIRuleExists("outscale_firewall_rules_set.web", &group),
+					testAccCheckOutscaleOAPIRuleAttributes("outscale_outbound_rule.egress_1", &group, nil, "egress"),
 				),
 			},
 		},
@@ -58,6 +58,6 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 				to_port_range = 8000
 				ip_ranges = ["10.0.0.0/8"]
 		}
-		group_id = "${outscale_firewall_rules_set.web.id}"
+		firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
 	}`, rInt)
 }
