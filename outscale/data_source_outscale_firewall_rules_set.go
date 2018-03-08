@@ -63,10 +63,9 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 										Computed: true,
 									},
 									"groups": {
-										Type:     schema.TypeSet,
+										Type:     schema.TypeList,
 										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-										Set:      schema.HashString,
+										Elem:     &schema.Schema{Type: schema.TypeMap},
 									},
 									"to_port": {
 										Type:     schema.TypeInt,
@@ -102,10 +101,9 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 										Computed: true,
 									},
 									"groups": {
-										Type:     schema.TypeSet,
+										Type:     schema.TypeList,
 										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-										Set:      schema.HashString,
+										Elem:     &schema.Schema{Type: schema.TypeMap},
 									},
 									"to_port": {
 										Type:     schema.TypeInt,
@@ -136,7 +134,7 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 							Computed: true,
 						},
 						"tag_set": {
-							Type: schema.TypeMap,
+							Type: schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"key": {
