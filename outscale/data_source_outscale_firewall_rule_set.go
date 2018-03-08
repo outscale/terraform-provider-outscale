@@ -51,7 +51,7 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 						"groups": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem:     &schema.Schema{Type: schema.TypeMap},
 							Set:      schema.HashString,
 						},
 						"to_port": {
@@ -90,7 +90,7 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 						"groups": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem:     &schema.Schema{Type: schema.TypeMap},
 							Set:      schema.HashString,
 						},
 						"to_port": {
@@ -220,29 +220,47 @@ func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 
 	for k, v := range p {
 		ip := make(map[string]interface{})
-		ip["from_port"] = v.FromPort
-		ip["ip_protocol"] = v.IpProtocol
-		ip["to_port"] = v.ToPort
+		if v.FromPort != nil {
+			ip["from_port"] = *v.FromPort
+		}
+		if v.IpProtocol != nil {
+			ip["ip_protocol"] = *v.IpProtocol
+		}
+		if v.ToPort != nil {
+			ip["to_port"] = *v.ToPort
+		}
 
-		ipr := make([]map[string]interface{}, len(v.IpRanges))
+		ipr := make([]string, len(v.IpRanges))
 		for i, v := range v.IpRanges {
-			ipr[i] = map[string]interface{}{"cidr_ip": v.CidrIp}
+			if v.CidrIp != nil {
+				ipr[i] = *v.CidrIp
+			}
 		}
 		ip["ip_ranges"] = ipr
 
-		prx := make([]map[string]interface{}, len(v.PrefixListIds))
+		prx := make([]string, len(v.PrefixListIds))
 		for i, v := range v.PrefixListIds {
-			prx[i] = map[string]interface{}{"prefix_list_id": v.PrefixListId}
+			if v.PrefixListId != nil {
+				prx[i] = *v.PrefixListId
+			}
 		}
 		ip["prefix_list_ids"] = prx
 
 		grp := make([]map[string]interface{}, len(v.UserIdGroupPairs))
 		for i, v := range v.UserIdGroupPairs {
-			grp[i] = map[string]interface{}{
-				"user_id":    v.UserId,
-				"group_name": v.GroupName,
-				"group_id":   v.GroupId,
+			g := make(map[string]interface{})
+
+			if v.UserId != nil {
+				g["user_id"] = *v.UserId
 			}
+			if v.GroupName != nil {
+				g["group_name"] = *v.GroupName
+			}
+			if v.GroupId != nil {
+				g["group_id"] = *v.GroupId
+			}
+
+			grp[i] = g
 		}
 		ip["groups"] = grp
 
