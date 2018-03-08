@@ -35,7 +35,120 @@ func resourceOutscaleImage() *schema.Resource {
 			Delete: schema.DefaultTimeout(40 * time.Minute),
 		},
 
-		Schema: getImageSchema(),
+		Schema: map[string]*schema.Schema{
+			"instance_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"dry_run": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"no_reboot": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+
+			"architecture": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_location": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_owner_alias": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"is_public": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"root_device_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"root_device_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			// Complex computed values
+			"block_device_mappings": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"no_device": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"virtual_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ebs": {
+							Type:     schema.TypeMap,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"product_codes": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Set:      amiProductCodesHash,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"product_code": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"state_reason": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"tag_set": dataSourceTagsSchema(),
+		},
 	}
 }
 
@@ -79,11 +192,10 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	id := *res.ImageId
 	d.SetId(id)
+	d.Set("image_id", id)
 	d.Partial(true) // make sure we record the id even if the rest of this gets interrupted
 	d.Set("id", id)
-	d.Set("manage_ebs_block_devices", false)
 	d.SetPartial("id")
-	d.SetPartial("manage_ebs_block_devices")
 	d.Partial(false)
 
 	_, err = resourceOutscaleImageWaitForAvailable(id, conn, 1)
@@ -153,81 +265,52 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("OMI has become %s", state)
 	}
 
-	d.Set("name", image.Name)
-	d.Set("description", image.Description)
-	d.Set("image_location", image.ImageLocation)
-	d.Set("image_owner_alias", image.ImageOwnerAlias)
-	d.Set("image_owner_id", image.OwnerId)
-	d.Set("image_state", image.State)
-	d.Set("image_type", image.ImageType)
-	d.Set("architecture", image.Architecture)
-	d.Set("is_public", image.Public)
-	d.Set("creation_date", image.CreationDate)
-	d.Set("root_device_name", image.RootDeviceName)
-	d.Set("root_device_type", image.RootDeviceType)
-
-	var ebsBlockDevs []map[string]interface{}
-	var ephemeralBlockDevs []map[string]interface{}
-
-	for _, blockDev := range image.BlockDeviceMappings {
-		ephemeralBlockDev := make(map[string]interface{})
-
-		if blockDev.Ebs != nil {
-			ebsBlockDev := make(map[string]interface{})
-
-			if blockDev.DeviceName != nil {
-				ebsBlockDev["device_name"] = *blockDev.DeviceName
-			}
-			if blockDev.Ebs.DeleteOnTermination != nil {
-				ebsBlockDev["delete_on_termination"] = *blockDev.Ebs.DeleteOnTermination
-			}
-			if blockDev.Ebs.Encrypted != nil {
-				ebsBlockDev["encrypted"] = *blockDev.Ebs.Encrypted
-			}
-			if blockDev.Ebs.VolumeSize != nil {
-				ebsBlockDev["volume_size"] = int(*blockDev.Ebs.VolumeSize)
-			}
-			if blockDev.Ebs.VolumeType != nil {
-				ebsBlockDev["volume_type"] = *blockDev.Ebs.VolumeType
-			}
-
-			if blockDev.Ebs.Iops != nil {
-				ebsBlockDev["iops"] = int(*blockDev.Ebs.Iops)
-			}
-			// The snapshot ID might not be set.
-			if blockDev.Ebs.SnapshotId != nil {
-				ebsBlockDev["snapshot_id"] = *blockDev.Ebs.SnapshotId
-			}
-			ebsBlockDevs = append(ebsBlockDevs, ebsBlockDev)
-
-			if blockDev.DeviceName != nil {
-				ephemeralBlockDev["device_name"] = *blockDev.DeviceName
-			}
-			if blockDev.VirtualName != nil {
-				ephemeralBlockDev["virtual_name"] = *blockDev.VirtualName
-			}
-
-			ephemeralBlockDev["ebs"] = ebsBlockDevs
-
-			ephemeralBlockDevs = append(ephemeralBlockDevs, ephemeralBlockDev)
-		} else {
-
-			if blockDev.DeviceName != nil {
-				ephemeralBlockDev["device_name"] = *blockDev.DeviceName
-			}
-			if blockDev.VirtualName != nil {
-				ephemeralBlockDev["virtual_name"] = *blockDev.VirtualName
-			}
-
-			ephemeralBlockDevs = append(ephemeralBlockDevs, ephemeralBlockDev)
-
-		}
+	d.SetId(*image.ImageId)
+	d.Set("architecture", *image.Architecture)
+	if image.CreationDate != nil {
+		d.Set("creation_date", *image.CreationDate)
 	}
+	if image.Description != nil {
+		d.Set("description", *image.Description)
+	}
+	d.Set("hypervisor", *image.Hypervisor)
+	d.Set("image_id", *image.ImageId)
+	d.Set("image_location", *image.ImageLocation)
+	if image.ImageOwnerAlias != nil {
+		d.Set("image_owner_alias", *image.ImageOwnerAlias)
+	}
+	d.Set("image_owner_id", *image.OwnerId)
+	d.Set("image_type", *image.ImageType)
+	d.Set("name", *image.Name)
+	d.Set("is_public", *image.Public)
+	if image.RootDeviceName != nil {
+		d.Set("root_device_name", *image.RootDeviceName)
+	}
+	d.Set("root_device_type", *image.RootDeviceType)
+	d.Set("image_state", *image.State)
+	// Complex types get their own functions
 
-	d.Set("block_device_mapping", ephemeralBlockDevs)
-	d.Set("product_codes", getProductCodes(image.ProductCodes))
-	d.Set("state_reason", getStateReason(image.StateReason))
-	d.Set("tag_set", tagsToMap(image.Tags))
+	r1 := amiBlockDeviceMappings(image.BlockDeviceMappings)
+	fmt.Printf("\n\n[DEBUG] R1 %s", r1)
+
+	r2 := amiProductCodes(image.ProductCodes)
+	fmt.Printf("\n\n[DEBUG] R2 %s", r2)
+
+	r3 := amiStateReason(image.StateReason)
+	fmt.Printf("\n\n[DEBUG] R3 %s", r3)
+
+	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+		return err
+	}
+	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
+		return err
+	}
+	if err := d.Set("state_reason", amiStateReason(image.StateReason)); err != nil {
+		return err
+	}
+	if err := d.Set("tag_set", dataSourceTags(image.Tags)); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -241,7 +324,7 @@ func resourceImageUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetPartial("tags")
+	d.SetPartial("tag_set")
 
 	if d.Get("description").(string) != "" {
 		_, err := conn.VM.ModifyImageAttribute(&fcu.ModifyImageAttributeInput{
@@ -295,177 +378,6 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 	// No error, OMI was deleted successfully
 	d.SetId("")
 	return nil
-}
-
-func getImageSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"architecture": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"block_device_mapping": {
-			Type: schema.TypeSet,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"ebs": {
-						Type:     schema.TypeMap,
-						Optional: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"delete_on_termination": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"iops": {
-									Type:     schema.TypeInt,
-									Optional: true,
-								},
-								"snapshot_id": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"volume_size": {
-									Type:     schema.TypeInt,
-									Optional: true,
-								},
-								"volume_type": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-							},
-						},
-					},
-					"no_device": {
-						Type:     schema.TypeBool,
-						Optional: true,
-					},
-					"virtual_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-				},
-			},
-			Optional: true,
-			Computed: true,
-		},
-		"creation_date": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"description": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"dry_run": {
-			Type:     schema.TypeBool,
-			Optional: true,
-		},
-		"instance_id": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"image_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"image_location": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"image_owner_alias": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"image_owner_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"image_state": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"image_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"is_public": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"name": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		"no_reboot": {
-			Type:     schema.TypeBool,
-			Optional: true,
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"product_codes": {
-			Type: schema.TypeList,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"product_code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"type": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"root_device_name": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"root_device_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"state_reason": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"message": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"tag_set": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-	}
 }
 
 func resourceOutscaleImageWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {

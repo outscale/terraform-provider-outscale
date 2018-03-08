@@ -1284,7 +1284,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"tag_set": {
-						Type: schema.TypeMap,
+						Type: schema.TypeList,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {

@@ -330,14 +330,18 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-// tagsToMap turns the list of tag into a map.
-func tagsToMap(ts []*fcu.Tag) map[string]string {
-	result := make(map[string]string)
-	for _, t := range ts {
-		if !tagIgnored(t) {
-			result[*t.Key] = *t.Value
-		}
+// tagsToMap turns the list of tags into a map.
+func tagsToMap(ts []*fcu.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	for k, t := range ts {
+		r := map[string]string{}
+		r["key"] = *t.Value
+		r["value"] = *t.Value
+
+		result[k] = r
 	}
+
+	fmt.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
 }
