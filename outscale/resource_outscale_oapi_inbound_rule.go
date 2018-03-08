@@ -92,7 +92,7 @@ func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interfac
 
 	req := &fcu.AuthorizeSecurityGroupIngressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -229,7 +229,7 @@ func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interfac
 		sg_id, "ingress", perm)
 	req := &fcu.RevokeSecurityGroupIngressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: []*fcu.IpPermission{perm},
+		IpPermissions: perm,
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
