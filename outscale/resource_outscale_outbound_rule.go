@@ -72,7 +72,7 @@ var awsMutexKV = mutexkv.NewMutexKV()
 
 func getIpPermissionsSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Optional: true,
 		ForceNew: true,
 		Elem: &schema.Resource{
@@ -83,10 +83,10 @@ func getIpPermissionsSchema() *schema.Schema {
 					ForceNew: true,
 				},
 				"groups": {
-					Type:     schema.TypeSet,
+					Type:     schema.TypeList,
 					Optional: true,
 					Elem:     &schema.Schema{Type: schema.TypeString},
-					Set:      schema.HashString,
+					// Set:      schema.HashString,
 				},
 				"to_port": {
 					Type:     schema.TypeInt,
@@ -353,7 +353,7 @@ func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup,
 
 func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
 	ipp := d.Get("ip_permissions")
-	ippem := ipp.(*schema.Set).List()
+	ippem := ipp.([]interface{})
 
 	perms := make([]*fcu.IpPermission, len(ippem))
 
@@ -486,7 +486,7 @@ func sgProtocolIntegers() map[string]int {
 
 func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {
 	if ipp, ippemOk := d.GetOk("ip_permissions"); ippemOk {
-		ippem := ipp.(*schema.Set).List()
+		ippem := ipp.([]interface{})
 
 		for _, v := range ippem {
 			values := v.(map[string]interface{})
@@ -593,11 +593,20 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rules []*fcu.I
 
 		var g []map[string]interface{}
 		for _, v := range rule.UserIdGroupPairs {
-			g = append(g, map[string]interface{}{
-				"group_name": *v.GroupName,
-				"group_id":   *v.GroupId,
-				"user_id":    *v.UserId,
-			})
+
+			gr := make(map[string]interface{}, len(rule.UserIdGroupPairs))
+
+			if v.GroupId != nil {
+				gr["group_id"] = *v.GroupId
+			}
+			if v.GroupName != nil {
+				gr["group_name"] = *v.GroupName
+			}
+			if v.UserId != nil {
+				gr["user_id"] = *v.UserId
+			}
+
+			g = append(g, gr)
 		}
 
 		if len(g) > 0 {
