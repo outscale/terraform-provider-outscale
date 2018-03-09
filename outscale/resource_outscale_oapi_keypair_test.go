@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
-	var conf fcu.OAPIKeyPairInfo
+	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -36,7 +36,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
-	var conf fcu.OAPIKeyPairInfo
+	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -57,7 +57,7 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 	})
 }
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
-	var conf fcu.OAPIKeyPairInfo
+	var conf fcu.KeyPairInfo
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -93,10 +93,10 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		}
 
 		// Try to find key pair
-		var resp *fcu.DescribeOAPIKeyPairsOutput
+		var resp *fcu.DescribeKeyPairsOutput
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.FCU.VM.DescribeOAPIKeyPairs(&fcu.DescribeOAPIKeyPairsInput{
+			resp, err = conn.FCU.VM.DescribeKeyPairs(&fcu.DescribeKeyPairsInput{
 				KeyNames: []*string{aws.String(rs.Primary.ID)},
 			})
 
@@ -115,7 +115,7 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		}
 
 		if err == nil {
-			if len(resp.OAPIKeyPairs) > 0 {
+			if len(resp.KeyPairs) > 0 {
 				return fmt.Errorf("still exist.")
 			}
 			return nil
@@ -134,7 +134,7 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *fcu.OAPIKeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *fcu.KeyPairInfo) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *conf.KeyFingerprint != expectedFingerprint {
 			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, *conf.KeyFingerprint)
@@ -143,7 +143,7 @@ func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.OAPIKeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.KeyPairInfo) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -153,12 +153,12 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.OAPIKeyPairInfo) r
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No OAPIKeyPair name is set")
 		}
-		var resp *fcu.DescribeOAPIKeyPairsOutput
+		var resp *fcu.DescribeKeyPairsOutput
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.FCU.VM.DescribeOAPIKeyPairs(&fcu.DescribeOAPIKeyPairsInput{
+			resp, err = conn.FCU.VM.DescribeKeyPairs(&fcu.DescribeKeyPairsInput{
 				KeyNames: []*string{aws.String(rs.Primary.ID)},
 			})
 			if err != nil {
@@ -172,19 +172,19 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.OAPIKeyPairInfo) r
 		if err != nil {
 			return err
 		}
-		if len(resp.OAPIKeyPairs) != 1 ||
-			*resp.OAPIKeyPairs[0].KeyName != rs.Primary.ID {
+		if len(resp.KeyPairs) != 1 ||
+			*resp.KeyPairs[0].KeyName != rs.Primary.ID {
 			return fmt.Errorf("OAPIKeyPair not found")
 		}
 
-		*res = *resp.OAPIKeyPairs[0]
+		*res = *resp.KeyPairs[0]
 
 		return nil
 	}
 }
 
 func testAccCheckOutscaleOAPIKeyPair_namePrefix(t *testing.T) {
-	var conf fcu.OAPIKeyPairInfo
+	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
