@@ -8,13 +8,13 @@ description: |-
 
 # outscale_vm
 
-Provides an Outscale keypair resource. This allows keypairs to be created, deleted, 
+Provides an Outscale keypair resource. This allows keypairs to be created, deleted,
 described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_key_pair" "a_key_pair" {
+resource "outscale_keypair" "a_key_pair" {
 	key_name   = "tf-acc-key-pair"
 }
 ```
