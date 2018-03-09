@@ -2,7 +2,9 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,16 @@ import (
 )
 
 func TestAccOutscaleVolume_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { testAccPreCheck(t) },
@@ -34,6 +46,16 @@ func TestAccOutscaleVolume_basic(t *testing.T) {
 }
 
 func TestAccOutscaleVolume_kmsKey(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var v fcu.Volume
 	ri := acctest.RandInt()
 	config := fmt.Sprintf(testAccAwsEbsVolumeConfigWithKmsKey, ri)
@@ -57,6 +79,16 @@ func TestAccOutscaleVolume_kmsKey(t *testing.T) {
 }
 
 func TestAccOutscaleVolume_NoIops(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -73,6 +105,16 @@ func TestAccOutscaleVolume_NoIops(t *testing.T) {
 }
 
 func TestAccOutscaleVolume_withTags(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },

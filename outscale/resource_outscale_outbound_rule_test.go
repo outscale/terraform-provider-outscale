@@ -19,7 +19,7 @@ func TestAccOutscaleOutboundRule(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi != false {
 		t.Skip()
 	}
 	var group fcu.SecurityGroup

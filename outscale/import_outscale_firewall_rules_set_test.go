@@ -1,6 +1,8 @@
 package outscale
 
 import (
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -8,6 +10,16 @@ import (
 )
 
 func TestAccOutscaleFirewallRulesSet_importBasic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	resourceName := "outscale_firewall_rules_set.web"
 
 	rInt := acctest.RandInt()

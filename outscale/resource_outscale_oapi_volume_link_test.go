@@ -12,7 +12,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
+func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -20,7 +20,7 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi == false {
 		t.Skip()
 	}
 	var i fcu.Instance
@@ -29,18 +29,18 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckVolumeAttachmentDestroy,
+		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachmentConfig,
+				Config: testAccOAPIVolumeAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
+						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
-					testAccCheckVolumeExists(
+					testAccCheckOAPIVolumeExists(
 						"outscale_volume.example", &v),
-					testAccCheckVolumeAttachmentExists(
+					testAccCheckOAPIVolumeAttachmentExists(
 						"outscale_volume_link.ebs_att", &i, &v),
 				),
 			},
@@ -48,7 +48,7 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVolumeAttachment_skipDestroy(t *testing.T) {
+func TestAccOutscaleOAPIVolumeAttachment_skipDestroy(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -56,7 +56,7 @@ func TestAccOutscaleVolumeAttachment_skipDestroy(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi == false {
 		t.Skip()
 	}
 	var i fcu.Instance
@@ -65,18 +65,18 @@ func TestAccOutscaleVolumeAttachment_skipDestroy(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckVolumeAttachmentDestroy,
+		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachmentConfigSkipDestroy,
+				Config: testAccOAPIVolumeAttachmentConfigSkipDestroy,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
+						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
-					testAccCheckVolumeExists(
+					testAccCheckOAPIVolumeExists(
 						"outscale_volume.example", &v),
-					testAccCheckVolumeAttachmentExists(
+					testAccCheckOAPIVolumeAttachmentExists(
 						"outscale_volume_link.ebs_att", &i, &v),
 				),
 			},
@@ -84,7 +84,7 @@ func TestAccOutscaleVolumeAttachment_skipDestroy(t *testing.T) {
 	})
 }
 
-func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -96,7 +96,7 @@ func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume
 		}
 
 		for _, b := range i.BlockDeviceMappings {
-			if rs.Primary.Attributes["device"] == *b.DeviceName {
+			if rs.Primary.Attributes["device_name"] == *b.DeviceName {
 				if b.Ebs.VolumeId != nil && rs.Primary.Attributes["volume_id"] == *b.Ebs.VolumeId {
 					// pass
 					return nil
@@ -108,7 +108,7 @@ func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume
 	}
 }
 
-func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
+func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		log.Printf("\n\n----- This is never called")
 		if rs.Type != "outscale_volume_link" {
@@ -118,39 +118,39 @@ func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccVolumeAttachmentConfig = `
+const testAccOAPIVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags = {
+	tag = {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
 	size = 1
-	availability_zone = "eu-west-2a"
-	tags = {
+	sub_region_name = "eu-west-2a"
+	tag = {
 		Name = "HelloWorld Volume"
 	}
 }
 resource "outscale_volume_link" "ebs_att" {
-  device = "/dev/sdh"
+  device_name = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
-	instance_id = "${outscale_vm.web.id}"
+	vm_id = "${outscale_vm.web.id}"
 }
 `
 
-const testAccVolumeAttachmentConfigSkipDestroy = `
+const testAccOAPIVolumeAttachmentConfigSkipDestroy = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags = {
+	tag = {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
 	size = 1
-	tags = {
+	tag = {
 		Name = "TestVolume"
 	}
 }
@@ -161,7 +161,7 @@ data "outscale_volume" "ebs_volume" {
     }
     filter {
 	name = "availability-zone"
-	values = ["${outscale_volume.example.availability_zone}"]
+	values = ["${outscale_volume.example.sub_region_name}"]
     }
     filter {
 	name = "tag:Name"
@@ -169,9 +169,9 @@ data "outscale_volume" "ebs_volume" {
     }
 }
 resource "outscale_volume_link" "ebs_att" {
-  	device = "/dev/sdh"
+  	device_name = "/dev/sdh"
 	volume_id = "${data.outscale_volume.ebs_volume.id}"
-	instance_id = "${outscale_vm.web.id}"
+	vm_id = "${outscale_vm.web.id}"
 	skip_destroy = true
 }
 `

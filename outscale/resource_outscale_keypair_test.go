@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,16 @@ import (
 )
 
 func TestAccOutscaleKeyPair_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
@@ -36,6 +48,16 @@ func TestAccOutscaleKeyPair_basic(t *testing.T) {
 }
 
 func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
@@ -57,6 +79,16 @@ func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
 	})
 }
 func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	var conf fcu.KeyPairInfo
 
 	resource.Test(t, resource.TestCase{

@@ -73,7 +73,6 @@ func testSweepServers(region string) error {
 }
 
 func TestAccOutscaleServer_Basic(t *testing.T) {
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -81,7 +80,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi != false {
 		t.Skip()
 	}
 
@@ -114,7 +113,6 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleServer_Windows_Password(t *testing.T) {
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -122,10 +120,9 @@ func TestAccOutscaleServer_Windows_Password(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi != false {
 		t.Skip()
 	}
-
 	var server fcu.Instance
 
 	// rInt := acctest.RandInt()
@@ -151,8 +148,6 @@ func TestAccOutscaleServer_Windows_Password(t *testing.T) {
 }
 
 func TestAccOutscaleServer_Update(t *testing.T) {
-	// var server fcu.Instance
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -160,7 +155,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi != false {
 		t.Skip()
 	}
 

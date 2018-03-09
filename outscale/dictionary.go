@@ -38,6 +38,8 @@ func init() {
 			"outscale_inbound_rule":       resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule":      resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":                resourceOutscaleOAPITags,
+			"outscale_volume":             resourceOAPIOutscaleVolume,
+			"outscale_volume_link":        resourceOutscaleOAPIVolumeLink,
 		},
 	}
 	datasources = Dictionary{

@@ -39,6 +39,16 @@ func TestAccDataSourceOutscaleOAPISecurityGroup(t *testing.T) {
 	})
 }
 func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

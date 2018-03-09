@@ -16,10 +16,9 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi == false {
 		t.Skip()
 	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
