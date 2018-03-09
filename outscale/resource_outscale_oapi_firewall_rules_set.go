@@ -731,11 +731,11 @@ func matchOAPIRules(rType string, local []interface{}, remote []map[string]inter
 	for _, raw := range local {
 		l := raw.(map[string]interface{})
 
-		localHash := idHash(rType, l["ip_protocol"].(string), int64(l["to_port_range"].(int)), int64(l["from_port_range"].(int)))
+		localHash := idHash(rType, l["ip_protocol"].(string), int64(l["to_port_range"].(int)), int64(l["from_port_range"].(int)), l["self"].(bool))
 
 		for _, r := range remote {
 
-			rHash := idHash(rType, r["ip_protocol"].(string), r["to_port_range"].(int64), r["from_port_range"].(int64))
+			rHash := idHash(rType, r["ip_protocol"].(string), r["to_port_range"].(int64), r["from_port_range"].(int64), r["self"].(bool))
 			if rHash == localHash {
 				var numExpectedCidrs, numExpectedPrefixLists, numExpectedSGs, numRemoteCidrs, numRemotePrefixLists, numRemoteSGs int
 				var matchingCidrs []string

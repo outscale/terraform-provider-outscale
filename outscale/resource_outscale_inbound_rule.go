@@ -1,8 +1,10 @@
 package outscale
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/errwrap"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -57,6 +60,12 @@ func resourceOutscaleInboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"ip_permissions": getIpPermissionsSchema(),
+			"self": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -255,4 +264,79 @@ func resourceOutscaleInboundRuleDelete(d *schema.ResourceData, meta interface{})
 	d.SetId("")
 
 	return nil
+}
+
+func ipPermissionIDHash(sg_id, ruleType string, ips []*fcu.IpPermission) string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("%s-", sg_id))
+
+	for _, ip := range ips {
+		if ip.FromPort != nil && *ip.FromPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.FromPort))
+		}
+		if ip.ToPort != nil && *ip.ToPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.ToPort))
+		}
+		buf.WriteString(fmt.Sprintf("%s-", *ip.IpProtocol))
+		buf.WriteString(fmt.Sprintf("%s-", ruleType))
+
+		// We need to make sure to sort the strings below so that we always
+		// generate the same hash code no matter what is in the set.
+		if len(ip.IpRanges) > 0 {
+			s := make([]string, len(ip.IpRanges))
+			for i, r := range ip.IpRanges {
+				s[i] = *r.CidrIp
+			}
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.PrefixListIds) > 0 {
+			s := make([]string, len(ip.PrefixListIds))
+			for i, pl := range ip.PrefixListIds {
+				s[i] = *pl.PrefixListId
+			}
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.UserIdGroupPairs) > 0 {
+			sort.Sort(ByGroupPair(ip.UserIdGroupPairs))
+			for _, pair := range ip.UserIdGroupPairs {
+				if pair.GroupId != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupId))
+				} else {
+					buf.WriteString("-")
+				}
+				if pair.GroupName != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupName))
+				} else {
+					buf.WriteString("-")
+				}
+			}
+		}
+	}
+
+	return fmt.Sprintf("sgrule-%d", hashcode.String(buf.String()))
+}
+
+type ByGroupPair []*fcu.UserIdGroupPair
+
+func (b ByGroupPair) Len() int      { return len(b) }
+func (b ByGroupPair) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b ByGroupPair) Less(i, j int) bool {
+	if b[i].GroupId != nil && b[j].GroupId != nil {
+		return *b[i].GroupId < *b[j].GroupId
+	}
+	if b[i].GroupName != nil && b[j].GroupName != nil {
+		return *b[i].GroupName < *b[j].GroupName
+	}
+
+	panic("mismatched security group rules, may be a terraform bug")
 }

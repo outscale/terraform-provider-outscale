@@ -17,10 +17,12 @@ func TestAccDataSourceOutscaleSecurityGroups_vpc(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfig_vpc(rInt),
 				Check: resource.ComposeTestCheckFunc(
+					// resource.TestCheckResourceAttr(
+					// 	"data.outscale_firewall_rules_set.by_id", "security_group_info.#", "3"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_firewall_rules_set.by_id", "security_group_info.#", "3"),
+						"data.outscale_firewall_rules_set.by_filter_public", "security_group_info.#", "1"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_firewall_rules_set.by_filter", "security_group_info.#", "1"),
+						"data.outscale_firewall_rules_set.by_filter_public", "security_group_info.0.ip_permissions_egress.#", "1"),
 				),
 			},
 		},
@@ -29,41 +31,52 @@ func TestAccDataSourceOutscaleSecurityGroups_vpc(t *testing.T) {
 
 func testAccDataSourceOutscaleSecurityGroupConfig_vpc(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_firewall_rules_set" "test" {
-		vpc_id = "vpc-e9d09d63"
+		resource "outscale_outbound_rule" "outscale_outbound_rule1" {
+	ip_permissions = {
+		from_port = 22
+		to_port = 22
+		ip_protocol = "tcp"
+		ip_ranges = ["46.231.147.8/32"]
+	}
+
+	group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+}
+
+resource "outscale_inbound_rule" "outscale_inbound_rule1" {
+	ip_permissions = {
+		from_port = 22
+		to_port = 22
+		ip_protocol = "tcp"
+		ip_ranges = ["46.231.147.8/32"]
+	}
+
+	group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+}
+
+resource "outscale_inbound_rule" "outscale_inbound_rule2" {
+	 ip_permissions = {
+		from_port = 443
+		to_port = 443
+		ip_protocol = "tcp"
+		ip_ranges = ["46.231.147.8/32"]
+	}
+
+	group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+}
+
+resource "outscale_firewall_rules_set" "outscale_firewall_rules_set" {
 		group_description = "Used in the terraform acceptance tests"
-		group_name = "test-1--%d"
+		group_name = "test-%d"
+		vpc_id = "vpc-e9d09d63"
 		tag = {
 			Name = "tf-acctest"
 			Seed = "%d"
 		}
 	}
-	resource "outscale_firewall_rules_set" "test2" {
-		vpc_id = "vpc-e9d09d63"
-		group_description = "Used in the terraform acceptance tests"
-		group_name = "test-2--%d"
-		tag = {
-			Name = "tf-acctest"
-			Seed = "%d"
-		}
-	}
-	resource "outscale_firewall_rules_set" "test3" {
-		vpc_id = "vpc-e9d09d63"
-		group_description = "Used in the terraform acceptance tests"
-		group_name = "test-3--%d"
-		tag = {
-			Name = "tf-acctest"
-			Seed = "%d"
-		}
-	}
-	data "outscale_firewall_rules_set" "by_id" {
-		group_id = ["${outscale_firewall_rules_set.test.id}", "${outscale_firewall_rules_set.test2.id}", "${outscale_firewall_rules_set.test3.id}"]
-	}
-	data "outscale_firewall_rules_set" "by_filter" {
+	data "outscale_firewall_rules_set" "by_filter_public" {
 		filter {
 			name = "group-name"
-			values = ["${outscale_firewall_rules_set.test.group_name}"]
+			values = ["${outscale_firewall_rules_set.outscale_firewall_rules_set.group_name}"]
 		}
-	}
-	`, rInt, rInt, rInt, rInt, rInt, rInt)
+	}`, rInt, rInt)
 }

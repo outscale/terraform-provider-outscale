@@ -8,17 +8,17 @@ import (
 )
 
 func TestAccOutscaleFirewallRulesSet_importBasic(t *testing.T) {
-	resourceName := "outscale_firewall_rules_set.web"
+	resourceName := "outscale_firewall_rules_set.outscale_firewall_rules_set"
 
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		CheckDestroy: testAccCheckAWSSecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
+				Config: testAccAWSSecurityGroupRuleIngressConfig(rInt),
 			},
 
 			resource.TestStep{

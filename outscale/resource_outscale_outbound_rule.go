@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -447,41 +446,6 @@ func (err securityGroupNotFound) Error() string {
 	}
 	return fmt.Sprintf("Expected to find one security group with ID %q, got: %#v",
 		err.id, err.securityGroups)
-}
-
-func protocolForValue(v string) string {
-	protocol := strings.ToLower(v)
-	if protocol == "-1" || protocol == "all" {
-		return "-1"
-	}
-	if _, ok := sgProtocolIntegers()[protocol]; ok {
-		return protocol
-	}
-	p, err := strconv.Atoi(protocol)
-	if err != nil {
-		fmt.Printf("\n\n[WARN] Unable to determine valid protocol: %s", err)
-		return protocol
-	}
-
-	for k, v := range sgProtocolIntegers() {
-		if p == v {
-			return strings.ToLower(k)
-		}
-	}
-
-	fmt.Printf("\n\n[WARN] Unable to determine valid protocol: no matching protocols found")
-	return protocol
-}
-
-func sgProtocolIntegers() map[string]int {
-	var protocolIntegers = make(map[string]int)
-	protocolIntegers = map[string]int{
-		"udp":  17,
-		"tcp":  6,
-		"icmp": 1,
-		"all":  -1,
-	}
-	return protocolIntegers
 }
 
 func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {

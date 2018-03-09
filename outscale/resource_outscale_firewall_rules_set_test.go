@@ -2,51 +2,56 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
+	"log"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleFirewallRulesSet(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi == false {
-		t.Skip()
-	}
+func TestAccAWSSecurityGroupRule_Ingress_VPC(t *testing.T) {
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
+
+	testRuleCount := func(*terraform.State) error {
+		if len(group.IpPermissions) != 1 {
+			return fmt.Errorf("Wrong Security Group rule count, expected %d, got %d",
+				1, len(group.IpPermissions))
+		}
+
+		rule := group.IpPermissions[0]
+		if *rule.FromPort != int64(80) {
+			return fmt.Errorf("Wrong Security Group port setting, expected %d, got %d",
+				80, int(*rule.FromPort))
+		}
+
+		return nil
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		CheckDestroy: testAccCheckAWSSecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
+				Config: testAccAWSSecurityGroupRuleIngressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					resource.TestCheckResourceAttr(
-						"outscale_firewall_rules_set.web", "group_name", fmt.Sprintf("terraform_test_%d", rInt)),
+					testAccCheckAWSSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
+					testAccCheckAWSSecurityGroupRuleAttributes("outscale_inbound_rule.ingress_1", &group, nil, "ingress"),
+					testRuleCount,
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
+func testAccCheckAWSSecurityGroupRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -61,11 +66,12 @@ func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 
 		var resp *fcu.DescribeSecurityGroupsOutput
 		var err error
+
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeSecurityGroups(req)
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -82,21 +88,20 @@ func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		if resp == nil {
-			return nil
-		}
-
-		if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+		ec2err, ok := err.(awserr.Error)
+		if !ok {
 			return err
 		}
-
-		return err
+		// Confirm error code is what we want
+		if ec2err.Code() != "InvalidGroup.NotFound" {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckAWSSecurityGroupRuleExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -114,11 +119,12 @@ func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGr
 
 		var resp *fcu.DescribeSecurityGroupsOutput
 		var err error
+
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeSecurityGroups(req)
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -140,14 +146,119 @@ func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGr
 	}
 }
 
-func testAccOutscaleFirewallRulesSetConfig(rInt int) string {
+func testAccCheckAWSSecurityGroupRuleAttributes(n string, group *fcu.SecurityGroup, p *fcu.IpPermission, ruleType string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Security Group Rule Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Security Group Rule is set")
+		}
+
+		if p == nil {
+			p = &fcu.IpPermission{
+				FromPort:   aws.Int64(80),
+				ToPort:     aws.Int64(8000),
+				IpProtocol: aws.String("tcp"),
+				IpRanges:   []*fcu.IpRange{{CidrIp: aws.String("10.0.0.0/8")}},
+			}
+		}
+
+		var matchingRule *fcu.IpPermission
+		var rules []*fcu.IpPermission
+		if ruleType == "ingress" {
+			rules = group.IpPermissions
+		} else {
+			rules = group.IpPermissionsEgress
+		}
+
+		if len(rules) == 0 {
+			return fmt.Errorf("No IPPerms")
+		}
+
+		for _, r := range rules {
+			if r.ToPort != nil && *p.ToPort != *r.ToPort {
+				continue
+			}
+
+			if r.FromPort != nil && *p.FromPort != *r.FromPort {
+				continue
+			}
+
+			if r.IpProtocol != nil && *p.IpProtocol != *r.IpProtocol {
+				continue
+			}
+
+			remaining := len(p.IpRanges)
+			for _, ip := range p.IpRanges {
+				for _, rip := range r.IpRanges {
+					if *ip.CidrIp == *rip.CidrIp {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(p.UserIdGroupPairs)
+			for _, ip := range p.UserIdGroupPairs {
+				for _, rip := range r.UserIdGroupPairs {
+					if *ip.GroupId == *rip.GroupId {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(p.PrefixListIds)
+			for _, pip := range p.PrefixListIds {
+				for _, rpip := range r.PrefixListIds {
+					if *pip.PrefixListId == *rpip.PrefixListId {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			matchingRule = r
+		}
+
+		if matchingRule != nil {
+			log.Printf("[DEBUG] Matching rule found : %s", matchingRule)
+			return nil
+		}
+
+		return fmt.Errorf("Error here\n\tlooking for %s, wasn't found in %s", p, rules)
+	}
+}
+
+func testAccAWSSecurityGroupRuleIngressConfig(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		tag = {
-						Name = "tf-acc-test"
+					tags = {
+									Name = "tf-acc-test"
+					}
+	}
+	resource "outscale_inbound_rule" "ingress_1" {
+		ip_permissions = {
+			ip_protocol = "tcp"
+		from_port = 80
+		to_port = 8000
+		ip_ranges = ["10.0.0.0/8"]
 		}
-		vpc_id = "vpc-e9d09d63"
+		group_id = "${outscale_firewall_rules_set.web.id}"
+		
 	}`, rInt)
 }
