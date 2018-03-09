@@ -20,7 +20,7 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi != false {
 		t.Skip()
 	}
 	var a fcu.Address
