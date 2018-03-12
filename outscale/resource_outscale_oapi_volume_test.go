@@ -96,10 +96,10 @@ func testAccCheckOAPIVolumeExists(n string, v *fcu.Volume) resource.TestCheckFun
 
 const testAccOutscaleOAPIVolumeConfig = `
 resource "outscale_volume" "test" {
-  availability_zone = "eu-west-2a"
-  volume_type = "gp2"
+  sub_region_name = "eu-west-2a"
+  type = "gp2"
   size = 1
-  tags {
+  tag {
     Name = "tf-acc-test-ebs-volume-test"
   }
 }
@@ -107,10 +107,10 @@ resource "outscale_volume" "test" {
 
 const testOutscaleOAPIVolumeConfigUpdateSize = `
 resource "outscale_volume" "test" {
-  availability_zone = "eu-west-2a"
-  volume_type = "gp2"
+  sub_region_name = "eu-west-2a"
+  type = "gp2"
   size = 10
-  tags {
+  tag {
     Name = "tf-acc-test-ebs-volume-test"
   }
 }

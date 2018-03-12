@@ -23,7 +23,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			"availability_zone": {
+			"sub_region_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -46,19 +46,19 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-			"volume_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
 			},
 			// Attributes
-			"attachment_set": {
+			"linked_volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"delete_on_termination": {
+						"delete_on_vm_termination": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
@@ -66,11 +66,11 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_id": {
+						"vm_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -81,11 +81,11 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 					},
 				},
 			},
-			"status": {
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": {
+			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -101,7 +101,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				},
 				Computed: true,
 			},
-			"tags": tagsSchema(),
+			"tag": tagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -114,7 +114,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	request := &fcu.CreateVolumeInput{
-		AvailabilityZone: aws.String(d.Get("availability_zone").(string)),
+		AvailabilityZone: aws.String(d.Get("sub_region_name").(string)),
 	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = aws.Int64(int64(value.(int)))
@@ -124,7 +124,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var t string
-	if value, ok := d.GetOk("volume_type"); ok {
+	if value, ok := d.GetOk("type"); ok {
 		t = value.(string)
 		request.VolumeType = aws.String(t)
 	}
@@ -138,12 +138,12 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	tagsSpec := make([]*fcu.TagSpecification, 0)
 
-	if v, ok := d.GetOk("tags"); ok {
-		tags := tagsFromMap(v.(map[string]interface{}))
+	if v, ok := d.GetOk("tag"); ok {
+		tag := tagsFromMap(v.(map[string]interface{}))
 
 		spec := &fcu.TagSpecification{
 			ResourceType: aws.String("volume"),
-			Tags:         tags,
+			Tags:         tag,
 		}
 
 		tagsSpec = append(tagsSpec, spec)
@@ -198,7 +198,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		if err := setTags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tags")
 	}
 
 	return readOAPIVolume(d, result)
@@ -283,7 +283,7 @@ func volumeOAPIStateRefreshFunc(conn *fcu.Client, volumeID string) resource.Stat
 func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 	d.SetId(*volume.VolumeId)
 
-	d.Set("availability_zone", *volume.AvailabilityZone)
+	d.Set("sub_region_name", *volume.AvailabilityZone)
 	if volume.Size != nil {
 		d.Set("size", *volume.Size)
 	}
@@ -291,7 +291,7 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 		d.Set("snapshot_id", *volume.SnapshotId)
 	}
 	if volume.VolumeType != nil {
-		d.Set("volume_type", *volume.VolumeType)
+		d.Set("type", *volume.VolumeType)
 	}
 
 	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
@@ -300,29 +300,29 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 		}
 	}
 	if volume.State != nil {
-		d.Set("status", *volume.State)
+		d.Set("state", *volume.State)
 	}
 	if volume.VolumeId != nil {
 		d.Set("volume_id", *volume.VolumeId)
 	}
 	if volume.VolumeType != nil {
-		d.Set("volume_type", *volume.VolumeType)
+		d.Set("type", *volume.VolumeType)
 	}
 	if volume.Attachments != nil {
 		res := make([]map[string]interface{}, len(volume.Attachments))
 		for k, g := range volume.Attachments {
 			r := make(map[string]interface{})
 			if g.DeleteOnTermination != nil {
-				r["delete_on_termination"] = *g.DeleteOnTermination
+				r["delete_on_vm_termination"] = *g.DeleteOnTermination
 			}
 			if g.Device != nil {
 				r["device"] = *g.Device
 			}
 			if g.InstanceId != nil {
-				r["instance_id"] = *g.InstanceId
+				r["vm_id"] = *g.InstanceId
 			}
 			if g.State != nil {
-				r["status"] = *g.State
+				r["state"] = *g.State
 			}
 			if g.VolumeId != nil {
 				r["volume_id"] = *g.VolumeId
@@ -332,28 +332,28 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 
 		}
 
-		if err := d.Set("attachment_set", res); err != nil {
+		if err := d.Set("linked_volumes", res); err != nil {
 			return err
 		}
 	} else {
-		if err := d.Set("attachment_set", []map[string]interface{}{
+		if err := d.Set("linked_volumes", []map[string]interface{}{
 			map[string]interface{}{
-				"delete_on_termination": false,
-				"device":                "none",
-				"instance_id":           "none",
-				"status":                "none",
-				"volume_id":             "none",
+				"delete_on_vm_termination": false,
+				"device":                   "none",
+				"vm_id":                    "none",
+				"state":                    "none",
+				"volume_id":                "none",
 			},
 		}); err != nil {
 			return err
 		}
 	}
 	if volume.Tags != nil {
-		if err := d.Set("tag_set", tagsToMap(volume.Tags)); err != nil {
+		if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
 			return err
 		}
 	} else {
-		if err := d.Set("tag_set", []map[string]string{
+		if err := d.Set("tags", []map[string]string{
 			map[string]string{
 				"key":   "",
 				"value": "",
