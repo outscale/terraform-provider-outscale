@@ -23,7 +23,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 				Config: testAccVolumeAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
+						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
 					testAccCheckOAPIVolumeExists(
@@ -58,7 +58,7 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Vo
 		}
 
 		for _, b := range i.BlockDeviceMappings {
-			if rs.Primary.Attributes["device"] == *b.DeviceName {
+			if rs.Primary.Attributes["device_name"] == *b.DeviceName {
 				if b.Ebs.VolumeId != nil && rs.Primary.Attributes["volume_id"] == *b.Ebs.VolumeId {
 					// pass
 					return nil
@@ -73,18 +73,18 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Vo
 const testAccOAPIVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
-	instance_type = "t1.micro"
-	tags {
+	type = "t1.micro"
+	tag {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
-  availability_zone = "eu-west-2a"
+  sub_region_name = "eu-west-2a"
 	size = 1
 }
 resource "outscale_volume_link" "ebs_att" {
-  device = "/dev/sdh"
+  device_name = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
-	instance_id = "${outscale_vm.web.id}"
+	vm_id = "${outscale_vm.web.id}"
 }
 `

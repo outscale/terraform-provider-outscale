@@ -36,12 +36,12 @@ func resourceOutscaleOAPIVolumeLink() *schema.Resource {
 func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Arguments
-		"device": {
+		"device_name": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"instance_id": {
+		"vm_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
@@ -54,12 +54,12 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		// Attributes
-		"delete_on_termination": {
+		"delete_on_vm_termination": {
 			Type:     schema.TypeBool,
 			Optional: true,
 			ForceNew: true,
 		},
-		"status": {
+		"state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -68,8 +68,8 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 
 func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	name := d.Get("device").(string)
-	iID := d.Get("instance_id").(string)
+	name := d.Get("device_name").(string)
+	iID := d.Get("vm_id").(string)
 	vID := d.Get("volume_id").(string)
 
 	// Find out if the volume is already attached to the instance, in which case
@@ -82,7 +82,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 				Values: []*string{aws.String(iID)},
 			},
 			&fcu.Filter{
-				Name:   aws.String("attachment.device"),
+				Name:   aws.String("attachment.device_name"),
 				Values: []*string{aws.String(name)},
 			},
 		},
@@ -232,7 +232,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		Filters: []*fcu.Filter{
 			&fcu.Filter{
 				Name:   aws.String("attachment.instance-id"),
-				Values: []*string{aws.String(d.Get("instance_id").(string))},
+				Values: []*string{aws.String(d.Get("vm_id").(string))},
 			},
 		},
 	}
@@ -257,7 +257,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("instance_id").(string), err)
+		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
 
 	if len(vols.Volumes) == 0 || *vols.Volumes[0].State == "available" {
@@ -279,10 +279,10 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	vID := d.Get("volume_id").(string)
-	iID := d.Get("instance_id").(string)
+	iID := d.Get("vm_id").(string)
 
 	opts := &fcu.DetachVolumeInput{
-		Device:     aws.String(d.Get("device").(string)),
+		Device:     aws.String(d.Get("device_name").(string)),
 		InstanceId: aws.String(iID),
 		VolumeId:   aws.String(vID),
 		//Force:      aws.Bool(d.Get("force_detach").(bool)),
