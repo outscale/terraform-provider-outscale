@@ -2,10 +2,12 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -113,25 +115,21 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
+	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	if filtersOk == false {
-		return fmt.Errorf("One of filters must be assigned")
-	}
-
-	// Build up search parameters
-
-	request := &fcu.DescribeVolumesInput{
-		VolumeIds: []*string{aws.String(d.Id())},
-	}
+	params := &fcu.DescribeVolumesInput{}
 	if filtersOk {
-		request.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if VolumeIdsOk {
+		params.VolumeIds = []*string{aws.String(VolumeIds.(string))}
 	}
 
-	var response *fcu.DescribeVolumesOutput
+	var resp *fcu.DescribeVolumesOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		response, err = conn.VM.DescribeVolumes(request)
+		resp, err = conn.VM.DescribeVolumes(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -142,17 +140,20 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
+		return err
 	}
 
-	return volumesDescriptionAttributes(d, response.Volumes)
+	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
+
+	filteredVolumes := resp.Volumes[:]
+
+	if len(filteredVolumes) < 1 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+	}
+
+	return volumesDescriptionAttributes(d, filteredVolumes)
 }
 
-// populate the numerous fields that the volume description returns.
 func volumesDescriptionAttributes(d *schema.ResourceData, volumes []*fcu.Volume) error {
 
 	i := make([]interface{}, len(volumes))
