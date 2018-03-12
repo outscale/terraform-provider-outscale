@@ -29,11 +29,10 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"owners": {
-				Type:     schema.TypeList,
+			"owner": {
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			// Computed values.
 			"architecture": {
@@ -141,11 +140,11 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 
 	executableUsers, executableUsersOk := d.GetOk("executable_by")
 	filters, filtersOk := d.GetOk("filter")
-	owners, ownersOk := d.GetOk("owners")
+	owner, ownersOk := d.GetOk("owner")
 	imageID, imageIDOk := d.GetOk("image_id")
 
 	if executableUsersOk == false && filtersOk == false && ownersOk == false && imageIDOk == false {
-		return fmt.Errorf("One of executable_users, filters, or owners must be assigned, or image_id must be provided")
+		return fmt.Errorf("One of executable_users, filters, or owner must be assigned, or image_id must be provided")
 	}
 
 	params := &fcu.DescribeImagesInput{}
@@ -159,11 +158,7 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 		params.ImageIds = []*string{aws.String(imageID.(string))}
 	}
 	if ownersOk {
-		o := expandStringList(owners.([]interface{}))
-
-		if len(o) > 0 {
-			params.Owners = o
-		}
+		params.Owners = []*string{aws.String(owner.(string))}
 	}
 
 	var res *fcu.DescribeImagesOutput
