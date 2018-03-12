@@ -3,8 +3,12 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_image"
 sidebar_current: "docs-outscale-resource-image"
 description: |-
-Creates an OMI from an existing instance which is either running or stopped.
+  Creates an OMI from an existing instance which is either running or stopped.
 ---
+
+# outscale_image
+
+Creates an OMI from an existing instance which is either running or stopped.
 
 ## Example Usage
 
@@ -72,3 +76,7 @@ The timeouts block allows you to specify timeouts for certain actions:
 * `create` - (Defaults to 40 mins) Used when creating the Image
 * `update` - (Defaults to 40 mins) Used when updating the Image
 * `delete` - (Defaults to 90 mins) Used when deregistering the Image
+
+See detailed information in [Create Image](http://docs.outscale.com/api_fcu/operations/Action_CreateImage_get.html#_api_fcu-action_createimage_get).
+See detailed information in [Describe Images](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_api_fcu-action_describeimages_get).
+See detailed information in [Register Image](http://docs.outscale.com/api_fcu/operations/Action_RegisterImage_get.html#_api_fcu-action_registerimage_get).

@@ -26,7 +26,7 @@ data "outscale_image" "centos73" {
   filter {
   name = "description" values = ["Centos 7.3*"]
   }
-} 
+}
 /* instance creation */
 resource "outscale_vm" "web" {
   image_id = "${data.outscale_image.centos73.image_id}"
@@ -69,4 +69,4 @@ The following attributes are exported:
 * `requester_id` - The ID of the requester.
 * `reservation_id` - Zero or more reservations, giving you information about your request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/definitions/Reservation.html#_api_fcu-reservation).
+See detailed information in [Tags](http://docs.outscale.com/api_fcu/index.html#_tags).
