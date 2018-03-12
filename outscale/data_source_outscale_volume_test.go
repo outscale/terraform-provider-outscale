@@ -8,40 +8,23 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleEbsVolumeDataSource_basic(t *testing.T) {
+func TestAccOutscaleVolumeDataSource_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckAwsEbsVolumeDataSourceConfig,
+				Config: testAccCheckOutscaleVolumeDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsEbsVolumeDataSourceID("data.outscale_volume.outscale_volume"),
-					resource.TestCheckResourceAttr("data.outscale_volume.outscale_volume", "size", "40"),
+					testAccCheckOutscaleVolumeDataSourceID("data.outscale_volume.ebs_volume"),
+					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "40"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleEbsVolumeDataSource_multipleFilters(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckAwsEbsVolumeDataSourceConfigWithMultipleFilters,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAwsEbsVolumeDataSourceID("data.outscale_volume.outscale_volume"),
-					resource.TestCheckResourceAttr("data.outscale_volume.outscale_volume", "size", "10"),
-					resource.TestCheckResourceAttr("data.outscale_volume.outscale_volume", "volume_type", "gp2"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckAwsEbsVolumeDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleVolumeDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -55,44 +38,19 @@ func testAccCheckAwsEbsVolumeDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckAwsEbsVolumeDataSourceConfig = `
+const testAccCheckOutscaleVolumeDataSourceConfig = `
 resource "outscale_volume" "example" {
     availability_zone = "eu-west-2a"
     volume_type = "gp2"
     size = 40
-    tags = {
+    tags {
         Name = "External Volume"
     }
 }
-data "outscale_volume" "outscale_volume" {
+data "outscale_volume" "ebs_volume" {
     filter {
-	name = "volume-type"
-	values = ["${outscale_volume.example.volume_type}"]
-    }
-}
-`
-
-const testAccCheckAwsEbsVolumeDataSourceConfigWithMultipleFilters = `
-resource "outscale_volume" "external1" {
-    availability_zone = "eu-west-2a"
-    volume_type = "gp2"
-    size = 10
-    tags = {
-        Name = "External Volume 1"
-    }
-}
-data "outscale_volume" "outscale_volume" {
-    filter = {
-	name = "tag:Name"
-	values = ["External Volume 1"]
-    }
-    filter = {
-	name = "size"
-	values = ["${outscale_volume.external1.size}"]
-    }
-    filter = {
-	name = "volume-type"
-	values = ["${outscale_volume.external1.type}"]
+		name = "volume-id"
+		values = ["${outscale_volume.example.id}"]
     }
 }
 `
