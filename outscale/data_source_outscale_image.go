@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -22,11 +24,10 @@ func dataSourceOutscaleImage() *schema.Resource {
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"image_ids": {
-				Type:     schema.TypeList,
+			"image_id": {
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"owners": {
 				Type:     schema.TypeList,
@@ -44,10 +45,6 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Computed: true,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"image_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -145,9 +142,10 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	executableUsers, executableUsersOk := d.GetOk("executable_by")
 	filters, filtersOk := d.GetOk("filter")
 	owners, ownersOk := d.GetOk("owners")
+	imageID, imageIDOk := d.GetOk("image_id")
 
-	if executableUsersOk == false && filtersOk == false && ownersOk == false {
-		return fmt.Errorf("One of executable_users, filters, or owners must be assigned")
+	if executableUsersOk == false && filtersOk == false && ownersOk == false && imageIDOk == false {
+		return fmt.Errorf("One of executable_users, filters, or owners must be assigned, or image_id must be provided")
 	}
 
 	params := &fcu.DescribeImagesInput{}
@@ -156,6 +154,9 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	}
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if imageIDOk {
+		params.ImageIds = []*string{aws.String(imageID.(string))}
 	}
 	if ownersOk {
 		o := expandStringList(owners.([]interface{}))
