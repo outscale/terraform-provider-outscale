@@ -66,9 +66,9 @@ func Provider() terraform.ResourceProvider {
 			"outscale_volume_link":        GetResource(fcu, "outscale_volume_link")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"outscale_vm":                 GetDatasource(fcu, "outscale_vm")(),
-			"outscale_vms":                GetDatasource(fcu, "outscale_vms")(),
-			"outscale_firewall_rule_set":  GetDatasource(fcu, "outscale_firewall_rule_set")(),
+			"outscale_vm":  GetDatasource(fcu, "outscale_vm")(),
+			"outscale_vms": GetDatasource(fcu, "outscale_vms")(),
+			// "outscale_firewall_rule_set":  GetDatasource(fcu, "outscale_firewall_rule_set")(),
 			"outscale_firewall_rules_set": GetDatasource(fcu, "outscale_firewall_rules_set")(),
 			"outscale_image":              GetDatasource(fcu, "outscale_image")(),
 			"outscale_images":             GetDatasource(fcu, "outscale_images")(),
@@ -76,6 +76,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_tags":               GetDatasource(fcu, "outscale_tags")(),
 			"outscale_public_ip":          GetDatasource(fcu, "outscale_public_ip")(),
 			"outscale_public_ips":         GetDatasource(fcu, "outscale_public_ips")(),
+			"outscale_volume":             GetDatasource(fcu, "outscale_volume")(),
+			"outscale_volumes":            GetDatasource(fcu, "outscale_volumes")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

@@ -56,7 +56,8 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 		// Attributes
 		"delete_on_vm_termination": {
 			Type:     schema.TypeBool,
-			Computed: true,
+			Optional: true,
+			ForceNew: true,
 		},
 		"state": {
 			Type:     schema.TypeString,
@@ -104,6 +105,9 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	})
 
 	if (err != nil) || (len(vols.Volumes) == 0) {
+		// This handles the situation where the instance is created by
+		// a spot request and whilst the request has been fulfilled the
+		// instance is not running yet
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
@@ -120,6 +124,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 				iID, err)
 		}
 
+		// not attached
 		opts := &fcu.AttachVolumeInput{
 			Device:     aws.String(name),
 			InstanceId: aws.String(iID),
@@ -214,6 +219,7 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *fcu.Client, volumeID, instanceID
 				}
 			}
 		}
+		// assume detached if volume count is 0
 		return 42, "detached", nil
 	}
 }
@@ -279,6 +285,13 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 		Device:     aws.String(d.Get("device_name").(string)),
 		InstanceId: aws.String(iID),
 		VolumeId:   aws.String(vID),
+		//Force:      aws.Bool(d.Get("force_detach").(bool)),
+	}
+
+	force, forceOk := d.GetOk("force_detach")
+	if forceOk {
+		opts.Force = aws.Bool(force.(bool))
+
 	}
 
 	var err error

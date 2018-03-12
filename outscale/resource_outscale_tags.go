@@ -409,7 +409,8 @@ func tagsSchema() *schema.Schema {
 
 func tagsSchemaComputed() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeMap,
+		Type:     schema.TypeList,
 		Computed: true,
+		Elem:     &schema.Schema{Type: schema.TypeMap},
 	}
 }

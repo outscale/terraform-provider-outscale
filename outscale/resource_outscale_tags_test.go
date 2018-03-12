@@ -17,7 +17,7 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi == false {
 		t.Skip()
 	}
 	var v fcu.Instance
@@ -53,13 +53,13 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 // 			return nil
 // 		}
 
-//     	if v != value {
-//  			return fmt.Errorf("%s: bad value: %s", key, v)
-//  		}
+// 		if v != value {
+// 			return fmt.Errorf("%s: bad value: %s", key, v)
+// 		}
 
-//  		return nil
-//  	}
-//  }
+// 		return nil
+// 	}
+// }
 
 const testAccCheckInstanceConfigTags = `
 resource "outscale_vm" "foo" {

@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
@@ -22,15 +21,13 @@ func TestAccOutscaleFirewallRulesSet_importBasic(t *testing.T) {
 	}
 	resourceName := "outscale_firewall_rules_set.web"
 
-	rInt := acctest.RandInt()
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSecurityGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
+				Config: testAccOutscaleSecurityGroupConfigClassic,
 			},
 
 			resource.TestStep{

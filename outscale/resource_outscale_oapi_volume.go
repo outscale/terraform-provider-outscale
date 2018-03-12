@@ -13,7 +13,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOAPIOutscaleVolume() *schema.Resource {
+func resourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeCreate,
 		Read:   resourceOAPIVolumeRead,
@@ -53,16 +53,16 @@ func resourceOAPIOutscaleVolume() *schema.Resource {
 				Computed: true,
 			},
 			// Attributes
-			"linked_volume": {
+			"linked_volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"delete_on_vm_deletion": {
+						"delete_on_vm_termination": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"device_name": {
+						"device": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -313,10 +313,10 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 		for k, g := range volume.Attachments {
 			r := make(map[string]interface{})
 			if g.DeleteOnTermination != nil {
-				r["delete_on_vm_deletion"] = *g.DeleteOnTermination
+				r["delete_on_vm_termination"] = *g.DeleteOnTermination
 			}
 			if g.Device != nil {
-				r["device_name"] = *g.Device
+				r["device"] = *g.Device
 			}
 			if g.InstanceId != nil {
 				r["vm_id"] = *g.InstanceId
@@ -332,17 +332,17 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 
 		}
 
-		if err := d.Set("linked_volume", res); err != nil {
+		if err := d.Set("linked_volumes", res); err != nil {
 			return err
 		}
 	} else {
-		if err := d.Set("linked_volume", []map[string]interface{}{
+		if err := d.Set("linked_volumes", []map[string]interface{}{
 			map[string]interface{}{
-				"delete_on_vm_deletion": false,
-				"device_name":           "none",
-				"vm_id":                 "none",
-				"state":                 "none",
-				"volume_id":             "none",
+				"delete_on_vm_termination": false,
+				"device":                   "none",
+				"vm_id":                    "none",
+				"state":                    "none",
+				"volume_id":                "none",
 			},
 		}); err != nil {
 			return err

@@ -39,84 +39,8 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ip_permissions": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"from_port": {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						"groups": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeMap},
-							Set:      schema.HashString,
-						},
-						"to_port": {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						"ip_protocol": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"ip_ranges": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validateCIDRNetworkAddress,
-							},
-						},
-						"prefix_list_ids": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-					},
-				},
-			},
-			"ip_permissions_egress": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"from_port": {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						"groups": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeMap},
-							Set:      schema.HashString,
-						},
-						"to_port": {
-							Type:     schema.TypeInt,
-							Computed: true,
-						},
-						"ip_protocol": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"ip_ranges": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validateCIDRNetworkAddress,
-							},
-						},
-						"prefix_list_ids": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-					},
-				},
-			},
+			"ip_permissions":        getDSIPPerms(),
+			"ip_permissions_egress": getDSIPPerms(),
 			"owner_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -209,63 +133,13 @@ func dataSourceOutscaleFirewallRuleSetRead(d *schema.ResourceData, meta interfac
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
 	d.Set("tag_set", tagsToMap(sg.Tags))
-	d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions))
-	d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress))
 
-	return nil
-}
-
-func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
-	ips := make([]map[string]interface{}, len(p))
-
-	for k, v := range p {
-		ip := make(map[string]interface{})
-		if v.FromPort != nil {
-			ip["from_port"] = *v.FromPort
-		}
-		if v.IpProtocol != nil {
-			ip["ip_protocol"] = *v.IpProtocol
-		}
-		if v.ToPort != nil {
-			ip["to_port"] = *v.ToPort
-		}
-
-		ipr := make([]string, len(v.IpRanges))
-		for i, v := range v.IpRanges {
-			if v.CidrIp != nil {
-				ipr[i] = *v.CidrIp
-			}
-		}
-		ip["ip_ranges"] = ipr
-
-		prx := make([]string, len(v.PrefixListIds))
-		for i, v := range v.PrefixListIds {
-			if v.PrefixListId != nil {
-				prx[i] = *v.PrefixListId
-			}
-		}
-		ip["prefix_list_ids"] = prx
-
-		grp := make([]map[string]interface{}, len(v.UserIdGroupPairs))
-		for i, v := range v.UserIdGroupPairs {
-			g := make(map[string]interface{})
-
-			if v.UserId != nil {
-				g["user_id"] = *v.UserId
-			}
-			if v.GroupName != nil {
-				g["group_name"] = *v.GroupName
-			}
-			if v.GroupId != nil {
-				g["group_id"] = *v.GroupId
-			}
-
-			grp[i] = g
-		}
-		ip["groups"] = grp
-
-		ips[k] = ip
+	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
+		return err
+	}
+	if err := d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress)); err != nil {
+		return err
 	}
 
-	return ips
+	return nil
 }

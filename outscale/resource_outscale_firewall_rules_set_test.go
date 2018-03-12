@@ -2,51 +2,79 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleFirewallRulesSet(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleSecurityGroup_DefaultEgress_Classic(t *testing.T) {
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi != false {
-		t.Skip()
-	}
+	// Classic
 	var group fcu.SecurityGroup
-	rInt := acctest.RandInt()
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleSGRuleDestroy,
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: "outscale_firewall_rules_set.web",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleSecurityGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleFirewallRulesSetConfig(rInt),
+				Config: testAccOutscaleSecurityGroupConfigClassic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupRuleExists("outscale_firewall_rules_set.web", &group),
-					resource.TestCheckResourceAttr(
-						"outscale_firewall_rules_set.web", "group_name", fmt.Sprintf("terraform_test_%d", rInt)),
+					testAccCheckOutscaleSecurityGroupExists("outscale_firewall_rules_set.web", &group),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
+func testAccCheckOutscaleSecurityGroupExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Security Group is set")
+		}
+
+		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		req := &fcu.DescribeSecurityGroupsInput{
+			GroupIds: []*string{aws.String(rs.Primary.ID)},
+		}
+		var err error
+		var resp *fcu.DescribeSecurityGroupsOutput
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeSecurityGroups(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+		if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
+			*group = *resp.SecurityGroups[0]
+			return nil
+		}
+
+		return fmt.Errorf("Security Group not found")
+	}
+}
+
+func testAccCheckOutscaleSecurityGroupDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -59,8 +87,8 @@ func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 			GroupIds: []*string{aws.String(rs.Primary.ID)},
 		}
 
-		var resp *fcu.DescribeSecurityGroupsOutput
 		var err error
+		var resp *fcu.DescribeSecurityGroupsOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeSecurityGroups(req)
 
@@ -82,72 +110,17 @@ func testAccCheckOutscaleSGRuleDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		if resp == nil {
+		if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
 			return nil
 		}
-
-		if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-			return err
-		}
-
-		return err
 	}
 
 	return nil
 }
 
-func testAccCheckOutscaleSecurityGroupRuleExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Security Group is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		req := &fcu.DescribeSecurityGroupsInput{
-			GroupIds: []*string{aws.String(rs.Primary.ID)},
-		}
-
-		var resp *fcu.DescribeSecurityGroupsOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSecurityGroups(req)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
-			*group = *resp.SecurityGroups[0]
-			return nil
-		}
-
-		return fmt.Errorf("Security Group not found")
-	}
+const testAccOutscaleSecurityGroupConfigClassic = `
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
 }
-
-func testAccOutscaleFirewallRulesSetConfig(rInt int) string {
-	return fmt.Sprintf(`
-	resource "outscale_firewall_rules_set" "web" {
-		group_name = "terraform_test_%d"
-		group_description = "Used in the terraform acceptance tests"
-		tag = {
-						Name = "tf-acc-test"
-		}
-		vpc_id = "vpc-e9d09d63"
-	}`, rInt)
-}
+`

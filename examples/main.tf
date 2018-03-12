@@ -1,6 +1,4 @@
 resource "outscale_inbound_rule" "outscale_inbound_rule1" {
-     count = 1 
-
     ip_permissions = {
         from_port = 22
         to_port = 22
@@ -12,8 +10,6 @@ resource "outscale_inbound_rule" "outscale_inbound_rule1" {
 }
 
 resource "outscale_inbound_rule" "outscale_inbound_rule2" {
-count = 1
-
      ip_permissions = {
         from_port = 443
         to_port = 443
@@ -25,10 +21,13 @@ count = 1
 }
 
 resource "outscale_firewall_rules_set" "outscale_firewall_rules_set" {
-    count = 1
-
     group_description = "test group tf"
     group_name = "sg1-test-group_test1"
 }
 
-data "outscale_firewall_rules_set" "by_filter" {}
+data "outscale_firewall_rules_set" "by_filter" {
+		filter {
+			name = "group-name"
+			values = ["${outscale_firewall_rules_set.outscale_firewall_rules_set.group_name}"]
+		}
+	}
