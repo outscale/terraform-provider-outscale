@@ -2,10 +2,12 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -13,22 +15,47 @@ import (
 
 func datasourceOutscaleOAPIVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceVolumesRead,
+		Read: datasourceOAPIVolumesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"volume": &schema.Schema{
+			"volumes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						//Schema: map[string]*schema.Schema{
-						"linked_volume": {
+						// Arguments
+						"sub_region_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"iops": {
+							Type: schema.TypeInt,
+
+							Computed: true,
+						},
+						"size": {
+							Type: schema.TypeInt,
+
+							Computed: true,
+						},
+						"snapshot_id": {
+							Type: schema.TypeString,
+
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						// Attributes
+						"linked_volumes": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"delete_on_vm_deletion": {
+									"delete_on_vm_termination": {
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
@@ -51,32 +78,11 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 								},
 							},
 						},
-						// Arguments
-						"sub_region_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"iops": {
-							Type: schema.TypeInt,
-
-							Computed: true,
-						},
-						"size": {
-							Type: schema.TypeInt,
-
-							Computed: true,
-						},
-						"snapshot_id": {
-							Type: schema.TypeString,
-
-							Computed: true,
-						},
 						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						// Attributes
-						"tag": {
+						"tags": {
 							Type: schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -92,12 +98,8 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							},
 							Computed: true,
 						},
-						//						"tags": tagsSchema(),
+						"tag": tagsSchema(),
 						"volume_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -113,25 +115,21 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
+	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	if filtersOk == false {
-		return fmt.Errorf("One of filters must be assigned")
-	}
-
-	// Build up search parameters
-
-	request := &fcu.DescribeVolumesInput{
-		VolumeIds: []*string{aws.String(d.Id())},
-	}
+	params := &fcu.DescribeVolumesInput{}
 	if filtersOk {
-		request.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if VolumeIdsOk {
+		params.VolumeIds = []*string{aws.String(VolumeIds.(string))}
 	}
 
-	var response *fcu.DescribeVolumesOutput
+	var resp *fcu.DescribeVolumesOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		response, err = conn.VM.DescribeVolumes(request)
+		resp, err = conn.VM.DescribeVolumes(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -142,18 +140,21 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
+		return err
 	}
 
-	return volumesDescriptionOAPIAttributes(d, response.Volumes)
+	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
+
+	filteredVolumes := resp.Volumes[:]
+
+	if len(filteredVolumes) < 1 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+	}
+
+	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-// populate the numerous fields that the volume description returns.
-func volumesDescriptionOAPIAttributes(d *schema.ResourceData, volumes []*fcu.Volume) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*fcu.Volume) error {
 
 	i := make([]interface{}, len(volumes))
 
@@ -165,13 +166,13 @@ func volumesDescriptionOAPIAttributes(d *schema.ResourceData, volumes []*fcu.Vol
 			for k, v := range v.Attachments {
 				at := make(map[string]interface{})
 				if v.DeleteOnTermination != nil {
-					at["delete_on_termination"] = *v.DeleteOnTermination
+					at["delete_on_vm_termination"] = *v.DeleteOnTermination
 				}
 				if v.Device != nil {
-					at["device"] = *v.Device
+					at["device_name"] = *v.Device
 				}
 				if v.InstanceId != nil {
-					at["instance_id"] = *v.InstanceId
+					at["vm_id"] = *v.InstanceId
 				}
 				if v.State != nil {
 					at["state"] = *v.State
@@ -181,10 +182,10 @@ func volumesDescriptionOAPIAttributes(d *schema.ResourceData, volumes []*fcu.Vol
 				}
 				a[k] = at
 			}
-			im["attachment_set"] = a
+			im["linked_volumes"] = a
 		}
 		if v.AvailabilityZone != nil {
-			im["availability_zone"] = *v.AvailabilityZone
+			im["sub_region_name"] = *v.AvailabilityZone
 		}
 		if v.Iops != nil {
 			im["iops"] = *v.Iops
@@ -196,13 +197,13 @@ func volumesDescriptionOAPIAttributes(d *schema.ResourceData, volumes []*fcu.Vol
 			im["snapshot_id"] = *v.SnapshotId
 		}
 		if v.Tags != nil {
-			im["tag_set"] = dataSourceTags(v.Tags)
+			im["tags"] = dataSourceTags(v.Tags)
 		}
 		if v.VolumeType != nil {
-			im["volume_type"] = *v.VolumeType
+			im["type"] = *v.VolumeType
 		}
 		if v.State != nil {
-			im["status"] = *v.State
+			im["state"] = *v.State
 		}
 		if v.VolumeId != nil {
 			im["volume_id"] = *v.VolumeId
@@ -210,7 +211,7 @@ func volumesDescriptionOAPIAttributes(d *schema.ResourceData, volumes []*fcu.Vol
 		i[k] = im
 	}
 
-	err := d.Set("volume_set", i)
+	err := d.Set("volumes", i)
 	d.SetId(resource.UniqueId())
 
 	return err
