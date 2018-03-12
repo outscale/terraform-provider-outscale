@@ -36,30 +36,14 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVolumeAttachment_skipDestroy(t *testing.T) {
-	var i fcu.Instance
-	var v fcu.Volume
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckVolumeAttachmentDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccVolumeAttachmentConfigSkipDestroy,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
-					testAccCheckInstanceExists(
-						"outscale_vm.web", &i),
-					testAccCheckVolumeExists(
-						"outscale_volume.example", &v),
-					testAccCheckVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i, &v),
-				),
-			},
-		},
-	})
+func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		log.Printf("\n\n----- This is never called")
+		if rs.Type != "outscale_volume_link" {
+			continue
+		}
+	}
+	return nil
 }
 
 func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume) resource.TestCheckFunc {
@@ -86,70 +70,21 @@ func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume
 	}
 }
 
-func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		log.Printf("\n\n----- This is never called")
-		if rs.Type != "outscale_volume_link" {
-			continue
-		}
-	}
-	return nil
-}
-
 const testAccVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags = {
+	tags {
 		Name = "HelloWorld"
 	}
 }
 resource "outscale_volume" "example" {
+  availability_zone = "eu-west-2a"
 	size = 1
-	availability_zone = "eu-west-2a"
-	tags = {
-		Name = "HelloWorld Volume"
-	}
 }
 resource "outscale_volume_link" "ebs_att" {
   device = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
 	instance_id = "${outscale_vm.web.id}"
-}
-`
-
-const testAccVolumeAttachmentConfigSkipDestroy = `
-resource "outscale_vm" "web" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t1.micro"
-	tags = {
-		Name = "HelloWorld"
-	}
-}
-resource "outscale_volume" "example" {
-	size = 1
-	tags = {
-		Name = "TestVolume"
-	}
-}
-data "outscale_volume" "ebs_volume" {
-    filter {
-	name = "size"
-	values = ["${outscale_volume.example.size}"]
-    }
-    filter {
-	name = "availability-zone"
-	values = ["${outscale_volume.example.availability_zone}"]
-    }
-    filter {
-	name = "tag:Name"
-	values = ["TestVolume"]
-    }
-}
-resource "outscale_volume_link" "ebs_att" {
-  	device = "/dev/sdh"
-	volume_id = "${data.outscale_volume.ebs_volume.id}"
-	instance_id = "${outscale_vm.web.id}"
-	skip_destroy = true
 }
 `
