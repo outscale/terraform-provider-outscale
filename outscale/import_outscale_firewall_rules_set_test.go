@@ -3,22 +3,19 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccOutscaleFirewallRulesSet_importBasic(t *testing.T) {
-	resourceName := "outscale_firewall_rules_set.outscale_firewall_rules_set"
-
-	rInt := acctest.RandInt()
+	resourceName := "outscale_firewall_rules_set.web"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckAWSSecurityGroupRuleDestroy,
+		CheckDestroy: testAccCheckOutscaleSecurityGroupDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccAWSSecurityGroupRuleIngressConfig(rInt),
+				Config: testAccOutscaleSecurityGroupConfigClassic,
 			},
 
 			resource.TestStep{

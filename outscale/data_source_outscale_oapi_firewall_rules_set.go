@@ -80,8 +80,8 @@ func dataSourceOutscaleOAPIFirewallRulesSets() *schema.Resource {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Schema{
-											Type:         schema.TypeString,
-											ValidateFunc: validateCIDRNetworkAddress,
+											Type: schema.TypeString,
+											// ValidateFunc: validateCIDRNetworkAddress,
 										},
 									},
 									"prefix_list_ids": {
@@ -119,8 +119,8 @@ func dataSourceOutscaleOAPIFirewallRulesSets() *schema.Resource {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Schema{
-											Type:         schema.TypeString,
-											ValidateFunc: validateCIDRNetworkAddress,
+											Type: schema.TypeString,
+											// ValidateFunc: validateCIDRNetworkAddress,
 										},
 									},
 									"prefix_list_ids": {

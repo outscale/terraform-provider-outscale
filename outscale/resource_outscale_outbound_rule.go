@@ -1,20 +1,20 @@
 package outscale
 
 import (
+	"bytes"
 	"fmt"
 	"log"
-	"net"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/errwrap"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/mutexkv"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleOutboundRule() *schema.Resource {
@@ -22,9 +22,6 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 		Create: resourceOutscaleOutboundRuleCreate,
 		Read:   resourceOutscaleOutboundRuleRead,
 		Delete: resourceOutscaleOutboundRuleDelete,
-		// Importer: &schema.ResourceImporter{
-		// 	State: resourceOutscaleOutboundImportState,
-		// },
 
 		Schema: map[string]*schema.Schema{
 			"cidr_ip": {
@@ -82,10 +79,10 @@ func getIpPermissionsSchema() *schema.Schema {
 					ForceNew: true,
 				},
 				"groups": {
-					Type:     schema.TypeList,
+					Type:     schema.TypeSet,
 					Optional: true,
 					Elem:     &schema.Schema{Type: schema.TypeString},
-					// Set:      schema.HashString,
+					Set:      schema.HashString,
 				},
 				"to_port": {
 					Type:     schema.TypeInt,
@@ -102,8 +99,8 @@ func getIpPermissionsSchema() *schema.Schema {
 					Optional: true,
 					ForceNew: true,
 					Elem: &schema.Schema{
-						Type:         schema.TypeString,
-						ValidateFunc: validateCIDRNetworkAddress,
+						Type: schema.TypeString,
+						// ValidateFunc: validateCIDRNetworkAddress,
 					},
 				},
 				"prefix_list_ids": {
@@ -119,7 +116,6 @@ func getIpPermissionsSchema() *schema.Schema {
 
 func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-
 	sg_id := d.Get("group_id").(string)
 
 	awsMutexKV.Lock(sg_id)
@@ -130,12 +126,14 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	perm, err := expandIPPerm(d, sg)
+	perms, err := expandIPPermEgress(d, sg)
 	if err != nil {
 		return err
 	}
 
-	if err := validateOutscaleSecurityGroupRule(d); err != nil {
+	ippems := d.Get("ip_permissions").([]interface{})
+
+	if err := validateAwsSecurityGroupRule(ippems); err != nil {
 		return err
 	}
 
@@ -143,19 +141,21 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
 
 	var autherr error
-	fmt.Printf("[DEBUG] Authorizing security group %s %s rule: %#v",
-		sg_id, "Egress", perm)
+	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sg_id, "Egress", perms)
 
 	req := &fcu.AuthorizeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: perm,
+		IpPermissions: perms,
 	}
 
-	resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, autherr = conn.VM.AuthorizeSecurityGroupEgress(req)
+	fmt.Printf("\n\n[DEBUG] REQUEST %s", req)
+
+	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		_, err = conn.VM.AuthorizeSecurityGroupEgress(req)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -165,14 +165,12 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 	})
 
 	if autherr != nil {
-		if awsErr, ok := autherr.(awserr.Error); ok {
-			if awsErr.Code() == "InvalidPermission.Duplicate" {
-				return fmt.Errorf(`[WARN] A duplicate Security Group rule was found on (%s). This may be
+		if strings.Contains(fmt.Sprint(autherr), "InvalidPermission.Duplicate") {
+			return fmt.Errorf(`[WARN] A duplicate Security Group rule was found on (%s). This may be
 a side effect of a now-fixed Terraform issue causing two security groups with
 identical attributes but different source_security_group_ids to overwrite each
 other in the state. See https://github.com/hashicorp/terraform/pull/2376 for more
-information and instructions for recovery. Error message: %s`, sg_id, awsErr.Message())
-			}
+information and instructions for recovery. Error message: %s`, sg_id, "InvalidPermission.Duplicate")
 		}
 
 		return fmt.Errorf(
@@ -180,7 +178,7 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 			ruleType, autherr)
 	}
 
-	id := ipPermissionIDHash(sg_id, ruleType, perm)
+	id := ipPermissionIDHash(sg_id, ruleType, perms)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -194,7 +192,7 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 		var rules []*fcu.IpPermission
 		rules = sg.IpPermissionsEgress
 
-		rule := findRuleMatch(perm, rules, isVPC)
+		rule := findRuleMatch(perms, rules, isVPC)
 
 		if rule == nil {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -235,7 +233,7 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 	ruleType := "egress"
 	rules = sg.IpPermissionsEgress
 
-	p, err := expandIPPerm(d, sg)
+	p, err := expandIPPermEgress(d, sg)
 	if err != nil {
 		return err
 	}
@@ -256,12 +254,11 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
-	if err := setFromIPPerm(d, sg, p); err != nil {
-		return errwrap.Wrapf("Error setting IP Permission for Security Group Rule: {{err}}", err)
-	}
-
 	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
+	if ips, err := setFromIPPerm(d, sg, p); err != nil {
+		return d.Set("ip_permissions", ips)
+	}
 	return nil
 }
 
@@ -277,15 +274,15 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	perm, err := expandIPPerm(d, sg)
+	perms, err := expandIPPermEgress(d, sg)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\n\n[DEBUG] Revoking security group %#v %s rule: %#v",
-		sg_id, "egress", perm)
+	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
+		sg_id, "egress", perms)
 	req := &fcu.RevokeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
-		IpPermissions: perm,
+		IpPermissions: perms,
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -293,7 +290,6 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("\n\n[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -313,19 +309,20 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
+// #################################
+
 func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup, error) {
 	req := &fcu.DescribeSecurityGroupsInput{
 		GroupIds: []*string{aws.String(id)},
 	}
 
-	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
+	var resp *fcu.DescribeSecurityGroupsOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeSecurityGroups(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("\n\n[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -334,7 +331,7 @@ func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup,
 		return nil
 	})
 
-	if strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+	if err, ok := err.(awserr.Error); ok && err.Code() == "InvalidGroup.NotFound" {
 		return nil, securityGroupNotFound{id, nil}
 	}
 	if err != nil {
@@ -350,56 +347,36 @@ func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup,
 	return resp.SecurityGroups[0], nil
 }
 
-func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
-	ipp := d.Get("ip_permissions")
-	ippem := ipp.([]interface{})
+func expandIPPermEgress(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
 
-	perms := make([]*fcu.IpPermission, len(ippem))
+	ippems := d.Get("ip_permissions").([]interface{})
+	perms := make([]*fcu.IpPermission, len(ippems))
 
-	for i, v := range ippem {
+	return expandIPPerm(d, sg, perms, ippems)
+}
+
+func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, perms []*fcu.IpPermission, ippems []interface{}) ([]*fcu.IpPermission, error) {
+
+	for k, ip := range ippems {
 		perm := fcu.IpPermission{}
-		values := v.(map[string]interface{})
+		v := ip.(map[string]interface{})
 
-		if raw, ok := values["from_port"]; ok {
-			perm.FromPort = aws.Int64(int64(raw.(int)))
-		}
-		if raw, ok := values["to_port"]; ok {
-			perm.ToPort = aws.Int64(int64(raw.(int)))
-		}
-		if raw, ok := values["ip_protocol"]; ok {
-			protocol := protocolForValue(raw.(string))
-			perm.IpProtocol = aws.String(protocol)
-		}
-
-		if raw, ok := values["ip_ranges"]; ok {
-			list := raw.([]interface{})
-			perm.IpRanges = make([]*fcu.IpRange, len(list))
-			for i, v := range list {
-				cidrIP, ok := v.(string)
-				if !ok {
-					return nil, fmt.Errorf("empty element found in ip_ranges - consider using the compact function")
-				}
-				perm.IpRanges[i] = &fcu.IpRange{CidrIp: aws.String(cidrIP)}
-			}
-		}
-
-		if raw, ok := values["prefix_list_ids"]; ok {
-			list := raw.([]interface{})
-			if len(list) > 0 {
-				perm.PrefixListIds = make([]*fcu.PrefixListId, len(list))
-				for i, v := range list {
-					prefixListID, ok := v.(string)
-					if !ok {
-						return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
-					}
-					perm.PrefixListIds[i] = &fcu.PrefixListId{PrefixListId: aws.String(prefixListID)}
-				}
-			}
-		}
+		perm.FromPort = aws.Int64(int64(v["from_port"].(int)))
+		perm.ToPort = aws.Int64(int64(v["to_port"].(int)))
+		protocol := protocolForValue(v["ip_protocol"].(string))
+		perm.IpProtocol = aws.String(protocol)
 
 		groups := make(map[string]bool)
 		if raw, ok := d.GetOk("source_security_group_owner_id"); ok {
 			groups[raw.(string)] = true
+		}
+
+		if v, ok := d.GetOk("self"); ok && v.(bool) {
+			if sg.VpcId != nil && *sg.VpcId != "" {
+				groups[*sg.GroupId] = true
+			} else {
+				groups[*sg.GroupName] = true
+			}
 		}
 
 		if len(groups) > 0 {
@@ -429,10 +406,182 @@ func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermi
 			}
 		}
 
-		perms[i] = &perm
+		if raw, ok := v["ip_ranges"]; ok {
+			list := raw.([]interface{})
+			if len(list) > 0 {
+				perm.IpRanges = make([]*fcu.IpRange, len(list))
+				for i, v := range list {
+					cidrIP, ok := v.(string)
+					if !ok {
+						return nil, fmt.Errorf("empty element found in cidr_blocks - consider using the compact function")
+					}
+					perm.IpRanges[i] = &fcu.IpRange{CidrIp: aws.String(cidrIP)}
+				}
+			}
+		}
+
+		if raw, ok := v["prefix_list_ids"]; ok {
+			list := raw.([]interface{})
+			if len(list) > 0 {
+				perm.PrefixListIds = make([]*fcu.PrefixListId, len(list))
+				for i, v := range list {
+					prefixListID, ok := v.(string)
+					if !ok {
+						return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+					}
+					perm.PrefixListIds[i] = &fcu.PrefixListId{PrefixListId: aws.String(prefixListID)}
+				}
+			}
+		}
+
+		perms[k] = &perm
+	}
+	return perms, nil
+}
+
+func validateAwsSecurityGroupRule(ippems []interface{}) error {
+
+	for _, value := range ippems {
+		v := value.(map[string]interface{})
+
+		_, blocksOk := v["ip_ranges"]
+		_, sourceOk := v["source_security_group_owner_id"]
+		_, selfOk := v["self"]
+		_, prefixOk := v["prefix_list_ids"]
+		if !blocksOk && !sourceOk && !selfOk && !prefixOk {
+			return fmt.Errorf(
+				"One of ['cidr_blocks', 'self', 'source_security_group_id', 'prefix_list_ids'] must be set to create an AWS Security Group Rule")
+		}
 	}
 
-	return perms, nil
+	return nil
+}
+
+func ipPermissionIDHash(sg_id, ruleType string, ips []*fcu.IpPermission) string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("%s-", sg_id))
+
+	for _, ip := range ips {
+		if ip.FromPort != nil && *ip.FromPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.FromPort))
+		}
+		if ip.ToPort != nil && *ip.ToPort > 0 {
+			buf.WriteString(fmt.Sprintf("%d-", *ip.ToPort))
+		}
+		buf.WriteString(fmt.Sprintf("%s-", *ip.IpProtocol))
+		buf.WriteString(fmt.Sprintf("%s-", ruleType))
+
+		// We need to make sure to sort the strings below so that we always
+		// generate the same hash code no matter what is in the set.
+		if len(ip.IpRanges) > 0 {
+			s := make([]string, len(ip.IpRanges))
+			for i, r := range ip.IpRanges {
+				s[i] = *r.CidrIp
+			}
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.PrefixListIds) > 0 {
+			s := make([]string, len(ip.PrefixListIds))
+			for i, pl := range ip.PrefixListIds {
+				s[i] = *pl.PrefixListId
+			}
+			sort.Strings(s)
+
+			for _, v := range s {
+				buf.WriteString(fmt.Sprintf("%s-", v))
+			}
+		}
+
+		if len(ip.UserIdGroupPairs) > 0 {
+			sort.Sort(ByGroupPair(ip.UserIdGroupPairs))
+			for _, pair := range ip.UserIdGroupPairs {
+				if pair.GroupId != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupId))
+				} else {
+					buf.WriteString("-")
+				}
+				if pair.GroupName != nil {
+					buf.WriteString(fmt.Sprintf("%s-", *pair.GroupName))
+				} else {
+					buf.WriteString("-")
+				}
+			}
+		}
+	}
+
+	return fmt.Sprintf("sgrule-%d", hashcode.String(buf.String()))
+}
+
+func findRuleMatch(p []*fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *fcu.IpPermission {
+	var rule *fcu.IpPermission
+	for _, i := range p {
+		for _, r := range rules {
+			if r.ToPort != nil && *i.ToPort != *r.ToPort {
+				continue
+			}
+
+			if r.FromPort != nil && *i.FromPort != *r.FromPort {
+				continue
+			}
+
+			if r.IpProtocol != nil && *i.IpProtocol != *r.IpProtocol {
+				continue
+			}
+
+			remaining := len(i.IpRanges)
+			for _, ip := range i.IpRanges {
+				for _, rip := range r.IpRanges {
+					if *ip.CidrIp == *rip.CidrIp {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(i.PrefixListIds)
+			for _, pl := range i.PrefixListIds {
+				for _, rpl := range r.PrefixListIds {
+					if *pl.PrefixListId == *rpl.PrefixListId {
+						remaining--
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			remaining = len(i.UserIdGroupPairs)
+			for _, ip := range i.UserIdGroupPairs {
+				for _, rip := range r.UserIdGroupPairs {
+					if isVPC {
+						if *ip.GroupId == *rip.GroupId {
+							remaining--
+						}
+					} else {
+						if *ip.GroupName == *rip.GroupName {
+							remaining--
+						}
+					}
+				}
+			}
+
+			if remaining > 0 {
+				continue
+			}
+
+			rule = r
+		}
+	}
+	return rule
 }
 
 type securityGroupNotFound struct {
@@ -448,142 +597,51 @@ func (err securityGroupNotFound) Error() string {
 		err.id, err.securityGroups)
 }
 
-func validateOutscaleSecurityGroupRule(d *schema.ResourceData) error {
-	if ipp, ippemOk := d.GetOk("ip_permissions"); ippemOk {
-		ippem := ipp.([]interface{})
+type ByGroupPair []*fcu.UserIdGroupPair
 
-		for _, v := range ippem {
-			values := v.(map[string]interface{})
-
-			_, blocksOk := values["ip_ranges"]
-			_, sourceOk := values["source_security_group_owner_id"]
-			_, prefixOk := values["prefix_list_ids"]
-			if !blocksOk && !sourceOk && !prefixOk {
-				return fmt.Errorf(
-					"One of ['ip_ranges', 'source_security_group_owner_id', 'prefix_list_ids'] must be set to create an Outscale Security Group Rule")
-			}
-		}
+func (b ByGroupPair) Len() int      { return len(b) }
+func (b ByGroupPair) Swap(i, j int) { b[i], b[j] = b[j], b[i] }
+func (b ByGroupPair) Less(i, j int) bool {
+	if b[i].GroupId != nil && b[j].GroupId != nil {
+		return *b[i].GroupId < *b[j].GroupId
+	}
+	if b[i].GroupName != nil && b[j].GroupName != nil {
+		return *b[i].GroupName < *b[j].GroupName
 	}
 
-	return nil
+	panic("mismatched security group rules, may be a terraform bug")
 }
 
-func findRuleMatch(p []*fcu.IpPermission, rules []*fcu.IpPermission, isVPC bool) *fcu.IpPermission {
-	var rule *fcu.IpPermission
-
-	for _, r := range rules {
-
-		if r.ToPort != nil && *p[0].ToPort != *r.ToPort {
-			continue
-		}
-
-		if r.FromPort != nil && *p[0].FromPort != *r.FromPort {
-			continue
-		}
-
-		if r.IpProtocol != nil && *p[0].IpProtocol != *r.IpProtocol {
-			continue
-		}
-
-		remaining := len(p[0].IpRanges)
-		for _, ip := range p[0].IpRanges {
-			for _, rip := range r.IpRanges {
-				if *ip.CidrIp == *rip.CidrIp {
-					remaining--
-				}
-			}
-		}
-
-		if remaining > 0 {
-			continue
-		}
-
-		remaining = len(p[0].PrefixListIds)
-		for _, pl := range p[0].PrefixListIds {
-			for _, rpl := range r.PrefixListIds {
-				if *pl.PrefixListId == *rpl.PrefixListId {
-					remaining--
-				}
-			}
-		}
-
-		if remaining > 0 {
-			continue
-		}
-
-		remaining = len(p[0].UserIdGroupPairs)
-		for _, ip := range p[0].UserIdGroupPairs {
-			for _, rip := range r.UserIdGroupPairs {
-				if isVPC {
-					if *ip.GroupId == *rip.GroupId {
-						remaining--
-					}
-				} else {
-					if *ip.GroupName == *rip.GroupName {
-						remaining--
-					}
-				}
-			}
-		}
-
-		if remaining > 0 {
-			continue
-		}
-
-		rule = r
-	}
-	return rule
-}
-
-func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rules []*fcu.IpPermission) error {
+func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rules []*fcu.IpPermission) ([]map[string]interface{}, error) {
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
 
-	ippems := make([]map[string]interface{}, len(rules))
+	ips := make([]map[string]interface{}, len(rules))
 
-	for i, rule := range rules {
-		ippem := make(map[string]interface{})
-		ippem["from_port"] = *rule.FromPort
-		ippem["to_port"] = *rule.ToPort
-		ippem["ip_protocol"] = *rule.IpProtocol
+	for k, rule := range rules {
+		ip := make(map[string]interface{})
 
-		cb := make([]*fcu.IpRange, len(rule.IpRanges))
-		for i, c := range rule.IpRanges {
-			cb[i] = &fcu.IpRange{CidrIp: c.CidrIp}
+		if rule.FromPort != nil {
+			ip["from_port"] = *rule.FromPort
 		}
-
-		if len(cb) > 0 {
-			ippem["ip_ranges"] = cb
+		if rule.ToPort != nil {
+			ip["to_port"] = *rule.ToPort
 		}
-
-		var g []map[string]interface{}
-		for _, v := range rule.UserIdGroupPairs {
-
-			gr := make(map[string]interface{}, len(rule.UserIdGroupPairs))
-
-			if v.GroupId != nil {
-				gr["group_id"] = *v.GroupId
+		if rule.IpProtocol != nil {
+			ip["ip_protocol"] = *rule.IpProtocol
+		}
+		if rule.IpRanges != nil {
+			var cb []string
+			for _, c := range rule.IpRanges {
+				cb = append(cb, *c.CidrIp)
 			}
-			if v.GroupName != nil {
-				gr["group_name"] = *v.GroupName
+			ip["ip_ranges"] = cb
+		}
+		if rule.PrefixListIds != nil {
+			var pl []string
+			for _, p := range rule.PrefixListIds {
+				pl = append(pl, *p.PrefixListId)
 			}
-			if v.UserId != nil {
-				gr["user_id"] = *v.UserId
-			}
-
-			g = append(g, gr)
-		}
-
-		if len(g) > 0 {
-			ippem["groups"] = g
-		}
-
-		pl := make([]*fcu.PrefixListId, len(rule.PrefixListIds))
-		for i, c := range rule.PrefixListIds {
-			pl[i] = &fcu.PrefixListId{PrefixListId: c.PrefixListId}
-		}
-
-		if len(pl) > 0 {
-			ippem["prefix_list_ids"] = pl
+			ip["prefix_list_ids"] = pl
 		}
 
 		if len(rule.UserIdGroupPairs) > 0 {
@@ -592,32 +650,12 @@ func setFromIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, rules []*fcu.I
 			if isVPC {
 				d.Set("source_security_group_owner_id", *s.GroupId)
 			} else {
-				d.Set("source_security_group_name", *s.GroupName)
+				d.Set("source_security_group_owner_id", *s.GroupName)
 			}
 		}
 
-		ippems[i] = ippem
+		ips[k] = ip
 	}
 
-	d.Set("ip_permissions", ippems)
-
-	return nil
-}
-
-func validateCIDRNetworkAddress(v interface{}, k string) (ws []string, errors []error) {
-	value := v.(string)
-	_, ipnet, err := net.ParseCIDR(value)
-	if err != nil {
-		errors = append(errors, fmt.Errorf(
-			"%q must contain a valid CIDR, got error parsing: %s", k, err))
-		return
-	}
-
-	if ipnet == nil || value != ipnet.String() {
-		errors = append(errors, fmt.Errorf(
-			"%q must contain a valid network CIDR, expected %q, got %q",
-			k, ipnet, value))
-	}
-
-	return
+	return ips, nil
 }
