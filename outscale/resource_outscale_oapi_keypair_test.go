@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIKeyPairConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeyPairExists("outscale_key_pair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 				),
 			},
@@ -69,9 +69,9 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIKeyPairConfig_retrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeyPairExists("outscale_key_pair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_key_pair.a_key_pair", "key_name", "tf-acc-key-pair",
+						"outscale_keypair.a_key_pair", "key_name", "tf-acc-key-pair",
 					),
 				),
 			},
@@ -99,7 +99,7 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIKeyPairConfig_generatedName,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeyPairExists("outscale_key_pair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 					func(s *terraform.State) error {
 						if conf.KeyName == nil {
@@ -120,7 +120,7 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_key_pair" {
+		if rs.Type != "outscale_keypair" {
 			continue
 		}
 
@@ -221,7 +221,7 @@ func testAccCheckOutscaleOAPIKeyPair_namePrefix(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:        func() { testAccPreCheck(t) },
-		IDRefreshName:   "outscale_key_pair.a_key_pair",
+		IDRefreshName:   "outscale_keypair.a_key_pair",
 		IDRefreshIgnore: []string{"key_name_prefix"},
 		Providers:       testAccProviders,
 		CheckDestroy:    testAccCheckOutscaleOAPIKeyPairDestroy,
@@ -229,9 +229,9 @@ func testAccCheckOutscaleOAPIKeyPair_namePrefix(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeyPairExists("outscale_key_pair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
-						"outscale_key_pair.a_key_pair", "baz-"),
+						"outscale_keypair.a_key_pair", "baz-"),
 				),
 			},
 		},
@@ -259,7 +259,7 @@ func testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
 func testAccOutscaleOAPIKeyPairConfig(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_key_pair" "a_key_pair" {
+resource "outscale_keypair" "a_key_pair" {
 	key_name   = "tf-acc-key-pair-%d"
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
@@ -269,14 +269,14 @@ resource "outscale_key_pair" "a_key_pair" {
 func testAccOutscaleOAPIKeyPairConfig_retrieveName(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_key_pair" "a_key_pair" {
+resource "outscale_keypair" "a_key_pair" {
 	key_name   = "tf-acc-key-pair"
 }
 `)
 }
 
 const testAccOutscaleOAPIKeyPairConfig_generatedName = `
-resource "outscale_key_pair" "a_key_pair" {
+resource "outscale_keypair" "a_key_pair" {
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `
@@ -284,7 +284,7 @@ resource "outscale_key_pair" "a_key_pair" {
 func testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_key_pair" "a_key_pair" {
+resource "outscale_keypair" "a_key_pair" {
 	key_name_prefix   = "baz-%d"
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
