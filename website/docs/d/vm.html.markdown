@@ -1,35 +1,27 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_vms"
-sidebar_current: "docs-outscale-datasource-vms"
+page_title: "OUTSCALE: outscale_vm"
+sidebar_current: "docs-outscale-datasource-vm"
 description: |-
-  Provides Outscale instances resource attributes. It can be used to recover attributes of instances not managed in the current configuration file.
+  Provides an Outscale instance resource attributes. It can be used to recover attributes of an instance not managed in the current configuration file.
 ---
 
-# outscale_vms
+# outscale_vm
 
-  Provides Outscale instances resource attributes. It can be used to recover attributes of instances not managed in the current configuration file.
+Provides an Outscale instance resource attributes. It can be used to recover attributes of an instance not managed in the current configuration file.
 
 ## Example Usage
 
 ```hcl
-data "outscale_image" "centos73" {
-  most_recent = true
-  executable_by = ["self"]
+resource "outscale_vm" "basic" {
+  image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	key_name = "terraform-basic"
+	security_group = ["sg-6ed31f3e"]
+}
 
-  filter {
-    name = "owner"
-    values = ["Outscale"]
-  }
-
-  filter {
-  name = "description" values = ["Centos 7.3*"]
-  }
-} 
-/* instance creation */
-resource "outscale_vms" "web" {
-  image_id = "${data.outscale_image.centos73.image_id}"
-  instance_type = "t2.micro"
+data "outscale_vms" "basic_web" {
+	instance_id = ["${outscale_vm.basic.id}"]
 }
 ```
 
@@ -38,7 +30,7 @@ resource "outscale_vms" "web" {
 The following arguments are supported:
 
 * `filter` - (Optional) One or more filters.
-* `instance_id` - (Optional) One or more instance IDs.
+* `instance_id` - (Optional)The ID of the instance.
 
 See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
@@ -125,10 +117,16 @@ Use the Filter.N parameter to filter the described instances on the following pr
 * `network-interface.association.allocation-id` - The allocation ID. This ID is returned when you allocate the External IP address for your network interface.
 * `network-interface.association.association-id` - The association ID. This ID is returned when the network interface is associated with an IP address.
 
+
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `reservation_set` - Zero or more reservations.
+* `group_set` - One or more security groups.
+* `instances_set` - One or more instances.
+* `owner_id` - The ID of the account which has reserved the instances.
+* `password_data` - Password for windows environments.
+* `requester_id` - The ID of the requester.
+* `reservation_id` - Zero or more reservations, giving you information about your request.
 
 See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).

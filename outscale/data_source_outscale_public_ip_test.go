@@ -18,7 +18,7 @@ func TestAccDataSourceOutscalePublicIP(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi != false {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{

@@ -4,9 +4,12 @@ page_title: "OUTSCALE: outscale_public_ip_link"
 sidebar_current: "docs-outscale-resource-public_ip_link"
 description: |-
   Associates an External IP address (EIP) with an instance or a network interface.
+---
+
+# outscale_public_ip_link
+
 An EIP address is a static IP address designed for dynamic Cloud computing. It can be used for instances in the public Cloud (standard) or in a Virtual Private Cloud (VPC).
 If you want to associate a new EIP to an instance that is already associated with another EIP, this action disassociates the old EIP and associates the new one. If you do not specify any network interface to associate the EIP with, it is associated with the primary network interface.
----
 
 NOTE: You can associate an EIP with a NAT gateway only when creating the NAT gateway. To modify its EIP, you need to delete the NAT gateway and create a new one. For more information, see the CreateNatGateway method.
 
@@ -48,4 +51,4 @@ The following arguments are supported:
 * `private_ip_address` - The primary or secondary private IP address to associate with the External IP address.
 * `public_ip` - The External IP address.
 
-See detailed information in [Describe Addresses](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Associate Address](http://docs.outscale.com/api_fcu/operations/Action_AssociateAddress_get.html#_api_fcu-action_associateaddress_get).

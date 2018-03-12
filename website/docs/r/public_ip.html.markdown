@@ -6,7 +6,7 @@ description: |-
   Provides an Outscale Public IP Association as a top level resource, to associate and disassociate Public IPs from Outscale VMs and Network Interfaces.
 ---
 
-# public_ip
+# outscale_public_ip
 
 NOTE: outscale_public_ip is useful in scenarios where Public IPs are either pre-existing or distributed to customers or users and therefore cannot be changed.
 
@@ -41,3 +41,5 @@ The following arguments are supported:
 * `network_interface_owner_id` - (Optional) The account ID of the owner.
 * `private_ip_address` - (Optional) The primary or secondary private IP address to associate with the Public IP address. If no private IP address is specified, the Public IP address is associated with the primary private IP address.
 * `public_ip` - (Optional) The External IP address.
+
+See detailed information in [FCU Address](http://docs.outscale.com/api_fcu/definitions/Address.html#_api_fcu-address).

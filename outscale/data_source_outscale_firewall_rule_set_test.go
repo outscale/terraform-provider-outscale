@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -10,6 +12,16 @@ import (
 )
 
 func TestAccDataSourceOutscaleSecurityGroup(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -26,6 +38,16 @@ func TestAccDataSourceOutscaleSecurityGroup(t *testing.T) {
 	})
 }
 func TestAccDataSourceOutscaleSecurityGroupPublic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
