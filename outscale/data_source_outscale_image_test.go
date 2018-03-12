@@ -64,21 +64,6 @@ func testAccCheckOutscaleImageDataSourceID(n string) resource.TestCheckFunc {
 
 const testAccCheckOutscaleImageDataSourceConfig = `
 data "outscale_image" "nat_ami" {
-	filter {
-		name = "name"
-		values = ["tf-testing-3273*"]
-	}
-	filter {
-		name = "virtualization-type"
-		values = ["hvm"]
-	}
-	filter {
-		name = "root-device-type"
-		values = ["ebs"]
-	}
-	filter {
-		name = "block-device-mapping.volume-type"
-		values = ["standard"]
-	}
+	image_id = "ami-1be615d0"
 }
 `
