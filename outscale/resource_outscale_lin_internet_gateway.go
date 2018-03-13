@@ -70,7 +70,8 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
-	d.Set("request_id", resp.InternetGateways[0].InternetGatewayId)
+	d.Set("request_id", resp.RequesterId)
+	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 
 	err = d.Set("attachement_set", flattenInternetAttachements(resp.InternetGateways[0].Attachments))
 	if err != nil {

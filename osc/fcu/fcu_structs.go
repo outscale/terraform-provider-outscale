@@ -4003,6 +4003,7 @@ type DescribeInternetGatewaysOutput struct {
 
 	// Information about one or more Internet gateways.
 	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
+	RequesterId      *string            `locationName:"requestId" type:"string"`
 }
 
 // Contains the parameters for DeleteInternetGateway.
