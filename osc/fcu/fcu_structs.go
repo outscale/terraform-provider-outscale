@@ -3908,3 +3908,120 @@ func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
 	s.VolumeId = &v
 	return s
 }
+
+//CreateInternetGatewayInput Contains the parameters for CreateInternetGateway.
+type CreateInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+//CreateInternetGatewayOutput Contains the output of CreateInternetGateway.
+type CreateInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the Internet gateway.
+	InternetGateway *InternetGateway `locationName:"internetGateway" type:"structure"`
+}
+
+//InternetGateway Describes an Internet gateway.
+type InternetGateway struct {
+	_ struct{} `type:"structure"`
+
+	// Any VPCs attached to the Internet gateway.
+	Attachments []*InternetGatewayAttachment `locationName:"attachmentSet" locationNameList:"item" type:"list"`
+
+	// The ID of the Internet gateway.
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string"`
+
+	// Any tags assigned to the Internet gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+//InternetGatewayAttachment Describes the attachment of a VPC to an Internet gateway or an egress-only
+// Internet gateway.
+type InternetGatewayAttachment struct {
+	_ struct{} `type:"structure"`
+
+	// The current state of the attachment. For an Internet gateway, the state is
+	// available when attached to a VPC; otherwise, this value is not returned.
+	State *string `locationName:"state" type:"string" enum:"AttachmentStatus"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Contains the parameters for DescribeInternetGateways.
+type DescribeInternetGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * attachment.state - The current state of the attachment between the gateway
+	//    and the VPC (available). Present only if a VPC is attached.
+	//
+	//    * attachment.vpc-id - The ID of an attached VPC.
+	//
+	//    * internet-gateway-id - The ID of the Internet gateway.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more Internet gateway IDs.
+	//
+	// Default: Describes all your Internet gateways.
+	InternetGatewayIds []*string `locationName:"internetGatewayId" locationNameList:"item" type:"list"`
+}
+
+//DescribeInternetGatewaysOutput Contains the output of DescribeInternetGateways.
+type DescribeInternetGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more Internet gateways.
+	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
+	RequesterId      *string            `locationName:"requestId" type:"string"`
+}
+
+// Contains the parameters for DeleteInternetGateway.
+type DeleteInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+}
+
+type DeleteInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
