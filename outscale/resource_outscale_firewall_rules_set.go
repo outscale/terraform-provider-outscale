@@ -3,7 +3,6 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -69,7 +68,7 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 
 func getIPPerms() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -81,7 +80,7 @@ func getIPPerms() *schema.Schema {
 					Type:     schema.TypeInt,
 					Computed: true,
 				},
-				"protocol": {
+				"ip_protocol": {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
@@ -93,19 +92,14 @@ func getIPPerms() *schema.Schema {
 					},
 				},
 				"groups": {
-					Type:     schema.TypeSet,
+					Type:     schema.TypeList,
 					Optional: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-					Set:      schema.HashString,
-				},
-				"self": {
-					Type:     schema.TypeBool,
-					Optional: true,
-					Default:  false,
+					Elem:     &schema.Schema{Type: schema.TypeMap},
+					// Set:      schema.HashString,
 				},
 			},
 		},
-		Set: resourceOutscaleSecurityGroupRuleHash,
+		// Set: resourceOutscaleSecurityGroupRuleHash,
 	}
 }
 
@@ -122,6 +116,8 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 
 	if v := d.Get("group_description"); v != nil {
 		securityGroupOpts.Description = aws.String(v.(string))
+	} else {
+		return fmt.Errorf("please provide a group description, its a required argument")
 	}
 
 	var groupName string
@@ -132,7 +128,7 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 	}
 	securityGroupOpts.GroupName = aws.String(groupName)
 
-	log.Printf(
+	fmt.Printf(
 		"[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
 	var createResp *fcu.CreateSecurityGroupOutput
@@ -156,19 +152,10 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*createResp.GroupId)
 
-	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
-			return err
-		}
-		d.SetPartial("tag_set")
-	}
-
-	log.Printf("[INFO] Security Group ID: %s", d.Id())
+	fmt.Printf("\n\n[INFO] Security Group ID: %s", d.Id())
 
 	// Wait for the security group to truly exist
-	log.Printf(
-		"[DEBUG] Waiting for Security Group (%s) to exist",
-		d.Id())
+	fmt.Printf("\n\n[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
 		Target:  []string{"exists"},
@@ -176,59 +163,62 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 		Timeout: 3 * time.Minute,
 	}
 
-	resp, err := stateConf.WaitForState()
+	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for Security Group (%s) to become available: %s",
 			d.Id(), err)
 	}
 
-	if err := setTags(conn, d); err != nil {
-		return err
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
 	}
 
-	group := resp.(*fcu.SecurityGroup)
-	if group.VpcId != nil && *group.VpcId != "" {
-		log.Printf("[DEBUG] Revoking default egress rule for Security Group for %s", d.Id())
+	// group := resp.(*fcu.SecurityGroup)
+	// if group.VpcId != nil && *group.VpcId != "" {
+	// 	fmt.Printf("\n\n[DEBUG] Revoking default egress rule for Security Group for %s", d.Id())
 
-		req := &fcu.RevokeSecurityGroupEgressInput{
-			GroupId: createResp.GroupId,
-			IpPermissions: []*fcu.IpPermission{
-				{
-					FromPort: aws.Int64(int64(0)),
-					ToPort:   aws.Int64(int64(0)),
-					IpRanges: []*fcu.IpRange{
-						{
-							CidrIp: aws.String("0.0.0.0/0"),
-						},
-					},
-					IpProtocol: aws.String("-1"),
-				},
-			},
-		}
+	// 	req := &fcu.RevokeSecurityGroupEgressInput{
+	// 		GroupId: createResp.GroupId,
+	// 		IpPermissions: []*fcu.IpPermission{
+	// 			{
+	// 				FromPort: aws.Int64(int64(0)),
+	// 				ToPort:   aws.Int64(int64(0)),
+	// 				IpRanges: []*fcu.IpRange{
+	// 					{
+	// 						CidrIp: aws.String("0.0.0.0/0"),
+	// 					},
+	// 				},
+	// 				IpProtocol: aws.String("-1"),
+	// 			},
+	// 		},
+	// 	}
 
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err = conn.VM.RevokeSecurityGroupEgress(req)
+	// 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 		_, err = conn.VM.RevokeSecurityGroupEgress(req)
 
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
+	// 		if err != nil {
+	// 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+	// 				return resource.RetryableError(err)
+	// 			}
+	// 			return resource.NonRetryableError(err)
+	// 		}
 
-			return nil
-		})
+	// 		return nil
+	// 	})
 
-		if err != nil {
-			return fmt.Errorf(
-				"Error revoking default egress rule for Security Group (%s): %s",
-				d.Id(), err)
-		}
+	// 	if err != nil {
+	// 		return fmt.Errorf(
+	// 			"Error revoking default egress rule for Security Group (%s): %s",
+	// 			d.Id(), err)
+	// 	}
 
-	}
+	// }
 
-	return resourceOutscaleSecurityGroupUpdate(d, meta)
+	return resourceOutscaleSecurityGroupRead(d, meta)
 }
 
 func resourceOutscaleSecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -272,38 +262,104 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 		return nil
 	}
 
-	sg := sgRaw.(*fcu.SecurityGroup)
+	group := sgRaw.(*fcu.SecurityGroup)
 
-	remoteIngressRules := resourceAwsSecurityGroupIPPermGather(d.Id(), sg.IpPermissions, sg.OwnerId)
-	remoteEgressRules := resourceAwsSecurityGroupIPPermGather(d.Id(), sg.IpPermissionsEgress, sg.OwnerId)
+	req := &fcu.DescribeSecurityGroupsInput{}
+	req.GroupIds = []*string{group.GroupId}
 
-	localIngressRules := d.Get("ip_permissions").(*schema.Set).List()
-	localEgressRules := d.Get("ip_permissions_egress").(*schema.Set).List()
+	fmt.Printf("[DEBUG] REQ %s", req)
 
-	// Loop through the local state of rules, doing a match against the remote
-	// ruleSet we built above.
-	ingressRules := matchRules("ingress", localIngressRules, remoteIngressRules)
-	egressRules := matchRules("egress", localEgressRules, remoteEgressRules)
+	var resp *fcu.DescribeSecurityGroupsOutput
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeSecurityGroups(req)
 
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if strings.Contains(err.Error(), "InvalidSecurityGroupID.NotFound") || strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+			resp = nil
+			err = nil
+		}
+
+		if err != nil {
+			return fmt.Errorf("\nError on SGStateRefresh: %s", err)
+		}
+	}
+
+	if resp == nil || len(resp.SecurityGroups) == 0 {
+		return fmt.Errorf("Unable to find Security Group")
+	}
+
+	if len(resp.SecurityGroups) > 1 {
+		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
+	}
+
+	sg := resp.SecurityGroups[0]
+
+	d.SetId(*sg.GroupId)
+	d.Set("group_id", sg.GroupId)
 	d.Set("group_description", sg.Description)
 	d.Set("group_name", sg.GroupName)
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
+	d.Set("tag_set", tagsToMap(sg.Tags))
 
-	if err := d.Set("ip_permissions", ingressRules); err != nil {
-		log.Printf("[WARN] Error setting Ingress rule set for (%s): %s", d.Id(), err)
+	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
+		return err
+	}
+	if err := d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress)); err != nil {
+		return err
 	}
 
-	if err := d.Set("ip_permissions_egress", egressRules); err != nil {
-		log.Printf("[WARN] Error setting Egress rule set for (%s): %s", d.Id(), err)
-	}
+	// sgRaw, _, err := SGStateRefreshFunc(conn, d.Id())()
+	// if err != nil {
+	// 	return err
+	// }
+	// if sgRaw == nil {
+	// 	d.SetId("")
+	// 	return nil
+	// }
 
-	if sg.Tags != nil {
-		d.Set("tag_set", tagsToMap(sg.Tags))
-	} else {
-		t := make([]map[string]interface{}, 0)
-		d.Set("tag_set", t)
-	}
+	// sg := sgRaw.(*fcu.SecurityGroup)
+
+	// remoteIngressRules := resourceAwsSecurityGroupIPPermGather(d.Id(), sg.IpPermissions, sg.OwnerId)
+	// remoteEgressRules := resourceAwsSecurityGroupIPPermGather(d.Id(), sg.IpPermissionsEgress, sg.OwnerId)
+
+	// // localIngressRules := d.Get("ip_permissions").(*schema.Set).List()
+	// // localEgressRules := d.Get("ip_permissions_egress").(*schema.Set).List()
+
+	// // Loop through the local state of rules, doing a match against the remote
+	// // ruleSet we built above.
+	// // ingressRules := matchRules("ingress", localIngressRules, remoteIngressRules)
+	// // egressRules := matchRules("egress", localEgressRules, remoteEgressRules)
+
+	// d.Set("group_description", sg.Description)
+	// d.Set("group_name", sg.GroupName)
+	// d.Set("vpc_id", sg.VpcId)
+	// d.Set("owner_id", sg.OwnerId)
+
+	// if err := d.Set("ip_permissions", remoteIngressRules); err != nil {
+	// 	fmt.Printf("\n\n[WARN] Error setting Ingress rule set for (%s): %s", d.Id(), err)
+	// }
+
+	// if err := d.Set("ip_permissions_egress", remoteEgressRules); err != nil {
+	// 	fmt.Printf("\n\n[WARN] Error setting Egress rule set for (%s): %s", d.Id(), err)
+	// }
+
+	// if sg.Tags != nil {
+	// 	d.Set("tag_set", tagsToMap(sg.Tags))
+	// } else {
+	// 	t := make([]map[string]interface{}, 0)
+	// 	d.Set("tag_set", t)
+	// }
 
 	return nil
 }
@@ -311,7 +367,7 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 func resourceOutscaleSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
+	fmt.Printf("\n\n[DEBUG] Security Group destroy: %v", d.Id())
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err := conn.VM.DeleteSecurityGroup(&fcu.DeleteSecurityGroupInput{
@@ -395,15 +451,15 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 
 				// check some early failures
 				if numExpectedCidrs > numRemoteCidrs {
-					log.Printf("[DEBUG] Local rule has more CIDR blocks, continuing (%d/%d)", numExpectedCidrs, numRemoteCidrs)
+					fmt.Printf("\n\n[DEBUG] Local rule has more CIDR blocks, continuing (%d/%d)", numExpectedCidrs, numRemoteCidrs)
 					continue
 				}
 				if numExpectedPrefixLists > numRemotePrefixLists {
-					log.Printf("[DEBUG] Local rule has more prefix lists, continuing (%d/%d)", numExpectedPrefixLists, numRemotePrefixLists)
+					fmt.Printf("\n\n[DEBUG] Local rule has more prefix lists, continuing (%d/%d)", numExpectedPrefixLists, numRemotePrefixLists)
 					continue
 				}
 				if numExpectedSGs > numRemoteSGs {
-					log.Printf("[DEBUG] Local rule has more Security Groups, continuing (%d/%d)", numExpectedSGs, numRemoteSGs)
+					fmt.Printf("\n\n[DEBUG] Local rule has more Security Groups, continuing (%d/%d)", numExpectedSGs, numRemoteSGs)
 					continue
 				}
 
@@ -571,7 +627,7 @@ func matchRules(rType string, local []interface{}, remote []map[string]interface
 		}
 
 		if lenSGs+lenCidr+lenPrefixLists > 0 {
-			log.Printf("[DEBUG] Found a remote Rule that wasn't empty: (%#v)", r)
+			fmt.Printf("\n\n[DEBUG] Found a remote Rule that wasn't empty: (%#v)", r)
 			saves = append(saves, r)
 		}
 	}
@@ -640,31 +696,33 @@ func resourceAwsSecurityGroupIPPermGather(groupId string, permissions []*fcu.IpP
 			m["prefix_list_ids"] = list
 		}
 
-		groups := flattenSecurityGroups(perm.UserIdGroupPairs, ownerId)
-		for i, g := range groups {
-			if *g.GroupId == groupId {
-				groups[i], groups = groups[len(groups)-1], groups[:len(groups)-1]
-				m["self"] = true
-			}
+		if len(perm.UserIdGroupPairs) > 0 {
+			groups := flattenSecurityGroups(perm.UserIdGroupPairs, ownerId)
+			m["groups"] = groups
 		}
 
-		if len(groups) > 0 {
-			raw, ok := m["groups"]
-			if !ok {
-				raw = schema.NewSet(schema.HashString, nil)
-			}
-			list := raw.(*schema.Set)
+		// for i, g := range groups {
+		// 	if *g.GroupId == groupId {
+		// 		groups[i], groups = groups[len(groups)-1], groups[:len(groups)-1]
+		// 	}
+		// }
 
-			for _, g := range groups {
-				if g.GroupName != nil {
-					list.Add(*g.GroupName)
-				} else {
-					list.Add(*g.GroupId)
-				}
-			}
+		// if len(groups) > 0 {
+		// 	raw, ok := m["groups"]
+		// 	if !ok {
+		// 		raw = make([]map[string]interface{}, 0, len(perm.PrefixListIds))
+		// 	}
+		// 	list := raw.([]map[string]interface{})
 
-			m["groups"] = list
-		}
+		// 	for _, g := range groups {
+		// 		if g.GroupName != nil {
+		// 			list = append(list, map[string]interface{}{"group_name": *g.GroupName})
+		// 		} else {
+		// 			list = append(list, map[string]interface{}{"group_name": *g.GroupId})
+		// 		}
+		// 		list = append(list, map[string]interface{}{"group_id": *g.GroupId})
+		// 	}
+		// }
 	}
 	rules := make([]map[string]interface{}, 0, len(ruleMap))
 	for _, m := range ruleMap {
@@ -742,7 +800,7 @@ func resourceOutscaleSecurityGroupUpdateRules(
 
 			var err error
 			if len(remove) > 0 {
-				log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
+				fmt.Printf("\n\n[DEBUG] Revoking security group %#v %s rule: %#v",
 					group, ruleset, remove)
 
 				if ruleset == "egress" {
@@ -794,7 +852,7 @@ func resourceOutscaleSecurityGroupUpdateRules(
 			}
 
 			if len(add) > 0 {
-				log.Printf("[DEBUG] Authorizing security group %#v %s rule: %#v",
+				fmt.Printf("\n\n[DEBUG] Authorizing security group %#v %s rule: %#v",
 					group, ruleset, add)
 				// Authorize the new rules
 				if ruleset == "egress" {
@@ -876,12 +934,10 @@ func expandIPPerms(
 				groups = append(groups, v.(string))
 			}
 		}
-		if v, ok := m["self"]; ok && v.(bool) {
-			if vpc {
-				groups = append(groups, *group.GroupId)
-			} else {
-				groups = append(groups, *group.GroupName)
-			}
+		if vpc {
+			groups = append(groups, *group.GroupId)
+		} else {
+			groups = append(groups, *group.GroupName)
 		}
 
 		if len(groups) > 0 {
@@ -957,7 +1013,7 @@ func SGStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 			}
 
 			if err != nil {
-				log.Printf("Error on SGStateRefresh: %s", err)
+				fmt.Printf("\n\nError on SGStateRefresh: %s", err)
 				return nil, "", err
 			}
 		}
@@ -1030,7 +1086,7 @@ func protocolForValue(v string) string {
 	}
 	p, err := strconv.Atoi(protocol)
 	if err != nil {
-		log.Printf("[WARN] Unable to determine valid protocol: %s", err)
+		fmt.Printf("\n\n[WARN] Unable to determine valid protocol: %s", err)
 		return protocol
 	}
 
@@ -1040,7 +1096,7 @@ func protocolForValue(v string) string {
 		}
 	}
 
-	log.Printf("[WARN] Unable to determine valid protocol: no matching protocols found")
+	fmt.Printf("\n\n[WARN] Unable to determine valid protocol: no matching protocols found")
 	return protocol
 }
 
