@@ -30,14 +30,14 @@ func init() {
 			"outscale_volume_link":        resourceOutscaleVolumeLink,
 		},
 		"oapi": ResourceMap{
-			"outscale_vm": resourceOutscaleOApiVM,
-			// "outscale_firewall_rules_set": resourceOutscaleOAPIFirewallRulesSet,
-			"outscale_image":     resourceOutscaleOAPIImage,
-			"outscale_keypair":   resourceOutscaleOAPIKeyPair,
-			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
-			// "outscale_inbound_rule":  resourceOutscaleOAPIInboundRule,
-			// "outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
-			"outscale_tag": resourceOutscaleOAPITags,
+			"outscale_vm":                 resourceOutscaleOApiVM,
+			"outscale_firewall_rules_set": resourceOutscaleOAPIFirewallRulesSet,
+			"outscale_image":              resourceOutscaleOAPIImage,
+			"outscale_keypair":            resourceOutscaleOAPIKeyPair,
+			"outscale_public_ip":          resourceOutscaleOAPIPublicIP,
+			"outscale_inbound_rule":       resourceOutscaleOAPIInboundRule,
+			"outscale_outbound_rule":      resourceOutscaleOAPIOutboundRule,
+			"outscale_tag":                resourceOutscaleOAPITags,
 		},
 	}
 	datasources = Dictionary{
