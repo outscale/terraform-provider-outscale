@@ -51,3 +51,26 @@ func (v VMOperations) DescribeInternetGateways(input *DescribeInternetGatewaysIn
 
 	return output, nil
 }
+
+func (v VMOperations) DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteInternetGateway"
+	output := &DeleteInternetGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteInternetGatewayInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}

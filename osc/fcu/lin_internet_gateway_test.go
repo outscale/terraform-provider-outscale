@@ -20,14 +20,14 @@ func TestVM_CreateInternetGateaway(t *testing.T) {
 
 	desc, err := client.VM.CreateInternetGateway(&input)
 	if err != nil {
-		t.Errorf("VM.RunInstance returned error: %v", err)
+		t.Errorf("VM.CreateInternetGateway returned error: %v", err)
 	}
 
 	expectedID := "igw-349c9be7"
 	outputInstanceID := *desc.InternetGateway.InternetGatewayId
 
 	if outputInstanceID != expectedID {
-		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
+		t.Fatalf("Expected InternetGatewayID:(%s), Got(%s)", outputInstanceID, expectedID)
 	}
 
 }
@@ -36,7 +36,7 @@ func TestVM_DescribeInternetGateaways(t *testing.T) {
 	setup()
 	defer teardown()
 
-	expectedID := "igw-349c9be7"
+	expectedID := "igw-251475c9"
 
 	input := DescribeInternetGatewaysInput{
 		InternetGatewayIds: []*string{&expectedID},
@@ -50,13 +50,35 @@ func TestVM_DescribeInternetGateaways(t *testing.T) {
 
 	desc, err := client.VM.DescribeInternetGateways(&input)
 	if err != nil {
-		t.Errorf("VM.RunInstance returned error: %v", err)
+		t.Errorf("VM.DescribeInternetGateways returned error: %v", err)
 	}
 
 	outputInstanceID := *desc.InternetGateways[0].InternetGatewayId
 
 	if outputInstanceID != expectedID {
 		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
+	}
+
+}
+
+func TestVM_DeleteInternetGateway(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expectedID := "igw-349c9be7"
+
+	input := DeleteInternetGatewayInput{
+		InternetGatewayId: &expectedID,
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Fprintf(w, ``)
+	})
+
+	_, err := client.VM.DeleteInternetGateway(&input)
+	if err != nil {
+		t.Errorf("VM.DeleteInternetGateway returned error: %v", err)
 	}
 
 }

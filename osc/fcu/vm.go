@@ -52,6 +52,7 @@ type VMService interface {
 	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
 	CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error)
 	DescribeInternetGateways(input *DescribeInternetGatewaysInput) (*DescribeInternetGatewaysOutput, error)
+	DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error)
 }
 
 const opRunInstances = "RunInstances"
