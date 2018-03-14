@@ -74,3 +74,47 @@ func (v VMOperations) DeleteInternetGateway(input *DeleteInternetGatewayInput) (
 
 	return output, nil
 }
+func (v VMOperations) CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpc"
+	output := &CreateVpcOutput{}
+
+	if input == nil {
+		input = &CreateVpcInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpcs"
+	output := &DescribeVpcsOutput{}
+
+	if input == nil {
+		input = &DescribeVpcsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
