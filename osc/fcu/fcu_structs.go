@@ -4139,6 +4139,8 @@ type DescribeVpcsOutput struct {
 
 	// Information about one or more VPCs.
 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 // Describes a VPC.
