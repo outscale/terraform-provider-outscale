@@ -1,84 +1,76 @@
 package fcu
 
 import (
-	"fmt"
+	"context"
 	"net/http"
-	"testing"
 )
 
-func TestVM_CreateInternetGateaway(t *testing.T) {
-	setup()
-	defer teardown()
+// CreateLinInternetGateway method
+func (v VMOperations) CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "CreateInternetGateway"
+	output := &CreateInternetGatewayOutput{}
 
-	input := CreateInternetGatewayInput{}
+	if input == nil {
+		input = &CreateInternetGatewayInput{}
+	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
-		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
-<CreateInternetGatewayResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>6bc7d085-32c3-4b87-b07b-04ccc5c25f19</requestId><internetGateway><internetGatewayId>igw-349c9be7</internetGatewayId><attachmentSet/><tagSet/></internetGateway></CreateInternetGatewayResponse>`)
-	})
-
-	desc, err := client.VM.CreateInternetGateway(&input)
 	if err != nil {
-		t.Errorf("VM.CreateInternetGateway returned error: %v", err)
+		return nil, err
 	}
 
-	expectedID := "igw-349c9be7"
-	outputInstanceID := *desc.InternetGateway.InternetGatewayId
-
-	if outputInstanceID != expectedID {
-		t.Fatalf("Expected InternetGatewayID:(%s), Got(%s)", outputInstanceID, expectedID)
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
 	}
 
+	return output, nil
 }
 
-func TestVM_DescribeInternetGateaways(t *testing.T) {
-	setup()
-	defer teardown()
+func (v VMOperations) DescribeInternetGateways(input *DescribeInternetGatewaysInput) (*DescribeInternetGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInternetGateways"
+	output := &DescribeInternetGatewaysOutput{}
 
-	expectedID := "igw-251475c9"
-
-	input := DescribeInternetGatewaysInput{
-		InternetGatewayIds: []*string{&expectedID},
+	if input == nil {
+		input = &DescribeInternetGatewaysInput{}
 	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
-		fmt.Fprintf(w, `<?xml version="1.0" encoding="UTF-8"?>
-<DescribeInternetGatewaysResponse xmlns="http://ec2.amazonaws.com/doc/2014-06-15/"><requestId>89135ead-4cab-4e11-b842-7b70d0d5f583</requestId><internetGatewaySet><item><internetGatewayId>igw-251475c9</internetGatewayId><attachmentSet><item><vpcId>vpc-e9d09d63</vpcId><state>available</state></item></attachmentSet><tagSet><item><key>Name</key><value>Default</value></item></tagSet></item></internetGatewaySet></DescribeInternetGatewaysResponse>`)
-	})
-
-	desc, err := client.VM.DescribeInternetGateways(&input)
 	if err != nil {
-		t.Errorf("VM.DescribeInternetGateways returned error: %v", err)
+		return nil, err
 	}
 
-	outputInstanceID := *desc.InternetGateways[0].InternetGatewayId
-
-	if outputInstanceID != expectedID {
-		t.Fatalf("Expected InstanceID:(%s), Got(%s)", outputInstanceID, expectedID)
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
 	}
 
+	return output, nil
 }
 
-func TestVM_DeleteInternetGateway(t *testing.T) {
-	setup()
-	defer teardown()
+func (v VMOperations) DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteInternetGateway"
+	output := &DeleteInternetGatewayOutput{}
 
-	expectedID := "igw-349c9be7"
-
-	input := DeleteInternetGatewayInput{
-		InternetGatewayId: &expectedID,
+	if input == nil {
+		input = &DeleteInternetGatewayInput{}
 	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
-		fmt.Fprintf(w, ``)
-	})
-
-	_, err := client.VM.DeleteInternetGateway(&input)
 	if err != nil {
-		t.Errorf("VM.DeleteInternetGateway returned error: %v", err)
+		return nil, err
 	}
 
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
