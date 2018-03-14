@@ -164,3 +164,25 @@ func TestVM_DescribeVpcs(t *testing.T) {
 	}
 
 }
+
+func TestVM_DeleteVpc(t *testing.T) {
+	setup()
+	defer teardown()
+
+	expectedID := "vpc-53769ad9"
+
+	input := DeleteVpcInput{
+		VpcId: &expectedID,
+	}
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Fprintf(w, ``)
+	})
+
+	_, err := client.VM.DeleteVpc(&input)
+	if err != nil {
+		t.Errorf("VM.DeleteVpc returned error: %v", err)
+	}
+
+}

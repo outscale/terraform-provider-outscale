@@ -96,6 +96,7 @@ func (v VMOperations) CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
 
 	return output, nil
 }
+
 func (v VMOperations) DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeVpcs"
@@ -103,6 +104,29 @@ func (v VMOperations) DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutpu
 
 	if input == nil {
 		input = &DescribeVpcsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpc"
+	output := &DeleteVpcOutput{}
+
+	if input == nil {
+		input = &DeleteVpcInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
