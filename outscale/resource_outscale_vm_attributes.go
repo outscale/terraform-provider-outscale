@@ -1007,11 +1007,8 @@ func buildOutscaleVMAttrOpts(
 
 func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 	input := &fcu.DescribeInstanceAttributeInput{
+		Attribute:  aws.String(d.Get("attribute").(string)),
 		InstanceId: aws.String(d.Get("instance_id").(string)),
-	}
-
-	if v, ok := d.GetOk("attribute"); ok {
-		input.Attribute = aws.String(v.(string))
 	}
 
 	var resp *fcu.DescribeInstanceAttributeOutput
