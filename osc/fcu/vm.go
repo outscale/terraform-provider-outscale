@@ -50,6 +50,8 @@ type VMService interface {
 	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
 	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
 	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
+	DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error)
+	DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -840,6 +842,50 @@ func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment,
 
 	if input == nil {
 		input = &DetachVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceAttribute"
+	output := &DescribeInstanceAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceStatus"
+	output := &DescribeInstanceStatusOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceStatusInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
