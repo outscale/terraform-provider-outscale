@@ -89,7 +89,7 @@ func testAccCheckOutscaleLinDestroyed(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin_internet_gateway" {
+		if rs.Type != "outscale_lin" {
 			continue
 		}
 
