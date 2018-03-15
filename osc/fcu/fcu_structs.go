@@ -820,7 +820,7 @@ type ModifyInstanceAttributeInput struct {
 
 	Attribute *string `locationName:"attribute" type:"string" enum:"InstanceAttributeName"`
 
-	BlockDeviceMappings []*InstanceBlockDeviceMappingSpecification `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
 	DisableApiTermination *AttributeBooleanValue `locationName:"disableApiTermination" type:"structure"`
 
@@ -868,7 +868,7 @@ func (s *ModifyInstanceAttributeInput) SetAttribute(v string) *ModifyInstanceAtt
 	return s
 }
 
-func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*InstanceBlockDeviceMappingSpecification) *ModifyInstanceAttributeInput {
+func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *ModifyInstanceAttributeInput {
 	s.BlockDeviceMappings = v
 	return s
 }
@@ -3553,19 +3553,6 @@ type Volume struct {
 	// Indicates whether the volume will be encrypted.
 	Encrypted *bool `locationName:"encrypted" type:"boolean"`
 
-	// The number of I/O operations per second (IOPS) that the volume supports.
-	// For Provisioned IOPS SSD volumes, this represents the number of IOPS that
-	// are provisioned for the volume. For General Purpose SSD volumes, this represents
-	// the baseline performance of the volume and the rate at which the volume accumulates
-	// I/O credits for bursting. For more information on General Purpose SSD baseline
-	// performance, I/O credits, and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
-	//
-	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
-	// gp2 volumes.
-	//
-	// Condition: This parameter is required for requests to create io1 volumes;
-	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
 	Iops *int64 `locationName:"iops" type:"integer"`
 
 	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
@@ -3675,8 +3662,6 @@ func (s *Volume) SetVolumeType(v string) *Volume {
 	return s
 }
 
-// Describes volume attachment details.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/VolumeAttachment
 type VolumeAttachment struct {
 	_ struct{} `type:"structure"`
 
@@ -3745,20 +3730,11 @@ func (s *VolumeAttachment) SetVolumeId(v string) *VolumeAttachment {
 	return s
 }
 
-// Contains the parameters for AttachVolume.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolumeRequest
 type AttachVolumeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The device name to expose to the instance (for example, /dev/sdh or xvdh).
-	//
-	// Device is a required field
 	Device *string `type:"string" required:"true"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
 	// The ID of the instance.
@@ -3766,10 +3742,6 @@ type AttachVolumeInput struct {
 	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
-	// The ID of the EBS volume. The volume and instance must be within the same
-	// Availability Zone.
-	//
-	// VolumeId is a required field
 	VolumeId *string `type:"string" required:"true"`
 }
 
@@ -3832,27 +3804,13 @@ type DetachVolumeInput struct {
 	// The device name.
 	Device *string `type:"string"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// Forces detachment if the previous detachment attempt did not occur cleanly
-	// (for example, logging into an instance, unmounting the volume, and detaching
-	// normally). This option can lead to data loss or a corrupted file system.
-	// Use this option only as a last resort to detach a volume from a failed instance.
-	// The instance won't have an opportunity to flush file system caches or file
-	// system metadata. If you use this option, you must perform file system check
-	// and repair procedures.
 	Force *bool `type:"boolean"`
 
 	// The ID of the instance.
 	InstanceId *string `type:"string"`
 
-	// The ID of the volume.
-	//
-	// VolumeId is a required field
 	VolumeId *string `type:"string" required:"true"`
 }
 
@@ -3906,5 +3864,85 @@ func (s *DetachVolumeInput) SetInstanceId(v string) *DetachVolumeInput {
 // SetVolumeId sets the VolumeId field's value.
 func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
 	s.VolumeId = &v
+	return s
+}
+
+type DescribeInstanceStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	IncludeAllInstances *bool `locationName:"includeAllInstances" type:"boolean"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
+
+	MaxResults *int64 `type:"integer"`
+
+	NextToken *string `type:"string"`
+}
+
+func (s DescribeInstanceStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeInstanceStatusInput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeInstanceStatusInput) SetDryRun(v bool) *DescribeInstanceStatusInput {
+	s.DryRun = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetFilters(v []*Filter) *DescribeInstanceStatusInput {
+	s.Filters = v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetIncludeAllInstances(v bool) *DescribeInstanceStatusInput {
+	s.IncludeAllInstances = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetInstanceIds(v []*string) *DescribeInstanceStatusInput {
+	s.InstanceIds = v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetMaxResults(v int64) *DescribeInstanceStatusInput {
+	s.MaxResults = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetNextToken(v string) *DescribeInstanceStatusInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeInstanceStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceStatuses []*InstanceStatus `locationName:"instanceStatusSet" locationNameList:"item" type:"list"`
+
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+func (s DescribeInstanceStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeInstanceStatusOutput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeInstanceStatusOutput) SetInstanceStatuses(v []*InstanceStatus) *DescribeInstanceStatusOutput {
+	s.InstanceStatuses = v
+	return s
+}
+
+func (s *DescribeInstanceStatusOutput) SetNextToken(v string) *DescribeInstanceStatusOutput {
+	s.NextToken = &v
 	return s
 }
