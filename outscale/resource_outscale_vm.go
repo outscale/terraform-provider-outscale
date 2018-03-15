@@ -556,11 +556,11 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("block_device_mapping") {
 
 		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.InstanceBlockDeviceMappingSpecification{}
+		mappings := []*fcu.BlockDeviceMapping{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
-			mapping := &fcu.InstanceBlockDeviceMappingSpecification{
+			mapping := &fcu.BlockDeviceMapping{
 				DeviceName:  aws.String(f["device_name"].(string)),
 				NoDevice:    aws.String(f["no_device"].(string)),
 				VirtualName: aws.String(f["virtual_name"].(string)),
@@ -568,9 +568,12 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 			e := f["ebs"].(map[string]interface{})
 
-			ebs := &fcu.EbsInstanceBlockDeviceSpecification{
+			ebs := &fcu.EbsBlockDevice{
 				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				VolumeId:            aws.String(e["volume_id"].(string)),
+				Iops:                aws.Int64(int64(e["iops"].(int))),
+				SnapshotId:          aws.String(e["snapshot_id"].(string)),
+				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
+				VolumeType:          aws.String((e["volume_type"].(string))),
 			}
 
 			mapping.Ebs = ebs
