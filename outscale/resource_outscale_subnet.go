@@ -41,9 +41,7 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(*r.Subnet.SubnetId)
-	d.Set("availability_zone", *r.Subnet.AvailabilityZone)
-	d.Set("cidr_block", *r.Subnet.CidrBlock)
-	d.Set("vpc_id", *r.Subnet.VpcId)
+
 
 	return resourceOutscaleSubNetRead(d, meta)
 }
@@ -81,6 +79,9 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
 	d.Set("subnet_id", resp.Subnets)
+	d.Set("availability_zone", resp.Subnets)
+	d.Set("cidr_block", resp.Subnets)
+	d.Set("vpc_id", resp.Subnets)
 
 	return nil
 }
