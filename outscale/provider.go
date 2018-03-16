@@ -81,6 +81,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_public_ips":         GetDatasource(fcu, "outscale_public_ips")(),
 			"outscale_volume":             GetDatasource(fcu, "outscale_volume")(),
 			"outscale_volumes":            GetDatasource(fcu, "outscale_volumes")(),
+			"outscale_nat_service":        GetDatasource(fcu, "outscale_nat_service")(),
+			"outscale_nat_services":       GetDatasource(fcu, "outscale_nat_services")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

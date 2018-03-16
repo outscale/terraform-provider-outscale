@@ -58,6 +58,8 @@ func init() {
 			"outscale_public_ips":         dataSourceOutscalePublicIPS,
 			"outscale_volume":             datasourceOutscaleVolume,
 			"outscale_volumes":            datasourceOutscaleVolumes,
+			"outscale_nat_service":        dataSourceOutscaleNatService,
+			"outscale_nat_services":       dataSourceOutscaleNatServices,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                 dataSourceOutscaleOAPIVM,
