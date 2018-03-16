@@ -3908,3 +3908,329 @@ func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
 	s.VolumeId = &v
 	return s
 }
+
+//CreateInternetGatewayInput Contains the parameters for CreateInternetGateway.
+type CreateInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+//CreateInternetGatewayOutput Contains the output of CreateInternetGateway.
+type CreateInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the Internet gateway.
+	InternetGateway *InternetGateway `locationName:"internetGateway" type:"structure"`
+}
+
+//InternetGateway Describes an Internet gateway.
+type InternetGateway struct {
+	_ struct{} `type:"structure"`
+
+	// Any VPCs attached to the Internet gateway.
+	Attachments []*InternetGatewayAttachment `locationName:"attachmentSet" locationNameList:"item" type:"list"`
+
+	// The ID of the Internet gateway.
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string"`
+
+	// Any tags assigned to the Internet gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+//InternetGatewayAttachment Describes the attachment of a VPC to an Internet gateway or an egress-only
+// Internet gateway.
+type InternetGatewayAttachment struct {
+	_ struct{} `type:"structure"`
+
+	// The current state of the attachment. For an Internet gateway, the state is
+	// available when attached to a VPC; otherwise, this value is not returned.
+	State *string `locationName:"state" type:"string" enum:"AttachmentStatus"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Contains the parameters for DescribeInternetGateways.
+type DescribeInternetGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * attachment.state - The current state of the attachment between the gateway
+	//    and the VPC (available). Present only if a VPC is attached.
+	//
+	//    * attachment.vpc-id - The ID of an attached VPC.
+	//
+	//    * internet-gateway-id - The ID of the Internet gateway.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more Internet gateway IDs.
+	//
+	// Default: Describes all your Internet gateways.
+	InternetGatewayIds []*string `locationName:"internetGatewayId" locationNameList:"item" type:"list"`
+}
+
+//DescribeInternetGatewaysOutput Contains the output of DescribeInternetGateways.
+type DescribeInternetGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more Internet gateways.
+	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
+	RequesterId      *string            `locationName:"requestId" type:"string"`
+}
+
+// Contains the parameters for DeleteInternetGateway.
+type DeleteInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+}
+
+type DeleteInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// Contains the parameters for CreateVpc.
+type CreateVpcInput struct {
+	_ struct{} `type:"structure"`
+
+	// Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for
+	// the VPC. You cannot specify the range of IP addresses, or the size of the
+	// CIDR block.
+	AmazonProvidedIpv6CidrBlock *bool `locationName:"amazonProvidedIpv6CidrBlock" type:"boolean"`
+
+	// The IPv4 network range for the VPC, in CIDR notation. For example, 10.0.0.0/16.
+	//
+	// CidrBlock is a required field
+	CidrBlock *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The tenancy options for instances launched into the VPC. For default, instances
+	// are launched with shared tenancy by default. You can launch instances with
+	// any tenancy into a shared tenancy VPC. For dedicated, instances are launched
+	// as dedicated tenancy instances by default. You can only launch instances
+	// with a tenancy of dedicated or host into a dedicated tenancy VPC.
+	//
+	// Important: The host value cannot be used with this parameter. Use the default
+	// or dedicated values only.
+	//
+	// Default: default
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+}
+
+// Contains the output of CreateVpc.
+type CreateVpcOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC.
+	Vpc *Vpc `locationName:"vpc" type:"structure"`
+}
+
+// Contains the parameters for DescribeVpcs.
+type DescribeVpcsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * cidr - The primary IPv4 CIDR block of the VPC. The CIDR block you specify
+	//    must exactly match the VPC's CIDR block for information to be returned
+	//    for the VPC. Must contain the slash followed by one or two digits (for
+	//    example, /28).
+	//
+	//    * cidr-block-association.cidr-block - An IPv4 CIDR block associated with
+	//    the VPC.
+	//
+	//    * cidr-block-association.association-id - The association ID for an IPv4
+	//    CIDR block associated with the VPC.
+	//
+	//    * cidr-block-association.state - The state of an IPv4 CIDR block associated
+	//    with the VPC.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * ipv6-cidr-block-association.ipv6-cidr-block - An IPv6 CIDR block associated
+	//    with the VPC.
+	//
+	//    * ipv6-cidr-block-association.association-id - The association ID for
+	//    an IPv6 CIDR block associated with the VPC.
+	//
+	//    * ipv6-cidr-block-association.state - The state of an IPv6 CIDR block
+	//    associated with the VPC.
+	//
+	//    * isDefault - Indicates whether the VPC is the default VPC.
+	//
+	//    * state - The state of the VPC (pending | available).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-id - The ID of the VPC.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more VPC IDs.
+	//
+	// Default: Describes all your VPCs.
+	VpcIds []*string `locationName:"VpcId" locationNameList:"VpcId" type:"list"`
+}
+
+// Contains the output of DescribeVpcs.
+type DescribeVpcsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more VPCs.
+	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
+}
+
+// Describes a VPC.
+type Vpc struct {
+	_ struct{} `type:"structure"`
+
+	// The primary IPv4 CIDR block for the VPC.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Information about the IPv4 CIDR blocks associated with the VPC.
+	CidrBlockAssociationSet []*VpcCidrBlockAssociation `locationName:"cidrBlockAssociationSet" locationNameList:"item" type:"list"`
+
+	// The ID of the set of DHCP options you've associated with the VPC (or default
+	// if the default options are associated with the VPC).
+	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
+
+	// The allowed tenancy of instances launched into the VPC.
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// Information about the IPv6 CIDR blocks associated with the VPC.
+	Ipv6CidrBlockAssociationSet []*VpcIpv6CidrBlockAssociation `locationName:"ipv6CidrBlockAssociationSet" locationNameList:"item" type:"list"`
+
+	// Indicates whether the VPC is the default VPC.
+	IsDefault *bool `locationName:"isDefault" type:"boolean"`
+
+	// The current state of the VPC.
+	State *string `locationName:"state" type:"string" enum:"VpcState"`
+
+	// Any tags assigned to the VPC.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Describes an IPv4 CIDR block associated with a VPC.
+type VpcCidrBlockAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID for the IPv4 CIDR block.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The IPv4 CIDR block.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Information about the state of the CIDR block.
+	CidrBlockState *VpcCidrBlockState `locationName:"cidrBlockState" type:"structure"`
+}
+
+// Describes the state of a CIDR block.
+type VpcCidrBlockState struct {
+	_ struct{} `type:"structure"`
+
+	// The state of the CIDR block.
+	State *string `locationName:"state" type:"string" enum:"VpcCidrBlockStateCode"`
+
+	// A message about the status of the CIDR block, if applicable.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+}
+
+// Describes an IPv6 CIDR block associated with a VPC.
+type VpcIpv6CidrBlockAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID for the IPv6 CIDR block.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The IPv6 CIDR block.
+	Ipv6CidrBlock *string `locationName:"ipv6CidrBlock" type:"string"`
+
+	// Information about the state of the CIDR block.
+	Ipv6CidrBlockState *VpcCidrBlockState `locationName:"ipv6CidrBlockState" type:"structure"`
+}
+
+// Contains the parameters for DeleteVpc.
+type DeleteVpcInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+type DeleteVpcOutput struct {
+	_ struct{} `type:"structure"`
+}
