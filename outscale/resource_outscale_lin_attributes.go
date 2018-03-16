@@ -16,42 +16,31 @@ func resourceOutscaleLinAttributes() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleLinAttrCreate,
 		Read:   resourceOutscaleLinAttrRead,
+		Update: resourceOutscaleLinAttrUpdate,
 		Delete: resourceOutscaleLinAttrDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"cidr_block": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
-			},
-			"instance_tenancy": {
-				Type:     schema.TypeString,
-				ForceNew: true,
+			"enable_dns_hostnames": {
+				Type:     schema.TypeBool,
 				Computed: true,
 				Optional: true,
 			},
-
-			// Attributes
-			"dhcp_options_id": {
-				Type:     schema.TypeString,
+			"enable_dns_support": {
+				Type:     schema.TypeBool,
 				Computed: true,
-			},
-			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"vpc_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Required: true,
 			},
-			"request_id": {
+			"attribute": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Required: true,
 			},
-			"tag_set": dataSourceTagsSchema(),
 		},
 	}
 }
@@ -59,23 +48,21 @@ func resourceOutscaleLinAttributes() *schema.Resource {
 func resourceOutscaleLinAttrCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	req := &fcu.CreateVpcInput{}
+	req := &fcu.ModifyVpcAttributeInput{}
 
-	req.CidrBlock = aws.String(d.Get("cidr_block").(string))
+	req.VpcId = aws.String(d.Get("vpc_id").(string))
 
-	if c, ok := d.GetOk("instance_tenancy"); ok {
-		cidr := c.(string)
-		if cidr == "default" || cidr == "dedicated" {
-			req.InstanceTenancy = aws.String(cidr)
-		} else {
-			return fmt.Errorf("cidr_block option not supported %s", cidr)
-		}
+	if c, ok := d.GetOk("enable_dns_hostnames"); ok {
+		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
+	}
+	if c, ok := d.GetOk("enable_dns_support"); ok {
+		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
 	}
 
-	var resp *fcu.CreateVpcOutput
+	var resp *fcu.ModifyVpcAttributeOutput
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.CreateVpc(req)
+		resp, err = conn.VM.ModifyVpcAttribute(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -94,7 +81,47 @@ func resourceOutscaleLinAttrCreate(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Cannot create the vpc, empty response")
 	}
 
-	d.SetId(*resp.Vpc.VpcId)
+	d.SetId(resource.UniqueId())
+
+	return resourceOutscaleLinAttrRead(d, meta)
+}
+
+func resourceOutscaleLinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).FCU
+
+	req := &fcu.ModifyVpcAttributeInput{}
+
+	if d.HasChange("vpc_id") && !d.IsNewResource() {
+		req.VpcId = aws.String(d.Get("vpc_id").(string))
+	}
+	if d.HasChange("enable_dns_hostnames") && !d.IsNewResource() {
+		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("enable_dns_hostnames").(bool))}
+	}
+	if d.HasChange("enable_dns_support") && !d.IsNewResource() {
+		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("enable_dns_support").(bool))}
+	}
+
+	var resp *fcu.ModifyVpcAttributeOutput
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, err = conn.VM.ModifyVpcAttribute(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+	if err != nil {
+		log.Printf("[DEBUG] Error creating lin (%s)", err)
+		return err
+	}
+
+	if resp == nil {
+		return fmt.Errorf("Cannot create the vpc, empty response")
+	}
 
 	return resourceOutscaleLinAttrRead(d, meta)
 }
@@ -102,16 +129,15 @@ func resourceOutscaleLinAttrCreate(d *schema.ResourceData, meta interface{}) err
 func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	id := d.Id()
-
-	req := &fcu.DescribeVpcsInput{
-		VpcIds: []*string{aws.String(id)},
+	req := &fcu.DescribeVpcAttributeInput{
+		Attribute: aws.String(d.Get("attribute").(string)),
+		VpcId:     aws.String(d.Get("vpc_id").(string)),
 	}
 
-	var resp *fcu.DescribeVpcsOutput
+	var resp *fcu.DescribeVpcAttributeOutput
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpcs(req)
+		resp, err = conn.VM.DescribeVpcAttribute(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -130,47 +156,14 @@ func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Lin not found")
 	}
 
-	if len(resp.Vpcs) == 0 {
-		d.SetId("")
-		return fmt.Errorf("Lin not found")
-	}
-
-	d.Set("cidr_block", resp.Vpcs[0].CidrBlock)
-	d.Set("instance_tenancy", resp.Vpcs[0].InstanceTenancy)
-	d.Set("dhcp_options_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("request_id", resp.RequesterId)
-
-	if err := d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags)); err != nil {
-		return err
-	}
+	d.Set("vpc_id", resp.VpcId)
+	d.Set("enable_dns_hostnames", resp.EnableDnsHostnames)
+	d.Set("enable_dns_support", resp.EnableDnsSupport)
 
 	return nil
 }
 
 func resourceOutscaleLinAttrDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	id := d.Id()
-
-	req := &fcu.DeleteVpcInput{
-		VpcId: &id,
-	}
-
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DeleteVpc(req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
-	})
-	if err != nil {
-		return err
-	}
 
 	d.SetId("")
 
