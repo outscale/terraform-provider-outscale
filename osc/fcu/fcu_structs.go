@@ -3908,3 +3908,177 @@ func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
 	s.VolumeId = &v
 	return s
 }
+
+//Create Subnet Struct
+type CreateSubnetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone for the subnet.
+	//
+	// Default: AWS selects one for you. If you create more than one subnet in your
+	// VPC, we may not necessarily select a different zone for each subnet.
+	AvailabilityZone *string `type:"string"`
+
+	// The IPv4 network range for the subnet, in CIDR notation. For example, 10.0.0.0/24.
+	//
+	// CidrBlock is a required field
+	CidrBlock *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The IPv6 network range for the subnet, in CIDR notation. The subnet size
+	// must use a /64 prefix length.
+	Ipv6CidrBlock *string `type:"string"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+type CreateSubnetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the subnet.
+	Subnet *Subnet `locationName:"subnet" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateSubnetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateSubnetOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubnet sets the Subnet field's value.
+type DeleteSubnetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the subnet.
+	//
+	// SubnetId is a required field
+	SubnetId *string `type:"string" required:"true"`
+}
+type DeleteSubnetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+type Subnet struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether a network interface created in this subnet (including a
+	// network interface created by RunInstances) receives an IPv6 address.
+	AssignIpv6AddressOnCreation *bool `locationName:"assignIpv6AddressOnCreation" type:"boolean"`
+
+	// The Availability Zone of the subnet.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The number of unused private IPv4 addresses in the subnet. Note that the
+	// IPv4 addresses for any stopped instances are considered unavailable.
+	AvailableIpAddressCount *int64 `locationName:"availableIpAddressCount" type:"integer"`
+
+	// The IPv4 CIDR block assigned to the subnet.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Indicates whether this is the default subnet for the Availability Zone.
+	DefaultForAz *bool `locationName:"defaultForAz" type:"boolean"`
+
+	// Information about the IPv6 CIDR blocks associated with the subnet.
+
+	// Indicates whether instances launched in this subnet receive a public IPv4
+	// address.
+	MapPublicIpOnLaunch *bool `locationName:"mapPublicIpOnLaunch" type:"boolean"`
+
+	// The current state of the subnet.
+	State *string `locationName:"state" type:"string" enum:"SubnetState"`
+
+	// The ID of the subnet.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+
+	// Any tags assigned to the subnet.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC the subnet is in.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+type DescribeSubnetsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * availabilityZone - The Availability Zone for the subnet. You can also
+	//    use availability-zone as the filter name.
+	//
+	//    * available-ip-address-count - The number of IPv4 addresses in the subnet
+	//    that are available.
+	//
+	//    * cidrBlock - The IPv4 CIDR block of the subnet. The CIDR block you specify
+	//    must exactly match the subnet's CIDR block for information to be returned
+	//    for the subnet. You can also use cidr or cidr-block as the filter names.
+	//
+	//    * defaultForAz - Indicates whether this is the default subnet for the
+	//    Availability Zone. You can also use default-for-az as the filter name.
+	//
+	//    * ipv6-cidr-block-association.ipv6-cidr-block - An IPv6 CIDR block associated
+	//    with the subnet.
+	//
+	//    * ipv6-cidr-block-association.association-id - An association ID for an
+	//    IPv6 CIDR block associated with the subnet.
+	//
+	//    * ipv6-cidr-block-association.state - The state of an IPv6 CIDR block
+	//    associated with the subnet.
+	//
+	//    * state - The state of the subnet (pending | available).
+	//
+	//    * subnet-id - The ID of the subnet.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-id - The ID of the VPC for the subnet.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more subnet IDs.
+	//
+	// Default: Describes all your subnets.
+	SubnetIds []*string `locationName:"SubnetId" locationNameList:"SubnetId" type:"list"`
+}
+type DescribeSubnetsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more subnets.
+	Subnets []*Subnet `locationName:"subnetSet" locationNameList:"item" type:"list"`
+}
