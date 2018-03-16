@@ -94,9 +94,23 @@ func testAccCheckNatGatewayExists(n string, ng *fcu.NatGateway) resource.TestChe
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		resp, err := conn.VM.DescribeNatGateways(&fcu.DescribeNatGatewaysInput{
-			NatGatewayIds: []*string{aws.String(rs.Primary.ID)},
+
+		var resp *fcu.DescribeNatGatewaysOutput
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+
+			resp, err = conn.VM.DescribeNatGateways(&fcu.DescribeNatGatewaysInput{
+				NatGatewayIds: []*string{aws.String(rs.Primary.ID)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
+
 		if err != nil {
 			return err
 		}
