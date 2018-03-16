@@ -41,6 +41,9 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(*r.Subnet.SubnetId)
+	d.Set("availability_zone", *r.Subnet.AvailabilityZone)
+	d.Set("cidr_block", *r.Subnet.CidrBlock)
+	d.Set("vpc_id", *r.Subnet.VpcId)
 
 	return resourceOutscaleSubNetRead(d, meta)
 }
