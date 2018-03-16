@@ -1,38 +1,58 @@
 package outscale
 
 import (
+	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleKeyPairDataSource_basic(t *testing.T) {
+func TestAccOutscaleKeypairDataSource_Instance(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
 
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	resource.Test(t, resource.TestCase{
-
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleKeyPairDataSourceConfigBasic,
+				Config: testAccCheckOutscaleKeypairDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					//testAccCheckOutscaleKeyPairExists("outscale_keypair.a_key_pair", &conf),
-					resource.TestCheckResourceAttr("data.outscale_keypair", "key_name", "tf-acc-key-pair2"),
+					testAccCheckOutscaleKeypairDataSourceID("data.outscale_keypair.nat_ami"),
+					resource.TestCheckResourceAttr("data.outscale_keypair.nat_ami", "key_name", "TestKey"),
 				),
 			},
 		},
 	})
 }
 
-const testAccCheckOutscaleKeyPairDataSourceConfigBasic = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair2"
+func testAccCheckOutscaleKeypairDataSourceID(n string) resource.TestCheckFunc {
+	// Wait for IAM role
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Can't find AMI data source: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("Key Pair data source ID not set")
+		}
+		return nil
+	}
 }
 
-data "outscale_keypair" "outscale_keypair" {
-    filter {
-	name = "key-name"
-	values = ["${outscale_keypair.a_key_pair.key_name}"]
-    }
+const testAccCheckOutscaleKeypairDataSourceConfig = `
+data "outscale_keypair" "nat_ami" {
+	key_name = "TestKey"
 }
 `
