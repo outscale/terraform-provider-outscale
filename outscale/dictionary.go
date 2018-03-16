@@ -40,7 +40,8 @@ func init() {
 			"outscale_public_ip": resourceOutscaleOAPIPublicIP,
 			// "outscale_inbound_rule":  resourceOutscaleOAPIInboundRule,
 			// "outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
-			"outscale_tag": resourceOutscaleOAPITags,
+			"outscale_tag":         resourceOutscaleOAPITags,
+			"outscale_nat_service": resourceOutscaleOAPINatService,
 		},
 	}
 	datasources = Dictionary{
