@@ -69,6 +69,8 @@ func init() {
 			"outscale_tags":               dataSourceOutscaleOAPITags,
 			"outscale_volume":             datasourceOutscaleOAPIVolume,
 			"outscale_volumes":            datasourceOutscaleOAPIVolumes,
+			"outscale_keypair":            datasourceOutscaleOAPIKeyPair,
+			"outscale_keypairs":           datasourceOutscaleOAPIKeyPairs,
 		},
 	}
 }
