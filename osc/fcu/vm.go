@@ -56,6 +56,9 @@ type VMService interface {
 	CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error)
 	DescribeNatGateways(input *DescribeNatGatewaysInput) (*DescribeNatGatewaysOutput, error)
 	DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error)
+	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
+	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
+	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
 }
 
 const opRunInstances = "RunInstances"

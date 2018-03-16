@@ -28,6 +28,7 @@ func init() {
 			"outscale_public_ip_link":       resourceOutscalePublicIPLink,
 			"outscale_volume":               resourceOutscaleVolume,
 			"outscale_volume_link":          resourceOutscaleVolumeLink,
+			"outscale_lin":                  resourceOutscaleLin,
 			"outscale_lin_internet_gateway": resourceOutscaleLinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleNatService,
 		},
