@@ -38,45 +38,33 @@ func resourceOutscaleNatService() *schema.Resource {
 				ForceNew: true,
 			},
 			// Attributes
-			"nat_gateway": {
-				Type:     schema.TypeMap,
+			"nat_gateway_address": {
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"nat_gateway_address": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"allocation_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"public_ip": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"nat_gateway_id": {
+						"allocation_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"subnetId": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"vpc_id": {
+						"public_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
+			},
+			"nat_gateway_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"vpc_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -157,19 +145,18 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 
 	// Set NAT Gateway attributes
 	ng := ngRaw.(*fcu.NatGateway)
-	ngGateway := make(map[string]interface{})
 
 	if ng.NatGatewayId != nil {
-		ngGateway["nat_gateway_id"] = *ng.NatGatewayId
+		d.Set("nat_gateway_id", *ng.NatGatewayId)
 	}
 	if ng.State != nil {
-		ngGateway["state"] = *ng.State
+		d.Set("state", *ng.State)
 	}
 	if ng.SubnetId != nil {
-		ngGateway["subnet_id"] = *ng.SubnetId
+		d.Set("subnet_id", *ng.SubnetId)
 	}
 	if ng.VpcId != nil {
-		ngGateway["vpc_id"] = *ng.VpcId
+		d.Set("vpc_id", *ng.VpcId)
 	}
 
 	if ng.NatGatewayAddresses != nil {
@@ -185,13 +172,9 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			addresses[k] = address
 		}
-		ngGateway["nat_gateway_address"] = addresses
-	}
-
-	fmt.Printf("\n\n[DEBUG] nat_gateway => %s", ngGateway)
-
-	if err := d.Set("nat_gateway", ngGateway); err != nil {
-		return err
+		if err := d.Set("nat_gateway_address", addresses); err != nil {
+			return err
+		}
 	}
 
 	return nil
