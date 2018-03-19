@@ -56,6 +56,8 @@ type VMService interface {
 	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
 	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
 	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
+	AttachInternetGateway(input *AttachInternetGatewayInput) (*AttachInternetGatewayOutput, error)
+	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
 }
 
 const opRunInstances = "RunInstances"
