@@ -98,7 +98,7 @@ func datasourceOutscaleVolumes() *schema.Resource {
 							},
 							Computed: true,
 						},
-						"tags": tagsSchema(),
+						"tag": tagsSchema(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,
