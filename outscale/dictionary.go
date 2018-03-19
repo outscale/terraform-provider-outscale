@@ -41,6 +41,7 @@ func init() {
 			// "outscale_inbound_rule":  resourceOutscaleOAPIInboundRule,
 			// "outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":         resourceOutscaleOAPITags,
+			"outscale_lin":         resourceOutscaleOAPILin,
 			"outscale_nat_service": resourceOutscaleOAPINatService,
 		},
 	}
