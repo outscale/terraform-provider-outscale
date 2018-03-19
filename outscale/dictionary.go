@@ -60,6 +60,8 @@ func init() {
 			"outscale_volumes":            datasourceOutscaleVolumes,
 			"outscale_nat_service":        dataSourceOutscaleNatService,
 			"outscale_nat_services":       dataSourceOutscaleNatServices,
+			"outscale_keypair":            datasourceOutscaleKeyPair,
+			"outscale_keypairs":           datasourceOutscaleKeyPairs,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                 dataSourceOutscaleOAPIVM,
@@ -71,6 +73,8 @@ func init() {
 			"outscale_tags":               dataSourceOutscaleOAPITags,
 			"outscale_volume":             datasourceOutscaleOAPIVolume,
 			"outscale_volumes":            datasourceOutscaleOAPIVolumes,
+			"outscale_keypair":            datasourceOutscaleOAPIKeyPair,
+			"outscale_keypairs":           datasourceOutscaleOAPIKeyPairs,
 		},
 	}
 }
