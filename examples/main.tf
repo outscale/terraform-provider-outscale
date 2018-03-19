@@ -1,48 +1,17 @@
-resource "outscale_outbound_rule" "outscale_outbound_rule1" {
-  ip_permissions = {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
+resource "outscale_vm" "outscale_vm" {
+  count = 1
 
-  ip_permissions = {
-    from_port   = 443
-    to_port     = 443
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
-
-  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+  image_id                = "ami-880caa66"
+  instance_type           = "c4.large"
+  disable_api_termination = true
 }
 
-resource "outscale_inbound_rule" "outscale_inbound_rule2" {
-  ip_permissions = {
-    from_port   = 443
-    to_port     = 443
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
-
-  ip_permissions = {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
-
-  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+resource "outscale_vm_attributes" "outscale_vm_attributes" {
+  instance_id             = "${outscale_vm.outscale_vm.0.id}"
+  attribute               = "disableApiTermination"
+  disable_api_termination = false
 }
 
-resource "outscale_firewall_rules_set" "outscale_firewall_rules_set" {
-  group_description = "test group tf"
-  group_name        = "sg1-test-group_test1"
-  vpc_id            = "vpc-e9d09d63"
-}
-
-data "outscale_firewall_rules_set" "by_filter" {
-  filter {
-    name   = "group-name"
-    values = ["${outscale_firewall_rules_set.outscale_firewall_rules_set.group_name}"]
-  }
+output "instance_id" {
+  value = "${outscale_vm.outscale_vm.0.id}"
 }

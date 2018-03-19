@@ -38,6 +38,18 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"value": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"additional_info": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"force": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 
 			// Describe
 			"filter": dataSourceFiltersSchema(),
@@ -230,11 +242,6 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-
-			"additional_info": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"instance_initiated_shutdown_behavior": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -254,14 +261,6 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-			},
-			"value": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"force": {
-				Type:     schema.TypeBool,
-				Optional: true,
 			},
 
 			// Computed
@@ -366,14 +365,73 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	instanceAttrOpts, err := buildOutscaleVMAttrOpts(d, meta)
+	id := aws.String(d.Get("instance_id").(string))
+	var attr *string
+
+	if attribute, attributeOk := d.GetOk("attribute"); attributeOk {
+		attr = aws.String(attribute.(string))
+	}
+	blockDevices, err := readBlockDeviceMappingsFromConfig(d, conn)
 	if err != nil {
 		return err
 	}
+	if len(blockDevices) > 0 {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.BlockDeviceMappings = blockDevices
+		if _, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+			return err
+		}
+	}
+	if t, tOk := d.GetOk("disable_api_termination"); tOk {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.DisableApiTermination = &fcu.AttributeBooleanValue{Value: aws.Bool(t.(bool))}
+		if _, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+			return err
+		}
+	}
 
-	fmt.Printf("\n\nREQUEST instanceAttr (%s)", instanceAttrOpts)
+	if t, tOk := d.GetOk("group_id"); tOk {
+		g := t.([]interface{})
+		gr := make([]*string, len(g))
+		for k, v := range g {
+			gr[k] = aws.String(v.(string))
+		}
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.Groups = gr
+		if _, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+			return err
+		}
+	}
+	if instanceInit, instanceInitOk := d.GetOk("instance_initiated_shutdown_behavior"); instanceInitOk {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.InstanceInitiatedShutdownBehavior = &fcu.AttributeValue{Value: aws.String(instanceInit.(string))}
+		if _, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+			return err
+		}
+	}
+	if t, tOk := d.GetOk("source_dest_check"); tOk {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.SourceDestCheck = &fcu.AttributeBooleanValue{Value: aws.Bool(t.(bool))}
+		if _, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+			return err
+		}
+	}
 
 	if v, ok := d.GetOk("instance_type"); ok {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.InstanceType = &fcu.AttributeValue{Value: aws.String(v.(string))}
 		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", instanceAttrOpts.InstanceId)
 		fmt.Printf("\n\n[INFO] instnace_type (%s)", v.(string))
 
@@ -400,13 +458,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		fmt.Printf("[INFO] Modifying instance type %s", *instanceAttrOpts.InstanceId)
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: instanceAttrOpts.InstanceId,
-			Attribute:  instanceAttrOpts.Attribute,
-			InstanceType: &fcu.AttributeValue{
-				Value: aws.String(v.(string)),
-			},
-		})
+		_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
 		if err != nil {
 			return err
 		}
@@ -433,6 +485,13 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if v, ok := d.GetOk("user_data"); ok {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.UserData = &fcu.BlobAttributeValue{
+			Value: v.([]byte),
+		}
+
 		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", instanceAttrOpts.InstanceId)
 		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
 			InstanceIds: []*string{instanceAttrOpts.InstanceId},
@@ -457,13 +516,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		log.Printf("[INFO] Modifying instance type %s", *instanceAttrOpts.InstanceId)
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: instanceAttrOpts.InstanceId,
-			Attribute:  instanceAttrOpts.Attribute,
-			UserData: &fcu.BlobAttributeValue{
-				Value: v.([]byte),
-			},
-		})
+		_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
 		if err != nil {
 			return err
 		}
@@ -492,6 +545,12 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if v, ok := d.GetOk("ebs_optimized"); ok {
+		instanceAttrOpts := &fcu.ModifyInstanceAttributeInput{}
+		instanceAttrOpts.InstanceId = id
+		instanceAttrOpts.Attribute = attr
+		instanceAttrOpts.EbsOptimized = &fcu.AttributeBooleanValue{
+			Value: aws.Bool(v.(bool)),
+		}
 		fmt.Printf("\n\n[INFO] Stopping Instance %q for ebs_optimized change", *instanceAttrOpts.InstanceId)
 		fmt.Printf("\n\n[INFO] ebs_optimized (%v)", v.(bool))
 		fmt.Printf("\n\n[INFO] ebs_optimized ok (%v)", ok)
@@ -525,17 +584,8 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		fmt.Printf("\n\n[INFO] Modifying instance type %s", *instanceAttrOpts.InstanceId)
-		input := &fcu.ModifyInstanceAttributeInput{
-			Attribute:  instanceAttrOpts.Attribute,
-			InstanceId: instanceAttrOpts.InstanceId,
-			EbsOptimized: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(v.(bool)),
-			},
-		}
 
-		fmt.Printf("[DEBUG] ATTR (%s)", input)
-
-		_, err = conn.VM.ModifyInstanceAttribute(input)
+		_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
 		if err != nil {
 			fmt.Printf("[ERROR] DEBUG (%s)", err)
 			return err
@@ -587,13 +637,271 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	d.Partial(true)
 
-	fmt.Printf("\n\n[DEBUG] updating the instance %s", d.Id())
+	id := d.Get("instance_id").(string)
 
-	if d.HasChange("attribute") && !d.IsNewResource() {
-		fmt.Printf("\n\n[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			Attribute: aws.String(d.Get("attribute").(string)),
+	log.Printf("[DEBUG] updating the instance %s", id)
+
+	if d.HasChange("instance_type") && !d.IsNewResource() {
+		log.Printf("[INFO] Stopping Instance %q for instance_type change", id)
+		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
 		})
+
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+			Target:     []string{"stopped"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to stop: %s", id, err)
+		}
+
+		log.Printf("[INFO] Modifying instance type %s", id)
+		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			InstanceType: &fcu.AttributeValue{
+				Value: aws.String(d.Get("instance_type").(string)),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Starting Instance %q after instance_type change", id)
+		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf = &resource.StateChangeConf{
+			Pending:    []string{"pending", "stopped"},
+			Target:     []string{"running"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to become ready: %s",
+				id, err)
+		}
+	}
+
+	if d.HasChange("user_data") && !d.IsNewResource() {
+		log.Printf("[INFO] Stopping Instance %q for instance_type change", id)
+		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+			Target:     []string{"stopped"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to stop: %s", id, err)
+		}
+
+		log.Printf("[INFO] Modifying instance type %s", id)
+		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			UserData: &fcu.BlobAttributeValue{
+				Value: d.Get("user_data").([]byte),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Starting Instance %q after user_data change", id)
+		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf = &resource.StateChangeConf{
+			Pending:    []string{"pending", "stopped"},
+			Target:     []string{"running"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to become ready: %s",
+				id, err)
+		}
+	}
+
+	if d.HasChange("ebs_optimized") && !d.IsNewResource() {
+		log.Printf("[INFO] Stopping Instance %q for instance_type change", id)
+		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+			Target:     []string{"stopped"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to stop: %s", id, err)
+		}
+
+		log.Printf("[INFO] Modifying instance type %s", id)
+		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			EbsOptimized: &fcu.AttributeBooleanValue{
+				Value: d.Get("ebs_optimized").(*bool),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Starting Instance %q after ebs_optimized change", id)
+		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf = &resource.StateChangeConf{
+			Pending:    []string{"pending", "stopped"},
+			Target:     []string{"running"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to become ready: %s",
+				id, err)
+		}
+	}
+
+	if d.HasChange("delete_on_termination") && !d.IsNewResource() {
+		log.Printf("[INFO] Stopping Instance %q for instance_type change", id)
+		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+			Target:     []string{"stopped"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to stop: %s", id, err)
+		}
+
+		log.Printf("[INFO] Modifying instance type %s", id)
+		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			DeleteOnTermination: &fcu.AttributeBooleanValue{
+				Value: d.Get("delete_on_termination").(*bool),
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[INFO] Starting Instance %q after delete_on_termination change", id)
+		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
+			InstanceIds: []*string{aws.String(id)},
+		})
+
+		stateConf = &resource.StateChangeConf{
+			Pending:    []string{"pending", "stopped"},
+			Target:     []string{"running"},
+			Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+			Timeout:    10 * time.Minute,
+			Delay:      10 * time.Second,
+			MinTimeout: 3 * time.Second,
+		}
+
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for instance (%s) to become ready: %s",
+				id, err)
+		}
+	}
+
+	if d.HasChange("disable_api_termination") {
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			DisableApiTermination: &fcu.AttributeBooleanValue{
+				Value: aws.Bool(d.Get("disable_api_termination").(bool)),
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("instance_initiated_shutdown_behavior") {
+		log.Printf("[INFO] Modifying instance %s", id)
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
+				Value: aws.String(d.Get("instance_initiated_shutdown_behavior").(string)),
+			},
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("group_id") {
+		log.Printf("[INFO] Modifying instance %s", id)
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			Groups:     d.Get("group_set").([]*string),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("source_dest_check") {
+		log.Printf("[INFO] Modifying instance %s", id)
+		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+			InstanceId: aws.String(id),
+			SourceDestCheck: &fcu.AttributeBooleanValue{
+				Value: aws.Bool(d.Get("source_dest_check").(bool)),
+			},
+		})
+
 		if err != nil {
 			return err
 		}
@@ -601,7 +909,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("block_device_mapping") {
 
-		maps := d.Get("block_device_mapping").([]interface{})
+		maps := d.Get("block_device_mapping").(*schema.Set).List()
 		mappings := []*fcu.BlockDeviceMapping{}
 
 		for _, m := range maps {
@@ -627,290 +935,12 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 			mappings = append(mappings, mapping)
 		}
 
-		fmt.Printf("\n\n[INFO] Modifying instance %s", d.Id())
+		log.Printf("[INFO] Modifying instance %s", id)
 		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(d.Id()),
+			InstanceId:          aws.String(id),
 			BlockDeviceMappings: mappings,
 		})
 
-		if err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("disable_api_termination") {
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			DisableApiTermination: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(d.Get("disable_api_termination").(bool)),
-			},
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("ebs_optimized") && !d.IsNewResource() {
-		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		fmt.Printf("\n\n[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			EbsOptimized: &fcu.AttributeBooleanValue{
-				Value: d.Get("ebs_optimized").(*bool),
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n\n[INFO] Starting Instance %q after ebs_optimized change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
-		}
-	}
-
-	if d.HasChange("group_id") {
-		fmt.Printf("\n\n[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			Groups:     d.Get("group_set").([]*string),
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("instance_type") && !d.IsNewResource() {
-		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		fmt.Printf("\n\n[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			InstanceType: &fcu.AttributeValue{
-				Value: aws.String(d.Get("instance_type").(string)),
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n\n[INFO] Starting Instance %q after instance_type change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
-		}
-	}
-
-	if d.HasChange("user_data") && !d.IsNewResource() {
-		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		fmt.Printf("\n\n[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			UserData: &fcu.BlobAttributeValue{
-				Value: d.Get("user_data").([]byte),
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n\n[INFO] Starting Instance %q after user_data change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
-		}
-	}
-
-	if d.HasChange("source_dest_check") {
-		fmt.Printf("\n\n[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			SourceDestCheck: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(d.Get("source_dest_check").(bool)),
-			},
-		})
-
-		if err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("delete_on_termination") && !d.IsNewResource() {
-		fmt.Printf("\n\n[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		fmt.Printf("\n\n[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			DeleteOnTermination: &fcu.AttributeBooleanValue{
-				Value: d.Get("delete_on_termination").(*bool),
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("\n\n[INFO] Starting Instance %q after delete_on_termination change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			return err
-		}
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
-		}
-	}
-
-	if d.HasChange("instance_initiated_shutdown_behavior") {
-		fmt.Printf("\n\n[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(d.Id()),
-			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
-				Value: aws.String(d.Get("instance_initiated_shutdown_behavior").(string)),
-			},
-		})
 		if err != nil {
 			return err
 		}
@@ -926,83 +956,6 @@ func resourceVMAttributesDelete(d *schema.ResourceData, meta interface{}) error 
 	d.SetId("")
 
 	return nil
-}
-
-func buildOutscaleVMAttrOpts(
-	d *schema.ResourceData, meta interface{}) (*fcu.ModifyInstanceAttributeInput, error) {
-	conn := meta.(*OutscaleClient).FCU
-
-	opts := &fcu.ModifyInstanceAttributeInput{}
-
-	fmt.Printf("[DEBUG] OPTS => %s", opts)
-
-	if attribute, attributeOk := d.GetOk("attribute"); attributeOk {
-		opts.Attribute = aws.String(attribute.(string))
-	}
-	blockDevices, err := readBlockDeviceMappingsFromConfig(d, conn)
-	if err != nil {
-		return nil, err
-	}
-	if len(blockDevices) > 0 {
-		opts := &fcu.ModifyInstanceAttributeInput{}
-		opts.BlockDeviceMappings = blockDevices
-		if _, err = conn.VM.ModifyInstanceAttribute(opts); err != nil {
-			return nil, err
-		}
-	}
-	if t, tOk := d.GetOk("disable_api_termination"); tOk {
-		req := &fcu.ModifyInstanceAttributeInput{}
-		req.Attribute = opts.Attribute
-		req.DisableApiTermination = &fcu.AttributeBooleanValue{Value: aws.Bool(t.(bool))}
-		if v, tOk := d.GetOk("value"); tOk {
-			req.Value = aws.String(v.(string))
-		} else {
-			return nil, fmt.Errorf("Value for disable_api_termination must be provided")
-		}
-		if _, err = conn.VM.ModifyInstanceAttribute(req); err != nil {
-			return nil, err
-		}
-	}
-
-	if t, tOk := d.GetOk("group_id"); tOk {
-		g := t.([]interface{})
-		gr := make([]*string, len(g))
-		for k, v := range g {
-			gr[k] = aws.String(v.(string))
-		}
-		opts.Groups = gr
-		if _, err = conn.VM.ModifyInstanceAttribute(opts); err != nil {
-			return nil, err
-		}
-	}
-	if t, tOk := d.GetOk("instance_id"); tOk {
-		opts.InstanceId = aws.String(t.(string))
-	}
-	if instanceInit, instanceInitOk := d.GetOk("instance_initiated_shutdown_behavior"); instanceInitOk {
-		req := &fcu.ModifyInstanceAttributeInput{}
-		req.Attribute = opts.Attribute
-		req.InstanceInitiatedShutdownBehavior = &fcu.AttributeValue{Value: aws.String(instanceInit.(string))}
-		if v, tOk := d.GetOk("value"); tOk {
-			req.Value = aws.String(v.(string))
-		} else {
-			return nil, fmt.Errorf("Value for instance_initiated_shutdown_behavior must be provided")
-		}
-		if _, err = conn.VM.ModifyInstanceAttribute(req); err != nil {
-			return nil, err
-		}
-	}
-	if t, tOk := d.GetOk("source_dest_check"); tOk {
-		req := &fcu.ModifyInstanceAttributeInput{}
-		req.Attribute = opts.Attribute
-		req.SourceDestCheck = &fcu.AttributeBooleanValue{Value: aws.Bool(t.(bool))}
-		if _, err = conn.VM.ModifyInstanceAttribute(req); err != nil {
-			return nil, err
-		}
-	}
-
-	fmt.Printf("[DEBUG] OPTS => %s", opts)
-
-	return opts, nil
 }
 
 func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
