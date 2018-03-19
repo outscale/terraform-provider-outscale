@@ -4234,3 +4234,53 @@ type DeleteVpcInput struct {
 type DeleteVpcOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// Contains the parameters for AttachInternetGateway.
+type AttachInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+type AttachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// Contains the parameters for DetachInternetGateway.
+type DetachInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+type DetachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
