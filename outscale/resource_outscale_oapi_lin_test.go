@@ -23,7 +23,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if oapi != true {
 		t.Skip()
 	}
 	var conf fcu.Vpc
@@ -38,7 +38,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinExists("outscale_lin.vpc", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_lin.vpc", "cidr_block", "10.0.0.0/16"),
+						"outscale_lin.vpc", "ip_range", "10.0.0.0/16"),
 				),
 			},
 		},
@@ -137,6 +137,6 @@ func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
 
 const testAccOutscaleOAPILinConfig = `
 resource "outscale_lin" "vpc" {
-	cidr_block = "10.0.0.0/16"
+	ip_range = "10.0.0.0/16"
 }
 `

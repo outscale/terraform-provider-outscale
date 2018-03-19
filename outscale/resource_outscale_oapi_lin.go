@@ -30,14 +30,14 @@ func resourceOutscaleOAPILinCreate(d *schema.ResourceData, meta interface{}) err
 
 	req := &fcu.CreateVpcInput{}
 
-	req.CidrBlock = aws.String(d.Get("cidr_block").(string))
+	req.CidrBlock = aws.String(d.Get("ip_range").(string))
 
-	if c, ok := d.GetOk("instance_tenancy"); ok {
+	if c, ok := d.GetOk("tenancy"); ok {
 		cidr := c.(string)
 		if cidr == "default" || cidr == "dedicated" {
 			req.InstanceTenancy = aws.String(cidr)
 		} else {
-			return fmt.Errorf("cidr_block option not supported %s", cidr)
+			return fmt.Errorf("ip_range option not supported %s", cidr)
 		}
 	}
 
@@ -60,7 +60,7 @@ func resourceOutscaleOAPILinCreate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if resp == nil {
-		return fmt.Errorf("Cannot create the vpc, empty response")
+		return fmt.Errorf("Cannot create the oAPI vpc, empty response")
 	}
 
 	d.SetId(*resp.Vpc.VpcId)
@@ -96,18 +96,18 @@ func resourceOutscaleOAPILinRead(d *schema.ResourceData, meta interface{}) error
 
 	if resp == nil {
 		d.SetId("")
-		return fmt.Errorf("Lin not found")
+		return fmt.Errorf("oAPI Lin not found")
 	}
 
 	if len(resp.Vpcs) == 0 {
 		d.SetId("")
-		return fmt.Errorf("Lin not found")
+		return fmt.Errorf("oAPI Lin not found")
 	}
 
-	d.Set("cidr_block", resp.Vpcs[0].CidrBlock)
-	d.Set("instance_tenancy", resp.Vpcs[0].InstanceTenancy)
-	d.Set("dhcp_options_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("ip_range", resp.Vpcs[0].CidrBlock)
+	d.Set("tenancy", resp.Vpcs[0].InstanceTenancy)
+	d.Set("dhcp_options_set_id", resp.Vpcs[0].DhcpOptionsId)
+	d.Set("lin_id", resp.RequesterId)
 
 	if err := d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags)); err != nil {
 		return err
@@ -148,12 +148,12 @@ func resourceOutscaleOAPILinDelete(d *schema.ResourceData, meta interface{}) err
 
 func getOAPILinSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"ip_range": { //cidr_block
+		"ip_range": {
 			Type:     schema.TypeString,
 			ForceNew: true,
 			Required: true,
 		},
-		"tenancy": { //instance_tenancy
+		"tenancy": {
 			Type:     schema.TypeString,
 			ForceNew: true,
 			Computed: true,
@@ -169,26 +169,10 @@ func getOAPILinSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-				},
-			},
-		},
+		"tag": tagsSchemaComputed(),
 		"lin_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		//		"tag_set": dataSourceTagsSchema(),
 	}
 }
