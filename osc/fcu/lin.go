@@ -142,3 +142,49 @@ func (v VMOperations) DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
 
 	return output, nil
 }
+
+func (v VMOperations) AttachInternetGateway(input *AttachInternetGatewayInput) (*AttachInternetGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "AttachInternetGateway"
+	output := &AttachInternetGatewayOutput{}
+
+	if input == nil {
+		input = &AttachInternetGatewayInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DetachInternetGateway"
+	output := &DetachInternetGatewayOutput{}
+
+	if input == nil {
+		input = &DetachInternetGatewayInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
