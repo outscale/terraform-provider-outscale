@@ -40,14 +40,14 @@ const testAccTagsDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "m1.small"
-	tags = {
+	tag {
 		foo = "bar"
 	}
 }
 resource "outscale_vm" "basic2" {
   image_id = "ami-8a6a0120"
 	instance_type = "m1.small"
-	tags = {
+	tag {
 		foo = "baz"
 	}
 }

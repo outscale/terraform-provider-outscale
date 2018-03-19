@@ -60,7 +60,7 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 				Computed: true,
 			},
 			"tag_set": tagsSchemaComputed(),
-			"tags":    tagsSchema(),
+			"tag":     tagsSchema(),
 		},
 	}
 }
