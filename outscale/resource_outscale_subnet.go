@@ -1,4 +1,4 @@
-ckage outscale
+package outscale
 
 import (
 	"fmt"
@@ -41,7 +41,6 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(*r.Subnet.SubnetId)
-
 
 	return resourceOutscaleSubNetRead(d, meta)
 }
