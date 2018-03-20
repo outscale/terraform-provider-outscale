@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
@@ -20,6 +21,7 @@ func TestAccOutscalePublicIPLink_importBasic(t *testing.T) {
 		t.Skip()
 	}
 	resourceName := "outscale_public_ip_link.bar"
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,7 +29,7 @@ func TestAccOutscalePublicIPLink_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPLinkConfig,
+				Config: testAccOutscalePublicIPLinkConfig(rInt),
 			},
 
 			resource.TestStep{
