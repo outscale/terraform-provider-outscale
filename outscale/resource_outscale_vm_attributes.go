@@ -461,7 +461,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 			InstanceId:          aws.String(id),
 			BlockDeviceMappings: mappings,
 		}
-		if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
+		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
 			return err
 		}
 	}
@@ -616,7 +616,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 			InstanceId:          aws.String(id),
 			BlockDeviceMappings: mappings,
 		}
-		if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
+		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
 			return err
 		}
 	}
@@ -660,36 +660,62 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 
 	fmt.Printf("\n\n[DEBUG] RESPONSE %+v", resp)
 
-	d.Set("instance_id", resp.InstanceId)
+	d.Set("instance_id", *resp.InstanceId)
 
-	d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
-
-	d.Set("disable_api_termination", resp.DisableApiTermination)
-
-	d.Set("ebs_optimized", resp.EbsOptimized)
-
-	err = d.Set("group_set", getGroupSet(resp.Groups))
-	if err != nil {
-		fmt.Println(getGroupSet(resp.Groups))
+	if resp.BlockDeviceMappings != nil {
+		d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
 	}
 
-	d.Set("instance_initiated_shutdown_behavior", resp.InstanceInitiatedShutdownBehavior)
+	if resp.DisableApiTermination != nil {
+		d.Set("disable_api_termination", *resp.DisableApiTermination.Value)
+	}
 
-	d.Set("instance_type", resp.InstanceType)
+	if resp.EbsOptimized != nil {
+		d.Set("ebs_optimized", *resp.EbsOptimized.Value)
+	}
 
-	d.Set("kernel", resp.KernelId)
+	if resp.Groups != nil {
+		err = d.Set("group_set", getGroupSet(resp.Groups))
+		if err != nil {
+			fmt.Println(getGroupSet(resp.Groups))
+		}
+	}
 
-	d.Set("product_codes", getProductCodes(resp.ProductCodes))
+	if resp.InstanceInitiatedShutdownBehavior != nil {
+		d.Set("instance_initiated_shutdown_behavior", *resp.InstanceInitiatedShutdownBehavior.Value)
+	}
 
-	d.Set("ramdisk", resp.RamdiskId)
+	if resp.InstanceType != nil {
+		d.Set("instance_type", *resp.InstanceType.Value)
+	}
 
-	d.Set("root_device_name", resp.RootDeviceName)
+	if resp.KernelId != nil {
+		d.Set("kernel", *resp.KernelId.Value)
+	}
 
-	d.Set("source_dest_check", resp.SourceDestCheck)
+	if resp.ProductCodes != nil {
+		d.Set("product_codes", getProductCodes(resp.ProductCodes))
+	}
 
-	d.Set("sriov_net_support", resp.SriovNetSupport)
+	if resp.RamdiskId != nil {
+		d.Set("ramdisk", *resp.RamdiskId.Value)
+	}
 
-	d.Set("user_data", resp.UserData)
+	if resp.RootDeviceName != nil {
+		d.Set("root_device_name", *resp.RootDeviceName.Value)
+	}
+
+	if resp.SourceDestCheck != nil {
+		d.Set("source_dest_check", *resp.SourceDestCheck.Value)
+	}
+
+	if resp.SriovNetSupport != nil {
+		d.Set("sriov_net_support", *resp.SriovNetSupport.Value)
+	}
+
+	if resp.UserData != nil {
+		d.Set("user_data", *resp.UserData.Value)
+	}
 
 	return nil
 }

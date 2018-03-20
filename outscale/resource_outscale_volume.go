@@ -223,7 +223,7 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {

@@ -1626,7 +1626,7 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 }
 
 func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAttributeInput, attr string) error {
-	fmt.Printf("\n\n[INFO] Stopping Instance %q for %s change", instanceAttrOpts.InstanceId, attr)
+	fmt.Printf("\n\n[INFO] Stopping Instance %q for %s change \n\n", instanceAttrOpts.InstanceId, attr)
 
 	_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
 		InstanceIds: []*string{instanceAttrOpts.InstanceId},
@@ -1647,13 +1647,18 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 			"Error waiting for instance (%s) to stop: %s", *instanceAttrOpts.InstanceId, err)
 	}
 
-	fmt.Printf("\n\n[INFO] Modifying instance id %s, attr %s", *instanceAttrOpts.InstanceId, attr)
+	fmt.Printf("\n\n[INFO] Instance Stopped %s\n\n", *instanceAttrOpts.InstanceId)
+
+	fmt.Printf("\n\n[INFO] Modifying instance id %s, attr %s\n\n", *instanceAttrOpts.InstanceId, attr)
+
+	fmt.Printf("\n\n[INFO] Modifying Info to %+v\n\n", instanceAttrOpts)
+
 	_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("\n\n[INFO] Starting Instance %q after instance_type change", instanceAttrOpts.InstanceId)
+	fmt.Printf("\n\n[INFO] Starting Instance %q after change of %s", *instanceAttrOpts.InstanceId, attr)
 	_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
 		InstanceIds: []*string{instanceAttrOpts.InstanceId},
 	})
@@ -1671,5 +1676,32 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 	if err != nil {
 		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", *instanceAttrOpts.InstanceId, err)
 	}
+
+	fmt.Printf("\n\n[INFO] Instance Started %s\n\n", *instanceAttrOpts.InstanceId)
+
+	input := &fcu.DescribeInstancesInput{
+		InstanceIds: []*string{instanceAttrOpts.InstanceId},
+	}
+
+	var resp *fcu.DescribeInstancesOutput
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeInstances(input)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error reading the instance %s", err)
+	}
+
+	fmt.Printf("\n\n[INFO] Instance changed to => %q \n\n", resp.Reservations[0])
+
 	return nil
 }
