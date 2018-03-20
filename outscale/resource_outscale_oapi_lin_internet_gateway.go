@@ -11,20 +11,20 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleLinInternetGateway() *schema.Resource {
+func resourceOutscaleOAPILinInternetGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleLinInternetGatewayCreate,
-		Read:   resourceOutscaleLinInternetGatewayRead,
-		Delete: resourceOutscaleLinInternetGatewayDelete,
+		Create: resourceOutscaleOAPILinInternetGatewayCreate,
+		Read:   resourceOutscaleOAPILinInternetGatewayRead,
+		Delete: resourceOutscaleOAPILinInternetGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: getLinInternetGatewaySchema(),
+		Schema: getOAPILinInternetGatewaySchema(),
 	}
 }
 
-func resourceOutscaleLinInternetGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinInternetGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	log.Println("[DEBUG] Creating LIN Internet Gateway")
@@ -37,10 +37,10 @@ func resourceOutscaleLinInternetGatewayCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(*r.InternetGateway.InternetGatewayId)
 
-	return resourceOutscaleLinInternetGatewayRead(d, meta)
+	return resourceOutscaleOAPILinInternetGatewayRead(d, meta)
 }
 
-func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	id := d.Id()
@@ -66,27 +66,26 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 	})
 	if err != nil {
 		log.Printf("[DEBUG] Error reading LIN Internet Gateway id (%s)", err)
-		return err
 	}
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
 	d.Set("request_id", resp.RequesterId)
-	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
+	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 
-	err = d.Set("attachement_set", flattenInternetAttachements(resp.InternetGateways[0].Attachments))
+	err = d.Set("lin_to_lin_internet_gateway_link", flattenOAPIInternetAttachements(resp.InternetGateways[0].Attachments))
 	if err != nil {
 		return err
 	}
 
-	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
+	if err := d.Set("tag", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func resourceOutscaleLinInternetGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinInternetGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	id := d.Id()
@@ -116,10 +115,10 @@ func resourceOutscaleLinInternetGatewayDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func getLinInternetGatewaySchema() map[string]*schema.Schema {
+func getOAPILinInternetGatewaySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
-		"attachement_set": {
+		"lin_to_lin_internet_gateway_link": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -128,14 +127,14 @@ func getLinInternetGatewaySchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"vpc_id": {
+					"lin_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-		"internet_gateway_id": {
+		"lin_internet_gateway_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -143,18 +142,16 @@ func getLinInternetGatewaySchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": dataSourceTagsSchema(),
+		"tag": dataSourceTagsSchema(),
 	}
 }
 
-func flattenInternetAttachements(attachements []*fcu.InternetGatewayAttachment) []map[string]interface{} {
+func flattenOAPIInternetAttachements(attachements []*fcu.InternetGatewayAttachment) []map[string]interface{} {
 	res := make([]map[string]interface{}, len(attachements))
 
 	for i, a := range attachements {
-		res[i] = map[string]interface{}{
-			"state":  *a.State,
-			"vpc_id": *a.VpcId,
-		}
+		res[i]["state"] = a.State
+		res[i]["lin_id"] = a.VpcId
 	}
 
 	return res
