@@ -66,6 +66,7 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 	})
 	if err != nil {
 		log.Printf("[DEBUG] Error reading LIN Internet Gateway id (%s)", err)
+		return err
 	}
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
@@ -150,8 +151,10 @@ func flattenInternetAttachements(attachements []*fcu.InternetGatewayAttachment) 
 	res := make([]map[string]interface{}, len(attachements))
 
 	for i, a := range attachements {
-		res[i]["state"] = a.State
-		res[i]["vpc_id"] = a.VpcId
+		res[i] = map[string]interface{}{
+			"state":  *a.State,
+			"vpc_id": *a.VpcId,
+		}
 	}
 
 	return res
