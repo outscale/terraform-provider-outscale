@@ -101,7 +101,7 @@ func resourceOutscaleVolume() *schema.Resource {
 				},
 				Computed: true,
 			},
-			"tags": tagsSchema(),
+			"tag": tagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -138,12 +138,12 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	tagsSpec := make([]*fcu.TagSpecification, 0)
 
-	if v, ok := d.GetOk("tags"); ok {
-		tags := tagsFromMap(v.(map[string]interface{}))
+	if v, ok := d.GetOk("tag"); ok {
+		tag := tagsFromMap(v.(map[string]interface{}))
 
 		spec := &fcu.TagSpecification{
 			ResourceType: aws.String("volume"),
-			Tags:         tags,
+			Tags:         tag,
 		}
 
 		tagsSpec = append(tagsSpec, spec)
@@ -223,7 +223,7 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {

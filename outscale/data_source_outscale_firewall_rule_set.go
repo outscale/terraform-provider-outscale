@@ -19,12 +19,9 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"group_name": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"group_id": {
 				Type:     schema.TypeString,

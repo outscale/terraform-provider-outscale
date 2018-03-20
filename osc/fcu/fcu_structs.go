@@ -820,7 +820,7 @@ type ModifyInstanceAttributeInput struct {
 
 	Attribute *string `locationName:"attribute" type:"string" enum:"InstanceAttributeName"`
 
-	BlockDeviceMappings []*InstanceBlockDeviceMappingSpecification `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
 	DisableApiTermination *AttributeBooleanValue `locationName:"disableApiTermination" type:"structure"`
 
@@ -868,7 +868,7 @@ func (s *ModifyInstanceAttributeInput) SetAttribute(v string) *ModifyInstanceAtt
 	return s
 }
 
-func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*InstanceBlockDeviceMappingSpecification) *ModifyInstanceAttributeInput {
+func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *ModifyInstanceAttributeInput {
 	s.BlockDeviceMappings = v
 	return s
 }
@@ -3553,19 +3553,6 @@ type Volume struct {
 	// Indicates whether the volume will be encrypted.
 	Encrypted *bool `locationName:"encrypted" type:"boolean"`
 
-	// The number of I/O operations per second (IOPS) that the volume supports.
-	// For Provisioned IOPS SSD volumes, this represents the number of IOPS that
-	// are provisioned for the volume. For General Purpose SSD volumes, this represents
-	// the baseline performance of the volume and the rate at which the volume accumulates
-	// I/O credits for bursting. For more information on General Purpose SSD baseline
-	// performance, I/O credits, and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
-	//
-	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
-	// gp2 volumes.
-	//
-	// Condition: This parameter is required for requests to create io1 volumes;
-	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
 	Iops *int64 `locationName:"iops" type:"integer"`
 
 	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
@@ -3675,8 +3662,6 @@ func (s *Volume) SetVolumeType(v string) *Volume {
 	return s
 }
 
-// Describes volume attachment details.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/VolumeAttachment
 type VolumeAttachment struct {
 	_ struct{} `type:"structure"`
 
@@ -3745,20 +3730,11 @@ func (s *VolumeAttachment) SetVolumeId(v string) *VolumeAttachment {
 	return s
 }
 
-// Contains the parameters for AttachVolume.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolumeRequest
 type AttachVolumeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The device name to expose to the instance (for example, /dev/sdh or xvdh).
-	//
-	// Device is a required field
 	Device *string `type:"string" required:"true"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
 	// The ID of the instance.
@@ -3766,10 +3742,6 @@ type AttachVolumeInput struct {
 	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
-	// The ID of the EBS volume. The volume and instance must be within the same
-	// Availability Zone.
-	//
-	// VolumeId is a required field
 	VolumeId *string `type:"string" required:"true"`
 }
 
@@ -3832,27 +3804,13 @@ type DetachVolumeInput struct {
 	// The device name.
 	Device *string `type:"string"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// Forces detachment if the previous detachment attempt did not occur cleanly
-	// (for example, logging into an instance, unmounting the volume, and detaching
-	// normally). This option can lead to data loss or a corrupted file system.
-	// Use this option only as a last resort to detach a volume from a failed instance.
-	// The instance won't have an opportunity to flush file system caches or file
-	// system metadata. If you use this option, you must perform file system check
-	// and repair procedures.
 	Force *bool `type:"boolean"`
 
 	// The ID of the instance.
 	InstanceId *string `type:"string"`
 
-	// The ID of the volume.
-	//
-	// VolumeId is a required field
 	VolumeId *string `type:"string" required:"true"`
 }
 
@@ -3906,6 +3864,86 @@ func (s *DetachVolumeInput) SetInstanceId(v string) *DetachVolumeInput {
 // SetVolumeId sets the VolumeId field's value.
 func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
 	s.VolumeId = &v
+	return s
+}
+
+type DescribeInstanceStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	IncludeAllInstances *bool `locationName:"includeAllInstances" type:"boolean"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
+
+	MaxResults *int64 `type:"integer"`
+
+	NextToken *string `type:"string"`
+}
+
+func (s DescribeInstanceStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeInstanceStatusInput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeInstanceStatusInput) SetDryRun(v bool) *DescribeInstanceStatusInput {
+	s.DryRun = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetFilters(v []*Filter) *DescribeInstanceStatusInput {
+	s.Filters = v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetIncludeAllInstances(v bool) *DescribeInstanceStatusInput {
+	s.IncludeAllInstances = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetInstanceIds(v []*string) *DescribeInstanceStatusInput {
+	s.InstanceIds = v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetMaxResults(v int64) *DescribeInstanceStatusInput {
+	s.MaxResults = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetNextToken(v string) *DescribeInstanceStatusInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeInstanceStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceStatuses []*InstanceStatus `locationName:"instanceStatusSet" locationNameList:"item" type:"list"`
+
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+func (s DescribeInstanceStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeInstanceStatusOutput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeInstanceStatusOutput) SetInstanceStatuses(v []*InstanceStatus) *DescribeInstanceStatusOutput {
+	s.InstanceStatuses = v
+	return s
+}
+
+func (s *DescribeInstanceStatusOutput) SetNextToken(v string) *DescribeInstanceStatusOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -4024,6 +4062,547 @@ type DeleteInternetGatewayInput struct {
 
 type DeleteInternetGatewayOutput struct {
 	_ struct{} `type:"structure"`
+}
+
+// Contains the parameters for CreateNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNatGatewayRequest
+type CreateNatGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation ID of an Elastic IP address to associate with the NAT gateway.
+	// If the Elastic IP address is associated with another resource, you must first
+	// disassociate it.
+	//
+	// AllocationId is a required field
+	AllocationId *string `type:"string" required:"true"`
+
+	// Unique, case-sensitive identifier you provide to ensure the idempotency of
+	// the request. For more information, see How to Ensure Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	//
+	// Constraint: Maximum 64 ASCII characters.
+	ClientToken *string `type:"string"`
+
+	// The subnet in which to create the NAT gateway.
+	//
+	// SubnetId is a required field
+	SubnetId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateNatGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateNatGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateNatGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateNatGatewayInput"}
+	if s.AllocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AllocationId"))
+	}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *CreateNatGatewayInput) SetAllocationId(v string) *CreateNatGatewayInput {
+	s.AllocationId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateNatGatewayInput) SetClientToken(v string) *CreateNatGatewayInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *CreateNatGatewayInput) SetSubnetId(v string) *CreateNatGatewayInput {
+	s.SubnetId = &v
+	return s
+}
+
+// Contains the output of CreateNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNatGatewayResult
+type CreateNatGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier to ensure the idempotency of the request.
+	// Only returned if a client token was provided in the request.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Information about the NAT gateway.
+	NatGateway *NatGateway `locationName:"natGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateNatGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateNatGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateNatGatewayOutput) SetClientToken(v string) *CreateNatGatewayOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetNatGateway sets the NatGateway field's value.
+func (s *CreateNatGatewayOutput) SetNatGateway(v *NatGateway) *CreateNatGatewayOutput {
+	s.NatGateway = v
+	return s
+}
+
+// Describes a NAT gateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NatGateway
+type NatGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time the NAT gateway was created.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The date and time the NAT gateway was deleted, if applicable.
+	DeleteTime *time.Time `locationName:"deleteTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// If the NAT gateway could not be created, specifies the error code for the
+	// failure. (InsufficientFreeAddressesInSubnet | Gateway.NotAttached | InvalidAllocationID.NotFound
+	// | Resource.AlreadyAssociated | InternalError | InvalidSubnetID.NotFound)
+	FailureCode *string `locationName:"failureCode" type:"string"`
+
+	// If the NAT gateway could not be created, specifies the error message for
+	// the failure, that corresponds to the error code.
+	//
+	//    * For InsufficientFreeAddressesInSubnet: "Subnet has insufficient free
+	//    addresses to create this NAT gateway"
+	//
+	//    * For Gateway.NotAttached: "Network vpc-xxxxxxxx has no Internet gateway
+	//    attached"
+	//
+	//    * For InvalidAllocationID.NotFound: "Elastic IP address eipalloc-xxxxxxxx
+	//    could not be associated with this NAT gateway"
+	//
+	//    * For Resource.AlreadyAssociated: "Elastic IP address eipalloc-xxxxxxxx
+	//    is already associated"
+	//
+	//    * For InternalError: "Network interface eni-xxxxxxxx, created and used
+	//    internally by this NAT gateway is in an invalid state. Please try again."
+	//
+	//    * For InvalidSubnetID.NotFound: "The specified subnet subnet-xxxxxxxx
+	//    does not exist or could not be found."
+	FailureMessage *string `locationName:"failureMessage" type:"string"`
+
+	// Information about the IP addresses and network interface associated with
+	// the NAT gateway.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The ID of the NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	ProvisionedBandwidth *ProvisionedBandwidth `locationName:"provisionedBandwidth" type:"structure"`
+
+	// The state of the NAT gateway.
+	//
+	//    * pending: The NAT gateway is being created and is not ready to process
+	//    traffic.
+	//
+	//    * failed: The NAT gateway could not be created. Check the failureCode
+	//    and failureMessage fields for the reason.
+	//
+	//    * available: The NAT gateway is able to process traffic. This status remains
+	//    until you delete the NAT gateway, and does not indicate the health of
+	//    the NAT gateway.
+	//
+	//    * deleting: The NAT gateway is in the process of being terminated and
+	//    may still be processing traffic.
+	//
+	//    * deleted: The NAT gateway has been terminated and is no longer processing
+	//    traffic.
+	State *string `locationName:"state" type:"string" enum:"NatGatewayState"`
+
+	// The ID of the subnet in which the NAT gateway is located.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+
+	// The ID of the VPC in which the NAT gateway is located.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s NatGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NatGateway) GoString() string {
+	return s.String()
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *NatGateway) SetCreateTime(v time.Time) *NatGateway {
+	s.CreateTime = &v
+	return s
+}
+
+// SetDeleteTime sets the DeleteTime field's value.
+func (s *NatGateway) SetDeleteTime(v time.Time) *NatGateway {
+	s.DeleteTime = &v
+	return s
+}
+
+// SetFailureCode sets the FailureCode field's value.
+func (s *NatGateway) SetFailureCode(v string) *NatGateway {
+	s.FailureCode = &v
+	return s
+}
+
+// SetFailureMessage sets the FailureMessage field's value.
+func (s *NatGateway) SetFailureMessage(v string) *NatGateway {
+	s.FailureMessage = &v
+	return s
+}
+
+// SetNatGatewayAddresses sets the NatGatewayAddresses field's value.
+func (s *NatGateway) SetNatGatewayAddresses(v []*NatGatewayAddress) *NatGateway {
+	s.NatGatewayAddresses = v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *NatGateway) SetNatGatewayId(v string) *NatGateway {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetProvisionedBandwidth sets the ProvisionedBandwidth field's value.
+func (s *NatGateway) SetProvisionedBandwidth(v *ProvisionedBandwidth) *NatGateway {
+	s.ProvisionedBandwidth = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *NatGateway) SetState(v string) *NatGateway {
+	s.State = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *NatGateway) SetSubnetId(v string) *NatGateway {
+	s.SubnetId = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *NatGateway) SetVpcId(v string) *NatGateway {
+	s.VpcId = &v
+	return s
+}
+
+// Describes the IP addresses and network interface associated with a NAT gateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NatGatewayAddress
+type NatGatewayAddress struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation ID of the Elastic IP address that's associated with the NAT
+	// gateway.
+	AllocationId *string `locationName:"allocationId" type:"string"`
+
+	// The ID of the network interface associated with the NAT gateway.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The private IP address associated with the Elastic IP address.
+	PrivateIp *string `locationName:"privateIp" type:"string"`
+
+	// The Elastic IP address associated with the NAT gateway.
+	PublicIp *string `locationName:"publicIp" type:"string"`
+}
+
+// String returns the string representation
+func (s NatGatewayAddress) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NatGatewayAddress) GoString() string {
+	return s.String()
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *NatGatewayAddress) SetAllocationId(v string) *NatGatewayAddress {
+	s.AllocationId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *NatGatewayAddress) SetNetworkInterfaceId(v string) *NatGatewayAddress {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetPrivateIp sets the PrivateIp field's value.
+func (s *NatGatewayAddress) SetPrivateIp(v string) *NatGatewayAddress {
+	s.PrivateIp = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *NatGatewayAddress) SetPublicIp(v string) *NatGatewayAddress {
+	s.PublicIp = &v
+	return s
+}
+
+// Reserved. If you need to sustain traffic greater than the documented limits
+// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ProvisionedBandwidth
+type ProvisionedBandwidth struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	ProvisionTime *time.Time `locationName:"provisionTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Provisioned *string `locationName:"provisioned" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	RequestTime *time.Time `locationName:"requestTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Requested *string `locationName:"requested" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Status *string `locationName:"status" type:"string"`
+}
+
+// String returns the string representation
+func (s ProvisionedBandwidth) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ProvisionedBandwidth) GoString() string {
+	return s.String()
+}
+
+// SetProvisionTime sets the ProvisionTime field's value.
+func (s *ProvisionedBandwidth) SetProvisionTime(v time.Time) *ProvisionedBandwidth {
+	s.ProvisionTime = &v
+	return s
+}
+
+// SetProvisioned sets the Provisioned field's value.
+func (s *ProvisionedBandwidth) SetProvisioned(v string) *ProvisionedBandwidth {
+	s.Provisioned = &v
+	return s
+}
+
+// SetRequestTime sets the RequestTime field's value.
+func (s *ProvisionedBandwidth) SetRequestTime(v time.Time) *ProvisionedBandwidth {
+	s.RequestTime = &v
+	return s
+}
+
+// SetRequested sets the Requested field's value.
+func (s *ProvisionedBandwidth) SetRequested(v string) *ProvisionedBandwidth {
+	s.Requested = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ProvisionedBandwidth) SetStatus(v string) *ProvisionedBandwidth {
+	s.Status = &v
+	return s
+}
+
+// Contains the parameters for DescribeNatGateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNatGatewaysRequest
+type DescribeNatGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more filters.
+	//
+	//    * nat-gateway-id - The ID of the NAT gateway.
+	//
+	//    * state - The state of the NAT gateway (pending | failed | available |
+	//    deleting | deleted).
+	//
+	//    * subnet-id - The ID of the subnet in which the NAT gateway resides.
+	//
+	//    * vpc-id - The ID of the VPC in which the NAT gateway resides.
+	Filter []*Filter `locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value specified is greater than 1000, we return only 1000
+	// items.
+	MaxResults *int64 `type:"integer"`
+
+	// One or more NAT gateway IDs.
+	NatGatewayIds []*string `locationName:"NatGatewayId" locationNameList:"item" type:"list"`
+
+	// The token to retrieve the next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeNatGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNatGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// SetFilter sets the Filter field's value.
+func (s *DescribeNatGatewaysInput) SetFilter(v []*Filter) *DescribeNatGatewaysInput {
+	s.Filter = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeNatGatewaysInput) SetMaxResults(v int64) *DescribeNatGatewaysInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNatGatewayIds sets the NatGatewayIds field's value.
+func (s *DescribeNatGatewaysInput) SetNatGatewayIds(v []*string) *DescribeNatGatewaysInput {
+	s.NatGatewayIds = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNatGatewaysInput) SetNextToken(v string) *DescribeNatGatewaysInput {
+	s.NextToken = &v
+	return s
+}
+
+// Contains the output of DescribeNatGateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNatGatewaysResult
+type DescribeNatGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the NAT gateways.
+	NatGateways []*NatGateway `locationName:"natGatewaySet" locationNameList:"item" type:"list"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeNatGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNatGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGateways sets the NatGateways field's value.
+func (s *DescribeNatGatewaysOutput) SetNatGateways(v []*NatGateway) *DescribeNatGatewaysOutput {
+	s.NatGateways = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeNatGatewaysOutput) SetNextToken(v string) *DescribeNatGatewaysOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Contains the parameters for DeleteNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNatGatewayRequest
+type DeleteNatGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the NAT gateway.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteNatGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteNatGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteNatGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteNatGatewayInput"}
+	if s.NatGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NatGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *DeleteNatGatewayInput) SetNatGatewayId(v string) *DeleteNatGatewayInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// Contains the output of DeleteNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNatGatewayResult
+type DeleteNatGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// String returns the string representation
+func (s DeleteNatGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteNatGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *DeleteNatGatewayOutput) SetNatGatewayId(v string) *DeleteNatGatewayOutput {
+	s.NatGatewayId = &v
+	return s
 }
 
 // Contains the parameters for CreateVpc.
@@ -4233,6 +4812,200 @@ type DeleteVpcInput struct {
 
 type DeleteVpcOutput struct {
 	_ struct{} `type:"structure"`
+}
+
+type ModifyVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// enabled, instances in the VPC get DNS hostnames; otherwise, they do not.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute. You can only enable
+	// DNS hostnames if you've enabled DNS support.
+	EnableDnsHostnames *AttributeBooleanValue `type:"structure"`
+
+	// Indicates whether the DNS resolution is supported for the VPC. If enabled,
+	// queries to the Amazon provided DNS server at the 169.254.169.253 IP address,
+	// or the reserved IP address at the base of the VPC network range "plus two"
+	// will succeed. If disabled, the Amazon provided DNS service in the VPC that
+	// resolves public DNS hostnames to IP addresses is not enabled.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute.
+	EnableDnsSupport *AttributeBooleanValue `type:"structure"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpcAttributeInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsHostnames(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsSupport(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *ModifyVpcAttributeInput) SetVpcId(v string) *ModifyVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcAttributeOutput
+type ModifyVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeOutput) GoString() string {
+	return s.String()
+}
+
+type DescribeVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC attribute.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"VpcAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcAttributeInput"}
+	if s.Attribute == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attribute"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeVpcAttributeInput) SetAttribute(v string) *DescribeVpcAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcAttributeInput) SetDryRun(v bool) *DescribeVpcAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeInput) SetVpcId(v string) *DescribeVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of DescribeVpcAttribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcAttributeResult
+type DescribeVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// this attribute is true, instances in the VPC get DNS hostnames; otherwise,
+	// they do not.
+	EnableDnsHostnames *AttributeBooleanValue `locationName:"enableDnsHostnames" type:"structure"`
+
+	// Indicates whether DNS resolution is enabled for the VPC. If this attribute
+	// is true, the Amazon DNS server resolves DNS hostnames for your instances
+	// to their corresponding IP addresses; otherwise, it does not.
+	EnableDnsSupport *AttributeBooleanValue `locationName:"enableDnsSupport" type:"structure"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *DescribeVpcAttributeOutput) SetEnableDnsSupport(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeOutput) SetVpcId(v string) *DescribeVpcAttributeOutput {
+	s.VpcId = &v
+	return s
 }
 
 // Contains the parameters for AttachInternetGateway.
