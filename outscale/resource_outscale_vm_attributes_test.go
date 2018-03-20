@@ -34,7 +34,7 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 				Config: testAccCheckOutscaleVMConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vm", "ebs_optimized", "true"),
+						"outscale_vm_attributes.outscale_vm_attributes", "ebs_optimized", "true"),
 				),
 			},
 		},
