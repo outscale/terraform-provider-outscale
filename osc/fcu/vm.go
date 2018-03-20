@@ -59,6 +59,8 @@ type VMService interface {
 	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
 	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
 	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
+	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
+	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
 }
 
 const opRunInstances = "RunInstances"

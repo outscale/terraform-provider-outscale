@@ -4775,3 +4775,197 @@ type DeleteVpcInput struct {
 type DeleteVpcOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+type ModifyVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// enabled, instances in the VPC get DNS hostnames; otherwise, they do not.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute. You can only enable
+	// DNS hostnames if you've enabled DNS support.
+	EnableDnsHostnames *AttributeBooleanValue `type:"structure"`
+
+	// Indicates whether the DNS resolution is supported for the VPC. If enabled,
+	// queries to the Amazon provided DNS server at the 169.254.169.253 IP address,
+	// or the reserved IP address at the base of the VPC network range "plus two"
+	// will succeed. If disabled, the Amazon provided DNS service in the VPC that
+	// resolves public DNS hostnames to IP addresses is not enabled.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute.
+	EnableDnsSupport *AttributeBooleanValue `type:"structure"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpcAttributeInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsHostnames(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsSupport(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *ModifyVpcAttributeInput) SetVpcId(v string) *ModifyVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcAttributeOutput
+type ModifyVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeOutput) GoString() string {
+	return s.String()
+}
+
+type DescribeVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC attribute.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"VpcAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcAttributeInput"}
+	if s.Attribute == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attribute"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeVpcAttributeInput) SetAttribute(v string) *DescribeVpcAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcAttributeInput) SetDryRun(v bool) *DescribeVpcAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeInput) SetVpcId(v string) *DescribeVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of DescribeVpcAttribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcAttributeResult
+type DescribeVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// this attribute is true, instances in the VPC get DNS hostnames; otherwise,
+	// they do not.
+	EnableDnsHostnames *AttributeBooleanValue `locationName:"enableDnsHostnames" type:"structure"`
+
+	// Indicates whether DNS resolution is enabled for the VPC. If this attribute
+	// is true, the Amazon DNS server resolves DNS hostnames for your instances
+	// to their corresponding IP addresses; otherwise, it does not.
+	EnableDnsSupport *AttributeBooleanValue `locationName:"enableDnsSupport" type:"structure"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *DescribeVpcAttributeOutput) SetEnableDnsSupport(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeOutput) SetVpcId(v string) *DescribeVpcAttributeOutput {
+	s.VpcId = &v
+	return s
+}
