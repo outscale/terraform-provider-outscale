@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -58,6 +59,8 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 	}
 	var conf fcu.Address
 
+	rInt := acctest.RandInt()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
@@ -65,7 +68,7 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig,
+				Config: testAccOutscalePublicIPInstanceConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscalePublicIPAttributes(&conf),
@@ -73,7 +76,7 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig2,
+				Config: testAccOutscalePublicIPInstanceConfig2(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscalePublicIPAttributes(&conf),
@@ -97,6 +100,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 		t.Skip()
 	}
 	var one fcu.Address
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -105,7 +109,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated,
+				Config: testAccOutscalePublicIPInstanceConfig_associated(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
@@ -113,7 +117,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated_switch,
+				Config: testAccOutscalePublicIPInstanceConfig_associated_switch(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
@@ -280,56 +284,80 @@ const testAccOutscalePublicIPConfig = `
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscalePublicIPInstanceConfig = `
+func testAccOutscalePublicIPInstanceConfig(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 resource "outscale_public_ip" "bar" {}
-`
+`, r)
+}
 
-const testAccOutscalePublicIPInstanceConfig2 = `
+func testAccOutscalePublicIPInstanceConfig2(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 resource "outscale_public_ip" "bar" {}
-`
+`, r)
+}
 
-const testAccOutscalePublicIPInstanceConfig_associated = `
+func testAccOutscalePublicIPInstanceConfig_associated(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 resource "outscale_vm" "foo" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.12"
   subnet_id  = "subnet-861fbecc"
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.19"
   subnet_id  = "subnet-861fbecc"
 }
 resource "outscale_public_ip" "bar" {}
-`
+`, r)
+}
 
-const testAccOutscalePublicIPInstanceConfig_associated_switch = `
+func testAccOutscalePublicIPInstanceConfig_associated_switch(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 resource "outscale_vm" "foo" {
  image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.12"
   subnet_id  = "subnet-861fbecc"
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.19"
   subnet_id  = "subnet-861fbecc"
 }
 resource "outscale_public_ip" "bar" {}
-`
+`, r)
+}
