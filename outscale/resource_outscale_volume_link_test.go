@@ -74,7 +74,7 @@ const testAccVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags {
+	tag {
 		Name = "HelloWorld"
 	}
 }
