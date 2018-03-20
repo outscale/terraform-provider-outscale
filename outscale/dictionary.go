@@ -31,6 +31,7 @@ func init() {
 			"outscale_lin":                  resourceOutscaleLin,
 			"outscale_lin_attributes":       resourceOutscaleLinAttributes,
 			"outscale_lin_internet_gateway": resourceOutscaleLinInternetGateway,
+			"outscale_nat_service":          resourceOutscaleNatService,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,
@@ -42,6 +43,8 @@ func init() {
 			// "outscale_outbound_rule": resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":            resourceOutscaleOAPITags,
 			"outscale_lin_attributes": resourceOutscaleOAPILinAttributes,
+			"outscale_lin":            resourceOutscaleOAPILin,
+			"outscale_nat_service":    resourceOutscaleOAPINatService,
 		},
 	}
 	datasources = Dictionary{
@@ -58,6 +61,10 @@ func init() {
 			"outscale_public_ips":         dataSourceOutscalePublicIPS,
 			"outscale_volume":             datasourceOutscaleVolume,
 			"outscale_volumes":            datasourceOutscaleVolumes,
+			"outscale_nat_service":        dataSourceOutscaleNatService,
+			"outscale_nat_services":       dataSourceOutscaleNatServices,
+			"outscale_keypair":            datasourceOutscaleKeyPair,
+			"outscale_keypairs":           datasourceOutscaleKeyPairs,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                 dataSourceOutscaleOAPIVM,
@@ -69,6 +76,8 @@ func init() {
 			"outscale_tags":               dataSourceOutscaleOAPITags,
 			"outscale_volume":             datasourceOutscaleOAPIVolume,
 			"outscale_volumes":            datasourceOutscaleOAPIVolumes,
+			"outscale_keypair":            datasourceOutscaleOAPIKeyPair,
+			"outscale_keypairs":           datasourceOutscaleOAPIKeyPairs,
 		},
 	}
 }

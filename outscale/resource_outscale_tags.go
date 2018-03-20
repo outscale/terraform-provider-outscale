@@ -10,7 +10,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -38,7 +37,7 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 
 	request := &fcu.CreateTagsInput{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
@@ -46,19 +45,16 @@ func resourceOutscaleTagsCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("One tag and resource id, must be assigned")
 	}
 
-	if tagsOk {
-		request.Tags = tagsFromMap(tags.(map[string]interface{}))
-	}
-	if resourceIdsOk {
-		var rids []*string
-		sgs := resourceIds.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			rids = append(rids, aws.String(str))
-		}
+	request.Tags = tagsFromMap(tag.(map[string]interface{}))
 
-		request.Resources = rids
+	var rids []*string
+	sgs := resourceIds.(*schema.Set).List()
+	for _, v := range sgs {
+		str := v.(string)
+		rids = append(rids, aws.String(str))
 	}
+
+	request.Resources = rids
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.VM.CreateTags(request)
@@ -86,9 +82,9 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	params := &fcu.DescribeTagsInput{}
 	filters := []*fcu.Filter{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 	if tagsOk {
-		tgs := tagsFromMap(tags.(map[string]interface{}))
+		tgs := tagsFromMap(tag.(map[string]interface{}))
 		ts := make([]*string, 0, len(tgs))
 		for _, t := range tgs {
 			ts = append(ts, t.Key)
@@ -145,7 +141,7 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 
 	request := &fcu.DeleteTagsInput{}
 
-	tags, tagsOk := d.GetOk("tags")
+	tag, tagsOk := d.GetOk("tag")
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
@@ -154,7 +150,7 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromMap(tags.(map[string]interface{}))
+		request.Tags = tagsFromMap(tag.(map[string]interface{}))
 	}
 	if resourceIdsOk {
 		var rids []*string
@@ -170,9 +166,8 @@ func resourceOutscaleTagsDelete(d *schema.ResourceData, meta interface{}) error 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.VM.DeleteTags(request)
 		if err != nil {
-			ec2err, ok := err.(awserr.Error)
-			if ok && strings.Contains(ec2err.Code(), ".NotFound") {
-				return resource.RetryableError(err) // retry
+			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
@@ -193,7 +188,7 @@ func getTagsSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"tags": {
+		"tag": {
 			Type:     schema.TypeMap,
 			Optional: true,
 			ForceNew: true,
@@ -249,14 +244,13 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Removing tags: %#v from %s", remove, d.Id())
+				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
 				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      remove,
 				})
 				if err != nil {
-					ec2err, ok := err.(awserr.Error)
-					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
 					return resource.NonRetryableError(err)
@@ -269,14 +263,13 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				fmt.Printf("[DEBUG] Creating tags: %v for %s", create, d.Id())
+				fmt.Printf("[DEBUG] Creating tag: %v for %s", create, d.Id())
 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      create,
 				})
 				if err != nil {
-					ec2err, ok := err.(awserr.Error)
-					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
 					}
 					return resource.NonRetryableError(err)
@@ -322,15 +315,13 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 			Key:   aws.String(k),
 			Value: aws.String(v.(string)),
 		}
-		if !tagIgnored(t) {
-			result = append(result, t)
-		}
+		result = append(result, t)
 	}
 
 	return result
 }
 
-// tagsToMap turns the list of tags into a map.
+// tagsToMap turns the list of tag into a map.
 func tagsToMap(ts []*fcu.Tag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	for k, t := range ts {
