@@ -143,6 +143,8 @@ func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
+	d.Set("request_id", *response.RequestId)
+
 	return readOutscalePublicIPLink(d, response.Addresses[0])
 }
 
@@ -213,6 +215,12 @@ func readOutscalePublicIPLink(d *schema.ResourceData, address *fcu.Address) erro
 		return err
 	}
 
+	if err := d.Set("allow_reassociation", address.AllowReassociation); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+
+		return err
+	}
+
 	return nil
 }
 
@@ -272,6 +280,10 @@ func getPublicIPLinkSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
+		},
+		"request_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
