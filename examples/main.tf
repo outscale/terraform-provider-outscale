@@ -1,18 +1,9 @@
-resource "outscale_vm" "outscale_vm" {
-  count = 1
-
-  image_id                = "ami-880caa66"
-  instance_type           = "c4.large"
-  disable_api_termination = false
-}
-
-resource "outscale_vm_attributes" "outscale_vm_attributes" {
-  instance_id             = "${outscale_vm.outscale_vm.0.id}"
-  attribute               = "disableApiTermination"
-  disable_api_termination = true
-}
-
-# output "instance_id" {
-#   value = "${outscale_vm.outscale_vm.0.id}"
+# resource "outscale_lin" "vpc" {
+#   cidr_block = "10.0.0.0/16"
 # }
 
+resource "outscale_lin_attributes" "outscale_lin_attributes" {
+  attribute            = "enableDnsSupport"
+  enable_dns_hostnames = true
+  vpc_id               = "vpc-e9d09d63"
+}
