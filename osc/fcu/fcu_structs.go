@@ -725,6 +725,8 @@ type DescribeAddressesOutput struct {
 	_ struct{} `type:"structure"`
 
 	Addresses []*Address `locationName:"addressesSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 func (s DescribeAddressesOutput) String() string {
@@ -737,6 +739,11 @@ func (s DescribeAddressesOutput) GoString() string {
 
 func (s *DescribeAddressesOutput) SetAddresses(v []*Address) *DescribeAddressesOutput {
 	s.Addresses = v
+	return s
+}
+
+func (s *DescribeAddressesOutput) SetRequestId(v string) *DescribeAddressesOutput {
+	s.RequestId = &v
 	return s
 }
 
