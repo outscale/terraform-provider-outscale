@@ -59,26 +59,21 @@ func resourceOutscaleLinAttrCreate(d *schema.ResourceData, meta interface{}) err
 		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
 	}
 
-	var resp *fcu.ModifyVpcAttributeOutput
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.ModifyVpcAttribute(req)
+		_, err = conn.VM.ModifyVpcAttribute(req)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 	if err != nil {
 		log.Printf("[DEBUG] Error creating lin (%s)", err)
 		return err
-	}
-
-	if resp == nil {
-		return fmt.Errorf("Cannot create the vpc, empty response")
 	}
 
 	d.SetId(resource.UniqueId())
@@ -101,26 +96,21 @@ func resourceOutscaleLinAttrUpdate(d *schema.ResourceData, meta interface{}) err
 		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("enable_dns_support").(bool))}
 	}
 
-	var resp *fcu.ModifyVpcAttributeOutput
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.ModifyVpcAttribute(req)
+		_, err = conn.VM.ModifyVpcAttribute(req)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 	if err != nil {
 		log.Printf("[DEBUG] Error creating lin (%s)", err)
 		return err
-	}
-
-	if resp == nil {
-		return fmt.Errorf("Cannot create the vpc, empty response")
 	}
 
 	return resourceOutscaleLinAttrRead(d, meta)
@@ -157,8 +147,12 @@ func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set("vpc_id", resp.VpcId)
-	d.Set("enable_dns_hostnames", resp.EnableDnsHostnames)
-	d.Set("enable_dns_support", resp.EnableDnsSupport)
+	if resp.EnableDnsHostnames != nil {
+		d.Set("enable_dns_hostnames", *resp.EnableDnsHostnames.Value)
+	}
+	if resp.EnableDnsSupport != nil {
+		d.Set("enable_dns_support", *resp.EnableDnsSupport.Value)
+	}
 
 	return nil
 }
