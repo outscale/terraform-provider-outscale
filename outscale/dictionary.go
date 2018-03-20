@@ -29,6 +29,7 @@ func init() {
 			"outscale_volume":               resourceOutscaleVolume,
 			"outscale_volume_link":          resourceOutscaleVolumeLink,
 			"outscale_lin":                  resourceOutscaleLin,
+			"outscale_lin_attributes":       resourceOutscaleLinAttributes,
 			"outscale_lin_internet_gateway": resourceOutscaleLinInternetGateway,
 		},
 		"oapi": ResourceMap{
