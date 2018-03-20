@@ -69,9 +69,9 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 
 func getDSIPPerms() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Computed: true,
-		Set:      resourceOutscaleSecurityGroupRuleHash,
+		// Set:      resourceOutscaleSecurityGroupRuleHash,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_port": {
@@ -195,14 +195,14 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 	return err
 }
 
-func flattenIPPermissions(p []*fcu.IpPermission) *schema.Set {
-	// ips := make([]map[string]interface{}, len(p))
+func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
+	ips := make([]map[string]interface{}, len(p))
 
-	s := &schema.Set{
-		F: resourceOutscaleSecurityGroupRuleHash,
-	}
+	// s := &schema.Set{
+	// 	F: resourceOutscaleSecurityGroupRuleHash,
+	// }
 
-	for _, v := range p {
+	for k, v := range p {
 		ip := make(map[string]interface{})
 		if v.FromPort != nil {
 			ip["from_port"] = *v.FromPort
@@ -254,9 +254,9 @@ func flattenIPPermissions(p []*fcu.IpPermission) *schema.Set {
 			ip["groups"] = grp
 		}
 
-		// ips[k] = ip
-		s.Add(ip)
+		ips[k] = ip
+		// s.Add(ip)
 	}
 
-	return s
+	return ips
 }
