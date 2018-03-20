@@ -50,6 +50,17 @@ type VMService interface {
 	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
 	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
 	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
+	CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error)
+	DescribeInternetGateways(input *DescribeInternetGatewaysInput) (*DescribeInternetGatewaysOutput, error)
+	DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error)
+	CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error)
+	DescribeNatGateways(input *DescribeNatGatewaysInput) (*DescribeNatGatewaysOutput, error)
+	DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error)
+	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
+	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
+	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
+	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
+	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -853,4 +864,72 @@ func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment,
 	}
 
 	return output, nil
+}
+
+func (v VMOperations) CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "CreateNatGateway"
+	output := &CreateNatGatewayOutput{}
+
+	if input == nil {
+		input = &CreateNatGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) DescribeNatGateways(input *DescribeNatGatewaysInput) (*DescribeNatGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeNatGateways"
+	output := &DescribeNatGatewaysOutput{}
+
+	if input == nil {
+		input = &DescribeNatGatewaysInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteNatGateway"
+	output := &DeleteNatGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteNatGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }

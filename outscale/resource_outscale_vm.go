@@ -70,12 +70,12 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	tagsSpec := make([]*fcu.TagSpecification, 0)
 
-	if v, ok := d.GetOk("tags"); ok {
-		tags := tagsFromMap(v.(map[string]interface{}))
+	if v, ok := d.GetOk("tag"); ok {
+		tag := tagsFromMap(v.(map[string]interface{}))
 
 		spec := &fcu.TagSpecification{
 			ResourceType: aws.String("instance"),
-			Tags:         tags,
+			Tags:         tag,
 		}
 
 		tagsSpec = append(tagsSpec, spec)
@@ -112,7 +112,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		if err := setTags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tags")
+		d.SetPartial("tag_set")
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -1314,7 +1314,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsSchema(),
+		"tag": tagsSchema(),
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
