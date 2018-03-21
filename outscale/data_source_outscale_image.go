@@ -83,14 +83,21 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// Complex computed values
-			"block_device_mappings": {
-				Type:     schema.TypeSet,
+			"request_id": {
+				Type:     schema.TypeString,
 				Computed: true,
-				Set:      amiBlockDeviceMappingHash,
+			},
+			// Complex computed values
+			"block_device_mapping": {
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"encrypted": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -190,6 +197,8 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 			"specific search criteria.")
 	}
 
+	d.Set("request_id", res.RequestId)
+
 	return omiDescriptionAttributes(d, res.Images[0])
 }
 
@@ -221,7 +230,7 @@ func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
 	d.Set("image_state", image.State)
 	d.Set("virtualization_type", image.VirtualizationType)
 	// Complex types get their own functions
-	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+	if err := d.Set("block_device_mapping", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
 	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
@@ -233,5 +242,6 @@ func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
 	if err := d.Set("tag_set", dataSourceTags(image.Tags)); err != nil {
 		return err
 	}
+
 	return nil
 }
