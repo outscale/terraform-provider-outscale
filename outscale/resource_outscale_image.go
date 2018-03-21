@@ -101,13 +101,21 @@ func resourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			// Complex computed values
-			"block_device_mappings": {
+			"block_device_mapping": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"encrypted": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -266,6 +274,7 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*image.ImageId)
+	d.Set("request_id", res.RequestId)
 	d.Set("architecture", *image.Architecture)
 	if image.CreationDate != nil {
 		d.Set("creation_date", *image.CreationDate)
@@ -289,7 +298,7 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("root_device_type", *image.RootDeviceType)
 	d.Set("image_state", *image.State)
 
-	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+	if err := d.Set("block_device_mapping", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
 	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
