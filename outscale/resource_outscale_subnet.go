@@ -31,16 +31,33 @@ func resourceOutscaleSubNet() *schema.Resource {
 //Create SubNet
 func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-
-	log.Println("[DEBUG] Creating Subnet")
-	r, err := conn.VM.CreateSubNet(nil)
-	if err != nil {
-		log.Printf("[DEBUG] Subnet %s", err)
-
-		return err
+	req := &fcu.CreateSubnetInput{
+		CidrBlock: aws.String(d.Get("cidr_block").(string)),
+		VpcId:     aws.String(d.Get("vpc_id").(string)),
 	}
+	if a, aok := d.GetOk("availability_zone"); aok {
+		req.AvailabilityZone = aws.String(a.(string))
+	}
+	if a, aok := d.GetOk("dry_run"); aok {
+		req.DryRun = aws.Bool(a.(bool))
+	}
+	var res *fcu.CreateSubnetOutput
+	var err error
+	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
+		res, err = conn.VM.CreateSubNet(req)
 
-	d.SetId(*r.Subnet.SubnetId)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				fmt.Printf("[INFO] Request limit exceeded")
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return resource.RetryableError(err)
+	})
+
+	d.SetId(*res.Subnet.SubnetId)
 
 	return resourceOutscaleSubNetRead(d, meta)
 }
@@ -77,10 +94,14 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 
 	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
-	d.Set("subnet_id", resp.Subnets)
-	d.Set("availability_zone", resp.Subnets)
-	d.Set("cidr_block", resp.Subnets)
-	d.Set("vpc_id", resp.Subnets)
+	d.Set("subnet_id", resp.Subnets[0].SubnetId)
+	d.Set("availability_zone", resp.Subnets[0].AvailabilityZone)
+	d.Set("cidr_block", resp.Subnets[0].CidrBlock)
+	d.Set("vpc_id", resp.Subnets[0].VpcId)
+
+	if err := d.Set("tag_set", dataSourceTags(resp.Subnets[0].Tags)); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -153,62 +174,41 @@ func readOutscaleSubNet(d *schema.ResourceData, subnet *fcu.Subnet) error {
 
 func getSubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		//This is attribute part for schema SubNet
+		"vpc_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"cidr_block": &schema.Schema{
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
 		"availability_zone": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
+		//This is arguments part for schema SubNet
 		"available_ip_address_count": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
-			ForceNew: true,
 		},
-		"cidr_block": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
-			Computed: true,
-			ForceNew: true,
-		},
+
 		"state": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"subnet_id": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
-			ForceNew: true,
 		},
 		"request_id": &schema.Schema{
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
-		"vpc_id": &schema.Schema{
-			Type:     schema.TypeString,
-			Required: true,
-			Computed: true,
-			ForceNew: true,
-		},
-		"tags": {
-			Type: schema.TypeList,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"tag": tagsSchema(),
+		"tag_set": dataSourceTagsSchema(),
 	}
 }

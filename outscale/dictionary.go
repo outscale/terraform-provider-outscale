@@ -31,6 +31,7 @@ func init() {
 			"outscale_lin":                  resourceOutscaleLin,
 			"outscale_lin_internet_gateway": resourceOutscaleLinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleNatService,
+			"outscale_subnet":               resourceOutscaleSubNet,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm": resourceOutscaleOApiVM,
