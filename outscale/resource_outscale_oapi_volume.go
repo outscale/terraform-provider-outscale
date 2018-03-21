@@ -153,9 +153,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		request.TagSpecifications = tagsSpec
 	}
 
-	log.Printf(
-		"[DEBUG] Outscale Volume create opts: %s", request)
-
 	var result *fcu.Volume
 	var err error
 

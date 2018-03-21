@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -174,11 +173,10 @@ func testAccCheckOutscaleSecurityGroupInboundRuleAttributes(n string, group *fcu
 		}
 
 		if matchingRule != nil {
-			log.Printf("[DEBUG] Matching rule found : %s", matchingRule)
 			return nil
 		}
 
-		return fmt.Errorf("Error here\n\tlooking for %s, wasn't found in %s", p, rules)
+		return fmt.Errorf("Error here\n\tlooking for %+v, wasn't found in %+v", p, rules)
 	}
 }
 
