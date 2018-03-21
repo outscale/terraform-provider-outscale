@@ -68,6 +68,7 @@ func init() {
 			"outscale_nat_services":       dataSourceOutscaleNatServices,
 			"outscale_keypair":            datasourceOutscaleKeyPair,
 			"outscale_keypairs":           datasourceOutscaleKeyPairs,
+			"outscale_vm_state":           dataSourceOutscaleVmState,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                 dataSourceOutscaleOAPIVM,

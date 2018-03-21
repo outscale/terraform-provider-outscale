@@ -88,6 +88,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nat_services":       GetDatasource(fcu, "outscale_nat_services")(),
 			"outscale_keypair":            GetDatasource(fcu, "outscale_keypair")(),
 			"outscale_keypairs":           GetDatasource(fcu, "outscale_keypairs")(),
+			"outscale_vm_state":           GetDatasource(fcu, "outscale_vm_state")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
