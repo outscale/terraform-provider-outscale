@@ -97,13 +97,16 @@ func dataSourceOutscaleImages() *schema.Resource {
 							Computed: true,
 						},
 						// Complex computed values
-						"block_device_mappings": {
-							Type:     schema.TypeSet,
+						"block_device_mapping": {
+							Type:     schema.TypeList,
 							Computed: true,
-							Set:      amiBlockDeviceMappingHash,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"device_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"encrypted": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -201,6 +204,8 @@ func dataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
 	}
 
+	d.Set("request_id", res.RequestId)
+
 	return omisDescriptionAttributes(d, res.Images)
 }
 
@@ -235,7 +240,7 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		im["root_device_type"] = *v.RootDeviceType
 
 		if v.BlockDeviceMappings != nil {
-			im["block_device_mappings"] = amiBlockDeviceMappings(v.BlockDeviceMappings)
+			im["block_device_mapping"] = amiBlockDeviceMappings(v.BlockDeviceMappings)
 		}
 		if v.ProductCodes != nil {
 			im["product_codes"] = amiProductCodes(v.ProductCodes)
@@ -260,9 +265,7 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 	s := make([]map[string]interface{}, len(m))
 
 	for k, v := range m {
-		mapping := map[string]interface{}{
-			"device_name": *v.DeviceName,
-		}
+		mapping := make(map[string]interface{})
 		if v.Ebs != nil {
 			ebs := map[string]interface{}{
 				"delete_on_termination": fmt.Sprintf("%t", *v.Ebs.DeleteOnTermination),
@@ -291,6 +294,13 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 		if v.VirtualName != nil {
 			mapping["virtual_name"] = *v.VirtualName
 		}
+		if v.DeviceName != nil {
+			mapping["device_name"] = *v.DeviceName
+		}
+		if v.NoDevice != nil {
+			mapping["no_device"] = *v.NoDevice
+		}
+
 		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
 		s[k] = mapping
 	}
@@ -325,7 +335,7 @@ func amiStateReason(m *fcu.StateReason) map[string]interface{} {
 	return s
 }
 
-// Generates a hash for the set hash function used by the block_device_mappings
+// Generates a hash for the set hash function used by the block_device_mapping
 // attribute.
 func amiBlockDeviceMappingHash(v interface{}) int {
 	var buf bytes.Buffer
