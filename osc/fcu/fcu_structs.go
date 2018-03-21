@@ -2195,6 +2195,28 @@ type DescribeSubnetsOutput struct {
 
 	// Information about one or more subnets.
 	Subnets []*Subnet `locationName:"subnetSet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeSubnetsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSubnetsOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubnets sets the Subnets field's value.
+func (s *DescribeSubnetsOutput) SetSubnets(v []*Subnet) *DescribeSubnetsOutput {
+	s.Subnets = v
+	return s
+}
+func (s *DescribeSubnetsOutput) SetRequesterId(v *string) *DescribeSubnetsOutput {
+	s.RequesterId = v
+	return s
 }
 
 // Contains the output of CreateNatGateway.
