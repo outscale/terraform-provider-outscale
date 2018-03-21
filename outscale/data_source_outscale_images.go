@@ -256,11 +256,10 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 }
 
 // Returns a set of block device mappings.
-func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) *schema.Set {
-	s := &schema.Set{
-		F: amiBlockDeviceMappingHash,
-	}
-	for _, v := range m {
+func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(m))
+
+	for k, v := range m {
 		mapping := map[string]interface{}{
 			"device_name": *v.DeviceName,
 		}
@@ -293,7 +292,7 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) *schema.Set {
 			mapping["virtual_name"] = *v.VirtualName
 		}
 		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
-		s.Add(mapping)
+		s[k] = mapping
 	}
 	return s
 }

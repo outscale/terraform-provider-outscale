@@ -53,6 +53,8 @@ type VMService interface {
 	CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error)
 	DeleteSubNet(input *DeleteSubnetInput) (*DeleteSubnetOutput, error)
 	DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubnetsOutput, error)
+	DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error)
+	DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error)
 	CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error)
 	DescribeInternetGateways(input *DescribeInternetGatewaysInput) (*DescribeInternetGatewaysOutput, error)
 	DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error)
@@ -62,6 +64,10 @@ type VMService interface {
 	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
 	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
 	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
+	AttachInternetGateway(input *AttachInternetGatewayInput) (*AttachInternetGatewayOutput, error)
+	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
+	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
+	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -867,6 +873,28 @@ func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment,
 	return output, nil
 }
 
+func (v VMOperations) DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceAttribute"
+	output := &DescribeInstanceAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
 func (v VMOperations) CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error) {
 	inURL := "/"
 	endpoint := "CreateNatGateway"
@@ -912,6 +940,27 @@ func (v VMOperations) DescribeNatGateways(input *DescribeNatGatewaysInput) (*Des
 	return output, nil
 }
 
+func (v VMOperations) DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceStatus"
+	output := &DescribeInstanceStatusOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceStatusInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error) {
 	inURL := "/"
 	endpoint := "DeleteNatGateway"
@@ -932,7 +981,6 @@ func (v VMOperations) DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNat
 	}
 
 	return output, nil
-
 }
 func (v VMOperations) CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error) {
 	inURL := "/"

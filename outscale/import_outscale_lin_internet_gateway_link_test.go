@@ -5,11 +5,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccOutscalePublicIPLink_importBasic(t *testing.T) {
+func TestAccOutscaleLinGatewayLink_import(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -17,26 +16,25 @@ func TestAccOutscalePublicIPLink_importBasic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
-	resourceName := "outscale_public_ip_link.bar"
-	rInt := acctest.RandInt()
+	resourceName := "outscale_lin_internet_gateway_link.link"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
+		CheckDestroy: testAccCheckOutscaleLinInternetGatewayLinkDettached,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPLinkConfig(rInt),
+				Config: testAccOutscaleLinInternetGatewayLinkConfig,
 			},
 
 			resource.TestStep{
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"associate_public_ip_address", "user_data", "security_group"},
+				ImportStateVerifyIgnore: []string{"vpc_id", "request_id"},
 			},
 		},
 	})
