@@ -18,7 +18,7 @@ func datasourceOutscaleOAPILinInternetGateways() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 
-			"internet_gateway_set": {
+			"lin_to_lin_internet_gateway_link": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -33,14 +33,14 @@ func datasourceOutscaleOAPILinInternetGateways() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"vpc_id": {
+									"lin_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"internet_gateway_id": {
+						"lin_internet_gateway_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -60,7 +60,7 @@ func datasourceOutscaleOAPILinInternetGatewaysRead(d *schema.ResourceData, meta 
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
-	internetID, insternetIDOk := d.GetOk("internet_gateway_id")
+	internetID, insternetIDOk := d.GetOk("lin_internet_gateway_id")
 
 	if filtersOk == false && insternetIDOk == false {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
@@ -110,7 +110,7 @@ func flattenOAPIInternetGwsAttachements(attachements []*fcu.InternetGatewayAttac
 
 	for i, a := range attachements {
 		res[i]["state"] = a.State
-		res[i]["vpc_id"] = a.VpcId
+		res[i]["lin_id"] = a.VpcId
 	}
 
 	return res
@@ -131,14 +131,14 @@ func internetGatewaysOAPIDescriptionAttributes(d *schema.ResourceData, internetG
 					at["state"] = *n.State
 				}
 				if n.VpcId != nil {
-					at["vpc_id"] = *n.VpcId
+					at["lin_id"] = *n.VpcId
 				}
 				a[m] = at
 			}
 			im["attachment_set"] = a
 		}
 		if v.InternetGatewayId != nil {
-			im["internet_gateway_id"] = *v.InternetGatewayId
+			im["lin_internet_gateway_id"] = *v.InternetGatewayId
 		}
 		if v.Tags != nil {
 			im["tag_set"] = tagsToMap(v.Tags)
@@ -146,5 +146,5 @@ func internetGatewaysOAPIDescriptionAttributes(d *schema.ResourceData, internetG
 		i[k] = im
 	}
 
-	return d.Set("internet_gateway_set", i)
+	return d.Set("lin_to_lin_internet_gateway_link", i)
 }
