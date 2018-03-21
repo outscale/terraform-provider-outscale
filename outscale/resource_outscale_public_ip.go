@@ -67,6 +67,10 @@ func getPublicIPSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -173,12 +177,13 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("network_interface_owner_id", "")
 	}
 	if address.PrivateIpAddress != nil {
-		d.Set("private_ip", *address.PrivateIpAddress)
+		d.Set("private_ip_address", *address.PrivateIpAddress)
 	} else {
-		d.Set("private_ip", "")
+		d.Set("private_ip_address", "")
 	}
-	d.Set("public_ip", *address.PublicIp)
 
+	d.Set("request_id", *describeAddresses.RequestId)
+	d.Set("public_ip", *address.PublicIp)
 	d.Set("domain", *address.Domain)
 	d.Set("allocation_id", *address.AllocationId)
 

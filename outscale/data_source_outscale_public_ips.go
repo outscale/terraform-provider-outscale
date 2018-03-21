@@ -72,6 +72,10 @@ func getPublicIPSDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -168,6 +172,8 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(resource.UniqueId())
+
+	d.Set("request_id", *describeAddresses.RequestId)
 
 	err = d.Set("addresses_set", address)
 
