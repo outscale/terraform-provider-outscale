@@ -60,9 +60,9 @@ func datasourceOutscaleOAPILinInternetGatewaysRead(d *schema.ResourceData, meta 
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
-	internetID, insternetIDOk := d.GetOk("lin_internet_gateway_id")
+	internetID, internetIDOk := d.GetOk("lin_internet_gateway_id")
 
-	if filtersOk == false && insternetIDOk == false {
+	if filtersOk == false && internetIDOk == false {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -71,7 +71,7 @@ func datasourceOutscaleOAPILinInternetGatewaysRead(d *schema.ResourceData, meta 
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
-	if insternetIDOk {
+	if internetIDOk {
 		i := internetID.([]string)
 		in := make([]*string, len(i))
 		for k, v := range i {

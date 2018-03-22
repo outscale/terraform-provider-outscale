@@ -63,7 +63,7 @@ func datasourceOutscaleLinInternetGatewaysRead(d *schema.ResourceData, meta inte
 	internetID, insternetIDOk := d.GetOk("internet_gateway_id")
 
 	if filtersOk == false && insternetIDOk == false {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+		return fmt.Errorf("One of filters, or internet_gateway_id must be assigned")
 	}
 
 	// Build up search parameters
