@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -236,17 +235,14 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *fcu.SecurityGroup, 
 				continue
 			}
 
-			fmt.Printf("RULES 2 %s", r)
-
 			matchingRule = r
 		}
 
 		if matchingRule != nil {
-			log.Printf("[DEBUG] Matching rule found : %s", matchingRule)
 			return nil
 		}
 
-		return fmt.Errorf("Error here\n\tlooking for %s, wasn't found in %s", p, rules)
+		return fmt.Errorf("Error here\n\tlooking for %+v, wasn't found in %+v", p, rules)
 	}
 }
 

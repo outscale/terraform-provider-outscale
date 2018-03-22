@@ -130,6 +130,7 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	d.Set("request_id", resp.RequestId)
 	tg := tagsDescToList(resp.Tags)
 	err = d.Set("tag_set", tg)
 
@@ -229,6 +230,10 @@ func getTagsSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
@@ -352,7 +357,7 @@ func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
 	for _, t := range ts {
 		if !tagDescIgnored(t) {
 			r := map[string]string{}
-			r["key"] = *t.Value
+			r["key"] = *t.Key
 			r["value"] = *t.Value
 			r["resource_id"] = *t.ResourceId
 			r["resource_type"] = *t.ResourceType

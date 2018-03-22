@@ -167,8 +167,6 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 		add["public_ip"] = *v.PublicIp
 
 		address[k] = add
-
-		fmt.Printf("\n[DEBUG] ADD %s \n", v)
 	}
 
 	d.SetId(resource.UniqueId())

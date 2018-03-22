@@ -27,13 +27,14 @@ func init() {
 			"outscale_public_ip":                 resourceOutscalePublicIP,
 			"outscale_public_ip_link":            resourceOutscalePublicIPLink,
 			"outscale_volume":                    resourceOutscaleVolume,
-			"outscale_volume_link":               resourceOutscaleVolumeLink,
+			"outscale_volumes_link":              resourceOutscaleVolumeLink,
 			"outscale_lin":                       resourceOutscaleLin,
 			"outscale_lin_attributes":            resourceOutscaleLinAttributes,
 			"outscale_lin_internet_gateway":      resourceOutscaleLinInternetGateway,
 			"outscale_lin_internet_gateway_link": resourceOutscaleLinInternetGatewayLink,
 			"outscale_vm_attributes":             resourceOutscaleVMAttributes,
 			"outscale_nat_service":               resourceOutscaleNatService,
+			"outscale_subnet":                    resourceOutscaleSubNet,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
@@ -48,6 +49,7 @@ func init() {
 			"outscale_lin":                  resourceOutscaleOAPILin,
 			"outscale_lin_internet_gateway": resourceOutscaleOAPILinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
+			"outscale_subnet":               resourceOutscaleOAPISubNet,
 		},
 	}
 	datasources = Dictionary{
@@ -68,6 +70,8 @@ func init() {
 			"outscale_nat_services":       dataSourceOutscaleNatServices,
 			"outscale_keypair":            datasourceOutscaleKeyPair,
 			"outscale_keypairs":           datasourceOutscaleKeyPairs,
+			"outscale_subnet":             dataSourceOutscaleSubnet,
+			"outscale_subnets":            dataSourceOutscaleSubnets,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                 dataSourceOutscaleOAPIVM,
@@ -81,6 +85,8 @@ func init() {
 			"outscale_volumes":            datasourceOutscaleOAPIVolumes,
 			"outscale_keypair":            datasourceOutscaleOAPIKeyPair,
 			"outscale_keypairs":           datasourceOutscaleOAPIKeyPairs,
+			"outscale_subnet":             dataSourceOutscaleOAPISubnet,
+			"outscale_subnets":            dataSourceOutscaleOAPISubnets,
 		},
 	}
 }
