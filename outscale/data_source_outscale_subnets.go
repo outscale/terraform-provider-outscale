@@ -21,7 +21,9 @@ func dataSourceOutscaleSubnets() *schema.Resource {
 			"subnet_id": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"subnet_set": {
 				Type:     schema.TypeList,
@@ -48,7 +50,7 @@ func dataSourceOutscaleSubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tag_set": dataSourceTagsSchema(),
+						"tag_set": tagsSchemaComputed(),
 
 						"vpc_id": {
 							Type:     schema.TypeString,
@@ -75,7 +77,7 @@ func dataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 
 	req := &fcu.DescribeSubnetsInput{}
 
-	if id := d.Get("subnet_id"); id != "" {
+	if id, ok := d.GetOk("subnet_id"); ok {
 		var ids []*string
 		for _, v := range id.([]string) {
 			ids = append(ids, aws.String(v))
@@ -83,9 +85,7 @@ func dataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) err
 		req.SubnetIds = ids
 	}
 
-	filters, filtersOk := d.GetOk("filter")
-
-	if filtersOk {
+	if filters, filtersOk := d.GetOk("filter"); filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 
