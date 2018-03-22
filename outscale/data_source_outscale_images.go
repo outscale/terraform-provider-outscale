@@ -110,10 +110,6 @@ func dataSourceOutscaleImages() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"encrypted": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
 									"no_device": {
 										Type:     schema.TypeString,
 										Computed: true,
@@ -285,12 +281,6 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 				"volume_type":           *v.Ebs.VolumeType,
 			}
 
-			// if v.Ebs.Encrypted != nil {
-			// 	ebs["encrypted"] = fmt.Sprintf("%t", *v.Ebs.Encrypted)
-			// } else {
-			// 	ebs["encrypted"] = "0"
-			// }
-			// Iops is not always set
 			if v.Ebs.Iops != nil {
 				ebs["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
 			} else {

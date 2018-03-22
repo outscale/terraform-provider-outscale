@@ -101,10 +101,6 @@ func dataSourceOutscaleImage() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"encrypted": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"virtual_name": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -209,15 +205,21 @@ func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
 	d.Set("architecture", image.Architecture)
 	if image.CreationDate != nil {
 		d.Set("creation_date", image.CreationDate)
+	} else {
+		d.Set("creation_date", "")
 	}
 	if image.Description != nil {
 		d.Set("description", image.Description)
+	} else {
+		d.Set("description", "")
 	}
 	d.Set("hypervisor", image.Hypervisor)
 	d.Set("image_id", image.ImageId)
 	d.Set("image_location", image.ImageLocation)
 	if image.ImageOwnerAlias != nil {
 		d.Set("image_owner_alias", image.ImageOwnerAlias)
+	} else {
+		d.Set("image_owner_alias", "")
 	}
 	d.Set("image_owner_id", image.OwnerId)
 	d.Set("image_type", image.ImageType)
@@ -225,6 +227,8 @@ func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
 	d.Set("is_public", image.Public)
 	if image.RootDeviceName != nil {
 		d.Set("root_device_name", image.RootDeviceName)
+	} else {
+		d.Set("root_device_name", "")
 	}
 	d.Set("root_device_type", image.RootDeviceType)
 	d.Set("image_state", image.State)
