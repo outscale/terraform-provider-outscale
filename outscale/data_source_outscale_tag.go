@@ -31,6 +31,10 @@ func dataSourceOutscaleTag() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -70,6 +74,8 @@ func dataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("value", *tag.Value)
 	d.Set("resource_id", *tag.ResourceId)
 	d.Set("resource_type", *tag.ResourceType)
+	d.Set("request_id", resp.RequestId)
+
 	d.SetId(resource.UniqueId())
 
 	return err

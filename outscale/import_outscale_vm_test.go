@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
@@ -21,7 +22,7 @@ func TestAccOutscaleInstance_importBasic(t *testing.T) {
 	}
 	resourceName := "outscale_vm.basic"
 
-	// rInt := acctest.RandInt()
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -29,7 +30,7 @@ func TestAccOutscaleInstance_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleServerConfig_basic(),
+				Config: testAccCheckOutscaleServerConfig_basic(rInt),
 			},
 
 			resource.TestStep{

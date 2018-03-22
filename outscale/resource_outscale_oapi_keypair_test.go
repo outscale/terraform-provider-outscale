@@ -238,9 +238,9 @@ func testAccOutscaleOAPIKeyPairConfig_retrieveName(r int) string {
 	return fmt.Sprintf(
 		`
 resource "outscale_keypair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair"
+	key_name   = "tf-acc-key-pair-%d"
 }
-`)
+`, r)
 }
 
 const testAccOutscaleOAPIKeyPairConfig_generatedName = `
