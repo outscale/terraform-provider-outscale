@@ -17,7 +17,13 @@ func datasourceOutscaleLinInternetGateways() *schema.Resource {
 		Read: datasourceOutscaleLinInternetGatewaysRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-
+			"internet_gateway_id": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"internet_gateway_set": {
 				Type:     schema.TypeSet,
 				Computed: true,
