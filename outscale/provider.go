@@ -66,7 +66,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_public_ip":                 GetResource(fcu, "outscale_public_ip")(),
 			"outscale_public_ip_link":            GetResource(fcu, "outscale_public_ip_link")(),
 			"outscale_volume":                    GetResource(fcu, "outscale_volume")(),
-			"outscale_volume_link":               GetResource(fcu, "outscale_volume_link")(),
+			"outscale_volumes_link":              GetResource(fcu, "outscale_volumes_link")(),
 			"outscale_vm_attributes":             GetResource(fcu, "outscale_vm_attributes")(),
 			"outscale_lin_attributes":            GetResource(fcu, "outscale_lin_attributes")(),
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
@@ -89,6 +89,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nat_services":       GetDatasource(fcu, "outscale_nat_services")(),
 			"outscale_keypair":            GetDatasource(fcu, "outscale_keypair")(),
 			"outscale_keypairs":           GetDatasource(fcu, "outscale_keypairs")(),
+			"outscale_subnet":             GetDatasource(fcu, "outscale_subnet")(),
+			"outscale_subnets":            GetDatasource(fcu, "outscale_subnets")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
