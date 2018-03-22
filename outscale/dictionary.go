@@ -56,8 +56,8 @@ func init() {
 		"fcu": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleVM,
 			"outscale_vms":                   dataSourceOutscaleVMS,
-			"outscale_firewall_rule_set":     dataSourceOutscaleFirewallRuleSet,
-			"outscale_firewall_rules_set":    dataSourceOutscaleFirewallRulesSets,
+			"outscale_firewall_rules_set":    dataSourceOutscaleFirewallRuleSet,
+			"outscale_firewall_rules_sets":   dataSourceOutscaleFirewallRulesSets,
 			"outscale_image":                 dataSourceOutscaleImage,
 			"outscale_images":                dataSourceOutscaleImages,
 			"outscale_tag":                   dataSourceOutscaleTag,
@@ -78,9 +78,9 @@ func init() {
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
 			"outscale_vms":                   datasourceOutscaleOApiVMS,
-			"outscale_firewall_rules_set":    dataSourceOutscaleOAPIFirewallRulesSets,
+			"outscale_firewall_rules_sets":   dataSourceOutscaleOAPIFirewallRulesSets,
 			"outscale_images":                dataSourceOutscaleOAPIImages,
-			"outscale_firewall_rule_set":     dataSourceOutscaleOAPIFirewallRuleSet,
+			"outscale_firewall_rules_set":    dataSourceOutscaleOAPIFirewallRuleSet,
 			"outscale_tag":                   dataSourceOutscaleOAPITag,
 			"outscale_tags":                  dataSourceOutscaleOAPITags,
 			"outscale_volume":                datasourceOutscaleOAPIVolume,

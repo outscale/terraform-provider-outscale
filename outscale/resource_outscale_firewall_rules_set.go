@@ -244,6 +244,7 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
 	d.Set("tag_set", tagsToMap(sg.Tags))
+	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err

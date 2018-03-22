@@ -1347,7 +1347,31 @@ type DescribeSecurityGroupsInput struct {
 type DescribeSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// Information about one or more security groups.
 	SecurityGroups []*SecurityGroup `locationName:"securityGroupInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"String"`
+}
+
+// String returns the string representation
+func (s DescribeSecurityGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSecurityGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetSecurityGroups sets the SecurityGroups field's value.
+func (s *DescribeSecurityGroupsOutput) SetSecurityGroups(v []*SecurityGroup) *DescribeSecurityGroupsOutput {
+	s.SecurityGroups = v
+	return s
+}
+
+func (s *DescribeSecurityGroupsOutput) SetRequestId(v string) *DescribeSecurityGroupsOutput {
+	s.RequestId = &v
+	return s
 }
 
 type SecurityGroup struct {

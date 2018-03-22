@@ -42,6 +42,10 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"tag_set": {
 				Type: schema.TypeMap,
 				Elem: &schema.Resource{
@@ -128,6 +132,7 @@ func dataSourceOutscaleFirewallRuleSetRead(d *schema.ResourceData, meta interfac
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
 	d.Set("tag_set", tagsToMap(sg.Tags))
+	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err
