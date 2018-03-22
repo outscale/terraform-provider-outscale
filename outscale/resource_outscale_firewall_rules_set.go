@@ -45,6 +45,12 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"group_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			"vpc_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -56,6 +62,10 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 			"ip_permissions":        getIPPerms(),
 			"ip_permissions_egress": getIPPerms(),
 			"owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -192,8 +202,6 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 	req := &fcu.DescribeSecurityGroupsInput{}
 	req.GroupIds = []*string{group.GroupId}
 
-	fmt.Printf("[DEBUG] REQ %s", req)
-
 	var resp *fcu.DescribeSecurityGroupsOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeSecurityGroups(req)
@@ -236,6 +244,7 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
 	d.Set("tag_set", tagsToMap(sg.Tags))
+	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err

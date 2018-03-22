@@ -101,8 +101,12 @@ func resourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			// Complex computed values
-			"block_device_mappings": {
+			"block_device_mapping": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -266,18 +270,25 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(*image.ImageId)
+	d.Set("request_id", res.RequestId)
 	d.Set("architecture", *image.Architecture)
 	if image.CreationDate != nil {
 		d.Set("creation_date", *image.CreationDate)
+	} else {
+		d.Set("creation_date", "")
 	}
 	if image.Description != nil {
 		d.Set("description", *image.Description)
+	} else {
+		d.Set("description", "")
 	}
 	d.Set("hypervisor", *image.Hypervisor)
 	d.Set("image_id", *image.ImageId)
 	d.Set("image_location", *image.ImageLocation)
 	if image.ImageOwnerAlias != nil {
 		d.Set("image_owner_alias", *image.ImageOwnerAlias)
+	} else {
+		d.Set("image_owner_alias", "")
 	}
 	d.Set("image_owner_id", *image.OwnerId)
 	d.Set("image_type", *image.ImageType)
@@ -285,11 +296,13 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("is_public", *image.Public)
 	if image.RootDeviceName != nil {
 		d.Set("root_device_name", *image.RootDeviceName)
+	} else {
+		d.Set("root_device_name", "")
 	}
 	d.Set("root_device_type", *image.RootDeviceType)
 	d.Set("image_state", *image.State)
 
-	if err := d.Set("block_device_mappings", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+	if err := d.Set("block_device_mapping", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
 	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {

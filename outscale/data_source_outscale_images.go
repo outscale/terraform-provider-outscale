@@ -39,7 +39,11 @@ func dataSourceOutscaleImages() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			// Computed values.
-			"image_set": {
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"images_set": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -97,10 +101,9 @@ func dataSourceOutscaleImages() *schema.Resource {
 							Computed: true,
 						},
 						// Complex computed values
-						"block_device_mappings": {
-							Type:     schema.TypeSet,
+						"block_device_mapping": {
+							Type:     schema.TypeList,
 							Computed: true,
-							Set:      amiBlockDeviceMappingHash,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"device_name": {
@@ -201,6 +204,8 @@ func dataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
 	}
 
+	d.Set("request_id", res.RequestId)
+
 	return omisDescriptionAttributes(d, res.Images)
 }
 
@@ -215,14 +220,20 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		im["architecture"] = *v.Architecture
 		if v.CreationDate != nil {
 			im["creation_date"] = *v.CreationDate
+		} else {
+			im["creation_date"] = ""
 		}
 		if v.Description != nil {
 			im["description"] = *v.Description
+		} else {
+			im["description"] = ""
 		}
 		im["image_id"] = *v.ImageId
 		im["image_location"] = *v.ImageLocation
 		if v.ImageOwnerAlias != nil {
 			im["image_owner_alias"] = *v.ImageOwnerAlias
+		} else {
+			im["image_owner_alias"] = ""
 		}
 		im["image_owner_id"] = *v.OwnerId
 		im["image_type"] = *v.ImageType
@@ -231,11 +242,13 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		im["is_public"] = *v.Public
 		if v.RootDeviceName != nil {
 			im["root_device_name"] = *v.RootDeviceName
+		} else {
+			im["root_device_name"] = ""
 		}
 		im["root_device_type"] = *v.RootDeviceType
 
 		if v.BlockDeviceMappings != nil {
-			im["block_device_mappings"] = amiBlockDeviceMappings(v.BlockDeviceMappings)
+			im["block_device_mapping"] = amiBlockDeviceMappings(v.BlockDeviceMappings)
 		}
 		if v.ProductCodes != nil {
 			im["product_codes"] = amiProductCodes(v.ProductCodes)
@@ -249,7 +262,7 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		i[k] = im
 	}
 
-	err := d.Set("image_set", i)
+	err := d.Set("images_set", i)
 	d.SetId(resource.UniqueId())
 
 	return err
@@ -260,9 +273,7 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 	s := make([]map[string]interface{}, len(m))
 
 	for k, v := range m {
-		mapping := map[string]interface{}{
-			"device_name": *v.DeviceName,
-		}
+		mapping := make(map[string]interface{})
 		if v.Ebs != nil {
 			ebs := map[string]interface{}{
 				"delete_on_termination": fmt.Sprintf("%t", *v.Ebs.DeleteOnTermination),
@@ -270,12 +281,6 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 				"volume_type":           *v.Ebs.VolumeType,
 			}
 
-			if v.Ebs.Encrypted != nil {
-				ebs["encrypted"] = fmt.Sprintf("%t", *v.Ebs.Encrypted)
-			} else {
-				ebs["encrypted"] = "0"
-			}
-			// Iops is not always set
 			if v.Ebs.Iops != nil {
 				ebs["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
 			} else {
@@ -291,6 +296,13 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 		if v.VirtualName != nil {
 			mapping["virtual_name"] = *v.VirtualName
 		}
+		if v.DeviceName != nil {
+			mapping["device_name"] = *v.DeviceName
+		}
+		if v.NoDevice != nil {
+			mapping["no_device"] = *v.NoDevice
+		}
+
 		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
 		s[k] = mapping
 	}
@@ -325,7 +337,7 @@ func amiStateReason(m *fcu.StateReason) map[string]interface{} {
 	return s
 }
 
-// Generates a hash for the set hash function used by the block_device_mappings
+// Generates a hash for the set hash function used by the block_device_mapping
 // attribute.
 func amiBlockDeviceMappingHash(v interface{}) int {
 	var buf bytes.Buffer

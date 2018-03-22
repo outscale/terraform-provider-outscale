@@ -107,10 +107,6 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		req.PublicIps = []*string{aws.String(id)}
 	}
 
-	fmt.Printf(
-		"[DEBUG] EIP describe configuration: %s (placement: %s)",
-		req, placement)
-
 	var describeAddresses *fcu.DescribeAddressesOutput
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
@@ -205,8 +201,6 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 				PrivateIpAddress:   privateIpAddress,
 			}
 		}
-
-		fmt.Printf("[DEBUG] EIP associate configuration: %s (placement: %s)", assocOpts, placement)
 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error

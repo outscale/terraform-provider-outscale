@@ -63,6 +63,10 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -135,8 +139,6 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 		req.GroupIds = g
 	}
 
-	fmt.Printf("[DEBUG] REQ %s", req)
-
 	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -187,6 +189,8 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 	}
 
 	fmt.Printf("[DEBUG] security_group_info %s", sg)
+
+	d.Set("request_id", resp.RequestId)
 
 	d.SetId(resource.UniqueId())
 
