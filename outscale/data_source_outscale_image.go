@@ -97,11 +97,11 @@ func dataSourceOutscaleImage() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"encrypted": {
+						"no_device": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"no_device": {
+						"encrypted": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},

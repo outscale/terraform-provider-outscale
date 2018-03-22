@@ -39,7 +39,11 @@ func dataSourceOutscaleImages() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			// Computed values.
-			"image_set": {
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"images_set": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -220,14 +224,20 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		im["architecture"] = *v.Architecture
 		if v.CreationDate != nil {
 			im["creation_date"] = *v.CreationDate
+		} else {
+			im["creation_date"] = ""
 		}
 		if v.Description != nil {
 			im["description"] = *v.Description
+		} else {
+			im["description"] = ""
 		}
 		im["image_id"] = *v.ImageId
 		im["image_location"] = *v.ImageLocation
 		if v.ImageOwnerAlias != nil {
 			im["image_owner_alias"] = *v.ImageOwnerAlias
+		} else {
+			im["image_owner_alias"] = ""
 		}
 		im["image_owner_id"] = *v.OwnerId
 		im["image_type"] = *v.ImageType
@@ -236,6 +246,8 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		im["is_public"] = *v.Public
 		if v.RootDeviceName != nil {
 			im["root_device_name"] = *v.RootDeviceName
+		} else {
+			im["root_device_name"] = ""
 		}
 		im["root_device_type"] = *v.RootDeviceType
 
@@ -254,7 +266,7 @@ func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) erro
 		i[k] = im
 	}
 
-	err := d.Set("image_set", i)
+	err := d.Set("images_set", i)
 	d.SetId(resource.UniqueId())
 
 	return err
@@ -273,11 +285,11 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 				"volume_type":           *v.Ebs.VolumeType,
 			}
 
-			if v.Ebs.Encrypted != nil {
-				ebs["encrypted"] = fmt.Sprintf("%t", *v.Ebs.Encrypted)
-			} else {
-				ebs["encrypted"] = "0"
-			}
+			// if v.Ebs.Encrypted != nil {
+			// 	ebs["encrypted"] = fmt.Sprintf("%t", *v.Ebs.Encrypted)
+			// } else {
+			// 	ebs["encrypted"] = "0"
+			// }
 			// Iops is not always set
 			if v.Ebs.Iops != nil {
 				ebs["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
