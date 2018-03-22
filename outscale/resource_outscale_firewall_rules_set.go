@@ -45,6 +45,12 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"group_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			"vpc_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -56,6 +62,10 @@ func resourceOutscaleFirewallRulesSet() *schema.Resource {
 			"ip_permissions":        getIPPerms(),
 			"ip_permissions_egress": getIPPerms(),
 			"owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
