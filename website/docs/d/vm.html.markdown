@@ -63,7 +63,7 @@ Use the Filter.N parameter to filter the described instances on the following pr
 * `key-name` - The name of the keypair used when launching the instance.
 * `launch-index` - The index for the instance when launching a group of several instances (for example, 0, 1, 2, and so on).
 * `launch-time` - The time when the instance was launched.
-* `monitoring-state` - Indicates whether monitoring is enabled for the instance (disabled | enabled).
+* `monitoring-state` - Indicates whether monitoring is enabled for the instance (`disabled ` | ` enabled`).
 * `owner-id` - The Outscale account ID of the instance owner.
 * `placement-group-name` - The name of the placement group for the instance.
 * `platform` - The platform. Use windows if you have Windows instances. Otherwise, leave this filter blank.
@@ -81,7 +81,7 @@ Use the Filter.N parameter to filter the described instances on the following pr
 * `state-reason-code` - The reason code for the state change.
 * `state-reason-message` - A message describing the state change.
 * `subnet-id` - The ID of the subnet for the instance.
-* `tag` -key=value` - The key/value combination of a tag that is assigned to the resource.
+* `tag` -key=value` - The key/value combination of a tag that is assigned to the resource`.
 * `tag-key` - The key of a tag that is assigned to the resource. You can use this filter alongside the tag-value filter. In that case, you filter the resources corresponding to each tag, regardless of the other filter.
 * `tag-value` - The value of a tag that is assigned to the resource. You can use this filter alongside the tag-key filter. In that case, you filter the resources corresponding to each tag, regardless of the other filter.
 * `tenancy` - The tenancy of an instance (dedicated | default | host).
@@ -128,5 +128,6 @@ The following attributes are exported:
 * `password_data` - Password for windows environments.
 * `requester_id` - The ID of the requester.
 * `reservation_id` - Zero or more reservations, giving you information about your request.
+* `request_id` - The ID of the request.
 
 See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).

@@ -20,11 +20,12 @@ data "outscale_image" "centos73" {
 
   filter {
     name = "owner"
-    values = ["Outscale"]
+    value = ["Outscale"]
   }
 
   filter {
-  name = "description" values = ["Centos 7.3*"]
+    name = "description"
+    value = ["Centos 7.3*"]
   }
 }
 /* instance creation */
@@ -67,6 +68,7 @@ The following attributes are exported:
 * `owner_id` - The ID of the account which has reserved the instances.
 * `password_data` - Password for windows environments.
 * `requester_id` - The ID of the requester.
+* `request_id` - The ID of the request.
 * `reservation_id` - Zero or more reservations, giving you information about your request.
 
-See detailed information in [Tags](http://docs.outscale.com/api_fcu/index.html#_tags).
+See detailed information in [Instances](http://docs.outscale.com/api_fcu/index.html#_instances).
