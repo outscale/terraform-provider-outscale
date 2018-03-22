@@ -21,7 +21,9 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 			"subnet_id": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"subnet": {
 				Type:     schema.TypeList,
@@ -48,7 +50,7 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tag": dataSourceTagsSchema(),
+						"tag": tagsSchemaComputed(),
 
 						"lin_id": {
 							Type:     schema.TypeString,
