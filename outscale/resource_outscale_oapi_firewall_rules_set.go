@@ -189,8 +189,6 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	req := &fcu.DescribeSecurityGroupsInput{}
 	req.GroupIds = []*string{group.GroupId}
 
-	fmt.Printf("[DEBUG] REQ %s", req)
-
 	var resp *fcu.DescribeSecurityGroupsOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeSecurityGroups(req)

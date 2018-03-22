@@ -145,7 +145,6 @@ information and instructions for recovery. Error message: %s`, sg_id, awsErr.Mes
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 
-		log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", id, rule)
 		return nil
 	})
 
@@ -198,8 +197,6 @@ func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) e
 		d.SetId("")
 		return nil
 	}
-
-	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
 	if ips, err := setFromIPPerm(d, sg, p); err != nil {
 		return d.Set("ip_permissions", ips)

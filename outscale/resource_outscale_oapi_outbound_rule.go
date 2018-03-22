@@ -145,8 +145,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		IpPermissions: perms,
 	}
 
-	fmt.Printf("\n\n[DEBUG] REQUEST %s", req)
-
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		_, err = conn.VM.AuthorizeSecurityGroupEgress(req)
@@ -197,7 +195,6 @@ information and instructions for recovery. Error message: %s`, sg_id, "InvalidPe
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 
-		log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", id, rule)
 		return nil
 	})
 
@@ -250,8 +247,6 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		d.SetId("")
 		return nil
 	}
-
-	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
 	if ips, err := setOAPIFromIPPerm(d, sg, p); err != nil {
 		return d.Set("inbound_rule", ips)

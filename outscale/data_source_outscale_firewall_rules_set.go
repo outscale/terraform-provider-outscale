@@ -135,8 +135,6 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 		req.GroupIds = g
 	}
 
-	fmt.Printf("[DEBUG] REQ %s", req)
-
 	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

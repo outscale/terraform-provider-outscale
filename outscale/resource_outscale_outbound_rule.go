@@ -148,8 +148,6 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 		IpPermissions: perms,
 	}
 
-	fmt.Printf("\n\n[DEBUG] REQUEST %s", req)
-
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		_, err = conn.VM.AuthorizeSecurityGroupEgress(req)
@@ -195,12 +193,9 @@ information and instructions for recovery. Error message: %s`, sg_id, "InvalidPe
 		rule := findRuleMatch(perms, rules, isVPC)
 
 		if rule == nil {
-			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-				ruleType, id, sg_id)
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 
-		log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", id, rule)
 		return nil
 	})
 
@@ -253,8 +248,6 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 		d.SetId("")
 		return nil
 	}
-
-	log.Printf("[DEBUG] Found rule for Security Group Rule (%s): %s", d.Id(), rule)
 
 	if ips, err := setFromIPPerm(d, sg, p); err != nil {
 		return d.Set("ip_permissions", ips)
