@@ -1089,9 +1089,40 @@ type DescribeTagsInput struct {
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return..
 	NextToken *string `locationName:"nextToken" type:"string"`
 
+	// A list of tags.
 	Tags []*TagDescription `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeTagsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeTagsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeTagsOutput) SetNextToken(v string) *DescribeTagsOutput {
+	s.NextToken = &v
+	return s
+}
+func (s *DescribeTagsOutput) SetRequestId(v string) *DescribeTagsOutput {
+	s.RequestId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DescribeTagsOutput) SetTags(v []*TagDescription) *DescribeTagsOutput {
+	s.Tags = v
+	return s
 }
 
 type TagDescription struct {
@@ -1677,6 +1708,34 @@ type DescribeVolumesOutput struct {
 
 	// Information about the volumes.
 	Volumes []*Volume `locationName:"volumeSet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVolumesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVolumesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeVolumesOutput) SetNextToken(v string) *DescribeVolumesOutput {
+	s.NextToken = &v
+	return s
+}
+func (s *DescribeVolumesOutput) SetRequesterId(v string) *DescribeVolumesOutput {
+	s.RequesterId = &v
+	return s
+}
+
+// SetVolumes sets the Volumes field's value.
+func (s *DescribeVolumesOutput) SetVolumes(v []*Volume) *DescribeVolumesOutput {
+	s.Volumes = v
+	return s
 }
 
 // Describes a volume.
