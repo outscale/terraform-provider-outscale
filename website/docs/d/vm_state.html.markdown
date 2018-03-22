@@ -52,4 +52,4 @@ The following attributes are exported:
 * `system_status` - Impaired functionality that stems from issues related to the systems supporting an instance (for example, hardware failures or network connectivity problems).
 * `request_id` - The ID of the request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).
+See detailed information in [Instance Status](http://docs.outscale.com/api_fcu/definitions/InstanceStatus.html#_api_fcu-instancestatus).
