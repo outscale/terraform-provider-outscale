@@ -50,6 +50,9 @@ type VMService interface {
 	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
 	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
 	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
+	CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error)
+	DeleteSubNet(input *DeleteSubnetInput) (*DeleteSubnetOutput, error)
+	DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubnetsOutput, error)
 	DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error)
 	DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error)
 	CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error)
@@ -965,6 +968,71 @@ func (v VMOperations) DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNat
 
 	if input == nil {
 		input = &DeleteNatGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSubnet"
+	output := &CreateSubnetOutput{}
+
+	if input == nil {
+		input = &CreateSubnetInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteSubNet(input *DeleteSubnetInput) (*DeleteSubnetOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSubnet"
+	output := &DeleteSubnetOutput{}
+
+	if input == nil {
+		input = &DeleteSubnetInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubnetsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSubnets"
+	output := &DescribeSubnetsOutput{}
+
+	if input == nil {
+		input = &DescribeSubnetsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
