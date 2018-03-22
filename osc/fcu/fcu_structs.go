@@ -1000,6 +1000,25 @@ type DescribeImagesOutput struct {
 	_ struct{} `type:"structure"`
 
 	Images []*Image `locationName:"imagesSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"String"`
+}
+
+func (s DescribeImagesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeImagesOutput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeImagesOutput) SetImages(v []*Image) *DescribeImagesOutput {
+	s.Images = v
+	return s
+}
+func (s *DescribeImagesOutput) SetRequestId(v *string) *DescribeImagesOutput {
+	s.RequestId = v
+	return s
 }
 
 type ModifyImageAttributeInput struct {
