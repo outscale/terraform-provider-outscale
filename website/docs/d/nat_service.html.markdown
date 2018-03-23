@@ -27,7 +27,7 @@ The following arguments are supported:
 
 * `nat_gateway_id` - (Optional) One or more IDs of NAT gateways.
 
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_api_fcu-action_describeimages_get).
+See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_CreateNatGateway_get.html#_api_fcu-action_createnatgateway_get).
 
 ## Filters
 
@@ -50,4 +50,4 @@ The following attributes are exported:
 * `vpc_id` - The ID of the VPC in which the NAT gateway is.
 * `request_id` - The ID of the request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_body_parameter).
+See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeNatGateways_get.html#_api_fcu-action_describenatgateways_get).
