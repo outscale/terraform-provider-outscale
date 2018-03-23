@@ -189,7 +189,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("client_token", instance.ClientToken)
 
-	d.Set("ebs_optimized", instance.EbsOptimized)
+	// d.Set("ebs_optimized", instance.EbsOptimized)
 
 	d.Set("image_id", instance.ImageId)
 
