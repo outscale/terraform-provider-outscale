@@ -257,13 +257,7 @@ func getProductCodes(codes []*fcu.ProductCode) []map[string]interface{} {
 			res = append(res, code)
 		}
 	} else {
-		res = make([]map[string]interface{}, 1)
-		code := map[string]interface{}{}
-
-		code["product_code"] = "UNSET"
-		code["type"] = "UNSET"
-
-		res = append(res, code)
+		res = make([]map[string]interface{}, 0)
 	}
 
 	return res
@@ -343,17 +337,7 @@ func getBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping
 			blockDeviceMapping = append(blockDeviceMapping, r)
 		}
 	} else {
-		blockDeviceMapping = make([]map[string]interface{}, 1)
-		r := map[string]interface{}{}
-		r["device_name"] = ""
-
-		e := map[string]interface{}{}
-		e["delete_on_termination"] = ""
-		e["status"] = ""
-		e["volume_id"] = ""
-		r["ebs"] = e
-
-		blockDeviceMapping = append(blockDeviceMapping, r)
+		blockDeviceMapping = make([]map[string]interface{}, 0)
 	}
 
 	return blockDeviceMapping

@@ -46,22 +46,7 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": {
-				Type: schema.TypeMap,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
+			"tag_set": tagsSchemaComputed(),
 		},
 	}
 }

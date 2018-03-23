@@ -337,12 +337,7 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 			result[k] = tag
 		}
 	} else {
-		result = []map[string]string{
-			map[string]string{
-				"key":   "",
-				"value": "",
-			},
-		}
+		result = make([]map[string]string, 0)
 	}
 
 	fmt.Printf("[DEBUG] TAG_SET %s", result)
