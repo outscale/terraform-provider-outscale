@@ -38,49 +38,32 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 			},
 			"block_device_mapping": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"device_name": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"ebs": {
 							Type:     schema.TypeMap,
-							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"delete_on_termination": {
 										Type:     schema.TypeBool,
-										Optional: true,
+										Computed: true,
 									},
-									"iops": {
-										Type:     schema.TypeInt,
-										Optional: true,
-									},
-									"snapshot_id": {
+									"status": {
 										Type:     schema.TypeString,
-										Optional: true,
+										Computed: true,
 									},
-									"volume_size": {
-										Type:     schema.TypeInt,
-										Optional: true,
-									},
-									"volume_type": {
+									"volume_id": {
 										Type:     schema.TypeString,
-										Optional: true,
+										Computed: true,
 									},
 								},
 							},
-						},
-						"no_device": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
-						"virtual_name": {
-							Type:     schema.TypeString,
-							Optional: true,
 						},
 					},
 				},
@@ -431,7 +414,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if v, ok := d.GetOk("block_device_mapping"); ok {
-		maps := v.(*schema.Set).List()
+		maps := v.([]interface{})
 		mappings := []*fcu.BlockDeviceMapping{}
 
 		for _, m := range maps {
@@ -662,9 +645,9 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 
 	d.Set("instance_id", *resp.InstanceId)
 
-	if resp.BlockDeviceMappings != nil {
-		d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
-	}
+	d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
+
+	d.Set("product_codes", getProductCodes(resp.ProductCodes))
 
 	if resp.DisableApiTermination != nil {
 		d.Set("disable_api_termination", *resp.DisableApiTermination.Value)
@@ -691,10 +674,6 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 
 	if resp.KernelId != nil {
 		d.Set("kernel", *resp.KernelId.Value)
-	}
-
-	if resp.ProductCodes != nil {
-		d.Set("product_codes", getProductCodes(resp.ProductCodes))
 	}
 
 	if resp.RamdiskId != nil {

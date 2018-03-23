@@ -142,14 +142,16 @@ resource "outscale_lin" "vpc" {
 	cidr_block = "10.0.0.0/16"
 }
 resource "outscale_subnet" "subnet" {
-	cidr_block = "10.0.0.0/16"
+	cidr_block = "10.0.0.0/24"
 	vpc_id = "${outscale_lin.vpc.id}"
 }
 
-resource "outscale_public_ip" "bar" {}
+resource "outscale_public_ip" "bar" {
+	domain = "standard"
+}
 
 resource "outscale_nat_service" "gateway" {
-    allocation_id = "${outscale_public_ip.bar.id}"
+    allocation_id = "${outscale_public_ip.bar.allocation_id}"
     subnet_id = "${outscale_subnet.subnet.id}"
 }
 `

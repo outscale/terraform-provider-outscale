@@ -26,9 +26,10 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 	// rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:      func() { testAccPreCheck(t) },
+		Providers:     testAccProviders,
+		IDRefreshName: "outscale_vm.outscale_vm",
+		CheckDestroy:  testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleVMConfig_basic(),
