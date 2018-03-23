@@ -93,16 +93,12 @@ func getDSIPPerms() *schema.Schema {
 				"ip_ranges": {
 					Type:     schema.TypeList,
 					Computed: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeMap,
-					},
+					Elem:     &schema.Schema{Type: schema.TypeMap},
 				},
 				"prefix_list_ids": {
 					Type:     schema.TypeList,
 					Computed: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeMap,
-					},
+					Elem:     &schema.Schema{Type: schema.TypeMap},
 				},
 				"groups": {
 					Type:     schema.TypeList,
@@ -222,21 +218,21 @@ func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 		}
 
 		if v.IpRanges != nil && len(v.IpRanges) > 0 {
-			ipr := make([]map[string]string, len(v.IpRanges))
+			var ipr []map[string]string
 			if len(v.IpRanges) > 0 {
+				ipr = make([]map[string]string, len(v.IpRanges))
 				for i, v := range v.IpRanges {
+					ip := make(map[string]string)
 					if v.CidrIp != nil {
-						ipr[i] = map[string]string{
-							"cidr_ip": *v.CidrIp,
-						}
+						ip["cidr_ip"] = *v.CidrIp
+						ipr[i] = ip
 					}
 				}
 			} else {
-				ipr = []map[string]string{
-					map[string]string{
-						"cidr_ip": "",
-					},
-				}
+				ipr = make([]map[string]string, 1)
+				ip := make(map[string]string)
+				ip["cidr_ip"] = ""
+				ipr[0] = ip
 			}
 			ip["ip_ranges"] = ipr
 		}

@@ -113,7 +113,7 @@ resource "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
 		group_description = "Used in the terraform acceptance tests"
 		group_name = "test-%d"
 		vpc_id = "vpc-e9d09d63"
-		tags = {
+		tag = {
 			Name = "tf-acctest"
 			Seed = "%d"
 		}

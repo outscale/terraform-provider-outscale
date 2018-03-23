@@ -96,9 +96,12 @@ func getIPPerms() *schema.Schema {
 				"ip_ranges": {
 					Type:     schema.TypeList,
 					Computed: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
+					Elem:     &schema.Schema{Type: schema.TypeMap},
+				},
+				"prefix_list_ids": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem:     &schema.Schema{Type: schema.TypeMap},
 				},
 				"groups": {
 					Type:     schema.TypeList,
