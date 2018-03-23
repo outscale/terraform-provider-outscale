@@ -90,6 +90,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_keypair":               GetDatasource(fcu, "outscale_keypair")(),
 			"outscale_keypairs":              GetDatasource(fcu, "outscale_keypairs")(),
 			"outscale_vm_state":              GetDatasource(fcu, "outscale_vm_state")(),
+			"outscale_vms_state":             GetDatasource(fcu, "outscale_vms_state")(),
 			"outscale_lin_internet_gateway":  GetDatasource(fcu, "outscale_lin_internet_gateway")(),
 			"outscale_lin_internet_gateways": GetDatasource(fcu, "outscale_lin_internet_gateways")(),
 			"outscale_subnet":                GetDatasource(fcu, "outscale_subnet")(),
