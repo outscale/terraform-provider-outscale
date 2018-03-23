@@ -1,20 +1,20 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_vm_state"
-sidebar_current: "docs-outscale-datasource-vm-state"
+page_title: "OUTSCALE: outscale_vms_state"
+sidebar_current: "docs-outscale-datasource-vms-state"
 description: |-
   Describes the status of one or more instances.
 ---
 
-# outscale_vm_state
+# outscale_vms_state
 
 Describes the status of one or more instances.
 
 ## Example Usage
 
 ```hcl
-data "outscale_vm_state" "state" {
-  instance_id = ["i-5adcfa0f"]
+data "outscale_vms_state" "state" {
+  instance_id = ["i-5adcfa0f", "i-31f8427d"]
 }
 ```
 
@@ -44,12 +44,7 @@ Use the Filter.N parameter to filter the described instances on the following pr
 
 The following attributes are exported:
 
-* `availability_zone` - The Availability Zone in which the instance is located
-* `events_set` - One or more scheduled events associated with the instance.
-* `instance_id` - The ID of the instance.
-* `instance_state` - The state of the instance.
-* `instance_status` - Impaired functionality that stems from issues internal to the instance (for example, impaired reachability).
-* `system_status` - Impaired functionality that stems from issues related to the systems supporting an instance (for example, hardware failures or network connectivity problems).
+* `instance_status_set` - One or more instance status descriptions.
 * `request_id` - The ID of the request.
 
-See detailed information in [Instance Status](http://docs.outscale.com/api_fcu/definitions/InstanceStatus.html#_api_fcu-instancestatus).
+See detailed information in [Instance Status Set](http://docs.outscale.com/api_fcu/definitions/InstanceStatus.html#_api_fcu-instancestatus).
