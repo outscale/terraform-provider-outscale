@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +15,17 @@ import (
 )
 
 func TestAccOutscaleNatService_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var natGateway fcu.NatGateway
 
 	resource.Test(t, resource.TestCase{
@@ -125,8 +138,18 @@ func testAccCheckNatGatewayExists(n string, ng *fcu.NatGateway) resource.TestChe
 }
 
 const testAccNatGatewayConfig = `
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
+resource "outscale_public_ip" "bar" {}
+
 resource "outscale_nat_service" "gateway" {
-    allocation_id = "eipalloc-32e506e8"
-    subnet_id = "subnet-861fbecc"
+    allocation_id = "${outscale_public_ip.bar.id}"
+    subnet_id = "${outscale_subnet.subnet.id}"
 }
 `

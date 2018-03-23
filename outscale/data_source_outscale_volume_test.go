@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -9,6 +11,17 @@ import (
 )
 
 func TestAccOutscaleVolumeDataSource_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -43,7 +56,7 @@ resource "outscale_volume" "example" {
     availability_zone = "eu-west-2a"
     volume_type = "gp2"
     size = 40
-    tags {
+    tag {
         Name = "External Volume"
     }
 }

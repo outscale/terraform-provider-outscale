@@ -19,7 +19,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 	var v fcu.Instance

@@ -19,7 +19,7 @@ func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{

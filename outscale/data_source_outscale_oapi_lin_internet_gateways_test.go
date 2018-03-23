@@ -16,7 +16,7 @@ func TestAccOutscaleOAPILinInternetGatewaysDatasource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 

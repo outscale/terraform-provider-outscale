@@ -96,7 +96,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var one fcu.Address
@@ -320,19 +320,27 @@ resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
 resource "outscale_vm" "foo" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.12"
-  subnet_id  = "subnet-861fbecc"
+  subnet_id  = "${outscale_subnet.subnet.id}"
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.19"
-  subnet_id  = "subnet-861fbecc"
+  subnet_id  = "${outscale_subnet.subnet.id}"
 }
 resource "outscale_public_ip" "bar" {}
 `, r)
@@ -344,19 +352,27 @@ resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
 resource "outscale_vm" "foo" {
  image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.12"
-  subnet_id  = "subnet-861fbecc"
+  subnet_id  = "${outscale_subnet.subnet.id}"
 }
 resource "outscale_vm" "bar" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
   private_ip_address = "10.0.0.19"
-  subnet_id  = "subnet-861fbecc"
+  subnet_id  = "${outscale_subnet.subnet.id}"
 }
 resource "outscale_public_ip" "bar" {}
 `, r)

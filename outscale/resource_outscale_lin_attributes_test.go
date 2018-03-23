@@ -36,9 +36,13 @@ func TestAccOutscaleLinAttr_basic(t *testing.T) {
 }
 
 const testAccOutscaleLinAttrConfig = `
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+
 resource "outscale_lin_attributes" "outscale_lin_attributes" {
 	enable_dns_hostnames = true
-	vpc_id = "vpc-5b79bc69"
-	attribute            = "enableDnsSupport"
+	vpc_id = "${outscale_lin.vpc.id}"
+	attribute = "enableDnsSupport"
 }
 `

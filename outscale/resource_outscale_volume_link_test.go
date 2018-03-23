@@ -82,7 +82,7 @@ resource "outscale_volume" "example" {
   availability_zone = "eu-west-2a"
 	size = 1
 }
-resource "outscale_volume_link" "ebs_att" {
+resource "outscale_volumes_link" "ebs_att" {
   device = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
 	instance_id = "${outscale_vm.web.id}"

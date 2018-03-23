@@ -18,7 +18,7 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -47,10 +47,15 @@ func testAccVMDataSourceConfig(r int) string {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	security_group = ["sg-6ed31f3e"]
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 

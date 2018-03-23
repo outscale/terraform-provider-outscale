@@ -18,7 +18,7 @@ func TestAccDataSourceOutscaleVmState(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -60,24 +60,20 @@ func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
 				vm.Primary.Attributes["instance_id"],
 			)
 		}
-		//
-		// if attr["public_ip"] != eipRs.Primary.Attributes["public_ip"] {
-		// 	return fmt.Errorf(
-		// 		"public_ip is %s; want %s",
-		// 		attr["public_ip"],
-		// 		eipRs.Primary.Attributes["public_ip"],
-		// 	)
-		// }
 
 		return nil
 	}
 }
 
 const testAccDataSourceOutscaleVmStateConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-update"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 
 data "outscale_vm_state" "state" {

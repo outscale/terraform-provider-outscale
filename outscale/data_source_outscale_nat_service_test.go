@@ -18,7 +18,7 @@ func TestAccOutscaleNatServiceDataSource_Instance(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -52,7 +52,22 @@ func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc
 }
 
 const testAccCheckOutscaleNatServiceDataSourceConfig = `
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
+resource "outscale_public_ip" "bar" {}
+
+resource "outscale_nat_service" "gateway" {
+    allocation_id = "${outscale_public_ip.bar.id}"
+    subnet_id = "${outscale_subnet.subnet.id}"
+}
+
 data "outscale_nat_service" "nat" {
-	nat_gateway_id = "nat-08f41400"
+	nat_gateway_id = "${outscale_nat_service.gateway.id}"
 }
 `

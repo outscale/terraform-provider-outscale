@@ -121,7 +121,7 @@ func TestAccOutscaleServer_Windows_Password(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var server fcu.Instance
@@ -156,7 +156,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 
@@ -430,11 +430,16 @@ func testAccCheckOutscaleServerConfig_basic(r int) string {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-	security_group = ["sg-6ed31f3e"]
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
 }`, r)
 }
 
@@ -444,11 +449,16 @@ func testAccCheckOutscaleServerConfig_basic_windows(r int) string {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic_windows" {
 	image_id = "ami-e1b93f29"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-	security_group = ["sg-6ed31f3e"]
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
 }`, r)
 }
 
@@ -458,10 +468,15 @@ func testAccInstanceConfigUpdateVMKey(r int) string {
 	key_name   = "terraform-key-%d"
 }
 
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	security_group = ["sg-6ed31f3e"]
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }`, r)
 }

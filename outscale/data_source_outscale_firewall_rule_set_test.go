@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleSecurityGroup(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
@@ -45,7 +45,7 @@ func TestAccDataSourceOutscaleSecurityGroupPublic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
@@ -95,8 +95,13 @@ func testAccDataSourceOutscaleSecurityGroupCheck(name string) resource.TestCheck
 
 func testAccDataSourceOutscaleSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
+		resource "outscale_lin" "vpc" {
+			cidr_block = "10.0.0.0/16"
+		}
+
+
 	resource "outscale_firewall_rules_set" "test" {
-		vpc_id = "vpc-e9d09d63"
+		vpc_id = "${outscale_lin.vpc.id}"
 		group_description = "Used in the terraform acceptance tests"
 		group_name = "test-%d"
 		tag = {

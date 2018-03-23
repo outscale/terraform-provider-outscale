@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +16,17 @@ import (
 )
 
 func TestAccOutscaleSecurityGroupRule_Egress(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -213,11 +226,15 @@ func testAccCheckOutscaleSecurityGroupRuleAttributes(n string, group *fcu.Securi
 
 func testAccOutscaleSecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
+		resource "outscale_lin" "vpc" {
+			cidr_block = "10.0.0.0/16"
+		}
+
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		vpc_id = "vpc-e9d09d63"
-					tags = {
+		vpc_id = "${outscale_lin.vpc.id}"
+					tag = {
 									Name = "tf-acc-test"
 					}
 	}

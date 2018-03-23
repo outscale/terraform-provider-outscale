@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -17,7 +16,7 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 

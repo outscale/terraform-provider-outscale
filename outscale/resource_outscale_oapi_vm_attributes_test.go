@@ -16,7 +16,7 @@ func TestAccOutscaleOAPIVMAttr_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if !oapi {
 		t.Skip()
 	}
 

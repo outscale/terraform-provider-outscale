@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,6 +14,17 @@ import (
 )
 
 func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -50,6 +63,17 @@ func TestAccOutscaleSecurityGroupRule_Ingress_VPC(t *testing.T) {
 }
 
 func TestAccOutscaleSecurityGroupRule_MultiIngress(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var group fcu.SecurityGroup
 
 	testMultiRuleCount := func(*terraform.State) error {
@@ -185,7 +209,7 @@ func testAccOutscaleSecurityGroupRuleIngressConfig(rInt int) string {
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-					tags {
+					tag {
 									Name = "tf-acc-test"
 					}
 	}

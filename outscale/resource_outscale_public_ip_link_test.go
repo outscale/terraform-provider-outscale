@@ -21,7 +21,7 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var a fcu.Address
@@ -143,11 +143,20 @@ func testAccOutscalePublicIPLinkConfig(r int) string {
 resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
 }
+
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-	subnet_id = "subnet-861fbecc"
+	subnet_id = "${outscale_subnet.subnet.id}"
 }
 
 resource "outscale_public_ip" "bar" {

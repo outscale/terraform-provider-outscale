@@ -19,7 +19,7 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if oapi {
 		t.Skip()
 	}
 	var v fcu.Instance
@@ -64,13 +64,28 @@ func testAccCheckTags(
 }
 
 const testAccCheckInstanceConfigTags = `
-resource "outscale_tag" "outscale_tag" {
-    resource_ids = ["i-9ea2e54f"]
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
 
-    tag {                               # NOK should be tag not tags
-        name7 = "testDataSource7"          # NOK delete doesn't delete tag
-        #name8 = "testDataSource8"          # tfa doesn't display correctly
-    }                                      # tfs displays nothing
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
+resource "outscale_vm" "basic" {
+	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+}
+
+resource "outscale_tag" "outscale_tag" {
+    resource_ids = ["${outscale_vm.basic.id}"]
+
+    tag {                              
+        name7 = "testDataSource7"           
+    }                                      
 }
 
 `

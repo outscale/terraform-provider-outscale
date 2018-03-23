@@ -23,7 +23,7 @@ func TestAccOutscaleOAPILinInternetGateway_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if !oapi {
 		t.Skip()
 	}
 	var conf fcu.InternetGateway

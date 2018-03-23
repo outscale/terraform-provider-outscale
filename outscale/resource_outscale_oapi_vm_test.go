@@ -18,7 +18,6 @@ import (
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -26,7 +25,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -55,8 +54,6 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
-	// var server fcu.Instance
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -64,7 +61,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -150,7 +147,6 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers 
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T,
 	before, after *fcu.Instance) resource.TestCheckFunc {
-
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -158,7 +154,7 @@ func testAccCheckOAPIVMNotRecreated(t *testing.T,
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 	return func(s *terraform.State) error {

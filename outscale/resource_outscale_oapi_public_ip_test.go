@@ -24,7 +24,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -48,6 +48,16 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
 	var conf fcu.Address
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -78,6 +88,16 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
 	var one fcu.Address
 
 	resource.Test(t, resource.TestCase{

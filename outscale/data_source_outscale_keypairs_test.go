@@ -18,7 +18,7 @@ func TestAccOutscaleKeypairsDataSource_Instance(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -52,10 +52,14 @@ func testAccCheckOutscaleKeypairsDataSourceID(n string) resource.TestCheckFunc {
 }
 
 const testAccCheckOutscaleKeypairsDataSourceConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
 data "outscale_keypairs" "nat_ami" {
 	filter {
 		name = "key-name"
-		values = ["TestKey"]
+		values = ["${outscale_keypair.a_key_pair.key_name}"]
 	}
 }
 `

@@ -23,7 +23,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != true {
+	if !oapi {
 		t.Skip()
 	}
 	var conf fcu.Vpc

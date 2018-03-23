@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleSecurityGroups_vpc(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
@@ -39,36 +39,15 @@ func TestAccDataSourceOutscaleSecurityGroups_vpc(t *testing.T) {
 
 func testAccDataSourceOutscaleSecurityGroupsCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
+		_, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		SGRs, ok := s.RootModule().Resources["outscale_firewall_rules_sets.outscale_firewall_rules_sets"]
+		_, ok = s.RootModule().Resources["outscale_firewall_rules_sets.outscale_firewall_rules_sets"]
 		if !ok {
 			return fmt.Errorf("can't find outscale_firewall_rules_sets.outscale_firewall_rules_sets in state")
 		}
-
-		att := SGRs.Primary.Attributes
-		attr := rs.Primary.Attributes
-
-		fmt.Printf("\n\n[DEBUG] TEST DEBUG ATT %s", att)
-		fmt.Printf("\n\n[DEBUG] TEST DEBUG ATTR %s", attr)
-
-		// if attr["ip_permissions"] != "2" {
-		// 	return fmt.Errorf(
-		// 		"ip_permissions is %s; want %s",
-		// 		attr["ip_permissions"],
-		// 		"2",
-		// 	)
-		// }
-		// if attr["ip_permissions_egress"] != "1" {
-		// 	return fmt.Errorf(
-		// 		"ip_permissions is %s; want %s",
-		// 		attr["ip_permissions"],
-		// 		"1",
-		// 	)
-		// }
 
 		return nil
 	}
@@ -109,10 +88,14 @@ resource "outscale_inbound_rule" "outscale_inbound_rule2" {
 	group_id = "${outscale_firewall_rules_sets.outscale_firewall_rules_sets.id}"
 }
 
+resource "outscale_lin" "vpc" {
+			cidr_block = "10.0.0.0/16"
+		}
+
 resource "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
 		group_description = "Used in the terraform acceptance tests"
 		group_name = "test-%d"
-		vpc_id = "vpc-e9d09d63"
+		vpc_id = "${outscale_lin.vpc.id}"
 		tag = {
 			Name = "tf-acctest"
 			Seed = "%d"
