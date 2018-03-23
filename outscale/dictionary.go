@@ -71,6 +71,7 @@ func init() {
 			"outscale_keypair":               datasourceOutscaleKeyPair,
 			"outscale_keypairs":              datasourceOutscaleKeyPairs,
 			"outscale_vm_state":              dataSourceOutscaleVmState,
+			"outscale_vms_state":             dataSourceOutscaleVMSState,
 			"outscale_lin_internet_gateway":  datasourceOutscaleLinInternetGateway,
 			"outscale_lin_internet_gateways": datasourceOutscaleLinInternetGateways,
 			"outscale_subnet":                dataSourceOutscaleSubnet,
