@@ -2102,6 +2102,8 @@ type DescribeInstanceStatusOutput struct {
 	InstanceStatuses []*InstanceStatus `locationName:"instanceStatusSet" locationNameList:"item" type:"list"`
 
 	NextToken *string `locationName:"nextToken" type:"string"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 func (s DescribeInstanceStatusOutput) String() string {
