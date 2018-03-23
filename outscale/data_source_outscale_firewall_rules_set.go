@@ -94,7 +94,14 @@ func getDSIPPerms() *schema.Schema {
 					Type:     schema.TypeList,
 					Computed: true,
 					Elem: &schema.Schema{
-						Type: schema.TypeString,
+						Type: schema.TypeMap,
+					},
+				},
+				"prefix_list_ids": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeMap,
 					},
 				},
 				"groups": {
@@ -202,10 +209,6 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 	ips := make([]map[string]interface{}, len(p))
 
-	// s := &schema.Set{
-	// 	F: resourceOutscaleSecurityGroupRuleHash,
-	// }
-
 	for k, v := range p {
 		ip := make(map[string]interface{})
 		if v.FromPort != nil {
@@ -219,20 +222,40 @@ func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 		}
 
 		if v.IpRanges != nil && len(v.IpRanges) > 0 {
-			ipr := make([]string, len(v.IpRanges))
-			for i, v := range v.IpRanges {
-				if v.CidrIp != nil {
-					ipr[i] = *v.CidrIp
+			ipr := make([]map[string]string, len(v.IpRanges))
+			if len(v.IpRanges) > 0 {
+				for i, v := range v.IpRanges {
+					if v.CidrIp != nil {
+						ipr[i] = map[string]string{
+							"cidr_ip": *v.CidrIp,
+						}
+					}
+				}
+			} else {
+				ipr = []map[string]string{
+					map[string]string{
+						"cidr_ip": "",
+					},
 				}
 			}
 			ip["ip_ranges"] = ipr
 		}
 
 		if v.PrefixListIds != nil && len(v.PrefixListIds) > 0 {
-			prx := make([]string, len(v.PrefixListIds))
-			for i, v := range v.PrefixListIds {
-				if v.PrefixListId != nil {
-					prx[i] = *v.PrefixListId
+			prx := make([]map[string]string, len(v.PrefixListIds))
+			if len(v.PrefixListIds) > 0 {
+				for i, v := range v.PrefixListIds {
+					if v.PrefixListId != nil {
+						prx[i] = map[string]string{
+							"prefix_list_ids": *v.PrefixListId,
+						}
+					}
+				}
+			} else {
+				prx = []map[string]string{
+					map[string]string{
+						"prefix_list_ids": "",
+					},
 				}
 			}
 			ip["prefix_list_ids"] = prx
