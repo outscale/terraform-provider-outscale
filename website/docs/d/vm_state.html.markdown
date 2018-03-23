@@ -6,7 +6,7 @@ description: |-
   Describes the status of one or more instances.
 ---
 
-# outscale_vm
+# outscale_vm_state
 
 Describes the status of one or more instances.
 
