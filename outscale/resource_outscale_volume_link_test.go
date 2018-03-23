@@ -23,13 +23,13 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 				Config: testAccVolumeAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
+						"outscale_volumes_link.ebs_att", "device", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
 					testAccCheckVolumeExists(
 						"outscale_volume.example", &v),
 					testAccCheckVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i, &v),
+						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
 		},
@@ -39,7 +39,7 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		log.Printf("\n\n----- This is never called")
-		if rs.Type != "outscale_volume_link" {
+		if rs.Type != "outscale_volumes_link" {
 			continue
 		}
 	}
