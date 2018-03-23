@@ -48,7 +48,7 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
 	security_group = ["sg-6ed31f3e"]
-	tags = {
+	tag = {
 		Name = "Hellow"
 	}
 }
@@ -58,7 +58,7 @@ resource "outscale_vm" "basic2" {
 	instance_type = "t2.micro"
 	key_name = "terraform-basic"
 	security_group = ["sg-6ed31f3e"]
-	tags = {
+	tag = {
 		Name = "Hellow"
 	}
 }

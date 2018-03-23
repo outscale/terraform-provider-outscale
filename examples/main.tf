@@ -6,7 +6,7 @@ resource "outscale_outbound_rule" "outscale_outbound_rule1" {
     ip_ranges   = ["46.231.147.8/32"]
   }
 
-  group_id = "${outscale_firewall_rules_sets.outscale_firewall_rules_sets.id}"
+  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
 }
 
 resource "outscale_inbound_rule" "outscale_inbound_rule1" {
@@ -17,7 +17,7 @@ resource "outscale_inbound_rule" "outscale_inbound_rule1" {
     ip_ranges   = ["46.231.147.8/32"]
   }
 
-  group_id = "${outscale_firewall_rules_sets.outscale_firewall_rules_sets.id}"
+  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
 }
 
 resource "outscale_inbound_rule" "outscale_inbound_rule2" {
@@ -28,15 +28,15 @@ resource "outscale_inbound_rule" "outscale_inbound_rule2" {
     ip_ranges   = ["46.231.147.8/32"]
   }
 
-  group_id = "${outscale_firewall_rules_sets.outscale_firewall_rules_sets.id}"
+  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
 }
 
-resource "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
+resource "outscale_firewall_rules_set" "outscale_firewall_rules_set" {
   group_description = "Used in the terraform acceptance tests"
   group_name        = "test-1234"
   vpc_id            = "vpc-e9d09d63"
 
-  tags = {
+  tag = {
     Name = "tf-acctest"
     Seed = "1234"
   }
@@ -45,6 +45,6 @@ resource "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
 data "outscale_firewall_rules_sets" "by_filter" {
   filter {
     name   = "group-name"
-    values = ["${outscale_firewall_rules_sets.outscale_firewall_rules_sets.group_name}"]
+    values = ["${outscale_firewall_rules_set.outscale_firewall_rules_set.group_name}"]
   }
 }
