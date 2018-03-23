@@ -129,7 +129,7 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	for _, keyPair := range resp.KeyPairs {
 		if *keyPair.KeyName == d.Id() {
 			d.Set("key_name", keyPair.KeyName)
-			d.Set("fingerprint", keyPair.KeyFingerprint)
+			d.Set("key_fingerprint", keyPair.KeyFingerprint)
 			return nil
 		}
 	}
