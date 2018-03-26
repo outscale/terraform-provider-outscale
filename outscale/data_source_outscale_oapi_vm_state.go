@@ -183,7 +183,8 @@ func flattenedStateOAPIVmState(state *fcu.InstanceState) map[string]interface{} 
 
 func eventsSetOAPIVmState(events []*fcu.InstanceStatusEvent) *schema.Set {
 	s := &schema.Set{
-		F: eventsHashState,
+		//F: eventsHashState,
+		F: eventsOAPIVmStateHash,
 	}
 	for _, v := range events {
 
