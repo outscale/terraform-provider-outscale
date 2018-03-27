@@ -15,9 +15,9 @@ import (
 
 func resourceOutscaleCustomerGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAwsCustomerGatewayCreate,
-		Read:   resourceAwsCustomerGatewayRead,
-		Delete: resourceAwsCustomerGatewayDelete,
+		Create: resourceOutscaleCustomerGatewayCreate,
+		Read:   resourceOutscaleCustomerGatewayRead,
+		Delete: resourceOutscaleCustomerGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -62,7 +62,7 @@ func resourceOutscaleCustomerGateway() *schema.Resource {
 	}
 }
 
-func resourceAwsCustomerGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	ipAddress := d.Get("ip_address").(string)
@@ -223,7 +223,7 @@ func resourceOutscaleCustomerGatewayExists(vpnType, ipAddress string, bgpAsn int
 	return false, nil
 }
 
-func resourceAwsCustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	gatewayFilter := &fcu.Filter{
@@ -284,7 +284,7 @@ func resourceAwsCustomerGatewayRead(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourceAwsCustomerGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var err error
