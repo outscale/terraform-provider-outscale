@@ -288,7 +288,7 @@ func resourceAwsCustomerGatewayDelete(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).FCU
 
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		_, err := conn.VM.DeleteCustomerGateway(&fcu.DeleteCustomerGatewayInput{
 			CustomerGatewayId: aws.String(d.Id()),
 		})
