@@ -51,6 +51,7 @@ func init() {
 			"outscale_lin_internet_gateway": resourceOutscaleOAPILinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
+			"outscale_client_endpoint":      resourceOutscaleOAPICustomerGateway,
 		},
 	}
 	datasources = Dictionary{
