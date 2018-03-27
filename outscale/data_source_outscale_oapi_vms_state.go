@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -18,7 +17,7 @@ import (
 func dataSourceOutscaleOAPIVMSState() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceOutscaleOAPIVMSStateRead,
-		Schema: getVmStateDataSourceSchema(),
+		Schema: getOAPIVMSStateDataSourceSchema(),
 	}
 }
 
@@ -66,56 +65,39 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	filteredStates := resp.InstanceStatuses[:]
+	filteredStates := resp.InstanceStatuses
 
-	var state *fcu.InstanceStatus
 	if len(filteredStates) < 1 {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	if len(filteredStates) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
-	}
-
-	state = filteredStates[0]
-
-	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", *state.InstanceId)
-
-	return statusDescriptionOAPIVMSStateAttributes(d, state)
+	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
 }
 
-func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status *fcu.InstanceStatus) error {
+func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []*fcu.InstanceStatus) error {
 
-	d.SetId(*status.InstanceId)
+	d.SetId(resource.UniqueId())
 
-	d.Set("sub_region_name", status.AvailabilityZone)
+	states := make([]map[string]interface{}, len(status))
 
-	events := eventsSet(status.Events)
-	err := d.Set("maintenance_event", events)
-	if err != nil {
-		return err
+	for k, v := range status {
+		state := make(map[string]interface{})
+
+		state["sub_region_name"] = *v.AvailabilityZone
+
+		events := eventsSetOAPIVMSState(v.Events)
+		state["maintenance_event"] = events
+
+		st := flattenedStateOAPIVMSState(v.InstanceState)
+		state["state"] = st
+
+		st1 := statusSetOAPIVMSState(v.InstanceStatus)
+		state["comment"] = st1
+
+		states[k] = state
 	}
 
-	state := flattenedState(status.InstanceState)
-	err = d.Set("state", state)
-	if err != nil {
-		return err
-	}
-
-	st := statusSet(status.InstanceStatus)
-	err = d.Set("instance_status", st)
-	if err != nil {
-		return err
-	}
-
-	sst := statusSet(status.SystemStatus)
-	err = d.Set("state", sst)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("vm_state_set", states)
 }
 
 func eventsOAPIVMSStateHash(v interface{}) int {
@@ -134,8 +116,8 @@ func statusSetOAPIVMSState(status *fcu.InstanceStatusSummary) *schema.Set {
 	}
 
 	st := map[string]interface{}{
-		"status":  *status.Status,
-		"details": detailsSet(status.Details),
+		"state": *status.Status,
+		"item":  detailsSet(status.Details),
 	}
 	s.Add(st)
 
@@ -152,8 +134,8 @@ func statusHashOAPIVMSState(v interface{}) int {
 func detailsHashOAPIVMSState(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["status"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["details"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["state"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["item"].(string)))
 	return hashcode.String(buf.String())
 }
 
@@ -165,8 +147,8 @@ func detailsSetOAPIVMSState(details []*fcu.InstanceStatusDetails) *schema.Set {
 	for _, v := range details {
 
 		status := map[string]interface{}{
-			"name":   *v.Name,
-			"status": *v.Status,
+			"name":  *v.Name,
+			"state": *v.Status,
 		}
 		s.Add(status)
 	}
@@ -189,7 +171,7 @@ func eventsSetOAPIVMSState(events []*fcu.InstanceStatusEvent) *schema.Set {
 	for _, v := range events {
 
 		status := map[string]interface{}{
-			"code":        *v.Code,
+			"state_code":  *v.Code,
 			"description": *v.Description,
 			"not_before":  v.NotBefore.Format(time.RFC3339),
 			"not_after":   v.NotAfter.Format(time.RFC3339),
@@ -208,17 +190,6 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					// "instance_id": {
-					// 	Type:     schema.TypeSet,
-					// 	Optional: true,
-					// 	Elem:     &schema.Schema{Type: schema.TypeString},
-					// },
-					// "include_all_instances": {
-					// 	Type:     schema.TypeBool,
-					// 	Optional: true,
-					// },
-
-					// Attributes
 					"sub_region_name": { //availability_zone
 						Type:     schema.TypeString,
 						Computed: true,
@@ -296,34 +267,6 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					// "comment": { // system_status
-					// 	Type:     schema.TypeSet,
-					// 	Computed: true,
-					// 	Elem: &schema.Resource{
-					// 		Schema: map[string]*schema.Schema{
-					// 			"item": {
-					// 				Type:     schema.TypeSet,
-					// 				Computed: true,
-					// 				Elem: &schema.Resource{
-					// 					Schema: map[string]*schema.Schema{
-					// 						"name": { // details
-					// 							Type:     schema.TypeString,
-					// 							Computed: true,
-					// 						},
-					// 						"state": { //status
-					// 							Type:     schema.TypeString,
-					// 							Computed: true,
-					// 						},
-					// 					},
-					// 				},
-					// 			},
-					// 			"state": { // status
-					// 				Type:     schema.TypeString,
-					// 				Computed: true,
-					// 			},
-					// 		},
-					// 	},
-					// },
 				},
 			},
 		},
