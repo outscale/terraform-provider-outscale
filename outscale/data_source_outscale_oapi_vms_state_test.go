@@ -72,11 +72,11 @@ resource "outscale_keypair" "a_key_pair" {
 
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
+	type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 
 data "outscale_vm_state" "state" {
-  instance_id = ["${outscale_vm.basic.id}"]
+  vm = ["${outscale_vm.basic.id}"]
 }
 `
