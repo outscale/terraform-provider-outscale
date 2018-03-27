@@ -92,6 +92,8 @@ func init() {
 			"outscale_lin_internet_gateways": datasourceOutscaleOAPILinInternetGateways,
 			"outscale_subnet":                dataSourceOutscaleOAPISubnet,
 			"outscale_subnets":               dataSourceOutscaleOAPISubnets,
+			"outscale_vm_state":              dataSourceOutscaleOAPIVMState,
+			"outscale_vms_state":             dataSourceOutscaleOAPIVMSState,
 		},
 	}
 }
