@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -18,7 +16,7 @@ import (
 func dataSourceOutscaleOAPIVMState() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceOutscaleOAPIVMStateRead,
-		Schema: getVmStateDataSourceSchema(),
+		Schema: getOAPIVMStateDataSourceSchema(),
 	}
 }
 
@@ -104,13 +102,7 @@ func statusDescriptionOAPIVMStateAttributes(d *schema.ResourceData, status *fcu.
 	}
 
 	st := statusSet(status.InstanceStatus)
-	err = d.Set("instance_status", st)
-	if err != nil {
-		return err
-	}
-
-	sst := statusSet(status.SystemStatus)
-	err = d.Set("state", sst)
+	err = d.Set("comment", st)
 	if err != nil {
 		return err
 	}
@@ -118,57 +110,26 @@ func statusDescriptionOAPIVMStateAttributes(d *schema.ResourceData, status *fcu.
 	return nil
 }
 
-func eventsOAPIVMStateHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["code"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["description"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["not_before"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["not_after"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func statusSetOAPIVMState(status *fcu.InstanceStatusSummary) *schema.Set {
-	s := &schema.Set{
-		F: statusHash,
-	}
+func statusSetOAPIVMState(status *fcu.InstanceStatusSummary) map[string]interface{} {
 
 	st := map[string]interface{}{
-		"status":  *status.Status,
-		"details": detailsSet(status.Details),
-	}
-	s.Add(st)
-
-	return s
-}
-
-func statusHashOAPIVMState(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["status"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func detailsHashOAPIVMState(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["status"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["details"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func detailsSetOAPIVMState(details []*fcu.InstanceStatusDetails) *schema.Set {
-	s := &schema.Set{
-		F: detailsHash,
+		"state": *status.Status,
+		"item":  detailsSetOAPIVMState(status.Details),
 	}
 
-	for _, v := range details {
+	return st
+}
+
+func detailsSetOAPIVMState(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(details))
+
+	for k, v := range details {
 
 		status := map[string]interface{}{
-			"name":   *v.Name,
-			"status": *v.Status,
+			"name":  *v.Name,
+			"state": *v.Status,
 		}
-		s.Add(status)
+		s[k] = status
 	}
 
 	return s
@@ -181,61 +142,48 @@ func flattenedStateOAPIVMState(state *fcu.InstanceState) map[string]interface{} 
 	}
 }
 
-func eventsSetOAPIVMState(events []*fcu.InstanceStatusEvent) *schema.Set {
-	s := &schema.Set{
-		//F: eventsHashState,
-		F: eventsOAPIVMStateHash,
-	}
-	for _, v := range events {
+func eventsSetOAPIVMState(events []*fcu.InstanceStatusEvent) []map[string]interface{} {
+
+	s := make([]map[string]interface{}, len(events))
+
+	for k, v := range events {
 
 		status := map[string]interface{}{
-			"code":        *v.Code,
+			"state_code":  *v.Code,
 			"description": *v.Description,
 			"not_before":  v.NotBefore.Format(time.RFC3339),
 			"not_after":   v.NotAfter.Format(time.RFC3339),
 		}
-		s.Add(status)
+		s[k] = status
 	}
 	return s
 }
 
 func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// Arguments
 		"filter": dataSourceFiltersSchema(),
-		// "instance_id": {
-		// 	Type:     schema.TypeSet,
-		// 	Optional: true,
-		// 	Elem:     &schema.Schema{Type: schema.TypeString},
-		// },
-		// "include_all_instances": {
-		// 	Type:     schema.TypeBool,
-		// 	Optional: true,
-		// },
-
-		// Attributes
-		"sub_region_name": { //availability_zone
+		"sub_region_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"maintenance_event": { //events_set
-			Type:     schema.TypeSet,
+		"maintenance_event": {
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"state_code": { //code
+					"state_code": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"description": { //
+					"description": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"not_after": { // not_before
+					"not_after": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"not_before": { // not_after
+					"not_before": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -243,16 +191,16 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 			},
 		},
 
-		"vm_id": { //instance_id
-			Type:     schema.TypeBool,
+		"vm_id": {
+			Type:     schema.TypeString,
 			Optional: true,
 		},
-		"state": { //instance_state
+		"state": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"state_code": { // code
+					"state_code": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -263,13 +211,13 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"comment": { // instance_status
-			Type:     schema.TypeSet,
+		"comment": {
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"item": { //details
-						Type:     schema.TypeSet,
+					"item": {
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -277,48 +225,20 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"state": { //status
+								"state": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
 					},
-					"state": { //state
+					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-		// "comment": { // system_status
-		// 	Type:     schema.TypeSet,
-		// 	Computed: true,
-		// 	Elem: &schema.Resource{
-		// 		Schema: map[string]*schema.Schema{
-		// 			"item": {
-		// 				Type:     schema.TypeSet,
-		// 				Computed: true,
-		// 				Elem: &schema.Resource{
-		// 					Schema: map[string]*schema.Schema{
-		// 						"name": { // details
-		// 							Type:     schema.TypeString,
-		// 							Computed: true,
-		// 						},
-		// 						"state": { //status
-		// 							Type:     schema.TypeString,
-		// 							Computed: true,
-		// 						},
-		// 					},
-		// 				},
-		// 			},
-		// 			"state": { // status
-		// 				Type:     schema.TypeString,
-		// 				Computed: true,
-		// 			},
-		// 		},
-		// 	},
-		// },
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
