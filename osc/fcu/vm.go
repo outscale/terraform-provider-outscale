@@ -68,6 +68,8 @@ type VMService interface {
 	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
 	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
 	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
+	DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error)
+	CreateDhcpOptionsRequest(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1033,6 +1035,51 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 
 	if input == nil {
 		input = &DescribeSubnetsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeDhcpOptions"
+	output := &DeleteDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &DeleteDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) CreateDhcpOptionsRequest(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "CreateDhcpOptions"
+	output := &CreateDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &CreateDhcpOptionsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

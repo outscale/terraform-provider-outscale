@@ -3319,3 +3319,221 @@ func (s DetachInternetGatewayOutput) String() string {
 func (s DetachInternetGatewayOutput) GoString() string {
 	return s.String()
 }
+
+// Contains the parameters for DeleteDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsRequest
+type DeleteDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DeleteDhcpOptionsInput) SetDhcpOptionsId(v string) *DeleteDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteDhcpOptionsInput) SetDryRun(v bool) *DeleteDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsOutput
+type DeleteDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NewDhcpConfiguration
+type NewDhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	Key *string `locationName:"key" type:"string"`
+
+	Values []*string `locationName:"Value" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s NewDhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NewDhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *NewDhcpConfiguration) SetKey(v string) *NewDhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *NewDhcpConfiguration) SetValues(v []*string) *NewDhcpConfiguration {
+	s.Values = v
+	return s
+}
+
+// Contains the parameters for CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsRequest
+type CreateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A DHCP configuration option.
+	//
+	// DhcpConfigurations is a required field
+	DhcpConfigurations []*NewDhcpConfiguration `locationName:"dhcpConfiguration" locationNameList:"item" type:"list" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s CreateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateDhcpOptionsInput"}
+	if s.DhcpConfigurations == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpConfigurations"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *CreateDhcpOptionsInput) SetDhcpConfigurations(v []*NewDhcpConfiguration) *CreateDhcpOptionsInput {
+	s.DhcpConfigurations = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateDhcpOptionsInput) SetDryRun(v bool) *CreateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// Contains the output of CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsResult
+type CreateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A set of DHCP options.
+	DhcpOptions *DhcpOptions `locationName:"dhcpOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *CreateDhcpOptionsOutput) SetDhcpOptions(v *DhcpOptions) *CreateDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
+
+// Describes a set of DHCP options.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpOptions
+type DhcpOptions struct {
+	_ struct{} `type:"structure"`
+
+	// One or more DHCP options in the set.
+	DhcpConfigurations []*DhcpConfiguration `locationName:"dhcpConfigurationSet" locationNameList:"item" type:"list"`
+
+	// The ID of the set of DHCP options.
+	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
+
+	// Any tags assigned to the DHCP options set.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DhcpOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DhcpOptions) GoString() string {
+	return s.String()
+}
+
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *DhcpOptions) SetDhcpConfigurations(v []*DhcpConfiguration) *DhcpOptions {
+	s.DhcpConfigurations = v
+	return s
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DhcpOptions) SetDhcpOptionsId(v string) *DhcpOptions {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DhcpOptions) SetTags(v []*Tag) *DhcpOptions {
+	s.Tags = v
+	return s
+}
