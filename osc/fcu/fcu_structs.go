@@ -3537,3 +3537,98 @@ func (s *DhcpOptions) SetTags(v []*Tag) *DhcpOptions {
 	s.Tags = v
 	return s
 }
+
+// Contains the parameters for DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsRequest
+type DescribeDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of one or more DHCP options sets.
+	//
+	// Default: Describes all your DHCP options sets.
+	DhcpOptionsIds []*string `locationName:"DhcpOptionsId" locationNameList:"DhcpOptionsId" type:"list"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * key - The key for one of the options (for example, domain-name).
+	//
+	//    * value - The value for one of the options.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptionsIds sets the DhcpOptionsIds field's value.
+func (s *DescribeDhcpOptionsInput) SetDhcpOptionsIds(v []*string) *DescribeDhcpOptionsInput {
+	s.DhcpOptionsIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeDhcpOptionsInput) SetDryRun(v bool) *DescribeDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeDhcpOptionsInput) SetFilters(v []*Filter) *DescribeDhcpOptionsInput {
+	s.Filters = v
+	return s
+}
+
+// Contains the output of DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsResult
+type DescribeDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more DHCP options sets.
+	DhcpOptions []*DhcpOptions `locationName:"dhcpOptionsSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *DescribeDhcpOptionsOutput) SetDhcpOptions(v []*DhcpOptions) *DescribeDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
