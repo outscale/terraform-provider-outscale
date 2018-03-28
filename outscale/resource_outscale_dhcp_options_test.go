@@ -22,14 +22,14 @@ func TestAccAWSDHCPOptions_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDHCPOptionsExists("aws_vpc_dhcp_options.foo", &d),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "domain_name", "service.consul"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "domain_name_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "domain_name_servers.1", "10.0.0.2"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "ntp_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "netbios_name_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "netbios_node_type", "2"),
-					resource.TestCheckResourceAttr("aws_vpc_dhcp_options.foo", "tags.Name", "foo-name"),
+					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name", "service.consul"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name_servers.0", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name_servers.1", "10.0.0.2"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "ntp_servers.0", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "netbios_name_servers.0", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "netbios_node_type", "2"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tags.Name", "foo-name"),
 				),
 			},
 		},
@@ -47,8 +47,8 @@ func TestAccOutscaleDHCPOptions_deleteOptions(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDHCPOptionsExists("aws_vpc_dhcp_options.foo", &d),
-					testAccCheckDHCPOptionsDelete("aws_vpc_dhcp_options.foo"),
+					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
+					testAccCheckDHCPOptionsDelete("outscale_dhcp_options.foo"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -60,7 +60,7 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "aws_vpc_dhcp_options" {
+		if rs.Type != "outscale_dhcp_options" {
 			continue
 		}
 
@@ -145,7 +145,7 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 }
 
 const testAccDHCPOptionsConfig = `
-resource "aws_vpc_dhcp_options" "foo" {
+resource "outscale_dhcp_options" "foo" {
 	domain_name = "service.consul"
 	domain_name_servers = ["127.0.0.1", "10.0.0.2"]
 	ntp_servers = ["127.0.0.1"]
