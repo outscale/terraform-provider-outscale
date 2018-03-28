@@ -95,7 +95,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_internet_gateways": GetDatasource(fcu, "outscale_lin_internet_gateways")(),
 			"outscale_subnet":                GetDatasource(fcu, "outscale_subnet")(),
 			"outscale_subnets":               GetDatasource(fcu, "outscale_subnets")(),
-			"outscale_vms_state":             GetDatasource(fcu, "outscale_vms_state")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
