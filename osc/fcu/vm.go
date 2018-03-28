@@ -68,6 +68,10 @@ type VMService interface {
 	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
 	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
 	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
+	CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error)
+	DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error)
+	DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error)
+	UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1033,6 +1037,92 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 
 	if input == nil {
 		input = &DescribeSubnetsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "CreateAccessKey"
+	output := &CreateAccessKeyOutput{}
+
+	if input == nil {
+		input = &CreateAccessKeyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "GetAccessKey"
+	output := &DescribeAccessKeyOutput{}
+
+	if input == nil {
+		input = &DescribeAccessKeyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteAccessKey"
+	output := &DeleteAccessKeyOutput{}
+
+	if input == nil {
+		input = &DeleteAccessKeyInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "UpdateAccessKey"
+	output := &UpdateAccessKeyOutput{}
+
+	if input == nil {
+		input = &UpdateAccessKeyInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
