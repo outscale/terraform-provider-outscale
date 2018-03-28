@@ -72,6 +72,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
 			"outscale_subnet":                    GetResource(fcu, "outscale_subnet")(),
 			"outscale_client_endpoint":           GetResource(fcu, "outscale_client_endpoint")(),
+			"outscale_route":                     GetResource(fcu, "outscale_route")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
