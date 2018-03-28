@@ -35,6 +35,7 @@ func init() {
 			"outscale_vm_attributes":             resourceOutscaleVMAttributes,
 			"outscale_nat_service":               resourceOutscaleNatService,
 			"outscale_subnet":                    resourceOutscaleSubNet,
+			"outscale_dhcp_option":               resourceOutscaleDHCPOption,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
