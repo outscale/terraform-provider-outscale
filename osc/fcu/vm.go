@@ -71,6 +71,10 @@ type VMService interface {
 	DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error)
 	DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (*DeleteCustomerGatewayOutput, error)
 	CreateCustomerGateway(input *CreateCustomerGatewayInput) (*CreateCustomerGatewayOutput, error)
+	CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error)
+	ReplaceRoute(input *ReplaceRouteInput) (*ReplaceRouteOutput, error)
+	DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error)
+	DescribeRouteTables(input *DescribeRouteTablesInput) (*DescribeRouteTablesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
