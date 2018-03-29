@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -12,136 +11,65 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 )
 
-func resourceOutscaleAccessKey() *schema.Resource {
+func resourceOutscaleIamAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleAccessKeyCreate,
-		Read:   resourceOutscaleAccessKeyRead,
-		Delete: resourceOutscaleAccessKeyDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
-		Update: resourceOutscaleAccessKeyUpdate,
+		Create: resourceOutscaleIamAccessKeyCreate,
+		Read:   resourceOutscaleIamAccessKeyRead,
+		Delete: resourceOutscaleIamAccessKeyDelete,
 
 		Schema: map[string]*schema.Schema{
 			"access_key_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				Computed: true,
 			},
-			"secret_access_key": &schema.Schema{
+			"secret_key": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				Computed: true,
 			},
-			"tag": {
-				Type:     schema.TypeMap,
+			"tag":     tagsSchema(),
+			"tag_set": tagsSchemaComputed(),
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"status": &schema.Schema{
+				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
+				Computed: true,
 			},
 			"owner_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"status": {
-				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
 			},
 		},
 	}
 }
 
-//Create AccessKey
-func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClientICU).ICU
+func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).ICU
+	con := meta.(*OutscaleClient).FCU
 
-	request := &icu.CreateAccessKeyInput{
-		AccessKeyId:     aws.String(d.Get("access_key_id").(string)),
-		SecretAccessKey: aws.String(d.Get("secret_access_key").(string)),
-		//aqui faltan las tags pero quiero ver como se declaran dentro del struct
+	request := &icu.CreateAccessKeyInput{}
+	if v, ok := d.GetOk("access_key_id"); ok {
+		request.AccessKeyId = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("secret_access_key"); ok {
+		request.SecretAccessKey = aws.String(v.(string))
+	}
+	if d.IsNewResource() {
+		if err := setTags(con, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
 	}
 	var err error
-	createResp, err := conn.ICU_VM.CreateAccessKey(request)
+	var createResp *icu.CreateAccessKeyOutput
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-	if err != nil {
-		return fmt.Errorf(
-			"Error creating access key for user %s: %s",
-			*request.AccessKeyId,
-			err,
-		)
-	}
-
-	d.SetId(*createResp.AccessKey)
-
-	if createResp.AccessKey == nil || createResp.ResponseMetadata == nil {
-		return fmt.Errorf("[ERR] CreateAccessKey response did not contain a Secret Access Key as expected")
-	}
-	return resourceOutscaleAccessKeyRead(d, meta)
-}
-func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClientICU).ICU
-
-	request := &icu.DescribeAccessKeyInput{
-		AccessKeyId:     aws.String(d.Get("access_key_id").(string)),
-		SecretAccessKey: aws.String(d.Get("secret_access_key").(string)),
-	}
-
-	_, err := conn.ICU_VM.DescribeAccessKey(request)
-	if err != nil {
-		// the user does not exist, so the key can't exist.
-		d.SetId("")
-
-		return fmt.Errorf("Error reading IAM acces key: %s", err)
-	}
-
-	// Guess the key isn't around anymore.
-	d.SetId("")
-	return nil
-}
-
-func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClientICU).ICU
-
-	request := &icu.DeleteAccessKeyInput{
-		AccessKeyId: aws.String(d.Id()),
-	}
-
-	if _, err := conn.ICU_VM.DeleteAccessKey(request); err != nil {
-		fmt.Errorf("Error deleting access key %s: %s", d.Id(), err)
-	}
-
-	return nil
-}
-
-func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClientICU).ICU
-
-	request := &icu.UpdateAccessKeyInput{
-		AccessKeyId: aws.String(d.Get("access_key_id").(string)),
-		Status:      aws.String(d.Get("status").(string)),
-	}
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.ICU_VM.UpdateAccessKey(request)
-
+		createResp, err = conn.API.CreateAccessKey(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -151,8 +79,127 @@ func resourceOutscaleAccessKeyUpdate(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error Updating AccessKey(%s)", err)
+		return err
+	}
+
+	d.SetId(*createResp.AccessKey.AccessKeyId)
+
+	if createResp.AccessKey == nil || createResp.AccessKey.SecretAccessKey == nil {
+		return fmt.Errorf("[ERR] CreateAccessKey response did not contain a Secret Access Key as expected")
+	}
+
+	return resourceOutscaleIamAccessKeyReadResult(d, &icu.AccessKeyMetadata{
+		AccessKeyId: createResp.AccessKey.AccessKeyId,
+		Status:      createResp.AccessKey.Status,
+	})
+}
+
+func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
+	iamconn := meta.(*OutscaleClient).ICU
+
+	request := &icu.ListAccessKeysInput{}
+
+	var err error
+	var getResp *icu.ListAccessKeysOutput
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+		getResp, err = iamconn.API.ListAccessKeys(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") { // XXX TEST ME
+			// the user does not exist, so the key can't exist.
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error reading IAM acces key: %s", err)
+	}
+
+	if getResp.AccessKeyMetadata[0].AccessKeyId != nil {
+		d.SetId(*getResp.AccessKeyMetadata[0].AccessKeyId)
+	}
+	if getResp.AccessKeyMetadata[0].Status != nil {
+		d.Set("status", getResp.AccessKeyMetadata[0].Status)
+	}
+	if getResp.AccessKeyMetadata[0].OwnerId != nil {
+		d.Set("owner_id", getResp.AccessKeyMetadata[0].OwnerId)
+	}
+	if getResp.AccessKeyMetadata[0].SecretAccessKey != nil {
+		d.Set("secret_access_key", getResp.AccessKeyMetadata[0].SecretAccessKey)
+	}
+	if getResp.AccessKeyMetadata[0].Tags != nil {
+		d.Set("tag_set", tagsToMapss(getResp.AccessKeyMetadata[0].Tags))
+	}
+	return nil
+}
+
+func resourceOutscaleIamAccessKeyReadResult(d *schema.ResourceData, key *icu.AccessKeyMetadata) error {
+	d.SetId(*key.AccessKeyId)
+	if err := d.Set("status", key.Status); err != nil {
 		return err
 	}
 	return nil
+}
+
+func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	iamconn := meta.(*OutscaleClient).ICU
+
+	request := &icu.DeleteAccessKeyInput{
+		AccessKeyId: aws.String(d.Id()),
+	}
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+		_, err = iamconn.API.DeleteAccessKey(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error deleting access key %s: %s", d.Id(), err)
+	}
+
+	return nil
+}
+func resourceOutscaleIamAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).ICU
+
+	request := &icu.UpdateAccessKeyInput{}
+	if v, ok := d.GetOk("access_key_id"); ok {
+		request.AccessKeyId = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("status"); ok {
+		request.Status = aws.String(v.(string))
+	}
+
+	var err error
+	var createResp *icu.UpdateAccessKeyOutput
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+		createResp, err = conn.API.UpdateAccessKey(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return resourceOutscaleIamAccessKeyRead(d, meta)
 }

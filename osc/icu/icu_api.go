@@ -8,19 +8,19 @@ import (
 )
 
 //VMOperations defines all the operations needed for FCU VMs
-type ICU_VMOperations struct {
+type ICUOperations struct {
 	client *osc.Client
 }
 
 //VMService all the necessary actions for them VM service
-type ICU_VMService interface {
+type ICUService interface {
 	CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error)
 	DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error)
 	UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error)
-	DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error)
+	ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error)
 }
 
-func (v ICU_VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
+func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "CreateAccessKey"
 	output := &CreateAccessKeyOutput{}
@@ -42,7 +42,7 @@ func (v ICU_VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateA
 
 	return output, nil
 }
-func (v ICU_VMOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
+func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "DeleteAccessKey"
 	output := &DeleteAccessKeyOutput{}
@@ -64,7 +64,7 @@ func (v ICU_VMOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteA
 
 	return output, nil
 }
-func (v ICU_VMOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
+func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "UpdateAccessKey"
 	output := &UpdateAccessKeyOutput{}
@@ -86,13 +86,13 @@ func (v ICU_VMOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateA
 
 	return output, nil
 }
-func (v ICU_VMOperations) DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error) {
+func (v ICUOperations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error) {
 	inURL := "/"
-	endpoint := "GetAccessKey"
-	output := &DescribeAccessKeyOutput{}
+	endpoint := "ListAccessKeys"
+	output := &ListAccessKeysOutput{}
 
 	if input == nil {
-		input = &DescribeAccessKeyInput{}
+		input = &ListAccessKeysInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

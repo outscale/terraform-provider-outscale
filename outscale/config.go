@@ -28,35 +28,20 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	client := &OutscaleClient{
-		FCU: fcu,
-	}
-
-	return client, nil
-}
-func (c *Config) Client_ICU() (*OutscaleClientICU, error) {
-	config := osc.Config{
-		Credentials: &osc.Credentials{
-			AccessKey: c.AccessKeyID,
-			SecretKey: c.SecretKeyID,
-			Region:    c.Region,
-		},
-	}
 	icu, err := icu.NewICUClient(config)
 	if err != nil {
 		return nil, err
 	}
-	clienticu := &OutscaleClientICU{
+	client := &OutscaleClient{
+		FCU: fcu,
 		ICU: icu,
 	}
 
-	return clienticu, nil
+	return client, nil
 }
 
 // OutscaleClient client
 type OutscaleClient struct {
 	FCU *fcu.Client
-}
-type OutscaleClientICU struct {
 	ICU *icu.Client
 }

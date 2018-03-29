@@ -52,7 +52,7 @@ func init() {
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
 		},
 		"icu": ResourceMap{
-			"outscale_access_key": resourceOutscaleAccessKey,
+			"outscale_api_key": resourceOutscaleIamAccessKey,
 		},
 	}
 	datasources = Dictionary{

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -328,6 +329,23 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 
 // tagsToMap turns the list of tag into a map.
 func tagsToMap(ts []*fcu.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	if len(ts) > 0 {
+		for k, t := range ts {
+			tag := make(map[string]string)
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+			result[k] = tag
+		}
+	} else {
+		result = make([]map[string]string, 0)
+	}
+
+	fmt.Printf("[DEBUG] TAG_SET %s", result)
+
+	return result
+}
+func tagsToMapss(ts []*icu.Tag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
