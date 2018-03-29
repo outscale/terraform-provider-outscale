@@ -108,6 +108,8 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("instance_tenancy", resp.Vpcs[0].InstanceTenancy)
 	d.Set("dhcp_options_id", resp.Vpcs[0].DhcpOptionsId)
 	d.Set("request_id", resp.RequesterId)
+	d.Set("state", resp.Vpcs[0].State)
+	d.Set("vpc_id", resp.Vpcs[0].VpcId)
 
 	if err := d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags)); err != nil {
 		return err
