@@ -18,6 +18,9 @@ func resourceOutscaleRouteTableAssociation() *schema.Resource {
 		Read:   resourceOutscaleRouteTableAssociationRead,
 		Update: resourceOutscaleRouteTableAssociationUpdate,
 		Delete: resourceOutscaleRouteTableAssociationDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"subnet_id": &schema.Schema{
