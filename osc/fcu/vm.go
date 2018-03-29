@@ -75,6 +75,13 @@ type VMService interface {
 	ReplaceRoute(input *ReplaceRouteInput) (*ReplaceRouteOutput, error)
 	DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error)
 	DescribeRouteTables(input *DescribeRouteTablesInput) (*DescribeRouteTablesOutput, error)
+	CreateRouteTable(input *CreateRouteTableInput) (*CreateRouteTableOutput, error)
+	DisableVgwRoutePropagation(input *DisableVgwRoutePropagationInput) (*DisableVgwRoutePropagationOutput, error)
+	EnableVgwRoutePropagation(input *EnableVgwRoutePropagationInput) (*EnableVgwRoutePropagationOutput, error)
+	DisassociateRouteTable(input *DisassociateRouteTableInput) (*DisassociateRouteTableOutput, error)
+	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
+	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
+	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
 }
 
 const opRunInstances = "RunInstances"
