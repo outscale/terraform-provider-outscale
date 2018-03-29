@@ -34,6 +34,24 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 func getDHCPOptionSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
+		"dhcp_configuration": {
+			Type:     schema.TypeList,
+			Optional: true,
+			ForceNew: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"value": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+				},
+			},
+		},
 		"dhcp_configuration_set": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -123,10 +141,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 	createOpts := &fcu.CreateDhcpOptionsInput{
 		DhcpConfigurations: []*fcu.NewDhcpConfiguration{
-			setDHCPOption("dhcp-configuration-set"),
-			setDHCPOption("dhcp-options-id"),
-			setDHCPOption("tag-set"),
-			setDHCPOption("request-id"),
+			setDHCPOption("dhcp-configuration"),
 		},
 	}
 
@@ -374,7 +389,7 @@ func findVPCsByDHCPOptionsID(conn *fcu.Client, id string) ([]*fcu.Vpc, error) {
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, err := conn.VM.DescribeVpcs(req)
+		resp, err = conn.VM.DescribeVpcs(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -385,8 +400,7 @@ func findVPCsByDHCPOptionsID(conn *fcu.Client, id string) ([]*fcu.Vpc, error) {
 	})
 
 	if err != nil {
-
-		return fmt.Errorf("InvalidVpcID.NotFound: %s", err)
+		return nil, fmt.Errorf("InvalidVpcID.NotFound: %s", err)
 	}
 
 	// resp, err := conn.VM.DescribeVpcs(req)

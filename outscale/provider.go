@@ -71,7 +71,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_attributes":            GetResource(fcu, "outscale_lin_attributes")(),
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
 			"outscale_subnet":                    GetResource(fcu, "outscale_subnet")(),
-			"outscale_dhcp_options":              GetResource(fcu, "outscale_dhcp_options")(),
+			"outscale_dhcp_option":               GetResource(fcu, "outscale_dhcp_option")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),

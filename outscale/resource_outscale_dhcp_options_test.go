@@ -37,13 +37,6 @@ func TestAccAWSDHCPOptions_basic(t *testing.T) {
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set", "service.consul"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set.key", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set.value_set.value", "10.0.0.2"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_options_id.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tag_set.key", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tag_set.value", "2"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "request_id", "foo-name"),
 				),
 			},
 		},
@@ -89,11 +82,35 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 		}
 
 		// Try to find the resource
-		resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
-			DhcpOptionsIds: []*string{
-				aws.String(rs.Primary.ID),
-			},
+		// resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
+		// 	DhcpOptionsIds: []*string{
+		// 		aws.String(rs.Primary.ID),
+		// 	},
+		// })
+
+		var resp *fcu.DescribeDhcpOptionsOutput
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+			resp, err = conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
+				DhcpOptionsIds: []*string{
+					aws.String(rs.Primary.ID),
+				},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
+
+		if err != nil {
+
+			return fmt.Errorf("Error deleting DHCP Options: %s", err)
+		}
+
 		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidDhcpOptionID.NotFound" {
 			continue
 		}
@@ -144,7 +161,11 @@ func testAccCheckDHCPOptionsExists(n string, d *fcu.DhcpOptions) resource.TestCh
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput)
+			resp, err = conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
+				DhcpOptionsIds: []*string{
+					aws.String(rs.Primary.ID),
+				},
+			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -193,15 +214,7 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 }
 
 const testAccDHCPOptionsConfig = `
-resource "outscale_dhcp_options" "foo" {
-	dhcp_configuration_set {
-	 key = "service.consul"
-	 value_set {
-		 value = ["127.0.0.1"]
-	 }
-	} 
-	tags {
-		Key = "foo-name"
-	}
+resource "outscale_dhcp_option" "outscale_dhcp_option" {
+   count = 1
 }
 `
