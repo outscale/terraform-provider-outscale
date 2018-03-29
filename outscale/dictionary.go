@@ -35,7 +35,6 @@ func init() {
 			"outscale_vm_attributes":             resourceOutscaleVMAttributes,
 			"outscale_nat_service":               resourceOutscaleNatService,
 			"outscale_subnet":                    resourceOutscaleSubNet,
-			"outscale_access_key":                resourceOutscaleAccessKey,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
@@ -51,6 +50,9 @@ func init() {
 			"outscale_lin_internet_gateway": resourceOutscaleOAPILinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
+		},
+		"icu": ResourceMap{
+			"outscale_access_key": resourceOutscaleAccessKey,
 		},
 	}
 	datasources = Dictionary{

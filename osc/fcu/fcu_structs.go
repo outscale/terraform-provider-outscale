@@ -3198,6 +3198,10 @@ func (s AttachInternetGatewayOutput) GoString() string {
 	return s.String()
 }
 
+type DetachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
 type DetachInternetGatewayInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3218,9 +3222,6 @@ type DetachInternetGatewayInput struct {
 	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
 }
 
-type DetachInternetGatewayOutput struct {
-	_ struct{} `type:"structure"`
-}
 type CreateAccessKeyInput struct {
 	_ struct{} `type:"structure"`
 
