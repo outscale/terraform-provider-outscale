@@ -78,7 +78,6 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		SecretAccessKey: aws.String(d.Get("secret_access_key").(string)),
 		//aqui faltan las tags pero quiero ver como se declaran dentro del struct
 	}
-	var res *icu.CreateAccessKeyOutput
 	var err error
 	createResp, err := conn.ICU_VM.CreateAccessKey(request)
 
@@ -105,7 +104,7 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 		SecretAccessKey: aws.String(d.Get("secret_access_key").(string)),
 	}
 
-	getResp, err := conn.ICU_VM.DescribeAccessKey(request)
+	_, err := conn.ICU_VM.DescribeAccessKey(request)
 	if err != nil {
 		// the user does not exist, so the key can't exist.
 		d.SetId("")
@@ -123,6 +122,10 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 
 	request := &icu.DeleteAccessKeyInput{
 		AccessKeyId: aws.String(d.Id()),
+	}
+
+	if _, err := conn.ICU_VM.DeleteAccessKey(request); err != nil {
+		fmt.Errorf("Error deleting access key %s: %s", d.Id(), err)
 	}
 
 	return nil

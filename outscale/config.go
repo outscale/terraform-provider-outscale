@@ -34,7 +34,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	return client, nil
 }
-func (c *Config) Client_ICU() (*OutscaleClient, error) {
+func (c *Config) Client_ICU() (*OutscaleClientICU, error) {
 	config := osc.Config{
 		Credentials: &osc.Credentials{
 			AccessKey: c.AccessKeyID,
@@ -46,11 +46,11 @@ func (c *Config) Client_ICU() (*OutscaleClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	client := &OutscaleClient{
+	clienticu := &OutscaleClientICU{
 		ICU: icu,
 	}
 
-	return client, nil
+	return clienticu, nil
 }
 
 // OutscaleClient client
