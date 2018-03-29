@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -133,17 +134,37 @@ func testAccCheckDHCPOptionsExists(n string, d *fcu.DhcpOptions) resource.TestCh
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
-			DhcpOptionsIds: []*string{
-				aws.String(rs.Primary.ID),
-			},
+		// //	resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
+		// 		DhcpOptionsIds: []*string{
+		// 			aws.String(rs.Primary.ID),
+		// 		},
+		// 	})
+
+		var resp *fcu.DescribeDhcpOptionsOutput
+
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			resp, err = conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
+
 		if err != nil {
-			return err
+
+			return fmt.Errorf("DHCP Options not found: %s", err)
 		}
-		if len(resp.DhcpOptions) == 0 {
-			return fmt.Errorf("DHCP Options not found")
-		}
+
+		// if err != nil {
+		// 	return err
+		// }
+		// if len(resp.DhcpOptions) == 0 {
+		// 	return fmt.Errorf("DHCP Options not found")
+		// }
 
 		*d = *resp.DhcpOptions[0]
 

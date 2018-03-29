@@ -130,9 +130,26 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		},
 	}
 
-	resp, err := conn.VM.CreateDhcpOptions(createOpts)
+	// resp, err := conn.VM.CreateDhcpOptions(createOpts)
+	// if err != nil {
+	// 	return fmt.Errorf("Error creating DHCP Options Set: %s", err)
+	// }
+
+	var resp *fcu.CreateDhcpOptionsOutput
+
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.CreateDhcpOptions(createOpts)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return fmt.Errorf("Error creating DHCP Options Set: %s", err)
+		return fmt.Errorf("Error creating DHCP Options Set: %s, err", err)
 	}
 
 	dos := resp.DhcpOptions
@@ -228,9 +245,29 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
 		log.Printf("[INFO] Deleting DHCP Options ID %s...", d.Id())
-		_, err := conn.VM.DeleteDhcpOptions(&fcu.DeleteDhcpOptionsInput{
-			DhcpOptionsId: aws.String(d.Id()),
+
+		// _, err := conn.VM.DeleteDhcpOptions(&fcu.DeleteDhcpOptionsInput{
+		// 	DhcpOptionsId: aws.String(d.Id()),
+		// })
+
+		//	var resp *fcu.DeleteDhcpOptionsOutput
+
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			_, err = conn.VM.DeleteDhcpOptions(&fcu.DeleteDhcpOptionsInput{
+				DhcpOptionsId: aws.String(d.Id()),
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
+		// if err != nil {
+		// 	return fmt.Errorf("Error creating DHCP Options Set: %s, err", err)
+		// }
 
 		if err == nil {
 			return nil
@@ -333,13 +370,32 @@ func findVPCsByDHCPOptionsID(conn *fcu.Client, id string) ([]*fcu.Vpc, error) {
 		},
 	}
 
-	resp, err := conn.VM.DescribeVpcs(req)
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVpcID.NotFound") {
-			return nil, nil
+	var resp *fcu.DescribeVpcsOutput
+
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		resp, err := conn.VM.DescribeVpcs(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		}
-		return nil, err
+		return nil
+	})
+
+	if err != nil {
+
+		return fmt.Errorf("InvalidVpcID.NotFound: %s", err)
 	}
+
+	// resp, err := conn.VM.DescribeVpcs(req)
+	// if err != nil {
+	// 	if strings.Contains(fmt.Sprint(err), "InvalidVpcID.NotFound") {
+	// 		return nil, nil
+	// 	}
+	// 	return nil, err
+	// }
 
 	return resp.Vpcs, nil
 }
