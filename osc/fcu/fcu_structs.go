@@ -4379,3 +4379,521 @@ func (s *PropagatingVgw) SetGatewayId(v string) *PropagatingVgw {
 	s.GatewayId = &v
 	return s
 }
+
+type CreateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRouteTableInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateRouteTableInput) SetDryRun(v bool) *CreateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateRouteTableInput) SetVpcId(v string) *CreateRouteTableInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of CreateRouteTable.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRouteTableResult
+type CreateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the route table.
+	RouteTable *RouteTable `locationName:"routeTable" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+// SetRouteTable sets the RouteTable field's value.
+func (s *CreateRouteTableOutput) SetRouteTable(v *RouteTable) *CreateRouteTableOutput {
+	s.RouteTable = v
+	return s
+}
+
+type DisableVgwRoutePropagationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the virtual private gateway.
+	//
+	// GatewayId is a required field
+	GatewayId *string `type:"string" required:"true"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DisableVgwRoutePropagationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableVgwRoutePropagationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisableVgwRoutePropagationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisableVgwRoutePropagationInput"}
+	if s.GatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *DisableVgwRoutePropagationInput) SetGatewayId(v string) *DisableVgwRoutePropagationInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *DisableVgwRoutePropagationInput) SetRouteTableId(v string) *DisableVgwRoutePropagationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableVgwRoutePropagationOutput
+type DisableVgwRoutePropagationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DisableVgwRoutePropagationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableVgwRoutePropagationOutput) GoString() string {
+	return s.String()
+}
+
+type EnableVgwRoutePropagationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the virtual private gateway.
+	//
+	// GatewayId is a required field
+	GatewayId *string `type:"string" required:"true"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s EnableVgwRoutePropagationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableVgwRoutePropagationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EnableVgwRoutePropagationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EnableVgwRoutePropagationInput"}
+	if s.GatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *EnableVgwRoutePropagationInput) SetGatewayId(v string) *EnableVgwRoutePropagationInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *EnableVgwRoutePropagationInput) SetRouteTableId(v string) *EnableVgwRoutePropagationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVgwRoutePropagationOutput
+type EnableVgwRoutePropagationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s EnableVgwRoutePropagationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableVgwRoutePropagationOutput) GoString() string {
+	return s.String()
+}
+
+type DisassociateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID representing the current association between the route
+	// table and subnet.
+	//
+	// AssociationId is a required field
+	AssociationId *string `locationName:"associationId" type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DisassociateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisassociateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateRouteTableInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DisassociateRouteTableInput) SetAssociationId(v string) *DisassociateRouteTableInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DisassociateRouteTableInput) SetDryRun(v bool) *DisassociateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateRouteTableOutput
+type DisassociateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DisassociateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisassociateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRouteTableInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteRouteTableInput) SetDryRun(v bool) *DeleteRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *DeleteRouteTableInput) SetRouteTableId(v string) *DeleteRouteTableInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteRouteTableOutput
+type DeleteRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+type AssociateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+
+	// The ID of the subnet.
+	//
+	// SubnetId is a required field
+	SubnetId *string `locationName:"subnetId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateRouteTableInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateRouteTableInput) SetDryRun(v bool) *AssociateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *AssociateRouteTableInput) SetRouteTableId(v string) *AssociateRouteTableInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *AssociateRouteTableInput) SetSubnetId(v string) *AssociateRouteTableInput {
+	s.SubnetId = &v
+	return s
+}
+
+// Contains the output of AssociateRouteTable.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateRouteTableResult
+type AssociateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The route table association ID (needed to disassociate the route table).
+	AssociationId *string `locationName:"associationId" type:"string"`
+}
+
+// String returns the string representation
+func (s AssociateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *AssociateRouteTableOutput) SetAssociationId(v string) *AssociateRouteTableOutput {
+	s.AssociationId = &v
+	return s
+}
+
+type ReplaceRouteTableAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID.
+	//
+	// AssociationId is a required field
+	AssociationId *string `locationName:"associationId" type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the new route table to associate with the subnet.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteTableAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteTableAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplaceRouteTableAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplaceRouteTableAssociationInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *ReplaceRouteTableAssociationInput) SetAssociationId(v string) *ReplaceRouteTableAssociationInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ReplaceRouteTableAssociationInput) SetDryRun(v bool) *ReplaceRouteTableAssociationInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *ReplaceRouteTableAssociationInput) SetRouteTableId(v string) *ReplaceRouteTableAssociationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Contains the output of ReplaceRouteTableAssociation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceRouteTableAssociationResult
+type ReplaceRouteTableAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new association.
+	NewAssociationId *string `locationName:"newAssociationId" type:"string"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteTableAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteTableAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetNewAssociationId sets the NewAssociationId field's value.
+func (s *ReplaceRouteTableAssociationOutput) SetNewAssociationId(v string) *ReplaceRouteTableAssociationOutput {
+	s.NewAssociationId = &v
+	return s
+}
