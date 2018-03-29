@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -10,6 +12,17 @@ import (
 )
 
 func TestAccOutscaleRoute_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var route fcu.Route
 
 	//aws creates a default route
@@ -49,44 +62,18 @@ func TestAccOutscaleRoute_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleRoute_ipv6Support(t *testing.T) {
-	var route fcu.Route
+func TestAccOutscaleRoute_changeCidr(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
 
-	//aws creates a default route
-	testCheck := func(s *terraform.State) error {
-
-		name := "aws_egress_only_internet_gateway.foo"
-		gwres, ok := s.RootModule().Resources[name]
-		if !ok {
-			return fmt.Errorf("Not found: %s\n", name)
-		}
-
-		if *route.EgressOnlyInternetGatewayId != gwres.Primary.ID {
-			return fmt.Errorf("Egress Only Internet Gateway Id (Expected=%s, Actual=%s)\n", gwres.Primary.ID, *route.EgressOnlyInternetGatewayId)
-		}
-
-		return nil
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
 	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleRouteDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleRouteConfigIpv6,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.bar", &route),
-					testCheck,
-				),
-			},
-		},
-	})
-}
+	if oapi {
+		t.Skip()
+	}
 
-func TestAccOutscaleRoute_changeCidr(t *testing.T) {
 	var route fcu.Route
 	var routeTable fcu.RouteTable
 
@@ -158,6 +145,17 @@ func TestAccOutscaleRoute_changeCidr(t *testing.T) {
 }
 
 func TestAccOutscaleRoute_noopdiff(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var route fcu.Route
 	var routeTable fcu.RouteTable
 
@@ -286,29 +284,6 @@ resource "outscale_route" "bar" {
 }
 `)
 
-var testAccOutscaleRouteConfigIpv6 = fmt.Sprintf(`
-resource "outscale_lin" "foo" {
-  cidr_block = "10.1.0.0/16"
-  assign_generated_ipv6_cidr_block = true
-}
-
-resource "aws_egress_only_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-}
-
-resource "outscale_route_table" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-}
-
-resource "outscale_route" "bar" {
-	route_table_id = "${outscale_route_table.foo.id}"
-	destination_ipv6_cidr_block = "::/0"
-	egress_only_gateway_id = "${aws_egress_only_internet_gateway.foo.id}"
-}
-
-
-`)
-
 var testAccOutscaleRouteBasicConfigChangeCidr = fmt.Sprint(`
 resource "outscale_lin" "foo" {
 	cidr_block = "10.1.0.0/16"
@@ -341,11 +316,6 @@ resource "outscale_lin_internet_gateway" "foo" {
 
 resource "outscale_route_table" "foo" {
 	vpc_id = "${outscale_lin.foo.id}"
-
-	route {
-		cidr_block = "10.2.0.0/16"
-		gateway_id = "${outscale_lin_internet_gateway.foo.id}"
-	}
 }
 
 resource "outscale_route" "bar" {
@@ -382,31 +352,32 @@ resource "outscale_vm" "nat" {
 }
 `)
 
-var testAccOutscaleRouteWithVPCEndpoint = fmt.Sprint(`
-resource "outscale_lin" "foo" {
-  cidr_block = "10.1.0.0/16"
-}
+// TODO: missing resource vpc_endpoint to make this test
+// var testAccOutscaleRouteWithVPCEndpoint = fmt.Sprint(`
+// resource "outscale_lin" "foo" {
+//   cidr_block = "10.1.0.0/16"
+// }
 
-resource "outscale_lin_internet_gateway" "foo" {
-  vpc_id = "${outscale_lin.foo.id}"
-}
+// resource "outscale_lin_internet_gateway" "foo" {
+//   vpc_id = "${outscale_lin.foo.id}"
+// }
 
-resource "outscale_route_table" "foo" {
-  vpc_id = "${outscale_lin.foo.id}"
-}
+// resource "outscale_route_table" "foo" {
+//   vpc_id = "${outscale_lin.foo.id}"
+// }
 
-resource "outscale_route" "bar" {
-  route_table_id         = "${outscale_route_table.foo.id}"
-  destination_cidr_block = "10.3.0.0/16"
-  gateway_id             = "${outscale_lin_internet_gateway.foo.id}"
+// resource "outscale_route" "bar" {
+//   route_table_id         = "${outscale_route_table.foo.id}"
+//   destination_cidr_block = "10.3.0.0/16"
+//   gateway_id             = "${outscale_lin_internet_gateway.foo.id}"
 
-  # Forcing endpoint to create before route - without this the crash is a race.
-  depends_on = ["aws_vpc_endpoint.baz"]
-}
+//   # Forcing endpoint to create before route - without this the crash is a race.
+//   depends_on = ["aws_vpc_endpoint.baz"]
+// }
 
-resource "aws_vpc_endpoint" "baz" {
-  vpc_id          = "${outscale_lin.foo.id}"
-  service_name    = "com.amazonaws.us-west-2.s3"
-  route_table_ids = ["${outscale_route_table.foo.id}"]
-}
-`)
+// resource "aws_vpc_endpoint" "baz" {
+//   vpc_id          = "${outscale_lin.foo.id}"
+//   service_name    = "com.amazonaws.us-west-2.s3"
+//   route_table_ids = ["${outscale_route_table.foo.id}"]
+// }
+// `)
