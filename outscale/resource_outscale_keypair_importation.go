@@ -85,7 +85,7 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 			return resource.RetryableError(err)
 		})
 		if err != nil {
-			return fmt.Errorf("Error creating KeyPair: %s", err)
+			return fmt.Errorf("Error creating KeyPairImportation: %s", err)
 		}
 		d.SetId(*resp.KeyName)
 		d.Set("public_key_material", *resp.KeyMaterial)
