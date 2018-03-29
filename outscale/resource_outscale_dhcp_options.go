@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleDHCPOption() *schema.Resource {
@@ -152,7 +153,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 			d.Id(), err)
 	}
 
-	return resourceAwsVpcDhcpOptionsUpdate(d, meta)
+	return resourceOutscaleDHCPOptionRead(d, meta)
 }
 
 func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) error {
@@ -163,28 +164,46 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 		},
 	}
 
-	resp, err := conn.VM.DescribeDhcpOptions(req)
-	if err != nil {
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
+	var resp *fcu.DescribeDhcpOptionsOutput
+
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.DescribeDhcpOptions(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		}
-
-		if ec2err.Code() == "InvalidDhcpOptionID.NotFound" {
-			log.Printf("[WARN] DHCP Options (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
-	}
-
-	if len(resp.DhcpOptions) == 0 {
 		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error describing DHCP Options: %s", err)
 	}
+
+	// resp, err := conn.VM.DescribeDhcpOptions(req)
+	// if err != nil {
+	// 	ec2err, ok := err.(awserr.Error)
+	// 	if !ok {
+	// 		return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
+	// 	}
+
+	// 	if ec2err.Code() == "InvalidDhcpOptionID.NotFound" {
+	// 		log.Printf("[WARN] DHCP Options (%s) not found, removing from state", d.Id())
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
+
+	// 	return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
+	// }
+
+	// if len(resp.DhcpOptions) == 0 {
+	// 	return nil
+	// }
 
 	opts := resp.DhcpOptions[0]
-	d.Set("tags", tagsToMap(opts.Tags))
+	d.Set("tag_set", tagsToMap(opts.Tags))
 
 	for _, cfg := range opts.DhcpConfigurations {
 		tfKey := strings.Replace(*cfg.Key, "-", "_", -1)
@@ -250,4 +269,77 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 			return resource.NonRetryableError(err)
 		}
 	})
+}
+
+func resourceDHCPOptionsStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		DescribeDhcpOpts := &fcu.DescribeDhcpOptionsInput{
+			DhcpOptionsIds: []*string{
+				aws.String(id),
+			},
+		}
+
+		//resp, err := conn.VM.DescribeDhcpOptions(DescribeDhcpOpts)
+
+		var resp *fcu.DescribeDhcpOptionsOutput
+
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			resp, err = conn.VM.DescribeDhcpOptions(DescribeDhcpOpts)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		// if err != nil {
+
+		//     return fmt.Errorf("Error creating NAT Gateway: %s", err)
+		// }
+
+		if err != nil {
+
+			if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionsID.NotFound") {
+				resp = nil
+			} else {
+				log.Printf("Error on DHCPOptionsStateRefresh: %s", err)
+				return nil, "", err
+			}
+		}
+
+		if resp == nil {
+			// Sometimes AWS just has consistency issues and doesn't see
+			// our instance yet. Return an empty state.
+			return nil, "", nil
+		}
+
+		dos := resp.DhcpOptions[0]
+		return dos, "created", nil
+	}
+}
+
+func findVPCsByDHCPOptionsID(conn *fcu.Client, id string) ([]*fcu.Vpc, error) {
+	req := &fcu.DescribeVpcsInput{
+		Filters: []*fcu.Filter{
+			&fcu.Filter{
+				Name: aws.String("dhcp-options-id"),
+				Values: []*string{
+					aws.String(id),
+				},
+			},
+		},
+	}
+
+	resp, err := conn.VM.DescribeVpcs(req)
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidVpcID.NotFound") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return resp.Vpcs, nil
 }

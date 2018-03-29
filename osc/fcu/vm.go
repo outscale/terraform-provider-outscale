@@ -70,6 +70,8 @@ type VMService interface {
 	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
 	DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error)
 	CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error)
+	DescribeDhcpOptions(input *DescribeDhcpOptionsInput) (*DescribeDhcpOptionsOutput, error)
+	AssociateDhcpOptions(input *AssociateDhcpOptionsInput) (*AssociateDhcpOptionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1095,13 +1097,35 @@ func (v VMOperations) CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateD
 	return output, nil
 }
 
-func (v VMOperations) DescribeDhcpOptions(input *DescribeDhcpOptionsInput) *DescribeDhcpOptionsOutput {
+func (v VMOperations) DescribeDhcpOptions(input *DescribeDhcpOptionsInput) (*DescribeDhcpOptionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeDhcpOptions"
 	output := &DescribeDhcpOptionsOutput{}
 
 	if input == nil {
 		input = &DescribeDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AssociateDhcpOptions(input *AssociateDhcpOptionsInput) (*AssociateDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "AssociateDhcpOptions"
+	output := &AssociateDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &AssociateDhcpOptionsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

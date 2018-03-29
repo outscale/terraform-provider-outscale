@@ -2,17 +2,30 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/aws-sdk-go/service/ec2"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func TestAccAWSDHCPOptions_basic(t *testing.T) {
-	var d ec2.DhcpOptions
+	var d fcu.DhcpOptions
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -23,13 +36,13 @@ func TestAccAWSDHCPOptions_basic(t *testing.T) {
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name", "service.consul"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "domain_name_servers.1", "10.0.0.2"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "ntp_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "netbios_name_servers.0", "127.0.0.1"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "netbios_node_type", "2"),
-					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tags.Name", "foo-name"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set", "service.consul"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set.key", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_configuration_set.value_set.value", "10.0.0.2"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "dhcp_options_id.0", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tag_set.key", "127.0.0.1"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "tag_set.value", "2"),
+					resource.TestCheckResourceAttr("outscale_dhcp_options.foo", "request_id", "foo-name"),
 				),
 			},
 		},
@@ -37,7 +50,17 @@ func TestAccAWSDHCPOptions_basic(t *testing.T) {
 }
 
 func TestAccOutscaleDHCPOptions_deleteOptions(t *testing.T) {
-	var d ec2.DhcpOptions
+	var d fcu.DhcpOptions
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -65,7 +88,7 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 		}
 
 		// Try to find the resource
-		resp, err := conn.DescribeDhcpOptions(&ec2.DescribeDhcpOptionsInput{
+		resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
 			DhcpOptionsIds: []*string{
 				aws.String(rs.Primary.ID),
 			},
@@ -73,6 +96,10 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidDhcpOptionID.NotFound" {
 			continue
 		}
+
+		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionID.NotFound") {
+		}
+
 		if err == nil {
 			if len(resp.DhcpOptions) > 0 {
 				return fmt.Errorf("still exists")
@@ -94,7 +121,7 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckDHCPOptionsExists(n string, d *ec2.DhcpOptions) resource.TestCheckFunc {
+func testAccCheckDHCPOptionsExists(n string, d *fcu.DhcpOptions) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -106,7 +133,7 @@ func testAccCheckDHCPOptionsExists(n string, d *ec2.DhcpOptions) resource.TestCh
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		resp, err := conn.DescribeDhcpOptions(&ec2.DescribeDhcpOptionsInput{
+		resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
 			DhcpOptionsIds: []*string{
 				aws.String(rs.Primary.ID),
 			},
@@ -136,7 +163,7 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		_, err := conn.DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{
+		_, err := conn.VM.DeleteDhcpOptions(&fcu.DeleteDhcpOptionsInput{
 			DhcpOptionsId: aws.String(rs.Primary.ID),
 		})
 
@@ -146,13 +173,14 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 
 const testAccDHCPOptionsConfig = `
 resource "outscale_dhcp_options" "foo" {
-	domain_name = "service.consul"
-	domain_name_servers = ["127.0.0.1", "10.0.0.2"]
-	ntp_servers = ["127.0.0.1"]
-	netbios_name_servers = ["127.0.0.1"]
-	netbios_node_type = 2
+	dhcp_configuration_set {
+	 key = "service.consul"
+	 value_set {
+		 value = ["127.0.0.1"]
+	 }
+	} 
 	tags {
-		Name = "foo-name"
+		Key = "foo-name"
 	}
 }
 `

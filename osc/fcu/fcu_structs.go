@@ -3510,6 +3510,40 @@ type DhcpOptions struct {
 	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
+// Describes a DHCP configuration option.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpConfiguration
+type DhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The name of a DHCP option.
+	Key *string `locationName:"key" type:"string"`
+
+	// One or more values for the DHCP option.
+	Values []*AttributeValue `locationName:"valueSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *DhcpConfiguration) SetKey(v string) *DhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *DhcpConfiguration) SetValues(v []*AttributeValue) *DhcpConfiguration {
+	s.Values = v
+	return s
+}
+
 // String returns the string representation
 func (s DhcpOptions) String() string {
 	return awsutil.Prettify(s)
@@ -3631,4 +3665,86 @@ func (s DescribeDhcpOptionsOutput) GoString() string {
 func (s *DescribeDhcpOptionsOutput) SetDhcpOptions(v []*DhcpOptions) *DescribeDhcpOptionsOutput {
 	s.DhcpOptions = v
 	return s
+}
+
+// Contains the parameters for AssociateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsRequest
+type AssociateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set, or default to associate no DHCP options with
+	// the VPC.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *AssociateDhcpOptionsInput) SetDhcpOptionsId(v string) *AssociateDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateDhcpOptionsInput) SetDryRun(v bool) *AssociateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *AssociateDhcpOptionsInput) SetVpcId(v string) *AssociateDhcpOptionsInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsOutput
+type AssociateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateDhcpOptionsOutput) GoString() string {
+	return s.String()
 }
