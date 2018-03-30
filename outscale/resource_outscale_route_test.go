@@ -270,7 +270,6 @@ resource "outscale_lin" "foo" {
 }
 
 resource "outscale_lin_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
 }
 
 resource "outscale_route_table" "foo" {

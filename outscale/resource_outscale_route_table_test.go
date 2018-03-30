@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -31,7 +30,7 @@ func TestAccOutscaleRouteTable_basic(t *testing.T) {
 	var v fcu.RouteTable
 
 	testCheck := func(*terraform.State) error {
-		if len(v.Routes) != 2 {
+		if len(v.Routes) != 1 {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
@@ -43,15 +42,15 @@ func TestAccOutscaleRouteTable_basic(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		if _, ok := routes["10.2.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
+		// if _, ok := routes["10.2.0.0/16"]; !ok {
+		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
+		// }
 
 		return nil
 	}
 
 	testCheckChange := func(*terraform.State) error {
-		if len(v.Routes) != 3 {
+		if len(v.Routes) != 1 {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
@@ -63,12 +62,12 @@ func TestAccOutscaleRouteTable_basic(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		if _, ok := routes["10.3.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
-		if _, ok := routes["10.4.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
+		// if _, ok := routes["10.3.0.0/16"]; !ok {
+		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
+		// }
+		// if _, ok := routes["10.4.0.0/16"]; !ok {
+		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
+		// }
 
 		return nil
 	}
@@ -115,7 +114,7 @@ func TestAccOutscaleRouteTable_instance(t *testing.T) {
 	var v fcu.RouteTable
 
 	testCheck := func(*terraform.State) error {
-		if len(v.Routes) != 2 {
+		if len(v.Routes) != 1 {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
@@ -127,9 +126,9 @@ func TestAccOutscaleRouteTable_instance(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		if _, ok := routes["10.2.0.0/16"]; !ok {
-			return fmt.Errorf("bad routes: %#v", v.Routes)
-		}
+		// if _, ok := routes["10.2.0.0/16"]; !ok {
+		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
+		// }
 
 		return nil
 	}
@@ -179,42 +178,6 @@ func TestAccOutscaleRouteTable_tags(t *testing.T) {
 					testAccCheckTags(&route_table.Tags, "foo", "bar"),
 				),
 			},
-
-			{
-				Config: testAccRouteTableConfigTagsUpdate,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRouteTableExists("outscale_route_table.foo", &route_table),
-					testAccCheckTags(&route_table.Tags, "foo", ""),
-					testAccCheckTags(&route_table.Tags, "bar", "baz"),
-				),
-			},
-		},
-	})
-}
-
-// For GH-13545, Fixes panic on an empty route config block
-func TestAccOutscaleRouteTable_panicEmptyRoute(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_route_table.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckRouteTableDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config:      testAccRouteTableConfigPanicEmptyRoute,
-				ExpectError: regexp.MustCompile("The request must contain the parameter destinationCidrBlock or destinationIpv6CidrBlock"),
-			},
 		},
 	})
 }
@@ -229,12 +192,12 @@ func testAccCheckRouteTableDestroy(s *terraform.State) error {
 
 		var resp *fcu.DescribeRouteTablesOutput
 		var err error
-		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
 				RouteTableIds: []*string{aws.String(rs.Primary.ID)},
 			})
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") || strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
 					return resource.RetryableError(err)
 				}
@@ -254,7 +217,7 @@ func testAccCheckRouteTableDestroy(s *terraform.State) error {
 		}
 
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			return err
+			return nil
 		}
 	}
 
@@ -276,12 +239,12 @@ func testAccCheckRouteTableExists(n string, v *fcu.RouteTable) resource.TestChec
 
 		var resp *fcu.DescribeRouteTablesOutput
 		var err error
-		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
 				RouteTableIds: []*string{aws.String(rs.Primary.ID)},
 			})
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
 					return resource.RetryableError(err)
 				}
@@ -395,7 +358,7 @@ resource "outscale_lin" "foo" {
 }
 
 resource "outscale_lin_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
+	#vpc_id = "${outscale_lin.foo.id}"
 }
 
 resource "outscale_route_table" "foo" {
@@ -409,7 +372,7 @@ resource "outscale_lin" "foo" {
 }
 
 resource "outscale_lin_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
+	#vpc_id = "${outscale_lin.foo.id}"
 }
 
 resource "outscale_route_table" "foo" {
@@ -449,20 +412,6 @@ resource "outscale_route_table" "foo" {
 
 	tag {
 		foo = "bar"
-	}
-}
-`
-
-const testAccRouteTableConfigTagsUpdate = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_route_table" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-
-	tag {
-		bar = "baz"
 	}
 }
 `
@@ -520,14 +469,3 @@ resource "outscale_route_table" "foo" {
 // 	propagating_vgws = ["${aws_vpn_gateway.foo.id}"]
 // }
 // `
-
-// For GH-13545
-const testAccRouteTableConfigPanicEmptyRoute = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.2.0.0/16"
-}
-
-resource "outscale_route_table" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-}
-`

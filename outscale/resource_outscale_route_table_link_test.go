@@ -69,7 +69,7 @@ func testAccCheckRouteTableAssociationDestroy(s *terraform.State) error {
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
 					return resource.RetryableError(err)
 				}
@@ -82,9 +82,9 @@ func testAccCheckRouteTableAssociationDestroy(s *terraform.State) error {
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-				return err
+				return nil
 			}
-			return nil
+			return err
 		}
 
 		rt := resp.RouteTables[0]
@@ -157,10 +157,6 @@ resource "outscale_subnet" "foo" {
 	cidr_block = "10.1.1.0/24"
 }
 
-resource "outscale_lin_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-}
-
 resource "outscale_route_table" "foo" {
 	vpc_id = "${outscale_lin.foo.id}"
 }
@@ -179,10 +175,6 @@ resource "outscale_lin" "foo" {
 resource "outscale_subnet" "foo" {
 	vpc_id = "${outscale_lin.foo.id}"
 	cidr_block = "10.1.1.0/24"
-}
-
-resource "outscale_lin_internet_gateway" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
 }
 
 resource "outscale_route_table" "bar" {
