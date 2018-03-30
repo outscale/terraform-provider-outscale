@@ -162,6 +162,19 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 			d.Id(), err)
 	}
 
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
+	}
+
+	a := make([]interface{}, 0)
+
+	d.Set("tag_set", a)
+	d.Set("route_set", a)
+	d.Set("association_set", a)
+
 	return resourceOutscaleRouteTableRead(d, meta)
 }
 
@@ -270,7 +283,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 
 	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteRouteTable(&fcu.DeleteRouteTableInput{
 			RouteTableId: aws.String(d.Id()),
 		})
@@ -315,7 +328,7 @@ func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) res
 
 		var resp *fcu.DescribeRouteTablesOutput
 		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
 				RouteTableIds: []*string{aws.String(id)},
 			})
