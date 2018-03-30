@@ -36,6 +36,7 @@ func init() {
 			"outscale_nat_service":               resourceOutscaleNatService,
 			"outscale_subnet":                    resourceOutscaleSubNet,
 			"outscale_dhcp_option":               resourceOutscaleDHCPOption,
+			"outscale_client_endpoint":           resourceOutscaleCustomerGateway,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
@@ -51,6 +52,7 @@ func init() {
 			"outscale_lin_internet_gateway": resourceOutscaleOAPILinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
+			"outscale_client_endpoint":      resourceOutscaleOAPICustomerGateway,
 		},
 	}
 	datasources = Dictionary{
