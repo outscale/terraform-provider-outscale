@@ -199,44 +199,47 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("propagating_vgws", propagatingVGWs)
 
-	route := make([]map[string]interface{}, 0, len(rt.Routes))
+	route := make([]map[string]interface{}, len(rt.Routes))
 
-	for k, r := range rt.Routes {
-		if r.GatewayId != nil && *r.GatewayId == "local" {
-			continue
-		}
+	if len(rt.Routes) > 0 {
+		for k, r := range rt.Routes {
+			if r.GatewayId != nil && *r.GatewayId == "local" {
+				continue
+			}
 
-		if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
-			continue
-		}
+			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
+				continue
+			}
 
-		if r.DestinationPrefixListId != nil {
-			continue
-		}
+			if r.DestinationPrefixListId != nil {
+				continue
+			}
 
-		m := make(map[string]interface{})
+			m := make(map[string]interface{})
 
-		if r.DestinationCidrBlock != nil {
-			m["cidr_block"] = *r.DestinationCidrBlock
-		}
-		if r.GatewayId != nil {
-			m["gateway_id"] = *r.GatewayId
-		}
-		if r.NatGatewayId != nil {
-			m["nat_gateway_id"] = *r.NatGatewayId
-		}
-		if r.InstanceId != nil {
-			m["instance_id"] = *r.InstanceId
-		}
-		if r.VpcPeeringConnectionId != nil {
-			m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
-		}
-		if r.NetworkInterfaceId != nil {
-			m["network_interface_id"] = *r.NetworkInterfaceId
-		}
+			if r.DestinationCidrBlock != nil {
+				m["cidr_block"] = *r.DestinationCidrBlock
+			}
+			if r.GatewayId != nil {
+				m["gateway_id"] = *r.GatewayId
+			}
+			if r.NatGatewayId != nil {
+				m["nat_gateway_id"] = *r.NatGatewayId
+			}
+			if r.InstanceId != nil {
+				m["instance_id"] = *r.InstanceId
+			}
+			if r.VpcPeeringConnectionId != nil {
+				m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
+			}
+			if r.NetworkInterfaceId != nil {
+				m["network_interface_id"] = *r.NetworkInterfaceId
+			}
 
-		route[k] = m
+			route[k] = m
+		}
 	}
+
 	d.Set("route", route)
 
 	d.Set("tags", tagsToMap(rt.Tags))
