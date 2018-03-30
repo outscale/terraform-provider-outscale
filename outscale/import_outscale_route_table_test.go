@@ -110,13 +110,7 @@ resource "outscale_subnet" "tf_test_subnet" {
 
 resource "outscale_public_ip" "nat" {}
 
-resource "outscale_lin_internet_gateway" "gw" {
-  vpc_id = "${outscale_lin.default.id}"
-
-  tag {
-    Name = "tf-rt-import-test"
-  }
-}
+resource "outscale_lin_internet_gateway" "gw" {}
 
 variable "private_subnet_cidrs" {
   default = "10.0.0.0/24"
@@ -160,12 +154,6 @@ resource "outscale_lin" "bar" {
   }
 }
 
-resource "outscale_lin_internet_gateway" "ogw" {
-  vpc_id = "${outscale_lin.bar.id}"
-
-  tags {
-    Name = "tf-rt-import-test"
-  }
-}
+resource "outscale_lin_internet_gateway" "ogw" {}
 
 `

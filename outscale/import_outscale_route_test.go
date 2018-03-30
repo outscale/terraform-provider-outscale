@@ -27,7 +27,7 @@ func TestAccOutscaleRoute_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleRouteBasicConfig,
+				Config: testAccOutscaleRouteNoopChange,
 			},
 
 			resource.TestStep{

@@ -28,7 +28,7 @@ func TestAccOutscaleRouteTableLink_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccRouteTableConfig,
+				Config: testAccRouteTableAssociationConfig,
 			},
 
 			resource.TestStep{
