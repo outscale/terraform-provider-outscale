@@ -45,7 +45,8 @@ func testAccCheckTags(
 	ts *[]*fcu.Tag, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		m := tagsToMap(*ts)
-		v, ok := m[0]["key"]
+		k, ok := m[0]["key"]
+		v, ok := m[0]["value"]
 		if value != "" && !ok {
 			return fmt.Errorf("Missing tag: %s", key)
 		} else if value == "" && ok {
@@ -54,6 +55,9 @@ func testAccCheckTags(
 		if value == "" {
 			return nil
 		}
+
+		fmt.Println("KEY =>", key, "K =>", k)
+		fmt.Println("V =>", v, "VALUE =>", value)
 
 		if v != value {
 			return fmt.Errorf("%s: bad value: %s", key, v)
