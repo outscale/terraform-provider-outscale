@@ -157,7 +157,7 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 		_, err = conn.VM.CreateRoute(createOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -292,7 +292,7 @@ func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error
 		_, err = conn.VM.ReplaceRoute(replaceOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -330,7 +330,7 @@ func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error
 			return nil
 		}
 
-		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 			log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
 			return resource.RetryableError(err)
 		}
@@ -360,7 +360,7 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 		res, err = conn.VM.DescribeRouteTables(findOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -413,7 +413,7 @@ func findResourceRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Route,
 		resp, err = conn.VM.DescribeRouteTables(findOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
