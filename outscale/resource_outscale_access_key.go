@@ -88,16 +88,17 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("[ERR] CreateAccessKey response did not contain a Secret Access Key as expected")
 	}
 
-	return resourceOutscaleIamAccessKeyReadResult(d, &icu.AccessKeyMetadata{
-		AccessKeyId: createResp.AccessKey.AccessKeyId,
-		Status:      createResp.AccessKey.Status,
-	})
+	return resourceOutscaleIamAccessKeyRead(d, meta)
 }
 
 func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
 	iamconn := meta.(*OutscaleClient).ICU
 
 	request := &icu.ListAccessKeysInput{}
+
+	if v, ok := d.GetOk("tag"); ok {
+		request.Tags = tagsFromMapICU(v.(map[string]interface{}))
+	}
 
 	var err error
 	var getResp *icu.ListAccessKeysOutput
@@ -113,12 +114,11 @@ func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") { // XXX TEST ME
-			// the user does not exist, so the key can't exist.
+		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error reading IAM acces key: %s", err)
+		return fmt.Errorf("Error reading access key: %s", err)
 	}
 
 	if getResp.AccessKeyMetadata[0].AccessKeyId != nil {
@@ -135,14 +135,6 @@ func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) 
 	}
 	if getResp.AccessKeyMetadata[0].Tags != nil {
 		d.Set("tag_set", tagsToMapss(getResp.AccessKeyMetadata[0].Tags))
-	}
-	return nil
-}
-
-func resourceOutscaleIamAccessKeyReadResult(d *schema.ResourceData, key *icu.AccessKeyMetadata) error {
-	d.SetId(*key.AccessKeyId)
-	if err := d.Set("status", key.Status); err != nil {
-		return err
 	}
 	return nil
 }
@@ -176,11 +168,11 @@ func resourceOutscaleIamAccessKeyUpdate(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).ICU
 
 	request := &icu.UpdateAccessKeyInput{}
-	if v, ok := d.GetOk("access_key_id"); ok {
-		request.AccessKeyId = aws.String(v.(string))
+	if d.HasChange("access_key_id") {
+		request.AccessKeyId = aws.String(d.Get("access_key_id").(string))
 	}
-	if v, ok := d.GetOk("status"); ok {
-		request.Status = aws.String(v.(string))
+	if d.HasChange("status") {
+		request.Status = aws.String(d.Get("status").(string))
 	}
 
 	var err error
