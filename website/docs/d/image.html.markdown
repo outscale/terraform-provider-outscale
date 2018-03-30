@@ -20,19 +20,19 @@ You can also use the Filter.N parameter to filter the OMI on the following prope
 data "outscale_image" "nat_ami" {
 	filter {
 		name = "name"
-		values = ["tf-testing-3273*"]
+		value = ["tf-testing-3273*"]
 	}
 	filter {
 		name = "virtualization-type"
-		values = ["hvm"]
+		value = ["hvm"]
 	}
 	filter {
 		name = "root-device-type"
-		values = ["ebs"]
+		value = ["ebs"]
 	}
 	filter {
 		name = "block-device-mapping.volume-type"
-		values = ["standard"]
+		value = ["standard"]
 	}
 }
 ```
@@ -41,14 +41,13 @@ data "outscale_image" "nat_ami" {
 
 The following arguments are supported:
 
-* `dryRun` - (Optional) If set to true, checks whether you have the required permissions to perform the action.
 * `executable_by` - (Optional) One ID.
 * `filter` - (Optional) One or more filters.
 * `image_id` - (Optional) One OMI ID.
 * `owner_id` - (Optional) The user ID of one OMI. By default, the OMI for which you have launch permissions are described.
 
 
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_api_fcu-action_describeimages_get).
+See detailed information in [Outscale Image](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_api_fcu-action_describeimages_get).
 
 ## Filters
 
@@ -86,7 +85,7 @@ Use the Filter.N parameter to filter the described instances on the following pr
 
 The following attributes are exported:
 
-* `image_set  ` - Information about one OMI.
+* `image_set  ` - Information about the full list of attributes.
 * `requester_id` - The ID of the request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_body_parameter).
+See detailed information in [Describe Image](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_body_parameter).
