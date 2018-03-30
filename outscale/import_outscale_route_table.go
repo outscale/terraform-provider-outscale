@@ -48,7 +48,7 @@ func resourceOutscaleRouteTableImportState(
 
 			// Minimal data for route
 			d := subResource.Data(nil)
-			d.SetType("aws_route")
+			d.SetType("outscale_route")
 			d.Set("route_table_id", id)
 			d.Set("destination_cidr_block", route.DestinationCidrBlock)
 			d.SetId(routeIDHash(d, route))
@@ -67,7 +67,7 @@ func resourceOutscaleRouteTableImportState(
 
 			// Minimal data for route
 			d := subResource.Data(nil)
-			d.SetType("aws_route_table_association")
+			d.SetType("outscale_route_table_link")
 			d.Set("route_table_id", assoc.RouteTableId)
 			d.SetId(*assoc.RouteTableAssociationId)
 			results = append(results, d)
