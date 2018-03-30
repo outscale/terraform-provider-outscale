@@ -58,4 +58,4 @@ The following attributes are exported:
 * `public_ip` The EIP.
 * `request_id` - The ID of the request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Describe Public IP](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
