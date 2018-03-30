@@ -1236,6 +1236,8 @@ type DescribeKeyPairsOutput struct {
 
 	// Information about one or more key pairs.
 	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3263,4 +3265,348 @@ type DescribeAccessKeyOutput struct {
 	_                struct{} `type:"structure"`
 	AccessKey        *string  `locationName:"accessKey" type:"structure"`
 	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+}
+
+type CreateCustomerGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// For devices that support BGP, the customer gateway's BGP ASN.
+	//
+	// Default: 65000
+	//
+	// BgpAsn is a required field
+	BgpAsn *int64 `type:"integer" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The Internet-routable IP address for the customer gateway's outside interface.
+	// The address must be static.
+	//
+	// PublicIp is a required field
+	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+
+	// The type of VPN connection that this customer gateway supports (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
+}
+
+// String returns the string representation
+func (s CreateCustomerGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateCustomerGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateCustomerGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCustomerGatewayInput"}
+	if s.BgpAsn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
+	}
+	if s.PublicIp == nil {
+		invalidParams.Add(request.NewErrParamRequired("PublicIp"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBgpAsn sets the BgpAsn field's value.
+func (s *CreateCustomerGatewayInput) SetBgpAsn(v int64) *CreateCustomerGatewayInput {
+	s.BgpAsn = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateCustomerGatewayInput) SetDryRun(v bool) *CreateCustomerGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *CreateCustomerGatewayInput) SetPublicIp(v string) *CreateCustomerGatewayInput {
+	s.PublicIp = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateCustomerGatewayInput) SetType(v string) *CreateCustomerGatewayInput {
+	s.Type = &v
+	return s
+}
+
+// Contains the output of CreateCustomerGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCustomerGatewayResult
+type CreateCustomerGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the customer gateway.
+	CustomerGateway *CustomerGateway `locationName:"customerGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateCustomerGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateCustomerGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGateway sets the CustomerGateway field's value.
+func (s *CreateCustomerGatewayOutput) SetCustomerGateway(v *CustomerGateway) *CreateCustomerGatewayOutput {
+	s.CustomerGateway = v
+	return s
+}
+
+type CustomerGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The customer gateway's Border Gateway Protocol (BGP) Autonomous System Number
+	// (ASN).
+	BgpAsn *string `locationName:"bgpAsn" type:"string"`
+
+	// The ID of the customer gateway.
+	CustomerGatewayId *string `locationName:"customerGatewayId" type:"string"`
+
+	// The Internet-routable IP address of the customer gateway's outside interface.
+	IpAddress *string `locationName:"ipAddress" type:"string"`
+
+	// The current state of the customer gateway (pending | available | deleting
+	// | deleted).
+	State *string `locationName:"state" type:"string"`
+
+	// Any tags assigned to the customer gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The type of VPN connection the customer gateway supports (ipsec.1).
+	Type *string `locationName:"type" type:"string"`
+}
+
+// String returns the string representation
+func (s CustomerGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CustomerGateway) GoString() string {
+	return s.String()
+}
+
+// SetBgpAsn sets the BgpAsn field's value.
+func (s *CustomerGateway) SetBgpAsn(v string) *CustomerGateway {
+	s.BgpAsn = &v
+	return s
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *CustomerGateway) SetCustomerGatewayId(v string) *CustomerGateway {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *CustomerGateway) SetIpAddress(v string) *CustomerGateway {
+	s.IpAddress = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CustomerGateway) SetState(v string) *CustomerGateway {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CustomerGateway) SetTags(v []*Tag) *CustomerGateway {
+	s.Tags = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CustomerGateway) SetType(v string) *CustomerGateway {
+	s.Type = &v
+	return s
+}
+
+// Contains the parameters for DeleteCustomerGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGatewayRequest
+type DeleteCustomerGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the customer gateway.
+	//
+	// CustomerGatewayId is a required field
+	CustomerGatewayId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DeleteCustomerGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteCustomerGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteCustomerGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCustomerGatewayInput"}
+	if s.CustomerGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomerGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *DeleteCustomerGatewayInput) SetCustomerGatewayId(v string) *DeleteCustomerGatewayInput {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteCustomerGatewayInput) SetDryRun(v bool) *DeleteCustomerGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGatewayOutput
+type DeleteCustomerGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteCustomerGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteCustomerGatewayOutput) GoString() string {
+	return s.String()
+}
+
+type DescribeCustomerGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more customer gateway IDs.
+	//
+	// Default: Describes all your customer gateways.
+	CustomerGatewayIds []*string `locationName:"CustomerGatewayId" locationNameList:"CustomerGatewayId" type:"list"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * bgp-asn - The customer gateway's Border Gateway Protocol (BGP) Autonomous
+	//    System Number (ASN).
+	//
+	//    * customer-gateway-id - The ID of the customer gateway.
+	//
+	//    * ip-address - The IP address of the customer gateway's Internet-routable
+	//    external interface.
+	//
+	//    * state - The state of the customer gateway (pending | available | deleting
+	//    | deleted).
+	//
+	//    * type - The type of customer gateway. Currently, the only supported type
+	//    is ipsec.1.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeCustomerGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeCustomerGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGatewayIds sets the CustomerGatewayIds field's value.
+func (s *DescribeCustomerGatewaysInput) SetCustomerGatewayIds(v []*string) *DescribeCustomerGatewaysInput {
+	s.CustomerGatewayIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeCustomerGatewaysInput) SetDryRun(v bool) *DescribeCustomerGatewaysInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeCustomerGatewaysInput) SetFilters(v []*Filter) *DescribeCustomerGatewaysInput {
+	s.Filters = v
+	return s
+}
+
+// Contains the output of DescribeCustomerGateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCustomerGatewaysResult
+type DescribeCustomerGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more customer gateways.
+	CustomerGateways []*CustomerGateway `locationName:"customerGatewaySet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeCustomerGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeCustomerGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGateways sets the CustomerGateways field's value.
+func (s *DescribeCustomerGatewaysOutput) SetCustomerGateways(v []*CustomerGateway) *DescribeCustomerGatewaysOutput {
+	s.CustomerGateways = v
+	return s
 }
