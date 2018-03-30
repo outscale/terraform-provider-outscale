@@ -1055,7 +1055,6 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 	return output, nil
 }
 
-<<<<<<< HEAD
 func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeDhcpOptions"
@@ -1107,7 +1106,7 @@ func (v VMOperations) CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateD
 
 	if input == nil {
 		input = &CreateDhcpOptionsInput{}
-}
+	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
@@ -1173,7 +1172,7 @@ func (v VMOperations) AssociateDhcpOptions(input *AssociateDhcpOptionsInput) (*A
 
 	if input == nil {
 		input = &AssociateDhcpOptionsInput{}
-}
+	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {

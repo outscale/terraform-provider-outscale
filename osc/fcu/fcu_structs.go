@@ -3369,6 +3369,14 @@ type CreateCustomerGatewayInput struct {
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// PublicIp is a required field
+	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+
+	// The type of VPN connection that this customer gateway supports (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
 }
 
 // GoString returns the string representation
@@ -3395,12 +3403,6 @@ func (s *CreateCustomerGatewayInput) Validate() error {
 	if s.BgpAsn == nil {
 		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
 	}
-	if s.PublicIp == nil {
-		invalidParams.Add(request.NewErrParamRequired("PublicIp"))
-	}
-	if s.Type == nil {
-		invalidParams.Add(request.NewErrParamRequired("Type"))
-	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -3417,12 +3419,6 @@ func (s *DeleteDhcpOptionsInput) SetDhcpOptionsId(v string) *DeleteDhcpOptionsIn
 // SetBgpAsn sets the BgpAsn field's value.
 func (s *CreateCustomerGatewayInput) SetBgpAsn(v int64) *CreateCustomerGatewayInput {
 	s.BgpAsn = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DeleteDhcpOptionsInput) SetDryRun(v bool) *DeleteDhcpOptionsInput {
-	s.DryRun = &v
 	return s
 }
 
