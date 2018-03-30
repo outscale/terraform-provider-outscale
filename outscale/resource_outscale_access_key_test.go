@@ -5,10 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"time"
-
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
@@ -16,7 +13,6 @@ import (
 
 func TestAccOutscaleAccessKey_basic(t *testing.T) {
 	var conf icu.AccessKeyMetadata
-	rName := fmt.Sprintf("test-user-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -24,11 +20,11 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleAccessKeyConfig(rName),
+				Config: testAccOutscaleAccessKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleAccessKeyExists("outscale_api_key.a_key", &conf),
 					testAccCheckOutscaleAccessKeyAttributes(&conf),
-					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_key_id"),
+					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_key"),
 				),
 			},
 		},
@@ -44,19 +40,8 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-
-		var err error
-		var resp *icu.ListAccessKeysOutput
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			resp, err = iamconn.API.ListAccessKeys(&icu.ListAccessKeysInput{})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
+		resp, err := iamconn.API.ListAccessKeys(&icu.ListAccessKeysInput{
+			UserName: aws.String(rs.Primary.ID),
 		})
 		if err == nil {
 			if len(resp.AccessKeyMetadata) > 0 {
@@ -65,12 +50,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		// Verify the error is what we want
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return err
-		}
-		if ec2err.Code() != "NoSuchEntity" {
+		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
 			return err
 		}
 	}
@@ -90,27 +70,13 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 		}
 
 		iamconn := testAccProvider.Meta().(*OutscaleClient).ICU
-		name := rs.Primary.Attributes["access_key_id"]
 
-		var err error
-		var resp *icu.ListAccessKeysOutput
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			resp, err = iamconn.API.ListAccessKeys(&icu.ListAccessKeysInput{})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
+		resp, err := iamconn.API.ListAccessKeys(nil)
 		if err != nil {
 			return err
 		}
 
-		if len(resp.AccessKeyMetadata) != 1 ||
-			*resp.AccessKeyMetadata[0].AccessKeyId != name {
+		if len(resp.AccessKeyMetadata) != 1 {
 			return fmt.Errorf("User not found not found")
 		}
 
@@ -122,7 +88,6 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 
 func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		if *accessKeyMetadata.Status != "Active" {
 			return fmt.Errorf("Bad status: %s", *accessKeyMetadata.Status)
 		}
@@ -131,8 +96,6 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 	}
 }
 
-func testAccOutscaleAccessKeyConfig(rName string) string {
-	return fmt.Sprint(`
+const testAccOutscaleAccessKeyConfig = `
 resource "outscale_api_key" "a_key" {}
-`)
-}
+`
