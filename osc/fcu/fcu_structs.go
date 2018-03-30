@@ -1236,6 +1236,8 @@ type DescribeKeyPairsOutput struct {
 
 	// Information about one or more key pairs.
 	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation

@@ -13,14 +13,11 @@ Describes your keypair.
 ## Example Usage
 
 ```hcl
-resource "outscale_key_pair" "outscale_keypair" {
+resource "outscale_keypair" "outscale_keypair" {
     count = 1
 
     key_name = "keyname_test_"
 }
-
-
-
 ```
 
 ## Argument Reference
