@@ -139,16 +139,24 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
-	createOpts := &fcu.CreateDhcpOptionsInput{
-		DhcpConfigurations: []*fcu.NewDhcpConfiguration{
-			setDHCPOption("dhcp-configuration"),
-		},
+	var createOpts *fcu.CreateDhcpOptionsInput
+
+	if v := setDHCPOption("dhcp-configuration"); v != nil {
+
+		fmt.Printf("[DEBUG] INPUT %s", v)
+
+		createOpts = &fcu.CreateDhcpOptionsInput{
+			DhcpConfigurations: []*fcu.NewDhcpConfiguration{
+				v,
+			},
+		}
+	} else {
+		createOpts = &fcu.CreateDhcpOptionsInput{
+			DhcpConfigurations: []*fcu.NewDhcpConfiguration{},
+		}
 	}
 
-	// resp, err := conn.VM.CreateDhcpOptions(createOpts)
-	// if err != nil {
-	// 	return fmt.Errorf("Error creating DHCP Options Set: %s", err)
-	// }
+	fmt.Printf("[DEBUG] VALUE => %s", createOpts)
 
 	var resp *fcu.CreateDhcpOptionsOutput
 
@@ -164,7 +172,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating DHCP Options Set: %s, err", err)
+		return fmt.Errorf("Error creating DHCP Options Set: %s", err)
 	}
 
 	dos := resp.DhcpOptions

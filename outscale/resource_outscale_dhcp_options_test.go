@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -36,7 +35,7 @@ func TestAccAWSDHCPOptions_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
+					testAccCheckDHCPOptionsExists("outscale_dhcp_option.foo", &d),
 				),
 			},
 		},
@@ -64,8 +63,8 @@ func TestAccOutscaleDHCPOptions_deleteOptions(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDHCPOptionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
-					testAccCheckDHCPOptionsDelete("outscale_dhcp_options.foo"),
+					testAccCheckDHCPOptionsExists("outscale_dhcp_option.foo", &d),
+					testAccCheckDHCPOptionsDelete("outscale_dhcp_option.foo"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -77,7 +76,7 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_dhcp_options" {
+		if rs.Type != "outscale_dhcp_option" {
 			continue
 		}
 
@@ -111,11 +110,8 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 			return fmt.Errorf("Error deleting DHCP Options: %s", err)
 		}
 
-		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidDhcpOptionID.NotFound" {
-			continue
-		}
-
 		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionID.NotFound") {
+			continue
 		}
 
 		if err == nil {
@@ -126,13 +122,8 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		// Verify the error is what we want
-		ec2err, ok := err.(awserr.Error)
-		if !ok {
-			return err
-		}
-		if ec2err.Code() != "InvalidDhcpOptionsID.NotFound" {
-			return err
+		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionsID.NotFound") {
+			return nil
 		}
 	}
 
@@ -214,7 +205,5 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 }
 
 const testAccDHCPOptionsConfig = `
-resource "outscale_dhcp_option" "outscale_dhcp_option" {
-   count = 1
-}
+resource "outscale_dhcp_option" "outscale_dhcp_option" {}
 `
