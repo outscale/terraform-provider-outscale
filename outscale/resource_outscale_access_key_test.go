@@ -49,7 +49,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		var resp *icu.ListAccessKeysOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			resp, err = iamconn.API.ListAccessKeys(&icu.ListAccessKeysInput{})
+			resp, err = iamconn.ICU.ListAccessKeys(&icu.ListAccessKeysInput{})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -96,7 +96,7 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 		var resp *icu.ListAccessKeysOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			resp, err = iamconn.API.ListAccessKeys(&icu.ListAccessKeysInput{})
+			resp, err = iamconn.ICU.ListAccessKeys(&icu.ListAccessKeysInput{})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
