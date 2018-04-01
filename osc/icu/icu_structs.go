@@ -340,6 +340,14 @@ type ListAccessKeysInput struct {
 	// a string of characters consisting of upper and lowercase alphanumeric characters
 	// with no spaces. You can also include any of the following characters: _+=,.@-
 	UserName *string `min:"1" type:"string"`
+
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListAccessKeysInput) SetTags(v []*Tag) *ListAccessKeysInput {
+	s.Tags = v
+	return s
 }
 
 // String returns the string representation

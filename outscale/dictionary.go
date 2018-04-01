@@ -35,6 +35,10 @@ func init() {
 			"outscale_vm_attributes":             resourceOutscaleVMAttributes,
 			"outscale_nat_service":               resourceOutscaleNatService,
 			"outscale_subnet":                    resourceOutscaleSubNet,
+			"outscale_client_endpoint":           resourceOutscaleCustomerGateway,
+			"outscale_route":                     resourceOutscaleRoute,
+			"outscale_route_table":               resourceOutscaleRouteTable,
+			"outscale_route_table_link":          resourceOutscaleRouteTableAssociation,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
@@ -50,6 +54,7 @@ func init() {
 			"outscale_lin_internet_gateway": resourceOutscaleOAPILinInternetGateway,
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
+			"outscale_client_endpoint":      resourceOutscaleOAPICustomerGateway,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
