@@ -49,8 +49,8 @@ func resourceOutscaleIamAccessKey() *schema.Resource {
 }
 
 func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).ICU
-	con := meta.(*OutscaleClient).FCU
+	icu_client := meta.(*OutscaleClient).ICU
+	fcu_client := meta.(*OutscaleClient).FCU
 
 	request := &icu.CreateAccessKeyInput{}
 	if v, ok := d.GetOk("access_key_id"); ok {
@@ -60,7 +60,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		request.SecretAccessKey = aws.String(v.(string))
 	}
 	if d.IsNewResource() {
-		if err := setTags(con, d); err != nil {
+		if err := setTags(fcu_client, d); err != nil {
 			return err
 		}
 		d.SetPartial("tag_set")
@@ -69,7 +69,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 	var createResp *icu.CreateAccessKeyOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		createResp, err = conn.API.CreateAccessKey(request)
+		createResp, err = icu_client.ICU.CreateAccessKey(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -95,7 +95,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
-	iamconn := meta.(*OutscaleClient).ICU
+	icu_client := meta.(*OutscaleClient).ICU
 
 	request := &icu.ListAccessKeysInput{}
 
@@ -103,7 +103,7 @@ func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) 
 	var getResp *icu.ListAccessKeysOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		getResp, err = iamconn.API.ListAccessKeys(request)
+		getResp, err = icu_client.ICU.ListAccessKeys(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -148,7 +148,7 @@ func resourceOutscaleIamAccessKeyReadResult(d *schema.ResourceData, key *icu.Acc
 }
 
 func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
-	iamconn := meta.(*OutscaleClient).ICU
+	icu_client := meta.(*OutscaleClient).ICU
 
 	request := &icu.DeleteAccessKeyInput{
 		AccessKeyId: aws.String(d.Id()),
@@ -156,7 +156,7 @@ func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		_, err = iamconn.API.DeleteAccessKey(request)
+		_, err = icu_client.ICU.DeleteAccessKey(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -173,7 +173,7 @@ func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}
 	return nil
 }
 func resourceOutscaleIamAccessKeyUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).ICU
+	icu_client := meta.(*OutscaleClient).ICU
 
 	request := &icu.UpdateAccessKeyInput{}
 	if v, ok := d.GetOk("access_key_id"); ok {
@@ -187,7 +187,7 @@ func resourceOutscaleIamAccessKeyUpdate(d *schema.ResourceData, meta interface{}
 	var createResp *icu.UpdateAccessKeyOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		createResp, err = conn.API.UpdateAccessKey(request)
+		createResp, err = icu_client.ICU.UpdateAccessKey(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
