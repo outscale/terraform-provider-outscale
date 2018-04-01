@@ -31,7 +31,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 }
 
 func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
-	iamconn := testAccProvider.Meta().(*OutscaleClient).ICU
+	client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_key" {
@@ -39,7 +39,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-		resp, err := iamconn.API.ListAccessKeys(nil)
+		resp, err := client_icu.ICU.ListAccessKeys(nil)
 		if err == nil {
 			if len(resp.AccessKeyMetadata) > 0 {
 				return fmt.Errorf("still exist.")
@@ -66,9 +66,9 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 			return fmt.Errorf("No Role name is set")
 		}
 
-		iamconn := testAccProvider.Meta().(*OutscaleClient).ICU
+		client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
 
-		resp, err := iamconn.API.ListAccessKeys(nil)
+		resp, err := client_icu.ICU.ListAccessKeys(nil)
 		if err != nil {
 			return err
 		}
