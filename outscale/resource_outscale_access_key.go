@@ -16,7 +16,7 @@ func resourceOutscaleIamAccessKey() *schema.Resource {
 		Create: resourceOutscaleIamAccessKeyCreate,
 		Read:   resourceOutscaleIamAccessKeyRead,
 		Delete: resourceOutscaleIamAccessKeyDelete,
-
+		Update: resourceOutscaleIamAccessKeyUpdate,
 		Schema: map[string]*schema.Schema{
 			"access_key_id": &schema.Schema{
 				Type:     schema.TypeString,
