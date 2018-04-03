@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_firewall_rules_set"
-sidebar_current: "docs-outscale-datasource-firewall_rules_set"
+page_title: "OUTSCALE: outscale_firewall_rules_sets"
+sidebar_current: "docs-outscale-datasource-firewall_rules_sets"
 description: |-
   Describes one or more security groups.
 ---
 
-# outscale_firewall_rules_set
+# outscale_firewall_rules_sets
 
 	Describes one or more security groups. You can specify either the name of the security groups or their IDs.
 
@@ -55,6 +55,7 @@ You can use the Filter.N parameter to filter the security groups on the followin
 
 ## Attributes Reference
 
+* `security_group_info` - Contains the following Attibutes:
 * `group_description` - 	A description of the security group.	false	string
 * `group_id` - 	The ID of the security group.	false	string
 * `group_name` - 	The name of the security group.	false	string
@@ -64,4 +65,4 @@ You can use the Filter.N parameter to filter the security groups on the followin
 * `tag_set` - 	One or more tags associated with the security group.	false	Tag
 * `vpc_id` - 	The ID of the VPC for the security group.	false	string
 
-See detailed information in [Describe Firewall Rules Sets](http://docs.outscale.com/api_fcu/operations/Action_DeleteSecurityGroup_get.html#_api_fcu-action_deletesecuritygroup_get).
+See detailed information in [Describe Firewall Rules Sets](http://docs.outscale.com/api_fcu/operations/Action_DescribeSecurityGroups_get.html#_api_fcu-action_describesecuritygroups_get).
