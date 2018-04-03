@@ -20,7 +20,7 @@ func dataSourceOutscaleVpcs() *schema.Resource {
 			"vpc_id": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     schema.Schema{Type: schema.TypeString},
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"vpc_set": {
 				Type:     schema.TypeList,
@@ -127,6 +127,7 @@ func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		vpc_set[i] = vpc
 	}
 
+	d.Set("vpc_set", vpc_set)
 	d.Set("request_id", resp.RequesterId)
 
 	return nil
