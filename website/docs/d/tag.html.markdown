@@ -24,7 +24,7 @@ resource "outscale_vm" "basic" {
 data "outscale_tag" "web" {
 	filter {
     name = "resource-id"
-    values = ["${outscale_vm.basic.id}"]
+    value = ["${outscale_vm.basic.id}"]
 	}
 }
 ```
