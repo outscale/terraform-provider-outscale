@@ -65,6 +65,13 @@ func resourceOutscaleLinCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*resp.Vpc.VpcId)
 
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
+	}
+
 	return resourceOutscaleLinRead(d, meta)
 }
 
@@ -111,7 +118,7 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("state", resp.Vpcs[0].State)
 	d.Set("vpc_id", resp.Vpcs[0].VpcId)
 
-	if err := d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags)); err != nil {
+	if err := d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags)); err != nil {
 		return err
 	}
 
@@ -179,6 +186,7 @@ func getLinSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": dataSourceTagsSchema(),
+		"tag_set": tagsSchemaComputed(),
+		"tag":     tagsSchema(),
 	}
 }
