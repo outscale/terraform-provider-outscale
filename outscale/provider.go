@@ -102,6 +102,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin":                   GetDatasource(fcu, "outscale_lin")(),
 			"outscale_lins":                  GetDatasource(fcu, "outscale_lins")(),
 			"outscale_lin_attributes":        GetDatasource(fcu, "outscale_lin_attributes")(),
+			"outscale_client_endpoint":       GetDatasource(fcu, "outscale_client_endpoint")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

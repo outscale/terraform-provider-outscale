@@ -84,6 +84,7 @@ func init() {
 			"outscale_lin":                   dataSourceOutscaleVpc,
 			"outscale_lins":                  dataSourceOutscaleVpcs,
 			"outscale_lin_attributes":        dataSourceOutscaleVpcAttr,
+			"outscale_client_endpoint":       dataSourceOutscaleCustomerGateway,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
