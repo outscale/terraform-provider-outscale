@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_volume"
-sidebar_current: "docs-outscale-datasource-volume"
+page_title: "OUTSCALE: outscale_volumes"
+sidebar_current: "docs-outscale-datasource-volumes"
 description: |-
   Describes one or more specified Block Storage Unit (BSU) volume..
 ---
@@ -13,18 +13,22 @@ description: |-
 ## Example Usage
 
 ```hcl
-resource "outscale_volume" "example" {
+resource "outscale_volume" "external1" {
     availability_zone = "eu-west-2a"
     volume_type = "gp2"
-    size = 40
+    size = 10
     tags {
-        Name = "External Volume"
+        Name = "External Volume 1"
     }
 }
-data "outscale_volume" "ebs_volume" {
+data "outscale_volumes" "ebs_volume" {
     filter {
-		name = "volume-id"
-		values = ["${outscale_volume.example.id}"]
+	name = "size"
+	values = ["${outscale_volume.external1.size}"]
+    }
+    filter {
+	name = "volume-type"
+	values = ["${outscale_volume.external1.volume_type}"]
     }
 }
 ```
@@ -33,9 +37,9 @@ data "outscale_volume" "ebs_volume" {
 
 The following arguments are supported:
 
-* `volume_id` - The ID of the volume.
+* `volume_id` - One or more Volume IDs.
 
-See detailed information in [Outscale Volume](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale Volumes](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Filters
 
@@ -71,6 +75,5 @@ The following attributes are exported:
 * `tag_set` - One or more tags associated with the volume.
 * `volume_id` - The ID of the volume.
 * `volume_type` - The type of the volume (standard | gp2 | io1 | sc1 | st1).
-* `request_id` - The ID of the request.
 
-See detailed information in [Describe Volume]http://docs.outscale.com/api_fcu/operations/Action_DescribeVolumes_get.html#_api_fcu-action_describevolumes_get.
+See detailed information in [Describe Volumes](http://docs.outscale.com/api_fcu/operations/Action_DescribeVolumes_get.html#_api_fcu-action_describevolumes_get).
