@@ -105,6 +105,7 @@ func init() {
 			"outscale_vms_state":             dataSourceOutscaleOAPIVMSState,
 			"outscale_lin":                   dataSourceOutscaleOAPIVpc,
 			"outscale_lins":                  dataSourceOutscaleOAPIVpcs,
+			"outscale_lin_attributes":        dataSourceOutscaleOAPIVpcAttr,
 		},
 	}
 }
