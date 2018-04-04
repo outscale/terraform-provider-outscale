@@ -114,6 +114,7 @@ func init() {
 			"outscale_lin_attributes":        dataSourceOutscaleOAPIVpcAttr,
 			"outscale_client_endpoint":       dataSourceOutscaleOAPICustomerGateway,
 			"outscale_client_endpoints":      dataSourceOutscaleOAPICustomerGateways,
+			"outscale_route_table":           dataSourceOutscaleOAPIRouteTable,
 		},
 	}
 }
