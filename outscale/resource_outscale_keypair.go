@@ -38,32 +38,7 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		keyName = resource.UniqueId()
 		d.Set("key_name", keyName)
 	}
-	// if publicKey, ok := d.GetOk("key_material"); ok {
-	// 	req := &fcu.ImportKeyPairInput{
-	// 		KeyName:           aws.String(keyName),
-	// 		PublicKeyMaterial: []byte(publicKey.(string)),
-	// 	}
 
-	// 	var resp *fcu.ImportKeyPairOutput
-	// 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-	// 		var err error
-	// 		resp, err = conn.VM.ImportKeyPair(req)
-
-	// 		if err != nil {
-	// 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-	// 				return resource.RetryableError(err)
-	// 			}
-	// 			return resource.NonRetryableError(err)
-	// 		}
-	// 		return resource.RetryableError(err)
-	// 	})
-
-	// 	if err != nil {
-	// 		return fmt.Errorf("Error import KeyPair: %s", err)
-	// 	}
-	// 	d.SetId(*resp.KeyName)
-
-	// } else {
 	req := &fcu.CreateKeyPairInput{
 		KeyName: aws.String(keyName),
 	}
