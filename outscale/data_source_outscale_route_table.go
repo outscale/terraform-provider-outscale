@@ -170,7 +170,7 @@ func dataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	for _, vgw := range rt.PropagatingVgws {
 		propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
 	}
-	d.Set("propagating_vgws", propagatingVGWs)
+	d.Set("propagating_vgw_set", propagatingVGWs)
 
 	d.SetId(aws.StringValue(rt.RouteTableId))
 	d.Set("route_table_id", rt.RouteTableId)
