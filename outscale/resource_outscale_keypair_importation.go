@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -114,27 +113,18 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 	})
 
 	if err != nil {
-		return err
-	}
-
-	if err != nil {
-		awsErr, ok := err.(awserr.Error)
-		if ok && awsErr.Code() == "InvalidKeyPair.NotFound" {
+		if strings.Contains(fmt.Sprint(err), "InvalidKeyPair.NotFound") {
 			d.SetId("")
 			return nil
 		}
 		return fmt.Errorf("Error retrieving KeyPair: %s", err)
 	}
 
-	for _, keyPair := range resp.KeyPairs {
-		if *keyPair.KeyName == d.Id() {
-			d.Set("public_key_material", keyPair.KeyName)
-			d.Set("fingerprint", keyPair.KeyFingerprint)
-			return nil
-		}
-	}
+	d.Set("public_key_material", resp.KeyPairs[0].KeyName)
+	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
+	d.Set("reques_id", resp.RequestId)
 
-	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
+	return nil
 }
 
 func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) error {
@@ -158,7 +148,7 @@ func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func getKeyPairImportationSchema() map[string]*schema.Schema {
