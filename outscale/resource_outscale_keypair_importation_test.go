@@ -37,7 +37,7 @@ func TestAccOutscaleKeyPairImportation_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleKeyPairImportationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleKeyPairConfig(rInt),
+				Config: testAccOutscaleKeyPairImportationConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeyPairImportationExists("outscale_keypair_importation.a_key_pair", &conf),
 				),
