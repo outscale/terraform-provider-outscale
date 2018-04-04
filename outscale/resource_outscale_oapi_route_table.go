@@ -198,85 +198,9 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("route_propagating_vpn_gateway", propagatingVGWs)
 
-	route := make([]map[string]interface{}, len(rt.Routes))
+	d.Set("route", setOAPIRouteSet(rt.Routes))
 
-	if len(rt.Routes) > 0 {
-		for k, r := range rt.Routes {
-			if r.GatewayId != nil && *r.GatewayId == "local" {
-				continue
-			}
-
-			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
-				continue
-			}
-
-			if r.DestinationPrefixListId != nil {
-				continue
-			}
-
-			m := make(map[string]interface{})
-
-			if r.DestinationCidrBlock != nil {
-				m["destination_ip_range"] = *r.DestinationCidrBlock
-			}
-			if r.DestinationPrefixListId != nil {
-				m["destinaton_prefix_list_id"] = *r.DestinationPrefixListId
-			}
-			if r.GatewayId != nil {
-				m["vpn_gateway_id"] = *r.GatewayId
-			}
-			if r.NatGatewayId != nil {
-				m["nat_gateway_id"] = *r.NatGatewayId
-			}
-			if r.InstanceId != nil {
-				m["vm_id"] = *r.InstanceId
-			}
-			if r.InstanceOwnerId != nil {
-				m["vm_account_id"] = *r.InstanceOwnerId
-			}
-			if r.VpcPeeringConnectionId != nil {
-				m["lin_peering_id"] = *r.VpcPeeringConnectionId
-			}
-			if r.NetworkInterfaceId != nil {
-				m["nic_id"] = *r.NetworkInterfaceId
-			}
-			if r.Origin != nil {
-				m["creation_method"] = *r.Origin
-			}
-			if r.State != nil {
-				m["state"] = *r.State
-			}
-
-			route[k] = m
-		}
-	}
-
-	association := make([]map[string]interface{}, len(rt.Routes))
-
-	if len(rt.Associations) > 0 {
-		for k, r := range rt.Associations {
-			m := make(map[string]interface{})
-
-			if r.Main != nil {
-				m["main"] = *r.Main
-			}
-			if r.RouteTableAssociationId != nil {
-				m["route_table_to_subnet_link_id"] = *r.RouteTableAssociationId
-			}
-			if r.RouteTableId != nil {
-				m["route_table_id"] = *r.RouteTableId
-			}
-			if r.SubnetId != nil {
-				m["subnet_id"] = *r.SubnetId
-			}
-
-			association[k] = m
-		}
-	}
-
-	d.Set("route", route)
-
-	d.Set("link", association)
+	d.Set("link", setOAPIAssociactionSet(rt.Associations))
 
 	d.Set("tag", tagsToMap(rt.Tags))
 
@@ -396,4 +320,89 @@ func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *fcu.Client, id string)
 		rt := resp.RouteTables[0]
 		return rt, "ready", nil
 	}
+}
+
+func setOAPIRouteSet(rt []*fcu.Route) []map[string]interface{} {
+
+	route := make([]map[string]interface{}, len(rt))
+
+	if len(rt) > 0 {
+		for k, r := range rt {
+			if r.GatewayId != nil && *r.GatewayId == "local" {
+				continue
+			}
+
+			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
+				continue
+			}
+
+			if r.DestinationPrefixListId != nil {
+				continue
+			}
+
+			m := make(map[string]interface{})
+
+			if r.DestinationCidrBlock != nil {
+				m["destination_ip_range"] = *r.DestinationCidrBlock
+			}
+			if r.DestinationPrefixListId != nil {
+				m["destinaton_prefix_list_id"] = *r.DestinationPrefixListId
+			}
+			if r.GatewayId != nil {
+				m["vpn_gateway_id"] = *r.GatewayId
+			}
+			if r.NatGatewayId != nil {
+				m["nat_gateway_id"] = *r.NatGatewayId
+			}
+			if r.InstanceId != nil {
+				m["vm_id"] = *r.InstanceId
+			}
+			if r.InstanceOwnerId != nil {
+				m["vm_account_id"] = *r.InstanceOwnerId
+			}
+			if r.VpcPeeringConnectionId != nil {
+				m["lin_peering_id"] = *r.VpcPeeringConnectionId
+			}
+			if r.NetworkInterfaceId != nil {
+				m["nic_id"] = *r.NetworkInterfaceId
+			}
+			if r.Origin != nil {
+				m["creation_method"] = *r.Origin
+			}
+			if r.State != nil {
+				m["state"] = *r.State
+			}
+
+			route[k] = m
+		}
+	}
+
+	return route
+}
+
+func setOAPIAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
+	association := make([]map[string]interface{}, len(rt))
+
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+
+			if r.Main != nil {
+				m["main"] = *r.Main
+			}
+			if r.RouteTableAssociationId != nil {
+				m["route_table_to_subnet_link_id"] = *r.RouteTableAssociationId
+			}
+			if r.RouteTableId != nil {
+				m["route_table_id"] = *r.RouteTableId
+			}
+			if r.SubnetId != nil {
+				m["subnet_id"] = *r.SubnetId
+			}
+
+			association[k] = m
+		}
+	}
+
+	return association
 }
