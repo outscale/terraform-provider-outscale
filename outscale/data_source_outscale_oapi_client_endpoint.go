@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceOutscaleCustomerGateway() *schema.Resource {
+func dataSourceOutscaleOAPICustomerGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleCustomerGatewayRead,
+		Read: dataSourceOutscaleOAPICustomerGatewayRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -24,7 +24,7 @@ func dataSourceOutscaleCustomerGateway() *schema.Resource {
 				Computed: true,
 			},
 
-			"ip_address": {
+			"public_ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -34,7 +34,7 @@ func dataSourceOutscaleCustomerGateway() *schema.Resource {
 				Computed: true,
 			},
 
-			"customer_gateway_id": {
+			"client_endpoint_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -43,26 +43,18 @@ func dataSourceOutscaleCustomerGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"tag_set": tagsSchemaComputed(),
+			"tag": tagsSchemaComputed(),
 		},
 	}
 }
 
-func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPICustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.DescribeCustomerGatewaysInput{}
 
 	filters, filtersOk := d.GetOk("filter")
-	v, vOk := d.GetOk("customer_gateway_id")
-
-	if filtersOk == false && vOk == false {
-		return fmt.Errorf("One of filters, or customer_gateway_id must be assigned")
-	}
+	v, vOk := d.GetOk("client_endpoint_id")
 
 	if filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
@@ -105,9 +97,9 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 
 	customerGateway := resp.CustomerGateways[0]
 	d.SetId(*customerGateway.CustomerGatewayId)
-	d.Set("ip_address", customerGateway.IpAddress)
+	d.Set("public_ip", customerGateway.IpAddress)
 	d.Set("type", customerGateway.Type)
-	d.Set("tag_set", tagsToMap(customerGateway.Tags))
+	d.Set("tag", tagsToMap(customerGateway.Tags))
 
 	if *customerGateway.BgpAsn != "" {
 		val, err := strconv.ParseInt(*customerGateway.BgpAsn, 0, 0)
@@ -117,7 +109,6 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 
 		d.Set("bgp_asn", int(val))
 	}
-	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }

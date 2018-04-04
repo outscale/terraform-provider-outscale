@@ -3662,6 +3662,8 @@ type DescribeCustomerGatewaysOutput struct {
 
 	// Information about one or more customer gateways.
 	CustomerGateways []*CustomerGateway `locationName:"customerGatewaySet" locationNameList:"item" type:"list"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3677,6 +3679,10 @@ func (s DescribeCustomerGatewaysOutput) GoString() string {
 // SetCustomerGateways sets the CustomerGateways field's value.
 func (s *DescribeCustomerGatewaysOutput) SetCustomerGateways(v []*CustomerGateway) *DescribeCustomerGatewaysOutput {
 	s.CustomerGateways = v
+	return s
+}
+func (s *DescribeCustomerGatewaysOutput) SetRequesterId(v *string) *DescribeCustomerGatewaysOutput {
+	s.RequesterId = v
 	return s
 }
 
