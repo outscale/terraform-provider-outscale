@@ -71,7 +71,6 @@ func dataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	if ok2 {
 		req.Filters = buildOutscaleDataSourceFilters(v.(*schema.Set))
 	}
-
 	var err error
 	var resp *fcu.DescribeVpcsOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

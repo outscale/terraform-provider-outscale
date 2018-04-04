@@ -2942,6 +2942,13 @@ type DescribeVpcAttributeInput struct {
 	//
 	// VpcId is a required field
 	VpcId *string `type:"string" required:"true"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+func (s *DescribeVpcAttributeInput) SetFilters(v []*Filter) *DescribeVpcAttributeInput {
+	s.Filters = v
+	return s
 }
 
 // String returns the string representation
@@ -3003,6 +3010,8 @@ type DescribeVpcAttributeOutput struct {
 
 	// The ID of the VPC.
 	VpcId *string `locationName:"vpcId" type:"string"`
+
+	RequesterId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3022,6 +3031,11 @@ func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanVa
 }
 
 // SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *DescribeVpcAttributeOutput) SetRequesterId(v *string) *DescribeVpcAttributeOutput {
+	s.RequesterId = v
+	return s
+}
+
 func (s *DescribeVpcAttributeOutput) SetEnableDnsSupport(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
 	s.EnableDnsSupport = v
 	return s

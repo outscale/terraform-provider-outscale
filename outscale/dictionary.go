@@ -86,6 +86,7 @@ func init() {
 			"outscale_subnets":               dataSourceOutscaleSubnets,
 			"outscale_lin":                   dataSourceOutscaleVpc,
 			"outscale_lins":                  dataSourceOutscaleVpcs,
+			"outscale_lin_attributes":        dataSourceOutscaleVpcAttr,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
