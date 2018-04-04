@@ -57,14 +57,20 @@ func dataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 
 	req := &fcu.DescribeVpcsInput{}
 
-	if id := d.Get("vpc_id"); id != "" {
+	id, ok1 := d.GetOk("vpc_id")
+	v, ok2 := d.GetOk("filter")
+
+	if ok1 == false && ok2 == false {
+		return fmt.Errorf("One of filters, or instance_id must be assigned")
+	}
+
+	if ok1 {
 		req.VpcIds = []*string{aws.String(id.(string))}
 	}
 
-	if v, ok := d.GetOk("filter"); ok {
+	if ok2 {
 		req.Filters = buildOutscaleDataSourceFilters(v.(*schema.Set))
 	}
-
 	var err error
 	var resp *fcu.DescribeVpcsOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
