@@ -39,7 +39,7 @@ func resourceOutscaleRouteTable() *schema.Resource {
 			"tag":     tagsSchema(),
 			"tag_set": tagsSchemaComputed(),
 
-			"propagating_vgws": {
+			"propagating_vgw_set": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,
@@ -197,7 +197,7 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 	for _, vgw := range rt.PropagatingVgws {
 		propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
 	}
-	d.Set("propagating_vgws", propagatingVGWs)
+	d.Set("propagating_vgw_set", propagatingVGWs)
 
 	d.Set("tag_set", tagsToMap(rt.Tags))
 
