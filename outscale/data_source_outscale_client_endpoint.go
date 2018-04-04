@@ -60,6 +60,10 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 	filters, filtersOk := d.GetOk("filter")
 	v, vOk := d.GetOk("customer_gateway_id")
 
+	if filtersOk == false && vOk == false {
+		return fmt.Errorf("One of filters, or customer_gateway_id must be assigned")
+	}
+
 	if filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
