@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleKeyPairImportation() *schema.Resource {
+func resourceOutscaleOAPIKeyPairImportation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKeyPairImportationCreate,
-		Read:   resourceKeyPairImportationRead,
-		Delete: resourceKeyPairImportationDelete,
+		Create: resourceOAPIKeyPairImportationCreate,
+		Read:   resourceOAPIKeyPairImportationRead,
+		Delete: resourceOAPIKeyPairImportationDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,11 +27,11 @@ func resourceOutscaleKeyPairImportation() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getKeyPairImportationSchema(),
+		Schema: getOAPIKeyPairImportationSchema(),
 	}
 }
 
-func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var keyName string
@@ -85,7 +85,7 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 			return resource.RetryableError(err)
 		})
 		if err != nil {
-			return fmt.Errorf("Error creating KeyPairImportation: %s", err)
+			return fmt.Errorf("Error creating OAPIKeyPairImportation: %s", err)
 		}
 		d.SetId(*resp.KeyName)
 		d.Set("public_key_material", *resp.KeyMaterial)
@@ -93,7 +93,7 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	req := &fcu.DescribeKeyPairsInput{
 		KeyNames: []*string{aws.String(d.Id())},
@@ -134,12 +134,10 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	d.Set("request_id", resp.RequestId)
-
 	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
 }
 
-func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -163,25 +161,27 @@ func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) 
 	return err
 }
 
-func getKeyPairImportationSchema() map[string]*schema.Schema {
+func getOAPIKeyPairImportationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"key_fingerprint": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"public_key_material": {
 			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Optional: true,
+			Computed: true,
 		},
 		"key_name": {
 			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Optional: true,
+			Computed: true,
 		},
 		"request_id": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 	}
