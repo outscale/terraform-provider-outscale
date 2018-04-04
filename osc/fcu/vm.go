@@ -68,6 +68,20 @@ type VMService interface {
 	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
 	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
 	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
+	DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error)
+	DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (*DeleteCustomerGatewayOutput, error)
+	CreateCustomerGateway(input *CreateCustomerGatewayInput) (*CreateCustomerGatewayOutput, error)
+	CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error)
+	ReplaceRoute(input *ReplaceRouteInput) (*ReplaceRouteOutput, error)
+	DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error)
+	DescribeRouteTables(input *DescribeRouteTablesInput) (*DescribeRouteTablesOutput, error)
+	CreateRouteTable(input *CreateRouteTableInput) (*CreateRouteTableOutput, error)
+	DisableVgwRoutePropagation(input *DisableVgwRoutePropagationInput) (*DisableVgwRoutePropagationOutput, error)
+	EnableVgwRoutePropagation(input *EnableVgwRoutePropagationInput) (*EnableVgwRoutePropagationOutput, error)
+	DisassociateRouteTable(input *DisassociateRouteTableInput) (*DisassociateRouteTableOutput, error)
+	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
+	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
+	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1033,6 +1047,73 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 
 	if input == nil {
 		input = &DescribeSubnetsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeCustomerGateways"
+	output := &DescribeCustomerGatewaysOutput{}
+
+	if input == nil {
+		input = &DescribeCustomerGatewaysInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (*DeleteCustomerGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteCustomerGateway"
+	output := &DeleteCustomerGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteCustomerGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (*CreateCustomerGatewayOutput, error) {
+
+	inURL := "/"
+	endpoint := "CreateCustomerGateway"
+	output := &CreateCustomerGatewayOutput{}
+
+	if input == nil {
+		input = &CreateCustomerGatewayInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

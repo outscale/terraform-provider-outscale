@@ -61,7 +61,6 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId(*resp.KeyName)
 	d.Set("key_material", *resp.KeyMaterial)
-	//}
 	return nil
 }
 
@@ -101,9 +100,11 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	for _, keyPair := range resp.KeyPairs {
 		if *keyPair.KeyName == d.Id() {
 			d.Set("key_name", keyPair.KeyName)
-			d.Set("fingerprint", keyPair.KeyFingerprint)
-			return nil
+			d.Set("key_fingerprint", keyPair.KeyFingerprint)
 		}
+		d.Set("request_id", *resp.RequesterId)
+		return nil
+
 	}
 
 	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
@@ -139,16 +140,23 @@ func getKeyPairSchema() map[string]*schema.Schema {
 		"key_fingerprint": {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 			Computed: true,
 		},
 		"key_material": {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
 			Computed: true,
 		},
 		"key_name": {
 			Type:     schema.TypeString,
 			Optional: true,
+			ForceNew: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}

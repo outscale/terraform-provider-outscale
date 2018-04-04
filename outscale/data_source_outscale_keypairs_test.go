@@ -41,7 +41,7 @@ func testAccCheckOutscaleKeypairsDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find AMI data source: %s", n)
+			return fmt.Errorf("Can't find OMI data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

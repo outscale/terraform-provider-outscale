@@ -72,6 +72,10 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
 			"outscale_subnet":                    GetResource(fcu, "outscale_subnet")(),
 			"outscale_keypair_importation":       GetResource(fcu, "outscale_keypair_importation")(),
+			"outscale_client_endpoint":           GetResource(fcu, "outscale_client_endpoint")(),
+			"outscale_route":                     GetResource(fcu, "outscale_route")(),
+			"outscale_route_table":               GetResource(fcu, "outscale_route_table")(),
+			"outscale_route_table_link":          GetResource(fcu, "outscale_route_table_link")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
@@ -96,6 +100,11 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_internet_gateways": GetDatasource(fcu, "outscale_lin_internet_gateways")(),
 			"outscale_subnet":                GetDatasource(fcu, "outscale_subnet")(),
 			"outscale_subnets":               GetDatasource(fcu, "outscale_subnets")(),
+			"outscale_lin":                   GetDatasource(fcu, "outscale_lin")(),
+			"outscale_lins":                  GetDatasource(fcu, "outscale_lins")(),
+			"outscale_lin_attributes":        GetDatasource(fcu, "outscale_lin_attributes")(),
+			"outscale_client_endpoint":       GetDatasource(fcu, "outscale_client_endpoint")(),
+			"outscale_client_endpoints":      GetDatasource(fcu, "outscale_client_endpoints")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
