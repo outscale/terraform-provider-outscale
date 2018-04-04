@@ -30,7 +30,7 @@ func datasourceOutscaleLinInternetGateways() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 
-						"attachement_set": {
+						"attachment_set": {
 							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
