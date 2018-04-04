@@ -39,8 +39,8 @@ func TestAccOutscaleOAPIKeyPairImportation_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
-					testAccCheckOutscaleKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 				),
 			},
 		},
@@ -69,7 +69,7 @@ func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig_retrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_keypair_importation.a_key_pair", "key_name", "tf-acc-key-pair",
 					),
@@ -99,8 +99,8 @@ func TestAccOutscaleOAPIKeyPairImportation_generatedName(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig_generatedName,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
-					testAccCheckOutscaleKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 					func(s *terraform.State) error {
 						if conf.KeyName == nil {
 							return fmt.Errorf("bad: No SG name")
@@ -239,8 +239,8 @@ func testAccCheckOutscaleOAPIKeyPairImportation_namePrefix(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckOutscaleKeyPairPrefixNameConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
-					testAccCheckOutscaleKeyPairGeneratedNamePrefix(
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
 						"outscale_keypair_importation.a_key_pair", "baz-"),
 				),
 			},

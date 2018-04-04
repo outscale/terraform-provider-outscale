@@ -122,7 +122,7 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 
 	d.Set("public_key_material", resp.KeyPairs[0].KeyName)
 	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
-	d.Set("reques_id", resp.RequestId)
+	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }
