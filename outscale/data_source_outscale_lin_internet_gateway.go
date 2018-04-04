@@ -35,7 +35,7 @@ func datasourceOutscaleLinInternetGateway() *schema.Resource {
 			},
 			"internet_gateway_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"tag_set": dataSourceTagsSchema(),
 			"request_id": {
@@ -84,16 +84,12 @@ func datasourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta inter
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
+	d.SetId(resource.UniqueId())
 	d.Set("request_id", resp.RequesterId)
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 	d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 
-	err = d.Set("attachement_set", flattenInternetGwAttachements(resp.InternetGateways[0].Attachments))
-	if err != nil {
-		return err
-	}
-
-	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
+	if err := d.Set("attachement_set", flattenInternetGwAttachements(resp.InternetGateways[0].Attachments)); err != nil {
 		return err
 	}
 
