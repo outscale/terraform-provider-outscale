@@ -199,89 +199,13 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("propagating_vgws", propagatingVGWs)
 
-	route := make([]map[string]interface{}, len(rt.Routes))
-
-	if len(rt.Routes) > 0 {
-		for k, r := range rt.Routes {
-			if r.GatewayId != nil && *r.GatewayId == "local" {
-				continue
-			}
-
-			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
-				continue
-			}
-
-			if r.DestinationPrefixListId != nil {
-				continue
-			}
-
-			m := make(map[string]interface{})
-
-			if r.DestinationCidrBlock != nil {
-				m["destination_cidr_block"] = *r.DestinationCidrBlock
-			}
-			if r.DestinationPrefixListId != nil {
-				m["destination_prefix_list_id"] = *r.DestinationPrefixListId
-			}
-			if r.GatewayId != nil {
-				m["gateway_id"] = *r.GatewayId
-			}
-			if r.NatGatewayId != nil {
-				m["nat_gateway_id"] = *r.NatGatewayId
-			}
-			if r.InstanceId != nil {
-				m["instance_id"] = *r.InstanceId
-			}
-			if r.InstanceOwnerId != nil {
-				m["instance_owner_id"] = *r.InstanceOwnerId
-			}
-			if r.VpcPeeringConnectionId != nil {
-				m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
-			}
-			if r.NetworkInterfaceId != nil {
-				m["network_interface_id"] = *r.NetworkInterfaceId
-			}
-			if r.Origin != nil {
-				m["origin"] = *r.Origin
-			}
-			if r.State != nil {
-				m["state"] = *r.State
-			}
-
-			route[k] = m
-		}
-	}
-
-	association := make([]map[string]interface{}, len(rt.Routes))
-
-	if len(rt.Associations) > 0 {
-		for k, r := range rt.Associations {
-			m := make(map[string]interface{})
-
-			if r.Main != nil {
-				m["main"] = *r.Main
-			}
-			if r.RouteTableAssociationId != nil {
-				m["route_table_association_id"] = *r.RouteTableAssociationId
-			}
-			if r.RouteTableId != nil {
-				m["route_table_id"] = *r.RouteTableId
-			}
-			if r.SubnetId != nil {
-				m["subnet_id"] = *r.SubnetId
-			}
-
-			association[k] = m
-		}
-	}
-
-	d.Set("route", route)
-
-	d.Set("association_set", association)
-
 	d.Set("tag_set", tagsToMap(rt.Tags))
 
-	return nil
+	if err := d.Set("route_set", setRouteSet(rt.Routes)); err != nil {
+		return err
+	}
+
+	return d.Set("association_set", setAssociactionSet(rt.Associations))
 }
 
 func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
@@ -397,4 +321,89 @@ func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) res
 		rt := resp.RouteTables[0]
 		return rt, "ready", nil
 	}
+}
+
+func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
+
+	route := make([]map[string]interface{}, len(rt))
+
+	if len(rt) > 0 {
+		for k, r := range rt {
+			if r.GatewayId != nil && *r.GatewayId == "local" {
+				continue
+			}
+
+			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
+				continue
+			}
+
+			if r.DestinationPrefixListId != nil {
+				continue
+			}
+
+			m := make(map[string]interface{})
+
+			if r.DestinationCidrBlock != nil {
+				m["destination_cidr_block"] = *r.DestinationCidrBlock
+			}
+			if r.DestinationPrefixListId != nil {
+				m["destination_prefix_list_id"] = *r.DestinationPrefixListId
+			}
+			if r.GatewayId != nil {
+				m["gateway_id"] = *r.GatewayId
+			}
+			if r.NatGatewayId != nil {
+				m["nat_gateway_id"] = *r.NatGatewayId
+			}
+			if r.InstanceId != nil {
+				m["instance_id"] = *r.InstanceId
+			}
+			if r.InstanceOwnerId != nil {
+				m["instance_owner_id"] = *r.InstanceOwnerId
+			}
+			if r.VpcPeeringConnectionId != nil {
+				m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
+			}
+			if r.NetworkInterfaceId != nil {
+				m["network_interface_id"] = *r.NetworkInterfaceId
+			}
+			if r.Origin != nil {
+				m["origin"] = *r.Origin
+			}
+			if r.State != nil {
+				m["state"] = *r.State
+			}
+
+			route[k] = m
+		}
+	}
+
+	return route
+}
+
+func setAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
+	association := make([]map[string]interface{}, len(rt))
+
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+
+			if r.Main != nil {
+				m["main"] = *r.Main
+			}
+			if r.RouteTableAssociationId != nil {
+				m["route_table_association_id"] = *r.RouteTableAssociationId
+			}
+			if r.RouteTableId != nil {
+				m["route_table_id"] = *r.RouteTableId
+			}
+			if r.SubnetId != nil {
+				m["subnet_id"] = *r.SubnetId
+			}
+
+			association[k] = m
+		}
+	}
+
+	return association
 }
