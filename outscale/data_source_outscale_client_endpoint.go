@@ -43,6 +43,10 @@ func dataSourceOutscaleCustomerGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"tag_set": tagsSchemaComputed(),
 		},
 	}
@@ -109,6 +113,7 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 
 		d.Set("bgp_asn", int(val))
 	}
+	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }
