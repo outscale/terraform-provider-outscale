@@ -58,10 +58,10 @@ resource "outscale_lin_internet_gateway" "gateway" {}
 data "outscale_lin_internet_gateway" "test" {
 	filter {
 		name = "internet-gateway-id"
-		values = ["${outscale_lin_internet_gateway.gateway.id}"]
+		values = ["${outscale_lin_internet_gateway.gateway.internet_gateway_id}"]
 	}
 }
 data "outscale_lin_internet_gateway" "by_id" {
-	internet_gateway_id = "${outscale_lin_internet_gateway.gateway.id}"
+	internet_gateway_id = "${outscale_lin_internet_gateway.gateway.internet_gateway_id}"
 }
 `
