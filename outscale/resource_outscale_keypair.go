@@ -17,9 +17,6 @@ func resourceOutscaleKeyPair() *schema.Resource {
 		Create: resourceKeyPairCreate,
 		Read:   resourceKeyPairRead,
 		Delete: resourceKeyPairDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -41,55 +38,55 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		keyName = resource.UniqueId()
 		d.Set("key_name", keyName)
 	}
-	if publicKey, ok := d.GetOk("key_material"); ok {
-		req := &fcu.ImportKeyPairInput{
-			KeyName:           aws.String(keyName),
-			PublicKeyMaterial: []byte(publicKey.(string)),
-		}
+	// if publicKey, ok := d.GetOk("key_material"); ok {
+	// 	req := &fcu.ImportKeyPairInput{
+	// 		KeyName:           aws.String(keyName),
+	// 		PublicKeyMaterial: []byte(publicKey.(string)),
+	// 	}
 
-		var resp *fcu.ImportKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.ImportKeyPair(req)
+	// 	var resp *fcu.ImportKeyPairOutput
+	// 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+	// 		var err error
+	// 		resp, err = conn.VM.ImportKeyPair(req)
 
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(err)
-		})
+	// 		if err != nil {
+	// 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+	// 				return resource.RetryableError(err)
+	// 			}
+	// 			return resource.NonRetryableError(err)
+	// 		}
+	// 		return resource.RetryableError(err)
+	// 	})
 
-		if err != nil {
-			return fmt.Errorf("Error import KeyPair: %s", err)
-		}
-		d.SetId(*resp.KeyName)
+	// 	if err != nil {
+	// 		return fmt.Errorf("Error import KeyPair: %s", err)
+	// 	}
+	// 	d.SetId(*resp.KeyName)
 
-	} else {
-		req := &fcu.CreateKeyPairInput{
-			KeyName: aws.String(keyName),
-		}
-
-		var resp *fcu.CreateKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.CreateKeyPair(req)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(err)
-		})
-		if err != nil {
-			return fmt.Errorf("Error creating KeyPair: %s", err)
-		}
-		d.SetId(*resp.KeyName)
-		d.Set("key_material", *resp.KeyMaterial)
+	// } else {
+	req := &fcu.CreateKeyPairInput{
+		KeyName: aws.String(keyName),
 	}
+
+	var resp *fcu.CreateKeyPairOutput
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.CreateKeyPair(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+	if err != nil {
+		return fmt.Errorf("Error creating KeyPair: %s", err)
+	}
+	d.SetId(*resp.KeyName)
+	d.Set("key_material", *resp.KeyMaterial)
+	//}
 	return nil
 }
 
