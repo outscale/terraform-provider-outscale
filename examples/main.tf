@@ -1,50 +1,22 @@
-resource "outscale_outbound_rule" "outscale_outbound_rule1" {
-  ip_permissions = {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
+resource "outscale_vm" "outscale_vm" {
+  count = 1
 
-  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
+  image_id = "ami-880caa66"
+
+  instance_type = "c4.large"
+
+  #key_name = "integ_sut_keypair"
+
+
+  #security_group = ["sg-c73d3b6b"]
+
+  disable_api_termination = false
 }
 
-resource "outscale_inbound_rule" "outscale_inbound_rule1" {
-  ip_permissions = {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
+resource "outscale_vm_attributes" "outscale_vm_attributes" {
+  instance_id = "${outscale_vm.outscale_vm.0.id}"
 
-  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
-}
+  attribute = "disableApiTermination"
 
-resource "outscale_inbound_rule" "outscale_inbound_rule2" {
-  ip_permissions = {
-    from_port   = 443
-    to_port     = 443
-    ip_protocol = "tcp"
-    ip_ranges   = ["46.231.147.8/32"]
-  }
-
-  group_id = "${outscale_firewall_rules_set.outscale_firewall_rules_set.id}"
-}
-
-resource "outscale_firewall_rules_set" "outscale_firewall_rules_set" {
-  group_description = "Used in the terraform acceptance tests"
-  group_name        = "test-1234"
-  vpc_id            = "vpc-e9d09d63"
-
-  tag = {
-    Name = "tf-acctest"
-    Seed = "1234"
-  }
-}
-
-data "outscale_firewall_rules_sets" "by_filter" {
-  filter {
-    name   = "group-name"
-    values = ["${outscale_firewall_rules_set.outscale_firewall_rules_set.group_name}"]
-  }
+  disable_api_termination = true
 }
