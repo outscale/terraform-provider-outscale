@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -29,13 +30,30 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			// ModifyInstanceAttribute schema
-
+			// Argument
 			"attribute": {
 				Type:     schema.TypeString,
+				Required: true,
+			},
+			"group_id": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"value": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"instance_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"disable_api_termination": {
+				Type:     schema.TypeBool,
 				Optional: true,
 				Computed: true,
 			},
+			// Attributes schema
 			"block_device_mapping": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -68,52 +86,12 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 					},
 				},
 			},
-			"disable_api_termination": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
+
 			"ebs_optimized": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Computed: true,
 			},
-			"group_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"instance_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"instance_initiated_shutdown_behavior": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"instance_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"source_dest_check": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"user_data": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"value": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
-			// DescribeInstanceAttribute schema
-			// same as above, but with attr and instance id required
 			"group_set": {
 				Type:     schema.TypeSet,
 				Computed: true,
@@ -130,7 +108,21 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 					},
 				},
 			},
-			"sriov_net_support": {
+			"instance_initiated_shutdown_behavior": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"instance_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"ramdisk": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -138,8 +130,18 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ramdisk_id": {
+			"source_dest_check": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"sriov_net_support": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"user_data": {
+				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
 			"kernel": {
@@ -284,17 +286,19 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	id := d.Get("instance_id").(string)
-	var attr *string
+	i, idOk := d.GetOk("instance_id")
+	v, ok := d.GetOk("attribute")
 
-	if v, ok := d.GetOk("attribute"); ok {
-		attr = aws.String(v.(string))
+	if !idOk && !ok {
+		return fmt.Errorf("Please provide and instance_id and an attribute")
 	}
+
+	id := i.(string)
+	attr := aws.String(v.(string))
 
 	if v, ok := d.GetOk("disable_api_termination"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			DisableApiTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(v.(bool)),
 			},
@@ -449,7 +453,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 		}
 	}
 
-	d.SetId(resource.UniqueId())
+	d.SetId(id)
 
 	return resourceVMAttributesRead(d, meta)
 }
@@ -461,7 +465,9 @@ func resourceVMAttributesRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return readDescribeVMStatus(d, conn)
+	// return readDescribeVMStatus(d, conn)
+
+	return nil
 }
 
 func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -469,14 +475,11 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	d.Partial(true)
 
-	id := d.Get("instance_id").(string)
-	// attr := aws.String(d.Get("attribute").(string))
-
-	log.Printf("[DEBUG] updating the instance %s", id)
+	log.Printf("[DEBUG] updating the instance %s", d.Id())
 
 	if d.HasChange("instance_type") && !d.IsNewResource() {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			InstanceType: &fcu.AttributeValue{
 				Value: aws.String(d.Get("instance_type").(string)),
 			},
@@ -488,7 +491,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("user_data") && !d.IsNewResource() {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			UserData: &fcu.BlobAttributeValue{
 				Value: d.Get("user_data").([]byte),
 			},
@@ -500,7 +503,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("ebs_optimized") && !d.IsNewResource() {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			EbsOptimized: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("ebs_optimized").(bool)),
 			},
@@ -512,7 +515,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("delete_on_termination") && !d.IsNewResource() {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			DeleteOnTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("delete_on_termination").(bool)),
 			},
@@ -524,7 +527,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("disable_api_termination") {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			DisableApiTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("disable_api_termination").(bool)),
 			},
@@ -536,7 +539,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("instance_initiated_shutdown_behavior") {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
 				Value: aws.String(d.Get("instance_initiated_shutdown_behavior").(string)),
 			},
@@ -548,7 +551,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("group_set") {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			Groups:     d.Get("group_set").([]*string),
 		}
 		if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
@@ -558,7 +561,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	if d.HasChange("source_dest_check") {
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
+			InstanceId: aws.String(d.Id()),
 			SourceDestCheck: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("source_dest_check").(bool)),
 			},
@@ -596,7 +599,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 		}
 
 		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(id),
+			InstanceId:          aws.String(d.Id()),
 			BlockDeviceMappings: mappings,
 		}
 		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
@@ -619,7 +622,7 @@ func resourceVMAttributesDelete(d *schema.ResourceData, meta interface{}) error 
 func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 	input := &fcu.DescribeInstanceAttributeInput{
 		Attribute:  aws.String(d.Get("attribute").(string)),
-		InstanceId: aws.String(d.Get("instance_id").(string)),
+		InstanceId: aws.String(d.Id()),
 	}
 
 	var resp *fcu.DescribeInstanceAttributeOutput
@@ -641,7 +644,9 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 		return fmt.Errorf("Error reading the DescribeInstanceAttribute %s", err)
 	}
 
-	fmt.Printf("\n\n[DEBUG] RESPONSE %+v", resp)
+	pretty, err := json.MarshalIndent(resp, "", "  ")
+
+	fmt.Print("\n\n[DEBUG] RESPONSE ", string(pretty))
 
 	d.Set("instance_id", *resp.InstanceId)
 
@@ -666,35 +671,53 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 
 	if resp.InstanceInitiatedShutdownBehavior != nil {
 		d.Set("instance_initiated_shutdown_behavior", *resp.InstanceInitiatedShutdownBehavior.Value)
+	} else {
+		d.Set("instance_initiated_shutdown_behavior", "")
 	}
 
 	if resp.InstanceType != nil {
 		d.Set("instance_type", *resp.InstanceType.Value)
+	} else {
+		d.Set("instance_type", "")
 	}
 
 	if resp.KernelId != nil {
 		d.Set("kernel", *resp.KernelId.Value)
+	} else {
+		d.Set("kernel", "")
 	}
 
 	if resp.RamdiskId != nil {
 		d.Set("ramdisk", *resp.RamdiskId.Value)
+	} else {
+		d.Set("ramdisk", "")
 	}
 
 	if resp.RootDeviceName != nil {
 		d.Set("root_device_name", *resp.RootDeviceName.Value)
+	} else {
+		d.Set("root_device_name", "")
 	}
 
 	if resp.SourceDestCheck != nil {
 		d.Set("source_dest_check", *resp.SourceDestCheck.Value)
+	} else {
+		d.Set("source_dest_check", "")
 	}
 
 	if resp.SriovNetSupport != nil {
 		d.Set("sriov_net_support", *resp.SriovNetSupport.Value)
+	} else {
+		d.Set("sriov_net_support", "")
 	}
 
 	if resp.UserData != nil {
 		d.Set("user_data", *resp.UserData.Value)
+	} else {
+		d.Set("user_data", "")
 	}
+
+	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }
