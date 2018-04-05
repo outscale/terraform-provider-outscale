@@ -113,93 +113,93 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleServer_Windows_Password(t *testing.T) {
+// func TestAccOutscaleServer_Windows_Password(t *testing.T) {
+//
+// 	o := os.Getenv("OUTSCALE_OAPI")
+//
+// 	oapi, err := strconv.ParseBool(o)
+// 	if err != nil {
+// 		oapi = false
+// 	}
+//
+// 	if oapi {
+// 		t.Skip()
+// 	}
+//
+// 	var server fcu.Instance
+//
+// 	// rInt := acctest.RandInt()
+//
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:     func() { testAccPreCheck(t) },
+// 		Providers:    testAccProviders,
+// 		CheckDestroy: testAccCheckOutscaleVMDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: testAccCheckOutscaleServerConfig_basic_windows(),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccCheckOutscaleVMExists("outscale_vm.basic_windows", &server),
+// 					testAccCheckOutscaleWindowsServerAttributes(&server),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic_windows", "image_id", "ami-e1b93f29"),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic_windows", "instance_type", "t2.micro"),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	var server fcu.Instance
-
-	// rInt := acctest.RandInt()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckOutscaleServerConfig_basic_windows(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic_windows", &server),
-					testAccCheckOutscaleWindowsServerAttributes(&server),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic_windows", "image_id", "ami-e1b93f29"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic_windows", "instance_type", "t2.micro"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleServer_Update(t *testing.T) {
-	// var server fcu.Instance
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	var before fcu.Instance
-	var after fcu.Instance
-
-	// rInt := acctest.RandInt()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckOutscaleServerConfig_basic(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleServerAttributes(&before),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "t2.micro"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "key_name", "terraform-basic"),
-				),
-			},
-			{
-				Config: testAccInstanceConfigUpdateVMKey(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckInstanceExists("outscale_vm.basic", &after),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "key_name", "terraform-update"),
-					testAccCheckInstanceNotRecreated(
-						t, &before, &after),
-				),
-			},
-		},
-	})
-}
+// func TestAccOutscaleServer_Update(t *testing.T) {
+// 	// var server fcu.Instance
+//
+// 	o := os.Getenv("OUTSCALE_OAPI")
+//
+// 	oapi, err := strconv.ParseBool(o)
+// 	if err != nil {
+// 		oapi = false
+// 	}
+//
+// 	if oapi {
+// 		t.Skip()
+// 	}
+//
+// 	var before fcu.Instance
+// 	var after fcu.Instance
+//
+// 	// rInt := acctest.RandInt()
+//
+// 	resource.Test(t, resource.TestCase{
+// 		PreCheck:     func() { testAccPreCheck(t) },
+// 		Providers:    testAccProviders,
+// 		CheckDestroy: testAccCheckOutscaleVMDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: testAccCheckOutscaleServerConfig_basic(),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
+// 					testAccCheckOutscaleServerAttributes(&before),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic", "instance_type", "t2.micro"),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic", "key_name", "terraform-basic"),
+// 				),
+// 			},
+// 			{
+// 				Config: testAccInstanceConfigUpdateVMKey(),
+// 				Check: resource.ComposeTestCheckFunc(
+// 					testAccCheckInstanceExists("outscale_vm.basic", &after),
+// 					resource.TestCheckResourceAttr(
+// 						"outscale_vm.basic", "key_name", "terraform-update"),
+// 					testAccCheckInstanceNotRecreated(
+// 						t, &before, &after),
+// 				),
+// 			},
+// 		},
+// 	})
+// }
 
 func testAccCheckInstanceExists(n string, i *fcu.Instance) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
@@ -433,8 +433,6 @@ func testAccCheckOutscaleServerConfig_basic() string {
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
 }`
 }
 
