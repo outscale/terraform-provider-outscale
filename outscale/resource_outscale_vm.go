@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -85,7 +86,9 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	fmt.Printf("\n\n[DEBUG] Run configuration: %v", runOpts)
+	pretty, err := json.MarshalIndent(runOpts, "", "  ")
+
+	fmt.Print("\n\n[DEBUG] Run configuration ", string(pretty))
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -1626,6 +1629,50 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 }
 
 func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAttributeInput, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	switch attr {
+	case "instanceType":
+		fallthrough
+	case "userData":
+		fallthrough
+	case "ebsOptimized":
+		fallthrough
+	case "deleteOnTermination":
+		stateConf, err = stopInstance(instanceAttrOpts, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n[INFO] Modifying Info to %+v\n\n", instanceAttrOpts)
+
+	if _, err := conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+		return err
+	}
+
+	switch attr {
+	case "instanceType":
+		fallthrough
+	case "userData":
+		fallthrough
+	case "ebsOptimized":
+		fallthrough
+	case "deleteOnTermination":
+		err = startInstance(instanceAttrOpts, stateConf, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func stopInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, conn *fcu.Client, attr string) (*resource.StateChangeConf, error) {
 	fmt.Printf("\n\n[INFO] Stopping Instance %q for %s change \n\n", instanceAttrOpts.InstanceId, attr)
 
 	_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
@@ -1643,7 +1690,7 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"Error waiting for instance (%s) to stop: %s", *instanceAttrOpts.InstanceId, err)
 	}
 
@@ -1651,17 +1698,17 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 
 	fmt.Printf("\n\n[INFO] Modifying instance id %s, attr %s\n\n", *instanceAttrOpts.InstanceId, attr)
 
-	fmt.Printf("\n\n[INFO] Modifying Info to %+v\n\n", instanceAttrOpts)
+	return stateConf, nil
+}
 
-	_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
-	if err != nil {
+func startInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, stateConf *resource.StateChangeConf, conn *fcu.Client, attr string) error {
+	fmt.Printf("\n\n[INFO] Starting Instance %q after change of %s", *instanceAttrOpts.InstanceId, attr)
+
+	if _, err := conn.VM.StartInstances(&fcu.StartInstancesInput{
+		InstanceIds: []*string{instanceAttrOpts.InstanceId},
+	}); err != nil {
 		return err
 	}
-
-	fmt.Printf("\n\n[INFO] Starting Instance %q after change of %s", *instanceAttrOpts.InstanceId, attr)
-	_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-		InstanceIds: []*string{instanceAttrOpts.InstanceId},
-	})
 
 	stateConf = &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
@@ -1672,36 +1719,11 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 		MinTimeout: 3 * time.Second,
 	}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
+	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", *instanceAttrOpts.InstanceId, err)
 	}
 
 	fmt.Printf("\n\n[INFO] Instance Started %s\n\n", *instanceAttrOpts.InstanceId)
-
-	input := &fcu.DescribeInstancesInput{
-		InstanceIds: []*string{instanceAttrOpts.InstanceId},
-	}
-
-	var resp *fcu.DescribeInstancesOutput
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstances(input)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error reading the instance %s", err)
-	}
-
-	fmt.Printf("\n\n[INFO] Instance changed to => %q \n\n", resp.Reservations[0])
 
 	return nil
 }
