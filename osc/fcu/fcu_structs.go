@@ -452,6 +452,8 @@ type DescribeInstanceAttributeOutput struct {
 	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
 
 	UserData *AttributeValue `locationName:"userData" type:"structure"`
+
+	RequesterId *string `type:"string"`
 }
 
 type AttributeBooleanValue struct {
