@@ -18,7 +18,7 @@ func TestAccOutscaleOAPIDSLinAttr_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 

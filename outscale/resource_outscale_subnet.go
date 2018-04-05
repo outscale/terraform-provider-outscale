@@ -62,6 +62,13 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 	d.SetId(*subnet.SubnetId)
 	log.Printf("[INFO] Subnet ID: %s", *subnet.SubnetId)
 
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
+	}
+
 	// Wait for the Subnet to become available
 	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", *subnet.SubnetId)
 	stateConf := &resource.StateChangeConf{
@@ -235,6 +242,7 @@ func getSubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": dataSourceTagsSchema(),
+		"tag_set": tagsSchemaComputed(),
+		"tag":     tagsSchema(),
 	}
 }

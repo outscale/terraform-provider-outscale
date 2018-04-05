@@ -3,6 +3,8 @@ package outscale
 import (
 	"fmt"
 	"math/rand"
+	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,6 +12,17 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	rand.Seed(time.Now().UTC().UnixNano())
 	rInt := rand.Intn(16)
 	cidr := fmt.Sprintf("172.%d.0.0/16", rInt)

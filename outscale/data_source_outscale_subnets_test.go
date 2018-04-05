@@ -50,6 +50,8 @@ func testAccDataSourceOutscaleSubnetsConfig(rInt int) string {
 		  availability_zone = "eu-west-2a"
 		}
 	
-		data "outscale_subnets" "by_filter" {}
+		data "outscale_subnets" "by_filter" {
+			subnet_id = ["${outscale_subnet.test.id}"]
+		}
 		`, rInt)
 }

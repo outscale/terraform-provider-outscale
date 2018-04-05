@@ -91,6 +91,8 @@ func init() {
 			"outscale_lin_attributes":        dataSourceOutscaleVpcAttr,
 			"outscale_client_endpoint":       dataSourceOutscaleCustomerGateway,
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
+			"outscale_route_table":           dataSourceOutscaleRouteTable,
+			"outscale_route_tables":          dataSourceOutscaleRouteTables,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -114,6 +116,9 @@ func init() {
 			"outscale_lins":                  dataSourceOutscaleOAPIVpcs,
 			"outscale_lin_attributes":        dataSourceOutscaleOAPIVpcAttr,
 			"outscale_client_endpoint":       dataSourceOutscaleOAPICustomerGateway,
+			"outscale_client_endpoints":      dataSourceOutscaleOAPICustomerGateways,
+			"outscale_route_table":           dataSourceOutscaleOAPIRouteTable,
+			"outscale_route_tables":          dataSourceOutscaleOAPIRouteTables,
 		},
 	}
 }
