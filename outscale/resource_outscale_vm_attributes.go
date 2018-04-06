@@ -56,29 +56,35 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 			// Attributes schema
 			"block_device_mapping": {
 				Type:     schema.TypeList,
+				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"device_name": {
 							Type:     schema.TypeString,
 							Computed: true,
+							Optional: true,
 						},
 						"ebs": {
 							Type:     schema.TypeMap,
 							Computed: true,
+							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"delete_on_termination": {
 										Type:     schema.TypeBool,
 										Computed: true,
+										Optional: true,
 									},
 									"status": {
 										Type:     schema.TypeString,
 										Computed: true,
+										Optional: true,
 									},
 									"volume_id": {
 										Type:     schema.TypeString,
 										Computed: true,
+										Optional: true,
 									},
 								},
 							},
@@ -287,14 +293,14 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	conn := meta.(*OutscaleClient).FCU
 
 	i, idOk := d.GetOk("instance_id")
-	v, ok := d.GetOk("attribute")
 
-	if !idOk && !ok {
-		return fmt.Errorf("Please provide and instance_id and an attribute")
+	if !idOk {
+		return fmt.Errorf("Please provide an instance_id")
 	}
 
+	fmt.Printf("\n\n[DEBUG] INSTANCE TO MODIFY (%s)", i)
+
 	id := i.(string)
-	attr := aws.String(v.(string))
 
 	if v, ok := d.GetOk("disable_api_termination"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
@@ -324,7 +330,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("instance_initiated_shutdown_behavior"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
 				Value: aws.String(v.(string)),
 			},
@@ -340,7 +345,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("source_dest_check"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			SourceDestCheck: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(v.(bool)),
 			},
@@ -356,7 +360,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("instance_type"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			InstanceType: &fcu.AttributeValue{
 				Value: aws.String(v.(string)),
 			},
@@ -372,7 +375,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("user_data"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			UserData: &fcu.BlobAttributeValue{
 				Value: v.([]byte),
 			},
@@ -388,7 +390,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("ebs_optimized"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			EbsOptimized: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(v.(bool)),
 			},
@@ -404,7 +405,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	if v, ok := d.GetOk("delete_on_termination"); ok {
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
-			Attribute:  attr,
 			DeleteOnTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(v.(bool)),
 			},
@@ -418,37 +418,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if v, ok := d.GetOk("block_device_mapping"); ok {
-		maps := v.([]interface{})
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["volume_type"].(string))),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(id),
-			BlockDeviceMappings: mappings,
-		}
-		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
+		if err := setBlockDevice(v, conn, id); err != nil {
 			return err
 		}
 	}
@@ -572,37 +542,7 @@ func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("block_device_mapping") {
-		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["volume_type"].(string))),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(d.Id()),
-			BlockDeviceMappings: mappings,
-		}
-		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
+		if err := setBlockDevice(d.Get("block_device_mapping"), conn, d.Id()); err != nil {
 			return err
 		}
 	}
@@ -717,7 +657,7 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 		d.Set("user_data", "")
 	}
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
@@ -844,6 +784,43 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 		if err := d.Set("instance_status_set", instances); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func setBlockDevice(v interface{}, conn *fcu.Client, id string) error {
+	maps := v.([]interface{})
+	mappings := []*fcu.BlockDeviceMapping{}
+
+	for _, m := range maps {
+		f := m.(map[string]interface{})
+		mapping := &fcu.BlockDeviceMapping{
+			DeviceName: aws.String(f["device_name"].(string)),
+		}
+
+		e := f["ebs"].(map[string]interface{})
+		var del bool
+		if e["delete_on_termination"].(string) == "0" {
+			del = false
+		} else {
+			del = true
+		}
+
+		ebs := &fcu.EbsBlockDevice{
+			DeleteOnTermination: aws.Bool(del),
+		}
+
+		mapping.Ebs = ebs
+
+		mappings = append(mappings, mapping)
+	}
+
+	opts := &fcu.ModifyInstanceAttributeInput{
+		InstanceId:          aws.String(id),
+		BlockDeviceMappings: mappings,
+	}
+	if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
+		return err
 	}
 	return nil
 }
