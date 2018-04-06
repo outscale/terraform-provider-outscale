@@ -257,12 +257,15 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	for k, cfg := range opts.DhcpConfigurations {
 
 		dhcp := make(map[string]interface{})
-		var values []string
-		for _, v := range cfg.Values {
-			values = append(values, *v.Value)
+		if cfg.Key != nil {
+
+			var values []string
+			for _, v := range cfg.Values {
+				values = append(values, *v.Value)
+			}
+			dhcp[*cfg.Key] = values
+			dhcpConfiguration[k] = dhcp
 		}
-		dhcp[*cfg.Key] = values
-		dhcpConfiguration[k] = dhcp
 
 	}
 	d.Set("dhcp_options_id", d.Id())
