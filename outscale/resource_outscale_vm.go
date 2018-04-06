@@ -186,13 +186,17 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
+	pretty, err := json.MarshalIndent(resp, "", "  ")
+
+	fmt.Print("\n\n[DEBUG] RESPONSE ", string(pretty))
+
 	instance := resp.Reservations[0].Instances[0]
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(instance.BlockDeviceMappings))
 
 	d.Set("client_token", instance.ClientToken)
 
-	// d.Set("ebs_optimized", instance.EbsOptimized)
+	d.Set("ebs_optimized", instance.EbsOptimized)
 
 	d.Set("image_id", instance.ImageId)
 
@@ -218,7 +222,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
@@ -384,37 +388,7 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("block_device_mapping") {
-		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["volume_type"].(string))),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(d.Id()),
-			BlockDeviceMappings: mappings,
-		}
-		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
+		if err := setBlockDevice(d.Get("block_device_mapping"), conn, d.Id()); err != nil {
 			return err
 		}
 	}
@@ -541,6 +515,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"disable_api_termination": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Computed: true,
 		},
 		"dry_run": {
 			Type:     schema.TypeBool,
@@ -1634,13 +1609,13 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 	var stateConf *resource.StateChangeConf
 
 	switch attr {
-	case "instanceType":
+	case "instance_type":
 		fallthrough
-	case "userData":
+	case "user_data":
 		fallthrough
-	case "ebsOptimized":
+	case "ebs_optimized":
 		fallthrough
-	case "deleteOnTermination":
+	case "delete_on_termination":
 		stateConf, err = stopInstance(instanceAttrOpts, conn, attr)
 	}
 
@@ -1655,13 +1630,13 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 	}
 
 	switch attr {
-	case "instanceType":
+	case "instance_type":
 		fallthrough
-	case "userData":
+	case "user_data":
 		fallthrough
-	case "ebsOptimized":
+	case "ebs_optimized":
 		fallthrough
-	case "deleteOnTermination":
+	case "delete_on_termination":
 		err = startInstance(instanceAttrOpts, stateConf, conn, attr)
 	}
 
