@@ -105,7 +105,7 @@ func datasourceOutscaleLinInternetGatewaysRead(d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateways id (%s)", err)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return internetGatewaysDescriptionAttributes(d, resp.InternetGateways)

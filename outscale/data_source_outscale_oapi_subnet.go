@@ -107,7 +107,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("state", subnet.State)
 	d.Set("tag", tagsToMap(subnet.Tags))
 	d.Set("available_ips_count", subnet.AvailableIpAddressCount)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

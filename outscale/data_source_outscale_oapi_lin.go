@@ -99,7 +99,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("tenancy", vpc.InstanceTenancy)
 	d.Set("state", vpc.State)
 	d.Set("tag", tagsToMap(vpc.Tags))
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

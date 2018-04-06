@@ -107,7 +107,7 @@ func resourceOutscaleOAPILinRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("ip_range", resp.Vpcs[0].CidrBlock)
 	d.Set("tenancy", resp.Vpcs[0].InstanceTenancy)
 	d.Set("dhcp_options_set_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("lin_id", resp.RequesterId)
+	d.Set("lin_id", resp.RequestId)
 
 	if err := d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags)); err != nil {
 		return err

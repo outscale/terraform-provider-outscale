@@ -107,7 +107,7 @@ func resourceOutscaleLinInternetGatewayLinkRead(d *schema.ResourceData, meta int
 	}
 
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
