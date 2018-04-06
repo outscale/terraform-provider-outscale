@@ -35,7 +35,7 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 				Config: testAccCheckOutscaleVMConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_vm_attributes.outscale_vm_attributes", "disable_api_termination", "false"),
+						"outscale_vm_attributes.outscale_vm_attributes", "ebs_optimized", "false"),
 				),
 			},
 		},
@@ -63,7 +63,9 @@ resource "outscale_vm" "outscale_vm" {
 
     #security_group = ["sg-c73d3b6b"]
 
-    disable_api_termination = false
+		disable_api_termination = true
+		
+		#ebs_optimized = true
 
 }
 
@@ -74,8 +76,21 @@ resource "outscale_vm_attributes" "outscale_vm_attributes" {
     instance_id = "${outscale_vm.outscale_vm.0.id}"
 
     attribute = "disableApiTermination"
-
-    disable_api_termination = true
+		disable_api_termination = false
+		
+		#attribute = "instanceType"
+		#instance_type = "t2.micro"
+		
+    #attribute = "ebsOptimized"
+		#ebs_optimized = false
+		
+		#attribute = "blockDeviceMapping"
+		#block_device_mapping {
+		#	device_name = "/dev/sda1"
+		#		ebs {
+		#			delete_on_termination = true
+		#		}
+		#}
 
 }`
 }
