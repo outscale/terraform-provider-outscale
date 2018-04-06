@@ -17,7 +17,7 @@ func datasourceOutscaleLinInternetGateway() *schema.Resource {
 		Read: datasourceOutscaleLinInternetGatewayRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"attachement_set": {
+			"attachment_set": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -35,7 +35,7 @@ func datasourceOutscaleLinInternetGateway() *schema.Resource {
 			},
 			"internet_gateway_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"tag_set": dataSourceTagsSchema(),
 			"request_id": {
@@ -88,16 +88,7 @@ func datasourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta inter
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 	d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 
-	err = d.Set("attachement_set", flattenInternetGwAttachements(resp.InternetGateways[0].Attachments))
-	if err != nil {
-		return err
-	}
-
-	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("attachment_set", flattenInternetGwAttachements(resp.InternetGateways[0].Attachments))
 }
 
 func flattenInternetGwAttachements(attachements []*fcu.InternetGatewayAttachment) []map[string]interface{} {

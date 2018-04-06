@@ -79,8 +79,8 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 
 	if id := d.Get("subnet_id"); id != "" {
 		var ids []*string
-		for _, v := range id.([]string) {
-			ids = append(ids, aws.String(v))
+		for _, v := range id.([]interface{}) {
+			ids = append(ids, aws.String(v.(string)))
 		}
 		req.SubnetIds = ids
 	}

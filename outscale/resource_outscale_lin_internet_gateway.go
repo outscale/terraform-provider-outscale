@@ -74,16 +74,11 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 	d.Set("request_id", resp.RequestId)
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 
-	err = d.Set("attachement_set", flattenInternetAttachements(resp.InternetGateways[0].Attachments))
-	if err != nil {
+	if err := d.Set("attachement_set", flattenInternetAttachements(resp.InternetGateways[0].Attachments)); err != nil {
 		return err
 	}
 
-	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 }
 
 func resourceOutscaleLinInternetGatewayDelete(d *schema.ResourceData, meta interface{}) error {
