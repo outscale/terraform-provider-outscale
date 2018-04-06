@@ -151,8 +151,12 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 			},
 		}
 	} else {
-		createOpts = &fcu.CreateDhcpOptionsInput{
-			DhcpConfigurations: []*fcu.NewDhcpConfiguration{},
+		createOpts = &fcu.CreateDhcpOptionsInput{}
+		createOpts.DhcpConfigurations = []*fcu.NewDhcpConfiguration{
+			&fcu.NewDhcpConfiguration{
+				Key:    aws.String(""),
+				Values: []*string{},
+			},
 		}
 	}
 
@@ -192,6 +196,9 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 			"Error waiting for DHCP Options (%s) to become available: %s",
 			d.Id(), err)
 	}
+
+	dhcp := make([]map[string]interface{}, 0)
+	d.Set("dhcp_configuration_set", dhcp)
 
 	return resourceOutscaleDHCPOptionRead(d, meta)
 }
@@ -245,22 +252,23 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	opts := resp.DhcpOptions[0]
 	d.Set("tag_set", tagsToMap(opts.Tags))
 
-	for _, cfg := range opts.DhcpConfigurations {
-		tfKey := strings.Replace(*cfg.Key, "-", "_", -1)
+	dhcpConfiguration := make([]map[string]interface{}, len(resp.DhcpOptions))
 
-		if _, ok := d.Get(tfKey).(string); ok {
-			d.Set(tfKey, cfg.Values[0].Value)
-		} else {
-			values := make([]string, 0, len(cfg.Values))
-			for _, v := range cfg.Values {
-				values = append(values, *v.Value)
-			}
+	for k, cfg := range opts.DhcpConfigurations {
 
-			d.Set(tfKey, values)
+		dhcp := make(map[string]interface{})
+		var values []string
+		for _, v := range cfg.Values {
+			values = append(values, *v.Value)
 		}
-	}
+		dhcp[*cfg.Key] = values
+		dhcpConfiguration[k] = dhcp
 
-	return nil
+	}
+	d.Set("dhcp_options_id", d.Id())
+	d.Set("request_id", resp.RequestId)
+
+	return d.Set("dhcp_configuration_set", dhcpConfiguration)
 }
 
 func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {

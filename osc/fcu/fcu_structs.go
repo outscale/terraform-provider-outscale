@@ -3945,7 +3945,8 @@ func (s *DescribeCustomerGatewaysInput) SetFilters(v []*Filter) *DescribeCustome
 // Contains the output of DescribeDhcpOptions.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsResult
 type DescribeDhcpOptionsOutput struct {
-	_ struct{} `type:"structure"`
+	_         struct{} `type:"structure"`
+	RequestId *string  `locationName:"requestId" type:"string"`
 
 	// Information about one or more DHCP options sets.
 	DhcpOptions []*DhcpOptions `locationName:"dhcpOptionsSet" locationNameList:"item" type:"list"`
@@ -5303,5 +5304,58 @@ func (s ReplaceRouteTableAssociationOutput) GoString() string {
 // SetNewAssociationId sets the NewAssociationId field's value.
 func (s *ReplaceRouteTableAssociationOutput) SetNewAssociationId(v string) *ReplaceRouteTableAssociationOutput {
 	s.NewAssociationId = &v
+	return s
+}
+
+// String returns the string representation
+func (s DescribeVpcsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcsInput) SetDryRun(v bool) *DescribeVpcsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpcsInput) SetFilters(v []*Filter) *DescribeVpcsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpcIds sets the VpcIds field's value.
+func (s *DescribeVpcsInput) SetVpcIds(v []*string) *DescribeVpcsInput {
+	s.VpcIds = v
+	return s
+}
+
+// // Contains the output of DescribeVpcs.
+// // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcsResult
+// type DescribeVpcsOutput struct {
+// 	_ struct{} `type:"structure"`
+
+// 	// Information about one or more VPCs.
+// 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+// }
+
+// // String returns the string representation
+// func (s DescribeVpcsOutput) String() string {
+// 	return awsutil.Prettify(s)
+// }
+
+// GoString returns the string representation
+// func (s DescribeVpcsOutput) GoString() string {
+// 	return s.String()
+// }
+
+// SetVpcs sets the Vpcs field's value.
+func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
+	s.Vpcs = v
 	return s
 }

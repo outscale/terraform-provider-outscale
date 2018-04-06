@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/aws-sdk-go/service/ec2"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -45,7 +47,7 @@ func resourceOutscaleDHCPOptionLinkCreate(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).FCU
 
 	log.Printf(
-		"[INFO] Creating DHCP Options association: %s => %s",
+		"[INFO] Creating DHCP Options Link: %s => %s",
 		d.Get("vpc_id").(string),
 		d.Get("dhcp_options_id").(string))
 
@@ -82,7 +84,7 @@ func resourceOutscaleDHCPOptionLinkRead(d *schema.ResourceData, meta interface{}
 
 	vpc := vpcRaw.(*ec2.Vpc)
 	if *vpc.VpcId != d.Get("vpc_id") || *vpc.DhcpOptionsId != d.Get("dhcp_options_id") {
-		log.Printf("[INFO] It seems the DHCP Options association is gone. Deleting reference from Graph...")
+		log.Printf("[INFO] It seems the DHCP Options Link is gone. Deleting reference from Graph...")
 		d.SetId("")
 	}
 
@@ -107,5 +109,31 @@ func resourceOutscaleDHCPOptionLinkDelete(d *schema.ResourceData, meta interface
 
 // DHCP Options Asociations cannot be updated.
 func resourceAwsVpcDhcpOptionsAssociationUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceAwsVpcDhcpOptionsAssociationCreate(d, meta)
+	return resourceOutscaleDHCPOptionLinkCreate(d, meta)
+}
+
+func VPCStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		DescribeVpcOpts := &fcu.DescribeVpcsInput{
+			VpcIds: []*string{aws.String(id)},
+		}
+		resp, err := conn.VM.DescribeVpcs(DescribeVpcOpts)
+		if err != nil {
+			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVpcID.NotFound" {
+				resp = nil
+			} else {
+				log.Printf("Error on VPCStateRefresh: %s", err)
+				return nil, "", err
+			}
+		}
+
+		if resp == nil {
+			// Sometimes AWS just has consistency issues and doesn't see
+			// our instance yet. Return an empty state.
+			return nil, "", nil
+		}
+
+		vpc := resp.Vpcs[0]
+		return vpc, *vpc.State, nil
+	}
 }

@@ -1,0 +1,88 @@
+package outscale
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+)
+
+func TestAccOutscaleDHCPOptionsLink_basic(t *testing.T) {
+	var v fcu.Vpc
+	var d fcu.DhcpOptions
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDHCPOptionsLinkDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccDHCPOptionsLinkConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
+					testAccCheckOutscaleLinExists("outscale_lin.foo", &v),
+					testAccCheckDHCPOptionsLinkExist("outscale_dhcp_options_link.foo", &v),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckDHCPOptionsLinkDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_dhcp_options_link" {
+			continue
+		}
+
+		// Try to find the VPC associated to the DHCP Options set
+		vpcs, err := findVPCsByDHCPOptionsID(conn, rs.Primary.Attributes["dhcp_options_id"])
+		if err != nil {
+			return err
+		}
+
+		if len(vpcs) > 0 {
+			return fmt.Errorf("DHCP Options association is still associated to %d VPCs.", len(vpcs))
+		}
+	}
+
+	return nil
+}
+
+func testAccCheckDHCPOptionsLinkExist(n string, vpc *fcu.Vpc) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No DHCP Options Set association ID is set")
+		}
+
+		if *vpc.DhcpOptionsId != rs.Primary.Attributes["dhcp_options_id"] {
+			return fmt.Errorf("VPC %s does not have DHCP Options Set %s associated", *vpc.VpcId, rs.Primary.Attributes["dhcp_options_id"])
+		}
+
+		if *vpc.VpcId != rs.Primary.Attributes["vpc_id"] {
+			return fmt.Errorf("DHCP Options Set %s is not associated with VPC %s", rs.Primary.Attributes["dhcp_options_id"], *vpc.VpcId)
+		}
+
+		return nil
+	}
+}
+
+const testAccDHCPOptionsLinkConfig = `
+resource "outscale_lin" "foo" {
+	cidr_block = "10.1.0.0/16"
+}
+resource "outscale_dhcp_option" "outscale_dhcp_option" {}
+
+resource "outscale_dhcp_options_link" "foo" {
+	vpc_id = "${aws_vpc.foo.id}"
+	dhcp_options_id = "${aws_vpc_dhcp_options.foo.id}"
+}
+`

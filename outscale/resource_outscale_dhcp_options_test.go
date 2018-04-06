@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccAWSDHCPOptions_basic(t *testing.T) {
+func TestAccOutscaleDHCPOptions_basic(t *testing.T) {
 	var d fcu.DhcpOptions
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -205,5 +205,5 @@ func testAccCheckDHCPOptionsDelete(n string) resource.TestCheckFunc {
 }
 
 const testAccDHCPOptionsConfig = `
-resource "outscale_dhcp_option" "outscale_dhcp_option" {}
+resource "outscale_dhcp_option" "foo" {}
 `
