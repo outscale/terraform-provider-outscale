@@ -4243,6 +4243,7 @@ type DescribeRouteTablesOutput struct {
 
 	// Information about one or more route tables.
 	RouteTables []*RouteTable `locationName:"routeTableSet" locationNameList:"item" type:"list"`
+	RequestId   *string       `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -4461,6 +4462,8 @@ type CreateRouteTableOutput struct {
 
 	// Information about the route table.
 	RouteTable *RouteTable `locationName:"routeTable" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
