@@ -76,21 +76,13 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_dhcp_option" {
+		if rs.Type != "aws_vpc_dhcp_options" {
 			continue
 		}
-
-		// Try to find the resource
-		// resp, err := conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
-		// 	DhcpOptionsIds: []*string{
-		// 		aws.String(rs.Primary.ID),
-		// 	},
-		// })
 
 		var resp *fcu.DescribeDhcpOptionsOutput
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
 			resp, err = conn.VM.DescribeDhcpOptions(&fcu.DescribeDhcpOptionsInput{
 				DhcpOptionsIds: []*string{
 					aws.String(rs.Primary.ID),
@@ -105,24 +97,13 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		if err != nil {
-
-			return fmt.Errorf("Error deleting DHCP Options: %s", err)
+		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionsID.NotFound") {
+			return nil
 		}
-
-		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionID.NotFound") {
-			continue
-		}
-
 		if err == nil {
 			if len(resp.DhcpOptions) > 0 {
 				return fmt.Errorf("still exists")
 			}
-
-			return nil
-		}
-
-		if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionsID.NotFound") {
 			return nil
 		}
 	}

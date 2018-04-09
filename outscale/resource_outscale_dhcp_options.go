@@ -229,44 +229,26 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error describing DHCP Options: %s", err)
 	}
 
-	// resp, err := conn.VM.DescribeDhcpOptions(req)
-	// if err != nil {
-	// 	ec2err, ok := err.(awserr.Error)
-	// 	if !ok {
-	// 		return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
-	// 	}
-
-	// 	if ec2err.Code() == "InvalidDhcpOptionID.NotFound" {
-	// 		log.Printf("[WARN] DHCP Options (%s) not found, removing from state", d.Id())
-	// 		d.SetId("")
-	// 		return nil
-	// 	}
-
-	// 	return fmt.Errorf("Error retrieving DHCP Options: %s", err.Error())
-	// }
-
-	// if len(resp.DhcpOptions) == 0 {
-	// 	return nil
-	// }
-
 	opts := resp.DhcpOptions[0]
 	d.Set("tag_set", tagsToMap(opts.Tags))
 
-	dhcpConfiguration := make([]map[string]interface{}, len(resp.DhcpOptions))
+	var dhcpConfiguration []map[string]interface{}
 
-	for k, cfg := range opts.DhcpConfigurations {
-
+	for _, cfg := range opts.DhcpConfigurations {
 		dhcp := make(map[string]interface{})
 		if cfg.Key != nil {
-
-			var values []string
+			var values []map[string]interface{}
 			for _, v := range cfg.Values {
-				values = append(values, *v.Value)
+				values = append(values, map[string]interface{}{
+					"value": *v.Value,
+				})
 			}
-			dhcp[*cfg.Key] = values
-			dhcpConfiguration[k] = dhcp
-		}
 
+			dhcp["key"] = *cfg.Key
+			dhcp["value_set"] = values
+
+			dhcpConfiguration = append(dhcpConfiguration, dhcp)
+		}
 	}
 	d.Set("dhcp_options_id", d.Id())
 	d.Set("request_id", resp.RequestId)
@@ -279,12 +261,6 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
 		log.Printf("[INFO] Deleting DHCP Options ID %s...", d.Id())
-
-		// _, err := conn.VM.DeleteDhcpOptions(&fcu.DeleteDhcpOptionsInput{
-		// 	DhcpOptionsId: aws.String(d.Id()),
-		// })
-
-		//	var resp *fcu.DeleteDhcpOptionsOutput
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
@@ -299,9 +275,6 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 			}
 			return nil
 		})
-		// if err != nil {
-		// 	return fmt.Errorf("Error creating DHCP Options Set: %s, err", err)
-		// }
 
 		if err == nil {
 			return nil
@@ -318,8 +291,6 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 		case "InvalidDhcpOptionsID.NotFound":
 			return nil
 		case "DependencyViolation":
-			// If it is a dependency violation, we want to disassociate
-			// all VPCs using the given DHCP Options ID, and retry deleting.
 			vpcs, err2 := findVPCsByDHCPOptionsID(conn, d.Id())
 			if err2 != nil {
 				log.Printf("[ERROR] %s", err2)
@@ -350,8 +321,6 @@ func resourceDHCPOptionsStateRefreshFunc(conn *fcu.Client, id string) resource.S
 			},
 		}
 
-		//resp, err := conn.VM.DescribeDhcpOptions(DescribeDhcpOpts)
-
 		var resp *fcu.DescribeDhcpOptionsOutput
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -366,11 +335,6 @@ func resourceDHCPOptionsStateRefreshFunc(conn *fcu.Client, id string) resource.S
 			return nil
 		})
 
-		// if err != nil {
-
-		//     return fmt.Errorf("Error creating NAT Gateway: %s", err)
-		// }
-
 		if err != nil {
 
 			if strings.Contains(fmt.Sprint(err), "InvalidDhcpOptionsID.NotFound") {
@@ -382,8 +346,6 @@ func resourceDHCPOptionsStateRefreshFunc(conn *fcu.Client, id string) resource.S
 		}
 
 		if resp == nil {
-			// Sometimes AWS just has consistency issues and doesn't see
-			// our instance yet. Return an empty state.
 			return nil, "", nil
 		}
 
@@ -421,14 +383,6 @@ func findVPCsByDHCPOptionsID(conn *fcu.Client, id string) ([]*fcu.Vpc, error) {
 	if err != nil {
 		return nil, fmt.Errorf("InvalidVpcID.NotFound: %s", err)
 	}
-
-	// resp, err := conn.VM.DescribeVpcs(req)
-	// if err != nil {
-	// 	if strings.Contains(fmt.Sprint(err), "InvalidVpcID.NotFound") {
-	// 		return nil, nil
-	// 	}
-	// 	return nil, err
-	// }
 
 	return resp.Vpcs, nil
 }
