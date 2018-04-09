@@ -12,17 +12,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleRouteTable() *schema.Resource {
+func resourceOutscaleOAPIRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleRouteTableCreate,
-		Read:   resourceOutscaleRouteTableRead,
-		Delete: resourceOutscaleRouteTableDelete,
+		Create: resourceOutscaleOAPIRouteTableCreate,
+		Read:   resourceOutscaleOAPIRouteTableRead,
+		Delete: resourceOutscaleOAPIRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceOutscaleRouteTableImportState,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"vpc_id": {
+			"lin_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -36,46 +36,45 @@ func resourceOutscaleRouteTable() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag":     tagsSchema(),
-			"tag_set": tagsSchemaComputed(),
+			"tag": tagsSchema(),
 
-			"propagating_vgw_set": {
+			"route_propagating_vpn_gateway": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
-			"route_set": {
+			"route": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"destination_cidr_block": {
+						"destination_ip_range": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"destination_prefix_list_id": {
+						"destinaton_prefix_list_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"gateway_id": {
+						"vpn_gateway_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_id": {
+						"vm_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_owner_id": {
+						"vm_account_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"network_interface_id": {
+						"nic_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"origin": {
+						"creation_method": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -83,14 +82,14 @@ func resourceOutscaleRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vpc_peering_connection_id": {
+						"lin_peering_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"association_set": {
+			"link": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -99,7 +98,7 @@ func resourceOutscaleRouteTable() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"route_table_association_id": {
+						"route_table_to_subnet_link_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -118,11 +117,11 @@ func resourceOutscaleRouteTable() *schema.Resource {
 	}
 }
 
-func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	createOpts := &fcu.CreateRouteTableInput{
-		VpcId: aws.String(d.Get("vpc_id").(string)),
+		VpcId: aws.String(d.Get("lin_id").(string)),
 	}
 	log.Printf("[DEBUG] RouteTable create config: %#v", createOpts)
 
@@ -153,7 +152,7 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"ready"},
-		Refresh: resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -166,22 +165,22 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 		if err := setTags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tag")
 	}
 
 	a := make([]interface{}, 0)
 
-	d.Set("tag_set", a)
-	d.Set("route_set", a)
-	d.Set("association_set", a)
+	d.Set("tag", a)
+	d.Set("route", a)
+	d.Set("link", a)
 
-	return resourceOutscaleRouteTableRead(d, meta)
+	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
 
-func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtRaw, _, err := resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id())()
+	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id())()
 	if err != nil {
 		return err
 	}
@@ -191,27 +190,27 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	rt := rtRaw.(*fcu.RouteTable)
-	d.Set("vpc_id", rt.VpcId)
+	d.Set("lin_id", rt.VpcId)
 
 	propagatingVGWs := make([]string, 0, len(rt.PropagatingVgws))
 	for _, vgw := range rt.PropagatingVgws {
 		propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
 	}
-	d.Set("propagating_vgw_set", propagatingVGWs)
+	d.Set("route_propagating_vpn_gateway", propagatingVGWs)
 
-	d.Set("tag_set", tagsToMap(rt.Tags))
+	d.Set("route", setOAPIRouteSet(rt.Routes))
 
-	if err := d.Set("route_set", setRouteSet(rt.Routes)); err != nil {
-		return err
-	}
+	d.Set("link", setOAPIAssociactionSet(rt.Associations))
 
-	return d.Set("association_set", setAssociactionSet(rt.Associations))
+	d.Set("tag", tagsToMap(rt.Tags))
+
+	return nil
 }
 
-func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtRaw, _, err := resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id())()
+	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id())()
 	if err != nil {
 		return err
 	}
@@ -275,7 +274,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
-		Refresh: resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -287,7 +286,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var resp *fcu.DescribeRouteTablesOutput
@@ -323,7 +322,7 @@ func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) res
 	}
 }
 
-func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
+func setOAPIRouteSet(rt []*fcu.Route) []map[string]interface{} {
 
 	route := make([]map[string]interface{}, len(rt))
 
@@ -344,31 +343,31 @@ func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
 			m := make(map[string]interface{})
 
 			if r.DestinationCidrBlock != nil {
-				m["destination_cidr_block"] = *r.DestinationCidrBlock
+				m["destination_ip_range"] = *r.DestinationCidrBlock
 			}
 			if r.DestinationPrefixListId != nil {
-				m["destination_prefix_list_id"] = *r.DestinationPrefixListId
+				m["destinaton_prefix_list_id"] = *r.DestinationPrefixListId
 			}
 			if r.GatewayId != nil {
-				m["gateway_id"] = *r.GatewayId
+				m["vpn_gateway_id"] = *r.GatewayId
 			}
 			if r.NatGatewayId != nil {
 				m["nat_gateway_id"] = *r.NatGatewayId
 			}
 			if r.InstanceId != nil {
-				m["instance_id"] = *r.InstanceId
+				m["vm_id"] = *r.InstanceId
 			}
 			if r.InstanceOwnerId != nil {
-				m["instance_owner_id"] = *r.InstanceOwnerId
+				m["vm_account_id"] = *r.InstanceOwnerId
 			}
 			if r.VpcPeeringConnectionId != nil {
-				m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
+				m["lin_peering_id"] = *r.VpcPeeringConnectionId
 			}
 			if r.NetworkInterfaceId != nil {
-				m["network_interface_id"] = *r.NetworkInterfaceId
+				m["nic_id"] = *r.NetworkInterfaceId
 			}
 			if r.Origin != nil {
-				m["origin"] = *r.Origin
+				m["creation_method"] = *r.Origin
 			}
 			if r.State != nil {
 				m["state"] = *r.State
@@ -381,7 +380,7 @@ func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
 	return route
 }
 
-func setAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
+func setOAPIAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
 	association := make([]map[string]interface{}, len(rt))
 
 	if len(rt) > 0 {
@@ -392,7 +391,7 @@ func setAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{
 				m["main"] = *r.Main
 			}
 			if r.RouteTableAssociationId != nil {
-				m["route_table_association_id"] = *r.RouteTableAssociationId
+				m["route_table_to_subnet_link_id"] = *r.RouteTableAssociationId
 			}
 			if r.RouteTableId != nil {
 				m["route_table_id"] = *r.RouteTableId

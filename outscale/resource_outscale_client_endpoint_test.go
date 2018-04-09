@@ -186,8 +186,20 @@ func testAccCheckCustomerGatewayDestroy(s *terraform.State) error {
 			Values: []*string{aws.String(rs.Primary.ID)},
 		}
 
-		resp, err := conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
-			Filters: []*fcu.Filter{gatewayFilter},
+		var resp *fcu.DescribeCustomerGatewaysOutput
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
+				Filters: []*fcu.Filter{gatewayFilter},
+			})
+
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
 		})
 
 		if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {

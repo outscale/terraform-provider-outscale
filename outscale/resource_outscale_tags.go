@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -250,7 +249,6 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
 				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      remove,
@@ -269,7 +267,6 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				fmt.Printf("[DEBUG] Creating tag: %v for %s", create, d.Id())
 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
 					Resources: []*string{aws.String(d.Id())},
 					Tags:      create,
@@ -341,8 +338,6 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 		result = make([]map[string]string, 0)
 	}
 
-	fmt.Printf("[DEBUG] TAG_SET %s", result)
-
 	return result
 }
 
@@ -397,9 +392,7 @@ func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
 func tagIgnored(t *fcu.Tag) bool {
 	filter := []string{"^outscale:"}
 	for _, v := range filter {
-		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
 		if r, _ := regexp.MatchString(v, *t.Key); r == true {
-			log.Printf("[DEBUG] Found Outscale specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
 			return true
 		}
 	}
@@ -409,9 +402,7 @@ func tagIgnored(t *fcu.Tag) bool {
 func tagDescIgnored(t *fcu.TagDescription) bool {
 	filter := []string{"^outscale:"}
 	for _, v := range filter {
-		log.Printf("[DEBUG] Matching %v with %v\n", v, *t.Key)
 		if r, _ := regexp.MatchString(v, *t.Key); r == true {
-			log.Printf("[DEBUG] Found AWS specific s %s (val: %s), ignoring.\n", *t.Key, *t.Value)
 			return true
 		}
 	}
