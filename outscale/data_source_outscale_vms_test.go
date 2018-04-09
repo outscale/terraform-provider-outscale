@@ -44,15 +44,11 @@ const testAccVMSDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
 }
 
 resource "outscale_vm" "basic2" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
 }
 
 data "outscale_vms" "basic_web" {
