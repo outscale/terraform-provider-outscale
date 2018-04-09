@@ -76,7 +76,7 @@ func testAccCheckDHCPOptionsDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "aws_vpc_dhcp_options" {
+		if rs.Type != "outscale_dhcp_option" {
 			continue
 		}
 
