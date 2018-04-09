@@ -35,7 +35,7 @@ func UnmarshalErrorHandler(r *http.Response) error {
 
 	err = xml.Unmarshal(data, &v)
 	if err != nil {
-		return fmt.Errorf("error: %v", err)
+		return fmt.Errorf("error unmarshalling response %v", err)
 	}
 
 	// Response body format is not consistent between metadata endpoints.

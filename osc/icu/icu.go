@@ -38,8 +38,6 @@ func NewICUClient(config osc.Config) (*Client, error) {
 	config.UserAgent = osc.UserAgent
 	config.Client = &http.Client{}
 
-	fmt.Printf("\n\n[DEBUG] CONFIG => %v\n\n", config)
-
 	c := osc.Client{
 		Config:                config,
 		Signer:                s,

@@ -31,14 +31,11 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
 
 	if err != nil {
-
-		fmt.Printf("[DEBUG ERROR] REQ => %v => ERR %s", req, err)
 		return nil, err
 	}
-
-	fmt.Printf("[DEBUG ERROR] REQ => %v", req)
 
 	err = v.client.Do(context.TODO(), req, output)
 	if err != nil {

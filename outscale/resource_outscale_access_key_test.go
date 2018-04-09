@@ -40,6 +40,9 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 
 		// Try to get access key
 		resp, err := client_icu.API.ListAccessKeys(nil)
+		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
+			return nil
+		}
 		if err == nil {
 			if len(resp.AccessKeyMetadata) > 0 {
 				return fmt.Errorf("still exist.")
@@ -47,9 +50,6 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 			return nil
 		}
 
-		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
-			return err
-		}
 	}
 
 	return nil
@@ -94,5 +94,8 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 }
 
 const testAccOutscaleAccessKeyConfig = `
-resource "outscale_api_key" "a_key" {}
+resource "outscale_api_key" "a_key" {
+	#access_key_id = "7E4U4AQ0CGLTWB78Q38V"
+	#secret_access_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"
+}
 `
