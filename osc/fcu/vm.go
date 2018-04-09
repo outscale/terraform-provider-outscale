@@ -134,7 +134,7 @@ func (v VMOperations) DescribeInstances(input *DescribeInstancesInput) (*Describ
 
 // DescribeInstances method
 func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error {
-	inURL := "/?Action=ModifyInstanceKeypair"
+	inURL := "/"
 	endpoint := "ModifyInstanceKeypair"
 
 	if input == nil {

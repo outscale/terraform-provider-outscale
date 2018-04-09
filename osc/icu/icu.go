@@ -17,7 +17,7 @@ const ICU = "icu"
 //Client manages the FCU API
 type Client struct {
 	client *osc.Client
-	ICU    ICUService
+	API    ICUService
 }
 
 // NewFCUClient return a client to operate FCU resources
@@ -38,6 +38,8 @@ func NewICUClient(config osc.Config) (*Client, error) {
 	config.UserAgent = osc.UserAgent
 	config.Client = &http.Client{}
 
+	fmt.Printf("\n\n[DEBUG] CONFIG => %v\n\n", config)
+
 	c := osc.Client{
 		Config:                config,
 		Signer:                s,
@@ -48,7 +50,7 @@ func NewICUClient(config osc.Config) (*Client, error) {
 	}
 
 	f := &Client{client: &c,
-		ICU: ICUOperations{client: &c},
+		API: ICUOperations{client: &c},
 	}
 	return f, nil
 }

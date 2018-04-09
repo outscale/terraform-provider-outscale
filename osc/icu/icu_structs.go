@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 )
 
 const (
@@ -341,11 +342,11 @@ type ListAccessKeysInput struct {
 	// with no spaces. You can also include any of the following characters: _+=,.@-
 	UserName *string `min:"1" type:"string"`
 
-	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+	Tags []*common.Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
 // SetTags sets the Tags field's value.
-func (s *ListAccessKeysInput) SetTags(v []*Tag) *ListAccessKeysInput {
+func (s *ListAccessKeysInput) SetTags(v []*common.Tag) *ListAccessKeysInput {
 	s.Tags = v
 	return s
 }
@@ -417,6 +418,8 @@ type ListAccessKeysOutput struct {
 	// When IsTruncated is true, this element is present and contains the value
 	// to use for the Marker parameter in a subsequent pagination request.
 	Marker *string `min:"1" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -461,17 +464,10 @@ type AccessKeyMetadata struct {
 	Status *string `type:"string" enum:"statusType"`
 
 	// The name of the IAM user that the key is associated with.
-	UserName        *string `min:"1" type:"string"`
-	OwnerId         *string `type:"string"`
-	SecretAccessKey *string `type:"string"`
-	Tags            []*Tag  `locationName:"tagSet" locationNameList:"item" type:"list"`
-}
-type Tag struct {
-	_ struct{} `type:"structure"`
-
-	Key *string `locationName:"key" type:"string"`
-
-	Value *string `locationName:"value" type:"string"`
+	UserName        *string       `min:"1" type:"string"`
+	OwnerId         *string       `type:"string"`
+	SecretAccessKey *string       `type:"string"`
+	Tags            []*common.Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
