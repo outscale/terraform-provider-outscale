@@ -22,8 +22,8 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 				Config: testAccOutscaleAccessKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleAccessKeyExists("outscale_api_key.a_key", &conf),
-					// testAccCheckOutscaleAccessKeyAttributes(&conf),
-					// resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_key"),
+					testAccCheckOutscaleAccessKeyAttributes(&conf),
+					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_key"),
 				),
 			},
 		},
@@ -39,7 +39,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-		resp, err := client_icu.ICU.ListAccessKeys(nil)
+		resp, err := client_icu.API.ListAccessKeys(nil)
 		if err == nil {
 			if len(resp.AccessKeyMetadata) > 0 {
 				return fmt.Errorf("still exist.")
@@ -68,7 +68,7 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 
 		client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
 
-		resp, err := client_icu.ICU.ListAccessKeys(nil)
+		resp, err := client_icu.API.ListAccessKeys(nil)
 		if err != nil {
 			return err
 		}
