@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/aws-sdk-go/service/ec2"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
@@ -82,7 +81,7 @@ func resourceOutscaleDHCPOptionLinkRead(d *schema.ResourceData, meta interface{}
 		return nil
 	}
 
-	vpc := vpcRaw.(*ec2.Vpc)
+	vpc := vpcRaw.(*fcu.Vpc)
 	if *vpc.VpcId != d.Get("vpc_id") || *vpc.DhcpOptionsId != d.Get("dhcp_options_id") {
 		log.Printf("[INFO] It seems the DHCP Options Link is gone. Deleting reference from Graph...")
 		d.SetId("")
