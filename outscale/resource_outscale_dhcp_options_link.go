@@ -1,11 +1,12 @@
 package outscale
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -34,10 +35,16 @@ func getDHCPOptionLinkSchema() map[string]*schema.Schema {
 		"dhcp_options_id": {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		"vpc_id": {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
@@ -45,7 +52,7 @@ func getDHCPOptionLinkSchema() map[string]*schema.Schema {
 func resourceOutscaleDHCPOptionLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	log.Printf(
+	fmt.Printf(
 		"[INFO] Creating DHCP Options Link: %s => %s",
 		d.Get("vpc_id").(string),
 		d.Get("dhcp_options_id").(string))
@@ -53,16 +60,29 @@ func resourceOutscaleDHCPOptionLinkCreate(d *schema.ResourceData, meta interface
 	optsID := aws.String(d.Get("dhcp_options_id").(string))
 	vpcID := aws.String(d.Get("vpc_id").(string))
 
-	if _, err := conn.VM.AssociateDhcpOptions(&fcu.AssociateDhcpOptionsInput{
-		DhcpOptionsId: optsID,
-		VpcId:         vpcID,
-	}); err != nil {
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, err = conn.VM.AssociateDhcpOptions(&fcu.AssociateDhcpOptionsInput{
+			DhcpOptionsId: optsID,
+			VpcId:         vpcID,
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
 		return err
 	}
 
 	// Set the ID and return
 	d.SetId(*optsID + "-" + *vpcID)
-	log.Printf("[INFO] Association ID: %s", d.Id())
+	fmt.Printf("[INFO] Association ID: %s", d.Id())
 
 	return nil
 
@@ -70,22 +90,34 @@ func resourceOutscaleDHCPOptionLinkCreate(d *schema.ResourceData, meta interface
 
 func resourceOutscaleDHCPOptionLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	// Get the VPC that this association belongs to
-	vpcRaw, _, err := VPCStateRefreshFunc(conn, d.Get("vpc_id").(string))()
+	var resp *fcu.DescribeVpcsOutput
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		DescribeVpcOpts := &fcu.DescribeVpcsInput{
+			VpcIds: []*string{aws.String(d.Get("vpc_id").(string))},
+		}
+		resp, err = conn.VM.DescribeVpcs(DescribeVpcOpts)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 
 	if err != nil {
 		return err
 	}
 
-	if vpcRaw == nil {
-		return nil
-	}
-
-	vpc := vpcRaw.(*fcu.Vpc)
+	vpc := resp.Vpcs[0]
 	if *vpc.VpcId != d.Get("vpc_id") || *vpc.DhcpOptionsId != d.Get("dhcp_options_id") {
-		log.Printf("[INFO] It seems the DHCP Options Link is gone. Deleting reference from Graph...")
+		fmt.Printf("[INFO] It seems the DHCP Options Link is gone. Deleting reference from Graph...")
 		d.SetId("")
 	}
+
+	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }
@@ -93,22 +125,31 @@ func resourceOutscaleDHCPOptionLinkRead(d *schema.ResourceData, meta interface{}
 func resourceOutscaleDHCPOptionLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	log.Printf("[INFO] Disassociating DHCP Options Set %s from VPC %s...", d.Get("dhcp_options_id"), d.Get("vpc_id"))
-	if _, err := conn.VM.AssociateDhcpOptions(&fcu.AssociateDhcpOptionsInput{
-		DhcpOptionsId: aws.String("default"),
-		VpcId:         aws.String(d.Get("vpc_id").(string)),
-	}); err != nil {
+	fmt.Printf("[INFO] Disassociating DHCP Options Set %s from VPC %s...", d.Get("dhcp_options_id"), d.Get("vpc_id"))
+
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, err = conn.VM.AssociateDhcpOptions(&fcu.AssociateDhcpOptionsInput{
+			DhcpOptionsId: aws.String(d.Get("dhcp_options_id").(string)),
+			VpcId:         aws.String(d.Get("vpc_id").(string)),
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
 		return err
 	}
 
 	d.SetId("")
 	return nil
 
-}
-
-// DHCP Options Asociations cannot be updated.
-func resourceAwsVpcDhcpOptionsAssociationUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceOutscaleDHCPOptionLinkCreate(d, meta)
 }
 
 func VPCStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
@@ -118,7 +159,7 @@ func VPCStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc 
 		}
 		resp, err := conn.VM.DescribeVpcs(DescribeVpcOpts)
 		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVpcID.NotFound" {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpcID.NotFound") {
 				resp = nil
 			} else {
 				log.Printf("Error on VPCStateRefresh: %s", err)
@@ -127,8 +168,6 @@ func VPCStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc 
 		}
 
 		if resp == nil {
-			// Sometimes AWS just has consistency issues and doesn't see
-			// our instance yet. Return an empty state.
 			return nil, "", nil
 		}
 

@@ -9,32 +9,32 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleDHCPOptionsLink_basic(t *testing.T) {
+func TestAccOutscaleDHCPOptionsAssociation_basic(t *testing.T) {
 	var v fcu.Vpc
 	var d fcu.DhcpOptions
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckDHCPOptionsLinkDestroy,
+		CheckDestroy: testAccCheckDHCPOptionsAssociationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDHCPOptionsLinkConfig,
+				Config: testAccDHCPOptionsAssociationConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDHCPOptionsExists("outscale_dhcp_options.foo", &d),
+					testAccCheckDHCPOptionsExists("outscale_dhcp_option.foo", &d),
 					testAccCheckOutscaleLinExists("outscale_lin.foo", &v),
-					testAccCheckDHCPOptionsLinkExist("outscale_dhcp_options_link.foo", &v),
+					testAccCheckDHCPOptionsAssociationExist("outscale_dhcp_option_link.foo", &v),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckDHCPOptionsLinkDestroy(s *terraform.State) error {
+func testAccCheckDHCPOptionsAssociationDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_dhcp_options_link" {
+		if rs.Type != "outscale_dhcp_option_link" {
 			continue
 		}
 
@@ -52,7 +52,7 @@ func testAccCheckDHCPOptionsLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckDHCPOptionsLinkExist(n string, vpc *fcu.Vpc) resource.TestCheckFunc {
+func testAccCheckDHCPOptionsAssociationExist(n string, vpc *fcu.Vpc) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -75,14 +75,15 @@ func testAccCheckDHCPOptionsLinkExist(n string, vpc *fcu.Vpc) resource.TestCheck
 	}
 }
 
-const testAccDHCPOptionsLinkConfig = `
+const testAccDHCPOptionsAssociationConfig = `
 resource "outscale_lin" "foo" {
 	cidr_block = "10.1.0.0/16"
 }
-resource "outscale_dhcp_option" "outscale_dhcp_option" {}
 
-resource "outscale_dhcp_options_link" "foo" {
-	vpc_id = "${aws_vpc.foo.id}"
-	dhcp_options_id = "${aws_vpc_dhcp_options.foo.id}"
+resource "outscale_dhcp_option" "foo" {}
+
+resource "outscale_dhcp_option_link" "foo" {
+	vpc_id = "${outscale_lin.foo.id}"
+	dhcp_options_id = "${outscale_dhcp_option.foo.id}"
 }
 `
