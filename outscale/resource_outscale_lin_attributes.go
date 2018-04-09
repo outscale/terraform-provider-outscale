@@ -41,6 +41,10 @@ func resourceOutscaleLinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -146,6 +150,7 @@ func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Lin not found")
 	}
 
+	d.SetId(*resp.VpcId)
 	d.Set("vpc_id", resp.VpcId)
 	if resp.EnableDnsHostnames != nil {
 		d.Set("enable_dns_hostnames", *resp.EnableDnsHostnames.Value)
@@ -153,6 +158,8 @@ func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error
 	if resp.EnableDnsSupport != nil {
 		d.Set("enable_dns_support", *resp.EnableDnsSupport.Value)
 	}
+
+	d.Set("request_id", resp.RequesterId)
 
 	return nil
 }

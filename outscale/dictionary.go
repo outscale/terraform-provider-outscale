@@ -57,6 +57,9 @@ func init() {
 			"outscale_nat_service":          resourceOutscaleOAPINatService,
 			"outscale_subnet":               resourceOutscaleOAPISubNet,
 			"outscale_client_endpoint":      resourceOutscaleOAPICustomerGateway,
+			"outscale_route":                resourceOutscaleOAPIRoute,
+			"outscale_route_table":          resourceOutscaleOAPIRouteTable,
+			"outscale_route_table_link":     resourceOutscaleOAPIRouteTableAssociation,
 		},
 	}
 	datasources = Dictionary{
@@ -83,6 +86,13 @@ func init() {
 			"outscale_lin_internet_gateways": datasourceOutscaleLinInternetGateways,
 			"outscale_subnet":                dataSourceOutscaleSubnet,
 			"outscale_subnets":               dataSourceOutscaleSubnets,
+			"outscale_lin":                   dataSourceOutscaleVpc,
+			"outscale_lins":                  dataSourceOutscaleVpcs,
+			"outscale_lin_attributes":        dataSourceOutscaleVpcAttr,
+			"outscale_client_endpoint":       dataSourceOutscaleCustomerGateway,
+			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
+			"outscale_route_table":           dataSourceOutscaleRouteTable,
+			"outscale_route_tables":          dataSourceOutscaleRouteTables,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -102,6 +112,13 @@ func init() {
 			"outscale_subnets":               dataSourceOutscaleOAPISubnets,
 			"outscale_vm_state":              dataSourceOutscaleOAPIVMState,
 			"outscale_vms_state":             dataSourceOutscaleOAPIVMSState,
+			"outscale_lin":                   dataSourceOutscaleOAPIVpc,
+			"outscale_lins":                  dataSourceOutscaleOAPIVpcs,
+			"outscale_lin_attributes":        dataSourceOutscaleOAPIVpcAttr,
+			"outscale_client_endpoint":       dataSourceOutscaleOAPICustomerGateway,
+			"outscale_client_endpoints":      dataSourceOutscaleOAPICustomerGateways,
+			"outscale_route_table":           dataSourceOutscaleOAPIRouteTable,
+			"outscale_route_tables":          dataSourceOutscaleOAPIRouteTables,
 		},
 	}
 }
