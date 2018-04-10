@@ -31,6 +31,7 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
 	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
 
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
@@ -101,9 +102,18 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	fmt.Println(rel.Opaque)
 
-	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
-	if err != nil {
-		return nil, err
+	if strings.Contains(operation, "AccessKey") {
+		c.SetHeaders(req, "icu", operation)
+		h, err := c.Sign(req, reader, time.Now(), c.Config.Target)
+		fmt.Printf("[DEBUG] HEADER => %s", h)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return req, nil
