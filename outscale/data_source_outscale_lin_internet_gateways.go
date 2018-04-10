@@ -78,10 +78,10 @@ func datasourceOutscaleLinInternetGatewaysRead(d *schema.ResourceData, meta inte
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if insternetIDOk {
-		i := internetID.([]string)
+		i := internetID.([]interface{})
 		in := make([]*string, len(i))
 		for k, v := range i {
-			in[k] = aws.String(v)
+			in[k] = aws.String(v.(string))
 		}
 		params.InternetGatewayIds = in
 	}
