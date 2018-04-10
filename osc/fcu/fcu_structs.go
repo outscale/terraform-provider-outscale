@@ -34,7 +34,7 @@ type DescribeInstancesOutput struct {
 
 	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
 
@@ -60,7 +60,7 @@ type Reservation struct {
 
 	OwnerId *string `locationName:"ownerId" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" type:"string"`
 }
@@ -452,6 +452,8 @@ type DescribeInstanceAttributeOutput struct {
 	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
 
 	UserData *AttributeValue `locationName:"userData" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type AttributeBooleanValue struct {
@@ -515,7 +517,7 @@ type RunInstancesInput struct {
 
 	OwnerId *string `type:"string"`
 
-	RequesterId *string `type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `type:"string"`
 
@@ -1237,7 +1239,7 @@ type DescribeKeyPairsOutput struct {
 	// Information about one or more key pairs.
 	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -1754,7 +1756,7 @@ type DescribeVolumesOutput struct {
 	// Information about the volumes.
 	Volumes []*Volume `locationName:"volumeSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -1773,7 +1775,7 @@ func (s *DescribeVolumesOutput) SetNextToken(v string) *DescribeVolumesOutput {
 	return s
 }
 func (s *DescribeVolumesOutput) SetRequesterId(v string) *DescribeVolumesOutput {
-	s.RequesterId = &v
+	s.RequestId = &v
 	return s
 }
 
@@ -2105,7 +2107,7 @@ type DescribeInstanceStatusOutput struct {
 
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 func (s DescribeInstanceStatusOutput) String() string {
@@ -2302,7 +2304,7 @@ type DescribeSubnetsOutput struct {
 	// Information about one or more subnets.
 	Subnets []*Subnet `locationName:"subnetSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -2321,7 +2323,7 @@ func (s *DescribeSubnetsOutput) SetSubnets(v []*Subnet) *DescribeSubnetsOutput {
 	return s
 }
 func (s *DescribeSubnetsOutput) SetRequesterId(v *string) *DescribeSubnetsOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -2632,7 +2634,7 @@ type DescribeVpcsOutput struct {
 	// Information about one or more VPCs.
 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // Describes a VPC.
@@ -2921,7 +2923,7 @@ type DescribeInternetGatewaysOutput struct {
 
 	// Information about one or more Internet gateways.
 	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
-	RequesterId      *string            `locationName:"requestId" type:"string"`
+	RequestId        *string            `locationName:"requestId" type:"string"`
 }
 
 type DescribeVpcAttributeInput struct {
@@ -3011,7 +3013,7 @@ type DescribeVpcAttributeOutput struct {
 	// The ID of the VPC.
 	VpcId *string `locationName:"vpcId" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3032,7 +3034,7 @@ func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanVa
 
 // SetEnableDnsSupport sets the EnableDnsSupport field's value.
 func (s *DescribeVpcAttributeOutput) SetRequesterId(v *string) *DescribeVpcAttributeOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -4018,7 +4020,7 @@ type DescribeCustomerGatewaysOutput struct {
 	// Information about one or more customer gateways.
 	CustomerGateways []*CustomerGateway `locationName:"customerGatewaySet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -4089,7 +4091,7 @@ func (s *DescribeCustomerGatewaysOutput) SetCustomerGateways(v []*CustomerGatewa
 	return s
 }
 func (s *DescribeCustomerGatewaysOutput) SetRequesterId(v *string) *DescribeCustomerGatewaysOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -4648,6 +4650,7 @@ type DescribeRouteTablesOutput struct {
 
 	// Information about one or more route tables.
 	RouteTables []*RouteTable `locationName:"routeTableSet" locationNameList:"item" type:"list"`
+	RequestId   *string       `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -4866,6 +4869,8 @@ type CreateRouteTableOutput struct {
 
 	// Information about the route table.
 	RouteTable *RouteTable `locationName:"routeTable" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation

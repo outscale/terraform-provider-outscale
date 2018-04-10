@@ -70,7 +70,7 @@ func resourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 
 	err = d.Set("lin_to_lin_internet_gateway_link", flattenOAPIInternetAttachements(resp.InternetGateways[0].Attachments))

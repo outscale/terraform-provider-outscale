@@ -128,7 +128,7 @@ func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.Set("vpc_set", vpc_set)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
