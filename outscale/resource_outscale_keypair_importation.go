@@ -16,9 +16,6 @@ func resourceOutscaleKeyPairImportation() *schema.Resource {
 		Create: resourceKeyPairImportationCreate,
 		Read:   resourceKeyPairImportationRead,
 		Delete: resourceKeyPairImportationDelete,
-		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
-		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
