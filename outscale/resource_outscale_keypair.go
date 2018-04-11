@@ -105,7 +105,7 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("key_name", keyPair.KeyName)
 			d.Set("key_fingerprint", keyPair.KeyFingerprint)
 		}
-		d.Set("request_id", *resp.RequesterId)
+		d.Set("request_id", *resp.RequestId)
 		return nil
 
 	}

@@ -55,6 +55,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                        GetResource(fcu, "outscale_vm")(),
 			"outscale_keypair":                   GetResource(fcu, "outscale_keypair")(),
+			"outscale_keypair_importation":       GetResource(fcu, "outscale_keypair_importation")(),
 			"outscale_image":                     GetResource(fcu, "outscale_image")(),
 			"outscale_lin_internet_gateway_link": GetResource(fcu, "outscale_lin_internet_gateway_link")(),
 			"outscale_lin_internet_gateway":      GetResource(fcu, "outscale_lin_internet_gateway")(),
@@ -71,11 +72,12 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_attributes":            GetResource(fcu, "outscale_lin_attributes")(),
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
 			"outscale_subnet":                    GetResource(fcu, "outscale_subnet")(),
-			"outscale_keypair_importation":       GetResource(fcu, "outscale_keypair_importation")(),
+			"outscale_dhcp_option":               GetResource(fcu, "outscale_dhcp_option")(),
 			"outscale_client_endpoint":           GetResource(fcu, "outscale_client_endpoint")(),
 			"outscale_route":                     GetResource(fcu, "outscale_route")(),
 			"outscale_route_table":               GetResource(fcu, "outscale_route_table")(),
 			"outscale_route_table_link":          GetResource(fcu, "outscale_route_table_link")(),
+			"outscale_dhcp_option_link":          GetResource(fcu, "outscale_dhcp_option_link")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
