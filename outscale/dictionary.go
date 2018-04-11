@@ -58,6 +58,7 @@ func init() {
 			"outscale_route":                resourceOutscaleOAPIRoute,
 			"outscale_route_table":          resourceOutscaleOAPIRouteTable,
 			"outscale_route_table_link":     resourceOutscaleOAPIRouteTableAssociation,
+			"outscale_api_key":              resourceOutscaleOAPIIamAccessKey,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
