@@ -103,9 +103,8 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	fmt.Println(rel.Opaque)
 
 	if strings.Contains(operation, "AccessKey") {
-		c.SetHeaders(req, "icu", operation)
-		h, err := c.Sign(req, reader, time.Now(), c.Config.Target)
-		fmt.Printf("[DEBUG] HEADER => %s", h)
+		c.SetHeaders(req, "TinaIcuService", operation)
+		_, err := c.Sign(req, reader, time.Now(), c.Config.Target)
 		if err != nil {
 			return nil, err
 		}
