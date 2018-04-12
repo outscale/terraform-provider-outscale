@@ -85,7 +85,7 @@ func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 

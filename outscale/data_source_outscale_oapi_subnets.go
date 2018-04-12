@@ -146,7 +146,7 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

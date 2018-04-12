@@ -80,7 +80,7 @@ func datasourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta i
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateway id (%s)", err)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 	d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 

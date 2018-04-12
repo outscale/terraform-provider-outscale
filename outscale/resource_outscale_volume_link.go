@@ -270,7 +270,7 @@ func resourceVolumeLinkRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("volume_id", vols.Volumes[0].Attachments[0].VolumeId)
 	d.Set("delete_on_termination", vols.Volumes[0].Attachments[0].DeleteOnTermination)
 	d.Set("status", vols.Volumes[0].Attachments[0].State)
-	d.Set("request_id", vols.RequesterId)
+	d.Set("request_id", vols.RequestId)
 
 	return nil
 

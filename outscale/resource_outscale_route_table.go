@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleRouteTable() *schema.Resource {
@@ -181,16 +182,41 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtRaw, _, err := resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id())()
+	var resp *fcu.DescribeRouteTablesOutput
+	var err error
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
+			RouteTableIds: []*string{aws.String(d.Id())},
+		})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		return err
+		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			resp = nil
+		} else {
+			log.Printf("Error on RouteTableStateRefresh: %s", err)
+			return err
+		}
 	}
-	if rtRaw == nil {
+
+	if resp == nil {
 		d.SetId("")
 		return nil
 	}
 
-	rt := rtRaw.(*fcu.RouteTable)
+	utils.PrintToJSON(resp, "ROUTE TABLE RESPONSE")
+
+	rt := resp.RouteTables[0]
+
+	d.Set("route_table_id", rt.RouteTableId)
+
 	d.Set("vpc_id", rt.VpcId)
 
 	propagatingVGWs := make([]string, 0, len(rt.PropagatingVgws))
@@ -200,6 +226,8 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("propagating_vgw_set", propagatingVGWs)
 
 	d.Set("tag_set", tagsToMap(rt.Tags))
+
+	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("route_set", setRouteSet(rt.Routes)); err != nil {
 		return err
@@ -327,56 +355,70 @@ func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
 
 	route := make([]map[string]interface{}, len(rt))
 
-	if len(rt) > 0 {
-		for k, r := range rt {
-			if r.GatewayId != nil && *r.GatewayId == "local" {
-				continue
-			}
+	for k, r := range rt {
+		// if r.GatewayId != nil && *r.GatewayId == "local" {
+		// 	continue
+		// }
 
-			if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
-				continue
-			}
+		// if r.Origin != nil && *r.Origin == "EnableVgwRoutePropagation" {
+		// 	continue
+		// }
 
-			if r.DestinationPrefixListId != nil {
-				continue
-			}
+		// if r.DestinationPrefixListId != nil {
+		// 	continue
+		// }
 
-			m := make(map[string]interface{})
+		m := make(map[string]interface{})
 
-			if r.DestinationCidrBlock != nil {
-				m["destination_cidr_block"] = *r.DestinationCidrBlock
-			}
-			if r.DestinationPrefixListId != nil {
-				m["destination_prefix_list_id"] = *r.DestinationPrefixListId
-			}
-			if r.GatewayId != nil {
-				m["gateway_id"] = *r.GatewayId
-			}
-			if r.NatGatewayId != nil {
-				m["nat_gateway_id"] = *r.NatGatewayId
-			}
-			if r.InstanceId != nil {
-				m["instance_id"] = *r.InstanceId
-			}
-			if r.InstanceOwnerId != nil {
-				m["instance_owner_id"] = *r.InstanceOwnerId
-			}
-			if r.VpcPeeringConnectionId != nil {
-				m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
-			}
-			if r.NetworkInterfaceId != nil {
-				m["network_interface_id"] = *r.NetworkInterfaceId
-			}
-			if r.Origin != nil {
-				m["origin"] = *r.Origin
-			}
-			if r.State != nil {
-				m["state"] = *r.State
-			}
-
-			route[k] = m
+		if r.DestinationCidrBlock != nil {
+			m["destination_cidr_block"] = *r.DestinationCidrBlock
+		} else {
+			m["destination_cidr_block"] = ""
 		}
+		if r.DestinationPrefixListId != nil {
+			m["destination_prefix_list_id"] = *r.DestinationPrefixListId
+		} else {
+			m["destination_prefix_list_id"] = ""
+		}
+		if r.GatewayId != nil {
+			m["gateway_id"] = *r.GatewayId
+		} else {
+			m["gateway_id"] = ""
+		}
+		if r.InstanceId != nil {
+			m["instance_id"] = *r.InstanceId
+		} else {
+			m["instance_id"] = ""
+		}
+		if r.InstanceOwnerId != nil {
+			m["instance_owner_id"] = *r.InstanceOwnerId
+		} else {
+			m["instance_owner_id"] = ""
+		}
+		if r.VpcPeeringConnectionId != nil {
+			m["vpc_peering_connection_id"] = *r.VpcPeeringConnectionId
+		} else {
+			m["vpc_peering_connection_id"] = ""
+		}
+		if r.NetworkInterfaceId != nil {
+			m["network_interface_id"] = *r.NetworkInterfaceId
+		} else {
+			m["network_interface_id"] = ""
+		}
+		if r.Origin != nil {
+			m["origin"] = *r.Origin
+		} else {
+			m["origin"] = ""
+		}
+		if r.State != nil {
+			m["state"] = *r.State
+		} else {
+			m["state"] = ""
+		}
+
+		route[k] = m
 	}
+	utils.PrintToJSON(route, "ROUTE")
 
 	return route
 }
@@ -384,26 +426,34 @@ func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
 func setAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
 	association := make([]map[string]interface{}, len(rt))
 
-	if len(rt) > 0 {
-		for k, r := range rt {
-			m := make(map[string]interface{})
+	for k, r := range rt {
+		m := make(map[string]interface{})
 
-			if r.Main != nil {
-				m["main"] = *r.Main
-			}
-			if r.RouteTableAssociationId != nil {
-				m["route_table_association_id"] = *r.RouteTableAssociationId
-			}
-			if r.RouteTableId != nil {
-				m["route_table_id"] = *r.RouteTableId
-			}
-			if r.SubnetId != nil {
-				m["subnet_id"] = *r.SubnetId
-			}
-
-			association[k] = m
+		if r.Main != nil {
+			m["main"] = *r.Main
+		} else {
+			m["main"] = ""
 		}
+		if r.RouteTableAssociationId != nil {
+			m["route_table_association_id"] = *r.RouteTableAssociationId
+		} else {
+			m["route_table_association_id"] = ""
+		}
+		if r.RouteTableId != nil {
+			m["route_table_id"] = *r.RouteTableId
+		} else {
+			m["route_table_id"] = ""
+		}
+		if r.SubnetId != nil {
+			m["subnet_id"] = *r.SubnetId
+		} else {
+			m["subnet_id"] = ""
+		}
+
+		association[k] = m
 	}
+
+	utils.PrintToJSON(association, "Association")
 
 	return association
 }
