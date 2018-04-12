@@ -5384,3 +5384,605 @@ func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
 	s.Vpcs = v
 	return s
 }
+
+type PurchaseReservedInstancesOfferingInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The number of Reserved Instances to purchase.
+	//
+	// InstanceCount is a required field
+	InstanceCount *int64 `type:"integer" required:"true"`
+
+	// Specified for Reserved Instance Marketplace offerings to limit the total
+	// order and ensure that the Reserved Instances are not purchased at unexpected
+	// prices.
+	LimitPrice *ReservedInstanceLimitPrice `locationName:"limitPrice" type:"structure"`
+
+	// The ID of the Reserved Instance offering to purchase.
+	//
+	// ReservedInstancesOfferingId is a required field
+	ReservedInstancesOfferingId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s PurchaseReservedInstancesOfferingInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PurchaseReservedInstancesOfferingInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PurchaseReservedInstancesOfferingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PurchaseReservedInstancesOfferingInput"}
+	if s.InstanceCount == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceCount"))
+	}
+	if s.ReservedInstancesOfferingId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReservedInstancesOfferingId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *PurchaseReservedInstancesOfferingInput) SetDryRun(v bool) *PurchaseReservedInstancesOfferingInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceCount sets the InstanceCount field's value.
+func (s *PurchaseReservedInstancesOfferingInput) SetInstanceCount(v int64) *PurchaseReservedInstancesOfferingInput {
+	s.InstanceCount = &v
+	return s
+}
+
+// SetLimitPrice sets the LimitPrice field's value.
+func (s *PurchaseReservedInstancesOfferingInput) SetLimitPrice(v *ReservedInstanceLimitPrice) *PurchaseReservedInstancesOfferingInput {
+	s.LimitPrice = v
+	return s
+}
+
+// SetReservedInstancesOfferingId sets the ReservedInstancesOfferingId field's value.
+func (s *PurchaseReservedInstancesOfferingInput) SetReservedInstancesOfferingId(v string) *PurchaseReservedInstancesOfferingInput {
+	s.ReservedInstancesOfferingId = &v
+	return s
+}
+
+// Contains the output of PurchaseReservedInstancesOffering.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/PurchaseReservedInstancesOfferingResult
+type PurchaseReservedInstancesOfferingOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of the purchased Reserved Instances.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s PurchaseReservedInstancesOfferingOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PurchaseReservedInstancesOfferingOutput) GoString() string {
+	return s.String()
+}
+
+// SetReservedInstancesId sets the ReservedInstancesId field's value.
+func (s *PurchaseReservedInstancesOfferingOutput) SetReservedInstancesId(v string) *PurchaseReservedInstancesOfferingOutput {
+	s.ReservedInstancesId = &v
+	return s
+}
+
+type ReservedInstanceLimitPrice struct {
+	_ struct{} `type:"structure"`
+
+	// Used for Reserved Instance Marketplace offerings. Specifies the limit price
+	// on the total order (instanceCount * price).
+	Amount *float64 `locationName:"amount" type:"double"`
+
+	// The currency in which the limitPrice amount is specified. At this time, the
+	// only supported currency is USD.
+	CurrencyCode *string `locationName:"currencyCode" type:"string" enum:"CurrencyCodeValues"`
+}
+
+// String returns the string representation
+func (s ReservedInstanceLimitPrice) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReservedInstanceLimitPrice) GoString() string {
+	return s.String()
+}
+
+// SetAmount sets the Amount field's value.
+func (s *ReservedInstanceLimitPrice) SetAmount(v float64) *ReservedInstanceLimitPrice {
+	s.Amount = &v
+	return s
+}
+
+// SetCurrencyCode sets the CurrencyCode field's value.
+func (s *ReservedInstanceLimitPrice) SetCurrencyCode(v string) *ReservedInstanceLimitPrice {
+	s.CurrencyCode = &v
+	return s
+}
+
+type DescribeReservedInstancesOfferingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone in which the Reserved Instance can be used.
+	AvailabilityZone *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * availability-zone - The Availability Zone where the Reserved Instance
+	//    can be used.
+	//
+	//    * duration - The duration of the Reserved Instance (for example, one year
+	//    or three years), in seconds (31536000 | 94608000).
+	//
+	//    * fixed-price - The purchase price of the Reserved Instance (for example,
+	//    9800.0).
+	//
+	//    * instance-type - The instance type that is covered by the reservation.
+	//
+	//    * marketplace - Set to true to show only Reserved Instance Marketplace
+	//    offerings. When this filter is not used, which is the default behavior,
+	//    all offerings from both AWS and the Reserved Instance Marketplace are
+	//    listed.
+	//
+	//    * product-description - The Reserved Instance product platform description.
+	//    Instances that include (Amazon VPC) in the product platform description
+	//    will only be displayed to EC2-Classic account holders and are for use
+	//    with Amazon VPC. (Linux/UNIX | Linux/UNIX (Amazon VPC) | SUSE Linux |
+	//    SUSE Linux (Amazon VPC) | Red Hat Enterprise Linux | Red Hat Enterprise
+	//    Linux (Amazon VPC) | Windows | Windows (Amazon VPC) | Windows with SQL
+	//    Server Standard | Windows with SQL Server Standard (Amazon VPC) | Windows
+	//    with SQL Server Web |  Windows with SQL Server Web (Amazon VPC) | Windows
+	//    with SQL Server Enterprise | Windows with SQL Server Enterprise (Amazon
+	//    VPC))
+	//
+	//    * reserved-instances-offering-id - The Reserved Instances offering ID.
+	//
+	//    * scope - The scope of the Reserved Instance (Availability Zone or Region).
+	//
+	//    * usage-price - The usage price of the Reserved Instance, per hour (for
+	//    example, 0.84).
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// Include Reserved Instance Marketplace offerings in the response.
+	IncludeMarketplace *bool `type:"boolean"`
+
+	// The tenancy of the instances covered by the reservation. A Reserved Instance
+	// with a tenancy of dedicated is applied to instances that run in a VPC on
+	// single-tenant hardware (i.e., Dedicated Instances).
+	//
+	// Important: The host value cannot be used with this parameter. Use the default
+	// or dedicated values only.
+	//
+	// Default: default
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// The instance type that the reservation will cover (for example, m1.small).
+	// For more information, see Instance Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	InstanceType *string `type:"string" enum:"InstanceType"`
+
+	// The maximum duration (in seconds) to filter when searching for offerings.
+	//
+	// Default: 94608000 (3 years)
+	MaxDuration *int64 `type:"long"`
+
+	// The maximum number of instances to filter when searching for offerings.
+	//
+	// Default: 20
+	MaxInstanceCount *int64 `type:"integer"`
+
+	// The maximum number of results to return for the request in a single page.
+	// The remaining results of the initial request can be seen by sending another
+	// request with the returned NextToken value. The maximum is 100.
+	//
+	// Default: 100
+	MaxResults *int64 `locationName:"maxResults" type:"integer"`
+
+	// The minimum duration (in seconds) to filter when searching for offerings.
+	//
+	// Default: 2592000 (1 month)
+	MinDuration *int64 `type:"long"`
+
+	// The token to retrieve the next page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The offering class of the Reserved Instance. Can be standard or convertible.
+	OfferingClass *string `type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type. If you are using tools that predate
+	// the 2011-11-01 API version, you only have access to the Medium Utilization
+	// Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// The Reserved Instance product platform description. Instances that include
+	// (Amazon VPC) in the description are for use with Amazon VPC.
+	ProductDescription *string `type:"string" enum:"RIProductDescription"`
+
+	// One or more Reserved Instances offering IDs.
+	ReservedInstancesOfferingIds []*string `locationName:"ReservedInstancesOfferingId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeReservedInstancesOfferingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeReservedInstancesOfferingsInput) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetAvailabilityZone(v string) *DescribeReservedInstancesOfferingsInput {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetDryRun(v bool) *DescribeReservedInstancesOfferingsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetFilters(v []*Filter) *DescribeReservedInstancesOfferingsInput {
+	s.Filters = v
+	return s
+}
+
+// SetIncludeMarketplace sets the IncludeMarketplace field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetIncludeMarketplace(v bool) *DescribeReservedInstancesOfferingsInput {
+	s.IncludeMarketplace = &v
+	return s
+}
+
+// SetInstanceTenancy sets the InstanceTenancy field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetInstanceTenancy(v string) *DescribeReservedInstancesOfferingsInput {
+	s.InstanceTenancy = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetInstanceType(v string) *DescribeReservedInstancesOfferingsInput {
+	s.InstanceType = &v
+	return s
+}
+
+// SetMaxDuration sets the MaxDuration field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetMaxDuration(v int64) *DescribeReservedInstancesOfferingsInput {
+	s.MaxDuration = &v
+	return s
+}
+
+// SetMaxInstanceCount sets the MaxInstanceCount field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetMaxInstanceCount(v int64) *DescribeReservedInstancesOfferingsInput {
+	s.MaxInstanceCount = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetMaxResults(v int64) *DescribeReservedInstancesOfferingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetMinDuration sets the MinDuration field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetMinDuration(v int64) *DescribeReservedInstancesOfferingsInput {
+	s.MinDuration = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetNextToken(v string) *DescribeReservedInstancesOfferingsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetOfferingClass sets the OfferingClass field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetOfferingClass(v string) *DescribeReservedInstancesOfferingsInput {
+	s.OfferingClass = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetOfferingType(v string) *DescribeReservedInstancesOfferingsInput {
+	s.OfferingType = &v
+	return s
+}
+
+// SetProductDescription sets the ProductDescription field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetProductDescription(v string) *DescribeReservedInstancesOfferingsInput {
+	s.ProductDescription = &v
+	return s
+}
+
+// SetReservedInstancesOfferingIds sets the ReservedInstancesOfferingIds field's value.
+func (s *DescribeReservedInstancesOfferingsInput) SetReservedInstancesOfferingIds(v []*string) *DescribeReservedInstancesOfferingsInput {
+	s.ReservedInstancesOfferingIds = v
+	return s
+}
+
+// Contains the output of DescribeReservedInstancesOfferings.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeReservedInstancesOfferingsResult
+type DescribeReservedInstancesOfferingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// A list of Reserved Instances offerings.
+	ReservedInstancesOfferings []*ReservedInstancesOffering `locationName:"reservedInstancesOfferingsSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeReservedInstancesOfferingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeReservedInstancesOfferingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedInstancesOfferingsOutput) SetNextToken(v string) *DescribeReservedInstancesOfferingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReservedInstancesOfferings sets the ReservedInstancesOfferings field's value.
+func (s *DescribeReservedInstancesOfferingsOutput) SetReservedInstancesOfferings(v []*ReservedInstancesOffering) *DescribeReservedInstancesOfferingsOutput {
+	s.ReservedInstancesOfferings = v
+	return s
+}
+
+type ReservedInstancesOffering struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone in which the Reserved Instance can be used.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The currency of the Reserved Instance offering you are purchasing. It's specified
+	// using ISO 4217 standard currency codes. At this time, the only supported
+	// currency is USD.
+	CurrencyCode *string `locationName:"currencyCode" type:"string" enum:"CurrencyCodeValues"`
+
+	// The duration of the Reserved Instance, in seconds.
+	Duration *int64 `locationName:"duration" type:"long"`
+
+	// The purchase price of the Reserved Instance.
+	FixedPrice *float64 `locationName:"fixedPrice" type:"float"`
+
+	// The tenancy of the instance.
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// The instance type on which the Reserved Instance can be used.
+	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
+
+	// Indicates whether the offering is available through the Reserved Instance
+	// Marketplace (resale) or AWS. If it's a Reserved Instance Marketplace offering,
+	// this is true.
+	Marketplace *bool `locationName:"marketplace" type:"boolean"`
+
+	// If convertible it can be exchanged for Reserved Instances of the same or
+	// higher monetary value, with different configurations. If standard, it is
+	// not possible to perform an exchange.
+	OfferingClass *string `locationName:"offeringClass" type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// The pricing details of the Reserved Instance offering.
+	PricingDetails []*PricingDetail `locationName:"pricingDetailsSet" locationNameList:"item" type:"list"`
+
+	// The Reserved Instance product platform description.
+	ProductDescription *string `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+
+	// The recurring charge tag assigned to the resource.
+	RecurringCharges []*RecurringCharge `locationName:"recurringCharges" locationNameList:"item" type:"list"`
+
+	// The ID of the Reserved Instance offering. This is the offering ID used in
+	// GetReservedInstancesExchangeQuote to confirm that an exchange can be made.
+	ReservedInstancesOfferingId *string `locationName:"reservedInstancesOfferingId" type:"string"`
+
+	// Whether the Reserved Instance is applied to instances in a region or an Availability
+	// Zone.
+	Scope *string `locationName:"scope" type:"string" enum:"scope"`
+
+	// The usage price of the Reserved Instance, per hour.
+	UsagePrice *float64 `locationName:"usagePrice" type:"float"`
+}
+
+// String returns the string representation
+func (s ReservedInstancesOffering) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReservedInstancesOffering) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *ReservedInstancesOffering) SetAvailabilityZone(v string) *ReservedInstancesOffering {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetCurrencyCode sets the CurrencyCode field's value.
+func (s *ReservedInstancesOffering) SetCurrencyCode(v string) *ReservedInstancesOffering {
+	s.CurrencyCode = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *ReservedInstancesOffering) SetDuration(v int64) *ReservedInstancesOffering {
+	s.Duration = &v
+	return s
+}
+
+// SetFixedPrice sets the FixedPrice field's value.
+func (s *ReservedInstancesOffering) SetFixedPrice(v float64) *ReservedInstancesOffering {
+	s.FixedPrice = &v
+	return s
+}
+
+// SetInstanceTenancy sets the InstanceTenancy field's value.
+func (s *ReservedInstancesOffering) SetInstanceTenancy(v string) *ReservedInstancesOffering {
+	s.InstanceTenancy = &v
+	return s
+}
+
+// SetInstanceType sets the InstanceType field's value.
+func (s *ReservedInstancesOffering) SetInstanceType(v string) *ReservedInstancesOffering {
+	s.InstanceType = &v
+	return s
+}
+
+// SetMarketplace sets the Marketplace field's value.
+func (s *ReservedInstancesOffering) SetMarketplace(v bool) *ReservedInstancesOffering {
+	s.Marketplace = &v
+	return s
+}
+
+// SetOfferingClass sets the OfferingClass field's value.
+func (s *ReservedInstancesOffering) SetOfferingClass(v string) *ReservedInstancesOffering {
+	s.OfferingClass = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *ReservedInstancesOffering) SetOfferingType(v string) *ReservedInstancesOffering {
+	s.OfferingType = &v
+	return s
+}
+
+// SetPricingDetails sets the PricingDetails field's value.
+func (s *ReservedInstancesOffering) SetPricingDetails(v []*PricingDetail) *ReservedInstancesOffering {
+	s.PricingDetails = v
+	return s
+}
+
+// SetProductDescription sets the ProductDescription field's value.
+func (s *ReservedInstancesOffering) SetProductDescription(v string) *ReservedInstancesOffering {
+	s.ProductDescription = &v
+	return s
+}
+
+// SetRecurringCharges sets the RecurringCharges field's value.
+func (s *ReservedInstancesOffering) SetRecurringCharges(v []*RecurringCharge) *ReservedInstancesOffering {
+	s.RecurringCharges = v
+	return s
+}
+
+// SetReservedInstancesOfferingId sets the ReservedInstancesOfferingId field's value.
+func (s *ReservedInstancesOffering) SetReservedInstancesOfferingId(v string) *ReservedInstancesOffering {
+	s.ReservedInstancesOfferingId = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *ReservedInstancesOffering) SetScope(v string) *ReservedInstancesOffering {
+	s.Scope = &v
+	return s
+}
+
+// SetUsagePrice sets the UsagePrice field's value.
+func (s *ReservedInstancesOffering) SetUsagePrice(v float64) *ReservedInstancesOffering {
+	s.UsagePrice = &v
+	return s
+}
+
+type PricingDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The number of reservations available for the price.
+	Count *int64 `locationName:"count" type:"integer"`
+
+	// The price per instance.
+	Price *float64 `locationName:"price" type:"double"`
+}
+
+// String returns the string representation
+func (s PricingDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PricingDetail) GoString() string {
+	return s.String()
+}
+
+// SetCount sets the Count field's value.
+func (s *PricingDetail) SetCount(v int64) *PricingDetail {
+	s.Count = &v
+	return s
+}
+
+// SetPrice sets the Price field's value.
+func (s *PricingDetail) SetPrice(v float64) *PricingDetail {
+	s.Price = &v
+	return s
+}
+
+type RecurringCharge struct {
+	_ struct{} `type:"structure"`
+
+	// The amount of the recurring charge.
+	Amount *float64 `locationName:"amount" type:"double"`
+
+	// The frequency of the recurring charge.
+	Frequency *string `locationName:"frequency" type:"string" enum:"RecurringChargeFrequency"`
+}
+
+// String returns the string representation
+func (s RecurringCharge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RecurringCharge) GoString() string {
+	return s.String()
+}
+
+// SetAmount sets the Amount field's value.
+func (s *RecurringCharge) SetAmount(v float64) *RecurringCharge {
+	s.Amount = &v
+	return s
+}
+
+// SetFrequency sets the Frequency field's value.
+func (s *RecurringCharge) SetFrequency(v string) *RecurringCharge {
+	s.Frequency = &v
+	return s
+}
