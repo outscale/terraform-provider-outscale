@@ -3,9 +3,11 @@ package osc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -83,14 +85,36 @@ func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time,
 
 // NewRequest creates a request and signs it
 func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr string, body interface{}) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
+	rel, errp := url.Parse(urlStr)
+	if errp != nil {
+		return nil, errp
 	}
 
-	b, err := c.MarshalHander(body, operation, "2017-12-15")
-	if err != nil {
-		return nil, err
+	var b interface{}
+	var err error
+	if method != http.MethodPost {
+		b, err = c.MarshalHander(body, operation, "2017-12-15")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		v := struct {
+			Action  string `json:"Action"`
+			Varsion string `json:"Version"`
+		}{operation, "2017-12-15"}
+
+		var m map[string]string
+
+		ja, _ := json.Marshal(v)
+		json.Unmarshal(ja, &m)
+		jb, _ := json.Marshal(body)
+		json.Unmarshal(jb, &m)
+
+		jm, _ := json.Marshal(m)
+		fmt.Printf("\n\n[DEBUG BODY]\n")
+		fmt.Println(string(jm))
+
+		b = string(jm)
 	}
 
 	u := c.Config.BaseURL.ResolveReference(rel)
@@ -130,8 +154,12 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	fmt.Printf("\n\n[DEBUG ERROR] RESP => %+v => ERR %s\n\n", resp, err)
-
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("\n\n[DEBUG RESP]\n")
+	fmt.Println(string(requestDump))
 	if err != nil {
 		return err
 	}
