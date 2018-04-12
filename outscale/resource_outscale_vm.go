@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -85,7 +86,9 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	fmt.Printf("\n\n[DEBUG] Run configuration: %v", runOpts)
+	pretty, err := json.MarshalIndent(runOpts, "", "  ")
+
+	fmt.Print("\n\n[DEBUG] Run configuration ", string(pretty))
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -183,13 +186,17 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
+	pretty, err := json.MarshalIndent(resp, "", "  ")
+
+	fmt.Print("\n\n[DEBUG] RESPONSE ", string(pretty))
+
 	instance := resp.Reservations[0].Instances[0]
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(instance.BlockDeviceMappings))
 
 	d.Set("client_token", instance.ClientToken)
 
-	// d.Set("ebs_optimized", instance.EbsOptimized)
+	d.Set("ebs_optimized", instance.EbsOptimized)
 
 	d.Set("image_id", instance.ImageId)
 
@@ -215,7 +222,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
@@ -381,37 +388,7 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("block_device_mapping") {
-		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["volume_type"].(string))),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(d.Id()),
-			BlockDeviceMappings: mappings,
-		}
-		if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
+		if err := setBlockDevice(d.Get("block_device_mapping"), conn, d.Id()); err != nil {
 			return err
 		}
 	}
@@ -538,6 +515,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"disable_api_termination": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Computed: true,
 		},
 		"dry_run": {
 			Type:     schema.TypeBool,
@@ -1478,7 +1456,8 @@ func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) re
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v", *i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				*i.StateReason)
 
 		}
 
@@ -1548,7 +1527,8 @@ func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRe
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v", *i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				*i.StateReason)
 
 		}
 
@@ -1626,6 +1606,50 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 }
 
 func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAttributeInput, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		stateConf, err = stopInstance(instanceAttrOpts, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("\n\n[INFO] Modifying Info to %+v\n\n", instanceAttrOpts)
+
+	if _, err := conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+		return err
+	}
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		err = startInstance(instanceAttrOpts, stateConf, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func stopInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, conn *fcu.Client, attr string) (*resource.StateChangeConf, error) {
 	fmt.Printf("\n\n[INFO] Stopping Instance %q for %s change \n\n", instanceAttrOpts.InstanceId, attr)
 
 	_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
@@ -1643,7 +1667,7 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"Error waiting for instance (%s) to stop: %s", *instanceAttrOpts.InstanceId, err)
 	}
 
@@ -1651,17 +1675,17 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 
 	fmt.Printf("\n\n[INFO] Modifying instance id %s, attr %s\n\n", *instanceAttrOpts.InstanceId, attr)
 
-	fmt.Printf("\n\n[INFO] Modifying Info to %+v\n\n", instanceAttrOpts)
+	return stateConf, nil
+}
 
-	_, err = conn.VM.ModifyInstanceAttribute(instanceAttrOpts)
-	if err != nil {
+func startInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, stateConf *resource.StateChangeConf, conn *fcu.Client, attr string) error {
+	fmt.Printf("\n\n[INFO] Starting Instance %q after change of %s", *instanceAttrOpts.InstanceId, attr)
+
+	if _, err := conn.VM.StartInstances(&fcu.StartInstancesInput{
+		InstanceIds: []*string{instanceAttrOpts.InstanceId},
+	}); err != nil {
 		return err
 	}
-
-	fmt.Printf("\n\n[INFO] Starting Instance %q after change of %s", *instanceAttrOpts.InstanceId, attr)
-	_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-		InstanceIds: []*string{instanceAttrOpts.InstanceId},
-	})
 
 	stateConf = &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
@@ -1672,36 +1696,11 @@ func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAt
 		MinTimeout: 3 * time.Second,
 	}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
+	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", *instanceAttrOpts.InstanceId, err)
 	}
 
 	fmt.Printf("\n\n[INFO] Instance Started %s\n\n", *instanceAttrOpts.InstanceId)
-
-	input := &fcu.DescribeInstancesInput{
-		InstanceIds: []*string{instanceAttrOpts.InstanceId},
-	}
-
-	var resp *fcu.DescribeInstancesOutput
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstances(input)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error reading the instance %s", err)
-	}
-
-	fmt.Printf("\n\n[INFO] Instance changed to => %q \n\n", resp.Reservations[0])
 
 	return nil
 }

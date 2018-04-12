@@ -76,7 +76,7 @@ func dataSourceOutscaleVMSStateRead(d *schema.ResourceData, meta interface{}) er
 	states := filteredStates
 
 	log.Printf("[DEBUG] outscale_vms_state - states found: %s", spew.Sdump(filteredStates))
-	d.Set("request_id", *resp.RequesterId)
+	d.Set("request_id", *resp.RequestId)
 
 	return statusesDescriptionAttributes(d, states)
 }

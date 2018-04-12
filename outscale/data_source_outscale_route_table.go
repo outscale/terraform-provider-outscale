@@ -30,6 +30,10 @@ func dataSourceOutscaleRouteTable() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"tag_set": tagsSchemaComputed(),
 			"route_set": {
 				Type:     schema.TypeList,
@@ -176,6 +180,7 @@ func dataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("route_table_id", rt.RouteTableId)
 	d.Set("vpc_id", rt.VpcId)
 	d.Set("tag_set", tagsToMap(rt.Tags))
+	d.Set("request_id", resp.RequestId)
 	if err := d.Set("route_set", setRouteSet(rt.Routes)); err != nil {
 		return err
 	}

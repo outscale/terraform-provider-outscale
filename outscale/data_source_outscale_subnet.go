@@ -107,7 +107,7 @@ func dataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("state", subnet.State)
 	d.Set("tag_set", tagsToMap(subnet.Tags))
 	d.Set("available_ip_address_count", subnet.AvailableIpAddressCount)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

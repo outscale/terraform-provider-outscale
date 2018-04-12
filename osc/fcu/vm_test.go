@@ -363,7 +363,7 @@ func TestVM_GetRequesterID(t *testing.T) {
 		t.Errorf("VM.RunInstance returned error: %v", err)
 	}
 
-	requesterID := *server.RequesterId
+	requesterID := *server.RequestId
 	expectedrequesterID := "193ddebf-63d4-466d-9fe1-d5b74b9962f0"
 
 	if requesterID != expectedrequesterID {

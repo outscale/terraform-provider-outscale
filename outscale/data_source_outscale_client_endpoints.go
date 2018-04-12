@@ -138,7 +138,7 @@ func dataSourceOutscaleCustomerGatewaysRead(d *schema.ResourceData, meta interfa
 	}
 
 	d.Set("customer_gateway_set", customerGateways)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return nil

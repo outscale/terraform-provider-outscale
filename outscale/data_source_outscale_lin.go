@@ -105,7 +105,7 @@ func dataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("instance_tenancy", vpc.InstanceTenancy)
 	d.Set("state", vpc.State)
 	d.Set("tag_set", tagsToMap(vpc.Tags))
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

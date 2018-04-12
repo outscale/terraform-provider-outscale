@@ -80,8 +80,6 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Create the instance
-	// log.Printf("[DEBUG] Run configuration: %s", runOpts)
-
 	var runResp *fcu.Reservation
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
@@ -1109,7 +1107,8 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				*i.StateReason)
 
 		}
 
@@ -1144,7 +1143,8 @@ func InstanceOApiPa(conn *fcu.Client, instanceID, failState string) resource.Sta
 		state := *i.State.Name
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %+v", *i.StateReason)
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				*i.StateReason)
 
 		}
 
