@@ -1071,7 +1071,6 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 	return output, nil
 }
 
-<<<<<<< HEAD
 func (v VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "CreateAccessKey"
@@ -1079,15 +1078,6 @@ func (v VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcces
 
 	if input == nil {
 		input = &CreateAccessKeyInput{}
-=======
-func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
-	inURL := "/"
-	endpoint := "DescribeDhcpOptions"
-	output := &DeleteDhcpOptionsOutput{}
-
-	if input == nil {
-		input = &DeleteDhcpOptionsInput{}
->>>>>>> develop
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1102,10 +1092,28 @@ func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteD
 
 	return output, nil
 }
-<<<<<<< HEAD
+func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeDhcpOptions"
+	output := &DeleteDhcpOptionsOutput{}
 
-=======
->>>>>>> develop
+	if input == nil {
+		input = &DeleteDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeCustomerGateways"

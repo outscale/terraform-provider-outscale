@@ -99,9 +99,10 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		}
 	} else {
 		v := struct {
-			Action  string `json:"Action"`
-			Varsion string `json:"Version"`
-		}{operation, "2017-12-15"}
+			Action               string `json:"Action"`
+			Version              string `json:"Version"`
+			AuthenticationMethod string `json:"AuthenticationMethod"`
+		}{operation, "2017-12-15", "accesskey"}
 
 		var m map[string]string
 
@@ -154,18 +155,32 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("\n\n[DEBUG RESP]\n")
-	fmt.Println(string(requestDump))
+
+	err = c.checkResponse(resp)
 	if err != nil {
 		return err
 	}
 
-	err = c.checkResponse(resp)
-	if err != nil {
+	if req.Method == "POST" {
+		defer resp.Body.Close()
+
+		requestDump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("\n\n[DEBUG RESP]\n")
+		fmt.Println(string(requestDump))
+		if err != nil {
+			return err
+		}
+
+		err = json.NewDecoder(resp.Body).Decode(v)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("\n\n[DEBUG Struct] %+v\n", v)
+
 		return err
 	}
 
