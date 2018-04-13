@@ -94,6 +94,7 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleRouteTables,
+			"outscale_vpn_gateway":           dataSourceOutscaleVpnGateway,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
