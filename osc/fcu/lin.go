@@ -232,3 +232,47 @@ func (v VMOperations) DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*D
 
 	return output, nil
 }
+
+func (v VMOperations) CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpnConnection"
+	output := &CreateVpnConnectionOutput{}
+
+	if input == nil {
+		input = &CreateVpnConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpnConnections"
+	output := &DescribeVpnConnectionsOutput{}
+
+	if input == nil {
+		input = &DescribeVpnConnectionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
