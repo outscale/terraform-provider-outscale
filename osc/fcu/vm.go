@@ -86,6 +86,8 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CopyImage(input *CopyImageInput) (*CopyImageOutput, error)
+	DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1205,6 +1207,50 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 
 	if input == nil {
 		input = &CreateCustomerGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CopyImage(input *CopyImageInput) (*CopyImageOutput, error) {
+	inURL := "/"
+	endpoint := "CopyImage"
+	output := &CopyImageOutput{}
+
+	if input == nil {
+		input = &CopyImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshots"
+	output := &DescribeSnapshotsOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

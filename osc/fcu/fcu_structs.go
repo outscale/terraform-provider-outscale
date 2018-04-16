@@ -5384,3 +5384,328 @@ func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
 	s.Vpcs = v
 	return s
 }
+
+// Contains the parameters for CopyImage.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyImageRequest
+type CopyImageInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see How to Ensure Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	ClientToken *string `type:"string"`
+
+	// A description for the new AMI in the destination region.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the destination snapshots of the copied image should be
+	// encrypted. The default CMK for EBS is used unless a non-default AWS Key Management
+	// Service (AWS KMS) CMK is specified with KmsKeyId. For more information, see
+	// Amazon EBS Encryption (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) CMK to use when
+	// encrypting the snapshots of an image during a copy operation. This parameter
+	// is only required if you want to use a non-default CMK; if this parameter
+	// is not specified, the default CMK for EBS is used. The ARN contains the arn:aws:kms
+	// namespace, followed by the region of the CMK, the AWS account ID of the CMK
+	// owner, the key namespace, and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// The specified CMK must exist in the region that the snapshot is being copied
+	// to. If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The name of the new AMI in the destination region.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// The ID of the AMI to copy.
+	//
+	// SourceImageId is a required field
+	SourceImageId *string `type:"string" required:"true"`
+
+	// The name of the region that contains the AMI to copy.
+	//
+	// SourceRegion is a required field
+	SourceRegion *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CopyImageInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CopyImageInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CopyImageInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CopyImageInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.SourceImageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceImageId"))
+	}
+	if s.SourceRegion == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceRegion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CopyImageInput) SetClientToken(v string) *CopyImageInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CopyImageInput) SetDescription(v string) *CopyImageInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CopyImageInput) SetDryRun(v bool) *CopyImageInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *CopyImageInput) SetEncrypted(v bool) *CopyImageInput {
+	s.Encrypted = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *CopyImageInput) SetKmsKeyId(v string) *CopyImageInput {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CopyImageInput) SetName(v string) *CopyImageInput {
+	s.Name = &v
+	return s
+}
+
+// SetSourceImageId sets the SourceImageId field's value.
+func (s *CopyImageInput) SetSourceImageId(v string) *CopyImageInput {
+	s.SourceImageId = &v
+	return s
+}
+
+// SetSourceRegion sets the SourceRegion field's value.
+func (s *CopyImageInput) SetSourceRegion(v string) *CopyImageInput {
+	s.SourceRegion = &v
+	return s
+}
+
+// Contains the output of CopyImage.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyImageResult
+type CopyImageOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new AMI.
+	ImageId *string `locationName:"imageId" type:"string"`
+}
+
+// String returns the string representation
+func (s CopyImageOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CopyImageOutput) GoString() string {
+	return s.String()
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *CopyImageOutput) SetImageId(v string) *CopyImageOutput {
+	s.ImageId = &v
+	return s
+}
+
+// Contains the parameters for DescribeSnapshots.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotsRequest
+type DescribeSnapshotsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * description - A description of the snapshot.
+	//
+	//    * owner-alias - Value from an Amazon-maintained list (amazon | aws-marketplace
+	//    | microsoft) of snapshot owners. Not to be confused with the user-configured
+	//    AWS account alias, which is set from the IAM consolew.
+	//
+	//    * owner-id - The ID of the AWS account that owns the snapshot.
+	//
+	//    * progress - The progress of the snapshot, as a percentage (for example,
+	//    80%).
+	//
+	//    * snapshot-id - The snapshot ID.
+	//
+	//    * start-time - The time stamp when the snapshot was initiated.
+	//
+	//    * status - The status of the snapshot (pending | completed | error).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * volume-id - The ID of the volume the snapshot is for.
+	//
+	//    * volume-size - The size of the volume, in GiB.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of snapshot results returned by DescribeSnapshots in paginated
+	// output. When this parameter is used, DescribeSnapshots only returns MaxResults
+	// results in a single page along with a NextToken response element. The remaining
+	// results of the initial request can be seen by sending another DescribeSnapshots
+	// request with the returned NextToken value. This value can be between 5 and
+	// 1000; if MaxResults is given a value larger than 1000, only 1000 results
+	// are returned. If this parameter is not used, then DescribeSnapshots returns
+	// all results. You cannot specify this parameter and the snapshot IDs parameter
+	// in the same request.
+	MaxResults *int64 `type:"integer"`
+
+	// The NextToken value returned from a previous paginated DescribeSnapshots
+	// request where MaxResults was used and the results exceeded the value of that
+	// parameter. Pagination continues from the end of the previous results that
+	// returned the NextToken value. This value is null when there are no more results
+	// to return.
+	NextToken *string `type:"string"`
+
+	// Returns the snapshots owned by the specified owner. Multiple owners can be
+	// specified.
+	OwnerIds []*string `locationName:"Owner" locationNameList:"Owner" type:"list"`
+
+	// One or more AWS accounts IDs that can create volumes from the snapshot.
+	RestorableByUserIds []*string `locationName:"RestorableBy" type:"list"`
+
+	// One or more snapshot IDs.
+	//
+	// Default: Describes snapshots for which you have launch permissions.
+	SnapshotIds []*string `locationName:"SnapshotId" locationNameList:"SnapshotId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeSnapshotsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSnapshotsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeSnapshotsInput) SetDryRun(v bool) *DescribeSnapshotsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeSnapshotsInput) SetFilters(v []*Filter) *DescribeSnapshotsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeSnapshotsInput) SetMaxResults(v int64) *DescribeSnapshotsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSnapshotsInput) SetNextToken(v string) *DescribeSnapshotsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetOwnerIds sets the OwnerIds field's value.
+func (s *DescribeSnapshotsInput) SetOwnerIds(v []*string) *DescribeSnapshotsInput {
+	s.OwnerIds = v
+	return s
+}
+
+// SetRestorableByUserIds sets the RestorableByUserIds field's value.
+func (s *DescribeSnapshotsInput) SetRestorableByUserIds(v []*string) *DescribeSnapshotsInput {
+	s.RestorableByUserIds = v
+	return s
+}
+
+// SetSnapshotIds sets the SnapshotIds field's value.
+func (s *DescribeSnapshotsInput) SetSnapshotIds(v []*string) *DescribeSnapshotsInput {
+	s.SnapshotIds = v
+	return s
+}
+
+// Contains the output of DescribeSnapshots.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotsResult
+type DescribeSnapshotsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The NextToken value to include in a future DescribeSnapshots request. When
+	// the results of a DescribeSnapshots request exceed MaxResults, this value
+	// can be used to retrieve the next page of results. This value is null when
+	// there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Information about the snapshots.
+	Snapshots []*Snapshot `locationName:"snapshotSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeSnapshotsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSnapshotsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSnapshotsOutput) SetNextToken(v string) *DescribeSnapshotsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSnapshots sets the Snapshots field's value.
+func (s *DescribeSnapshotsOutput) SetSnapshots(v []*Snapshot) *DescribeSnapshotsOutput {
+	s.Snapshots = v
+	return s
+}

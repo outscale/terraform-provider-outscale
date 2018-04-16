@@ -77,6 +77,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_route_table":               GetResource(fcu, "outscale_route_table")(),
 			"outscale_route_table_link":          GetResource(fcu, "outscale_route_table_link")(),
 			"outscale_dhcp_option_link":          GetResource(fcu, "outscale_dhcp_option_link")(),
+			"outscale_image_copy":                GetResource(fcu, "outscale_image_copy")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
