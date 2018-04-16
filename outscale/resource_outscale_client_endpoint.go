@@ -289,7 +289,7 @@ func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interfac
 
 	var err error
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.DeleteCustomerGateway(&fcu.DeleteCustomerGatewayInput{
+		_, err = conn.VM.DeleteCustomerGateway(&fcu.DeleteCustomerGatewayInput{
 			CustomerGatewayId: aws.String(d.Id()),
 		})
 
@@ -318,9 +318,14 @@ func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interfac
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err := conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
+		var resp *fcu.DescribeCustomerGatewaysOutput
+		resp, err = conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
 			Filters: []*fcu.Filter{gatewayFilter},
 		})
+
+		if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+			return resource.RetryableError(err)
+		}
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {
