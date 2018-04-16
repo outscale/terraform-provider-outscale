@@ -107,6 +107,7 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 	d.SetId(*customerGateway.CustomerGatewayId)
 	d.Set("ip_address", customerGateway.IpAddress)
 	d.Set("type", customerGateway.Type)
+	d.Set("state", customerGateway.State)
 	d.Set("tag_set", tagsToMap(customerGateway.Tags))
 
 	if *customerGateway.BgpAsn != "" {
