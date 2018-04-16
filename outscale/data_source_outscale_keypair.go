@@ -54,6 +54,7 @@ func datasourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 	keypair := resp.KeyPairs[0]
 	d.Set("key_name", keypair.KeyName)
 	d.Set("key_fingerprint", keypair.KeyFingerprint)
+	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 	return nil
 }
@@ -71,6 +72,10 @@ func datasourceOutscaleKeyPair() *schema.Resource {
 				Computed: true,
 			},
 			"key_fingerprint": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

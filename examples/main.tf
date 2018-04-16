@@ -1,9 +1,22 @@
-resource "outscale_lin_internet_gateway" "res" {}
+# resource "outscale_keypair" "outscale_keypair" {
+#   key_name = "keyname_test_"
+# }
 
-data "outscale_lin_internet_gateway" "data" {
-  internet_gateway_id = "${outscale_lin_internet_gateway.res.internet_gateway_id}"
+data "outscale_keypair" "outscale_keypair" {
+  key_name = "${outscale_keypair.outscale_keypair.key_name}"
 }
 
-data "outscale_lin_internet_gateways" "data2" {
-  internet_gateway_id = ["${outscale_lin_internet_gateway.res.internet_gateway_id}"]
+resource "outscale_keypair" "outscale_keypair" {
+  key_name = "keyname_test_"
+}
+
+resource "outscale_keypair" "outscale_keypair2" {
+  key_name = "keyname_test_2"
+}
+
+data "outscale_keypairs" "outscale_keypairs" {
+  key_name = [
+    "${outscale_keypair.outscale_keypair.key_name}",
+    "${outscale_keypair.outscale_keypair2.key_name}",
+  ]
 }
