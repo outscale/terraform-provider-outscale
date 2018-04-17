@@ -41,6 +41,7 @@ func init() {
 			"outscale_route_table":               resourceOutscaleRouteTable,
 			"outscale_route_table_link":          resourceOutscaleRouteTableAssociation,
 			"outscale_dhcp_option_link":          resourceOutscaleDHCPOptionLink,
+			"outscale_vpn_connection":            resourceOutscaleVpnConnection,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,

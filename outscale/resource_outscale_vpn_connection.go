@@ -1,49 +1,17 @@
 package outscale
 
 import (
-	"encoding/xml"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
-
-type XmlVpnConnectionConfig struct {
-	Tunnels []XmlIpsecTunnel `xml:"ipsec_tunnel"`
-}
-
-type XmlIpsecTunnel struct {
-	OutsideAddress string `xml:"vpn_gateway>tunnel_outside_address>ip_address"`
-	PreSharedKey   string `xml:"ike>pre_shared_key"`
-}
-
-type TunnelInfo struct {
-	Tunnel1Address      string
-	Tunnel1PreSharedKey string
-	Tunnel2Address      string
-	Tunnel2PreSharedKey string
-}
-
-func (slice XmlVpnConnectionConfig) Len() int {
-	return len(slice.Tunnels)
-}
-
-func (slice XmlVpnConnectionConfig) Less(i, j int) bool {
-	return slice.Tunnels[i].OutsideAddress < slice.Tunnels[j].OutsideAddress
-}
-
-func (slice XmlVpnConnectionConfig) Swap(i, j int) {
-	slice.Tunnels[i], slice.Tunnels[j] = slice.Tunnels[j], slice.Tunnels[i]
-}
 
 func resourceOutscaleVpnConnection() *schema.Resource {
 	return &schema.Resource{
@@ -331,27 +299,26 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceOutscaleVpnConnectionUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ec2conn
-
-	// Update tags if required.
-	if err := setTags(conn, d); err != nil {
-		return err
-	}
-
-	d.SetPartial("tags")
-
-	return resourceOutscaleVpnConnectionRead(d, meta)
-}
-
 func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*AWSClient).ec2conn
+	conn := meta.(*OutscaleClient).FCU
 
-	_, err := conn.DeleteVpnConnection(&fcu.DeleteVpnConnectionInput{
-		VpnConnectionId: aws.String(d.Id()),
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, err = conn.VM.DeleteVpnConnection(&fcu.DeleteVpnConnectionInput{
+			VpnConnectionId: aws.String(d.Id()),
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
 	})
+
 	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidVpnConnectionID.NotFound" {
+		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
 		} else {
@@ -360,12 +327,6 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 		}
 	}
 
-	// These things can take quite a while to tear themselves down and any
-	// attempt to modify resources they reference (e.g. CustomerGateways or
-	// VPN Gateways) before deletion will result in an error. Furthermore,
-	// they don't just disappear. The go into "deleted" state. We need to
-	// wait to ensure any other modifications the user might make to their
-	// VPC stack can safely run.
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted"},
@@ -382,61 +343,4 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 	}
 
 	return nil
-}
-
-// routesToMapList turns the list of routes into a list of maps.
-func routesToMapList(routes []*fcu.VpnStaticRoute) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(routes))
-	for _, r := range routes {
-		staticRoute := make(map[string]interface{})
-		staticRoute["destination_cidr_block"] = *r.DestinationCidrBlock
-		staticRoute["state"] = *r.State
-
-		if r.Source != nil {
-			staticRoute["source"] = *r.Source
-		}
-
-		result = append(result, staticRoute)
-	}
-
-	return result
-}
-
-// telemetryToMapList turns the VGW telemetry into a list of maps.
-func telemetryToMapList(telemetry []*fcu.VgwTelemetry) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(telemetry))
-	for _, t := range telemetry {
-		vgw := make(map[string]interface{})
-		vgw["accepted_route_count"] = *t.AcceptedRouteCount
-		vgw["outside_ip_address"] = *t.OutsideIpAddress
-		vgw["status"] = *t.Status
-		vgw["status_message"] = *t.StatusMessage
-
-		// LastStatusChange is a time.Time(). Convert it into a string
-		// so it can be handled by schema's type system.
-		vgw["last_status_change"] = t.LastStatusChange.String()
-		result = append(result, vgw)
-	}
-
-	return result
-}
-
-func xmlConfigToTunnelInfo(xmlConfig string) (*TunnelInfo, error) {
-	var vpnConfig XmlVpnConnectionConfig
-	if err := xml.Unmarshal([]byte(xmlConfig), &vpnConfig); err != nil {
-		return nil, errwrap.Wrapf("Error Unmarshalling XML: {{err}}", err)
-	}
-
-	// don't expect consistent ordering from the XML
-	sort.Sort(vpnConfig)
-
-	tunnelInfo := TunnelInfo{
-		Tunnel1Address:      vpnConfig.Tunnels[0].OutsideAddress,
-		Tunnel1PreSharedKey: vpnConfig.Tunnels[0].PreSharedKey,
-
-		Tunnel2Address:      vpnConfig.Tunnels[1].OutsideAddress,
-		Tunnel2PreSharedKey: vpnConfig.Tunnels[1].PreSharedKey,
-	}
-
-	return &tunnelInfo, nil
 }

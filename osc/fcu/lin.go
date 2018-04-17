@@ -276,3 +276,25 @@ func (v VMOperations) DescribeVpnConnections(input *DescribeVpnConnectionsInput)
 
 	return output, nil
 }
+
+func (v VMOperations) DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpnConnections"
+	output := &DeleteVpnConnectionOutput{}
+
+	if input == nil {
+		input = &DeleteVpnConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
