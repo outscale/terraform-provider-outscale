@@ -95,7 +95,7 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 		d.Set("dns_support_enabled", *resp.EnableDnsSupport.Value)
 	}
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

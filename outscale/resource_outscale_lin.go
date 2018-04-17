@@ -114,7 +114,7 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("cidr_block", resp.Vpcs[0].CidrBlock)
 	d.Set("instance_tenancy", resp.Vpcs[0].InstanceTenancy)
 	d.Set("dhcp_options_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.Set("state", resp.Vpcs[0].State)
 	d.Set("vpc_id", resp.Vpcs[0].VpcId)
 

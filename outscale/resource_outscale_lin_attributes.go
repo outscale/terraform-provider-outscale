@@ -159,7 +159,7 @@ func resourceOutscaleLinAttrRead(d *schema.ResourceData, meta interface{}) error
 		d.Set("enable_dns_support", *resp.EnableDnsSupport.Value)
 	}
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

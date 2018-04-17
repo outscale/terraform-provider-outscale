@@ -99,7 +99,7 @@ func resourceOutscaleLinInternetGatewayLinkRead(d *schema.ResourceData, meta int
 
 	if len(resp.InternetGateways) > 0 {
 		attchs := flattenInternetAttachements(resp.InternetGateways[0].Attachments)
-		d.Set("attachement_set", attchs)
+		d.Set("attachment_set", attchs)
 	}
 
 	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
@@ -107,7 +107,7 @@ func resourceOutscaleLinInternetGatewayLinkRead(d *schema.ResourceData, meta int
 	}
 
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
@@ -159,7 +159,7 @@ func getLinInternetGatewayLinkSchema() map[string]*schema.Schema {
 		},
 
 		// Attributes
-		"attachement_set": {
+		"attachment_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{

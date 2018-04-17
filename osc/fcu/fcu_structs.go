@@ -34,7 +34,7 @@ type DescribeInstancesOutput struct {
 
 	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
 
@@ -60,7 +60,7 @@ type Reservation struct {
 
 	OwnerId *string `locationName:"ownerId" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" type:"string"`
 }
@@ -452,6 +452,8 @@ type DescribeInstanceAttributeOutput struct {
 	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
 
 	UserData *AttributeValue `locationName:"userData" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type AttributeBooleanValue struct {
@@ -515,7 +517,7 @@ type RunInstancesInput struct {
 
 	OwnerId *string `type:"string"`
 
-	RequesterId *string `type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `type:"string"`
 
@@ -1237,7 +1239,7 @@ type DescribeKeyPairsOutput struct {
 	// Information about one or more key pairs.
 	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -1754,7 +1756,7 @@ type DescribeVolumesOutput struct {
 	// Information about the volumes.
 	Volumes []*Volume `locationName:"volumeSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -1773,7 +1775,7 @@ func (s *DescribeVolumesOutput) SetNextToken(v string) *DescribeVolumesOutput {
 	return s
 }
 func (s *DescribeVolumesOutput) SetRequesterId(v string) *DescribeVolumesOutput {
-	s.RequesterId = &v
+	s.RequestId = &v
 	return s
 }
 
@@ -2105,7 +2107,7 @@ type DescribeInstanceStatusOutput struct {
 
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 func (s DescribeInstanceStatusOutput) String() string {
@@ -2302,7 +2304,7 @@ type DescribeSubnetsOutput struct {
 	// Information about one or more subnets.
 	Subnets []*Subnet `locationName:"subnetSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -2321,7 +2323,7 @@ func (s *DescribeSubnetsOutput) SetSubnets(v []*Subnet) *DescribeSubnetsOutput {
 	return s
 }
 func (s *DescribeSubnetsOutput) SetRequesterId(v *string) *DescribeSubnetsOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -2632,7 +2634,7 @@ type DescribeVpcsOutput struct {
 	// Information about one or more VPCs.
 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // Describes a VPC.
@@ -2921,7 +2923,7 @@ type DescribeInternetGatewaysOutput struct {
 
 	// Information about one or more Internet gateways.
 	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
-	RequesterId      *string            `locationName:"requestId" type:"string"`
+	RequestId        *string            `locationName:"requestId" type:"string"`
 }
 
 type DescribeVpcAttributeInput struct {
@@ -3011,7 +3013,7 @@ type DescribeVpcAttributeOutput struct {
 	// The ID of the VPC.
 	VpcId *string `locationName:"vpcId" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3032,7 +3034,7 @@ func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanVa
 
 // SetEnableDnsSupport sets the EnableDnsSupport field's value.
 func (s *DescribeVpcAttributeOutput) SetRequesterId(v *string) *DescribeVpcAttributeOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -3281,6 +3283,38 @@ type DescribeAccessKeyOutput struct {
 	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
 }
 
+// Contains the parameters for DeleteDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsRequest
+type DeleteDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// The Internet-routable IP address for the customer gateway's outside interface.
+	// The address must be static.
+	//
+	// PublicIp is a required field
+	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+
+	// The type of VPN connection that this customer gateway supports (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// String returns the string representation
+func (s CreateCustomerGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
 type CreateCustomerGatewayInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3297,9 +3331,6 @@ type CreateCustomerGatewayInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The Internet-routable IP address for the customer gateway's outside interface.
-	// The address must be static.
-	//
 	// PublicIp is a required field
 	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
 
@@ -3309,27 +3340,29 @@ type CreateCustomerGatewayInput struct {
 	Type *string `type:"string" required:"true" enum:"GatewayType"`
 }
 
-// String returns the string representation
-func (s CreateCustomerGatewayInput) String() string {
-	return awsutil.Prettify(s)
-}
-
 // GoString returns the string representation
+func (s DeleteDhcpOptionsInput) GoString() string {
+	return s.String()
+}
 func (s CreateCustomerGatewayInput) GoString() string {
 	return s.String()
 }
 
 // Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
 func (s *CreateCustomerGatewayInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateCustomerGatewayInput"}
 	if s.BgpAsn == nil {
 		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
-	}
-	if s.PublicIp == nil {
-		invalidParams.Add(request.NewErrParamRequired("PublicIp"))
-	}
-	if s.Type == nil {
-		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -3338,16 +3371,31 @@ func (s *CreateCustomerGatewayInput) Validate() error {
 	return nil
 }
 
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DeleteDhcpOptionsInput) SetDhcpOptionsId(v string) *DeleteDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
 // SetBgpAsn sets the BgpAsn field's value.
 func (s *CreateCustomerGatewayInput) SetBgpAsn(v int64) *CreateCustomerGatewayInput {
 	s.BgpAsn = &v
 	return s
 }
 
-// SetDryRun sets the DryRun field's value.
 func (s *CreateCustomerGatewayInput) SetDryRun(v bool) *CreateCustomerGatewayInput {
 	s.DryRun = &v
 	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsOutput
+type DeleteDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
 }
 
 // SetPublicIp sets the PublicIp field's value.
@@ -3377,6 +3425,23 @@ func (s CreateCustomerGatewayOutput) String() string {
 }
 
 // GoString returns the string representation
+func (s DeleteDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NewDhcpConfiguration
+type NewDhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	Key *string `locationName:"key" type:"string"`
+
+	Values []*string `locationName:"Value" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s NewDhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
 func (s CreateCustomerGatewayOutput) GoString() string {
 	return s.String()
 }
@@ -3417,6 +3482,38 @@ func (s CustomerGateway) String() string {
 }
 
 // GoString returns the string representation
+func (s NewDhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *NewDhcpConfiguration) SetKey(v string) *NewDhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *NewDhcpConfiguration) SetValues(v []*string) *NewDhcpConfiguration {
+	s.Values = v
+	return s
+}
+
+// Contains the parameters for CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsRequest
+type CreateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A DHCP configuration option.
+	//
+	// DhcpConfigurations is a required field
+	DhcpConfigurations []*NewDhcpConfiguration `locationName:"dhcpConfiguration" locationNameList:"item" type:"list" required:"true"`
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
 func (s CustomerGateway) GoString() string {
 	return s.String()
 }
@@ -3466,7 +3563,6 @@ type DeleteCustomerGatewayInput struct {
 	//
 	// CustomerGatewayId is a required field
 	CustomerGatewayId *string `type:"string" required:"true"`
-
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
 	// the required permissions, the error response is DryRunOperation. Otherwise,
@@ -3475,16 +3571,33 @@ type DeleteCustomerGatewayInput struct {
 }
 
 // String returns the string representation
+func (s CreateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
 func (s DeleteCustomerGatewayInput) String() string {
 	return awsutil.Prettify(s)
 }
 
 // GoString returns the string representation
+func (s CreateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
 func (s DeleteCustomerGatewayInput) GoString() string {
 	return s.String()
 }
 
 // Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateDhcpOptionsInput"}
+	if s.DhcpConfigurations == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpConfigurations"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
 func (s *DeleteCustomerGatewayInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DeleteCustomerGatewayInput"}
 	if s.CustomerGatewayId == nil {
@@ -3497,6 +3610,12 @@ func (s *DeleteCustomerGatewayInput) Validate() error {
 	return nil
 }
 
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *CreateDhcpOptionsInput) SetDhcpConfigurations(v []*NewDhcpConfiguration) *CreateDhcpOptionsInput {
+	s.DhcpConfigurations = v
+	return s
+}
+
 // SetCustomerGatewayId sets the CustomerGatewayId field's value.
 func (s *DeleteCustomerGatewayInput) SetCustomerGatewayId(v string) *DeleteCustomerGatewayInput {
 	s.CustomerGatewayId = &v
@@ -3504,9 +3623,92 @@ func (s *DeleteCustomerGatewayInput) SetCustomerGatewayId(v string) *DeleteCusto
 }
 
 // SetDryRun sets the DryRun field's value.
+func (s *CreateDhcpOptionsInput) SetDryRun(v bool) *CreateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
 func (s *DeleteCustomerGatewayInput) SetDryRun(v bool) *DeleteCustomerGatewayInput {
 	s.DryRun = &v
 	return s
+}
+
+// Contains the output of CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsResult
+type CreateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A set of DHCP options.
+	DhcpOptions *DhcpOptions `locationName:"dhcpOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *CreateDhcpOptionsOutput) SetDhcpOptions(v *DhcpOptions) *CreateDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
+
+// Describes a set of DHCP options.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpOptions
+type DhcpOptions struct {
+	_ struct{} `type:"structure"`
+
+	// One or more DHCP options in the set.
+	DhcpConfigurations []*DhcpConfiguration `locationName:"dhcpConfigurationSet" locationNameList:"item" type:"list"`
+
+	// The ID of the set of DHCP options.
+	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
+
+	// Any tags assigned to the DHCP options set.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// Describes a DHCP configuration option.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpConfiguration
+type DhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The name of a DHCP option.
+	Key *string `locationName:"key" type:"string"`
+
+	// One or more values for the DHCP option.
+	Values []*AttributeValue `locationName:"valueSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *DhcpConfiguration) SetKey(v string) *DhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *DhcpConfiguration) SetValues(v []*AttributeValue) *DhcpConfiguration {
+	s.Values = v
+	return s
+}
+
+// String returns the string representation
+func (s DhcpOptions) String() string {
+	return awsutil.Prettify(s)
 }
 
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGatewayOutput
@@ -3520,6 +3722,82 @@ func (s DeleteCustomerGatewayOutput) String() string {
 }
 
 // GoString returns the string representation
+func (s DhcpOptions) GoString() string {
+	return s.String()
+}
+
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *DhcpOptions) SetDhcpConfigurations(v []*DhcpConfiguration) *DhcpOptions {
+	s.DhcpConfigurations = v
+	return s
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DhcpOptions) SetDhcpOptionsId(v string) *DhcpOptions {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DhcpOptions) SetTags(v []*Tag) *DhcpOptions {
+	s.Tags = v
+	return s
+}
+
+// Contains the parameters for DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsRequest
+type DescribeDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of one or more DHCP options sets.
+	//
+	// Default: Describes all your DHCP options sets.
+	DhcpOptionsIds []*string `locationName:"DhcpOptionsId" locationNameList:"DhcpOptionsId" type:"list"`
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * key - The key for one of the options (for example, domain-name).
+	//
+	//    * value - The value for one of the options.
+	//    * bgp-asn - The customer gateway's Border Gateway Protocol (BGP) Autonomous
+	//    System Number (ASN).
+	//
+	//    * customer-gateway-id - The ID of the customer gateway.
+	//
+	//    * ip-address - The IP address of the customer gateway's Internet-routable
+	//    external interface.
+	//
+	//    * state - The state of the customer gateway (pending | available | deleting
+	//    | deleted).
+	//
+	//    * type - The type of customer gateway. Currently, the only supported type
+	//    is ipsec.1.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
 func (s DeleteCustomerGatewayOutput) GoString() string {
 	return s.String()
 }
@@ -3540,6 +3818,11 @@ type DescribeCustomerGatewaysInput struct {
 
 	// One or more filters.
 	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * key - The key for one of the options (for example, domain-name).
+	//
+	//    * value - The value for one of the options.
 	//    * bgp-asn - The customer gateway's Border Gateway Protocol (BGP) Autonomous
 	//    System Number (ASN).
 	//
@@ -3573,11 +3856,23 @@ type DescribeCustomerGatewaysInput struct {
 }
 
 // String returns the string representation
+func (s DescribeDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
 func (s DescribeCustomerGatewaysInput) String() string {
 	return awsutil.Prettify(s)
 }
 
 // GoString returns the string representation
+func (s DescribeDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptionsIds sets the DhcpOptionsIds field's value.
+func (s *DescribeDhcpOptionsInput) SetDhcpOptionsIds(v []*string) *DescribeDhcpOptionsInput {
+	s.DhcpOptionsIds = v
+	return s
+}
 func (s DescribeCustomerGatewaysInput) GoString() string {
 	return s.String()
 }
@@ -3589,15 +3884,77 @@ func (s *DescribeCustomerGatewaysInput) SetCustomerGatewayIds(v []*string) *Desc
 }
 
 // SetDryRun sets the DryRun field's value.
+func (s *DescribeDhcpOptionsInput) SetDryRun(v bool) *DescribeDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
 func (s *DescribeCustomerGatewaysInput) SetDryRun(v bool) *DescribeCustomerGatewaysInput {
 	s.DryRun = &v
 	return s
 }
 
 // SetFilters sets the Filters field's value.
+func (s *DescribeDhcpOptionsInput) SetFilters(v []*Filter) *DescribeDhcpOptionsInput {
+	s.Filters = v
+	return s
+}
 func (s *DescribeCustomerGatewaysInput) SetFilters(v []*Filter) *DescribeCustomerGatewaysInput {
 	s.Filters = v
 	return s
+}
+
+// Contains the output of DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsResult
+type DescribeDhcpOptionsOutput struct {
+	_         struct{} `type:"structure"`
+	RequestId *string  `locationName:"requestId" type:"string"`
+
+	// Information about one or more DHCP options sets.
+	DhcpOptions []*DhcpOptions `locationName:"dhcpOptionsSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *DescribeDhcpOptionsOutput) SetDhcpOptions(v []*DhcpOptions) *DescribeDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
+
+// Contains the parameters for AssociateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsRequest
+type AssociateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set, or default to associate no DHCP options with
+	// the VPC.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
 }
 
 // Contains the output of DescribeCustomerGateways.
@@ -3608,7 +3965,7 @@ type DescribeCustomerGatewaysOutput struct {
 	// Information about one or more customer gateways.
 	CustomerGateways []*CustomerGateway `locationName:"customerGatewaySet" locationNameList:"item" type:"list"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3617,6 +3974,58 @@ func (s DescribeCustomerGatewaysOutput) String() string {
 }
 
 // GoString returns the string representation
+func (s AssociateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *AssociateDhcpOptionsInput) SetDhcpOptionsId(v string) *AssociateDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateDhcpOptionsInput) SetDryRun(v bool) *AssociateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *AssociateDhcpOptionsInput) SetVpcId(v string) *AssociateDhcpOptionsInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsOutput
+type AssociateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
 func (s DescribeCustomerGatewaysOutput) GoString() string {
 	return s.String()
 }
@@ -3627,7 +4036,7 @@ func (s *DescribeCustomerGatewaysOutput) SetCustomerGateways(v []*CustomerGatewa
 	return s
 }
 func (s *DescribeCustomerGatewaysOutput) SetRequesterId(v *string) *DescribeCustomerGatewaysOutput {
-	s.RequesterId = v
+	s.RequestId = v
 	return s
 }
 
@@ -4186,6 +4595,7 @@ type DescribeRouteTablesOutput struct {
 
 	// Information about one or more route tables.
 	RouteTables []*RouteTable `locationName:"routeTableSet" locationNameList:"item" type:"list"`
+	RequestId   *string       `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -4404,6 +4814,8 @@ type CreateRouteTableOutput struct {
 
 	// Information about the route table.
 	RouteTable *RouteTable `locationName:"routeTable" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -4862,5 +5274,58 @@ func (s ReplaceRouteTableAssociationOutput) GoString() string {
 // SetNewAssociationId sets the NewAssociationId field's value.
 func (s *ReplaceRouteTableAssociationOutput) SetNewAssociationId(v string) *ReplaceRouteTableAssociationOutput {
 	s.NewAssociationId = &v
+	return s
+}
+
+// String returns the string representation
+func (s DescribeVpcsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcsInput) SetDryRun(v bool) *DescribeVpcsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpcsInput) SetFilters(v []*Filter) *DescribeVpcsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpcIds sets the VpcIds field's value.
+func (s *DescribeVpcsInput) SetVpcIds(v []*string) *DescribeVpcsInput {
+	s.VpcIds = v
+	return s
+}
+
+// // Contains the output of DescribeVpcs.
+// // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcsResult
+// type DescribeVpcsOutput struct {
+// 	_ struct{} `type:"structure"`
+
+// 	// Information about one or more VPCs.
+// 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+// }
+
+// // String returns the string representation
+// func (s DescribeVpcsOutput) String() string {
+// 	return awsutil.Prettify(s)
+// }
+
+// GoString returns the string representation
+// func (s DescribeVpcsOutput) GoString() string {
+// 	return s.String()
+// }
+
+// SetVpcs sets the Vpcs field's value.
+func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
+	s.Vpcs = v
 	return s
 }

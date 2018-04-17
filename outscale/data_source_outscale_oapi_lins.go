@@ -128,7 +128,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.Set("lin", lin)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

@@ -82,7 +82,7 @@ func dataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[DEBUG] outscale_vm_state - Single State found: %s", *state.InstanceId)
 
-	d.Set("request_id", *resp.RequesterId)
+	d.Set("request_id", *resp.RequestId)
 
 	return statusDescriptionAttributes(d, state)
 }
