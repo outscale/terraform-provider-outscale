@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -112,8 +111,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		json.Unmarshal(jb, &m)
 
 		jm, _ := json.Marshal(m)
-		fmt.Printf("\n\n[DEBUG BODY]\n")
-		fmt.Println(string(jm))
 
 		b = string(jm)
 	}
@@ -164,22 +161,10 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	if req.Method == "POST" {
 		defer resp.Body.Close()
 
-		requestDump, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Printf("\n\n[DEBUG RESP]\n")
-		fmt.Println(string(requestDump))
-		if err != nil {
-			return err
-		}
-
 		err = json.NewDecoder(resp.Body).Decode(v)
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("\n\n[DEBUG Struct] %+v\n", v)
 
 		return err
 	}

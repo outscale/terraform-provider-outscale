@@ -2,9 +2,7 @@ package icu
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 )
@@ -33,12 +31,6 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
-	requestDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("\n\n[DEBUG REQ]\n")
-	fmt.Println(string(requestDump))
 
 	if err != nil {
 		return nil, err
@@ -61,6 +53,7 @@ func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -83,6 +76,7 @@ func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -106,16 +100,7 @@ func (v ICUOperations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKe
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
-	requestDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("\n\n[DEBUG REQ]\n")
-	fmt.Println(string(requestDump))
 
-	if err != nil {
-		return nil, err
-	}
 	if err != nil {
 		return nil, err
 	}
