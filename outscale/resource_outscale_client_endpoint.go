@@ -281,6 +281,8 @@ func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{
 		d.Set("bgp_asn", int(val))
 	}
 
+	d.Set("request_id", resp.RequestId)
+
 	return nil
 }
 
