@@ -38,7 +38,7 @@ func resourceOutscaleOAPIIamAccessKey() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"status": &schema.Schema{
+			"state": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -121,7 +121,7 @@ func resourceOutscaleOAPIIamAccessKeyRead(d *schema.ResourceData, meta interface
 	d.Set("api_key_id", getResp.AccessKeyMetadata[0].AccessKeyId)
 	d.Set("secret_key", getResp.AccessKeyMetadata[0].SecretAccessKey)
 	d.Set("account_id", getResp.AccessKeyMetadata[0].OwnerId)
-	d.Set("status", getResp.AccessKeyMetadata[0].Status)
+	d.Set("state", getResp.AccessKeyMetadata[0].Status)
 	d.Set("tag_set", tagsToMapC(getResp.AccessKeyMetadata[0].Tags))
 	d.Set("request_id", getResp.RequestId)
 
