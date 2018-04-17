@@ -63,15 +63,19 @@ func dataSourceOutscaleFirewallRulesSets() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func getDSIPPerms() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Computed: true,
-		Set:      resourceOutscaleSecurityGroupRuleHash,
+		// Set:      resourceOutscaleSecurityGroupRuleHash,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_port": {
@@ -89,9 +93,12 @@ func getDSIPPerms() *schema.Schema {
 				"ip_ranges": {
 					Type:     schema.TypeList,
 					Computed: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
+					Elem:     &schema.Schema{Type: schema.TypeMap},
+				},
+				"prefix_list_ids": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem:     &schema.Schema{Type: schema.TypeMap},
 				},
 				"groups": {
 					Type:     schema.TypeList,
@@ -134,8 +141,6 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 		}
 		req.GroupIds = g
 	}
-
-	fmt.Printf("[DEBUG] REQ %s", req)
 
 	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
@@ -188,6 +193,8 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 
 	fmt.Printf("[DEBUG] security_group_info %s", sg)
 
+	d.Set("request_id", resp.RequestId)
+
 	d.SetId(resource.UniqueId())
 
 	err = d.Set("security_group_info", sg)
@@ -195,14 +202,10 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 	return err
 }
 
-func flattenIPPermissions(p []*fcu.IpPermission) *schema.Set {
-	// ips := make([]map[string]interface{}, len(p))
+func flattenIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
+	ips := make([]map[string]interface{}, len(p))
 
-	s := &schema.Set{
-		F: resourceOutscaleSecurityGroupRuleHash,
-	}
-
-	for _, v := range p {
+	for k, v := range p {
 		ip := make(map[string]interface{})
 		if v.FromPort != nil {
 			ip["from_port"] = *v.FromPort
@@ -215,20 +218,40 @@ func flattenIPPermissions(p []*fcu.IpPermission) *schema.Set {
 		}
 
 		if v.IpRanges != nil && len(v.IpRanges) > 0 {
-			ipr := make([]string, len(v.IpRanges))
-			for i, v := range v.IpRanges {
-				if v.CidrIp != nil {
-					ipr[i] = *v.CidrIp
+			var ipr []map[string]string
+			if len(v.IpRanges) > 0 {
+				ipr = make([]map[string]string, len(v.IpRanges))
+				for i, v := range v.IpRanges {
+					ip := make(map[string]string)
+					if v.CidrIp != nil {
+						ip["cidr_ip"] = *v.CidrIp
+						ipr[i] = ip
+					}
 				}
+			} else {
+				ipr = make([]map[string]string, 1)
+				ip := make(map[string]string)
+				ip["cidr_ip"] = ""
+				ipr[0] = ip
 			}
 			ip["ip_ranges"] = ipr
 		}
 
 		if v.PrefixListIds != nil && len(v.PrefixListIds) > 0 {
-			prx := make([]string, len(v.PrefixListIds))
-			for i, v := range v.PrefixListIds {
-				if v.PrefixListId != nil {
-					prx[i] = *v.PrefixListId
+			prx := make([]map[string]string, len(v.PrefixListIds))
+			if len(v.PrefixListIds) > 0 {
+				for i, v := range v.PrefixListIds {
+					if v.PrefixListId != nil {
+						prx[i] = map[string]string{
+							"prefix_list_ids": *v.PrefixListId,
+						}
+					}
+				}
+			} else {
+				prx = []map[string]string{
+					map[string]string{
+						"prefix_list_ids": "",
+					},
 				}
 			}
 			ip["prefix_list_ids"] = prx
@@ -254,9 +277,9 @@ func flattenIPPermissions(p []*fcu.IpPermission) *schema.Set {
 			ip["groups"] = grp
 		}
 
-		// ips[k] = ip
-		s.Add(ip)
+		ips[k] = ip
+		// s.Add(ip)
 	}
 
-	return s
+	return ips
 }

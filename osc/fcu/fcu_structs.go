@@ -34,7 +34,7 @@ type DescribeInstancesOutput struct {
 
 	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
 
@@ -60,7 +60,7 @@ type Reservation struct {
 
 	OwnerId *string `locationName:"ownerId" type:"string"`
 
-	RequesterId *string `locationName:"requestId" type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `locationName:"reservationId" type:"string"`
 }
@@ -341,24 +341,6 @@ type InstanceStatusSummary struct {
 	Status *string `locationName:"status" type:"string" enum:"SummaryStatus"`
 }
 
-func (s InstanceStatusSummary) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s InstanceStatusSummary) GoString() string {
-	return s.String()
-}
-
-func (s *InstanceStatusSummary) SetDetails(v []*InstanceStatusDetails) *InstanceStatusSummary {
-	s.Details = v
-	return s
-}
-
-func (s *InstanceStatusSummary) SetStatus(v string) *InstanceStatusSummary {
-	s.Status = &v
-	return s
-}
-
 type EbsInstanceBlockDevice struct {
 	AttachTime *time.Time `locationName:"attachTime" type:"timestamp" timestampFormat:"iso8601"`
 
@@ -470,6 +452,8 @@ type DescribeInstanceAttributeOutput struct {
 	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
 
 	UserData *AttributeValue `locationName:"userData" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type AttributeBooleanValue struct {
@@ -533,7 +517,7 @@ type RunInstancesInput struct {
 
 	OwnerId *string `type:"string"`
 
-	RequesterId *string `type:"string"`
+	RequestId *string `locationName:"requestId" type:"string"`
 
 	ReservationId *string `type:"string"`
 
@@ -630,24 +614,6 @@ type AllocateAddressInput struct {
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 }
 
-func (s AllocateAddressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AllocateAddressInput) GoString() string {
-	return s.String()
-}
-
-func (s *AllocateAddressInput) SetDomain(v string) *AllocateAddressInput {
-	s.Domain = &v
-	return s
-}
-
-func (s *AllocateAddressInput) SetDryRun(v bool) *AllocateAddressInput {
-	s.DryRun = &v
-	return s
-}
-
 type AllocateAddressOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -656,29 +622,6 @@ type AllocateAddressOutput struct {
 	Domain *string `locationName:"domain" type:"string" enum:"DomainType"`
 
 	PublicIp *string `locationName:"publicIp" type:"string"`
-}
-
-func (s AllocateAddressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AllocateAddressOutput) GoString() string {
-	return s.String()
-}
-
-func (s *AllocateAddressOutput) SetAllocationId(v string) *AllocateAddressOutput {
-	s.AllocationId = &v
-	return s
-}
-
-func (s *AllocateAddressOutput) SetDomain(v string) *AllocateAddressOutput {
-	s.Domain = &v
-	return s
-}
-
-func (s *AllocateAddressOutput) SetPublicIp(v string) *AllocateAddressOutput {
-	s.PublicIp = &v
-	return s
 }
 
 type DescribeAddressesInput struct {
@@ -693,38 +636,12 @@ type DescribeAddressesInput struct {
 	PublicIps []*string `locationName:"PublicIp" locationNameList:"PublicIp" type:"list"`
 }
 
-func (s DescribeAddressesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DescribeAddressesInput) GoString() string {
-	return s.String()
-}
-
-func (s *DescribeAddressesInput) SetAllocationIds(v []*string) *DescribeAddressesInput {
-	s.AllocationIds = v
-	return s
-}
-
-func (s *DescribeAddressesInput) SetDryRun(v bool) *DescribeAddressesInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DescribeAddressesInput) SetFilters(v []*Filter) *DescribeAddressesInput {
-	s.Filters = v
-	return s
-}
-
-func (s *DescribeAddressesInput) SetPublicIps(v []*string) *DescribeAddressesInput {
-	s.PublicIps = v
-	return s
-}
-
 type DescribeAddressesOutput struct {
 	_ struct{} `type:"structure"`
 
 	Addresses []*Address `locationName:"addressesSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 func (s DescribeAddressesOutput) String() string {
@@ -737,6 +654,11 @@ func (s DescribeAddressesOutput) GoString() string {
 
 func (s *DescribeAddressesOutput) SetAddresses(v []*Address) *DescribeAddressesOutput {
 	s.Addresses = v
+	return s
+}
+
+func (s *DescribeAddressesOutput) SetRequestId(v string) *DescribeAddressesOutput {
+	s.RequestId = &v
 	return s
 }
 
@@ -762,65 +684,12 @@ type Address struct {
 	PublicIp *string `locationName:"publicIp" type:"string"`
 }
 
-func (s Address) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s Address) GoString() string {
-	return s.String()
-}
-
-func (s *Address) SetAllocationId(v string) *Address {
-	s.AllocationId = &v
-	return s
-}
-
-func (s *Address) SetAllowReassociation(v bool) *Address {
-	s.AllowReassociation = &v
-	return s
-}
-
-func (s *Address) SetAssociationId(v string) *Address {
-	s.AssociationId = &v
-	return s
-}
-
-func (s *Address) SetDomain(v string) *Address {
-	s.Domain = &v
-	return s
-}
-
-func (s *Address) SetInstanceId(v string) *Address {
-	s.InstanceId = &v
-	return s
-}
-
-func (s *Address) SetNetworkInterfaceId(v string) *Address {
-	s.NetworkInterfaceId = &v
-	return s
-}
-
-func (s *Address) SetNetworkInterfaceOwnerId(v string) *Address {
-	s.NetworkInterfaceOwnerId = &v
-	return s
-}
-
-func (s *Address) SetPrivateIpAddress(v string) *Address {
-	s.PrivateIpAddress = &v
-	return s
-}
-
-func (s *Address) SetPublicIp(v string) *Address {
-	s.PublicIp = &v
-	return s
-}
-
 type ModifyInstanceAttributeInput struct {
 	_ struct{} `type:"structure"`
 
 	Attribute *string `locationName:"attribute" type:"string" enum:"InstanceAttributeName"`
 
-	BlockDeviceMappings []*InstanceBlockDeviceMappingSpecification `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
 	DisableApiTermination *AttributeBooleanValue `locationName:"disableApiTermination" type:"structure"`
 
@@ -868,7 +737,7 @@ func (s *ModifyInstanceAttributeInput) SetAttribute(v string) *ModifyInstanceAtt
 	return s
 }
 
-func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*InstanceBlockDeviceMappingSpecification) *ModifyInstanceAttributeInput {
+func (s *ModifyInstanceAttributeInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *ModifyInstanceAttributeInput {
 	s.BlockDeviceMappings = v
 	return s
 }
@@ -924,19 +793,6 @@ type BlobAttributeValue struct {
 	Value []byte `locationName:"value" type:"blob"`
 }
 
-func (s BlobAttributeValue) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s BlobAttributeValue) GoString() string {
-	return s.String()
-}
-
-func (s *BlobAttributeValue) SetValue(v []byte) *BlobAttributeValue {
-	s.Value = v
-	return s
-}
-
 type StopInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -947,70 +803,13 @@ type StopInstancesInput struct {
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
 }
 
-func (s StopInstancesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s StopInstancesInput) GoString() string {
-	return s.String()
-}
-
-func (s *StopInstancesInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "StopInstancesInput"}
-	if s.InstanceIds == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceIds"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *StopInstancesInput) SetDryRun(v bool) *StopInstancesInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *StopInstancesInput) SetForce(v bool) *StopInstancesInput {
-	s.Force = &v
-	return s
-}
-
-func (s *StopInstancesInput) SetInstanceIds(v []*string) *StopInstancesInput {
-	s.InstanceIds = v
-	return s
-}
-
 type StopInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
 	StoppingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
 }
-
-func (s StopInstancesOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s StopInstancesOutput) GoString() string {
-	return s.String()
-}
-
-func (s *StopInstancesOutput) SetStoppingInstances(v []*InstanceStateChange) *StopInstancesOutput {
-	s.StoppingInstances = v
-	return s
-}
-
 type ModifyInstanceAttributeOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s ModifyInstanceAttributeOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s ModifyInstanceAttributeOutput) GoString() string {
-	return s.String()
 }
 
 type StartInstancesInput struct {
@@ -1023,58 +822,10 @@ type StartInstancesInput struct {
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list" required:"true"`
 }
 
-func (s StartInstancesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s StartInstancesInput) GoString() string {
-	return s.String()
-}
-
-func (s *StartInstancesInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "StartInstancesInput"}
-	if s.InstanceIds == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceIds"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *StartInstancesInput) SetAdditionalInfo(v string) *StartInstancesInput {
-	s.AdditionalInfo = &v
-	return s
-}
-
-func (s *StartInstancesInput) SetDryRun(v bool) *StartInstancesInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *StartInstancesInput) SetInstanceIds(v []*string) *StartInstancesInput {
-	s.InstanceIds = v
-	return s
-}
-
 type StartInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
 	StartingInstances []*InstanceStateChange `locationName:"instancesSet" locationNameList:"item" type:"list"`
-}
-
-func (s StartInstancesOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s StartInstancesOutput) GoString() string {
-	return s.String()
-}
-
-func (s *StartInstancesOutput) SetStartingInstances(v []*InstanceStateChange) *StartInstancesOutput {
-	s.StartingInstances = v
-	return s
 }
 
 type AssociateAddressInput struct {
@@ -1093,68 +844,12 @@ type AssociateAddressInput struct {
 	PublicIp *string `type:"string"`
 }
 
-func (s AssociateAddressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AssociateAddressInput) GoString() string {
-	return s.String()
-}
-
-func (s *AssociateAddressInput) SetAllocationId(v string) *AssociateAddressInput {
-	s.AllocationId = &v
-	return s
-}
-
-func (s *AssociateAddressInput) SetAllowReassociation(v bool) *AssociateAddressInput {
-	s.AllowReassociation = &v
-	return s
-}
-
-func (s *AssociateAddressInput) SetInstanceId(v string) *AssociateAddressInput {
-	s.InstanceId = &v
-	return s
-}
-
-func (s *AssociateAddressInput) SetNetworkInterfaceId(v string) *AssociateAddressInput {
-	s.NetworkInterfaceId = &v
-	return s
-}
-
-func (s *AssociateAddressInput) SetPrivateIpAddress(v string) *AssociateAddressInput {
-	s.PrivateIpAddress = &v
-	return s
-}
-
-func (s *AssociateAddressInput) SetPublicIp(v string) *AssociateAddressInput {
-	s.PublicIp = &v
-	return s
-}
-
 type AssociateAddressOutput struct {
 	_ struct{} `type:"structure"`
 
 	AssociationId *string `locationName:"associationId" type:"string"`
 
 	RequestId *string `locationName:"requestId" type:"string"`
-}
-
-func (s AssociateAddressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AssociateAddressOutput) GoString() string {
-	return s.String()
-}
-
-func (s *AssociateAddressOutput) SetAssociationId(v string) *AssociateAddressOutput {
-	s.AssociationId = &v
-	return s
-}
-
-func (s *AssociateAddressOutput) SetRequestId(v string) *AssociateAddressOutput {
-	s.RequestId = &v
-	return s
 }
 
 type DisassociateAddressInput struct {
@@ -1165,47 +860,11 @@ type DisassociateAddressInput struct {
 	PublicIp *string `type:"string"`
 }
 
-func (s DisassociateAddressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DisassociateAddressInput) GoString() string {
-	return s.String()
-}
-
-func (s *DisassociateAddressInput) SetAssociationId(v string) *DisassociateAddressInput {
-	s.AssociationId = &v
-	return s
-}
-
-func (s *DisassociateAddressInput) SetPublicIp(v string) *DisassociateAddressInput {
-	s.PublicIp = &v
-	return s
-}
-
 type DisassociateAddressOutput struct {
 	_ struct{} `type:"structure"`
 
 	RequestId *string `locationName:"requestId" type:"string"`
 	Return    *bool   `locationName:"return" type:"boolean"`
-}
-
-func (s DisassociateAddressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DisassociateAddressOutput) GoString() string {
-	return s.String()
-}
-
-func (s *DisassociateAddressOutput) SetReturn(v bool) *DisassociateAddressOutput {
-	s.Return = &v
-	return s
-}
-
-func (s *DisassociateAddressOutput) SetRequestId(v string) *DisassociateAddressOutput {
-	s.RequestId = &v
-	return s
 }
 
 type ReleaseAddressInput struct {
@@ -1218,41 +877,9 @@ type ReleaseAddressInput struct {
 	PublicIp *string `type:"string"`
 }
 
-func (s ReleaseAddressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s ReleaseAddressInput) GoString() string {
-	return s.String()
-}
-
-func (s *ReleaseAddressInput) SetAllocationId(v string) *ReleaseAddressInput {
-	s.AllocationId = &v
-	return s
-}
-
-func (s *ReleaseAddressInput) SetDryRun(v bool) *ReleaseAddressInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *ReleaseAddressInput) SetPublicIp(v string) *ReleaseAddressInput {
-	s.PublicIp = &v
-	return s
-}
-
 type ReleaseAddressOutput struct {
 	_ struct{} `type:"structure"`
 }
-
-func (s ReleaseAddressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s ReleaseAddressOutput) GoString() string {
-	return s.String()
-}
-
 type RegisterImageInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1287,108 +914,10 @@ type RegisterImageInput struct {
 	VirtualizationType *string `locationName:"virtualizationType" type:"string"`
 }
 
-func (s RegisterImageInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RegisterImageInput) GoString() string {
-	return s.String()
-}
-
-func (s *RegisterImageInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "RegisterImageInput"}
-	if s.Name == nil {
-		invalidParams.Add(request.NewErrParamRequired("Name"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *RegisterImageInput) SetArchitecture(v string) *RegisterImageInput {
-	s.Architecture = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetBillingProducts(v []*string) *RegisterImageInput {
-	s.BillingProducts = v
-	return s
-}
-
-func (s *RegisterImageInput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *RegisterImageInput {
-	s.BlockDeviceMappings = v
-	return s
-}
-
-func (s *RegisterImageInput) SetDescription(v string) *RegisterImageInput {
-	s.Description = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetDryRun(v bool) *RegisterImageInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetEnaSupport(v bool) *RegisterImageInput {
-	s.EnaSupport = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetImageLocation(v string) *RegisterImageInput {
-	s.ImageLocation = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetKernelId(v string) *RegisterImageInput {
-	s.KernelId = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetName(v string) *RegisterImageInput {
-	s.Name = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetRamdiskId(v string) *RegisterImageInput {
-	s.RamdiskId = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetRootDeviceName(v string) *RegisterImageInput {
-	s.RootDeviceName = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetSriovNetSupport(v string) *RegisterImageInput {
-	s.SriovNetSupport = &v
-	return s
-}
-
-func (s *RegisterImageInput) SetVirtualizationType(v string) *RegisterImageInput {
-	s.VirtualizationType = &v
-	return s
-}
-
 type RegisterImageOutput struct {
 	_ struct{} `type:"structure"`
 
 	ImageId *string `locationName:"imageId" type:"string"`
-}
-
-func (s RegisterImageOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RegisterImageOutput) GoString() string {
-	return s.String()
-}
-
-func (s *RegisterImageOutput) SetImageId(v string) *RegisterImageOutput {
-	s.ImageId = &v
-	return s
 }
 
 type DeregisterImageInput struct {
@@ -1399,46 +928,8 @@ type DeregisterImageInput struct {
 	ImageId *string `type:"string" required:"true"`
 }
 
-func (s DeregisterImageInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeregisterImageInput) GoString() string {
-	return s.String()
-}
-
-func (s *DeregisterImageInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DeregisterImageInput"}
-	if s.ImageId == nil {
-		invalidParams.Add(request.NewErrParamRequired("ImageId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *DeregisterImageInput) SetDryRun(v bool) *DeregisterImageInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DeregisterImageInput) SetImageId(v string) *DeregisterImageInput {
-	s.ImageId = &v
-	return s
-}
-
 type DeregisterImageOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s DeregisterImageOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeregisterImageOutput) GoString() string {
-	return s.String()
 }
 
 type Image struct {
@@ -1493,19 +984,6 @@ type Image struct {
 	VirtualizationType *string `locationName:"virtualizationType" type:"string" enum:"VirtualizationType"`
 }
 
-func (s Image) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s Image) GoString() string {
-	return s.String()
-}
-
-func (s *Image) SetArchitecture(v string) *Image {
-	s.Architecture = &v
-	return s
-}
-
 type DescribeImagesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1520,43 +998,12 @@ type DescribeImagesInput struct {
 	Owners []*string `locationName:"Owner" locationNameList:"Owner" type:"list"`
 }
 
-func (s DescribeImagesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DescribeImagesInput) GoString() string {
-	return s.String()
-}
-
-func (s *DescribeImagesInput) SetDryRun(v bool) *DescribeImagesInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DescribeImagesInput) SetExecutableUsers(v []*string) *DescribeImagesInput {
-	s.ExecutableUsers = v
-	return s
-}
-
-func (s *DescribeImagesInput) SetFilters(v []*Filter) *DescribeImagesInput {
-	s.Filters = v
-	return s
-}
-
-func (s *DescribeImagesInput) SetImageIds(v []*string) *DescribeImagesInput {
-	s.ImageIds = v
-	return s
-}
-
-func (s *DescribeImagesInput) SetOwners(v []*string) *DescribeImagesInput {
-	s.Owners = v
-	return s
-}
-
 type DescribeImagesOutput struct {
 	_ struct{} `type:"structure"`
 
 	Images []*Image `locationName:"imagesSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"String"`
 }
 
 func (s DescribeImagesOutput) String() string {
@@ -1569,6 +1016,10 @@ func (s DescribeImagesOutput) GoString() string {
 
 func (s *DescribeImagesOutput) SetImages(v []*Image) *DescribeImagesOutput {
 	s.Images = v
+	return s
+}
+func (s *DescribeImagesOutput) SetRequestId(v *string) *DescribeImagesOutput {
+	s.RequestId = v
 	return s
 }
 
@@ -1596,86 +1047,8 @@ type ModifyImageAttributeInput struct {
 	Value *string `type:"string"`
 }
 
-func (s ModifyImageAttributeInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s ModifyImageAttributeInput) GoString() string {
-	return s.String()
-}
-
-func (s *ModifyImageAttributeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ModifyImageAttributeInput"}
-	if s.ImageId == nil {
-		invalidParams.Add(request.NewErrParamRequired("ImageId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *ModifyImageAttributeInput) SetAttribute(v string) *ModifyImageAttributeInput {
-	s.Attribute = &v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetDescription(v *AttributeValue) *ModifyImageAttributeInput {
-	s.Description = v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetDryRun(v bool) *ModifyImageAttributeInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetImageId(v string) *ModifyImageAttributeInput {
-	s.ImageId = &v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetLaunchPermission(v *LaunchPermissionModifications) *ModifyImageAttributeInput {
-	s.LaunchPermission = v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetOperationType(v string) *ModifyImageAttributeInput {
-	s.OperationType = &v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetProductCodes(v []*string) *ModifyImageAttributeInput {
-	s.ProductCodes = v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetUserGroups(v []*string) *ModifyImageAttributeInput {
-	s.UserGroups = v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetUserIds(v []*string) *ModifyImageAttributeInput {
-	s.UserIds = v
-	return s
-}
-
-func (s *ModifyImageAttributeInput) SetValue(v string) *ModifyImageAttributeInput {
-	s.Value = &v
-	return s
-}
-
 type ModifyImageAttributeOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s ModifyImageAttributeOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s ModifyImageAttributeOutput) GoString() string {
-	return s.String()
 }
 
 type LaunchPermissionModifications struct {
@@ -1686,48 +1059,12 @@ type LaunchPermissionModifications struct {
 	Remove []*LaunchPermission `locationNameList:"item" type:"list"`
 }
 
-func (s LaunchPermissionModifications) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s LaunchPermissionModifications) GoString() string {
-	return s.String()
-}
-
-func (s *LaunchPermissionModifications) SetAdd(v []*LaunchPermission) *LaunchPermissionModifications {
-	s.Add = v
-	return s
-}
-
-func (s *LaunchPermissionModifications) SetRemove(v []*LaunchPermission) *LaunchPermissionModifications {
-	s.Remove = v
-	return s
-}
-
 type LaunchPermission struct {
 	_ struct{} `type:"structure"`
 
 	Group *string `locationName:"group" type:"string" enum:"PermissionGroup"`
 
 	UserId *string `locationName:"userId" type:"string"`
-}
-
-func (s LaunchPermission) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s LaunchPermission) GoString() string {
-	return s.String()
-}
-
-func (s *LaunchPermission) SetGroup(v string) *LaunchPermission {
-	s.Group = &v
-	return s
-}
-
-func (s *LaunchPermission) SetUserId(v string) *LaunchPermission {
-	s.UserId = &v
-	return s
 }
 
 type DeleteTagsInput struct {
@@ -1740,51 +1077,8 @@ type DeleteTagsInput struct {
 	Tags []*Tag `locationName:"tag" locationNameList:"item" type:"list"`
 }
 
-func (s DeleteTagsInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeleteTagsInput) GoString() string {
-	return s.String()
-}
-
-func (s *DeleteTagsInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DeleteTagsInput"}
-	if s.Resources == nil {
-		invalidParams.Add(request.NewErrParamRequired("Resources"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *DeleteTagsInput) SetDryRun(v bool) *DeleteTagsInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DeleteTagsInput) SetResources(v []*string) *DeleteTagsInput {
-	s.Resources = v
-	return s
-}
-
-func (s *DeleteTagsInput) SetTags(v []*Tag) *DeleteTagsInput {
-	s.Tags = v
-	return s
-}
-
 type DeleteTagsOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s DeleteTagsOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeleteTagsOutput) GoString() string {
-	return s.String()
 }
 
 type CreateTagsInput struct {
@@ -1797,54 +1091,8 @@ type CreateTagsInput struct {
 	Tags []*Tag `locationName:"Tag" locationNameList:"item" type:"list" required:"true"`
 }
 
-func (s CreateTagsInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s CreateTagsInput) GoString() string {
-	return s.String()
-}
-
-func (s *CreateTagsInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateTagsInput"}
-	if s.Resources == nil {
-		invalidParams.Add(request.NewErrParamRequired("Resources"))
-	}
-	if s.Tags == nil {
-		invalidParams.Add(request.NewErrParamRequired("Tags"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *CreateTagsInput) SetDryRun(v bool) *CreateTagsInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *CreateTagsInput) SetResources(v []*string) *CreateTagsInput {
-	s.Resources = v
-	return s
-}
-
-func (s *CreateTagsInput) SetTags(v []*Tag) *CreateTagsInput {
-	s.Tags = v
-	return s
-}
-
 type CreateTagsOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s CreateTagsOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s CreateTagsOutput) GoString() string {
-	return s.String()
 }
 
 type DescribeTagsInput struct {
@@ -1859,55 +1107,40 @@ type DescribeTagsInput struct {
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
-func (s DescribeTagsInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DescribeTagsInput) GoString() string {
-	return s.String()
-}
-
-func (s *DescribeTagsInput) SetDryRun(v bool) *DescribeTagsInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DescribeTagsInput) SetFilters(v []*Filter) *DescribeTagsInput {
-	s.Filters = v
-	return s
-}
-
-func (s *DescribeTagsInput) SetMaxResults(v int64) *DescribeTagsInput {
-	s.MaxResults = &v
-	return s
-}
-
-func (s *DescribeTagsInput) SetNextToken(v string) *DescribeTagsInput {
-	s.NextToken = &v
-	return s
-}
-
 type DescribeTagsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return..
 	NextToken *string `locationName:"nextToken" type:"string"`
 
+	// A list of tags.
 	Tags []*TagDescription `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
+// String returns the string representation
 func (s DescribeTagsOutput) String() string {
 	return awsutil.Prettify(s)
 }
 
+// GoString returns the string representation
 func (s DescribeTagsOutput) GoString() string {
 	return s.String()
 }
 
+// SetNextToken sets the NextToken field's value.
 func (s *DescribeTagsOutput) SetNextToken(v string) *DescribeTagsOutput {
 	s.NextToken = &v
 	return s
 }
+func (s *DescribeTagsOutput) SetRequestId(v string) *DescribeTagsOutput {
+	s.RequestId = &v
+	return s
+}
 
+// SetTags sets the Tags field's value.
 func (s *DescribeTagsOutput) SetTags(v []*TagDescription) *DescribeTagsOutput {
 	s.Tags = v
 	return s
@@ -1925,58 +1158,12 @@ type TagDescription struct {
 	Value *string `locationName:"value" type:"string"`
 }
 
-func (s TagDescription) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s TagDescription) GoString() string {
-	return s.String()
-}
-
-func (s *TagDescription) SetKey(v string) *TagDescription {
-	s.Key = &v
-	return s
-}
-
-func (s *TagDescription) SetResourceId(v string) *TagDescription {
-	s.ResourceId = &v
-	return s
-}
-
-func (s *TagDescription) SetResourceType(v string) *TagDescription {
-	s.ResourceType = &v
-	return s
-}
-
-func (s *TagDescription) SetValue(v string) *TagDescription {
-	s.Value = &v
-	return s
-}
-
 type TagSpecification struct {
 	_ struct{} `type:"structure"`
 
 	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
 
 	Tags []*Tag `locationName:"Tag" locationNameList:"item" type:"list"`
-}
-
-func (s TagSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s TagSpecification) GoString() string {
-	return s.String()
-}
-
-func (s *TagSpecification) SetResourceType(v string) *TagSpecification {
-	s.ResourceType = &v
-	return s
-}
-
-func (s *TagSpecification) SetTags(v []*Tag) *TagSpecification {
-	s.Tags = v
-	return s
 }
 
 // Contains the parameters for ImportKeyPair.
@@ -2005,48 +1192,8 @@ type ImportKeyPairInput struct {
 }
 
 // String returns the string representation
-func (s ImportKeyPairInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ImportKeyPairInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *ImportKeyPairInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ImportKeyPairInput"}
-	if s.KeyName == nil {
-		invalidParams.Add(request.NewErrParamRequired("KeyName"))
-	}
-	if s.PublicKeyMaterial == nil {
-		invalidParams.Add(request.NewErrParamRequired("PublicKeyMaterial"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
 
 // SetDryRun sets the DryRun field's value.
-func (s *ImportKeyPairInput) SetDryRun(v bool) *ImportKeyPairInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *ImportKeyPairInput) SetKeyName(v string) *ImportKeyPairInput {
-	s.KeyName = &v
-	return s
-}
-
-// SetPublicKeyMaterial sets the PublicKeyMaterial field's value.
-func (s *ImportKeyPairInput) SetPublicKeyMaterial(v []byte) *ImportKeyPairInput {
-	s.PublicKeyMaterial = v
-	return s
-}
 
 // Contains the output of ImportKeyPair.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImportKeyPairResult
@@ -2058,28 +1205,6 @@ type ImportKeyPairOutput struct {
 
 	// The key pair name you provided.
 	KeyName *string `locationName:"keyName" type:"string"`
-}
-
-// String returns the string representation
-func (s ImportKeyPairOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ImportKeyPairOutput) GoString() string {
-	return s.String()
-}
-
-// SetKeyFingerprint sets the KeyFingerprint field's value.
-func (s *ImportKeyPairOutput) SetKeyFingerprint(v string) *ImportKeyPairOutput {
-	s.KeyFingerprint = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *ImportKeyPairOutput) SetKeyName(v string) *ImportKeyPairOutput {
-	s.KeyName = &v
-	return s
 }
 
 // Contains the parameters for DescribeKeyPairs.
@@ -2106,34 +1231,6 @@ type DescribeKeyPairsInput struct {
 	KeyNames []*string `locationName:"KeyName" locationNameList:"KeyName" type:"list"`
 }
 
-// String returns the string representation
-func (s DescribeKeyPairsInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeKeyPairsInput) GoString() string {
-	return s.String()
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DescribeKeyPairsInput) SetDryRun(v bool) *DescribeKeyPairsInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetFilters sets the Filters field's value.
-func (s *DescribeKeyPairsInput) SetFilters(v []*Filter) *DescribeKeyPairsInput {
-	s.Filters = v
-	return s
-}
-
-// SetKeyNames sets the KeyNames field's value.
-func (s *DescribeKeyPairsInput) SetKeyNames(v []*string) *DescribeKeyPairsInput {
-	s.KeyNames = v
-	return s
-}
-
 // Contains the output of DescribeKeyPairs.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeKeyPairsResult
 type DescribeKeyPairsOutput struct {
@@ -2141,23 +1238,11 @@ type DescribeKeyPairsOutput struct {
 
 	// Information about one or more key pairs.
 	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
-func (s DescribeKeyPairsOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeKeyPairsOutput) GoString() string {
-	return s.String()
-}
-
-// SetKeyPairs sets the KeyPairs field's value.
-func (s *DescribeKeyPairsOutput) SetKeyPairs(v []*KeyPairInfo) *DescribeKeyPairsOutput {
-	s.KeyPairs = v
-	return s
-}
 
 // Describes a key pair.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/KeyPairInfo
@@ -2175,26 +1260,6 @@ type KeyPairInfo struct {
 }
 
 // String returns the string representation
-func (s KeyPairInfo) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s KeyPairInfo) GoString() string {
-	return s.String()
-}
-
-// SetKeyFingerprint sets the KeyFingerprint field's value.
-func (s *KeyPairInfo) SetKeyFingerprint(v string) *KeyPairInfo {
-	s.KeyFingerprint = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *KeyPairInfo) SetKeyName(v string) *KeyPairInfo {
-	s.KeyName = &v
-	return s
-}
 
 // Contains the parameters for DeleteKeyPair.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteKeyPairRequest
@@ -2213,58 +1278,11 @@ type DeleteKeyPairInput struct {
 	KeyName *string `type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s DeleteKeyPairInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DeleteKeyPairInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DeleteKeyPairInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DeleteKeyPairInput"}
-	if s.KeyName == nil {
-		invalidParams.Add(request.NewErrParamRequired("KeyName"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DeleteKeyPairInput) SetDryRun(v bool) *DeleteKeyPairInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *DeleteKeyPairInput) SetKeyName(v string) *DeleteKeyPairInput {
-	s.KeyName = &v
-	return s
-}
-
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteKeyPairOutput
 type DeleteKeyPairOutput struct {
 	_ struct{} `type:"structure"`
 }
 
-// String returns the string representation
-func (s DeleteKeyPairOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DeleteKeyPairOutput) GoString() string {
-	return s.String()
-}
-
-// Contains the parameters for CreateKeyPair.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateKeyPairRequest
 type CreateKeyPairInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2280,41 +1298,6 @@ type CreateKeyPairInput struct {
 	//
 	// KeyName is a required field
 	KeyName *string `type:"string" required:"true"`
-}
-
-// String returns the string representation
-func (s CreateKeyPairInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateKeyPairInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *CreateKeyPairInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateKeyPairInput"}
-	if s.KeyName == nil {
-		invalidParams.Add(request.NewErrParamRequired("KeyName"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *CreateKeyPairInput) SetDryRun(v bool) *CreateKeyPairInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *CreateKeyPairInput) SetKeyName(v string) *CreateKeyPairInput {
-	s.KeyName = &v
-	return s
 }
 
 // Describes a key pair.
@@ -2335,34 +1318,6 @@ type CreateKeyPairOutput struct {
 	RequestId *string `locationName:"requestId" type:"String"`
 }
 
-// String returns the string representation
-func (s CreateKeyPairOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateKeyPairOutput) GoString() string {
-	return s.String()
-}
-
-// SetKeyFingerprint sets the KeyFingerprint field's value.
-func (s *CreateKeyPairOutput) SetKeyFingerprint(v string) *CreateKeyPairOutput {
-	s.KeyFingerprint = &v
-	return s
-}
-
-// SetKeyMaterial sets the KeyMaterial field's value.
-func (s *CreateKeyPairOutput) SetKeyMaterial(v string) *CreateKeyPairOutput {
-	s.KeyMaterial = &v
-	return s
-}
-
-// SetKeyName sets the KeyName field's value.
-func (s *CreateKeyPairOutput) SetKeyName(v string) *CreateKeyPairOutput {
-	s.KeyName = &v
-	return s
-}
-
 type CreateSecurityGroupInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2375,66 +1330,10 @@ type CreateSecurityGroupInput struct {
 	VpcId *string `type:"string"`
 }
 
-func (s CreateSecurityGroupInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s CreateSecurityGroupInput) GoString() string {
-	return s.String()
-}
-
-func (s *CreateSecurityGroupInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateSecurityGroupInput"}
-	if s.Description == nil {
-		invalidParams.Add(request.NewErrParamRequired("Description"))
-	}
-	if s.GroupName == nil {
-		invalidParams.Add(request.NewErrParamRequired("GroupName"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *CreateSecurityGroupInput) SetDescription(v string) *CreateSecurityGroupInput {
-	s.Description = &v
-	return s
-}
-
-func (s *CreateSecurityGroupInput) SetDryRun(v bool) *CreateSecurityGroupInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *CreateSecurityGroupInput) SetGroupName(v string) *CreateSecurityGroupInput {
-	s.GroupName = &v
-	return s
-}
-
-func (s *CreateSecurityGroupInput) SetVpcId(v string) *CreateSecurityGroupInput {
-	s.VpcId = &v
-	return s
-}
-
 type CreateSecurityGroupOutput struct {
 	_ struct{} `type:"structure"`
 
 	GroupId *string `locationName:"groupId" type:"string"`
-}
-
-func (s CreateSecurityGroupOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s CreateSecurityGroupOutput) GoString() string {
-	return s.String()
-}
-
-func (s *CreateSecurityGroupOutput) SetGroupId(v string) *CreateSecurityGroupOutput {
-	s.GroupId = &v
-	return s
 }
 
 type DescribeSecurityGroupsInput struct {
@@ -2449,50 +1348,33 @@ type DescribeSecurityGroupsInput struct {
 	GroupNames []*string `locationName:"GroupName" locationNameList:"GroupName" type:"list"`
 }
 
-func (s DescribeSecurityGroupsInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DescribeSecurityGroupsInput) GoString() string {
-	return s.String()
-}
-
-func (s *DescribeSecurityGroupsInput) SetDryRun(v bool) *DescribeSecurityGroupsInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DescribeSecurityGroupsInput) SetFilters(v []*Filter) *DescribeSecurityGroupsInput {
-	s.Filters = v
-	return s
-}
-
-func (s *DescribeSecurityGroupsInput) SetGroupIds(v []*string) *DescribeSecurityGroupsInput {
-	s.GroupIds = v
-	return s
-}
-
-func (s *DescribeSecurityGroupsInput) SetGroupNames(v []*string) *DescribeSecurityGroupsInput {
-	s.GroupNames = v
-	return s
-}
-
 type DescribeSecurityGroupsOutput struct {
 	_ struct{} `type:"structure"`
 
+	// Information about one or more security groups.
 	SecurityGroups []*SecurityGroup `locationName:"securityGroupInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"String"`
 }
 
+// String returns the string representation
 func (s DescribeSecurityGroupsOutput) String() string {
 	return awsutil.Prettify(s)
 }
 
+// GoString returns the string representation
 func (s DescribeSecurityGroupsOutput) GoString() string {
 	return s.String()
 }
 
+// SetSecurityGroups sets the SecurityGroups field's value.
 func (s *DescribeSecurityGroupsOutput) SetSecurityGroups(v []*SecurityGroup) *DescribeSecurityGroupsOutput {
 	s.SecurityGroups = v
+	return s
+}
+
+func (s *DescribeSecurityGroupsOutput) SetRequestId(v string) *DescribeSecurityGroupsOutput {
+	s.RequestId = &v
 	return s
 }
 
@@ -2516,54 +1398,6 @@ type SecurityGroup struct {
 	VpcId *string `locationName:"vpcId" type:"string"`
 }
 
-func (s SecurityGroup) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s SecurityGroup) GoString() string {
-	return s.String()
-}
-
-func (s *SecurityGroup) SetDescription(v string) *SecurityGroup {
-	s.Description = &v
-	return s
-}
-
-func (s *SecurityGroup) SetGroupId(v string) *SecurityGroup {
-	s.GroupId = &v
-	return s
-}
-
-func (s *SecurityGroup) SetGroupName(v string) *SecurityGroup {
-	s.GroupName = &v
-	return s
-}
-
-func (s *SecurityGroup) SetIpPermissions(v []*IpPermission) *SecurityGroup {
-	s.IpPermissions = v
-	return s
-}
-
-func (s *SecurityGroup) SetIpPermissionsEgress(v []*IpPermission) *SecurityGroup {
-	s.IpPermissionsEgress = v
-	return s
-}
-
-func (s *SecurityGroup) SetOwnerId(v string) *SecurityGroup {
-	s.OwnerId = &v
-	return s
-}
-
-func (s *SecurityGroup) SetTags(v []*Tag) *SecurityGroup {
-	s.Tags = v
-	return s
-}
-
-func (s *SecurityGroup) SetVpcId(v string) *SecurityGroup {
-	s.VpcId = &v
-	return s
-}
-
 type IpPermission struct {
 	_ struct{} `type:"structure"`
 
@@ -2582,66 +1416,10 @@ type IpPermission struct {
 	UserIdGroupPairs []*UserIdGroupPair `locationName:"groups" locationNameList:"item" type:"list"`
 }
 
-func (s IpPermission) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s IpPermission) GoString() string {
-	return s.String()
-}
-
-func (s *IpPermission) SetFromPort(v int64) *IpPermission {
-	s.FromPort = &v
-	return s
-}
-
-func (s *IpPermission) SetIpProtocol(v string) *IpPermission {
-	s.IpProtocol = &v
-	return s
-}
-
-func (s *IpPermission) SetIpRanges(v []*IpRange) *IpPermission {
-	s.IpRanges = v
-	return s
-}
-
-func (s *IpPermission) SetIpv6Ranges(v []*Ipv6Range) *IpPermission {
-	s.Ipv6Ranges = v
-	return s
-}
-
-func (s *IpPermission) SetPrefixListIds(v []*PrefixListId) *IpPermission {
-	s.PrefixListIds = v
-	return s
-}
-
-func (s *IpPermission) SetToPort(v int64) *IpPermission {
-	s.ToPort = &v
-	return s
-}
-
-func (s *IpPermission) SetUserIdGroupPairs(v []*UserIdGroupPair) *IpPermission {
-	s.UserIdGroupPairs = v
-	return s
-}
-
 type IpRange struct {
 	_ struct{} `type:"structure"`
 
 	CidrIp *string `locationName:"cidrIp" type:"string"`
-}
-
-func (s IpRange) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s IpRange) GoString() string {
-	return s.String()
-}
-
-func (s *IpRange) SetCidrIp(v string) *IpRange {
-	s.CidrIp = &v
-	return s
 }
 
 type Ipv6Range struct {
@@ -2650,36 +1428,10 @@ type Ipv6Range struct {
 	CidrIpv6 *string `locationName:"cidrIpv6" type:"string"`
 }
 
-func (s Ipv6Range) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s Ipv6Range) GoString() string {
-	return s.String()
-}
-
-func (s *Ipv6Range) SetCidrIpv6(v string) *Ipv6Range {
-	s.CidrIpv6 = &v
-	return s
-}
-
 type PrefixListId struct {
 	_ struct{} `type:"structure"`
 
 	PrefixListId *string `locationName:"prefixListId" type:"string"`
-}
-
-func (s PrefixListId) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s PrefixListId) GoString() string {
-	return s.String()
-}
-
-func (s *PrefixListId) SetPrefixListId(v string) *PrefixListId {
-	s.PrefixListId = &v
-	return s
 }
 
 type UserIdGroupPair struct {
@@ -2696,44 +1448,6 @@ type UserIdGroupPair struct {
 	VpcId *string `locationName:"vpcId" type:"string"`
 
 	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
-}
-
-func (s UserIdGroupPair) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s UserIdGroupPair) GoString() string {
-	return s.String()
-}
-
-func (s *UserIdGroupPair) SetGroupId(v string) *UserIdGroupPair {
-	s.GroupId = &v
-	return s
-}
-
-func (s *UserIdGroupPair) SetGroupName(v string) *UserIdGroupPair {
-	s.GroupName = &v
-	return s
-}
-
-func (s *UserIdGroupPair) SetPeeringStatus(v string) *UserIdGroupPair {
-	s.PeeringStatus = &v
-	return s
-}
-
-func (s *UserIdGroupPair) SetUserId(v string) *UserIdGroupPair {
-	s.UserId = &v
-	return s
-}
-
-func (s *UserIdGroupPair) SetVpcId(v string) *UserIdGroupPair {
-	s.VpcId = &v
-	return s
-}
-
-func (s *UserIdGroupPair) SetVpcPeeringConnectionId(v string) *UserIdGroupPair {
-	s.VpcPeeringConnectionId = &v
-	return s
 }
 
 type RevokeSecurityGroupEgressInput struct {
@@ -2758,81 +1472,8 @@ type RevokeSecurityGroupEgressInput struct {
 	ToPort *int64 `locationName:"toPort" type:"integer"`
 }
 
-func (s RevokeSecurityGroupEgressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RevokeSecurityGroupEgressInput) GoString() string {
-	return s.String()
-}
-
-func (s *RevokeSecurityGroupEgressInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "RevokeSecurityGroupEgressInput"}
-	if s.GroupId == nil {
-		invalidParams.Add(request.NewErrParamRequired("GroupId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetCidrIp(v string) *RevokeSecurityGroupEgressInput {
-	s.CidrIp = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetDryRun(v bool) *RevokeSecurityGroupEgressInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetFromPort(v int64) *RevokeSecurityGroupEgressInput {
-	s.FromPort = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetGroupId(v string) *RevokeSecurityGroupEgressInput {
-	s.GroupId = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetIpPermissions(v []*IpPermission) *RevokeSecurityGroupEgressInput {
-	s.IpPermissions = v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetIpProtocol(v string) *RevokeSecurityGroupEgressInput {
-	s.IpProtocol = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetSourceSecurityGroupName(v string) *RevokeSecurityGroupEgressInput {
-	s.SourceSecurityGroupName = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetSourceSecurityGroupOwnerId(v string) *RevokeSecurityGroupEgressInput {
-	s.SourceSecurityGroupOwnerId = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupEgressInput) SetToPort(v int64) *RevokeSecurityGroupEgressInput {
-	s.ToPort = &v
-	return s
-}
-
 type RevokeSecurityGroupEgressOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s RevokeSecurityGroupEgressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RevokeSecurityGroupEgressOutput) GoString() string {
-	return s.String()
 }
 
 type RevokeSecurityGroupIngressInput struct {
@@ -2859,74 +1500,8 @@ type RevokeSecurityGroupIngressInput struct {
 	ToPort *int64 `type:"integer"`
 }
 
-func (s RevokeSecurityGroupIngressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RevokeSecurityGroupIngressInput) GoString() string {
-	return s.String()
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetCidrIp(v string) *RevokeSecurityGroupIngressInput {
-	s.CidrIp = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetDryRun(v bool) *RevokeSecurityGroupIngressInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetFromPort(v int64) *RevokeSecurityGroupIngressInput {
-	s.FromPort = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetGroupId(v string) *RevokeSecurityGroupIngressInput {
-	s.GroupId = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetGroupName(v string) *RevokeSecurityGroupIngressInput {
-	s.GroupName = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetIpPermissions(v []*IpPermission) *RevokeSecurityGroupIngressInput {
-	s.IpPermissions = v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetIpProtocol(v string) *RevokeSecurityGroupIngressInput {
-	s.IpProtocol = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetSourceSecurityGroupName(v string) *RevokeSecurityGroupIngressInput {
-	s.SourceSecurityGroupName = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetSourceSecurityGroupOwnerId(v string) *RevokeSecurityGroupIngressInput {
-	s.SourceSecurityGroupOwnerId = &v
-	return s
-}
-
-func (s *RevokeSecurityGroupIngressInput) SetToPort(v int64) *RevokeSecurityGroupIngressInput {
-	s.ToPort = &v
-	return s
-}
-
 type RevokeSecurityGroupIngressOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s RevokeSecurityGroupIngressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s RevokeSecurityGroupIngressOutput) GoString() string {
-	return s.String()
 }
 
 type AuthorizeSecurityGroupEgressInput struct {
@@ -2951,81 +1526,8 @@ type AuthorizeSecurityGroupEgressInput struct {
 	ToPort *int64 `locationName:"toPort" type:"integer"`
 }
 
-func (s AuthorizeSecurityGroupEgressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AuthorizeSecurityGroupEgressInput) GoString() string {
-	return s.String()
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "AuthorizeSecurityGroupEgressInput"}
-	if s.GroupId == nil {
-		invalidParams.Add(request.NewErrParamRequired("GroupId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetCidrIp(v string) *AuthorizeSecurityGroupEgressInput {
-	s.CidrIp = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetDryRun(v bool) *AuthorizeSecurityGroupEgressInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetFromPort(v int64) *AuthorizeSecurityGroupEgressInput {
-	s.FromPort = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetGroupId(v string) *AuthorizeSecurityGroupEgressInput {
-	s.GroupId = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetIpPermissions(v []*IpPermission) *AuthorizeSecurityGroupEgressInput {
-	s.IpPermissions = v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetIpProtocol(v string) *AuthorizeSecurityGroupEgressInput {
-	s.IpProtocol = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetSourceSecurityGroupName(v string) *AuthorizeSecurityGroupEgressInput {
-	s.SourceSecurityGroupName = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetSourceSecurityGroupOwnerId(v string) *AuthorizeSecurityGroupEgressInput {
-	s.SourceSecurityGroupOwnerId = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupEgressInput) SetToPort(v int64) *AuthorizeSecurityGroupEgressInput {
-	s.ToPort = &v
-	return s
-}
-
 type AuthorizeSecurityGroupEgressOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s AuthorizeSecurityGroupEgressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AuthorizeSecurityGroupEgressOutput) GoString() string {
-	return s.String()
 }
 
 type AuthorizeSecurityGroupIngressInput struct {
@@ -3052,74 +1554,8 @@ type AuthorizeSecurityGroupIngressInput struct {
 	ToPort *int64 `type:"integer"`
 }
 
-func (s AuthorizeSecurityGroupIngressInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AuthorizeSecurityGroupIngressInput) GoString() string {
-	return s.String()
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetCidrIp(v string) *AuthorizeSecurityGroupIngressInput {
-	s.CidrIp = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetDryRun(v bool) *AuthorizeSecurityGroupIngressInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetFromPort(v int64) *AuthorizeSecurityGroupIngressInput {
-	s.FromPort = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetGroupId(v string) *AuthorizeSecurityGroupIngressInput {
-	s.GroupId = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetGroupName(v string) *AuthorizeSecurityGroupIngressInput {
-	s.GroupName = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetIpPermissions(v []*IpPermission) *AuthorizeSecurityGroupIngressInput {
-	s.IpPermissions = v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetIpProtocol(v string) *AuthorizeSecurityGroupIngressInput {
-	s.IpProtocol = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetSourceSecurityGroupName(v string) *AuthorizeSecurityGroupIngressInput {
-	s.SourceSecurityGroupName = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetSourceSecurityGroupOwnerId(v string) *AuthorizeSecurityGroupIngressInput {
-	s.SourceSecurityGroupOwnerId = &v
-	return s
-}
-
-func (s *AuthorizeSecurityGroupIngressInput) SetToPort(v int64) *AuthorizeSecurityGroupIngressInput {
-	s.ToPort = &v
-	return s
-}
-
 type AuthorizeSecurityGroupIngressOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s AuthorizeSecurityGroupIngressOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s AuthorizeSecurityGroupIngressOutput) GoString() string {
-	return s.String()
 }
 
 type DeleteSecurityGroupInput struct {
@@ -3132,39 +1568,8 @@ type DeleteSecurityGroupInput struct {
 	GroupName *string `type:"string"`
 }
 
-func (s DeleteSecurityGroupInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeleteSecurityGroupInput) GoString() string {
-	return s.String()
-}
-
-func (s *DeleteSecurityGroupInput) SetDryRun(v bool) *DeleteSecurityGroupInput {
-	s.DryRun = &v
-	return s
-}
-
-func (s *DeleteSecurityGroupInput) SetGroupId(v string) *DeleteSecurityGroupInput {
-	s.GroupId = &v
-	return s
-}
-
-func (s *DeleteSecurityGroupInput) SetGroupName(v string) *DeleteSecurityGroupInput {
-	s.GroupName = &v
-	return s
-}
-
 type DeleteSecurityGroupOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-func (s DeleteSecurityGroupOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-func (s DeleteSecurityGroupOutput) GoString() string {
-	return s.String()
 }
 
 // Contains the parameters for CreateVolume.
@@ -3233,83 +1638,6 @@ type CreateVolumeInput struct {
 	VolumeType *string `type:"string" enum:"VolumeType"`
 }
 
-// String returns the string representation
-func (s CreateVolumeInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateVolumeInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *CreateVolumeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateVolumeInput"}
-	if s.AvailabilityZone == nil {
-		invalidParams.Add(request.NewErrParamRequired("AvailabilityZone"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetAvailabilityZone sets the AvailabilityZone field's value.
-func (s *CreateVolumeInput) SetAvailabilityZone(v string) *CreateVolumeInput {
-	s.AvailabilityZone = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *CreateVolumeInput) SetDryRun(v bool) *CreateVolumeInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetEncrypted sets the Encrypted field's value.
-func (s *CreateVolumeInput) SetEncrypted(v bool) *CreateVolumeInput {
-	s.Encrypted = &v
-	return s
-}
-
-// SetIops sets the Iops field's value.
-func (s *CreateVolumeInput) SetIops(v int64) *CreateVolumeInput {
-	s.Iops = &v
-	return s
-}
-
-// SetKmsKeyId sets the KmsKeyId field's value.
-func (s *CreateVolumeInput) SetKmsKeyId(v string) *CreateVolumeInput {
-	s.KmsKeyId = &v
-	return s
-}
-
-// SetSize sets the Size field's value.
-func (s *CreateVolumeInput) SetSize(v int64) *CreateVolumeInput {
-	s.Size = &v
-	return s
-}
-
-// SetSnapshotId sets the SnapshotId field's value.
-func (s *CreateVolumeInput) SetSnapshotId(v string) *CreateVolumeInput {
-	s.SnapshotId = &v
-	return s
-}
-
-// SetTagSpecifications sets the TagSpecifications field's value.
-func (s *CreateVolumeInput) SetTagSpecifications(v []*TagSpecification) *CreateVolumeInput {
-	s.TagSpecifications = v
-	return s
-}
-
-// SetVolumeType sets the VolumeType field's value.
-func (s *CreateVolumeInput) SetVolumeType(v string) *CreateVolumeInput {
-	s.VolumeType = &v
-	return s
-}
-
 // Contains the parameters for DeleteVolume.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVolumeRequest
 type DeleteVolumeInput struct {
@@ -3327,54 +1655,9 @@ type DeleteVolumeInput struct {
 	VolumeId *string `type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s DeleteVolumeInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DeleteVolumeInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DeleteVolumeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DeleteVolumeInput"}
-	if s.VolumeId == nil {
-		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DeleteVolumeInput) SetDryRun(v bool) *DeleteVolumeInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetVolumeId sets the VolumeId field's value.
-func (s *DeleteVolumeInput) SetVolumeId(v string) *DeleteVolumeInput {
-	s.VolumeId = &v
-	return s
-}
-
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVolumeOutput
 type DeleteVolumeOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-// String returns the string representation
-func (s DeleteVolumeOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DeleteVolumeOutput) GoString() string {
-	return s.String()
 }
 
 // Contains the parameters for DescribeVolumes.
@@ -3461,46 +1744,6 @@ type DescribeVolumesInput struct {
 	VolumeIds []*string `locationName:"VolumeId" locationNameList:"VolumeId" type:"list"`
 }
 
-// String returns the string representation
-func (s DescribeVolumesInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeVolumesInput) GoString() string {
-	return s.String()
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DescribeVolumesInput) SetDryRun(v bool) *DescribeVolumesInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetFilters sets the Filters field's value.
-func (s *DescribeVolumesInput) SetFilters(v []*Filter) *DescribeVolumesInput {
-	s.Filters = v
-	return s
-}
-
-// SetMaxResults sets the MaxResults field's value.
-func (s *DescribeVolumesInput) SetMaxResults(v int64) *DescribeVolumesInput {
-	s.MaxResults = &v
-	return s
-}
-
-// SetNextToken sets the NextToken field's value.
-func (s *DescribeVolumesInput) SetNextToken(v string) *DescribeVolumesInput {
-	s.NextToken = &v
-	return s
-}
-
-// SetVolumeIds sets the VolumeIds field's value.
-func (s *DescribeVolumesInput) SetVolumeIds(v []*string) *DescribeVolumesInput {
-	s.VolumeIds = v
-	return s
-}
-
 type DescribeVolumesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3512,6 +1755,8 @@ type DescribeVolumesOutput struct {
 
 	// Information about the volumes.
 	Volumes []*Volume `locationName:"volumeSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -3527,6 +1772,10 @@ func (s DescribeVolumesOutput) GoString() string {
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeVolumesOutput) SetNextToken(v string) *DescribeVolumesOutput {
 	s.NextToken = &v
+	return s
+}
+func (s *DescribeVolumesOutput) SetRequesterId(v string) *DescribeVolumesOutput {
+	s.RequestId = &v
 	return s
 }
 
@@ -3553,19 +1802,6 @@ type Volume struct {
 	// Indicates whether the volume will be encrypted.
 	Encrypted *bool `locationName:"encrypted" type:"boolean"`
 
-	// The number of I/O operations per second (IOPS) that the volume supports.
-	// For Provisioned IOPS SSD volumes, this represents the number of IOPS that
-	// are provisioned for the volume. For General Purpose SSD volumes, this represents
-	// the baseline performance of the volume and the rate at which the volume accumulates
-	// I/O credits for bursting. For more information on General Purpose SSD baseline
-	// performance, I/O credits, and bursting, see Amazon EBS Volume Types (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
-	// in the Amazon Elastic Compute Cloud User Guide.
-	//
-	// Constraint: Range is 100-20000 IOPS for io1 volumes and 100-10000 IOPS for
-	// gp2 volumes.
-	//
-	// Condition: This parameter is required for requests to create io1 volumes;
-	// it is not used in requests to create gp2, st1, sc1, or standard volumes.
 	Iops *int64 `locationName:"iops" type:"integer"`
 
 	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
@@ -3675,8 +1911,6 @@ func (s *Volume) SetVolumeType(v string) *Volume {
 	return s
 }
 
-// Describes volume attachment details.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/VolumeAttachment
 type VolumeAttachment struct {
 	_ struct{} `type:"structure"`
 
@@ -3745,20 +1979,11 @@ func (s *VolumeAttachment) SetVolumeId(v string) *VolumeAttachment {
 	return s
 }
 
-// Contains the parameters for AttachVolume.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVolumeRequest
 type AttachVolumeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The device name to expose to the instance (for example, /dev/sdh or xvdh).
-	//
-	// Device is a required field
 	Device *string `type:"string" required:"true"`
 
-	// Checks whether you have the required permissions for the action, without
-	// actually making the request, and provides an error response. If you have
-	// the required permissions, the error response is DryRunOperation. Otherwise,
-	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
 	// The ID of the instance.
@@ -3766,64 +1991,7 @@ type AttachVolumeInput struct {
 	// InstanceId is a required field
 	InstanceId *string `type:"string" required:"true"`
 
-	// The ID of the EBS volume. The volume and instance must be within the same
-	// Availability Zone.
-	//
-	// VolumeId is a required field
 	VolumeId *string `type:"string" required:"true"`
-}
-
-// String returns the string representation
-func (s AttachVolumeInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s AttachVolumeInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *AttachVolumeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "AttachVolumeInput"}
-	if s.Device == nil {
-		invalidParams.Add(request.NewErrParamRequired("Device"))
-	}
-	if s.InstanceId == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
-	}
-	if s.VolumeId == nil {
-		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDevice sets the Device field's value.
-func (s *AttachVolumeInput) SetDevice(v string) *AttachVolumeInput {
-	s.Device = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *AttachVolumeInput) SetDryRun(v bool) *AttachVolumeInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *AttachVolumeInput) SetInstanceId(v string) *AttachVolumeInput {
-	s.InstanceId = &v
-	return s
-}
-
-// SetVolumeId sets the VolumeId field's value.
-func (s *AttachVolumeInput) SetVolumeId(v string) *AttachVolumeInput {
-	s.VolumeId = &v
-	return s
 }
 
 type DetachVolumeInput struct {
@@ -3832,80 +2000,131 @@ type DetachVolumeInput struct {
 	// The device name.
 	Device *string `type:"string"`
 
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Force *bool `type:"boolean"`
+
+	// The ID of the instance.
+	InstanceId *string `type:"string"`
+
+	VolumeId *string `type:"string" required:"true"`
+}
+type CreateSubnetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone for the subnet.
+	//
+	// Default: AWS selects one for you. If you create more than one subnet in your
+	// VPC, we may not necessarily select a different zone for each subnet.
+	AvailabilityZone *string `type:"string"`
+
+	// The IPv4 network range for the subnet, in CIDR notation. For example, 10.0.0.0/24.
+	//
+	// CidrBlock is a required field
+	CidrBlock *string `type:"string" required:"true"`
+
 	// Checks whether you have the required permissions for the action, without
 	// actually making the request, and provides an error response. If you have
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// Forces detachment if the previous detachment attempt did not occur cleanly
-	// (for example, logging into an instance, unmounting the volume, and detaching
-	// normally). This option can lead to data loss or a corrupted file system.
-	// Use this option only as a last resort to detach a volume from a failed instance.
-	// The instance won't have an opportunity to flush file system caches or file
-	// system metadata. If you use this option, you must perform file system check
-	// and repair procedures.
-	Force *bool `type:"boolean"`
+	// The IPv6 network range for the subnet, in CIDR notation. The subnet size
+	// must use a /64 prefix length.
+	Ipv6CidrBlock *string `type:"string"`
 
-	// The ID of the instance.
-	InstanceId *string `type:"string"`
-
-	// The ID of the volume.
+	// The ID of the VPC.
 	//
-	// VolumeId is a required field
-	VolumeId *string `type:"string" required:"true"`
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s DetachVolumeInput) String() string {
+type CreateSubnetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the subnet.
+	Subnet *Subnet `locationName:"subnet" type:"structure"`
+}
+
+type DescribeInstanceStatusInput struct {
+	_ struct{} `type:"structure"`
+
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	IncludeAllInstances *bool `locationName:"includeAllInstances" type:"boolean"`
+
+	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
+
+	MaxResults *int64 `type:"integer"`
+
+	NextToken *string `type:"string"`
+}
+
+func (s DescribeInstanceStatusInput) String() string {
 	return awsutil.Prettify(s)
 }
 
-// GoString returns the string representation
-func (s DetachVolumeInput) GoString() string {
+func (s DescribeInstanceStatusInput) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DetachVolumeInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DetachVolumeInput"}
-	if s.VolumeId == nil {
-		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDevice sets the Device field's value.
-func (s *DetachVolumeInput) SetDevice(v string) *DetachVolumeInput {
-	s.Device = &v
-	return s
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DetachVolumeInput) SetDryRun(v bool) *DetachVolumeInput {
+func (s *DescribeInstanceStatusInput) SetDryRun(v bool) *DescribeInstanceStatusInput {
 	s.DryRun = &v
 	return s
 }
 
-// SetForce sets the Force field's value.
-func (s *DetachVolumeInput) SetForce(v bool) *DetachVolumeInput {
-	s.Force = &v
+func (s *DescribeInstanceStatusInput) SetFilters(v []*Filter) *DescribeInstanceStatusInput {
+	s.Filters = v
 	return s
 }
 
-// SetInstanceId sets the InstanceId field's value.
-func (s *DetachVolumeInput) SetInstanceId(v string) *DetachVolumeInput {
-	s.InstanceId = &v
+func (s *DescribeInstanceStatusInput) SetIncludeAllInstances(v bool) *DescribeInstanceStatusInput {
+	s.IncludeAllInstances = &v
 	return s
 }
 
-// SetVolumeId sets the VolumeId field's value.
-func (s *DetachVolumeInput) SetVolumeId(v string) *DetachVolumeInput {
-	s.VolumeId = &v
+func (s *DescribeInstanceStatusInput) SetInstanceIds(v []*string) *DescribeInstanceStatusInput {
+	s.InstanceIds = v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetMaxResults(v int64) *DescribeInstanceStatusInput {
+	s.MaxResults = &v
+	return s
+}
+
+func (s *DescribeInstanceStatusInput) SetNextToken(v string) *DescribeInstanceStatusInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeInstanceStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	InstanceStatuses []*InstanceStatus `locationName:"instanceStatusSet" locationNameList:"item" type:"list"`
+
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+func (s DescribeInstanceStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s DescribeInstanceStatusOutput) GoString() string {
+	return s.String()
+}
+
+func (s *DescribeInstanceStatusOutput) SetInstanceStatuses(v []*InstanceStatus) *DescribeInstanceStatusOutput {
+	s.InstanceStatuses = v
+	return s
+}
+
+func (s *DescribeInstanceStatusOutput) SetNextToken(v string) *DescribeInstanceStatusOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -3918,6 +2137,596 @@ type CreateInternetGatewayInput struct {
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the subnet.
+	//
+	// SubnetId is a required field
+	SubnetId *string `type:"string" required:"true"`
+}
+
+type DeleteSubnetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the subnet.
+	//
+	// SubnetId is a required field
+	SubnetId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteSubnetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteSubnetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteSubnetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteSubnetInput"}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteSubnetInput) SetDryRun(v bool) *DeleteSubnetInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *DeleteSubnetInput) SetSubnetId(v string) *DeleteSubnetInput {
+	s.SubnetId = &v
+	return s
+}
+
+type DeleteSubnetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+type Subnet struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether a network interface created in this subnet (including a
+	// network interface created by RunInstances) receives an IPv6 address.
+	AssignIpv6AddressOnCreation *bool `locationName:"assignIpv6AddressOnCreation" type:"boolean"`
+
+	// The Availability Zone of the subnet.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The number of unused private IPv4 addresses in the subnet. Note that the
+	// IPv4 addresses for any stopped instances are considered unavailable.
+	AvailableIpAddressCount *int64 `locationName:"availableIpAddressCount" type:"integer"`
+
+	// The IPv4 CIDR block assigned to the subnet.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Indicates whether this is the default subnet for the Availability Zone.
+	DefaultForAz *bool `locationName:"defaultForAz" type:"boolean"`
+
+	// Information about the IPv6 CIDR blocks associated with the subnet.
+
+	// Indicates whether instances launched in this subnet receive a public IPv4
+	// address.
+	MapPublicIpOnLaunch *bool `locationName:"mapPublicIpOnLaunch" type:"boolean"`
+
+	// The current state of the subnet.
+	State *string `locationName:"state" type:"string" enum:"SubnetState"`
+
+	// The ID of the subnet.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+
+	// Any tags assigned to the subnet.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC the subnet is in.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+type DescribeSubnetsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * availabilityZone - The Availability Zone for the subnet. You can also
+	//    use availability-zone as the filter name.
+	//
+	//    * available-ip-address-count - The number of IPv4 addresses in the subnet
+	//    that are available.
+	//
+	//    * cidrBlock - The IPv4 CIDR block of the subnet. The CIDR block you specify
+	//    must exactly match the subnet's CIDR block for information to be returned
+	//    for the subnet. You can also use cidr or cidr-block as the filter names.
+	//
+	//    * defaultForAz - Indicates whether this is the default subnet for the
+	//    Availability Zone. You can also use default-for-az as the filter name.
+	//
+	//    * ipv6-cidr-block-association.ipv6-cidr-block - An IPv6 CIDR block associated
+	//    with the subnet.
+	//
+	//    * ipv6-cidr-block-association.association-id - An association ID for an
+	//    IPv6 CIDR block associated with the subnet.
+	//
+	//    * ipv6-cidr-block-association.state - The state of an IPv6 CIDR block
+	//    associated with the subnet.
+	//
+	//    * state - The state of the subnet (pending | available).
+	//
+	//    * subnet-id - The ID of the subnet.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-id - The ID of the VPC for the subnet.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more subnet IDs.
+	//
+	// Default: Describes all your subnets.
+	SubnetIds []*string `locationName:"SubnetId" locationNameList:"SubnetId" type:"list"`
+}
+type DescribeSubnetsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more subnets.
+	Subnets []*Subnet `locationName:"subnetSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeSubnetsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSubnetsOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubnets sets the Subnets field's value.
+func (s *DescribeSubnetsOutput) SetSubnets(v []*Subnet) *DescribeSubnetsOutput {
+	s.Subnets = v
+	return s
+}
+func (s *DescribeSubnetsOutput) SetRequesterId(v *string) *DescribeSubnetsOutput {
+	s.RequestId = v
+	return s
+}
+
+// Contains the output of CreateNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNatGatewayResult
+type CreateNatGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier to ensure the idempotency of the request.
+	// Only returned if a client token was provided in the request.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Information about the NAT gateway.
+	NatGateway *NatGateway `locationName:"natGateway" type:"structure"`
+}
+
+// Describes a NAT gateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NatGateway
+type NatGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time the NAT gateway was created.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The date and time the NAT gateway was deleted, if applicable.
+	DeleteTime *time.Time `locationName:"deleteTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// If the NAT gateway could not be created, specifies the error code for the
+	// failure. (InsufficientFreeAddressesInSubnet | Gateway.NotAttached | InvalidAllocationID.NotFound
+	// | Resource.AlreadyAssociated | InternalError | InvalidSubnetID.NotFound)
+	FailureCode *string `locationName:"failureCode" type:"string"`
+
+	// If the NAT gateway could not be created, specifies the error message for
+	// the failure, that corresponds to the error code.
+	//
+	//    * For InsufficientFreeAddressesInSubnet: "Subnet has insufficient free
+	//    addresses to create this NAT gateway"
+	//
+	//    * For Gateway.NotAttached: "Network vpc-xxxxxxxx has no Internet gateway
+	//    attached"
+	//
+	//    * For InvalidAllocationID.NotFound: "Elastic IP address eipalloc-xxxxxxxx
+	//    could not be associated with this NAT gateway"
+	//
+	//    * For Resource.AlreadyAssociated: "Elastic IP address eipalloc-xxxxxxxx
+	//    is already associated"
+	//
+	//    * For InternalError: "Network interface eni-xxxxxxxx, created and used
+	//    internally by this NAT gateway is in an invalid state. Please try again."
+	//
+	//    * For InvalidSubnetID.NotFound: "The specified subnet subnet-xxxxxxxx
+	//    does not exist or could not be found."
+	FailureMessage *string `locationName:"failureMessage" type:"string"`
+
+	// Information about the IP addresses and network interface associated with
+	// the NAT gateway.
+	NatGatewayAddresses []*NatGatewayAddress `locationName:"natGatewayAddressSet" locationNameList:"item" type:"list"`
+
+	// The ID of the NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	ProvisionedBandwidth *ProvisionedBandwidth `locationName:"provisionedBandwidth" type:"structure"`
+
+	// The state of the NAT gateway.
+	//
+	//    * pending: The NAT gateway is being created and is not ready to process
+	//    traffic.
+	//
+	//    * failed: The NAT gateway could not be created. Check the failureCode
+	//    and failureMessage fields for the reason.
+	//
+	//    * available: The NAT gateway is able to process traffic. This status remains
+	//    until you delete the NAT gateway, and does not indicate the health of
+	//    the NAT gateway.
+	//
+	//    * deleting: The NAT gateway is in the process of being terminated and
+	//    may still be processing traffic.
+	//
+	//    * deleted: The NAT gateway has been terminated and is no longer processing
+	//    traffic.
+	State *string `locationName:"state" type:"string" enum:"NatGatewayState"`
+
+	// The ID of the subnet in which the NAT gateway is located.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+
+	// The ID of the VPC in which the NAT gateway is located.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Describes the IP addresses and network interface associated with a NAT gateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NatGatewayAddress
+type NatGatewayAddress struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation ID of the Elastic IP address that's associated with the NAT
+	// gateway.
+	AllocationId *string `locationName:"allocationId" type:"string"`
+
+	// The ID of the network interface associated with the NAT gateway.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The private IP address associated with the Elastic IP address.
+	PrivateIp *string `locationName:"privateIp" type:"string"`
+
+	// The Elastic IP address associated with the NAT gateway.
+	PublicIp *string `locationName:"publicIp" type:"string"`
+}
+
+type ProvisionedBandwidth struct {
+	_ struct{} `type:"structure"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	ProvisionTime *time.Time `locationName:"provisionTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Provisioned *string `locationName:"provisioned" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	RequestTime *time.Time `locationName:"requestTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Requested *string `locationName:"requested" type:"string"`
+
+	// Reserved. If you need to sustain traffic greater than the documented limits
+	// (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html),
+	// contact us through the Support Center (https://console.aws.amazon.com/support/home?).
+	Status *string `locationName:"status" type:"string"`
+}
+type DescribeNatGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more filters.
+	//
+	//    * nat-gateway-id - The ID of the NAT gateway.
+	//
+	//    * state - The state of the NAT gateway (pending | failed | available |
+	//    deleting | deleted).
+	//
+	//    * subnet-id - The ID of the subnet in which the NAT gateway resides.
+	//
+	//    * vpc-id - The ID of the VPC in which the NAT gateway resides.
+	Filter []*Filter `locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value specified is greater than 1000, we return only 1000
+	// items.
+	MaxResults *int64 `type:"integer"`
+
+	// One or more NAT gateway IDs.
+	NatGatewayIds []*string `locationName:"NatGatewayId" locationNameList:"item" type:"list"`
+
+	// The token to retrieve the next page of results.
+	NextToken *string `type:"string"`
+}
+
+type DescribeNatGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the NAT gateways.
+	NatGateways []*NatGateway `locationName:"natGatewaySet" locationNameList:"item" type:"list"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+type DeleteNatGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the NAT gateway.
+	//
+	// NatGatewayId is a required field
+	NatGatewayId *string `type:"string" required:"true"`
+}
+
+type DeleteNatGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+}
+
+// Contains the parameters for CreateVpc.
+type CreateVpcInput struct {
+	_ struct{} `type:"structure"`
+
+	// Requests an Amazon-provided IPv6 CIDR block with a /56 prefix length for
+	// the VPC. You cannot specify the range of IP addresses, or the size of the
+	// CIDR block.
+	AmazonProvidedIpv6CidrBlock *bool `locationName:"amazonProvidedIpv6CidrBlock" type:"boolean"`
+
+	// The IPv4 network range for the VPC, in CIDR notation. For example, 10.0.0.0/16.
+	//
+	// CidrBlock is a required field
+	CidrBlock *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The tenancy options for instances launched into the VPC. For default, instances
+	// are launched with shared tenancy by default. You can launch instances with
+	// any tenancy into a shared tenancy VPC. For dedicated, instances are launched
+	// as dedicated tenancy instances by default. You can only launch instances
+	// with a tenancy of dedicated or host into a dedicated tenancy VPC.
+	//
+	// Important: The host value cannot be used with this parameter. Use the default
+	// or dedicated values only.
+	//
+	// Default: default
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+}
+
+// Contains the output of CreateVpc.
+type CreateVpcOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC.
+	Vpc *Vpc `locationName:"vpc" type:"structure"`
+}
+
+// Contains the parameters for DescribeVpcs.
+type DescribeVpcsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * cidr - The primary IPv4 CIDR block of the VPC. The CIDR block you specify
+	//    must exactly match the VPC's CIDR block for information to be returned
+	//    for the VPC. Must contain the slash followed by one or two digits (for
+	//    example, /28).
+	//
+	//    * cidr-block-association.cidr-block - An IPv4 CIDR block associated with
+	//    the VPC.
+	//
+	//    * cidr-block-association.association-id - The association ID for an IPv4
+	//    CIDR block associated with the VPC.
+	//
+	//    * cidr-block-association.state - The state of an IPv4 CIDR block associated
+	//    with the VPC.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * ipv6-cidr-block-association.ipv6-cidr-block - An IPv6 CIDR block associated
+	//    with the VPC.
+	//
+	//    * ipv6-cidr-block-association.association-id - The association ID for
+	//    an IPv6 CIDR block associated with the VPC.
+	//
+	//    * ipv6-cidr-block-association.state - The state of an IPv6 CIDR block
+	//    associated with the VPC.
+	//
+	//    * isDefault - Indicates whether the VPC is the default VPC.
+	//
+	//    * state - The state of the VPC (pending | available).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-id - The ID of the VPC.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more VPC IDs.
+	//
+	// Default: Describes all your VPCs.
+	VpcIds []*string `locationName:"VpcId" locationNameList:"VpcId" type:"list"`
+}
+
+// Contains the output of DescribeVpcs.
+type DescribeVpcsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more VPCs.
+	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// Describes a VPC.
+type Vpc struct {
+	_ struct{} `type:"structure"`
+
+	// The primary IPv4 CIDR block for the VPC.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Information about the IPv4 CIDR blocks associated with the VPC.
+	CidrBlockAssociationSet []*VpcCidrBlockAssociation `locationName:"cidrBlockAssociationSet" locationNameList:"item" type:"list"`
+
+	// The ID of the set of DHCP options you've associated with the VPC (or default
+	// if the default options are associated with the VPC).
+	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
+
+	// The allowed tenancy of instances launched into the VPC.
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// Information about the IPv6 CIDR blocks associated with the VPC.
+	Ipv6CidrBlockAssociationSet []*VpcIpv6CidrBlockAssociation `locationName:"ipv6CidrBlockAssociationSet" locationNameList:"item" type:"list"`
+
+	// Indicates whether the VPC is the default VPC.
+	IsDefault *bool `locationName:"isDefault" type:"boolean"`
+
+	// The current state of the VPC.
+	State *string `locationName:"state" type:"string" enum:"VpcState"`
+
+	// Any tags assigned to the VPC.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Describes an IPv4 CIDR block associated with a VPC.
+type VpcCidrBlockAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID for the IPv4 CIDR block.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The IPv4 CIDR block.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// Information about the state of the CIDR block.
+	CidrBlockState *VpcCidrBlockState `locationName:"cidrBlockState" type:"structure"`
+}
+
+// Describes the state of a CIDR block.
+type VpcCidrBlockState struct {
+	_ struct{} `type:"structure"`
+
+	// The state of the CIDR block.
+	State *string `locationName:"state" type:"string" enum:"VpcCidrBlockStateCode"`
+
+	// A message about the status of the CIDR block, if applicable.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+}
+
+// Describes an IPv6 CIDR block associated with a VPC.
+type VpcIpv6CidrBlockAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID for the IPv6 CIDR block.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The IPv6 CIDR block.
+	Ipv6CidrBlock *string `locationName:"ipv6CidrBlock" type:"string"`
+
+	// Information about the state of the CIDR block.
+	Ipv6CidrBlockState *VpcCidrBlockState `locationName:"ipv6CidrBlockState" type:"structure"`
+}
+
+// Contains the parameters for DeleteVpc.
+type DeleteVpcInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+type DeleteVpcOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 //CreateInternetGatewayOutput Contains the output of CreateInternetGateway.
@@ -3953,6 +2762,89 @@ type InternetGatewayAttachment struct {
 
 	// The ID of the VPC.
 	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+type ModifyVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// enabled, instances in the VPC get DNS hostnames; otherwise, they do not.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute. You can only enable
+	// DNS hostnames if you've enabled DNS support.
+	EnableDnsHostnames *AttributeBooleanValue `type:"structure"`
+
+	// Indicates whether the DNS resolution is supported for the VPC. If enabled,
+	// queries to the Amazon provided DNS server at the 169.254.169.253 IP address,
+	// or the reserved IP address at the base of the VPC network range "plus two"
+	// will succeed. If disabled, the Amazon provided DNS service in the VPC that
+	// resolves public DNS hostnames to IP addresses is not enabled.
+	//
+	// You cannot modify the DNS resolution and DNS hostnames attributes in the
+	// same request. Use separate requests for each attribute.
+	EnableDnsSupport *AttributeBooleanValue `type:"structure"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpcAttributeInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsHostnames(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *ModifyVpcAttributeInput) SetEnableDnsSupport(v *AttributeBooleanValue) *ModifyVpcAttributeInput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *ModifyVpcAttributeInput) SetVpcId(v string) *ModifyVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcAttributeOutput
+type ModifyVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcAttributeOutput) GoString() string {
+	return s.String()
 }
 
 // Contains the parameters for DescribeInternetGateways.
@@ -3997,16 +2889,230 @@ type DescribeInternetGatewaysInput struct {
 	InternetGatewayIds []*string `locationName:"internetGatewayId" locationNameList:"item" type:"list"`
 }
 
+// String returns the string representation
+func (s DescribeInternetGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeInternetGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeInternetGatewaysInput) SetDryRun(v bool) *DescribeInternetGatewaysInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeInternetGatewaysInput) SetFilters(v []*Filter) *DescribeInternetGatewaysInput {
+	s.Filters = v
+	return s
+}
+
+// SetInternetGatewayIds sets the InternetGatewayIds field's value.
+func (s *DescribeInternetGatewaysInput) SetInternetGatewayIds(v []*string) *DescribeInternetGatewaysInput {
+	s.InternetGatewayIds = v
+	return s
+}
+
 //DescribeInternetGatewaysOutput Contains the output of DescribeInternetGateways.
 type DescribeInternetGatewaysOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about one or more Internet gateways.
 	InternetGateways []*InternetGateway `locationName:"internetGatewaySet" locationNameList:"item" type:"list"`
-	RequesterId      *string            `locationName:"requestId" type:"string"`
+	RequestId        *string            `locationName:"requestId" type:"string"`
 }
 
-// Contains the parameters for DeleteInternetGateway.
+type DescribeVpcAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC attribute.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"VpcAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+func (s *DescribeVpcAttributeInput) SetFilters(v []*Filter) *DescribeVpcAttributeInput {
+	s.Filters = v
+	return s
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcAttributeInput"}
+	if s.Attribute == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attribute"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeVpcAttributeInput) SetAttribute(v string) *DescribeVpcAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcAttributeInput) SetDryRun(v bool) *DescribeVpcAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeInput) SetVpcId(v string) *DescribeVpcAttributeInput {
+	s.VpcId = &v
+	return s
+}
+
+type DescribeVpcAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the instances launched in the VPC get DNS hostnames. If
+	// this attribute is true, instances in the VPC get DNS hostnames; otherwise,
+	// they do not.
+	EnableDnsHostnames *AttributeBooleanValue `locationName:"enableDnsHostnames" type:"structure"`
+
+	// Indicates whether DNS resolution is enabled for the VPC. If this attribute
+	// is true, the Amazon DNS server resolves DNS hostnames for your instances
+	// to their corresponding IP addresses; otherwise, it does not.
+	EnableDnsSupport *AttributeBooleanValue `locationName:"enableDnsSupport" type:"structure"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpcAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetEnableDnsHostnames sets the EnableDnsHostnames field's value.
+func (s *DescribeVpcAttributeOutput) SetEnableDnsHostnames(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsHostnames = v
+	return s
+}
+
+// SetEnableDnsSupport sets the EnableDnsSupport field's value.
+func (s *DescribeVpcAttributeOutput) SetRequesterId(v *string) *DescribeVpcAttributeOutput {
+	s.RequestId = v
+	return s
+}
+
+func (s *DescribeVpcAttributeOutput) SetEnableDnsSupport(v *AttributeBooleanValue) *DescribeVpcAttributeOutput {
+	s.EnableDnsSupport = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DescribeVpcAttributeOutput) SetVpcId(v string) *DescribeVpcAttributeOutput {
+	s.VpcId = &v
+	return s
+}
+
+type AttachInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AttachInternetGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachInternetGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachInternetGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachInternetGatewayInput"}
+	if s.InternetGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InternetGatewayId"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachInternetGatewayInput) SetDryRun(v bool) *AttachInternetGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInternetGatewayId sets the InternetGatewayId field's value.
+func (s *AttachInternetGatewayInput) SetInternetGatewayId(v string) *AttachInternetGatewayInput {
+	s.InternetGatewayId = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *AttachInternetGatewayInput) SetVpcId(v string) *AttachInternetGatewayInput {
+	s.VpcId = &v
+	return s
+}
+
 type DeleteInternetGatewayInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4022,6 +3128,2259 @@ type DeleteInternetGatewayInput struct {
 	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
 }
 
+// String returns the string representation
+func (s DeleteInternetGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteInternetGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteInternetGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteInternetGatewayInput"}
+	if s.InternetGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InternetGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteInternetGatewayInput) SetDryRun(v bool) *DeleteInternetGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInternetGatewayId sets the InternetGatewayId field's value.
+func (s *DeleteInternetGatewayInput) SetInternetGatewayId(v string) *DeleteInternetGatewayInput {
+	s.InternetGatewayId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteInternetGatewayOutput
 type DeleteInternetGatewayOutput struct {
 	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteInternetGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteInternetGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for CreateNatGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNatGatewayRequest
+type CreateNatGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation ID of an Elastic IP address to associate with the NAT gateway.
+	// If the Elastic IP address is associated with another resource, you must first
+	// disassociate it.
+	//
+	// AllocationId is a required field
+	AllocationId *string `type:"string" required:"true"`
+
+	// Unique, case-sensitive identifier you provide to ensure the idempotency of
+	// the request. For more information, see How to Ensure Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	//
+	// Constraint: Maximum 64 ASCII characters.
+	ClientToken *string `type:"string"`
+
+	// The subnet in which to create the NAT gateway.
+	//
+	// SubnetId is a required field
+	SubnetId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateNatGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateNatGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateNatGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateNatGatewayInput"}
+	if s.AllocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AllocationId"))
+	}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *CreateNatGatewayInput) SetAllocationId(v string) *CreateNatGatewayInput {
+	s.AllocationId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateNatGatewayInput) SetClientToken(v string) *CreateNatGatewayInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *CreateNatGatewayInput) SetSubnetId(v string) *CreateNatGatewayInput {
+	s.SubnetId = &v
+	return s
+}
+
+type AttachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AttachInternetGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachInternetGatewayOutput) GoString() string {
+	return s.String()
+}
+
+type DetachInternetGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the Internet gateway.
+	//
+	// InternetGatewayId is a required field
+	InternetGatewayId *string `locationName:"internetGatewayId" type:"string" required:"true"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DetachInternetGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachInternetGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachInternetGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachInternetGatewayInput"}
+	if s.InternetGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InternetGatewayId"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachInternetGatewayInput) SetDryRun(v bool) *DetachInternetGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInternetGatewayId sets the InternetGatewayId field's value.
+func (s *DetachInternetGatewayInput) SetInternetGatewayId(v string) *DetachInternetGatewayInput {
+	s.InternetGatewayId = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DetachInternetGatewayInput) SetVpcId(v string) *DetachInternetGatewayInput {
+	s.VpcId = &v
+	return s
+}
+
+type DetachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DetachInternetGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachInternetGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for DeleteDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsRequest
+type DeleteDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// The Internet-routable IP address for the customer gateway's outside interface.
+	// The address must be static.
+	//
+	// PublicIp is a required field
+	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+
+	// The type of VPN connection that this customer gateway supports (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// String returns the string representation
+func (s CreateCustomerGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+type CreateCustomerGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// For devices that support BGP, the customer gateway's BGP ASN.
+	//
+	// Default: 65000
+	//
+	// BgpAsn is a required field
+	BgpAsn *int64 `type:"integer" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// PublicIp is a required field
+	PublicIp *string `locationName:"IpAddress" type:"string" required:"true"`
+
+	// The type of VPN connection that this customer gateway supports (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
+}
+
+// GoString returns the string representation
+func (s DeleteDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+func (s CreateCustomerGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+func (s *CreateCustomerGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCustomerGatewayInput"}
+	if s.BgpAsn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BgpAsn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DeleteDhcpOptionsInput) SetDhcpOptionsId(v string) *DeleteDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetBgpAsn sets the BgpAsn field's value.
+func (s *CreateCustomerGatewayInput) SetBgpAsn(v int64) *CreateCustomerGatewayInput {
+	s.BgpAsn = &v
+	return s
+}
+
+func (s *CreateCustomerGatewayInput) SetDryRun(v bool) *CreateCustomerGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteDhcpOptionsOutput
+type DeleteDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *CreateCustomerGatewayInput) SetPublicIp(v string) *CreateCustomerGatewayInput {
+	s.PublicIp = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateCustomerGatewayInput) SetType(v string) *CreateCustomerGatewayInput {
+	s.Type = &v
+	return s
+}
+
+// Contains the output of CreateCustomerGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCustomerGatewayResult
+type CreateCustomerGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the customer gateway.
+	CustomerGateway *CustomerGateway `locationName:"customerGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateCustomerGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NewDhcpConfiguration
+type NewDhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	Key *string `locationName:"key" type:"string"`
+
+	Values []*string `locationName:"Value" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s NewDhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+func (s CreateCustomerGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGateway sets the CustomerGateway field's value.
+func (s *CreateCustomerGatewayOutput) SetCustomerGateway(v *CustomerGateway) *CreateCustomerGatewayOutput {
+	s.CustomerGateway = v
+	return s
+}
+
+type CustomerGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The customer gateway's Border Gateway Protocol (BGP) Autonomous System Number
+	// (ASN).
+	BgpAsn *string `locationName:"bgpAsn" type:"string"`
+
+	// The ID of the customer gateway.
+	CustomerGatewayId *string `locationName:"customerGatewayId" type:"string"`
+
+	// The Internet-routable IP address of the customer gateway's outside interface.
+	IpAddress *string `locationName:"ipAddress" type:"string"`
+
+	// The current state of the customer gateway (pending | available | deleting
+	// | deleted).
+	State *string `locationName:"state" type:"string"`
+
+	// Any tags assigned to the customer gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The type of VPN connection the customer gateway supports (ipsec.1).
+	Type *string `locationName:"type" type:"string"`
+}
+
+// String returns the string representation
+func (s CustomerGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NewDhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *NewDhcpConfiguration) SetKey(v string) *NewDhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *NewDhcpConfiguration) SetValues(v []*string) *NewDhcpConfiguration {
+	s.Values = v
+	return s
+}
+
+// Contains the parameters for CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsRequest
+type CreateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A DHCP configuration option.
+	//
+	// DhcpConfigurations is a required field
+	DhcpConfigurations []*NewDhcpConfiguration `locationName:"dhcpConfiguration" locationNameList:"item" type:"list" required:"true"`
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+func (s CustomerGateway) GoString() string {
+	return s.String()
+}
+
+// SetBgpAsn sets the BgpAsn field's value.
+func (s *CustomerGateway) SetBgpAsn(v string) *CustomerGateway {
+	s.BgpAsn = &v
+	return s
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *CustomerGateway) SetCustomerGatewayId(v string) *CustomerGateway {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *CustomerGateway) SetIpAddress(v string) *CustomerGateway {
+	s.IpAddress = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CustomerGateway) SetState(v string) *CustomerGateway {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CustomerGateway) SetTags(v []*Tag) *CustomerGateway {
+	s.Tags = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CustomerGateway) SetType(v string) *CustomerGateway {
+	s.Type = &v
+	return s
+}
+
+// Contains the parameters for DeleteCustomerGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGatewayRequest
+type DeleteCustomerGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the customer gateway.
+	//
+	// CustomerGatewayId is a required field
+	CustomerGatewayId *string `type:"string" required:"true"`
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s CreateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+func (s DeleteCustomerGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+func (s DeleteCustomerGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateDhcpOptionsInput"}
+	if s.DhcpConfigurations == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpConfigurations"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+func (s *DeleteCustomerGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCustomerGatewayInput"}
+	if s.CustomerGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomerGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *CreateDhcpOptionsInput) SetDhcpConfigurations(v []*NewDhcpConfiguration) *CreateDhcpOptionsInput {
+	s.DhcpConfigurations = v
+	return s
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *DeleteCustomerGatewayInput) SetCustomerGatewayId(v string) *DeleteCustomerGatewayInput {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateDhcpOptionsInput) SetDryRun(v bool) *CreateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+func (s *DeleteCustomerGatewayInput) SetDryRun(v bool) *DeleteCustomerGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// Contains the output of CreateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateDhcpOptionsResult
+type CreateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A set of DHCP options.
+	DhcpOptions *DhcpOptions `locationName:"dhcpOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *CreateDhcpOptionsOutput) SetDhcpOptions(v *DhcpOptions) *CreateDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
+
+// Describes a set of DHCP options.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpOptions
+type DhcpOptions struct {
+	_ struct{} `type:"structure"`
+
+	// One or more DHCP options in the set.
+	DhcpConfigurations []*DhcpConfiguration `locationName:"dhcpConfigurationSet" locationNameList:"item" type:"list"`
+
+	// The ID of the set of DHCP options.
+	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
+
+	// Any tags assigned to the DHCP options set.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+
+// Describes a DHCP configuration option.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DhcpConfiguration
+type DhcpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The name of a DHCP option.
+	Key *string `locationName:"key" type:"string"`
+
+	// One or more values for the DHCP option.
+	Values []*AttributeValue `locationName:"valueSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DhcpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DhcpConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetKey sets the Key field's value.
+func (s *DhcpConfiguration) SetKey(v string) *DhcpConfiguration {
+	s.Key = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *DhcpConfiguration) SetValues(v []*AttributeValue) *DhcpConfiguration {
+	s.Values = v
+	return s
+}
+
+// String returns the string representation
+func (s DhcpOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCustomerGatewayOutput
+type DeleteCustomerGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteCustomerGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DhcpOptions) GoString() string {
+	return s.String()
+}
+
+// SetDhcpConfigurations sets the DhcpConfigurations field's value.
+func (s *DhcpOptions) SetDhcpConfigurations(v []*DhcpConfiguration) *DhcpOptions {
+	s.DhcpConfigurations = v
+	return s
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *DhcpOptions) SetDhcpOptionsId(v string) *DhcpOptions {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *DhcpOptions) SetTags(v []*Tag) *DhcpOptions {
+	s.Tags = v
+	return s
+}
+
+// Contains the parameters for DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsRequest
+type DescribeDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of one or more DHCP options sets.
+	//
+	// Default: Describes all your DHCP options sets.
+	DhcpOptionsIds []*string `locationName:"DhcpOptionsId" locationNameList:"DhcpOptionsId" type:"list"`
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * key - The key for one of the options (for example, domain-name).
+	//
+	//    * value - The value for one of the options.
+	//    * bgp-asn - The customer gateway's Border Gateway Protocol (BGP) Autonomous
+	//    System Number (ASN).
+	//
+	//    * customer-gateway-id - The ID of the customer gateway.
+	//
+	//    * ip-address - The IP address of the customer gateway's Internet-routable
+	//    external interface.
+	//
+	//    * state - The state of the customer gateway (pending | available | deleting
+	//    | deleted).
+	//
+	//    * type - The type of customer gateway. Currently, the only supported type
+	//    is ipsec.1.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+func (s DeleteCustomerGatewayOutput) GoString() string {
+	return s.String()
+}
+
+type DescribeCustomerGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more customer gateway IDs.
+	//
+	// Default: Describes all your customer gateways.
+	CustomerGatewayIds []*string `locationName:"CustomerGatewayId" locationNameList:"CustomerGatewayId" type:"list"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * dhcp-options-id - The ID of a set of DHCP options.
+	//
+	//    * key - The key for one of the options (for example, domain-name).
+	//
+	//    * value - The value for one of the options.
+	//    * bgp-asn - The customer gateway's Border Gateway Protocol (BGP) Autonomous
+	//    System Number (ASN).
+	//
+	//    * customer-gateway-id - The ID of the customer gateway.
+	//
+	//    * ip-address - The IP address of the customer gateway's Internet-routable
+	//    external interface.
+	//
+	//    * state - The state of the customer gateway (pending | available | deleting
+	//    | deleted).
+	//
+	//    * type - The type of customer gateway. Currently, the only supported type
+	//    is ipsec.1.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+func (s DescribeCustomerGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptionsIds sets the DhcpOptionsIds field's value.
+func (s *DescribeDhcpOptionsInput) SetDhcpOptionsIds(v []*string) *DescribeDhcpOptionsInput {
+	s.DhcpOptionsIds = v
+	return s
+}
+func (s DescribeCustomerGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGatewayIds sets the CustomerGatewayIds field's value.
+func (s *DescribeCustomerGatewaysInput) SetCustomerGatewayIds(v []*string) *DescribeCustomerGatewaysInput {
+	s.CustomerGatewayIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeDhcpOptionsInput) SetDryRun(v bool) *DescribeDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+func (s *DescribeCustomerGatewaysInput) SetDryRun(v bool) *DescribeCustomerGatewaysInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeDhcpOptionsInput) SetFilters(v []*Filter) *DescribeDhcpOptionsInput {
+	s.Filters = v
+	return s
+}
+func (s *DescribeCustomerGatewaysInput) SetFilters(v []*Filter) *DescribeCustomerGatewaysInput {
+	s.Filters = v
+	return s
+}
+
+// Contains the output of DescribeDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeDhcpOptionsResult
+type DescribeDhcpOptionsOutput struct {
+	_         struct{} `type:"structure"`
+	RequestId *string  `locationName:"requestId" type:"string"`
+
+	// Information about one or more DHCP options sets.
+	DhcpOptions []*DhcpOptions `locationName:"dhcpOptionsSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDhcpOptions sets the DhcpOptions field's value.
+func (s *DescribeDhcpOptionsOutput) SetDhcpOptions(v []*DhcpOptions) *DescribeDhcpOptionsOutput {
+	s.DhcpOptions = v
+	return s
+}
+
+// Contains the parameters for AssociateDhcpOptions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsRequest
+type AssociateDhcpOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the DHCP options set, or default to associate no DHCP options with
+	// the VPC.
+	//
+	// DhcpOptionsId is a required field
+	DhcpOptionsId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// Contains the output of DescribeCustomerGateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCustomerGatewaysResult
+type DescribeCustomerGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more customer gateways.
+	CustomerGateways []*CustomerGateway `locationName:"customerGatewaySet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeCustomerGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateDhcpOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateDhcpOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateDhcpOptionsInput"}
+	if s.DhcpOptionsId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DhcpOptionsId"))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDhcpOptionsId sets the DhcpOptionsId field's value.
+func (s *AssociateDhcpOptionsInput) SetDhcpOptionsId(v string) *AssociateDhcpOptionsInput {
+	s.DhcpOptionsId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateDhcpOptionsInput) SetDryRun(v bool) *AssociateDhcpOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *AssociateDhcpOptionsInput) SetVpcId(v string) *AssociateDhcpOptionsInput {
+	s.VpcId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateDhcpOptionsOutput
+type AssociateDhcpOptionsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AssociateDhcpOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateDhcpOptionsOutput) GoString() string {
+	return s.String()
+}
+func (s DescribeCustomerGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGateways sets the CustomerGateways field's value.
+func (s *DescribeCustomerGatewaysOutput) SetCustomerGateways(v []*CustomerGateway) *DescribeCustomerGatewaysOutput {
+	s.CustomerGateways = v
+	return s
+}
+func (s *DescribeCustomerGatewaysOutput) SetRequesterId(v *string) *DescribeCustomerGatewaysOutput {
+	s.RequestId = v
+	return s
+}
+
+type CreateRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR address block used for the destination match. Routing decisions
+	// are based on the most specific match.
+	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
+
+	// The IPv6 CIDR block used for the destination match. Routing decisions are
+	// based on the most specific match.
+	DestinationIpv6CidrBlock *string `locationName:"destinationIpv6CidrBlock" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// [IPv6 traffic only] The ID of an egress-only Internet gateway.
+	EgressOnlyInternetGatewayId *string `locationName:"egressOnlyInternetGatewayId" type:"string"`
+
+	// The ID of an Internet gateway or virtual private gateway attached to your
+	// VPC.
+	GatewayId *string `locationName:"gatewayId" type:"string"`
+
+	// The ID of a NAT instance in your VPC. The operation fails if you specify
+	// an instance ID unless exactly one network interface is attached.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+
+	// The ID of a network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The ID of the route table for the route.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+
+	// The ID of a VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRouteInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *CreateRouteInput) SetDestinationCidrBlock(v string) *CreateRouteInput {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationIpv6CidrBlock sets the DestinationIpv6CidrBlock field's value.
+func (s *CreateRouteInput) SetDestinationIpv6CidrBlock(v string) *CreateRouteInput {
+	s.DestinationIpv6CidrBlock = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateRouteInput) SetDryRun(v bool) *CreateRouteInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEgressOnlyInternetGatewayId sets the EgressOnlyInternetGatewayId field's value.
+func (s *CreateRouteInput) SetEgressOnlyInternetGatewayId(v string) *CreateRouteInput {
+	s.EgressOnlyInternetGatewayId = &v
+	return s
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *CreateRouteInput) SetGatewayId(v string) *CreateRouteInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *CreateRouteInput) SetInstanceId(v string) *CreateRouteInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *CreateRouteInput) SetNatGatewayId(v string) *CreateRouteInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *CreateRouteInput) SetNetworkInterfaceId(v string) *CreateRouteInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *CreateRouteInput) SetRouteTableId(v string) *CreateRouteInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *CreateRouteInput) SetVpcPeeringConnectionId(v string) *CreateRouteInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Contains the output of CreateRoute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRouteResult
+type CreateRouteOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns true if the request succeeds; otherwise, it returns an error.
+	Return *bool `locationName:"return" type:"boolean"`
+}
+
+// String returns the string representation
+func (s CreateRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteOutput) GoString() string {
+	return s.String()
+}
+
+// SetReturn sets the Return field's value.
+func (s *CreateRouteOutput) SetReturn(v bool) *CreateRouteOutput {
+	s.Return = &v
+	return s
+}
+
+type Route struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR block used for the destination match.
+	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
+
+	// The IPv6 CIDR block used for the destination match.
+	DestinationIpv6CidrBlock *string `locationName:"destinationIpv6CidrBlock" type:"string"`
+
+	// The prefix of the AWS service.
+	DestinationPrefixListId *string `locationName:"destinationPrefixListId" type:"string"`
+
+	// The ID of the egress-only Internet gateway.
+	EgressOnlyInternetGatewayId *string `locationName:"egressOnlyInternetGatewayId" type:"string"`
+
+	// The ID of a gateway attached to your VPC.
+	GatewayId *string `locationName:"gatewayId" type:"string"`
+
+	// The ID of a NAT instance in your VPC.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The AWS account ID of the owner of the instance.
+	InstanceOwnerId *string `locationName:"instanceOwnerId" type:"string"`
+
+	// The ID of a NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// Describes how the route was created.
+	//
+	//    * CreateRouteTable - The route was automatically created when the route
+	//    table was created.
+	//
+	//    * CreateRoute - The route was manually added to the route table.
+	//
+	//    * EnableVgwRoutePropagation - The route was propagated by route propagation.
+	Origin *string `locationName:"origin" type:"string" enum:"RouteOrigin"`
+
+	// The state of the route. The blackhole state indicates that the route's target
+	// isn't available (for example, the specified gateway isn't attached to the
+	// VPC, or the specified NAT instance has been terminated).
+	State *string `locationName:"state" type:"string" enum:"RouteState"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+// String returns the string representation
+func (s Route) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Route) GoString() string {
+	return s.String()
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *Route) SetDestinationCidrBlock(v string) *Route {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationIpv6CidrBlock sets the DestinationIpv6CidrBlock field's value.
+func (s *Route) SetDestinationIpv6CidrBlock(v string) *Route {
+	s.DestinationIpv6CidrBlock = &v
+	return s
+}
+
+// SetDestinationPrefixListId sets the DestinationPrefixListId field's value.
+func (s *Route) SetDestinationPrefixListId(v string) *Route {
+	s.DestinationPrefixListId = &v
+	return s
+}
+
+// SetEgressOnlyInternetGatewayId sets the EgressOnlyInternetGatewayId field's value.
+func (s *Route) SetEgressOnlyInternetGatewayId(v string) *Route {
+	s.EgressOnlyInternetGatewayId = &v
+	return s
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *Route) SetGatewayId(v string) *Route {
+	s.GatewayId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *Route) SetInstanceId(v string) *Route {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceOwnerId sets the InstanceOwnerId field's value.
+func (s *Route) SetInstanceOwnerId(v string) *Route {
+	s.InstanceOwnerId = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *Route) SetNatGatewayId(v string) *Route {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *Route) SetNetworkInterfaceId(v string) *Route {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetOrigin sets the Origin field's value.
+func (s *Route) SetOrigin(v string) *Route {
+	s.Origin = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Route) SetState(v string) *Route {
+	s.State = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *Route) SetVpcPeeringConnectionId(v string) *Route {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+type ReplaceRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR address block used for the destination match. The value you
+	// provide must match the CIDR of an existing route in the table.
+	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
+
+	// The IPv6 CIDR address block used for the destination match. The value you
+	// provide must match the CIDR of an existing route in the table.
+	DestinationIpv6CidrBlock *string `locationName:"destinationIpv6CidrBlock" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// [IPv6 traffic only] The ID of an egress-only Internet gateway.
+	EgressOnlyInternetGatewayId *string `locationName:"egressOnlyInternetGatewayId" type:"string"`
+
+	// The ID of an Internet gateway or virtual private gateway.
+	GatewayId *string `locationName:"gatewayId" type:"string"`
+
+	// The ID of a NAT instance in your VPC.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// [IPv4 traffic only] The ID of a NAT gateway.
+	NatGatewayId *string `locationName:"natGatewayId" type:"string"`
+
+	// The ID of a network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+
+	// The ID of a VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplaceRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplaceRouteInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *ReplaceRouteInput) SetDestinationCidrBlock(v string) *ReplaceRouteInput {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationIpv6CidrBlock sets the DestinationIpv6CidrBlock field's value.
+func (s *ReplaceRouteInput) SetDestinationIpv6CidrBlock(v string) *ReplaceRouteInput {
+	s.DestinationIpv6CidrBlock = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ReplaceRouteInput) SetDryRun(v bool) *ReplaceRouteInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEgressOnlyInternetGatewayId sets the EgressOnlyInternetGatewayId field's value.
+func (s *ReplaceRouteInput) SetEgressOnlyInternetGatewayId(v string) *ReplaceRouteInput {
+	s.EgressOnlyInternetGatewayId = &v
+	return s
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *ReplaceRouteInput) SetGatewayId(v string) *ReplaceRouteInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ReplaceRouteInput) SetInstanceId(v string) *ReplaceRouteInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetNatGatewayId sets the NatGatewayId field's value.
+func (s *ReplaceRouteInput) SetNatGatewayId(v string) *ReplaceRouteInput {
+	s.NatGatewayId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *ReplaceRouteInput) SetNetworkInterfaceId(v string) *ReplaceRouteInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *ReplaceRouteInput) SetRouteTableId(v string) *ReplaceRouteInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *ReplaceRouteInput) SetVpcPeeringConnectionId(v string) *ReplaceRouteInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceRouteOutput
+type ReplaceRouteOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR range for the route. The value you specify must match the CIDR
+	// for the route exactly.
+	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
+
+	// The IPv6 CIDR range for the route. The value you specify must match the CIDR
+	// for the route exactly.
+	DestinationIpv6CidrBlock *string `locationName:"destinationIpv6CidrBlock" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRouteInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *DeleteRouteInput) SetDestinationCidrBlock(v string) *DeleteRouteInput {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetDestinationIpv6CidrBlock sets the DestinationIpv6CidrBlock field's value.
+func (s *DeleteRouteInput) SetDestinationIpv6CidrBlock(v string) *DeleteRouteInput {
+	s.DestinationIpv6CidrBlock = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteRouteInput) SetDryRun(v bool) *DeleteRouteInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *DeleteRouteInput) SetRouteTableId(v string) *DeleteRouteInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteRouteOutput
+type DeleteRouteOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteOutput) GoString() string {
+	return s.String()
+}
+
+type DescribeRouteTablesInput struct {
+	_ struct{} `type:"structure"`
+
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	//    * vpc-id - The ID of the VPC for the route table.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more route table IDs.
+	//
+	// Default: Describes all your route tables.
+	RouteTableIds []*string `locationName:"RouteTableId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeRouteTablesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRouteTablesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeRouteTablesInput) SetDryRun(v bool) *DescribeRouteTablesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeRouteTablesInput) SetFilters(v []*Filter) *DescribeRouteTablesInput {
+	s.Filters = v
+	return s
+}
+
+// SetRouteTableIds sets the RouteTableIds field's value.
+func (s *DescribeRouteTablesInput) SetRouteTableIds(v []*string) *DescribeRouteTablesInput {
+	s.RouteTableIds = v
+	return s
+}
+
+// Contains the output of DescribeRouteTables.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeRouteTablesResult
+type DescribeRouteTablesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more route tables.
+	RouteTables []*RouteTable `locationName:"routeTableSet" locationNameList:"item" type:"list"`
+	RequestId   *string       `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeRouteTablesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRouteTablesOutput) GoString() string {
+	return s.String()
+}
+
+// SetRouteTables sets the RouteTables field's value.
+func (s *DescribeRouteTablesOutput) SetRouteTables(v []*RouteTable) *DescribeRouteTablesOutput {
+	s.RouteTables = v
+	return s
+}
+
+type RouteTable struct {
+	_ struct{} `type:"structure"`
+
+	// The associations between the route table and one or more subnets.
+	Associations []*RouteTableAssociation `locationName:"associationSet" locationNameList:"item" type:"list"`
+
+	// Any virtual private gateway (VGW) propagating routes.
+	PropagatingVgws []*PropagatingVgw `locationName:"propagatingVgwSet" locationNameList:"item" type:"list"`
+
+	// The ID of the route table.
+	RouteTableId *string `locationName:"routeTableId" type:"string"`
+
+	// The routes in the route table.
+	Routes []*Route `locationName:"routeSet" locationNameList:"item" type:"list"`
+
+	// Any tags assigned to the route table.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s RouteTable) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RouteTable) GoString() string {
+	return s.String()
+}
+
+// SetAssociations sets the Associations field's value.
+func (s *RouteTable) SetAssociations(v []*RouteTableAssociation) *RouteTable {
+	s.Associations = v
+	return s
+}
+
+// SetPropagatingVgws sets the PropagatingVgws field's value.
+func (s *RouteTable) SetPropagatingVgws(v []*PropagatingVgw) *RouteTable {
+	s.PropagatingVgws = v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *RouteTable) SetRouteTableId(v string) *RouteTable {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetRoutes sets the Routes field's value.
+func (s *RouteTable) SetRoutes(v []*Route) *RouteTable {
+	s.Routes = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *RouteTable) SetTags(v []*Tag) *RouteTable {
+	s.Tags = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *RouteTable) SetVpcId(v string) *RouteTable {
+	s.VpcId = &v
+	return s
+}
+
+// Describes an association between a route table and a subnet.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/RouteTableAssociation
+type RouteTableAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether this is the main route table.
+	Main *bool `locationName:"main" type:"boolean"`
+
+	// The ID of the association between a route table and a subnet.
+	RouteTableAssociationId *string `locationName:"routeTableAssociationId" type:"string"`
+
+	// The ID of the route table.
+	RouteTableId *string `locationName:"routeTableId" type:"string"`
+
+	// The ID of the subnet. A subnet ID is not returned for an implicit association.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+}
+
+// String returns the string representation
+func (s RouteTableAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s RouteTableAssociation) GoString() string {
+	return s.String()
+}
+
+// SetMain sets the Main field's value.
+func (s *RouteTableAssociation) SetMain(v bool) *RouteTableAssociation {
+	s.Main = &v
+	return s
+}
+
+// SetRouteTableAssociationId sets the RouteTableAssociationId field's value.
+func (s *RouteTableAssociation) SetRouteTableAssociationId(v string) *RouteTableAssociation {
+	s.RouteTableAssociationId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *RouteTableAssociation) SetRouteTableId(v string) *RouteTableAssociation {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *RouteTableAssociation) SetSubnetId(v string) *RouteTableAssociation {
+	s.SubnetId = &v
+	return s
+}
+
+type PropagatingVgw struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the virtual private gateway (VGW).
+	GatewayId *string `locationName:"gatewayId" type:"string"`
+}
+
+// String returns the string representation
+func (s PropagatingVgw) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PropagatingVgw) GoString() string {
+	return s.String()
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *PropagatingVgw) SetGatewayId(v string) *PropagatingVgw {
+	s.GatewayId = &v
+	return s
+}
+
+type CreateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateRouteTableInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateRouteTableInput) SetDryRun(v bool) *CreateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateRouteTableInput) SetVpcId(v string) *CreateRouteTableInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of CreateRouteTable.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateRouteTableResult
+type CreateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the route table.
+	RouteTable *RouteTable `locationName:"routeTable" type:"structure"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+// SetRouteTable sets the RouteTable field's value.
+func (s *CreateRouteTableOutput) SetRouteTable(v *RouteTable) *CreateRouteTableOutput {
+	s.RouteTable = v
+	return s
+}
+
+type DisableVgwRoutePropagationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the virtual private gateway.
+	//
+	// GatewayId is a required field
+	GatewayId *string `type:"string" required:"true"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DisableVgwRoutePropagationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableVgwRoutePropagationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisableVgwRoutePropagationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisableVgwRoutePropagationInput"}
+	if s.GatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *DisableVgwRoutePropagationInput) SetGatewayId(v string) *DisableVgwRoutePropagationInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *DisableVgwRoutePropagationInput) SetRouteTableId(v string) *DisableVgwRoutePropagationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisableVgwRoutePropagationOutput
+type DisableVgwRoutePropagationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DisableVgwRoutePropagationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisableVgwRoutePropagationOutput) GoString() string {
+	return s.String()
+}
+
+type EnableVgwRoutePropagationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the virtual private gateway.
+	//
+	// GatewayId is a required field
+	GatewayId *string `type:"string" required:"true"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s EnableVgwRoutePropagationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableVgwRoutePropagationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EnableVgwRoutePropagationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EnableVgwRoutePropagationInput"}
+	if s.GatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayId sets the GatewayId field's value.
+func (s *EnableVgwRoutePropagationInput) SetGatewayId(v string) *EnableVgwRoutePropagationInput {
+	s.GatewayId = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *EnableVgwRoutePropagationInput) SetRouteTableId(v string) *EnableVgwRoutePropagationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/EnableVgwRoutePropagationOutput
+type EnableVgwRoutePropagationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s EnableVgwRoutePropagationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EnableVgwRoutePropagationOutput) GoString() string {
+	return s.String()
+}
+
+type DisassociateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID representing the current association between the route
+	// table and subnet.
+	//
+	// AssociationId is a required field
+	AssociationId *string `locationName:"associationId" type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DisassociateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisassociateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateRouteTableInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DisassociateRouteTableInput) SetAssociationId(v string) *DisassociateRouteTableInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DisassociateRouteTableInput) SetDryRun(v bool) *DisassociateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DisassociateRouteTableOutput
+type DisassociateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DisassociateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DisassociateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRouteTableInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteRouteTableInput) SetDryRun(v bool) *DeleteRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *DeleteRouteTableInput) SetRouteTableId(v string) *DeleteRouteTableInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteRouteTableOutput
+type DeleteRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+type AssociateRouteTableInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the route table.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+
+	// The ID of the subnet.
+	//
+	// SubnetId is a required field
+	SubnetId *string `locationName:"subnetId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociateRouteTableInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateRouteTableInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateRouteTableInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateRouteTableInput"}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AssociateRouteTableInput) SetDryRun(v bool) *AssociateRouteTableInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *AssociateRouteTableInput) SetRouteTableId(v string) *AssociateRouteTableInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *AssociateRouteTableInput) SetSubnetId(v string) *AssociateRouteTableInput {
+	s.SubnetId = &v
+	return s
+}
+
+// Contains the output of AssociateRouteTable.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssociateRouteTableResult
+type AssociateRouteTableOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The route table association ID (needed to disassociate the route table).
+	AssociationId *string `locationName:"associationId" type:"string"`
+}
+
+// String returns the string representation
+func (s AssociateRouteTableOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociateRouteTableOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *AssociateRouteTableOutput) SetAssociationId(v string) *AssociateRouteTableOutput {
+	s.AssociationId = &v
+	return s
+}
+
+type ReplaceRouteTableAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID.
+	//
+	// AssociationId is a required field
+	AssociationId *string `locationName:"associationId" type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the new route table to associate with the subnet.
+	//
+	// RouteTableId is a required field
+	RouteTableId *string `locationName:"routeTableId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteTableAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteTableAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplaceRouteTableAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplaceRouteTableAssociationInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.RouteTableId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteTableId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *ReplaceRouteTableAssociationInput) SetAssociationId(v string) *ReplaceRouteTableAssociationInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ReplaceRouteTableAssociationInput) SetDryRun(v bool) *ReplaceRouteTableAssociationInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRouteTableId sets the RouteTableId field's value.
+func (s *ReplaceRouteTableAssociationInput) SetRouteTableId(v string) *ReplaceRouteTableAssociationInput {
+	s.RouteTableId = &v
+	return s
+}
+
+// Contains the output of ReplaceRouteTableAssociation.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReplaceRouteTableAssociationResult
+type ReplaceRouteTableAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new association.
+	NewAssociationId *string `locationName:"newAssociationId" type:"string"`
+}
+
+// String returns the string representation
+func (s ReplaceRouteTableAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ReplaceRouteTableAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetNewAssociationId sets the NewAssociationId field's value.
+func (s *ReplaceRouteTableAssociationOutput) SetNewAssociationId(v string) *ReplaceRouteTableAssociationOutput {
+	s.NewAssociationId = &v
+	return s
+}
+
+// String returns the string representation
+func (s DescribeVpcsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcsInput) SetDryRun(v bool) *DescribeVpcsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpcsInput) SetFilters(v []*Filter) *DescribeVpcsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpcIds sets the VpcIds field's value.
+func (s *DescribeVpcsInput) SetVpcIds(v []*string) *DescribeVpcsInput {
+	s.VpcIds = v
+	return s
+}
+
+// // Contains the output of DescribeVpcs.
+// // Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcsResult
+// type DescribeVpcsOutput struct {
+// 	_ struct{} `type:"structure"`
+
+// 	// Information about one or more VPCs.
+// 	Vpcs []*Vpc `locationName:"vpcSet" locationNameList:"item" type:"list"`
+// }
+
+// // String returns the string representation
+// func (s DescribeVpcsOutput) String() string {
+// 	return awsutil.Prettify(s)
+// }
+
+// GoString returns the string representation
+// func (s DescribeVpcsOutput) GoString() string {
+// 	return s.String()
+// }
+
+// SetVpcs sets the Vpcs field's value.
+func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
+	s.Vpcs = v
+	return s
 }

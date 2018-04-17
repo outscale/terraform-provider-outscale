@@ -244,9 +244,10 @@ func getPlacement(placement *fcu.Placement) map[string]interface{} {
 }
 
 func getProductCodes(codes []*fcu.ProductCode) []map[string]interface{} {
-	res := []map[string]interface{}{}
+	var res []map[string]interface{}
 
-	if codes != nil {
+	if len(codes) > 0 {
+		res = make([]map[string]interface{}, len(codes))
 		for _, c := range codes {
 			code := map[string]interface{}{}
 
@@ -255,6 +256,8 @@ func getProductCodes(codes []*fcu.ProductCode) []map[string]interface{} {
 
 			res = append(res, code)
 		}
+	} else {
+		res = make([]map[string]interface{}, 0)
 	}
 
 	return res
@@ -317,19 +320,24 @@ func flattenEBS(ebs *fcu.EbsInstanceBlockDevice) map[string]interface{} {
 }
 
 func getBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping) []map[string]interface{} {
-	blockDeviceMapping := []map[string]interface{}{}
+	var blockDeviceMapping []map[string]interface{}
 
-	if blockDeviceMapping != nil {
+	if len(blockDeviceMappings) > 0 {
+		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
 		for _, mapping := range blockDeviceMappings {
 			r := map[string]interface{}{}
-			r["block_device_mapping"] = *mapping.DeviceName
+			r["device_name"] = *mapping.DeviceName
 
 			e := map[string]interface{}{}
-
+			e["delete_on_termination"] = *mapping.Ebs.DeleteOnTermination
+			e["status"] = *mapping.Ebs.Status
+			e["volume_id"] = *mapping.Ebs.VolumeId
 			r["ebs"] = e
 
 			blockDeviceMapping = append(blockDeviceMapping, r)
 		}
+	} else {
+		blockDeviceMapping = make([]map[string]interface{}, 0)
 	}
 
 	return blockDeviceMapping

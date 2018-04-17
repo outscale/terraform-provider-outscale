@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleSecurityGroup(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
@@ -30,8 +30,8 @@ func TestAccDataSourceOutscaleSecurityGroup(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rule_set.by_id"),
-					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rule_set.by_filter"),
+					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rules_set.by_id"),
+					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rules_set.by_filter"),
 				),
 			},
 		},
@@ -45,7 +45,7 @@ func TestAccDataSourceOutscaleSecurityGroupPublic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
@@ -56,7 +56,7 @@ func TestAccDataSourceOutscaleSecurityGroupPublic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleSecurityGroupPublicConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rule_set.by_filter_public"),
+					testAccDataSourceOutscaleSecurityGroupCheck("data.outscale_firewall_rules_set.by_filter_public"),
 				),
 			},
 		},
@@ -95,8 +95,13 @@ func testAccDataSourceOutscaleSecurityGroupCheck(name string) resource.TestCheck
 
 func testAccDataSourceOutscaleSecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
+		resource "outscale_lin" "vpc" {
+			cidr_block = "10.0.0.0/16"
+		}
+
+
 	resource "outscale_firewall_rules_set" "test" {
-		vpc_id = "vpc-e9d09d63"
+		vpc_id = "${outscale_lin.vpc.id}"
 		group_description = "Used in the terraform acceptance tests"
 		group_name = "test-%d"
 		tag = {
@@ -104,10 +109,10 @@ func testAccDataSourceOutscaleSecurityGroupConfig(rInt int) string {
 			Seed = "%d"
 		}
 	}
-	data "outscale_firewall_rule_set" "by_id" {
+	data "outscale_firewall_rules_set" "by_id" {
 		group_id = "${outscale_firewall_rules_set.test.id}"
 	}
-	data "outscale_firewall_rule_set" "by_filter" {
+	data "outscale_firewall_rules_set" "by_filter" {
 		filter {
 			name = "group-name"
 			values = ["${outscale_firewall_rules_set.test.group_name}"]
@@ -125,7 +130,7 @@ func testAccDataSourceOutscaleSecurityGroupPublicConfig(rInt int) string {
 			Seed = "%d"
 		}
 	}
-	data "outscale_firewall_rule_set" "by_filter_public" {
+	data "outscale_firewall_rules_set" "by_filter_public" {
 		filter {
 			name = "group-name"
 			values = ["${outscale_firewall_rules_set.test.group_name}"]

@@ -16,10 +16,9 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -43,22 +42,30 @@ func TestAccOutscaleVMSDataSource_basic(t *testing.T) {
 
 // Lookup based on InstanceID
 const testAccVMSDataSourceConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
+	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
-	tags = {
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	tag = {
 		Name = "Hellow"
 	}
 }
-
 resource "outscale_vm" "basic2" {
-  image_id = "ami-8a6a0120"
+	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
-	tags = {
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	tag = {
 		Name = "Hellow"
 	}
 }

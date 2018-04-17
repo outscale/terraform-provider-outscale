@@ -3,6 +3,8 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,6 +13,17 @@ import (
 )
 
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var i fcu.Instance
 	var v fcu.Volume
 

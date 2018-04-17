@@ -19,12 +19,9 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"group_name": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"group_id": {
 				Type:     schema.TypeString,
@@ -45,22 +42,11 @@ func dataSourceOutscaleFirewallRuleSet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": {
-				Type: schema.TypeMap,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
+			"request_id": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tag_set": tagsSchemaComputed(),
 		},
 	}
 }
@@ -87,8 +73,6 @@ func dataSourceOutscaleFirewallRuleSetRead(d *schema.ResourceData, meta interfac
 	if gidOk {
 		req.GroupIds = []*string{aws.String(gid.(string))}
 	}
-
-	fmt.Printf("[DEBUG] REQ %s", req)
 
 	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
@@ -133,6 +117,7 @@ func dataSourceOutscaleFirewallRuleSetRead(d *schema.ResourceData, meta interfac
 	d.Set("vpc_id", sg.VpcId)
 	d.Set("owner_id", sg.OwnerId)
 	d.Set("tag_set", tagsToMap(sg.Tags))
+	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err

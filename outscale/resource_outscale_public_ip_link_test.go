@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -20,10 +21,11 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var a fcu.Address
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -31,7 +33,7 @@ func TestAccOutscalePublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscalePublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscalePublicIPLinkConfig,
+				Config: testAccOutscalePublicIPLinkConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists(
 						"outscale_public_ip.bar", &a),
@@ -136,12 +138,25 @@ func testAccCheckOutscalePublicIPLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-const testAccOutscalePublicIPLinkConfig = `
+func testAccOutscalePublicIPLinkConfig(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
+resource "outscale_lin" "vpc" {
+	cidr_block = "10.0.0.0/16"
+}
+resource "outscale_subnet" "subnet" {
+	cidr_block = "10.0.0.0/16"
+	vpc_id = "${outscale_lin.vpc.id}"
+}
+
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	subnet_id = "subnet-861fbecc"
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	subnet_id = "${outscale_subnet.subnet.id}"
 }
 
 resource "outscale_public_ip" "bar" {
@@ -151,4 +166,5 @@ resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.public_ip}"
 	instance_id = "${outscale_vm.basic.id}"
   depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
-}`
+}`, r)
+}

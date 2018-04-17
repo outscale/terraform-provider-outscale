@@ -363,10 +363,8 @@ func TestVM_GetRequesterID(t *testing.T) {
 		t.Errorf("VM.RunInstance returned error: %v", err)
 	}
 
-	requesterID := *server.RequesterId
+	requesterID := *server.RequestId
 	expectedrequesterID := "193ddebf-63d4-466d-9fe1-d5b74b9962f0"
-
-	fmt.Println(requesterID, expectedrequesterID)
 
 	if requesterID != expectedrequesterID {
 		t.Fatalf("Expected OwnerID:(%s), Got(%s)", requesterID, expectedrequesterID)
@@ -400,8 +398,6 @@ func TestVM_GetReservationID(t *testing.T) {
 
 	reservationID := *server.ReservationId
 	expectedReservationID := "r-071eb05d"
-
-	fmt.Println("OUTPUT =>", reservationID, expectedReservationID)
 
 	if reservationID != expectedReservationID {
 		t.Fatalf("Expected OwnerID:(%s), Got(%s)", reservationID, expectedReservationID)

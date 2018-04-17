@@ -1,10 +1,12 @@
 package outscale
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
@@ -16,16 +18,18 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
+
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVMDataSourceConfig,
+				Config: testAccVMDataSourceConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
@@ -37,13 +41,22 @@ func TestAccOutscaleVMDataSource_basic(t *testing.T) {
 	})
 }
 
-// Lookup based on InstanceID
-const testAccVMDataSourceConfig = `
+func testAccVMDataSourceConfig(r int) string {
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
 resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
+	image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
 }
 
 data "outscale_vm" "basic_web" {
@@ -55,4 +68,6 @@ data "outscale_vm" "basic_web" {
 
 output "datasource_arch" {
 	value = "${data.outscale_vm.basic_web.owner_id}"
-}`
+}
+`, r)
+}

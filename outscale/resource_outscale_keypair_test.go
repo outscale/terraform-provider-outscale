@@ -25,7 +25,7 @@ func TestAccOutscaleKeyPair_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var conf fcu.KeyPairInfo
@@ -55,7 +55,7 @@ func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var conf fcu.KeyPairInfo
@@ -86,7 +86,7 @@ func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	var conf fcu.KeyPairInfo
@@ -216,6 +216,16 @@ func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.
 }
 
 func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()

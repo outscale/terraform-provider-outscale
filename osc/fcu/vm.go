@@ -50,9 +50,42 @@ type VMService interface {
 	DescribeVolumes(input *DescribeVolumesInput) (*DescribeVolumesOutput, error)
 	AttachVolume(input *AttachVolumeInput) (*VolumeAttachment, error)
 	DetachVolume(input *DetachVolumeInput) (*VolumeAttachment, error)
+	CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error)
+	DeleteSubNet(input *DeleteSubnetInput) (*DeleteSubnetOutput, error)
+	DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubnetsOutput, error)
+	DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error)
+	DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error)
 	CreateInternetGateway(input *CreateInternetGatewayInput) (*CreateInternetGatewayOutput, error)
 	DescribeInternetGateways(input *DescribeInternetGatewaysInput) (*DescribeInternetGatewaysOutput, error)
 	DeleteInternetGateway(input *DeleteInternetGatewayInput) (*DeleteInternetGatewayOutput, error)
+	CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error)
+	DescribeNatGateways(input *DescribeNatGatewaysInput) (*DescribeNatGatewaysOutput, error)
+	DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error)
+	CreateVpc(input *CreateVpcInput) (*CreateVpcOutput, error)
+	DescribeVpcs(input *DescribeVpcsInput) (*DescribeVpcsOutput, error)
+	DeleteVpc(input *DeleteVpcInput) (*DeleteVpcOutput, error)
+	AttachInternetGateway(input *AttachInternetGatewayInput) (*AttachInternetGatewayOutput, error)
+	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
+	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
+	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
+	DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error)
+	CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error)
+	DescribeDhcpOptions(input *DescribeDhcpOptionsInput) (*DescribeDhcpOptionsOutput, error)
+	AssociateDhcpOptions(input *AssociateDhcpOptionsInput) (*AssociateDhcpOptionsOutput, error)
+	DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error)
+	DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (*DeleteCustomerGatewayOutput, error)
+	CreateCustomerGateway(input *CreateCustomerGatewayInput) (*CreateCustomerGatewayOutput, error)
+	CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error)
+	ReplaceRoute(input *ReplaceRouteInput) (*ReplaceRouteOutput, error)
+	DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error)
+	DescribeRouteTables(input *DescribeRouteTablesInput) (*DescribeRouteTablesOutput, error)
+	CreateRouteTable(input *CreateRouteTableInput) (*CreateRouteTableOutput, error)
+	DisableVgwRoutePropagation(input *DisableVgwRoutePropagationInput) (*DisableVgwRoutePropagationOutput, error)
+	EnableVgwRoutePropagation(input *EnableVgwRoutePropagationInput) (*EnableVgwRoutePropagationOutput, error)
+	DisassociateRouteTable(input *DisassociateRouteTableInput) (*DisassociateRouteTableOutput, error)
+	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
+	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
+	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -843,6 +876,335 @@ func (v VMOperations) DetachVolume(input *DetachVolumeInput) (*VolumeAttachment,
 
 	if input == nil {
 		input = &DetachVolumeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceAttribute(input *DescribeInstanceAttributeInput) (*DescribeInstanceAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceAttribute"
+	output := &DescribeInstanceAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+func (v VMOperations) CreateNatGateway(input *CreateNatGatewayInput) (*CreateNatGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "CreateNatGateway"
+	output := &CreateNatGatewayOutput{}
+
+	if input == nil {
+		input = &CreateNatGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) DescribeNatGateways(input *DescribeNatGatewaysInput) (*DescribeNatGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeNatGateways"
+	output := &DescribeNatGatewaysOutput{}
+
+	if input == nil {
+		input = &DescribeNatGatewaysInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceStatus(input *DescribeInstanceStatusInput) (*DescribeInstanceStatusOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceStatus"
+	output := &DescribeInstanceStatusOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceStatusInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DeleteNatGateway(input *DeleteNatGatewayInput) (*DeleteNatGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteNatGateway"
+	output := &DeleteNatGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteNatGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CreateSubNet(input *CreateSubnetInput) (*CreateSubnetOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSubnet"
+	output := &CreateSubnetOutput{}
+
+	if input == nil {
+		input = &CreateSubnetInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteSubNet(input *DeleteSubnetInput) (*DeleteSubnetOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSubnet"
+	output := &DeleteSubnetOutput{}
+
+	if input == nil {
+		input = &DeleteSubnetInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubnetsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSubnets"
+	output := &DescribeSubnetsOutput{}
+
+	if input == nil {
+		input = &DescribeSubnetsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeDhcpOptions"
+	output := &DeleteDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &DeleteDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeCustomerGateways"
+	output := &DescribeCustomerGatewaysOutput{}
+
+	if input == nil {
+		input = &DescribeCustomerGatewaysInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "CreateDhcpOptions"
+	output := &CreateDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &CreateDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (*DeleteCustomerGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteCustomerGateway"
+	output := &DeleteCustomerGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteCustomerGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeDhcpOptions(input *DescribeDhcpOptionsInput) (*DescribeDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeDhcpOptions"
+	output := &DescribeDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &DescribeDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AssociateDhcpOptions(input *AssociateDhcpOptionsInput) (*AssociateDhcpOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "AssociateDhcpOptions"
+	output := &AssociateDhcpOptionsOutput{}
+
+	if input == nil {
+		input = &AssociateDhcpOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (*CreateCustomerGatewayOutput, error) {
+
+	inURL := "/"
+	endpoint := "CreateCustomerGateway"
+	output := &CreateCustomerGatewayOutput{}
+
+	if input == nil {
+		input = &CreateCustomerGatewayInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,7 +15,16 @@ import (
 )
 
 func TestAccOutscaleSecurityGroup_DefaultEgress_Classic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
 
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	// Classic
 	var group fcu.SecurityGroup
 	resource.Test(t, resource.TestCase{

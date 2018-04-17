@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -23,7 +24,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -47,8 +48,18 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
-	var conf fcu.Address
+	o := os.Getenv("OUTSCALE_OAPI")
 
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+	var conf fcu.Address
+	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
@@ -56,7 +67,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig,
+				Config: testAccOutscalePublicIPInstanceConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -64,7 +75,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig2,
+				Config: testAccOutscalePublicIPInstanceConfig2(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -77,6 +88,16 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
 	var one fcu.Address
 
 	resource.Test(t, resource.TestCase{

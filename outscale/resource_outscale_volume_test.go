@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +15,17 @@ import (
 )
 
 func TestAccOutscaleVolume_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -30,6 +43,17 @@ func TestAccOutscaleVolume_basic(t *testing.T) {
 }
 
 func TestAccOutscaleVolume_updateSize(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var v fcu.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -99,7 +123,7 @@ resource "outscale_volume" "test" {
   availability_zone = "eu-west-2a"
   volume_type = "gp2"
   size = 1
-  tags {
+  tag {
     Name = "tf-acc-test-ebs-volume-test"
   }
 }
@@ -110,7 +134,7 @@ resource "outscale_volume" "test" {
   availability_zone = "eu-west-2a"
   volume_type = "gp2"
   size = 10
-  tags {
+  tag {
     Name = "tf-acc-test-ebs-volume-test"
   }
 }

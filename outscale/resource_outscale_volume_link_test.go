@@ -3,6 +3,8 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,6 +13,17 @@ import (
 )
 
 func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var i fcu.Instance
 	var v fcu.Volume
 
@@ -23,13 +36,13 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 				Config: testAccVolumeAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device", "/dev/sdh"),
+						"outscale_volumes_link.ebs_att", "device", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
 					testAccCheckVolumeExists(
 						"outscale_volume.example", &v),
 					testAccCheckVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i, &v),
+						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
 		},
@@ -39,7 +52,7 @@ func TestAccOutscaleVolumeAttachment_basic(t *testing.T) {
 func testAccCheckVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		log.Printf("\n\n----- This is never called")
-		if rs.Type != "outscale_volume_link" {
+		if rs.Type != "outscale_volumes_link" {
 			continue
 		}
 	}
@@ -74,7 +87,7 @@ const testAccVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
 	image_id = "ami-8a6a0120"
 	instance_type = "t1.micro"
-	tags {
+	tag {
 		Name = "HelloWorld"
 	}
 }
@@ -82,7 +95,7 @@ resource "outscale_volume" "example" {
   availability_zone = "eu-west-2a"
 	size = 1
 }
-resource "outscale_volume_link" "ebs_att" {
+resource "outscale_volumes_link" "ebs_att" {
   device = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
 	instance_id = "${outscale_vm.web.id}"

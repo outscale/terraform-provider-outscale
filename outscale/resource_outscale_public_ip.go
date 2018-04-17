@@ -67,6 +67,10 @@ func getPublicIPSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -117,10 +121,6 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 	} else {
 		req.PublicIps = []*string{aws.String(id)}
 	}
-
-	fmt.Printf(
-		"[DEBUG] EIP describe configuration: %s (domain: %s)",
-		req, domain)
 
 	var describeAddresses *fcu.DescribeAddressesOutput
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -173,12 +173,13 @@ func resourceOutscalePublicIPRead(d *schema.ResourceData, meta interface{}) erro
 		d.Set("network_interface_owner_id", "")
 	}
 	if address.PrivateIpAddress != nil {
-		d.Set("private_ip", *address.PrivateIpAddress)
+		d.Set("private_ip_address", *address.PrivateIpAddress)
 	} else {
-		d.Set("private_ip", "")
+		d.Set("private_ip_address", "")
 	}
-	d.Set("public_ip", *address.PublicIp)
 
+	d.Set("request_id", *describeAddresses.RequestId)
+	d.Set("public_ip", *address.PublicIp)
 	d.Set("domain", *address.Domain)
 	d.Set("allocation_id", *address.AllocationId)
 
@@ -225,8 +226,6 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 				PrivateIpAddress:   privateIpAddress,
 			}
 		}
-
-		fmt.Printf("[DEBUG] EIP associate configuration: %s (domain: %s)", assocOpts, domain)
 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error

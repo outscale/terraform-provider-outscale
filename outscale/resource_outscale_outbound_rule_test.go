@@ -2,7 +2,8 @@ package outscale
 
 import (
 	"fmt"
-	"log"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +16,17 @@ import (
 )
 
 func TestAccOutscaleSecurityGroupRule_Egress(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var group fcu.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -205,21 +217,24 @@ func testAccCheckOutscaleSecurityGroupRuleAttributes(n string, group *fcu.Securi
 		}
 
 		if matchingRule != nil {
-			log.Printf("[DEBUG] Matching rule found : %s", matchingRule)
 			return nil
 		}
 
-		return fmt.Errorf("Error here\n\tlooking for %s, wasn't found in %s", p, rules)
+		return fmt.Errorf("Error here\n\tlooking for %+v, wasn't found in %+v", p, rules)
 	}
 }
 
 func testAccOutscaleSecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
+		resource "outscale_lin" "vpc" {
+			cidr_block = "10.0.0.0/16"
+		}
+
 	resource "outscale_firewall_rules_set" "web" {
 		group_name = "terraform_test_%d"
 		group_description = "Used in the terraform acceptance tests"
-		vpc_id = "vpc-e9d09d63"
-					tags = {
+		vpc_id = "${outscale_lin.vpc.id}"
+					tag = {
 									Name = "tf-acc-test"
 					}
 	}

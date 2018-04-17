@@ -16,10 +16,9 @@ func TestAccOutscaleTagDataSource(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -44,7 +43,7 @@ const testAccTagDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
 	instance_type = "m1.small"
-	tags = {
+	tag {
 		foo = "bar"
 	}
 }

@@ -19,7 +19,7 @@ func TestAccOutscaleImageDataSource_Instance(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -63,7 +63,28 @@ func testAccCheckOutscaleImageDataSourceID(n string) resource.TestCheckFunc {
 }
 
 const testAccCheckOutscaleImageDataSourceConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
+resource "outscale_vm" "basic" {
+	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+}
+
+resource "outscale_image" "foo" {
+	name = "tf-testing-%d"
+	instance_id = "${outscale_vm.basic.id}"
+}
+
 data "outscale_image" "nat_ami" {
-	image_id = "ami-1be615d0"
+	image_id = "${outscale_image.foo.id}"
 }
 `

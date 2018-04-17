@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroup(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -46,7 +46,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroupPublic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi != false {
+	if !oapi {
 		t.Skip()
 	}
 	rInt := acctest.RandInt()
