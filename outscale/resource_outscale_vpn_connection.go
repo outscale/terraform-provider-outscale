@@ -194,8 +194,21 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 
 func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, err := conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
-			VpnConnectionIds: []*string{aws.String(connectionId)},
+
+		var resp *fcu.DescribeVpnConnectionsOutput
+		var err error
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
+				VpnConnectionIds: []*string{aws.String(connectionId)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		})
 
 		if err != nil {
@@ -322,7 +335,7 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 			d.SetId("")
 			return nil
 		} else {
-			log.Printf("[ERROR] Error deleting VPN connection: %s", err)
+			fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
 			return err
 		}
 	}
@@ -338,8 +351,9 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 
 	_, stateErr := stateConf.WaitForState()
 	if stateErr != nil {
+
 		return fmt.Errorf(
-			"Error waiting for VPN connection (%s) to delete: %s", d.Id(), err)
+			"Error waiting for VPN connection (%s) to delete: %s", d.Id(), stateErr)
 	}
 
 	return nil
