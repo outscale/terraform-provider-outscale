@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -336,6 +337,24 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 	} else {
 		result = make([]map[string]string, 0)
 	}
+
+	return result
+}
+
+func tagsToMapC(ts []*common.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	if len(ts) > 0 {
+		for k, t := range ts {
+			tag := make(map[string]string)
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+			result[k] = tag
+		}
+	} else {
+		result = make([]map[string]string, 0)
+	}
+
+	fmt.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
 }

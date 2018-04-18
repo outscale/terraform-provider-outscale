@@ -3202,50 +3202,6 @@ type CreateNatGatewayInput struct {
 	SubnetId *string `type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s CreateNatGatewayInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateNatGatewayInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *CreateNatGatewayInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateNatGatewayInput"}
-	if s.AllocationId == nil {
-		invalidParams.Add(request.NewErrParamRequired("AllocationId"))
-	}
-	if s.SubnetId == nil {
-		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetAllocationId sets the AllocationId field's value.
-func (s *CreateNatGatewayInput) SetAllocationId(v string) *CreateNatGatewayInput {
-	s.AllocationId = &v
-	return s
-}
-
-// SetClientToken sets the ClientToken field's value.
-func (s *CreateNatGatewayInput) SetClientToken(v string) *CreateNatGatewayInput {
-	s.ClientToken = &v
-	return s
-}
-
-// SetSubnetId sets the SubnetId field's value.
-func (s *CreateNatGatewayInput) SetSubnetId(v string) *CreateNatGatewayInput {
-	s.SubnetId = &v
-	return s
-}
-
 type AttachInternetGatewayOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3258,6 +3214,10 @@ func (s AttachInternetGatewayOutput) String() string {
 // GoString returns the string representation
 func (s AttachInternetGatewayOutput) GoString() string {
 	return s.String()
+}
+
+type DetachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 type DetachInternetGatewayInput struct {
@@ -3280,62 +3240,47 @@ type DetachInternetGatewayInput struct {
 	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s DetachInternetGatewayInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DetachInternetGatewayInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DetachInternetGatewayInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DetachInternetGatewayInput"}
-	if s.InternetGatewayId == nil {
-		invalidParams.Add(request.NewErrParamRequired("InternetGatewayId"))
-	}
-	if s.VpcId == nil {
-		invalidParams.Add(request.NewErrParamRequired("VpcId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DetachInternetGatewayInput) SetDryRun(v bool) *DetachInternetGatewayInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetInternetGatewayId sets the InternetGatewayId field's value.
-func (s *DetachInternetGatewayInput) SetInternetGatewayId(v string) *DetachInternetGatewayInput {
-	s.InternetGatewayId = &v
-	return s
-}
-
-// SetVpcId sets the VpcId field's value.
-func (s *DetachInternetGatewayInput) SetVpcId(v string) *DetachInternetGatewayInput {
-	s.VpcId = &v
-	return s
-}
-
-type DetachInternetGatewayOutput struct {
+type CreateAccessKeyInput struct {
 	_ struct{} `type:"structure"`
-}
 
-// String returns the string representation
-func (s DetachInternetGatewayOutput) String() string {
-	return awsutil.Prettify(s)
+	AccessKeyId     *string `type:"string" required:"false"`
+	SecretAccessKey *string `type:"string" required:"false"`
+	Tags            []*Tag  `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
-
-// GoString returns the string representation
-func (s DetachInternetGatewayOutput) GoString() string {
-	return s.String()
+type CreateAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	AccessKey        *string  `locationName:"accessKey" type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+}
+type DeleteAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyId *string  `type:"string" required:"true"`
+}
+type DeleteAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+	Return           *bool    `locationName:"deleteAccessKey" type:"boolean"`
+}
+type UpdateAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyId *string  `type:"string" required:"true"`
+	Status      *string  `locationName:"status" type:"string" enum:"StatusType"`
+}
+type UpdateAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+	Return           *bool    `locationName:"updateAccessKey" type:"boolean"`
+}
+type DescribeAccessKeyInput struct {
+	_               struct{} `type:"structure"`
+	AccessKeyId     *string  `type:"string" required:"false"`
+	SecretAccessKey *string  `type:"string" required:"false"`
+	Tags            []*Tag   `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+type DescribeAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	AccessKey        *string  `locationName:"accessKey" type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
 }
 
 // Contains the parameters for DeleteDhcpOptions.

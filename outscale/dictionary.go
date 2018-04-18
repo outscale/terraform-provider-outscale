@@ -63,6 +63,9 @@ func init() {
 			"outscale_route_table":              resourceOutscaleRouteTable,
 			"outscale_route_table_link":         resourceOutscaleRouteTableAssociation,
 		},
+		"icu": ResourceMap{
+			"outscale_api_key": resourceOutscaleIamAccessKey,
+		},
 	}
 	datasources = Dictionary{
 		"fcu": ResourceMap{
@@ -95,6 +98,7 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleRouteTables,
+			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

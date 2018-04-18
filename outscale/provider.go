@@ -12,6 +12,7 @@ import (
 func Provider() terraform.ResourceProvider {
 
 	fcu := "fcu"
+	icu := "icu"
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -72,6 +73,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_attributes":            GetResource(fcu, "outscale_lin_attributes")(),
 			"outscale_nat_service":               GetResource(fcu, "outscale_nat_service")(),
 			"outscale_subnet":                    GetResource(fcu, "outscale_subnet")(),
+			"outscale_api_key":                   GetResource(icu, "outscale_api_key")(),
 			"outscale_dhcp_option":               GetResource(fcu, "outscale_dhcp_option")(),
 			"outscale_client_endpoint":           GetResource(fcu, "outscale_client_endpoint")(),
 			"outscale_route":                     GetResource(fcu, "outscale_route")(),
@@ -109,6 +111,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_client_endpoints":      GetDatasource(fcu, "outscale_client_endpoints")(),
 			"outscale_route_table":           GetDatasource(fcu, "outscale_route_table")(),
 			"outscale_route_tables":          GetDatasource(fcu, "outscale_route_tables")(),
+			"outscale_api_key":               GetDatasource(fcu, "outscale_api_key")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

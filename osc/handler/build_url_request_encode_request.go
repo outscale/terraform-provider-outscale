@@ -16,8 +16,6 @@ func BuildURLEncodedRequest(body interface{}, method, url string) (*http.Request
 	if method == http.MethodPost {
 		reader := strings.NewReader(body.(string))
 		req, err := http.NewRequest(method, url, reader)
-		req.Header.Add("Content-Type", mediaTypeURLEncoded)
-
 		if err != nil {
 			return nil, nil, err
 		}
