@@ -91,6 +91,14 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error)
+	DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error)
+	DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error)
+	CreateVpnGateway(input *CreateVpnGatewayInput) (*CreateVpnGatewayOutput, error)
+	DescribeVpnGateways(input *DescribeVpnGatewaysInput) (*DescribeVpnGatewaysOutput, error)
+	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
+	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
+	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
 }
 
 const opRunInstances = "RunInstances"
