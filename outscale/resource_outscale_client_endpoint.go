@@ -269,6 +269,8 @@ func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{
 
 	customerGateway := resp.CustomerGateways[0]
 	d.Set("ip_address", customerGateway.IpAddress)
+	d.Set("customer_gateway_id", customerGateway.CustomerGatewayId)
+	d.Set("state", customerGateway.State)
 	d.Set("type", customerGateway.Type)
 	d.Set("tag_set", tagsToMap(customerGateway.Tags))
 
