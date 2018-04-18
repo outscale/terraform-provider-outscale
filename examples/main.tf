@@ -32,23 +32,28 @@
 #   value = "${outscale_subnet.outscale_subnet1.subnet_id}"
 # }
 
-resource "outscale_lin" "outscale_lin" {
-  cidr_block = "10.0.0.0/24"
-}
+# resource "outscale_lin" "outscale_lin" {
+#   cidr_block = "10.0.0.0/24"
+# }
 
-resource "outscale_route_table" "outscale_route_table" {
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-}
+# resource "outscale_route_table" "outscale_route_table" {
+#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+# }
 
-resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
+# resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
 
-resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
-  vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
-}
+# resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
+#   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
+#   vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
+# }
 
-resource "outscale_route" "outscale_route" {
-  gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
-  destination_cidr_block = "10.0.0.0/16"
-  route_table_id         = "${outscale_route_table.outscale_route_table.route_table_id}"
+# resource "outscale_route" "outscale_route" {
+#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
+#   destination_cidr_block = "10.0.0.0/16"
+#   route_table_id         = "${outscale_route_table.outscale_route_table.route_table_id}"
+# }
+
+resource "outscale_keypair_importation" "outscale_keypair_importation" {
+  key_name            = "keyname_test"
+  public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
