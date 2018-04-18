@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -122,6 +124,9 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
+	fmt.Println("[DEBUG]")
+	utils.PrintToJSON(resp, "SUBNET")
+
 	subnet := resp.Subnets[0]
 
 	d.Set("subnet_id", subnet.SubnetId)
@@ -130,6 +135,7 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("vpc_id", subnet.VpcId)
 	d.Set("state", subnet.State)
 	d.Set("available_ip_address_count", subnet.AvailableIpAddressCount)
+
 	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("tag_set", tagsToMap(subnet.Tags)); err != nil {
@@ -227,12 +233,10 @@ func getSubNetSchema() map[string]*schema.Schema {
 			Computed: true,
 			ForceNew: true,
 		},
-		//This is arguments part for schema SubNet
 		"available_ip_address_count": &schema.Schema{
-			Type:     schema.TypeString,
+			Type:     schema.TypeInt,
 			Computed: true,
 		},
-
 		"state": &schema.Schema{
 			Type:     schema.TypeString,
 			Computed: true,
