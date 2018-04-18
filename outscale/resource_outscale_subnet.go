@@ -128,6 +128,8 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("availability_zone", subnet.AvailabilityZone)
 	d.Set("cidr_block", subnet.CidrBlock)
 	d.Set("vpc_id", subnet.VpcId)
+	d.Set("state", subnet.State)
+	d.Set("available_ip_address_count", subnet.AvailableIpAddressCount)
 	d.Set("request_id", resp.RequestId)
 
 	if err := d.Set("tag_set", tagsToMap(subnet.Tags)); err != nil {

@@ -143,26 +143,41 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	// Set NAT Gateway attributes
-	ng := ngRaw.(*fcu.NatGateway)
+	opts := &fcu.DescribeNatGatewaysInput{
+		NatGatewayIds: []*string{aws.String(d.Id())},
+	}
+	var resp *fcu.DescribeNatGatewaysOutput
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
 
-	if ng.NatGatewayId != nil {
-		d.Set("nat_gateway_id", *ng.NatGatewayId)
+		resp, err = conn.VM.DescribeNatGateways(opts)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if resp.NatGateways[0].NatGatewayId != nil {
+		d.Set("nat_gateway_id", *resp.NatGateways[0].NatGatewayId)
 	}
-	if ng.State != nil {
-		d.Set("state", *ng.State)
+	if resp.NatGateways[0].State != nil {
+		d.Set("state", *resp.NatGateways[0].State)
 	}
-	if ng.SubnetId != nil {
-		d.Set("subnet_id", *ng.SubnetId)
+	if resp.NatGateways[0].SubnetId != nil {
+		d.Set("subnet_id", *resp.NatGateways[0].SubnetId)
 	}
-	if ng.VpcId != nil {
-		d.Set("vpc_id", *ng.VpcId)
+	if resp.NatGateways[0].VpcId != nil {
+		d.Set("vpc_id", *resp.NatGateways[0].VpcId)
 	}
 
-	if ng.NatGatewayAddresses != nil {
-		addresses := make([]map[string]interface{}, len(ng.NatGatewayAddresses))
+	d.Set("request_id", resp.RequestId)
 
-		for k, v := range ng.NatGatewayAddresses {
+	addresses := make([]map[string]interface{}, len(resp.NatGateways[0].NatGatewayAddresses))
+	if resp.NatGateways[0].NatGatewayAddresses != nil {
+		for k, v := range resp.NatGateways[0].NatGatewayAddresses {
 			address := make(map[string]interface{})
 			if v.AllocationId != nil {
 				address["allocation_id"] = *v.AllocationId
@@ -172,9 +187,10 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			addresses[k] = address
 		}
-		if err := d.Set("nat_gateway_address", addresses); err != nil {
-			return err
-		}
+	}
+
+	if err := d.Set("nat_gateway_address", addresses); err != nil {
+		return err
 	}
 
 	return nil
