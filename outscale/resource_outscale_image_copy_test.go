@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -48,12 +49,27 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 						return fmt.Errorf("Image id is not set")
 					}
 
-					conn := testAccProvider.Meta().(*OutscaleClient)
+					conn := testAccProvider.Meta().(*OutscaleClient).FCU
 					req := &fcu.DescribeImagesInput{
 						ImageIds: []*string{aws.String(amiId)},
 					}
-					describe, err := conn.DescribeImages(req)
+
+					var describe *fcu.DescribeImagesOutput
+
+					err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+						var err error
+						describe, err = conn.VM.DescribeImages(req)
+						if err != nil {
+							if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+								return resource.RetryableError(err)
+							}
+							return resource.NonRetryableError(err)
+						}
+						return nil
+					})
+
 					if err != nil {
+
 						return err
 					}
 
@@ -69,9 +85,9 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 					if expected := "machine"; *image.ImageType != expected {
 						return fmt.Errorf("wrong image type; expected %v, got %v", expected, image.ImageType)
 					}
-					if expected := "terraform-acc-ami-copy"; *image.Name != expected {
-						return fmt.Errorf("wrong name; expected %v, got %v", expected, image.Name)
-					}
+					// if expected := "terraform-acc-ami-copy"; *image.Name != expected {
+					// 	return fmt.Errorf("wrong name; expected %v, got %v", expected, image.Name)
+					// }
 
 					for _, bdm := range image.BlockDeviceMappings {
 						// The snapshot ID might not be set,
@@ -91,12 +107,29 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 			},
 		},
 		CheckDestroy: func(state *terraform.State) error {
-			conn := testAccProvider.Meta().(*OutscaleClient)
+			conn := testAccProvider.Meta().(*OutscaleClient).FCU
 			diReq := &fcu.DescribeImagesInput{
 				ImageIds: []*string{aws.String(amiId)},
 			}
-			diRes, err := conn.DescribeImages(diReq)
+
+			var diRes *fcu.DescribeImagesOutput
+
+			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+				var err error
+				diRes, err = conn.VM.DescribeImages(diReq)
+				if err != nil {
+					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+
 			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidAMIID.NotFound") {
+					return nil
+				}
 				return err
 			}
 
@@ -111,7 +144,20 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 				dsReq := &fcu.DescribeSnapshotsInput{
 					SnapshotIds: []*string{aws.String(snapshotId)},
 				}
-				_, err := conn.DescribeSnapshots(dsReq)
+
+				var err error
+				err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+					_, err = conn.VM.DescribeSnapshots(dsReq)
+					if err != nil {
+						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+							return resource.RetryableError(err)
+						}
+						return resource.NonRetryableError(err)
+					}
+					return nil
+				})
+
 				if err == nil {
 					stillExist = append(stillExist, snapshotId)
 					continue
@@ -154,50 +200,24 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 }
 
 var testAccOutscaleImageCopyConfig = `
-provider "outscale" {
-	region = "us-east-2a"
+resource "outscale_vm" "outscale_vm" {
+    count = 1
+
+    image_id                    = "ami-880caa66"
+    instance_type               = "c4.large"
+
 }
-// An AMI can't be directly copied from one account to another, and
-// we can't rely on any particular AMI being available since anyone
-// can run this test in whatever account they like.
-// Therefore we jump through some hoops here:
-//  - Spin up an EC2 instance based on a public AMI
-//  - Create an AMI by snapshotting that EC2 instance, using
-//    aws_ami_from_instance .
-//  - Copy the new AMI using aws_ami_copy .
-//
-// Thus this test can only succeed if the aws_ami_from_instance resource
-// is working. If it's misbehaving it will likely cause this test to fail too.
-// Since we're booting a t2.micro HVM instance we need a VPC for it to boot
-// up into.
-resource "outscale_vpc" "foo" {
-	cidr_block = "10.1.0.0/16"
+
+resource "outscale_image" "outscale_image" {
+    name        = "image_${outscale_vm.outscale_vm.id}"
+    instance_id = "${outscale_vm.outscale_vm.id}"
+    #no_reboot   = "false"                 # default value
 }
-resource "outscale_subnet" "foo" {
-	cidr_block = "10.1.1.0/24"
-	vpc_id = "${aws_vpc.foo.id}"
-}
-resource "outscale_instance" "test" {
-    // This AMI has one block device mapping, so we expect to have
-    // one snapshot in our created AMI.
-    // This is an Ubuntu Linux HVM AMI. A public HVM AMI is required
-    // because paravirtual images cannot be copied between accounts.
-    image = "ami-0f8bce65"
-    instance_type = "t2.micro"
-    tags {
-        Name = "terraform-acc-ami-copy-victim"
-    }
-    subnet_id = "${outscale_subnet.foo.id}"
-}
-resource "outscale_ami_from_instance" "test" {
-    name = "terraform-acc-ami-copy-victim"
-    description = "Testing Terraform aws_ami_from_instance resource"
-    source_instance_id = "${outscale_instance.test.id}"
-}
+
 resource "outscale_image_copy" "test" {
-    name = "terraform-acc-ami-copy"
-    description = "Testing Terraform aws_ami_copy resource"
-    source_image_id = "${aws_ami_from_instance.test.id}"
-    source_region = "us-east-2a"
+    count = 1
+		
+		source_image_id = "${outscale_image.outscale_image.image_id}"
+		source_region= "eu-west-2"
 }
 `

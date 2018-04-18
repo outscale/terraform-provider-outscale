@@ -5709,3 +5709,161 @@ func (s *DescribeSnapshotsOutput) SetSnapshots(v []*Snapshot) *DescribeSnapshots
 	s.Snapshots = v
 	return s
 }
+
+// Describes a snapshot.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/Snapshot
+type Snapshot struct {
+	_ struct{} `type:"structure"`
+
+	// The data encryption key identifier for the snapshot. This value is a unique
+	// identifier that corresponds to the data encryption key that was used to encrypt
+	// the original volume or snapshot copy. Because data encryption keys are inherited
+	// by volumes created from snapshots, and vice versa, if snapshots share the
+	// same data encryption key identifier, then they belong to the same volume/snapshot
+	// lineage. This parameter is only returned by the DescribeSnapshots API operation.
+	DataEncryptionKeyId *string `locationName:"dataEncryptionKeyId" type:"string"`
+
+	// The description for the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// Indicates whether the snapshot is encrypted.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
+	// key (CMK) that was used to protect the volume encryption key for the parent
+	// volume.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// Value from an Amazon-maintained list (amazon | aws-marketplace | microsoft)
+	// of snapshot owners. Not to be confused with the user-configured AWS account
+	// alias, which is set from the IAM console.
+	OwnerAlias *string `locationName:"ownerAlias" type:"string"`
+
+	// The AWS account ID of the EBS snapshot owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The progress of the snapshot, as a percentage.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The ID of the snapshot. Each snapshot receives a unique identifier when it
+	// is created.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// The time stamp when the snapshot was initiated.
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The snapshot state.
+	State *string `locationName:"status" type:"string" enum:"SnapshotState"`
+
+	// Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy
+	// operation fails (for example, if the proper AWS Key Management Service (AWS
+	// KMS) permissions are not obtained) this field displays error state details
+	// to help you diagnose why the error occurred. This parameter is only returned
+	// by the DescribeSnapshots API operation.
+	StateMessage *string `locationName:"statusMessage" type:"string"`
+
+	// Any tags assigned to the snapshot.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the volume that was used to create the snapshot. Snapshots created
+	// by the CopySnapshot action have an arbitrary volume ID that should not be
+	// used for any purpose.
+	VolumeId *string `locationName:"volumeId" type:"string"`
+
+	// The size of the volume, in GiB.
+	VolumeSize *int64 `locationName:"volumeSize" type:"integer"`
+}
+
+// String returns the string representation
+func (s Snapshot) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Snapshot) GoString() string {
+	return s.String()
+}
+
+// SetDataEncryptionKeyId sets the DataEncryptionKeyId field's value.
+func (s *Snapshot) SetDataEncryptionKeyId(v string) *Snapshot {
+	s.DataEncryptionKeyId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Snapshot) SetDescription(v string) *Snapshot {
+	s.Description = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *Snapshot) SetEncrypted(v bool) *Snapshot {
+	s.Encrypted = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *Snapshot) SetKmsKeyId(v string) *Snapshot {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetOwnerAlias sets the OwnerAlias field's value.
+func (s *Snapshot) SetOwnerAlias(v string) *Snapshot {
+	s.OwnerAlias = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *Snapshot) SetOwnerId(v string) *Snapshot {
+	s.OwnerId = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *Snapshot) SetProgress(v string) *Snapshot {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *Snapshot) SetSnapshotId(v string) *Snapshot {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *Snapshot) SetStartTime(v time.Time) *Snapshot {
+	s.StartTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Snapshot) SetState(v string) *Snapshot {
+	s.State = &v
+	return s
+}
+
+// SetStateMessage sets the StateMessage field's value.
+func (s *Snapshot) SetStateMessage(v string) *Snapshot {
+	s.StateMessage = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Snapshot) SetTags(v []*Tag) *Snapshot {
+	s.Tags = v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *Snapshot) SetVolumeId(v string) *Snapshot {
+	s.VolumeId = &v
+	return s
+}
+
+// SetVolumeSize sets the VolumeSize field's value.
+func (s *Snapshot) SetVolumeSize(v int64) *Snapshot {
+	s.VolumeSize = &v
+	return s
+}

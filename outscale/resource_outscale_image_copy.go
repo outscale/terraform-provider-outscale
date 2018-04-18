@@ -1,7 +1,11 @@
 package outscale
 
 import (
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
@@ -10,7 +14,7 @@ func resourceOutscaleImageCopy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceImageCopyCreate,
 		Read:   resourceImageRead,
-		Update: resourceImageUpdate,
+
 		Delete: resourceImageDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -19,25 +23,14 @@ func resourceOutscaleImageCopy() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"instance_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Required: true,
-			},
-			"dry_run": {
-				Type:     schema.TypeBool,
+				Computed: true,
 				Optional: true,
+				ForceNew: true,
 			},
-			"no_reboot": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
 			"architecture": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -141,56 +134,64 @@ func resourceOutscaleImageCopy() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-			// "description": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	ForceNew: true,
-			// 	Computed: true,
-			// },
-			// "name": {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// 	Optional: true,
-			// },
+			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+
 			"source_image_id": {
 				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
+				Required: true,
+				ForceNew: true,
 			},
 			"source_region": {
 				Type:     schema.TypeString,
-				Computed: true,
 				Optional: true,
+				ForceNew: true,
+				Computed: true,
 			},
-			// "image_id": {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
-			// "request_id": {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
 		},
 	}
 }
 
 func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU
-
-	req := &fcu.CopyImageInput{
-		Name:          aws.String(d.Get("name").(string)),
-		Description:   aws.String(d.Get("description").(string)),
-		SourceImageId: aws.String(d.Get("source_image_id").(string)),
-		SourceRegion:  aws.String(d.Get("source_region").(string)),
-		// Encrypted:     aws.Bool(d.Get("encrypted").(bool)),
+	req := &fcu.CopyImageInput{}
+	if v, ok := d.GetOk("name"); ok {
+		req.Name = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("description"); ok {
+		req.Description = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("source_image_id"); ok {
+		req.SourceImageId = aws.String(v.(string))
+	}
+	if v, ok := d.GetOk("source_region"); ok {
+		req.SourceRegion = aws.String(v.(string))
 	}
 
 	if v, ok := d.GetOk("kms_key_id"); ok {
 		req.KmsKeyId = aws.String(v.(string))
 	}
 
-	res, err := client.VM.CopyImage(req)
+	var res *fcu.CopyImageOutput
+
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		var err error
+		res, err = client.VM.CopyImage(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
 	if err != nil {
+
 		return err
 	}
 
@@ -198,9 +199,7 @@ func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(id)
 	d.Partial(true) // make sure we record the id even if the rest of this gets interrupted
 	d.Set("image_id", id)
-	d.Set("manage_ebs_snapshots", true)
 	d.SetPartial("image_id")
-	d.SetPartial("manage_ebs_snapshots")
 	d.Partial(false)
 
 	_, err = resourceOutscaleImageWaitForAvailable(id, client, 1)

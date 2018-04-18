@@ -117,7 +117,7 @@ func resourceOutscaleDHCPOptionLinkRead(d *schema.ResourceData, meta interface{}
 		d.SetId("")
 	}
 
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
