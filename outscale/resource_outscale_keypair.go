@@ -66,7 +66,7 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId(*resp.KeyName)
 	d.Set("key_material", *resp.KeyMaterial)
-	return nil
+	return resourceKeyPairRead(d, meta)
 }
 
 func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {

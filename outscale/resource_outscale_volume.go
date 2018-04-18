@@ -52,6 +52,10 @@ func resourceOutscaleVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			// Attributes
 			"attachment_set": {
 				Type:     schema.TypeList,
@@ -198,7 +202,7 @@ func resourceVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("tag_set")
 	}
 
-	return readVolume(d, result)
+	return resourceVolumeRead(d, meta)
 }
 
 func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
@@ -230,6 +234,8 @@ func resourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
+
+	d.Set("request_id", response.RequestId)
 
 	return readVolume(d, response.Volumes[0])
 }

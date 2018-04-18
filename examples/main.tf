@@ -100,19 +100,44 @@
 #   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
 # }
 
-resource "outscale_client_endpoint" "outscale_client_endpoint" {
-  bgp_asn    = "3"
-  ip_address = "171.33.74.122"
-  type       = "ipsec.1"
+# resource "outscale_client_endpoint" "outscale_client_endpoint" {
+#   bgp_asn    = "3"
+#   ip_address = "171.33.74.122"
+#   type       = "ipsec.1"
+# }
+
+# resource "outscale_dhcp_option" "outscale_dhcp_option" {}
+
+# resource "outscale_lin" "outscale_lin" {
+#   cidr_block = "10.0.0.0/16"
+# }
+
+# resource "outscale_dhcp_option_link" "outscale_dhcp_option_link" {
+#   dhcp_options_id = "${outscale_dhcp_option.outscale_dhcp_option.dhcp_options_id}"
+#   vpc_id          = "${outscale_lin.outscale_lin.vpc_id}"
+# }
+
+resource "outscale_keypair" "outscale_keypair" {
+  count = 1
+
+  key_name = "keyname_test_123"
 }
 
-resource "outscale_dhcp_option" "outscale_dhcp_option" {}
-
-resource "outscale_lin" "outscale_lin" {
-  cidr_block = "10.0.0.0/16"
+resource "outscale_volume" "outscale_volume" {
+  availability_zone = "eu-west-2a"
+  size              = 40
 }
 
-resource "outscale_dhcp_option_link" "outscale_dhcp_option_link" {
-  dhcp_options_id = "${outscale_dhcp_option.outscale_dhcp_option.dhcp_options_id}"
-  vpc_id          = "${outscale_lin.outscale_lin.vpc_id}"
+resource "outscale_vm" "outscale_vm" {
+  image_id      = "ami-880caa66"
+  instance_type = "c4.large"
+
+  # key_name       = "integ_sut_keypair"
+  # security_group = ["sg-c73d3b6b"]
+}
+
+resource "outscale_volumes_link" "outscale_volumes_link" {
+  device      = "/dev/sdb"
+  volume_id   = "${outscale_volume.outscale_volume.id}"
+  instance_id = "${outscale_vm.outscale_vm.id}"
 }
