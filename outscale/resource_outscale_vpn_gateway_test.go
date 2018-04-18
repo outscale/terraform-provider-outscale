@@ -72,26 +72,6 @@ func TestAccOutscaleVpnGateway_delete(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVpnGateway_tags(t *testing.T) {
-	var v fcu.VpnGateway
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_vpn_gateway.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckVpnGatewayDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckVpnGatewayConfigTags,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVpnGatewayExists("outscale_vpn_gateway.foo", &v),
-					testAccCheckTags(&v.Tags, "foo", "bar"),
-				),
-			},
-		},
-	})
-}
-
 func testAccOutscaleVpnGatewayDisappears(gateway *fcu.VpnGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
