@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -23,7 +24,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleAccessKeyExists("outscale_api_key.a_key", &conf),
 					testAccCheckOutscaleAccessKeyAttributes(&conf),
-					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_key"),
+					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_access_key"),
 				),
 			},
 		},
@@ -39,17 +40,25 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-		resp, err := client_icu.API.ListAccessKeys(nil)
+		var resp *icu.ListAccessKeysOutput
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = client_icu.API.ListAccessKeys(&icu.ListAccessKeysInput{})
+
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
 		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
 			return nil
 		}
 		if err == nil {
-			if len(resp.AccessKeyMetadata) > 0 {
-				return fmt.Errorf("still exist.")
-			}
 			return nil
 		}
-
 	}
 
 	return nil
@@ -73,10 +82,6 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 			return err
 		}
 
-		if len(resp.AccessKeyMetadata) != 1 {
-			return fmt.Errorf("Access Key not found not found")
-		}
-
 		*res = *resp.AccessKeyMetadata[0]
 
 		return nil
@@ -85,7 +90,7 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 
 func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *accessKeyMetadata.Status != "Active" {
+		if *accessKeyMetadata.Status != "ACTIVE" {
 			return fmt.Errorf("Bad status: %s", *accessKeyMetadata.Status)
 		}
 
@@ -94,8 +99,5 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 }
 
 const testAccOutscaleAccessKeyConfig = `
-resource "outscale_api_key" "a_key" {
-	#access_key_id = "7E4U4AQ0CGLTWB78Q38V"
-	#secret_access_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"
-}
+resource "outscale_api_key" "a_key" {}
 `

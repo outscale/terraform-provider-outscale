@@ -26,10 +26,9 @@ func TestAccOutscaleDSAPIKey_basic(t *testing.T) {
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_client_endpoint.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckCustomerGatewayDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckCustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAPIKeyDSConfig(rInt, rBgpAsn),
@@ -43,7 +42,6 @@ func TestAccOutscaleDSAPIKey_basic(t *testing.T) {
 }
 
 func testAccCheckOutscaleAKsDataSourceID(n string) resource.TestCheckFunc {
-	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

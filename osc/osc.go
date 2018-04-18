@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -99,9 +98,10 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		}
 	} else {
 		v := struct {
-			Action  string `json:"Action"`
-			Varsion string `json:"Version"`
-		}{operation, "2017-12-15"}
+			Action               string `json:"Action"`
+			Version              string `json:"Version"`
+			AuthenticationMethod string `json:"AuthenticationMethod"`
+		}{operation, "2017-12-15", "accesskey"}
 
 		var m map[string]string
 
@@ -111,8 +111,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		json.Unmarshal(jb, &m)
 
 		jm, _ := json.Marshal(m)
-		fmt.Printf("\n\n[DEBUG BODY]\n")
-		fmt.Println(string(jm))
 
 		b = string(jm)
 	}
@@ -154,18 +152,20 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("\n\n[DEBUG RESP]\n")
-	fmt.Println(string(requestDump))
+
+	err = c.checkResponse(resp)
 	if err != nil {
 		return err
 	}
 
-	err = c.checkResponse(resp)
-	if err != nil {
+	if req.Method == "POST" {
+		defer resp.Body.Close()
+
+		err = json.NewDecoder(resp.Body).Decode(v)
+		if err != nil {
+			return err
+		}
+
 		return err
 	}
 
