@@ -134,7 +134,7 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 
 	d.Set("tag_set", t)
 
-	return nil
+	return resourceOutscaleCustomerGatewayRead(d, meta)
 }
 
 func customerGatewayRefreshFunc(conn *fcu.Client, gatewayId string) resource.StateRefreshFunc {
