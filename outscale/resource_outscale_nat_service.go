@@ -32,6 +32,10 @@ func resourceOutscaleNatService() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -118,7 +122,6 @@ func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error waiting for NAT Gateway (%s) to become available: %s", d.Id(), err)
 	}
 
-	// Update our attributes and return
 	return resourceNatServiceRead(d, meta)
 }
 
@@ -162,18 +165,24 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 
 	if resp.NatGateways[0].NatGatewayId != nil {
 		d.Set("nat_gateway_id", *resp.NatGateways[0].NatGatewayId)
+	} else {
+		d.Set("nat_gateway_id", "")
 	}
 	if resp.NatGateways[0].State != nil {
 		d.Set("state", *resp.NatGateways[0].State)
+	} else {
+		d.Set("state", "")
 	}
 	if resp.NatGateways[0].SubnetId != nil {
 		d.Set("subnet_id", *resp.NatGateways[0].SubnetId)
+	} else {
+		d.Set("subnet_id", "")
 	}
 	if resp.NatGateways[0].VpcId != nil {
 		d.Set("vpc_id", *resp.NatGateways[0].VpcId)
+	} else {
+		d.Set("vpc_id", "")
 	}
-
-	d.Set("request_id", resp.RequestId)
 
 	addresses := make([]map[string]interface{}, len(resp.NatGateways[0].NatGatewayAddresses))
 	if resp.NatGateways[0].NatGatewayAddresses != nil {
@@ -192,6 +201,8 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("nat_gateway_address", addresses); err != nil {
 		return err
 	}
+
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

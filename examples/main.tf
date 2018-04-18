@@ -53,7 +53,49 @@
 #   route_table_id         = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
 
-resource "outscale_keypair_importation" "outscale_keypair_importation" {
-  key_name            = "keyname_test"
-  public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+# resource "outscale_keypair_importation" "outscale_keypair_importation" {
+#   key_name            = "keyname_test"
+#   public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+# }
+
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "outscale_subnet" {
+  vpc_id     = "${outscale_lin.outscale_lin.vpc_id}"
+  cidr_block = "10.0.0.0/18"
+}
+
+resource "outscale_public_ip" "outscale_public_ip" {
+  #domain = "Standard" # BUG doc API
+  domain = ""
+}
+
+resource "outscale_nat_service" "outscale_nat_service" {
+  depends_on    = ["outscale_route.outscale_route"]
+  subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
+  allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
+}
+
+resource "outscale_route_table" "outscale_route_table" {
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+}
+
+resource "outscale_route" "outscale_route" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+  route_table_id         = "${outscale_route_table.outscale_route_table.id}"
+}
+
+resource "outscale_route_table_link" "outscale_route_table_link" {
+  subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+  route_table_id = "${outscale_route_table.outscale_route_table.id}"
+}
+
+resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
+
+resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
+  vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
+  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
 }

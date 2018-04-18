@@ -75,12 +75,10 @@ func resourceOutscaleRouteTableAssociationCreate(d *schema.ResourceData, meta in
 		return err
 	}
 
-	// Set the ID and return
 	d.SetId(*resp.AssociationId)
 	d.Set("association_id", d.Id())
-	log.Printf("[INFO] Association ID: %s", d.Id())
 
-	return nil
+	return resourceOutscaleRouteTableAssociationRead(d, meta)
 }
 
 func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta interface{}) error {
@@ -129,8 +127,6 @@ func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta inte
 	if !found {
 		d.SetId("")
 	}
-
-	fmt.Printf("[DEBUG] STATE %s", d.State())
 
 	return nil
 }
