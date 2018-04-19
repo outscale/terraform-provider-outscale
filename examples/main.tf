@@ -1,9 +1,1 @@
-resource "outscale_lin_internet_gateway" "res" {}
-
-data "outscale_lin_internet_gateway" "data" {
-  internet_gateway_id = "${outscale_lin_internet_gateway.res.internet_gateway_id}"
-}
-
-data "outscale_lin_internet_gateways" "data2" {
-  internet_gateway_id = ["${outscale_lin_internet_gateway.res.internet_gateway_id}"]
-}
+data "outscale_api_key" "test" {}

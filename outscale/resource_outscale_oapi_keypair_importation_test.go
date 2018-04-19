@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleKeyPair_basic(t *testing.T) {
+func TestAccOutscaleOAPIKeyPairImportation_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -39,14 +39,15 @@ func TestAccOutscaleKeyPair_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
+func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -68,16 +69,16 @@ func TestAccOutscaleKeyPair_basic_name(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig_retrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_keypair.a_key_pair", "key_name", "tf-acc-key-pair",
+						"outscale_keypair_importation.a_key_pair", "key_name", "tf-acc-key-pair",
 					),
 				),
 			},
 		},
 	})
 }
-func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
+func TestAccOutscaleOAPIKeyPairImportation_generatedName(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -98,7 +99,8 @@ func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleKeyPairConfig_generatedName,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 					func(s *terraform.State) error {
 						if conf.KeyName == nil {
 							return fmt.Errorf("bad: No SG name")
@@ -114,11 +116,11 @@ func TestAccOutscaleKeyPair_generatedName(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleKeyPairDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIKeyPairImportationDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_keypair" {
+		if rs.Type != "outscale_keypair_importation" {
 			continue
 		}
 
@@ -164,7 +166,7 @@ func testAccCheckOutscaleKeyPairDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleKeyPairFingerprint(expectedFingerprint string, conf *fcu.KeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairImportationFingerprint(expectedFingerprint string, conf *fcu.KeyPairInfo) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *conf.KeyFingerprint != expectedFingerprint {
 			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, *conf.KeyFingerprint)
@@ -173,7 +175,7 @@ func testAccCheckOutscaleKeyPairFingerprint(expectedFingerprint string, conf *fc
 	}
 }
 
-func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairImportationExists(n string, res *fcu.KeyPairInfo) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -213,7 +215,7 @@ func testAccCheckOutscaleKeyPairExists(n string, res *fcu.KeyPairInfo) resource.
 	}
 }
 
-func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
+func testAccCheckOutscaleOAPIKeyPairImportation_namePrefix(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -229,7 +231,7 @@ func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:        func() { testAccPreCheck(t) },
-		IDRefreshName:   "outscale_keypair.a_key_pair",
+		IDRefreshName:   "outscale_keypair_importation.a_key_pair",
 		IDRefreshIgnore: []string{"key_name_prefix"},
 		Providers:       testAccProviders,
 		CheckDestroy:    testAccCheckOutscaleKeyPairDestroy,
@@ -237,16 +239,16 @@ func testAccCheckOutscaleKeyPair_namePrefix(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckOutscaleKeyPairPrefixNameConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeyPairExists("outscale_keypair.a_key_pair", &conf),
-					testAccCheckOutscaleKeyPairGeneratedNamePrefix(
-						"outscale_keypair.a_key_pair", "baz-"),
+					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
+					testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
+						"outscale_keypair_importation.a_key_pair", "baz-"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleKeyPairGeneratedNamePrefix(
+func testAccCheckOutscaleOAPIKeyPairImportationGeneratedNamePrefix(
 	resource, prefix string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r, ok := s.RootModule().Resources[resource]
@@ -264,35 +266,37 @@ func testAccCheckOutscaleKeyPairGeneratedNamePrefix(
 	}
 }
 
-func testAccOutscaleKeyPairConfig(r int) string {
+func testAccOutscaleOAPIKeyPairImportationConfig(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_keypair" "a_key_pair" {
+resource "outscale_keypair_importation" "a_key_pair" {
 	key_name   = "tf-acc-key-pair-%d"
+	public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `, r)
 }
 
-func testAccOutscaleKeyPairConfig_retrieveName(r int) string {
+func testAccOutscaleOAPIKeyPairImportationConfig_retrieveName(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_keypair" "a_key_pair" {
+resource "outscale_keypair_importation" "a_key_pair" {
 	key_name   = "tf-acc-key-pair"
 }
 `)
 }
 
-const testAccOutscaleKeyPairConfig_generatedName = `
-resource "outscale_keypair" "a_key_pair" {
-	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+const testAccOutscaleOAPIKeyPairImportationConfig_generatedName = `
+resource "outscale_keypair_importation" "a_key_pair" {
+	public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `
 
-func testAccCheckOutscaleKeyPairPrefixNameConfig(r int) string {
+func testAccCheckOutscaleOAPIKeyPairImportationPrefixNameConfig(r int) string {
 	return fmt.Sprintf(
 		`
-resource "outscale_keypair" "a_key_pair" {
+resource "outscale_keypair_importation" "a_key_pair" {
 	key_name_prefix   = "baz-%d"
+	public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `, r)
 }

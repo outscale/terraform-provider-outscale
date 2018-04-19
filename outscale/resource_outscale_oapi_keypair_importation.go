@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleKeyPair() *schema.Resource {
+func resourceOutscaleOAPIKeyPairImportation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKeyPairCreate,
-		Read:   resourceKeyPairRead,
-		Delete: resourceKeyPairDelete,
+		Create: resourceOAPIKeyPairImportationCreate,
+		Read:   resourceOAPIKeyPairImportationRead,
+		Delete: resourceOAPIKeyPairImportationDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,47 +27,73 @@ func resourceOutscaleKeyPair() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getKeyPairSchema(),
+		Schema: getOAPIKeyPairImportationSchema(),
 	}
 }
 
-func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var keyName string
-	if v, ok := d.GetOk("key_name"); ok {
+	if v, ok := d.GetOk("public_key_material"); ok {
 		keyName = v.(string)
 	} else {
 		keyName = resource.UniqueId()
-		d.Set("key_name", keyName)
+		d.Set("public_key_material", keyName)
 	}
+	if publicKey, ok := d.GetOk("public_key_material"); ok {
+		req := &fcu.ImportKeyPairInput{
+			KeyName:           aws.String(keyName),
+			PublicKeyMaterial: []byte(publicKey.(string)),
+		}
 
-	req := &fcu.CreateKeyPairInput{
-		KeyName: aws.String(keyName),
-	}
+		var resp *fcu.ImportKeyPairOutput
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			resp, err = conn.VM.ImportKeyPair(req)
 
-	var resp *fcu.CreateKeyPairOutput
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
-		resp, err = conn.VM.CreateKeyPair(req)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(err)
+		})
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return fmt.Errorf("Error import KeyPair: %s", err)
 		}
-		return resource.RetryableError(err)
-	})
-	if err != nil {
-		return fmt.Errorf("Error creating KeyPair: %s", err)
+		d.SetId(*resp.KeyName)
+
+	} else {
+		req := &fcu.CreateKeyPairInput{
+			KeyName: aws.String(keyName),
+		}
+
+		var resp *fcu.CreateKeyPairOutput
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			resp, err = conn.VM.CreateKeyPair(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(err)
+		})
+		if err != nil {
+			return fmt.Errorf("Error creating OAPIKeyPairImportation: %s", err)
+		}
+		d.SetId(*resp.KeyName)
+		d.Set("public_key_material", *resp.KeyMaterial)
 	}
-	d.SetId(*resp.KeyName)
-	d.Set("key_material", *resp.KeyMaterial)
 	return nil
 }
 
-func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	req := &fcu.DescribeKeyPairsInput{
 		KeyNames: []*string{aws.String(d.Id())},
@@ -102,18 +128,16 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 
 	for _, keyPair := range resp.KeyPairs {
 		if *keyPair.KeyName == d.Id() {
-			d.Set("key_name", keyPair.KeyName)
-			d.Set("key_fingerprint", keyPair.KeyFingerprint)
+			d.Set("public_key_material", keyPair.KeyName)
+			d.Set("fingerprint", keyPair.KeyFingerprint)
+			return nil
 		}
-		d.Set("request_id", *resp.RequestId)
-		return nil
-
 	}
 
 	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
 }
 
-func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -137,29 +161,27 @@ func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-func getKeyPairSchema() map[string]*schema.Schema {
+func getOAPIKeyPairImportationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"key_fingerprint": {
 			Type:     schema.TypeString,
 			Optional: true,
-			ForceNew: true,
 			Computed: true,
 		},
-		"key_material": {
+		"public_key_material": {
 			Type:     schema.TypeString,
 			Optional: true,
-			ForceNew: true,
 			Computed: true,
 		},
 		"key_name": {
 			Type:     schema.TypeString,
 			Optional: true,
-			ForceNew: true,
 			Computed: true,
 		},
 		"request_id": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 	}

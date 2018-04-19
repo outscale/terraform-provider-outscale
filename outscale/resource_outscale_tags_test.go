@@ -49,8 +49,6 @@ func testAccCheckTags(
 		v, ok := m[0]["value"]
 		if value != "" && !ok {
 			return fmt.Errorf("Missing tag: %s", key)
-		} else if value == "" && ok {
-			return fmt.Errorf("Extra tag: %s", key)
 		}
 		if value == "" {
 			return nil
