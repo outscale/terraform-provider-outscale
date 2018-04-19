@@ -232,3 +232,177 @@ func (v VMOperations) DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*D
 
 	return output, nil
 }
+
+func (v VMOperations) CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpnConnection"
+	output := &CreateVpnConnectionOutput{}
+
+	if input == nil {
+		input = &CreateVpnConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateVpnGateway(input *CreateVpnGatewayInput) (*CreateVpnGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpnGateway"
+	output := &CreateVpnGatewayOutput{}
+
+	if input == nil {
+		input = &CreateVpnGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpnConnections"
+	output := &DescribeVpnConnectionsOutput{}
+
+	if input == nil {
+		input = &DescribeVpnConnectionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeVpnGateways(input *DescribeVpnGatewaysInput) (*DescribeVpnGatewaysOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpnGateways"
+	output := &DescribeVpnGatewaysOutput{}
+
+	if input == nil {
+		input = &DescribeVpnGatewaysInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpnConnection"
+	output := &DeleteVpnConnectionOutput{}
+
+	if input == nil {
+		input = &DeleteVpnConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpnGateway"
+	output := &DeleteVpnGatewayOutput{}
+
+	if input == nil {
+		input = &DeleteVpnGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "AttachVpnGateway"
+	output := &AttachVpnGatewayOutput{}
+
+	if input == nil {
+		input = &AttachVpnGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error) {
+	inURL := "/"
+	endpoint := "DetachVpnGateway"
+	output := &DetachVpnGatewayOutput{}
+
+	if input == nil {
+		input = &DetachVpnGatewayInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}

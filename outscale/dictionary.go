@@ -42,6 +42,8 @@ func init() {
 			"outscale_route_table_link":          resourceOutscaleRouteTableAssociation,
 			"outscale_dhcp_option":               resourceOutscaleDHCPOption,
 			"outscale_dhcp_option_link":          resourceOutscaleDHCPOptionLink,
+			"outscale_vpn_connection":            resourceOutscaleVpnConnection,
+			"outscale_vpn_gateway":               resourceOutscaleVpnGateway,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                       resourceOutscaleOApiVM,
@@ -62,6 +64,9 @@ func init() {
 			"outscale_route":                    resourceOutscaleRoute,
 			"outscale_route_table":              resourceOutscaleRouteTable,
 			"outscale_route_table_link":         resourceOutscaleRouteTableAssociation,
+		},
+		"icu": ResourceMap{
+			"outscale_api_key": resourceOutscaleIamAccessKey,
 		},
 	}
 	datasources = Dictionary{
@@ -95,6 +100,7 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleRouteTables,
+			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

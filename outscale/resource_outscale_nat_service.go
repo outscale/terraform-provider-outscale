@@ -83,8 +83,6 @@ func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 		SubnetId:     aws.String(d.Get("subnet_id").(string)),
 	}
 
-	fmt.Printf("\n\n[DEBUG] Create NAT Gateway: %s", *createOpts)
-
 	var natResp *fcu.CreateNatGatewayOutput
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {

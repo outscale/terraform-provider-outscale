@@ -170,9 +170,8 @@
 #         values = ["ipsec.1"] }
 #     */
 # }
-
 resource "outscale_client_endpoint" "outscale_client_endpoint" {
   bgp_asn    = "3"
   ip_address = "171.33.74.122"
   type       = "ipsec.1"
-}
+  }

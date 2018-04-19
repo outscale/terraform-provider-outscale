@@ -2,6 +2,7 @@ package fcu
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
@@ -68,6 +69,10 @@ type VMService interface {
 	DetachInternetGateway(input *DetachInternetGatewayInput) (*DetachInternetGatewayOutput, error)
 	ModifyVpcAttribute(input *ModifyVpcAttributeInput) (*ModifyVpcAttributeOutput, error)
 	DescribeVpcAttribute(input *DescribeVpcAttributeInput) (*DescribeVpcAttributeOutput, error)
+	CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error)
+	DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error)
+	DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error)
+	UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error)
 	DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error)
 	CreateDhcpOptions(input *CreateDhcpOptionsInput) (*CreateDhcpOptionsOutput, error)
 	DescribeDhcpOptions(input *DescribeDhcpOptionsInput) (*DescribeDhcpOptionsOutput, error)
@@ -86,6 +91,14 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error)
+	DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error)
+	DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error)
+	CreateVpnGateway(input *CreateVpnGatewayInput) (*CreateVpnGatewayOutput, error)
+	DescribeVpnGateways(input *DescribeVpnGatewaysInput) (*DescribeVpnGatewaysOutput, error)
+	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
+	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
+	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -134,7 +147,7 @@ func (v VMOperations) DescribeInstances(input *DescribeInstancesInput) (*Describ
 
 // DescribeInstances method
 func (v VMOperations) ModifyInstanceKeyPair(input *ModifyInstanceKeyPairInput) error {
-	inURL := "/?Action=ModifyInstanceKeypair"
+	inURL := "/"
 	endpoint := "ModifyInstanceKeypair"
 
 	if input == nil {
@@ -1066,6 +1079,27 @@ func (v VMOperations) DescribeSubNet(input *DescribeSubnetsInput) (*DescribeSubn
 	return output, nil
 }
 
+func (v VMOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "CreateAccessKey"
+	output := &CreateAccessKeyOutput{}
+
+	if input == nil {
+		input = &CreateAccessKeyInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteDhcpOptionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeDhcpOptions"
@@ -1087,6 +1121,7 @@ func (v VMOperations) DeleteDhcpOptions(input *DeleteDhcpOptionsInput) (*DeleteD
 
 	return output, nil
 }
+
 func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysInput) (*DescribeCustomerGatewaysOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeCustomerGateways"
@@ -1095,6 +1130,32 @@ func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysIn
 	if input == nil {
 		input = &DescribeCustomerGatewaysInput{}
 	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeAccessKey(input *DescribeAccessKeyInput) (*DescribeAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "GetAccessKey"
+	output := &DescribeAccessKeyOutput{}
+
+	if input == nil {
+		input = &DescribeAccessKeyInput{}
+	}
+
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
@@ -1139,6 +1200,50 @@ func (v VMOperations) DeleteCustomerGateway(input *DeleteCustomerGatewayInput) (
 
 	if input == nil {
 		input = &DeleteCustomerGatewayInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteAccessKey"
+	output := &DeleteAccessKeyOutput{}
+
+	if input == nil {
+		input = &DeleteAccessKeyInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "UpdateAccessKey"
+	output := &UpdateAccessKeyOutput{}
+
+	if input == nil {
+		input = &UpdateAccessKeyInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1205,6 +1310,7 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 
 	if input == nil {
 		input = &CreateCustomerGatewayInput{}
+
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

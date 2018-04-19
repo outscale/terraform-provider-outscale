@@ -3203,50 +3203,6 @@ type CreateNatGatewayInput struct {
 	SubnetId *string `type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s CreateNatGatewayInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateNatGatewayInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *CreateNatGatewayInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateNatGatewayInput"}
-	if s.AllocationId == nil {
-		invalidParams.Add(request.NewErrParamRequired("AllocationId"))
-	}
-	if s.SubnetId == nil {
-		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetAllocationId sets the AllocationId field's value.
-func (s *CreateNatGatewayInput) SetAllocationId(v string) *CreateNatGatewayInput {
-	s.AllocationId = &v
-	return s
-}
-
-// SetClientToken sets the ClientToken field's value.
-func (s *CreateNatGatewayInput) SetClientToken(v string) *CreateNatGatewayInput {
-	s.ClientToken = &v
-	return s
-}
-
-// SetSubnetId sets the SubnetId field's value.
-func (s *CreateNatGatewayInput) SetSubnetId(v string) *CreateNatGatewayInput {
-	s.SubnetId = &v
-	return s
-}
-
 type AttachInternetGatewayOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3259,6 +3215,10 @@ func (s AttachInternetGatewayOutput) String() string {
 // GoString returns the string representation
 func (s AttachInternetGatewayOutput) GoString() string {
 	return s.String()
+}
+
+type DetachInternetGatewayOutput struct {
+	_ struct{} `type:"structure"`
 }
 
 type DetachInternetGatewayInput struct {
@@ -3281,62 +3241,47 @@ type DetachInternetGatewayInput struct {
 	VpcId *string `locationName:"vpcId" type:"string" required:"true"`
 }
 
-// String returns the string representation
-func (s DetachInternetGatewayInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DetachInternetGatewayInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *DetachInternetGatewayInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "DetachInternetGatewayInput"}
-	if s.InternetGatewayId == nil {
-		invalidParams.Add(request.NewErrParamRequired("InternetGatewayId"))
-	}
-	if s.VpcId == nil {
-		invalidParams.Add(request.NewErrParamRequired("VpcId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDryRun sets the DryRun field's value.
-func (s *DetachInternetGatewayInput) SetDryRun(v bool) *DetachInternetGatewayInput {
-	s.DryRun = &v
-	return s
-}
-
-// SetInternetGatewayId sets the InternetGatewayId field's value.
-func (s *DetachInternetGatewayInput) SetInternetGatewayId(v string) *DetachInternetGatewayInput {
-	s.InternetGatewayId = &v
-	return s
-}
-
-// SetVpcId sets the VpcId field's value.
-func (s *DetachInternetGatewayInput) SetVpcId(v string) *DetachInternetGatewayInput {
-	s.VpcId = &v
-	return s
-}
-
-type DetachInternetGatewayOutput struct {
+type CreateAccessKeyInput struct {
 	_ struct{} `type:"structure"`
-}
 
-// String returns the string representation
-func (s DetachInternetGatewayOutput) String() string {
-	return awsutil.Prettify(s)
+	AccessKeyId     *string `type:"string" required:"false"`
+	SecretAccessKey *string `type:"string" required:"false"`
+	Tags            []*Tag  `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
-
-// GoString returns the string representation
-func (s DetachInternetGatewayOutput) GoString() string {
-	return s.String()
+type CreateAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	AccessKey        *string  `locationName:"accessKey" type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+}
+type DeleteAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyId *string  `type:"string" required:"true"`
+}
+type DeleteAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+	Return           *bool    `locationName:"deleteAccessKey" type:"boolean"`
+}
+type UpdateAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyId *string  `type:"string" required:"true"`
+	Status      *string  `locationName:"status" type:"string" enum:"StatusType"`
+}
+type UpdateAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
+	Return           *bool    `locationName:"updateAccessKey" type:"boolean"`
+}
+type DescribeAccessKeyInput struct {
+	_               struct{} `type:"structure"`
+	AccessKeyId     *string  `type:"string" required:"false"`
+	SecretAccessKey *string  `type:"string" required:"false"`
+	Tags            []*Tag   `locationName:"tagSet" locationNameList:"item" type:"list"`
+}
+type DescribeAccessKeyOutput struct {
+	_                struct{} `type:"structure"`
+	AccessKey        *string  `locationName:"accessKey" type:"structure"`
+	ResponseMetadata *string  `locationName:"responseMetaData" type:"structure"`
 }
 
 // Contains the parameters for DeleteDhcpOptions.
@@ -5384,4 +5329,1055 @@ func (s *DescribeVpcsInput) SetVpcIds(v []*string) *DescribeVpcsInput {
 func (s *DescribeVpcsOutput) SetVpcs(v []*Vpc) *DescribeVpcsOutput {
 	s.Vpcs = v
 	return s
+}
+
+type VpnConnectionOptionsSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the VPN connection uses static routes only. Static routes
+	// must be used for devices that don't support BGP.
+	StaticRoutesOnly *bool `locationName:"staticRoutesOnly" type:"boolean"`
+}
+
+// String returns the string representation
+func (s VpnConnectionOptionsSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VpnConnectionOptionsSpecification) GoString() string {
+	return s.String()
+}
+
+// SetStaticRoutesOnly sets the StaticRoutesOnly field's value.
+func (s *VpnConnectionOptionsSpecification) SetStaticRoutesOnly(v bool) *VpnConnectionOptionsSpecification {
+	s.StaticRoutesOnly = &v
+	return s
+}
+
+type CreateVpnGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone for the virtual private gateway.
+	AvailabilityZone *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The type of VPN connection this virtual private gateway supports.
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"GatewayType"`
+}
+
+// String returns the string representation
+func (s CreateVpnGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpnGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpnGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpnGatewayInput"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *CreateVpnGatewayInput) SetAvailabilityZone(v string) *CreateVpnGatewayInput {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVpnGatewayInput) SetDryRun(v bool) *CreateVpnGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateVpnGatewayInput) SetType(v string) *CreateVpnGatewayInput {
+	s.Type = &v
+	return s
+}
+
+type CreateVpnConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the customer gateway.
+	//
+	// CustomerGatewayId is a required field
+	CustomerGatewayId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Indicates whether the VPN connection requires static routes. If you are creating
+	// a VPN connection for a device that does not support BGP, you must specify
+	// true.
+	//
+	// Default: false
+	Options *VpnConnectionOptionsSpecification `locationName:"options" type:"structure"`
+
+	// The type of VPN connection (ipsec.1).
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true"`
+
+	// The ID of the virtual private gateway.
+	//
+	// VpnGatewayId is a required field
+	VpnGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateVpnConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpnConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpnConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpnConnectionInput"}
+	if s.CustomerGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomerGatewayId"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.VpnGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *CreateVpnConnectionInput) SetCustomerGatewayId(v string) *CreateVpnConnectionInput {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVpnConnectionInput) SetDryRun(v bool) *CreateVpnConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *CreateVpnConnectionInput) SetOptions(v *VpnConnectionOptionsSpecification) *CreateVpnConnectionInput {
+	s.Options = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CreateVpnConnectionInput) SetType(v string) *CreateVpnConnectionInput {
+	s.Type = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *CreateVpnConnectionInput) SetVpnGatewayId(v string) *CreateVpnConnectionInput {
+	s.VpnGatewayId = &v
+	return s
+}
+
+// Contains the output of CreateVpnConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnConnectionResult
+type CreateVpnConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPN connection.
+	VpnConnection *VpnConnection `locationName:"vpnConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateVpnConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpnConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnConnection sets the VpnConnection field's value.
+func (s *CreateVpnConnectionOutput) SetVpnConnection(v *VpnConnection) *CreateVpnConnectionOutput {
+	s.VpnConnection = v
+	return s
+}
+
+// Contains the output of CreateVpnGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnGatewayResult
+type CreateVpnGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the virtual private gateway.
+	VpnGateway *VpnGateway `locationName:"vpnGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateVpnGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+type VpnConnection struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration information for the VPN connection's customer gateway (in
+	// the native XML format). This element is always present in the CreateVpnConnection
+	// response; however, it's present in the DescribeVpnConnections response only
+	// if the VPN connection is in the pending or available state.
+	CustomerGatewayConfiguration *string `locationName:"customerGatewayConfiguration" type:"string"`
+
+	// The ID of the customer gateway at your end of the VPN connection.
+	CustomerGatewayId *string `locationName:"customerGatewayId" type:"string"`
+
+	// The VPN connection options.
+	Options *VpnConnectionOptions `locationName:"options" type:"structure"`
+
+	// The static routes associated with the VPN connection.
+	Routes []*VpnStaticRoute `locationName:"routes" locationNameList:"item" type:"list"`
+
+	// The current state of the VPN connection.
+	State *string `locationName:"state" type:"string" enum:"VpnState"`
+
+	// Any tags assigned to the VPN connection.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The type of VPN connection.
+	Type *string `locationName:"type" type:"string" enum:"GatewayType"`
+
+	// Information about the VPN tunnel.
+	VgwTelemetry []*VgwTelemetry `locationName:"vgwTelemetry" locationNameList:"item" type:"list"`
+
+	// The ID of the VPN connection.
+	VpnConnectionId *string `locationName:"vpnConnectionId" type:"string"`
+
+	// The ID of the virtual private gateway at the AWS side of the VPN connection.
+	VpnGatewayId *string `locationName:"vpnGatewayId" type:"string"`
+}
+
+// String returns the string representation
+func (s VpnConnection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VpnConnection) GoString() string {
+	return s.String()
+}
+
+// SetCustomerGatewayConfiguration sets the CustomerGatewayConfiguration field's value.
+func (s *VpnConnection) SetCustomerGatewayConfiguration(v string) *VpnConnection {
+	s.CustomerGatewayConfiguration = &v
+	return s
+}
+
+// SetCustomerGatewayId sets the CustomerGatewayId field's value.
+func (s *VpnConnection) SetCustomerGatewayId(v string) *VpnConnection {
+	s.CustomerGatewayId = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *VpnConnection) SetOptions(v *VpnConnectionOptions) *VpnConnection {
+	s.Options = v
+	return s
+}
+
+// SetRoutes sets the Routes field's value.
+func (s *VpnConnection) SetRoutes(v []*VpnStaticRoute) *VpnConnection {
+	s.Routes = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *VpnConnection) SetState(v string) *VpnConnection {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *VpnConnection) SetTags(v []*Tag) *VpnConnection {
+	s.Tags = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *VpnConnection) SetType(v string) *VpnConnection {
+	s.Type = &v
+	return s
+}
+
+// SetVgwTelemetry sets the VgwTelemetry field's value.
+func (s *VpnConnection) SetVgwTelemetry(v []*VgwTelemetry) *VpnConnection {
+	s.VgwTelemetry = v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *VpnConnection) SetVpnConnectionId(v string) *VpnConnection {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *VpnConnection) SetVpnGatewayId(v string) *VpnConnection {
+	s.VpnGatewayId = &v
+	return s
+}
+func (s CreateVpnGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnGateway sets the VpnGateway field's value.
+func (s *CreateVpnGatewayOutput) SetVpnGateway(v *VpnGateway) *CreateVpnGatewayOutput {
+	s.VpnGateway = v
+	return s
+}
+
+type VpnGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone where the virtual private gateway was created, if applicable.
+	// This field may be empty or not returned.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The current state of the virtual private gateway.
+	State *string `locationName:"state" type:"string" enum:"VpnState"`
+
+	// Any tags assigned to the virtual private gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The type of VPN connection the virtual private gateway supports.
+	Type *string `locationName:"type" type:"string" enum:"GatewayType"`
+
+	// Any VPCs attached to the virtual private gateway.
+	VpcAttachments []*VpcAttachment `locationName:"attachments" locationNameList:"item" type:"list"`
+
+	// The ID of the virtual private gateway.
+	VpnGatewayId *string `locationName:"vpnGatewayId" type:"string"`
+}
+
+func (s VpnGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+func (s VpnGateway) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *VpnGateway) SetAvailabilityZone(v string) *VpnGateway {
+	s.AvailabilityZone = &v
+	return s
+}
+
+func (s *VpnGateway) SetState(v string) *VpnGateway {
+	s.State = &v
+	return s
+}
+
+func (s *VpnGateway) SetTags(v []*Tag) *VpnGateway {
+	s.Tags = v
+	return s
+}
+
+func (s *VpnGateway) SetType(v string) *VpnGateway {
+	s.Type = &v
+	return s
+}
+
+// SetVpcAttachments sets the VpcAttachments field's value.
+func (s *VpnGateway) SetVpcAttachments(v []*VpcAttachment) *VpnGateway {
+	s.VpcAttachments = v
+	return s
+}
+
+func (s *VpnGateway) SetVpnGatewayId(v string) *VpnGateway {
+	s.VpnGatewayId = &v
+	return s
+}
+
+type VpnConnectionOptions struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether the VPN connection uses static routes only. Static routes
+	// must be used for devices that don't support BGP.
+	StaticRoutesOnly *bool `locationName:"staticRoutesOnly" type:"boolean"`
+}
+
+type VpcAttachment struct {
+	_ struct{} `type:"structure"`
+
+	// The current state of the attachment.
+	State *string `locationName:"state" type:"string" enum:"AttachmentStatus"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s VpcAttachment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// SetStaticRoutesOnly sets the StaticRoutesOnly field's value.
+func (s *VpnConnectionOptions) SetStaticRoutesOnly(v bool) *VpnConnectionOptions {
+	s.StaticRoutesOnly = &v
+	return s
+}
+
+type VpnStaticRoute struct {
+	_ struct{} `type:"structure"`
+
+	// The CIDR block associated with the local subnet of the customer data center.
+	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
+
+	// Indicates how the routes were provided.
+	Source *string `locationName:"source" type:"string" enum:"VpnStaticRouteSource"`
+
+	// The current state of the static route.
+	State *string `locationName:"state" type:"string" enum:"VpnState"`
+}
+
+// String returns the string representation
+func (s VpnStaticRoute) String() string {
+	return s.String()
+}
+func (s VpcAttachment) GoString() string {
+	return s.String()
+}
+
+// SetState sets the State field's value.
+func (s *VpcAttachment) SetState(v string) *VpcAttachment {
+	s.State = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *VpcAttachment) SetVpcId(v string) *VpcAttachment {
+	s.VpcId = &v
+	return s
+}
+
+type DescribeVpnGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * attachment.state - The current state of the attachment between the gateway
+	//    and the VPC (attaching | attached | detaching | detached).
+	//
+	//    * attachment.vpc-id - The ID of an attached VPC.
+	//
+	//    * availability-zone - The Availability Zone for the virtual private gateway
+	//    (if applicable).
+	//
+	//    * state - The state of the virtual private gateway (pending | available
+	//    | deleting | deleted).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * type - The type of virtual private gateway. Currently the only supported
+	//    type is ipsec.1.
+	//
+	//    * vpn-gateway-id - The ID of the virtual private gateway.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more virtual private gateway IDs.
+	//
+	// Default: Describes all your virtual private gateways.
+	VpnGatewayIds []*string `locationName:"VpnGatewayId" locationNameList:"VpnGatewayId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVpnGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VpnStaticRoute) GoString() string {
+	return s.String()
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *VpnStaticRoute) SetDestinationCidrBlock(v string) *VpnStaticRoute {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *VpnStaticRoute) SetSource(v string) *VpnStaticRoute {
+	s.Source = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *VpnStaticRoute) SetState(v string) *VpnStaticRoute {
+	s.State = &v
+	return s
+}
+
+type VgwTelemetry struct {
+	_ struct{} `type:"structure"`
+
+	// The number of accepted routes.
+	AcceptedRouteCount *int64 `locationName:"acceptedRouteCount" type:"integer"`
+
+	// The date and time of the last change in status.
+	LastStatusChange *time.Time `locationName:"lastStatusChange" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The Internet-routable IP address of the virtual private gateway's outside
+	// interface.
+	OutsideIpAddress *string `locationName:"outsideIpAddress" type:"string"`
+
+	// The status of the VPN tunnel.
+	Status *string `locationName:"status" type:"string" enum:"TelemetryStatus"`
+
+	// If an error occurs, a description of the error.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+}
+
+// String returns the string representation
+func (s VgwTelemetry) String() string {
+	return s.String()
+}
+func (s DescribeVpnGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpnGatewaysInput) SetDryRun(v bool) *DescribeVpnGatewaysInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpnGatewaysInput) SetFilters(v []*Filter) *DescribeVpnGatewaysInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpnGatewayIds sets the VpnGatewayIds field's value.
+func (s *DescribeVpnGatewaysInput) SetVpnGatewayIds(v []*string) *DescribeVpnGatewaysInput {
+	s.VpnGatewayIds = v
+	return s
+}
+
+// Contains the output of DescribeVpnGateways.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpnGatewaysResult
+type DescribeVpnGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more virtual private gateways.
+	VpnGateways []*VpnGateway `locationName:"vpnGatewaySet" locationNameList:"item" type:"list"`
+	RequestId   *string       `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpnGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpnGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnGateways sets the VpnGateways field's value.
+func (s *DescribeVpnGatewaysOutput) SetVpnGateways(v []*VpnGateway) *DescribeVpnGatewaysOutput {
+	s.VpnGateways = v
+	return s
+}
+
+type DeleteVpnGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the virtual private gateway.
+	//
+	// VpnGatewayId is a required field
+	VpnGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVpnGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VgwTelemetry) GoString() string {
+	return s.String()
+}
+
+// SetAcceptedRouteCount sets the AcceptedRouteCount field's value.
+func (s *VgwTelemetry) SetAcceptedRouteCount(v int64) *VgwTelemetry {
+	s.AcceptedRouteCount = &v
+	return s
+}
+
+// SetLastStatusChange sets the LastStatusChange field's value.
+func (s *VgwTelemetry) SetLastStatusChange(v time.Time) *VgwTelemetry {
+	s.LastStatusChange = &v
+	return s
+}
+
+// SetOutsideIpAddress sets the OutsideIpAddress field's value.
+func (s *VgwTelemetry) SetOutsideIpAddress(v string) *VgwTelemetry {
+	s.OutsideIpAddress = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VgwTelemetry) SetStatus(v string) *VgwTelemetry {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *VgwTelemetry) SetStatusMessage(v string) *VgwTelemetry {
+	s.StatusMessage = &v
+	return s
+}
+
+type DescribeVpnConnectionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * customer-gateway-configuration - The configuration information for the
+	//    customer gateway.
+	//
+	//    * customer-gateway-id - The ID of a customer gateway associated with the
+	//    VPN connection.
+	//
+	//    * state - The state of the VPN connection (pending | available | deleting
+	//    | deleted).
+	//
+	//    * option.static-routes-only - Indicates whether the connection has static
+	//    routes only. Used for devices that do not support Border Gateway Protocol
+	//    (BGP).
+	//
+	//    * route.destination-cidr-block - The destination CIDR block. This corresponds
+	//    to the subnet used in a customer data center.
+	//
+	//    * bgp-asn - The BGP Autonomous System Number (ASN) associated with a BGP
+	//    device.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * type - The type of VPN connection. Currently the only supported type
+	//    is ipsec.1.
+	//
+	//    * vpn-connection-id - The ID of the VPN connection.
+	//
+	//    * vpn-gateway-id - The ID of a virtual private gateway associated with
+	//    the VPN connection.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more VPN connection IDs.
+	//
+	// Default: Describes your VPN connections.
+	VpnConnectionIds []*string `locationName:"VpnConnectionId" locationNameList:"VpnConnectionId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVpnConnectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpnConnectionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpnConnectionsInput) SetDryRun(v bool) *DescribeVpnConnectionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpnConnectionsInput) SetFilters(v []*Filter) *DescribeVpnConnectionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpnConnectionIds sets the VpnConnectionIds field's value.
+func (s *DescribeVpnConnectionsInput) SetVpnConnectionIds(v []*string) *DescribeVpnConnectionsInput {
+	s.VpnConnectionIds = v
+	return s
+}
+
+// Contains the output of DescribeVpnConnections.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpnConnectionsResult
+type DescribeVpnConnectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more VPN connections.
+	VpnConnections []*VpnConnection `locationName:"vpnConnectionSet" locationNameList:"item" type:"list"`
+	RequestId      *string          `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpnConnectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpnConnectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpnConnections sets the VpnConnections field's value.
+func (s *DescribeVpnConnectionsOutput) SetVpnConnections(v []*VpnConnection) *DescribeVpnConnectionsOutput {
+	s.VpnConnections = v
+	return s
+}
+
+func (s DeleteVpnGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpnGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpnGatewayInput"}
+	if s.VpnGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVpnGatewayInput) SetDryRun(v bool) *DeleteVpnGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *DeleteVpnGatewayInput) SetVpnGatewayId(v string) *DeleteVpnGatewayInput {
+	s.VpnGatewayId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnGatewayOutput
+type DeleteVpnGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteVpnGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpnGatewayOutput) GoString() string {
+	return s.String()
+}
+
+type AttachVpnGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+
+	// The ID of the virtual private gateway.
+	//
+	// VpnGatewayId is a required field
+	VpnGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AttachVpnGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachVpnGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachVpnGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachVpnGatewayInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+	if s.VpnGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachVpnGatewayInput) SetDryRun(v bool) *AttachVpnGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *AttachVpnGatewayInput) SetVpcId(v string) *AttachVpnGatewayInput {
+	s.VpcId = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *AttachVpnGatewayInput) SetVpnGatewayId(v string) *AttachVpnGatewayInput {
+	s.VpnGatewayId = &v
+	return s
+}
+
+// Contains the output of AttachVpnGateway.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachVpnGatewayResult
+type AttachVpnGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the attachment.
+	VpcAttachment *VpcAttachment `locationName:"attachment" type:"structure"`
+}
+
+// String returns the string representation
+func (s AttachVpnGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachVpnGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcAttachment sets the VpcAttachment field's value.
+func (s *AttachVpnGatewayOutput) SetVpcAttachment(v *VpcAttachment) *AttachVpnGatewayOutput {
+	s.VpcAttachment = v
+	return s
+}
+
+type DeleteVpnConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVpnConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpnConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpnConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpnConnectionInput"}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVpnConnectionInput) SetDryRun(v bool) *DeleteVpnConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *DeleteVpnConnectionInput) SetVpnConnectionId(v string) *DeleteVpnConnectionInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnConnectionOutput
+type DeleteVpnConnectionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteVpnConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpnConnectionOutput) GoString() string {
+	return s.String()
+}
+
+type DetachVpnGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+
+	// The ID of the virtual private gateway.
+	//
+	// VpnGatewayId is a required field
+	VpnGatewayId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DetachVpnGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachVpnGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachVpnGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachVpnGatewayInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+	if s.VpnGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachVpnGatewayInput) SetDryRun(v bool) *DetachVpnGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *DetachVpnGatewayInput) SetVpcId(v string) *DetachVpnGatewayInput {
+	s.VpcId = &v
+	return s
+}
+
+// SetVpnGatewayId sets the VpnGatewayId field's value.
+func (s *DetachVpnGatewayInput) SetVpnGatewayId(v string) *DetachVpnGatewayInput {
+	s.VpnGatewayId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachVpnGatewayOutput
+type DetachVpnGatewayOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DetachVpnGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachVpnGatewayOutput) GoString() string {
+	return s.String()
 }
