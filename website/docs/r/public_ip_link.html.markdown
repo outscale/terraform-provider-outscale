@@ -50,5 +50,6 @@ The following arguments are supported:
 * `network_interface_id` - The ID of the instance or of the network interface.
 * `private_ip_address` - The primary or secondary private IP address to associate with the External IP address.
 * `public_ip` - The External IP address.
+* `request_id` - The ID of the request.
 
 See detailed information in [Associate Address](http://docs.outscale.com/api_fcu/operations/Action_AssociateAddress_get.html#_api_fcu-action_associateaddress_get).

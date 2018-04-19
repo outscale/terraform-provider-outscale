@@ -49,7 +49,7 @@ resource "outscale_vm" "foo" {
 
 resource "outscale_tag" "foo" {
 	resource_ids = ["${outscale_vm.foo.id}"]
-	tags {
+	tag {
 		faz = "baz"
 	}
 }
@@ -59,12 +59,8 @@ resource "outscale_tag" "foo" {
 
 The following arguments are supported:
 
-* `dry_run` - If set to true, checks whether you have the required permissions to perform the action.
 * `resource_ids` - One or more resource IDs.
 * `filter` - One or more filters.
-* `tags` - A list of tags to add to the specified resources.
-* `max_results` - The maximum number of results that can be returned in a single page. You can use the NextToken attribute to request the next results pages. This value is between 5 and 1000. If you provide a value larger than 1000, only 1000 results are returned.
-* `next_token` - The token to request the next results page.
-* `tag_set` - Information about one or more tags.
+* `tag` - A list of tags to add to the specified resources.
 
 See detailed information in [FCU Address](http://docs.outscale.com/api_fcu/definitions/Address.html#_api_fcu-address).
