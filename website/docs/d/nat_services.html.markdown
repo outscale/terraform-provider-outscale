@@ -1,14 +1,14 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nat_service"
-sidebar_current: "docs-outscale-datasource-nat-service"
+page_title: "OUTSCALE: outscale_nat_services"
+sidebar_current: "docs-outscale-datasource-nat-services"
 description: |-
     Describes one or more network address translation (NAT) gateways.
 
 
 ---
 
-# outscale_nat_service
+# outscale_nat_services
 
 Describes one or more network address translation (NAT) gateways.
 
@@ -17,7 +17,7 @@ Describes one or more network address translation (NAT) gateways.
 
 ```hcl
 data "outscale_nat_services" "nat" {
-	nat_gateway_id = ["nat-08f41400"]
+	nat_gateway_id = ["${outscale_nat_service.gateway.id}"]
 }
 ```
 
@@ -27,6 +27,8 @@ The following arguments are supported:
 
 * `nat_gateway_id` - (Optional) One or more IDs of NAT gateways.
 * `filter.N` - (Optional) One or more filters.
+* `request_id` - (Optional) The ID of the request.
+
 
 See detailed information in [Outscale NatService](http://docs.outscale.com/api_fcu/operations/Action_CreateNatGateway_get.html#_api_fcu-action_createnatgateway_get).
 

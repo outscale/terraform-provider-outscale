@@ -85,7 +85,7 @@ Use the Filter.N parameter to filter the described instances on the following pr
 
 The following attributes are exported:
 
-* `image_set  ` - Information about the full list of attributes.
+* `image_set  ` - Information about one OMI.
 * `requester_id` - The ID of the request.
 
 See detailed information in [Describe Image](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_body_parameter).
