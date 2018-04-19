@@ -88,6 +88,10 @@ func resourceOutscaleRoute() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -184,30 +188,54 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.SetId(routeIDHash(d, route))
-	resourceOutscaleRouteSetResourceData(d, route)
-	return nil
+	return resourceOutscaleRouteRead(d, meta)
 }
 
 func resourceOutscaleRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	routeTableId := d.Get("route_table_id").(string)
+	cidr := d.Get("destination_cidr_block").(string)
 
-	destinationCidrBlock := d.Get("destination_cidr_block").(string)
+	findOpts := &fcu.DescribeRouteTablesInput{
+		RouteTableIds: []*string{&routeTableId},
+	}
 
-	route, err := findResourceRoute(conn, routeTableId, destinationCidrBlock)
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableId)
-			d.SetId("")
-			return nil
+	var resp *fcu.DescribeRouteTablesOutput
+	var err error
+	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeRouteTables(findOpts)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				log.Printf("[DEBUG] Trying to create route again: %q", err)
+				return resource.RetryableError(err)
+			}
+
+			return resource.NonRetryableError(err)
 		}
+
+		return nil
+	})
+
+	if err != nil {
 		return err
 	}
-	resourceOutscaleRouteSetResourceData(d, route)
-	return nil
-}
 
-func resourceOutscaleRouteSetResourceData(d *schema.ResourceData, route *fcu.Route) {
+	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
+		return fmt.Errorf("Route Table %q is gone, or route does not exist.",
+			routeTableId)
+	}
+
+	var route *fcu.Route
+
+	if cidr != "" {
+		for _, r := range (*resp.RouteTables[0]).Routes {
+			if r.DestinationCidrBlock != nil && *r.DestinationCidrBlock == cidr {
+				route = r
+			}
+		}
+	}
+
 	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
 	d.Set("gateway_id", route.GatewayId)
 	d.Set("instance_id", route.InstanceId)
@@ -217,6 +245,8 @@ func resourceOutscaleRouteSetResourceData(d *schema.ResourceData, route *fcu.Rou
 	d.Set("instance_owner_id", route.InstanceOwnerId)
 	d.Set("origin", route.Origin)
 	d.Set("state", route.State)
+	d.Set("request_id", resp.RequestId)
+	return nil
 }
 
 func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error {

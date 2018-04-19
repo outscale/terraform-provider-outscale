@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -64,7 +66,7 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.SetId(*resp.KeyName)
 	d.Set("key_material", *resp.KeyMaterial)
-	return nil
+	return resourceKeyPairRead(d, meta)
 }
 
 func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
@@ -100,17 +102,14 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error retrieving KeyPair: %s", err)
 	}
 
-	for _, keyPair := range resp.KeyPairs {
-		if *keyPair.KeyName == d.Id() {
-			d.Set("key_name", keyPair.KeyName)
-			d.Set("key_fingerprint", keyPair.KeyFingerprint)
-		}
-		d.Set("request_id", *resp.RequestId)
-		return nil
+	fmt.Println("\n\n[DEBUG] RESP")
+	utils.PrintToJSON(resp, "KEY_PAIR")
 
-	}
+	d.Set("key_name", resp.KeyPairs[0].KeyName)
+	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
+	d.Set("request_id", resp.RequestId)
 
-	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
+	return nil
 }
 
 func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {

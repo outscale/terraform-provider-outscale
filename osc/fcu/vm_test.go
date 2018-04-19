@@ -444,6 +444,7 @@ func TestVM_DescribeKeyPair(t *testing.T) {
 	defer teardown()
 
 	keyName := "tf-acc-key-pair"
+	requestID := "4c534b1d-80dc-4778-a075-9d6f8d6ba22e"
 
 	input := &DescribeKeyPairsInput{
 		KeyNames: []*string{&keyName},
@@ -467,6 +468,9 @@ func TestVM_DescribeKeyPair(t *testing.T) {
 	}
 	if expectedFingerPrint != *key.KeyPairs[0].KeyFingerprint {
 		t.Fatalf("Expected FingerPrint:(%s), Got(%s)", expectedFingerPrint, *key.KeyPairs[0].KeyFingerprint)
+	}
+	if requestID != *key.RequestId {
+		t.Fatalf("Expected RequestId:(%s), Got(%s)", requestID, *key.RequestId)
 	}
 }
 

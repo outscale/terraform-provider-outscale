@@ -125,6 +125,7 @@ func dataSourceOutscaleCustomerGatewaysRead(d *schema.ResourceData, meta interfa
 		customerGateway["ip_address"] = *v.IpAddress
 		customerGateway["type"] = *v.Type
 		customerGateway["tag_set"] = tagsToMap(v.Tags)
+		customerGateway["state"] = *v.State
 
 		if *v.BgpAsn != "" {
 			val, err := strconv.ParseInt(*v.BgpAsn, 0, 0)

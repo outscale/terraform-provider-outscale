@@ -1237,9 +1237,8 @@ type DescribeKeyPairsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about one or more key pairs.
-	KeyPairs []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
-
-	RequestId *string `locationName:"requestId" type:"string"`
+	KeyPairs  []*KeyPairInfo `locationName:"keySet" locationNameList:"item" type:"list"`
+	RequestId *string        `locationName:"requestId" type:"String"`
 }
 
 // String returns the string representation
@@ -2502,6 +2501,8 @@ type DescribeNatGatewaysOutput struct {
 	// The token to use to retrieve the next page of results. This value is null
 	// when there are no more results to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type DeleteNatGatewayInput struct {

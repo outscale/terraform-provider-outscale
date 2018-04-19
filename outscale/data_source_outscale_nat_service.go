@@ -51,6 +51,10 @@ func dataSourceOutscaleNatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -100,6 +104,8 @@ func dataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Your query returned more than one result. Please try a more " +
 			"specific search criteria.")
 	}
+
+	d.Set("request_id", res.RequestId)
 
 	return ngDescriptionAttributes(d, res.NatGateways[0])
 }
