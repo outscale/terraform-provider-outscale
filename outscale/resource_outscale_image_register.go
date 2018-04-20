@@ -1,86 +1,176 @@
 package outscale
 
 import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+
+	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleImageRegister() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceImageRegisterCreate,
-		// Read:   resourceImageRegisterRead,
-		// Update: resourceImageRegisterUpdate,
-		// Delete: resourceImageRegisterDelete,
+		Read:   resourceImageRead,
+		Delete: resourceImageRegisterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
-			"arquitecture": {
+			//Image
+			"instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
-			"block_device_mapping": {
-				Type:     schema.TypeList,
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"dry_run": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+			},
+			"no_reboot": {
+				Type:     schema.TypeBool,
+				Optional: true,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"ebs": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"delete_on_termination": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"iops": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"snapshot_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"volume_size": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"volume_type": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"no_device": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"virtual_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 			"description": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+
+			"architecture": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"image_location": {
 				Type:     schema.TypeString,
 				Computed: true,
+				ForceNew: true,
+				Optional: true,
 			},
-			"name": {
+			"image_owner_alias": {
 				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_owner_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"is_public": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"root_device_name": {
 				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+			},
+			"root_device_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			// Complex computed values
+			"block_device_mapping": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+						"no_device": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+						"virtual_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+						"ebs": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+			"product_codes": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Set:      amiProductCodesHash,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"product_code": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"state_reason": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"tag_set": dataSourceTagsSchema(),
+
+			// Image Register
+			"arquitecture": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 				Computed: true,
 			},
 		},
@@ -88,6 +178,115 @@ func resourceOutscaleImageRegister() *schema.Resource {
 }
 
 func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error {
-	//client := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).FCU
+
+	request := &fcu.RegisterImageInput{}
+
+	architecture, architectureOk := d.GetOk("architecture")
+	block_device_mapping, block_device_mappingOk := d.GetOk("block_device_mapping")
+	description, descriptionOk := d.GetOk("description")
+	image_location, image_locationOk := d.GetOk("image_location")
+	name, nameOk := d.GetOk("name")
+	root_device_name, root_device_nameOk := d.GetOk("root_device_name")
+
+	if architectureOk {
+		request.Architecture = aws.String(architecture.(string))
+	}
+	if block_device_mappingOk {
+		maps := block_device_mapping.([]interface{})
+		mappings := []*fcu.BlockDeviceMapping{}
+
+		for _, m := range maps {
+			f := m.(map[string]interface{})
+			mapping := &fcu.BlockDeviceMapping{
+				DeviceName: aws.String(f["device_name"].(string)),
+			}
+
+			e := f["ebs"].(map[string]interface{})
+			var del bool
+			if e["delete_on_termination"].(string) == "0" {
+				del = false
+			} else {
+				del = true
+			}
+
+			ebs := &fcu.EbsBlockDevice{
+				DeleteOnTermination: aws.Bool(del),
+			}
+
+			mapping.Ebs = ebs
+
+			mappings = append(mappings, mapping)
+		}
+
+		request.BlockDeviceMappings = mappings
+	}
+	if descriptionOk {
+		request.Description = aws.String(description.(string))
+	}
+	if image_locationOk {
+		request.ImageLocation = aws.String(image_location.(string))
+	}
+	if nameOk {
+		request.Name = aws.String(name.(string))
+	}
+	if root_device_nameOk {
+		request.RootDeviceName = aws.String(root_device_name.(string))
+	}
+
+	var registerResp *fcu.RegisterImageOutput
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+		registerResp, err = conn.VM.RegisterImage(request)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+
+		return fmt.Errorf("[DEBUG] Error register image %s", err)
+	}
+
+	d.SetId(*registerResp.ImageId)
+	d.Set("image_id", *registerResp.ImageId)
+
+	_, err = resourceOutscaleImageWaitForAvailable(*registerResp.ImageId, conn, 1)
+	if err != nil {
+		return err
+	}
+
+	return resourceImageRead(d, meta)
+}
+
+func resourceImageRegisterDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).FCU
+
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+		_, err = conn.VM.DeregisterImage(&fcu.DeregisterImageInput{
+			ImageId: aws.String(d.Id()),
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+
+		return fmt.Errorf("[DEBUG] Error Deregister image %s", err)
+	}
 	return nil
 }
