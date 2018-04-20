@@ -45,6 +45,7 @@ func init() {
 			"outscale_image_copy":                resourceOutscaleImageCopy,
 			"outscale_vpn_connection":            resourceOutscaleVpnConnection,
 			"outscale_vpn_gateway":               resourceOutscaleVpnGateway,
+			"outscale_image_register":            resourceOutscaleImageRegister,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                       resourceOutscaleOApiVM,
