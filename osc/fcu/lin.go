@@ -406,3 +406,47 @@ func (v VMOperations) DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpn
 
 	return output, nil
 }
+
+func (v VMOperations) CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpnConnectionRoute"
+	output := &CreateVpnConnectionRouteOutput{}
+
+	if input == nil {
+		input = &CreateVpnConnectionRouteInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpnConnectionRoute"
+	output := &DeleteVpnConnectionRouteOutput{}
+
+	if input == nil {
+		input = &DeleteVpnConnectionRouteInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}

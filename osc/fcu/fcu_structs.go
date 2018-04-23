@@ -6381,3 +6381,137 @@ func (s DetachVpnGatewayOutput) String() string {
 func (s DetachVpnGatewayOutput) GoString() string {
 	return s.String()
 }
+
+type CreateVpnConnectionRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// The CIDR block associated with the local subnet of the customer network.
+	//
+	// DestinationCidrBlock is a required field
+	DestinationCidrBlock *string `type:"string" required:"true"`
+
+	// The ID of the VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateVpnConnectionRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpnConnectionRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpnConnectionRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpnConnectionRouteInput"}
+	if s.DestinationCidrBlock == nil {
+		invalidParams.Add(request.NewErrParamRequired("DestinationCidrBlock"))
+	}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *CreateVpnConnectionRouteInput) SetDestinationCidrBlock(v string) *CreateVpnConnectionRouteInput {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *CreateVpnConnectionRouteInput) SetVpnConnectionId(v string) *CreateVpnConnectionRouteInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpnConnectionRouteOutput
+type CreateVpnConnectionRouteOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateVpnConnectionRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpnConnectionRouteOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteVpnConnectionRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// The CIDR block associated with the local subnet of the customer network.
+	//
+	// DestinationCidrBlock is a required field
+	DestinationCidrBlock *string `type:"string" required:"true"`
+
+	// The ID of the VPN connection.
+	//
+	// VpnConnectionId is a required field
+	VpnConnectionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVpnConnectionRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpnConnectionRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpnConnectionRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpnConnectionRouteInput"}
+	if s.DestinationCidrBlock == nil {
+		invalidParams.Add(request.NewErrParamRequired("DestinationCidrBlock"))
+	}
+	if s.VpnConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpnConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
+func (s *DeleteVpnConnectionRouteInput) SetDestinationCidrBlock(v string) *DeleteVpnConnectionRouteInput {
+	s.DestinationCidrBlock = &v
+	return s
+}
+
+// SetVpnConnectionId sets the VpnConnectionId field's value.
+func (s *DeleteVpnConnectionRouteInput) SetVpnConnectionId(v string) *DeleteVpnConnectionRouteInput {
+	s.VpnConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpnConnectionRouteOutput
+type DeleteVpnConnectionRouteOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteVpnConnectionRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpnConnectionRouteOutput) GoString() string {
+	return s.String()
+}
