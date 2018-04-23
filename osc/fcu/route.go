@@ -2,7 +2,9 @@ package fcu
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/http/httputil"
 )
 
 func (v VMOperations) CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error) {
@@ -150,6 +152,12 @@ func (v VMOperations) EnableVgwRoutePropagation(input *EnableVgwRoutePropagation
 	if err != nil {
 		return nil, err
 	}
+
+	requestDump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
 
 	err = v.client.Do(context.TODO(), req, output)
 	if err != nil {

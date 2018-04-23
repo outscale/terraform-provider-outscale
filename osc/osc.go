@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -152,6 +153,12 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
+
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
 
 	err = c.checkResponse(resp)
 	if err != nil {
