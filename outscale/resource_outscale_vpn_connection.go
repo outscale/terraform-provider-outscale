@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -137,15 +138,31 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 
 	cgid, ok := d.GetOk("customer_gateway_id")
 	vpngid, ok2 := d.GetOk("vpn_gateway_id")
+	typev, ok3 := d.GetOk("type")
+	options, ok4 := d.GetOk("options")
 
-	if !ok && !ok2 {
-		return fmt.Errorf("please provide the required attributes customer_gateway_id and vpn_gateway_id")
+	if !ok && !ok2 && ok3 {
+		return fmt.Errorf("please provide the required attributes customer_gateway_id, vpn_gateway_id and type")
 	}
 
 	createOpts := &fcu.CreateVpnConnectionInput{
 		CustomerGatewayId: aws.String(cgid.(string)),
-		Type:              aws.String("ipsec.1"),
+		Type:              aws.String(typev.(string)),
 		VpnGatewayId:      aws.String(vpngid.(string)),
+	}
+
+	if ok4 {
+		opt := options.(map[string]interface{})
+		option := opt["static_routes_only"]
+
+		b, err := strconv.ParseBool(option.(string))
+		if err != nil {
+			return err
+		}
+
+		createOpts.Options = &fcu.VpnConnectionOptionsSpecification{
+			StaticRoutesOnly: aws.Bool(b),
+		}
 	}
 
 	var resp *fcu.CreateVpnConnectionOutput
