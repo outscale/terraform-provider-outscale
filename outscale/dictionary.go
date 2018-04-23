@@ -45,6 +45,7 @@ func init() {
 			"outscale_vpn_connection":            resourceOutscaleVpnConnection,
 			"outscale_vpn_gateway":               resourceOutscaleVpnGateway,
 			"outscale_vpn_gateway_link":          resourceOutscaleVpnGatewayLink,
+			"outscale_vpn_connection_route":      resourceOutscaleVpnConnectionRoute,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                       resourceOutscaleOApiVM,

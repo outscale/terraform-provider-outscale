@@ -6,25 +6,20 @@ description: |-
   Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported.
 ---
 
-# outscale_vm
+# outscale_volume
 
   Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
 
 ## Example Usage
 
 ```hcl
-data "outscale_volume" "outscale_volume" {
-  most_recent = true
-
-  filter {
-    name   = "volume-type"
-    values = ["gp2"]
-  }
-
-  filter {
-    name   = "tag:Name"
-    values = ["Example"]
-  }
+resource "outscale_volume" "example" {
+    availability_zone = "eu-west-2a"
+    volume_type = "gp2"
+    size = 40
+    tags {
+        Name = "External Volume"
+    }
 }
 ```
 
@@ -38,7 +33,7 @@ The following arguments are supported:
 * `snapshot_id` - (Optional) The ID of the snapshot from which you want to create the volume.
 * `volume_type` - (Optional) The type of volume you want to create (io1 | gp2 | standard | sc1 | st1).
 
-See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale Images](http://docs.outscale.com/api_fcu/operations/Action_CreateImage_get.html#_api_fcu-action_createimage_get).
 
 
 ## Attributes Reference
@@ -53,6 +48,6 @@ The following attributes are exported:
 * `status` - The state of the volume (creating| available| in-use| deleting| error).
 * `tag_set` - One or more tags associated with the volume.
 * `volume_id` - The ID of the volume.
-* `volume_type` - The type of the volume (standard | gp2 | io1 | sc1 | st1).
+* `volume_type` - The type of the volume (`standard` | `gp2` | `io1` | `sc1` | `st1`).
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/definitions/Volume.html#_api_fcu-volume).
+See detailed information in [Volume Description](http://docs.outscale.com/api_fcu/definitions/Volume.html#_api_fcu-volume).

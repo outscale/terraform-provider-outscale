@@ -109,6 +109,14 @@ func testAccCheckRouteTableAssociationExists(n string, v *fcu.RouteTable) resour
 			return fmt.Errorf("No ID is set")
 		}
 
+		val, ok := rs.Primary.Attributes["request_id"]
+
+		fmt.Printf("[DEBUG] Request ID => %s, %s, %t", rs.Primary.Attributes["request_id"], val, ok)
+
+		if val, ok := rs.Primary.Attributes["request_id"]; !ok && val == "" {
+			return fmt.Errorf("No request id set")
+		}
+
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 		var resp *fcu.DescribeRouteTablesOutput

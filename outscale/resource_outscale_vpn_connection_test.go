@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,17 @@ import (
 )
 
 func TestAccOutscaleVpnConnection_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 
@@ -42,6 +55,16 @@ func TestAccOutscaleVpnConnection_basic(t *testing.T) {
 }
 
 func TestAccOutscaleVpnConnection_withoutStaticRoutes(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
@@ -69,6 +92,16 @@ func TestAccOutscaleVpnConnection_withoutStaticRoutes(t *testing.T) {
 }
 
 func TestAccOutscaleVpnConnection_disappears(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 

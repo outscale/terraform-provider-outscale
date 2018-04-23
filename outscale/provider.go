@@ -83,6 +83,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connection":            GetResource(fcu, "outscale_vpn_connection")(),
 			"outscale_vpn_gateway":               GetResource(fcu, "outscale_vpn_gateway")(),
 			"outscale_vpn_gateway_link":          GetResource(fcu, "outscale_vpn_gateway_link")(),
+			"outscale_vpn_connection_route":      GetResource(fcu, "outscale_vpn_connection_route")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),

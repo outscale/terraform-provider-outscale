@@ -13,16 +13,7 @@ NOTE: outscale_public_ip is useful in scenarios where Public IPs are either pre-
 ## Example Usage
 
 ```hcl
-
-resource "outscale_vm" "basic" {
-    image_id = "ami-8a6a0120"
-    instance_type = "t2.micro"
-    key_name = "terraform-basic"
-}
-resource "outscale_public_ip" "bar" {
-    instance_id = "${outscale_vm.basic.id}"
-}
-
+resource "outscale_public_ip" "bar" {}
 ```
 
 ## Argument Reference
@@ -33,13 +24,14 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-* `allocation_id` - (Optional) The ID that represents the allocation of the EIP for use with instances in a VPC.
-* `association_id` - (Optional) The association ID for the EIP.
 * `domain` - (Optional) The type of platform in which you can use the EIP.
-* `instance_id` - (Optional) The ID of the instance. This is required for Outscale VM-Classic. For Outscale VM-VPC, you can specify either the instance ID or the network interface ID, but not both. The operation fails if you specify an instance ID unless exactly one network interface is attached.
-* `network_interface_id` - (Optional) The ID of the network interface. If the instance has more than one network interface, you must specify a network interface ID.
-* `network_interface_owner_id` - (Optional) The account ID of the owner.
-* `private_ip_address` - (Optional) The primary or secondary private IP address to associate with the Public IP address. If no private IP address is specified, the Public IP address is associated with the primary private IP address.
-* `public_ip` - (Optional) The External IP address.
+
+## Attribute reference
+
+* `allocation_id` - The ID that represents the allocation of the EIP for use with instances in a VPC.
+* `domain` - The type of platform in which you can use the EIP.
+* `public_ip` - The External IP address.
+* `request_id` - The ID of the request.
+
 
 See detailed information in [FCU Address](http://docs.outscale.com/api_fcu/definitions/Address.html#_api_fcu-address).

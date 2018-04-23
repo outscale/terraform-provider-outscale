@@ -25,12 +25,12 @@ data "outscale_public_ip" "by_public_ip" {
 
 The following arguments are supported:
 
-* `AllocationId` - (Optional) One allocation IDs.
-* `Filter.N` - (Optional) One or more filters.
-* `PublicIp` - (Optional) One External IP address.
+* `allocation_id` - (Optional) One allocation IDs.
+* `filter` - (Optional) One or more filters.
+* `public_ip` - (Optional) One External IP address.
 
 
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Outscale datasource Public IP](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
 
 ## Filters
 
@@ -52,7 +52,14 @@ Use the Filter.N parameter to filter the described instances on the following pr
 
 The following attributes are exported:
 
+* `allocation_id` - The ID of the allocation.
+* `association_id` - The association ID for the EIP.
+* `domain` - Whether the EIP is for use in the public Cloud or in a VPC.
+* `instance_id` - The ID of the instance the address is associated with (if any).
+* `network_interface_id` - The ID of the network interface the address is associated with (if any).
+* `network_interface_owner_id` - The account ID of the owner.
+* `private_ip_address` - The private IP address associated with the EIP.
+* `public_ip` - The EIP.
 * `request_id` - The ID of the request.
-* `address_set` - Information about one External IP address.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Describe datasources Public IP](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
