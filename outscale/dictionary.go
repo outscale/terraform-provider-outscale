@@ -44,6 +44,7 @@ func init() {
 			"outscale_dhcp_option_link":          resourceOutscaleDHCPOptionLink,
 			"outscale_vpn_connection":            resourceOutscaleVpnConnection,
 			"outscale_vpn_gateway":               resourceOutscaleVpnGateway,
+			"outscale_vpn_gateway_link":          resourceOutscaleVpnGatewayLink,
 			"outscale_vpn_connection_route":      resourceOutscaleVpnConnectionRoute,
 		},
 		"oapi": ResourceMap{
@@ -101,7 +102,9 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleRouteTables,
+			"outscale_vpn_gateway":           dataSourceOutscaleVpnGateway,
 			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
+			"outscale_vpn_gateways":          dataSourceOutscaleVpnGateways,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

@@ -505,6 +505,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 
 	instancesIds, instancesIdsOk := d.GetOk("instance_id")
 
+	if !filtersOk && !instancesIdsOk {
+		return fmt.Errorf("One of instance_id or filters must be assigned")
+	}
+
 	if instancesIdsOk {
 		var ids []*string
 
