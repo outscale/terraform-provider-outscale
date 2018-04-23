@@ -19,13 +19,16 @@ func datasourceOutscaleVolumes() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
+			"volume_id": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 			"volume_set": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						//Schema: map[string]*schema.Schema{
-						// Arguments
 						"availability_zone": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -117,12 +120,21 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	filters, filtersOk := d.GetOk("filter")
 	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
+	if !filtersOk && !VolumeIdsOk {
+		return fmt.Errorf("One of volume_id or filters must be assigned")
+	}
+
 	params := &fcu.DescribeVolumesInput{}
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if VolumeIdsOk {
-		params.VolumeIds = []*string{aws.String(VolumeIds.(string))}
+		var ids []*string
+
+		for _, id := range VolumeIds.([]interface{}) {
+			ids = append(ids, aws.String(id.(string)))
+		}
+		params.VolumeIds = ids
 	}
 
 	var resp *fcu.DescribeVolumesOutput

@@ -46,6 +46,7 @@ func init() {
 			"outscale_vpn_gateway":                   resourceOutscaleVpnGateway,
 			"outscale_vpn_connection_route":          resourceOutscaleVpnConnectionRoute,
 			"outscale_vpn_gateway_route_propagation": resourceOutscaleVpnGatewayRoutePropagation,
+			"outscale_vpn_gateway_link":              resourceOutscaleVpnGatewayLink,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                       resourceOutscaleOApiVM,
@@ -102,7 +103,9 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleCustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleRouteTables,
+			"outscale_vpn_gateway":           dataSourceOutscaleVpnGateway,
 			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
+			"outscale_vpn_gateways":          dataSourceOutscaleVpnGateways,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

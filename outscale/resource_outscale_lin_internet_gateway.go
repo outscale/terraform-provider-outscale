@@ -1,7 +1,7 @@
 package outscale
 
 import (
-	"log"
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,10 +27,10 @@ func resourceOutscaleLinInternetGateway() *schema.Resource {
 func resourceOutscaleLinInternetGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	log.Println("[DEBUG] Creating LIN Internet Gateway")
+	fmt.Println("[DEBUG] Creating LIN Internet Gateway")
 	r, err := conn.VM.CreateInternetGateway(nil)
 	if err != nil {
-		log.Printf("[DEBUG] Error creating LIN Internet Gateway %s", err)
+		fmt.Printf("[DEBUG] Error creating LIN Internet Gateway %s", err)
 
 		return err
 	}
@@ -45,7 +45,7 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 
 	id := d.Id()
 
-	log.Printf("[DEBUG] Reading LIN Internet Gateway id (%s)", id)
+	fmt.Printf("[DEBUG] Reading LIN Internet Gateway id (%s)", id)
 
 	req := &fcu.DescribeInternetGatewaysInput{
 		InternetGatewayIds: []*string{aws.String(id)},
@@ -65,11 +65,11 @@ func resourceOutscaleLinInternetGatewayRead(d *schema.ResourceData, meta interfa
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading LIN Internet Gateway id (%s)", err)
+		fmt.Printf("[DEBUG] Error reading LIN Internet Gateway id (%s)", err)
 		return err
 	}
 
-	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
+	fmt.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
 	d.Set("request_id", resp.RequestId)
 	d.Set("internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
@@ -85,7 +85,7 @@ func resourceOutscaleLinInternetGatewayDelete(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).FCU
 
 	id := d.Id()
-	log.Printf("[DEBUG] Deleting LIN Internet Gateway id (%s)", id)
+	fmt.Printf("[DEBUG] Deleting LIN Internet Gateway id (%s)", id)
 
 	req := &fcu.DeleteInternetGatewayInput{
 		InternetGatewayId: &id,
@@ -104,7 +104,7 @@ func resourceOutscaleLinInternetGatewayDelete(d *schema.ResourceData, meta inter
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error deleting LIN Internet Gateway id (%s)", err)
+		fmt.Printf("[DEBUG] Error deleting LIN Internet Gateway id (%s)", err)
 		return err
 	}
 

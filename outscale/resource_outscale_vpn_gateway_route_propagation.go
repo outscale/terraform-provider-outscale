@@ -65,6 +65,7 @@ func resourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 	}
 
 	d.SetId(fmt.Sprintf("%s_%s", gwID, rtID))
+	d.Set("request_id", "")
 	return nil
 }
 
@@ -111,7 +112,7 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-			RouteTableIds: []*string{aws.String(d.Id())},
+			RouteTableIds: []*string{aws.String(rtID)},
 		})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
