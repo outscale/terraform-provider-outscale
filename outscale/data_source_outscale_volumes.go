@@ -120,6 +120,10 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	filters, filtersOk := d.GetOk("filter")
 	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
+	if !filtersOk && !VolumeIdsOk {
+		return fmt.Errorf("One of volume_id or filters must be assigned")
+	}
+
 	params := &fcu.DescribeVolumesInput{}
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))

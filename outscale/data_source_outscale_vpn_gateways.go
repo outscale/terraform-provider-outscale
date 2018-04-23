@@ -73,6 +73,10 @@ func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{})
 	filters, filtersOk := d.GetOk("filter")
 	vpn, vpnOk := d.GetOk("vpn_gateway_id")
 
+	if !filtersOk && !vpnOk {
+		return fmt.Errorf("One of vpn_gateway_id or filters must be assigned")
+	}
+
 	params := &fcu.DescribeVpnGatewaysInput{}
 
 	if filtersOk {
