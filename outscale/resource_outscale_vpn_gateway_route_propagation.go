@@ -65,7 +65,6 @@ func resourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 	}
 
 	d.SetId(fmt.Sprintf("%s_%s", gwID, rtID))
-	d.Set("request_id", "")
 	return nil
 }
 
