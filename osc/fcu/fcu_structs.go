@@ -6669,3 +6669,153 @@ func (s *AvailabilityZoneMessage) SetMessage(v string) *AvailabilityZoneMessage 
 	s.Message = &v
 	return s
 }
+
+type DescribePrefixListsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * prefix-list-id: The ID of a prefix list.
+	//
+	//    * prefix-list-name: The name of a prefix list.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value specified is greater than 1000, we return only 1000
+	// items.
+	MaxResults *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a prior call.)
+	NextToken *string `type:"string"`
+
+	// One or more prefix list IDs.
+	PrefixListIds []*string `locationName:"PrefixListId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribePrefixListsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePrefixListsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribePrefixListsInput) SetDryRun(v bool) *DescribePrefixListsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribePrefixListsInput) SetFilters(v []*Filter) *DescribePrefixListsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribePrefixListsInput) SetMaxResults(v int64) *DescribePrefixListsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePrefixListsInput) SetNextToken(v string) *DescribePrefixListsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefixListIds sets the PrefixListIds field's value.
+func (s *DescribePrefixListsInput) SetPrefixListIds(v []*string) *DescribePrefixListsInput {
+	s.PrefixListIds = v
+	return s
+}
+
+// Contains the output of DescribePrefixLists.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePrefixListsResult
+type DescribePrefixListsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use when requesting the next set of items. If there are no additional
+	// items to return, the string is empty.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// All available prefix lists.
+	PrefixLists []*PrefixList `locationName:"prefixListSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribePrefixListsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePrefixListsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePrefixListsOutput) SetNextToken(v string) *DescribePrefixListsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefixLists sets the PrefixLists field's value.
+func (s *DescribePrefixListsOutput) SetPrefixLists(v []*PrefixList) *DescribePrefixListsOutput {
+	s.PrefixLists = v
+	return s
+}
+
+type PrefixList struct {
+	_ struct{} `type:"structure"`
+
+	// The IP address range of the AWS service.
+	Cidrs []*string `locationName:"cidrSet" locationNameList:"item" type:"list"`
+
+	// The ID of the prefix.
+	PrefixListId *string `locationName:"prefixListId" type:"string"`
+
+	// The name of the prefix.
+	PrefixListName *string `locationName:"prefixListName" type:"string"`
+}
+
+// String returns the string representation
+func (s PrefixList) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PrefixList) GoString() string {
+	return s.String()
+}
+
+// SetCidrs sets the Cidrs field's value.
+func (s *PrefixList) SetCidrs(v []*string) *PrefixList {
+	s.Cidrs = v
+	return s
+}
+
+// SetPrefixListId sets the PrefixListId field's value.
+func (s *PrefixList) SetPrefixListId(v string) *PrefixList {
+	s.PrefixListId = &v
+	return s
+}
+
+// SetPrefixListName sets the PrefixListName field's value.
+func (s *PrefixList) SetPrefixListName(v string) *PrefixList {
+	s.PrefixListName = &v
+	return s
+}
