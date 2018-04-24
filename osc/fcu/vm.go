@@ -99,6 +99,8 @@ type VMService interface {
 	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
 	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
+	CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error)
+	DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1324,4 +1326,52 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 	}
 
 	return output, nil
+}
+
+func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateImageExportTask"
+	output := &CreateInstanceExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateInstanceExportTaskInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error) {
+
+	inURL := "/"
+	endpoint := "DescribeImageExportTasks"
+	output := &DescribeImageExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeImageExportTasksInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }
