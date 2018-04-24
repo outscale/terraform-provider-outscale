@@ -110,6 +110,7 @@ func init() {
 			"outscale_prefix_list":           dataSourceOutscalePrefixList,
 			"outscale_quota":                 dataSourceOutscaleQuota,
 			"outscale_quotas":                dataSourceOutscaleQuotas,
+			"outscale_prefix_lists":          dataSourceOutscalePrefixLists,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
