@@ -1376,7 +1376,7 @@ func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*Des
 
 func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
 	inURL := "/"
-	endpoint := "DescribePrefixLists"
+	endpoint := "DescribeRegions"
 	output := &DescribeRegionsOutput{}
 
 	if input == nil {

@@ -14,7 +14,7 @@ func TestAccDataSourceOutscaleRegions(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleRegionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_regions.by_name", "region_info.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_regions.by_name_current", "region_info.#", "1"),
 				),
 			},
 		},
