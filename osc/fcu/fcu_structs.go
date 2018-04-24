@@ -6819,3 +6819,110 @@ func (s *PrefixList) SetPrefixListName(v string) *PrefixList {
 	s.PrefixListName = &v
 	return s
 }
+
+type DescribeRegionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * endpoint - The endpoint of the region (for example, ec2.us-east-1.amazonaws.com).
+	//
+	//    * region-name - The name of the region (for example, us-east-1).
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The names of one or more regions.
+	RegionNames []*string `locationName:"RegionName" locationNameList:"RegionName" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeRegionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRegionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeRegionsInput) SetDryRun(v bool) *DescribeRegionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeRegionsInput) SetFilters(v []*Filter) *DescribeRegionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetRegionNames sets the RegionNames field's value.
+func (s *DescribeRegionsInput) SetRegionNames(v []*string) *DescribeRegionsInput {
+	s.RegionNames = v
+	return s
+}
+
+// Contains the output of DescribeRegions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeRegionsResult
+type DescribeRegionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more regions.
+	Regions []*Region `locationName:"regionInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeRegionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRegionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetRegions sets the Regions field's value.
+func (s *DescribeRegionsOutput) SetRegions(v []*Region) *DescribeRegionsOutput {
+	s.Regions = v
+	return s
+}
+
+type Region struct {
+	_ struct{} `type:"structure"`
+
+	// The region service endpoint.
+	Endpoint *string `locationName:"regionEndpoint" type:"string"`
+
+	// The name of the region.
+	RegionName *string `locationName:"regionName" type:"string"`
+}
+
+// String returns the string representation
+func (s Region) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Region) GoString() string {
+	return s.String()
+}
+
+// SetEndpoint sets the Endpoint field's value.
+func (s *Region) SetEndpoint(v string) *Region {
+	s.Endpoint = &v
+	return s
+}
+
+// SetRegionName sets the RegionName field's value.
+func (s *Region) SetRegionName(v string) *Region {
+	s.RegionName = &v
+	return s
+}
