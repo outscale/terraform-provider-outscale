@@ -106,6 +106,7 @@ func init() {
 			"outscale_vpn_gateway":           dataSourceOutscaleVpnGateway,
 			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
 			"outscale_vpn_gateways":          dataSourceOutscaleVpnGateways,
+			"outscale_sub_region":            dataSourceOutscaleAvailabilityZone,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
