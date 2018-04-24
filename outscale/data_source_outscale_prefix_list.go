@@ -81,6 +81,10 @@ func dataSourceOutscalePrefixListRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("no matching prefix list found; the prefix list ID or name may be invalid or not exist in the current region")
 	}
 
+	if len(resp.PrefixLists) > 1 {
+		return fmt.Errorf("multiple Prefix matched; use additional constraints to reduce matches to a single Prefix")
+	}
+
 	pl := resp.PrefixLists[0]
 
 	d.SetId(*pl.PrefixListId)

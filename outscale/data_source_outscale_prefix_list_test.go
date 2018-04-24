@@ -33,10 +33,10 @@ func testAccDataSourceOutscalePrefixListCheck(name string) resource.TestCheckFun
 
 		attr := rs.Primary.Attributes
 
-		if attr["prefix_list_name"] != "com.amazonaws.us-west-2.s3" {
+		if attr["prefix_list_name"] != "com.outscale.eu-west-2.osu" {
 			return fmt.Errorf("bad name %s", attr["prefix_list_name"])
 		}
-		if attr["prefix_list_id"] != "pl-68a54001" {
+		if attr["prefix_list_id"] != "pl-a14a8cdc" {
 			return fmt.Errorf("bad id %s", attr["prefix_list_id"])
 		}
 
@@ -45,11 +45,11 @@ func testAccDataSourceOutscalePrefixListCheck(name string) resource.TestCheckFun
 			err           error
 		)
 
-		if cidrBlockSize, err = strconv.Atoi(attr["cidr_blocks.#"]); err != nil {
+		if cidrBlockSize, err = strconv.Atoi(attr["cidr_set.#"]); err != nil {
 			return err
 		}
 		if cidrBlockSize < 1 {
-			return fmt.Errorf("cidr_blocks seem suspiciously low: %d", cidrBlockSize)
+			return fmt.Errorf("cidr_set seem suspiciously low: %d", cidrBlockSize)
 		}
 
 		return nil
@@ -58,6 +58,6 @@ func testAccDataSourceOutscalePrefixListCheck(name string) resource.TestCheckFun
 
 const testAccDataSourceOutscalePrefixListConfig = `
 data "outscale_prefix_list" "s3_by_id" {
-  prefix_list_id = "pl-68a54001"
+  prefix_list_id = "pl-a14a8cdc"
 }
 `
