@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -42,7 +43,7 @@ func resourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 	gwID := d.Get("gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
 
-	fmt.Printf("\n\n[INFO] Enabling VGW propagation from %s to %s", gwID, rtID)
+	log.Printf("\n\n[INFO] Enabling VGW propagation from %s to %s", gwID, rtID)
 
 	var err error
 
@@ -74,7 +75,7 @@ func resourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 	gwID := d.Get("gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
 
-	fmt.Printf("\n\n[INFO] Disabling VGW propagation from %s to %s", gwID, rtID)
+	log.Printf("\n\n[INFO] Disabling VGW propagation from %s to %s", gwID, rtID)
 
 	var err error
 
@@ -106,7 +107,7 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 	gwID := d.Get("gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
 
-	fmt.Printf("\n\n[INFO] Reading route table %s to check for VPN gateway %s", rtID, gwID)
+	log.Printf("\n\n[INFO] Reading route table %s to check for VPN gateway %s", rtID, gwID)
 	var resp *fcu.DescribeRouteTablesOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -135,7 +136,7 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 		}
 	}
 	if !exists {
-		fmt.Printf("\n\n[INFO] %s is no longer propagating to %s, so dropping route propagation from state", rtID, gwID)
+		log.Printf("\n\n[INFO] %s is no longer propagating to %s, so dropping route propagation from state", rtID, gwID)
 		d.SetId("")
 		return nil
 	}
