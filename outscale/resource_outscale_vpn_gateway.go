@@ -48,6 +48,10 @@ func resourceOutscaleVpnGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"vpn_gateway_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"vpc_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -151,6 +155,7 @@ func resourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) er
 		vs[k] = vp
 	}
 
+	d.Set("vpn_gateway_id", vpnGateway.VpnGatewayId)
 	d.Set("attachments", vs)
 	d.Set("state", vpnGateway.State)
 	d.Set("tag_set", tagsToMap(vpnGateway.Tags))
