@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"time"
@@ -62,7 +63,7 @@ func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interfa
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 
-	fmt.Printf("[DEBUG] DescribeAvailabilityZones %s\n", req)
+	log.Printf("[DEBUG] DescribeAvailabilityZones %s\n", req)
 
 	var resp *fcu.DescribeAvailabilityZonesOutput
 	var err error

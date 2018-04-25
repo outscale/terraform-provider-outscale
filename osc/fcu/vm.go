@@ -103,6 +103,7 @@ type VMService interface {
 	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
 	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
+	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1381,7 +1382,27 @@ func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuota
 
 	if input == nil {
 		input = &DescribeQuotasInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeRegions"
+	output := &DescribeRegionsOutput{}
+
+	if input == nil {
+		input = &DescribeRegionsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -59,7 +60,7 @@ func dataSourceOutscalePrefixListRead(d *schema.ResourceData, meta interface{}) 
 		params.PrefixListIds = aws.StringSlice([]string{prefix.(string)})
 	}
 
-	fmt.Printf("[DEBUG] DescribePrefixLists %s\n", params)
+	log.Printf("[DEBUG] DescribePrefixLists %s\n", params)
 
 	var resp *fcu.DescribePrefixListsOutput
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
