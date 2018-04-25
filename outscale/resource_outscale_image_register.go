@@ -188,6 +188,11 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	image_location, image_locationOk := d.GetOk("image_location")
 	name, nameOk := d.GetOk("name")
 	root_device_name, root_device_nameOk := d.GetOk("root_device_name")
+	instanceID, instanceIDOk := d.GetOk("instance_id")
+
+	if !nameOk && !instanceIDOk {
+		return fmt.Errorf("please provide the required attributes name and instance_id")
+	}
 
 	if architectureOk {
 		request.Architecture = aws.String(architecture.(string))
@@ -227,12 +232,12 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	if image_locationOk {
 		request.ImageLocation = aws.String(image_location.(string))
 	}
-	if nameOk {
-		request.Name = aws.String(name.(string))
-	}
 	if root_device_nameOk {
 		request.RootDeviceName = aws.String(root_device_name.(string))
 	}
+
+	request.Name = aws.String(name.(string))
+	request.InstanceId = aws.String(instanceID.(string))
 
 	var registerResp *fcu.RegisterImageOutput
 	var err error
@@ -250,8 +255,7 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	})
 
 	if err != nil {
-
-		return fmt.Errorf("[DEBUG] Error register image %s", err)
+		return fmt.Errorf("Error register image %s", err)
 	}
 
 	d.SetId(*registerResp.ImageId)
@@ -286,7 +290,7 @@ func resourceImageRegisterDelete(d *schema.ResourceData, meta interface{}) error
 
 	if err != nil {
 
-		return fmt.Errorf("[DEBUG] Error Deregister image %s", err)
+		return fmt.Errorf("Error Deregister image %s", err)
 	}
 	return nil
 }

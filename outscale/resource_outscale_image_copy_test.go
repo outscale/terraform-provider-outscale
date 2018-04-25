@@ -202,7 +202,6 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 var testAccOutscaleImageCopyConfig = `
 resource "outscale_vm" "outscale_vm" {
     count = 1
-
     image_id                    = "ami-880caa66"
     instance_type               = "c4.large"
 
@@ -211,7 +210,6 @@ resource "outscale_vm" "outscale_vm" {
 resource "outscale_image" "outscale_image" {
     name        = "image_${outscale_vm.outscale_vm.id}"
     instance_id = "${outscale_vm.outscale_vm.id}"
-    #no_reboot   = "false"                 # default value
 }
 
 resource "outscale_image_copy" "test" {

@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func TestAccOutscaleImageRegister_basic(t *testing.T) {
+	r := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -20,9 +22,9 @@ func TestAccOutscaleImageRegister_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleImageRegisterDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleImageRegisterConfig,
+				Config: testAccOutscaleImageRegisterConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImageRegisterExists("outscale_image_register.test"),
+					testAccCheckOutscaleImageRegisterExists("outscale_image_register.outscale_image_register"),
 				),
 			},
 		},
@@ -82,17 +84,15 @@ func testAccCheckOutscaleImageRegisterExists(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccOutscaleImageRegisterConfig = `
+func testAccOutscaleImageRegisterConfig(r int) string {
+	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_vm" {
     count = 1
-
     image_id                    = "ami-880caa66"
     instance_type               = "c4.large"
 }
-
-resource "outscale_image_register" "test" {
-    count = 1
-    name        = "image_${outscale_vm.outscale_vm.id}"
+resource "outscale_image_register" "outscale_image_register" {
+    name        = "image_%d"
     instance_id = "${outscale_vm.outscale_vm.id}"
-	}
-`
+}`, r)
+}
