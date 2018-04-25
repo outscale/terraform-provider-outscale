@@ -102,6 +102,7 @@ type VMService interface {
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
 	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
+	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 }
 
@@ -1374,6 +1375,27 @@ func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*Des
 	return output, nil
 }
 
+func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeQuotas"
+	output := &DescribeQuotasOutput{}
+
+	if input == nil {
+		input = &DescribeQuotasInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeRegions"
@@ -1381,7 +1403,6 @@ func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeReg
 
 	if input == nil {
 		input = &DescribeRegionsInput{}
-
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
