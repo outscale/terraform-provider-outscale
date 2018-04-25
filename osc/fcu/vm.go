@@ -1331,10 +1331,10 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error) {
 	inURL := "/"
 	endpoint := "CreateImageExportTask"
-	output := &CreateInstanceExportTaskOutput{}
+	output := &CreateImageExportTaskOutput{}
 
 	if input == nil {
-		input = &CreateInstanceExportTaskInput{}
+		input = &CreateImageExportTaskInput{}
 
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
@@ -1352,7 +1352,6 @@ func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (
 }
 
 func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error) {
-
 	inURL := "/"
 	endpoint := "DescribeImageExportTasks"
 	output := &DescribeImageExportTasksOutput{}

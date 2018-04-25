@@ -6382,324 +6382,56 @@ func (s DetachVpnGatewayOutput) GoString() string {
 	return s.String()
 }
 
-// Describes an instance export task.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportTask
-type ExportTask struct {
-	_ struct{} `type:"structure"`
-
-	// A description of the resource being exported.
-	Description *string `locationName:"description" type:"string"`
-
-	// The ID of the export task.
-	ExportTaskId *string `locationName:"exportTaskId" type:"string"`
-
-	// Information about the export task.
-	ExportToS3Task *ExportToS3Task `locationName:"exportToS3" type:"structure"`
-
-	// Information about the instance to export.
-	InstanceExportDetails *InstanceExportDetails `locationName:"instanceExport" type:"structure"`
-
-	// The state of the export task.
-	State *string `locationName:"state" type:"string" enum:"ExportTaskState"`
-
-	// The status message related to the export task.
-	StatusMessage *string `locationName:"statusMessage" type:"string"`
+type CreateImageExportTaskInput struct {
+	_           struct{}                           `type:"structure"`
+	ExportToOsu *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	ImageId     *string                            `locationName:"imageId" type:"string"`
 }
 
-// String returns the string representation
-func (s ExportTask) String() string {
-	return awsutil.Prettify(s)
+type ImageExportToOsuTaskSpecification struct {
+	_               struct{}                           `type:"structure"`
+	DiskImageFormat *string                            `locationName:"diskImageFormat" type:"string"`
+	OsuAkSk         *ExportToOsuAccessKeySpecification `locationName:"osuAkSk" type:"structure"`
+	OsuBucket       *string                            `locationName:"osuBucket" type:"string"`
+	OsuManifestUrl  *string                            `locationName:"osuManifestUrl" type:"string"`
+	OsuPrefix       *string                            `locationName:"osuPrefix" type:"string"`
 }
 
-// GoString returns the string representation
-func (s ExportTask) GoString() string {
-	return s.String()
+type ExportToOsuAccessKeySpecification struct {
+	_         struct{} `type:"structure"`
+	AccessKey *string  `locationName:"accessKey" type:"string"`
+	SecretKey *string  `locationName:"secretKey" type:"string"`
 }
 
-// SetDescription sets the Description field's value.
-func (s *ExportTask) SetDescription(v string) *ExportTask {
-	s.Description = &v
-	return s
+type CreateImageExportTaskOutput struct {
+	_               struct{}         `type:"structure"`
+	ImageExportTask *ImageExportTask `locationName:"imageExportTask" type:"structre"`
+	RequestId       *string          `locationName:"requestId" type:"string"`
 }
 
-// SetExportTaskId sets the ExportTaskId field's value.
-func (s *ExportTask) SetExportTaskId(v string) *ExportTask {
-	s.ExportTaskId = &v
-	return s
+type ImageExportTask struct {
+	_                 struct{}                           `type:"structure"`
+	Completion        *int64                             `locationName:"completion" type:"string"`
+	ExportToOsu       *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structre"`
+	ImageExport       *ImageExport                       `locationName:"imageExport" type:"structre"`
+	ImageExportTaskId *string                            `locationName:"imageExportTaskId" type:"string"`
+	ImageId           *string                            `locationName:"imageId" type:"string"`
+	State             *string                            `locationName:"state" type:"string"`
+	StatusMessage     *string                            `locationName:"statusMessage" type:"string"`
 }
 
-// SetExportToS3Task sets the ExportToS3Task field's value.
-func (s *ExportTask) SetExportToS3Task(v *ExportToS3Task) *ExportTask {
-	s.ExportToS3Task = v
-	return s
+type ImageExport struct {
+	_       struct{} `type:"structure"`
+	ImageId *string  `locationName:"imageId" type:"string"`
 }
 
-// SetInstanceExportDetails sets the InstanceExportDetails field's value.
-func (s *ExportTask) SetInstanceExportDetails(v *InstanceExportDetails) *ExportTask {
-	s.InstanceExportDetails = v
-	return s
+type DescribeImageExportTasksInput struct {
+	_                 struct{}  `type:"structure"`
+	ImageExportTaskId []*string `locationName:"imageExportTaskId" locationNameList:"item" type:"list"`
 }
 
-// SetState sets the State field's value.
-func (s *ExportTask) SetState(v string) *ExportTask {
-	s.State = &v
-	return s
-}
-
-// SetStatusMessage sets the StatusMessage field's value.
-func (s *ExportTask) SetStatusMessage(v string) *ExportTask {
-	s.StatusMessage = &v
-	return s
-}
-
-// Contains the parameters for CreateInstanceExportTask.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateInstanceExportTaskRequest
-type CreateInstanceExportTaskInput struct {
-	_ struct{} `type:"structure"`
-
-	// A description for the conversion task or the resource being exported. The
-	// maximum length is 255 bytes.
-	Description *string `locationName:"description" type:"string"`
-
-	// The format and location for an instance export task.
-	ExportToS3Task *ExportToS3TaskSpecification `locationName:"exportToS3" type:"structure"`
-
-	// The ID of the instance.
-	//
-	// InstanceId is a required field
-	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
-
-	// The target virtualization environment.
-	TargetEnvironment *string `locationName:"targetEnvironment" type:"string" enum:"ExportEnvironment"`
-}
-
-// String returns the string representation
-func (s CreateInstanceExportTaskInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateInstanceExportTaskInput) GoString() string {
-	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *CreateInstanceExportTaskInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "CreateInstanceExportTaskInput"}
-	if s.InstanceId == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
-// SetDescription sets the Description field's value.
-func (s *CreateInstanceExportTaskInput) SetDescription(v string) *CreateInstanceExportTaskInput {
-	s.Description = &v
-	return s
-}
-
-// SetExportToS3Task sets the ExportToS3Task field's value.
-func (s *CreateInstanceExportTaskInput) SetExportToS3Task(v *ExportToS3TaskSpecification) *CreateInstanceExportTaskInput {
-	s.ExportToS3Task = v
-	return s
-}
-
-// SetInstanceId sets the InstanceId field's value.
-func (s *CreateInstanceExportTaskInput) SetInstanceId(v string) *CreateInstanceExportTaskInput {
-	s.InstanceId = &v
-	return s
-}
-
-// SetTargetEnvironment sets the TargetEnvironment field's value.
-func (s *CreateInstanceExportTaskInput) SetTargetEnvironment(v string) *CreateInstanceExportTaskInput {
-	s.TargetEnvironment = &v
-	return s
-}
-
-// Contains the output for CreateInstanceExportTask.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateInstanceExportTaskResult
-type CreateInstanceExportTaskOutput struct {
-	_ struct{} `type:"structure"`
-
-	// Information about the instance export task.
-	ExportTask *ExportTask `locationName:"exportTask" type:"structure"`
-}
-
-// String returns the string representation
-func (s CreateInstanceExportTaskOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s CreateInstanceExportTaskOutput) GoString() string {
-	return s.String()
-}
-
-// SetExportTask sets the ExportTask field's value.
-func (s *CreateInstanceExportTaskOutput) SetExportTask(v *ExportTask) *CreateInstanceExportTaskOutput {
-	s.ExportTask = v
-	return s
-}
-
-// Contains the parameters for DescribeExportTasks.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportTasksRequest
-type DescribeExportTasksInput struct {
-	_ struct{} `type:"structure"`
-
-	// One or more export task IDs.
-	ExportTaskIds []*string `locationName:"exportTaskId" locationNameList:"ExportTaskId" type:"list"`
-}
-
-// String returns the string representation
-func (s DescribeExportTasksInput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeExportTasksInput) GoString() string {
-	return s.String()
-}
-
-// SetExportTaskIds sets the ExportTaskIds field's value.
-func (s *DescribeExportTasksInput) SetExportTaskIds(v []*string) *DescribeExportTasksInput {
-	s.ExportTaskIds = v
-	return s
-}
-
-// Contains the output for DescribeExportTasks.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeExportTasksResult
-type DescribeExportTasksOutput struct {
-	_ struct{} `type:"structure"`
-
-	// Information about the export tasks.
-	ExportTasks []*ExportTask `locationName:"exportTaskSet" locationNameList:"item" type:"list"`
-}
-
-// String returns the string representation
-func (s DescribeExportTasksOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s DescribeExportTasksOutput) GoString() string {
-	return s.String()
-}
-
-// SetExportTasks sets the ExportTasks field's value.
-func (s *DescribeExportTasksOutput) SetExportTasks(v []*ExportTask) *DescribeExportTasksOutput {
-	s.ExportTasks = v
-	return s
-}
-
-// Describes the format and location for an instance export task.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportToS3Task
-type ExportToS3Task struct {
-	_ struct{} `type:"structure"`
-
-	// The container format used to combine disk images with metadata (such as OVF).
-	// If absent, only the disk image is exported.
-	ContainerFormat *string `locationName:"containerFormat" type:"string" enum:"ContainerFormat"`
-
-	// The format for the exported image.
-	DiskImageFormat *string `locationName:"diskImageFormat" type:"string" enum:"DiskImageFormat"`
-
-	// The S3 bucket for the destination image. The destination bucket must exist
-	// and grant WRITE and READ_ACP permissions to the AWS account vm-import-export@amazon.com.
-	S3Bucket *string `locationName:"s3Bucket" type:"string"`
-
-	// The encryption key for your S3 bucket.
-	S3Key *string `locationName:"s3Key" type:"string"`
-}
-
-// String returns the string representation
-func (s ExportToS3Task) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ExportToS3Task) GoString() string {
-	return s.String()
-}
-
-// SetContainerFormat sets the ContainerFormat field's value.
-func (s *ExportToS3Task) SetContainerFormat(v string) *ExportToS3Task {
-	s.ContainerFormat = &v
-	return s
-}
-
-// SetDiskImageFormat sets the DiskImageFormat field's value.
-func (s *ExportToS3Task) SetDiskImageFormat(v string) *ExportToS3Task {
-	s.DiskImageFormat = &v
-	return s
-}
-
-// SetS3Bucket sets the S3Bucket field's value.
-func (s *ExportToS3Task) SetS3Bucket(v string) *ExportToS3Task {
-	s.S3Bucket = &v
-	return s
-}
-
-// SetS3Key sets the S3Key field's value.
-func (s *ExportToS3Task) SetS3Key(v string) *ExportToS3Task {
-	s.S3Key = &v
-	return s
-}
-
-// Describes an instance export task.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ExportToS3TaskSpecification
-type ExportToS3TaskSpecification struct {
-	_ struct{} `type:"structure"`
-
-	// The container format used to combine disk images with metadata (such as OVF).
-	// If absent, only the disk image is exported.
-	ContainerFormat *string `locationName:"containerFormat" type:"string" enum:"ContainerFormat"`
-
-	// The format for the exported image.
-	DiskImageFormat *string `locationName:"diskImageFormat" type:"string" enum:"DiskImageFormat"`
-
-	// The S3 bucket for the destination image. The destination bucket must exist
-	// and grant WRITE and READ_ACP permissions to the AWS account vm-import-export@amazon.com.
-	S3Bucket *string `locationName:"s3Bucket" type:"string"`
-
-	// The image is written to a single object in the S3 bucket at the S3 key s3prefix
-	// + exportTaskId + '.' + diskImageFormat.
-	S3Prefix *string `locationName:"s3Prefix" type:"string"`
-}
-
-// String returns the string representation
-func (s ExportToS3TaskSpecification) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s ExportToS3TaskSpecification) GoString() string {
-	return s.String()
-}
-
-// SetContainerFormat sets the ContainerFormat field's value.
-func (s *ExportToS3TaskSpecification) SetContainerFormat(v string) *ExportToS3TaskSpecification {
-	s.ContainerFormat = &v
-	return s
-}
-
-// SetDiskImageFormat sets the DiskImageFormat field's value.
-func (s *ExportToS3TaskSpecification) SetDiskImageFormat(v string) *ExportToS3TaskSpecification {
-	s.DiskImageFormat = &v
-	return s
-}
-
-// SetS3Bucket sets the S3Bucket field's value.
-func (s *ExportToS3TaskSpecification) SetS3Bucket(v string) *ExportToS3TaskSpecification {
-	s.S3Bucket = &v
-	return s
-}
-
-// SetS3Prefix sets the S3Prefix field's value.
-func (s *ExportToS3TaskSpecification) SetS3Prefix(v string) *ExportToS3TaskSpecification {
-	s.S3Prefix = &v
-	return s
+type DescribeImageExportTasksOutput struct {
+	_               struct{}           `type:"structure"`
+	ImageExportTask []*ImageExportTask `locationName:"imageExportTask" locationNameList:"item" type:"list"`
+	RequestId       *string            `locationName:"requestId" type:"string"`
 }
