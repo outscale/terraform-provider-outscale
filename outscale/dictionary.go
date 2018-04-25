@@ -111,6 +111,7 @@ func init() {
 			"outscale_quota":                 dataSourceOutscaleQuota,
 			"outscale_region":                dataSourceOutscaleRegion,
 			"outscale_sub_regions":           dataSourceOutscaleAvailabilityZones,
+			"outscale_regions":               dataSourceOutscaleRegions,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
