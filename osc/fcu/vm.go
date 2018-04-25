@@ -100,6 +100,7 @@ type VMService interface {
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
 	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
+	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1309,6 +1310,29 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 
 	if input == nil {
 		input = &CreateCustomerGatewayInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeAvailabilityZones"
+	output := &DescribeAvailabilityZonesOutput{}
+
+	if input == nil {
+		input = &DescribeAvailabilityZonesInput{}
 
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

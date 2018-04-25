@@ -119,6 +119,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_gateway":           GetDatasource(fcu, "outscale_vpn_gateway")(),
 			"outscale_api_key":               GetDatasource(fcu, "outscale_api_key")(),
 			"outscale_vpn_gateways":          GetDatasource(fcu, "outscale_vpn_gateways")(),
+			"outscale_sub_region":            GetDatasource(fcu, "outscale_sub_region")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

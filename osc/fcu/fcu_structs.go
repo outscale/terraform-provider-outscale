@@ -6515,3 +6515,157 @@ func (s DeleteVpnConnectionRouteOutput) String() string {
 func (s DeleteVpnConnectionRouteOutput) GoString() string {
 	return s.String()
 }
+
+type DescribeAvailabilityZonesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * message - Information about the Availability Zone.
+	//
+	//    * region-name - The name of the region for the Availability Zone (for
+	//    example, us-east-1).
+	//
+	//    * state - The state of the Availability Zone (available | information
+	//    | impaired | unavailable).
+	//
+	//    * zone-name - The name of the Availability Zone (for example, us-east-1a).
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The names of one or more Availability Zones.
+	ZoneNames []*string `locationName:"ZoneName" locationNameList:"ZoneName" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeAvailabilityZonesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAvailabilityZonesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeAvailabilityZonesInput) SetDryRun(v bool) *DescribeAvailabilityZonesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeAvailabilityZonesInput) SetFilters(v []*Filter) *DescribeAvailabilityZonesInput {
+	s.Filters = v
+	return s
+}
+
+// SetZoneNames sets the ZoneNames field's value.
+func (s *DescribeAvailabilityZonesInput) SetZoneNames(v []*string) *DescribeAvailabilityZonesInput {
+	s.ZoneNames = v
+	return s
+}
+
+// Contains the output of DescribeAvailabiltyZones.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAvailabilityZonesResult
+type DescribeAvailabilityZonesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more Availability Zones.
+	AvailabilityZones []*AvailabilityZone `locationName:"availabilityZoneInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAvailabilityZonesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAvailabilityZonesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *DescribeAvailabilityZonesOutput) SetAvailabilityZones(v []*AvailabilityZone) *DescribeAvailabilityZonesOutput {
+	s.AvailabilityZones = v
+	return s
+}
+
+type AvailabilityZone struct {
+	_ struct{} `type:"structure"`
+
+	// Any messages about the Availability Zone.
+	Messages []*AvailabilityZoneMessage `locationName:"messageSet" locationNameList:"item" type:"list"`
+
+	// The name of the region.
+	RegionName *string `locationName:"regionName" type:"string"`
+
+	// The state of the Availability Zone.
+	State *string `locationName:"zoneState" type:"string" enum:"AvailabilityZoneState"`
+
+	// The name of the Availability Zone.
+	ZoneName *string `locationName:"zoneName" type:"string"`
+}
+
+// String returns the string representation
+func (s AvailabilityZone) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AvailabilityZone) GoString() string {
+	return s.String()
+}
+
+// SetMessages sets the Messages field's value.
+func (s *AvailabilityZone) SetMessages(v []*AvailabilityZoneMessage) *AvailabilityZone {
+	s.Messages = v
+	return s
+}
+
+// SetRegionName sets the RegionName field's value.
+func (s *AvailabilityZone) SetRegionName(v string) *AvailabilityZone {
+	s.RegionName = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *AvailabilityZone) SetState(v string) *AvailabilityZone {
+	s.State = &v
+	return s
+}
+
+// SetZoneName sets the ZoneName field's value.
+func (s *AvailabilityZone) SetZoneName(v string) *AvailabilityZone {
+	s.ZoneName = &v
+	return s
+}
+
+type AvailabilityZoneMessage struct {
+	_ struct{} `type:"structure"`
+
+	// The message about the Availability Zone.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation
+func (s AvailabilityZoneMessage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AvailabilityZoneMessage) GoString() string {
+	return s.String()
+}
+
+// SetMessage sets the Message field's value.
+func (s *AvailabilityZoneMessage) SetMessage(v string) *AvailabilityZoneMessage {
+	s.Message = &v
+	return s
+}
