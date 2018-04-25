@@ -6988,3 +6988,414 @@ func (s *Snapshot) SetVolumeSize(v int64) *Snapshot {
 func (s DeleteVpnConnectionRouteOutput) GoString() string {
 	return s.String()
 }
+
+type DescribeAvailabilityZonesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * message - Information about the Availability Zone.
+	//
+	//    * region-name - The name of the region for the Availability Zone (for
+	//    example, us-east-1).
+	//
+	//    * state - The state of the Availability Zone (available | information
+	//    | impaired | unavailable).
+	//
+	//    * zone-name - The name of the Availability Zone (for example, us-east-1a).
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The names of one or more Availability Zones.
+	ZoneNames []*string `locationName:"ZoneName" locationNameList:"ZoneName" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeAvailabilityZonesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAvailabilityZonesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeAvailabilityZonesInput) SetDryRun(v bool) *DescribeAvailabilityZonesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeAvailabilityZonesInput) SetFilters(v []*Filter) *DescribeAvailabilityZonesInput {
+	s.Filters = v
+	return s
+}
+
+// SetZoneNames sets the ZoneNames field's value.
+func (s *DescribeAvailabilityZonesInput) SetZoneNames(v []*string) *DescribeAvailabilityZonesInput {
+	s.ZoneNames = v
+	return s
+}
+
+// Contains the output of DescribeAvailabiltyZones.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeAvailabilityZonesResult
+type DescribeAvailabilityZonesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more Availability Zones.
+	AvailabilityZones []*AvailabilityZone `locationName:"availabilityZoneInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAvailabilityZonesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAvailabilityZonesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAvailabilityZones sets the AvailabilityZones field's value.
+func (s *DescribeAvailabilityZonesOutput) SetAvailabilityZones(v []*AvailabilityZone) *DescribeAvailabilityZonesOutput {
+	s.AvailabilityZones = v
+	return s
+}
+
+type AvailabilityZone struct {
+	_ struct{} `type:"structure"`
+
+	// Any messages about the Availability Zone.
+	Messages []*AvailabilityZoneMessage `locationName:"messageSet" locationNameList:"item" type:"list"`
+
+	// The name of the region.
+	RegionName *string `locationName:"regionName" type:"string"`
+
+	// The state of the Availability Zone.
+	State *string `locationName:"zoneState" type:"string" enum:"AvailabilityZoneState"`
+
+	// The name of the Availability Zone.
+	ZoneName *string `locationName:"zoneName" type:"string"`
+}
+
+// String returns the string representation
+func (s AvailabilityZone) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AvailabilityZone) GoString() string {
+	return s.String()
+}
+
+// SetMessages sets the Messages field's value.
+func (s *AvailabilityZone) SetMessages(v []*AvailabilityZoneMessage) *AvailabilityZone {
+	s.Messages = v
+	return s
+}
+
+// SetRegionName sets the RegionName field's value.
+func (s *AvailabilityZone) SetRegionName(v string) *AvailabilityZone {
+	s.RegionName = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *AvailabilityZone) SetState(v string) *AvailabilityZone {
+	s.State = &v
+	return s
+}
+
+// SetZoneName sets the ZoneName field's value.
+func (s *AvailabilityZone) SetZoneName(v string) *AvailabilityZone {
+	s.ZoneName = &v
+	return s
+}
+
+type AvailabilityZoneMessage struct {
+	_ struct{} `type:"structure"`
+
+	// The message about the Availability Zone.
+	Message *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation
+func (s AvailabilityZoneMessage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AvailabilityZoneMessage) GoString() string {
+	return s.String()
+}
+
+// SetMessage sets the Message field's value.
+func (s *AvailabilityZoneMessage) SetMessage(v string) *AvailabilityZoneMessage {
+	s.Message = &v
+	return s
+}
+
+type DescribePrefixListsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * prefix-list-id: The ID of a prefix list.
+	//
+	//    * prefix-list-name: The name of a prefix list.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value specified is greater than 1000, we return only 1000
+	// items.
+	MaxResults *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a prior call.)
+	NextToken *string `type:"string"`
+
+	// One or more prefix list IDs.
+	PrefixListIds []*string `locationName:"PrefixListId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribePrefixListsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePrefixListsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribePrefixListsInput) SetDryRun(v bool) *DescribePrefixListsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribePrefixListsInput) SetFilters(v []*Filter) *DescribePrefixListsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribePrefixListsInput) SetMaxResults(v int64) *DescribePrefixListsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePrefixListsInput) SetNextToken(v string) *DescribePrefixListsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefixListIds sets the PrefixListIds field's value.
+func (s *DescribePrefixListsInput) SetPrefixListIds(v []*string) *DescribePrefixListsInput {
+	s.PrefixListIds = v
+	return s
+}
+
+// Contains the output of DescribePrefixLists.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribePrefixListsResult
+type DescribePrefixListsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use when requesting the next set of items. If there are no additional
+	// items to return, the string is empty.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// All available prefix lists.
+	PrefixLists []*PrefixList `locationName:"prefixListSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribePrefixListsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribePrefixListsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribePrefixListsOutput) SetNextToken(v string) *DescribePrefixListsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrefixLists sets the PrefixLists field's value.
+func (s *DescribePrefixListsOutput) SetPrefixLists(v []*PrefixList) *DescribePrefixListsOutput {
+	s.PrefixLists = v
+	return s
+}
+
+type PrefixList struct {
+	_ struct{} `type:"structure"`
+
+	// The IP address range of the AWS service.
+	Cidrs []*string `locationName:"cidrSet" locationNameList:"item" type:"list"`
+
+	// The ID of the prefix.
+	PrefixListId *string `locationName:"prefixListId" type:"string"`
+
+	// The name of the prefix.
+	PrefixListName *string `locationName:"prefixListName" type:"string"`
+}
+
+// String returns the string representation
+func (s PrefixList) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PrefixList) GoString() string {
+	return s.String()
+}
+
+// SetCidrs sets the Cidrs field's value.
+func (s *PrefixList) SetCidrs(v []*string) *PrefixList {
+	s.Cidrs = v
+	return s
+}
+
+// SetPrefixListId sets the PrefixListId field's value.
+func (s *PrefixList) SetPrefixListId(v string) *PrefixList {
+	s.PrefixListId = &v
+	return s
+}
+
+// SetPrefixListName sets the PrefixListName field's value.
+func (s *PrefixList) SetPrefixListName(v string) *PrefixList {
+	s.PrefixListName = &v
+	return s
+}
+
+type DescribeRegionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * endpoint - The endpoint of the region (for example, ec2.us-east-1.amazonaws.com).
+	//
+	//    * region-name - The name of the region (for example, us-east-1).
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The names of one or more regions.
+	RegionNames []*string `locationName:"RegionName" locationNameList:"RegionName" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeRegionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRegionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeRegionsInput) SetDryRun(v bool) *DescribeRegionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeRegionsInput) SetFilters(v []*Filter) *DescribeRegionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetRegionNames sets the RegionNames field's value.
+func (s *DescribeRegionsInput) SetRegionNames(v []*string) *DescribeRegionsInput {
+	s.RegionNames = v
+	return s
+}
+
+// Contains the output of DescribeRegions.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeRegionsResult
+type DescribeRegionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more regions.
+	Regions []*Region `locationName:"regionInfo" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeRegionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeRegionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetRegions sets the Regions field's value.
+func (s *DescribeRegionsOutput) SetRegions(v []*Region) *DescribeRegionsOutput {
+	s.Regions = v
+	return s
+}
+
+type Region struct {
+	_ struct{} `type:"structure"`
+
+	// The region service endpoint.
+	Endpoint *string `locationName:"regionEndpoint" type:"string"`
+
+	// The name of the region.
+	RegionName *string `locationName:"regionName" type:"string"`
+}
+
+// String returns the string representation
+func (s Region) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Region) GoString() string {
+	return s.String()
+}
+
+// SetEndpoint sets the Endpoint field's value.
+func (s *Region) SetEndpoint(v string) *Region {
+	s.Endpoint = &v
+	return s
+}
+
+// SetRegionName sets the RegionName field's value.
+func (s *Region) SetRegionName(v string) *Region {
+	s.RegionName = &v
+	return s
+}
