@@ -12,29 +12,39 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleAvailabilityZone() *schema.Resource {
+func dataSourceOutscaleAvailabilityZones() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleAvailabilityZoneRead,
+		Read: dataSourceOutscaleAvailabilityZonesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"zone_name": &schema.Schema{
-				Type:     schema.TypeString,
+				Type:     schema.TypeList,
 				Optional: true,
-				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-
-			"region_name": &schema.Schema{
-				Type:     schema.TypeString,
+			"availability_zone_info": &schema.Schema{
+				Type:     schema.TypeList,
 				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"region_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"zone_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"zone_state": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 
 			"request_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"zone_state": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -42,7 +52,7 @@ func dataSourceOutscaleAvailabilityZone() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleAvailabilityZonesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -55,7 +65,11 @@ func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interfa
 	req := &fcu.DescribeAvailabilityZonesInput{}
 
 	if zoneOk {
-		req.ZoneNames = []*string{aws.String(zone.(string))}
+		var ids []*string
+		for _, v := range zone.([]interface{}) {
+			ids = append(ids, aws.String(v.(string)))
+		}
+		req.ZoneNames = ids
 	}
 
 	if filtersOk {
@@ -80,16 +94,20 @@ func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interfa
 	if resp == nil || len(resp.AvailabilityZones) == 0 {
 		return fmt.Errorf("no matching AZ found")
 	}
-	if len(resp.AvailabilityZones) > 1 {
-		return fmt.Errorf("multiple AZs matched; use additional constraints to reduce matches to a single AZ")
+
+	d.SetId(resource.UniqueId())
+
+	azi := make([]map[string]interface{}, len(resp.AvailabilityZones))
+
+	for k, v := range resp.AvailabilityZones {
+		az := make(map[string]interface{})
+		az["region_name"] = *v.RegionName
+		az["zone_name"] = *v.ZoneName
+		az["zone_state"] = *v.State
+		azi[k] = az
 	}
 
-	az := resp.AvailabilityZones[0]
-
-	d.SetId(*az.ZoneName)
-	d.Set("zone_name", az.ZoneName)
-	d.Set("region_name", az.RegionName)
-	d.Set("zone_state", az.State)
+	d.Set("availability_zone_info", azi)
 	d.Set("request_id", resp.RequestId)
 
 	return nil
