@@ -172,10 +172,6 @@ func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 		req.SourceRegion = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("kms_key_id"); ok {
-		req.KmsKeyId = aws.String(v.(string))
-	}
-
 	var res *fcu.CopyImageOutput
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {

@@ -37,9 +37,12 @@ The following arguments are supported:
 * `ip_permissions_egress` - The outbound rules associated with the security group.
 * `vpc_id` - The ID of the VPC.
 * `tags` - (Optional) A mapping of tags to assign to the resource.
-* `tag_set` - One or more tags associated with the security group.
-* `ownerId` - The ID of the VPC for the security group.
 
+## Attributes Reference
+
+* `group_id` - The ID of the security group.
+* `request_id` - The ID of the request.
+* `tag_set` - One or more tags associated with the security group.
 
 See detailed information in [Authorize Security Group Egress](http://docs.outscale.com/api_fcu/operations/Action_AuthorizeSecurityGroupEgress_get.html#_api_fcu-action_authorizesecuritygroupegress_get).
 See detailed information in [Authorize Security Group Ingress](http://docs.outscale.com/api_fcu/operations/Action_AuthorizeSecurityGroupIngress_get.html#_api_fcu-action_authorizesecuritygroupingress_get).

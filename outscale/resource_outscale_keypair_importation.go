@@ -86,7 +86,8 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 		d.SetId(*resp.KeyName)
 		d.Set("public_key_material", *resp.KeyMaterial)
 	}
-	return nil
+
+	return resourceKeyPairImportationRead(d, meta)
 }
 
 func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) error {

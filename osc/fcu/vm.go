@@ -2,7 +2,6 @@ package fcu
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
@@ -101,6 +100,8 @@ type VMService interface {
 	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
 	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
+	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
+	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1134,8 +1135,6 @@ func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysIn
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
-
-	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
 	if err != nil {
 		return nil, err
 	}

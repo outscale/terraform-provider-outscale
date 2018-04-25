@@ -63,6 +63,10 @@ func getVolumeLinkSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
