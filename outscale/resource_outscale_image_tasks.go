@@ -28,122 +28,123 @@ func resourceOutscaleImageTasks() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"export_to_osu": {
 				Type:     schema.TypeList,
-				Computed: true,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk_image_format": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
 						},
 						"manifest_url": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
 						},
 						"osu_ak_sk": {
 							Type:     schema.TypeList,
-							Computed: true,
+							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"access_key": {
 										Type:     schema.TypeString,
-										Computed: true,
+										Required: true,
 									},
 									"secret_key": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
+						},
+						"osu_bucket": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"image_id": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_export_task": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"completion": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"export_to_osu": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"disk_image_format": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"manifest_url": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"osu_ak_sk": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"access_key": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"secret_key": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+											},
+										},
+									},
+									"osu_bucket": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-					},
-				},
-				// "osu_bucket": {
-				// 	Type:     schema.TypeString,
-				// 	Computed: true,
-				// },
-			},
-			"image_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Required: true,
-			},
-			"image_export_task": {
-				Type:     schema.TypeList,
-				Computed: true,
-				"completion": {
-					Type:     schema.TypeInt,
-					Computed: true,
-				},
-				"export_to_osu": {
-					Type:     schema.TypeList,
-					Computed: true,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"disk_image_format": {
-								Type:     schema.TypeString,
-								Computed: true,
-							},
-							"manifest_url": {
-								Type:     schema.TypeString,
-								Computed: true,
-							},
-							"osu_ak_sk": {
-								Type:     schema.TypeList,
-								Computed: true,
-								Elem: &schema.Resource{
-									Schema: map[string]*schema.Schema{
-										"access_key": {
-											Type:     schema.TypeString,
-											Computed: true,
-											Required: true,
-										},
-										"secret_key": {
-											Type:     schema.TypeString,
-											Computed: true,
-											Required: true,
-										},
+						"image_export": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"image_id": {
+										Type:     schema.TypeString,
+										Computed: true,
 									},
 								},
 							},
 						},
-					},
-					// "osu_bucket": {
-					// 	Type:     schema.TypeString,
-					// 	Computed: true,
-					// },
-				},
-				"image_export": {
-					Type:     schema.TypeList,
-					Computed: true,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"image_id": {
-								Type:     schema.TypeString,
-								Computed: true,
-							},
+						"image_export_task_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"status_message": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
-				"image_export_task_id": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"image_id": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"state": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"status_message": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 		},
 	}
@@ -152,32 +153,41 @@ func resourceOutscaleImageTasks() *schema.Resource {
 func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	export_to_osu, export_to_osuOk := d.GetOk("export_to_osu")
-	image_id, image_idOk := d.GetOk("image_id")
-	image_export_task, image_export_taskOk := d.GetOk("image_export_task")
-	request_id, request_idOk := d.GetOk("request_id")
+	eto, etoOk := d.GetOk("export_to_osu")
 
 	request := &fcu.CreateImageExportTaskInput{}
 
-	if export_to_osuOk {
-		request.export_to_osu = aws.String(export_to_osu.(string))
-	}
-	if image_idOk {
-		request.image_id = aws.String(image_id.(string))
-	}
-	if image_export_taskOk {
-		request.image_export_task = aws.String(image_export_task.(string))
-	}
-	if request_idOk {
-		request.request_id = aws.String(request_id.(string))
+	if v, ok := d.GetOk("image_id"); ok {
+		request.ImageId = aws.String(v.(string))
 	}
 
-	var tasksResp *fcu.CreateImageExportTaskOutput
+	if etoOk {
+		e := eto.(map[string]interface{})
+		et := &fcu.ImageExportToOsuTaskSpecification{}
+		if v, ok := e["disk_image_format"]; ok {
+			et.DiskImageFormat = aws.String(v.(string))
+		}
+		if v, ok := e["manifest_url"]; ok {
+			et.OsuManifestUrl = aws.String(v.(string))
+		}
+		if v, ok := e["osu_bucket"]; ok {
+			et.OsuBucket = aws.String(v.(string))
+		}
+		if v, ok := e["osu_ak_sk"]; ok {
+			w := v.(map[string]interface{})
+			et.OsuAkSk = &fcu.ExportToOsuAccessKeySpecification{
+				AccessKey: aws.String(w["access_key"].(string)),
+				SecretKey: aws.String(w["secret_key"].(string)),
+			}
+		}
+		request.ExportToOsu = et
+	}
+
+	var resp *fcu.CreateImageExportTaskOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-		tasksResp, err = conn.VM.CreateImageExportTask(request)
+		resp, err = conn.VM.CreateImageExportTask(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -188,24 +198,23 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-
 		return fmt.Errorf("[DEBUG] Error image task %s", err)
 	}
 
-	return nil
+	d.SetId(*resp.ImageExportTask.ImageExportTaskId)
+
+	return resourceImageTasksRead(d, meta)
 }
 
 func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	request := &fcu.DescribeInstanceExportTaskInput{}
-
+	var resp *fcu.DescribeImageExportTasksOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-		_, err = conn.VM.DescribeInstanceExportTask(&fcu.DescribeInstanceExportTaskInput{
-			ImageId: aws.String(d.Id()),
+		resp, err = conn.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
+			ImageExportTaskId: []*string{aws.String(d.Id())},
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -217,13 +226,47 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-
-		return fmt.Errorf("[DEBUG] Error Deregister image %s", err)
+		return fmt.Errorf("Error reading task image %s", err)
 	}
+
+	imageExportTask := make([]map[string]interface{}, len(resp.ImageExportTask))
+	for k, v := range resp.ImageExportTask {
+		i := make(map[string]interface{})
+		i["completion"] = *v.Completion
+		i["image_export_task_id"] = *v.ImageExportTaskId
+		i["image_id"] = *v.ImageId
+		i["state"] = *v.State
+		i["status_message"] = *v.StatusMessage
+
+		exportToOsu := make(map[string]interface{})
+		exportToOsu["disk_image_format"] = *v.ExportToOsu.DiskImageFormat
+		exportToOsu["osu_bucket"] = *v.ExportToOsu.OsuBucket
+		exportToOsu["manifest_url"] = *v.ExportToOsu.OsuManifestUrl
+		exportToOsu["osu_prefix"] = *v.ExportToOsu.OsuPrefix
+
+		osuAkSk := make(map[string]interface{})
+		osuAkSk["access_key"] = *v.ExportToOsu.OsuAkSk.AccessKey
+		osuAkSk["secret_key"] = *v.ExportToOsu.OsuAkSk.SecretKey
+
+		exportToOsu["osu_ak_sk"] = osuAkSk
+
+		i["exportToOsu"] = exportToOsu
+
+		imageExportTask[k] = i
+	}
+
+	if err := d.Set("image_export_task", imageExportTask); err != nil {
+		return err
+	}
+
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
 
 func resourceImageTasksDelete(d *schema.ResourceData, meta interface{}) error {
+
+	d.SetId("")
+
 	return nil
 }
