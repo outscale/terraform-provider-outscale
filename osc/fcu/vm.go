@@ -101,6 +101,8 @@ type VMService interface {
 	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
 	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
+	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
+	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1333,6 +1335,52 @@ func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZones
 
 	if input == nil {
 		input = &DescribeAvailabilityZonesInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribePrefixLists"
+	output := &DescribePrefixListsOutput{}
+
+	if input == nil {
+		input = &DescribePrefixListsInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeRegions"
+	output := &DescribeRegionsOutput{}
+
+	if input == nil {
+		input = &DescribeRegionsInput{}
 
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

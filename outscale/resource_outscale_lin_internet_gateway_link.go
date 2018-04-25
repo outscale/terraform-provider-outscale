@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -49,7 +50,7 @@ func resourceOutscaleLinInternetGatewayLinkCreate(d *schema.ResourceData, meta i
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error linking Internet Gateway id (%s)", err)
+		return fmt.Errorf("[DEBUG] Error linking Internet Gateway id (%s)", err)
 	}
 
 	d.SetId(igID)
@@ -136,7 +137,7 @@ func resourceOutscaleLinInternetGatewayLinkDelete(d *schema.ResourceData, meta i
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error dettaching Internet Gateway id (%s)", err)
+		return fmt.Errorf("[DEBUG] Error dettaching Internet Gateway id (%s)", err)
 	}
 
 	d.SetId("")
