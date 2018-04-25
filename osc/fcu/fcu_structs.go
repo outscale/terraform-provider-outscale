@@ -6857,6 +6857,7 @@ type DescribeQuotasOutput struct {
 
 	// All available prefix lists.
 	ReferenceQuotaSet []*ReferenceQuota `locationName:"referenceQuotaSet" locationNameList:"item" type:"list"`
+	RequestId         *string           `locationName:"requestId" type:"string"`
 }
 
 type DescribeRegionsInput struct {
