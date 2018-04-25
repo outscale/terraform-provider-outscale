@@ -6820,6 +6820,46 @@ func (s *PrefixList) SetPrefixListName(v string) *PrefixList {
 	return s
 }
 
+type DescribeQuotasInput struct {
+	_ struct{} `type:"structure"`
+
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * prefix-list-id: The ID of a prefix list.
+	//
+	//    * prefix-list-name: The name of a prefix list.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value specified is greater than 1000, we return only 1000
+	// items.
+	MaxResults *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a prior call.)
+	NextToken *string `type:"string"`
+
+	// One or more prefix list IDs.
+	QuotaName []*string `locationName:"QuotaName" locationNameList:"item" type:"list"`
+}
+
+type DescribeQuotasOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use when requesting the next set of items. If there are no additional
+	// items to return, the string is empty.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// All available prefix lists.
+	ReferenceQuotaSet []*ReferenceQuota `locationName:"referenceQuotaSet" locationNameList:"item" type:"list"`
+	RequestId         *string           `locationName:"requestId" type:"string"`
+}
+
 type DescribeRegionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6874,9 +6914,8 @@ type DescribeRegionsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about one or more regions.
-	Regions []*Region `locationName:"regionInfo" locationNameList:"item" type:"list"`
-
-	RequestId *string `locationName:"requestId" type:"string"`
+	Regions   []*Region `locationName:"regionInfo" locationNameList:"item" type:"list"`
+	RequestId *string   `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -6893,6 +6932,21 @@ func (s DescribeRegionsOutput) GoString() string {
 func (s *DescribeRegionsOutput) SetRegions(v []*Region) *DescribeRegionsOutput {
 	s.Regions = v
 	return s
+}
+
+type ReferenceQuota struct {
+	QuotaSet  []*QuotaSet `locationName:"quotaSet" locationNameList:"item" type:"list"`
+	Reference *string     `locationName:"reference" type:"string"`
+}
+
+type QuotaSet struct {
+	Description    *string `locationName:"description" type:"string"`
+	DisplayName    *string `locationName:"displayName" type:"string"`
+	GroupName      *string `locationName:"groupName" type:"string"`
+	MaxQuotaValue  *string `locationName:"maxQuotaValue" type:"string"`
+	Name           *string `locationName:"name" type:"string"`
+	OwnerId        *string `locationName:"ownerId" type:"string"`
+	UsedQuotaValue *string `locationName:"usedQuotaValue" type:"string"`
 }
 
 type Region struct {
