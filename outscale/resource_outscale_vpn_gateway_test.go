@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +16,16 @@ import (
 )
 
 func TestAccOutscaleVpnGateway_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	var v, v2 fcu.VpnGateway
 
 	resource.Test(t, resource.TestCase{
@@ -41,6 +53,16 @@ func TestAccOutscaleVpnGateway_basic(t *testing.T) {
 	})
 }
 func TestAccOutscaleVpnGateway_delete(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
 	var vpnGateway fcu.VpnGateway
 
 	testDeleted := func(r string) resource.TestCheckFunc {

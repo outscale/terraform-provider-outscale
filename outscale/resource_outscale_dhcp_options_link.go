@@ -84,7 +84,7 @@ func resourceOutscaleDHCPOptionLinkCreate(d *schema.ResourceData, meta interface
 	d.SetId(*optsID + "-" + *vpcID)
 	fmt.Printf("[INFO] Association ID: %s", d.Id())
 
-	return nil
+	return resourceOutscaleDHCPOptionLinkRead(d, meta)
 
 }
 

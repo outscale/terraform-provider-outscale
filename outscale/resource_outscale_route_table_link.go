@@ -38,6 +38,10 @@ func resourceOutscaleRouteTableAssociation() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -71,26 +75,45 @@ func resourceOutscaleRouteTableAssociationCreate(d *schema.ResourceData, meta in
 		return err
 	}
 
-	// Set the ID and return
 	d.SetId(*resp.AssociationId)
 	d.Set("association_id", d.Id())
-	log.Printf("[INFO] Association ID: %s", d.Id())
 
-	return nil
+	return resourceOutscaleRouteTableAssociationRead(d, meta)
 }
 
 func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtRaw, _, err := resourceOutscaleRouteTableStateRefreshFunc(
-		conn, d.Get("route_table_id").(string))()
+	var rtRaw *fcu.DescribeRouteTablesOutput
+	var err error
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		rtRaw, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
+			RouteTableIds: []*string{aws.String(d.Get("route_table_id").(string))},
+		})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
 	if err != nil {
-		return err
+		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			rtRaw = nil
+		} else {
+			log.Printf("Error on RouteTableStateRefresh: %s", err)
+			return err
+		}
 	}
+
 	if rtRaw == nil {
 		return nil
 	}
-	rt := rtRaw.(*fcu.RouteTable)
+	rt := rtRaw.RouteTables[0]
+
+	d.Set("request_id", rtRaw.RequestId)
 
 	found := false
 	for _, a := range rt.Associations {

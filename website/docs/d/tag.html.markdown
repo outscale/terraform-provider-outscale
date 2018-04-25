@@ -33,10 +33,9 @@ data "outscale_tag" "web" {
 
 The following arguments are supported:
 
-* `dryRun` - (Optional) If set to true, checks whether you have the required permissions to perform the action.
 * `filter` - (Optional) One or more filters.
 
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeTags_get.html#_api_fcu-action_describetags_get).
+See detailed information in [Outscale Tag](http://docs.outscale.com/api_fcu/operations/Action_DescribeTags_get.html#_api_fcu-action_describetags_get).
 
 ## Filters
 
@@ -54,4 +53,4 @@ The following attributes are exported:
 * `tag_set` - Information about one.
 * `request_id` - The ID of the request.
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeTags_get.html#_body_parameter).
+See detailed information in [Describe Tag](http://docs.outscale.com/api_fcu/operations/Action_DescribeTags_get.html#_body_parameter).

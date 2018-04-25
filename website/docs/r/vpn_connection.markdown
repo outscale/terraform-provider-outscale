@@ -6,9 +6,9 @@ description: |-
   Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported.
 ---
 
-# outscale_vm
+# outscale_vpn_connection
 
-  Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
+Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
 
 ## Example Usage
 
@@ -39,7 +39,6 @@ The following arguments are supported:
 * `volume_type` - (Optional) The type of volume you want to create (io1 | gp2 | standard | sc1 | st1).
 
 See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
 
 ## Attributes Reference
 

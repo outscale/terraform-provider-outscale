@@ -129,5 +129,8 @@ Use the Filter.N parameter to filter the described instances on the following pr
 The following attributes are exported:
 
 * `reservation_set` - Zero or more reservations.
+* `request_id`- The ID of the request.
+
+
 
 See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).
