@@ -123,6 +123,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_prefix_list":           GetDatasource(fcu, "outscale_prefix_list")(),
 			"outscale_quota":                 GetDatasource(fcu, "outscale_quota")(),
 			"outscale_region":                GetDatasource(fcu, "outscale_region")(),
+			"outscale_sub_regions":           GetDatasource(fcu, "outscale_sub_regions")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
