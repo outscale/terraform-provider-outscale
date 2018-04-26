@@ -7138,3 +7138,22 @@ type RecurringCharge struct {
 	// The frequency of the recurring charge.
 	Frequency *string `locationName:"frequency" type:"string" enum:"RecurringChargeFrequency"`
 }
+
+type DescribeInstanceTypesInput struct {
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+type DescribeInstanceTypesOutput struct {
+	InstanceTypeSet []*InstanceType `locationName:"instanceTypeSet" locationNameList:"item" type:"list"`
+	RequestId       *string         `locationName:"requestId" type:"string"`
+}
+
+type InstanceType struct {
+	EbsOptimizedAvailable *bool   `locationName:"ebsOptimizedAvailable" type:"bool"`
+	MaxIpAddresses        *int64  `locationName:"maxIpAddresses" type:"int64"`
+	Memory                *int64  `locationName:"memory" type:"int64"`
+	Name                  *string `locationName:"name" type:"string"`
+	StorageCount          *int64  `locationName:"storageCount" type:"int64"`
+	StorageSize           *int64  `locationName:"storageSize" type:"int64"`
+	Vcpu                  *int64  `locationName:"vcpu" type:"int64"`
+}

@@ -106,6 +106,7 @@ type VMService interface {
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
 	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
+	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1449,6 +1450,28 @@ func (v VMOperations) DescribeReservedInstances(input *DescribeReservedInstances
 
 	if input == nil {
 		input = &DescribeReservedInstancesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceTypes"
+	output := &DescribeInstanceTypesOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceTypesInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

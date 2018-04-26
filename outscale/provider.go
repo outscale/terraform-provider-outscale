@@ -131,6 +131,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connections":       GetDatasource(fcu, "outscale_vpn_connections")(),
 			"outscale_product_types":         GetDatasource(fcu, "outscale_product_types")(),
 			"outscale_reserved_vms":          GetDatasource(fcu, "outscale_reserved_vms")(),
+			"outscale_vm_type":               GetDatasource(fcu, "outscale_vm_type")(),
+			"outscale_vm_types":              GetDatasource(fcu, "outscale_vm_types")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
