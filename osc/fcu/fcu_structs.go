@@ -6405,15 +6405,15 @@ type ExportToOsuAccessKeySpecification struct {
 
 type CreateImageExportTaskOutput struct {
 	_               struct{}         `type:"structure"`
-	ImageExportTask *ImageExportTask `locationName:"imageExportTask" type:"structre"`
+	ImageExportTask *ImageExportTask `locationName:"imageExportTask" type:"structure"`
 	RequestId       *string          `locationName:"requestId" type:"string"`
 }
 
 type ImageExportTask struct {
 	_                 struct{}                           `type:"structure"`
 	Completion        *int64                             `locationName:"completion" type:"string"`
-	ExportToOsu       *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structre"`
-	ImageExport       *ImageExport                       `locationName:"imageExport" type:"structre"`
+	ExportToOsu       *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	ImageExport       *ImageExport                       `locationName:"imageExport" type:"structure"`
 	ImageExportTaskId *string                            `locationName:"imageExportTaskId" type:"string"`
 	ImageId           *string                            `locationName:"imageId" type:"string"`
 	State             *string                            `locationName:"state" type:"string"`
