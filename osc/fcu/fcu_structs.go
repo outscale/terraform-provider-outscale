@@ -6980,3 +6980,18 @@ func (s *Region) SetRegionName(v string) *Region {
 	s.RegionName = &v
 	return s
 }
+
+type DescribeProductTypesInput struct {
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+type DescribeProductTypesOutput struct {
+	ProductTypeSet []*ProductType `locationName:"productTypeSet" locationNameList:"item" type:"list"`
+	RequestId      *string        `locationName:"requestId" type:"string"`
+}
+
+type ProductType struct {
+	Description   *string `locationName:"description" type:"string"`
+	ProductTypeId *string `locationName:"productTypeId" type:"string"`
+	Vendor        *string `locationName:"vendor" type:"string"`
+}

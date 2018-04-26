@@ -104,6 +104,7 @@ type VMService interface {
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
 	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
+	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1403,6 +1404,28 @@ func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeReg
 
 	if input == nil {
 		input = &DescribeRegionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeProductTypes"
+	output := &DescribeProductTypesOutput{}
+
+	if input == nil {
+		input = &DescribeProductTypesInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
