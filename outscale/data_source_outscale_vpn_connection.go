@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -19,44 +18,35 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"customer_gateway_id": {
+			"vpn_connection_id": {
 				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-
-			"options": {
-				Type:     schema.TypeMap,
 				Optional: true,
 				Computed: true,
-				ForceNew: true,
+			},
+			"options": {
+				Type:     schema.TypeMap,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"static_routes_only": {
 							Type:     schema.TypeBool,
-							Optional: true,
 							Computed: true,
 						},
 					},
 				},
 			},
-
 			"type": {
 				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Computed: true,
 			},
-
 			"vpn_gateway_id": {
 				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Computed: true,
 			},
 			"customer_gateway_configuration": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"routes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -79,13 +69,10 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 			},
 
 			"tag_set": tagsSchemaComputed(),
-			"tag":     tagsSchema(),
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vgw_telemetry": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -110,12 +97,6 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
-
-			"vpn_connection_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -124,129 +105,30 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 	}
 }
 
-// func dataSourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{}) error {
-// 	conn := meta.(*OutscaleClient).FCU
-
-// 	cgid, ok := d.GetOk("customer_gateway_id")
-// 	vpngid, ok2 := d.GetOk("vpn_gateway_id")
-// 	typev, ok3 := d.GetOk("type")
-// 	options, ok4 := d.GetOk("options")
-
-// 	if !ok && !ok2 && ok3 {
-// 		return fmt.Errorf("please provide the required attributes customer_gateway_id, vpn_gateway_id and type")
-// 	}
-
-// 	createOpts := &fcu.CreateVpnConnectionInput{
-// 		CustomerGatewayId: aws.String(cgid.(string)),
-// 		Type:              aws.String(typev.(string)),
-// 		VpnGatewayId:      aws.String(vpngid.(string)),
-// 	}
-
-// 	if ok4 {
-// 		opt := options.(map[string]interface{})
-// 		option := opt["static_routes_only"]
-
-// 		b, err := strconv.ParseBool(option.(string))
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		createOpts.Options = &fcu.VpnConnectionOptionsSpecification{
-// 			StaticRoutesOnly: aws.Bool(b),
-// 		}
-// 	}
-
-// 	var resp *fcu.CreateVpnConnectionOutput
-// 	var err error
-
-// 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 		resp, err = conn.VM.CreateVpnConnection(createOpts)
-// 		if err != nil {
-// 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-// 				return resource.RetryableError(err)
-// 			}
-// 			return resource.NonRetryableError(err)
-// 		}
-// 		return resource.NonRetryableError(err)
-// 	})
-
-// 	if err != nil {
-// 		return fmt.Errorf("Error creating vpn connection: %s", err)
-// 	}
-
-// 	vpnConnection := resp.VpnConnection
-// 	d.SetId(*vpnConnection.VpnConnectionId)
-
-// 	stateConf := &resource.StateChangeConf{
-// 		Pending:    []string{"pending"},
-// 		Target:     []string{"available"},
-// 		Refresh:    vpnConnectionRefreshFunc(conn, *vpnConnection.VpnConnectionId),
-// 		Timeout:    30 * time.Minute,
-// 		Delay:      10 * time.Second,
-// 		MinTimeout: 10 * time.Second,
-// 	}
-
-// 	_, stateErr := stateConf.WaitForState()
-// 	if stateErr != nil {
-// 		return fmt.Errorf(
-// 			"Error waiting for VPN connection (%s) to become ready: %s",
-// 			*vpnConnection.VpnConnectionId, err)
-// 	}
-
-// 	if err := setTags(conn, d); err != nil {
-// 		return err
-// 	}
-
-// 	return resourceOutscaleVpnConnectionRead(d, meta)
-// }
-
-// func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.StateRefreshFunc {
-// 	return func() (interface{}, string, error) {
-
-// 		var resp *fcu.DescribeVpnConnectionsOutput
-// 		var err error
-
-// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 			resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
-// 				VpnConnectionIds: []*string{aws.String(connectionId)},
-// 			})
-// 			if err != nil {
-// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-// 					return resource.RetryableError(err)
-// 				}
-// 				return resource.NonRetryableError(err)
-// 			}
-// 			return resource.NonRetryableError(err)
-// 		})
-
-// 		if err != nil {
-// 			if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
-// 				resp = nil
-// 			} else {
-// 				log.Printf("Error on VPNConnectionRefresh: %s", err)
-// 				return nil, "", err
-// 			}
-// 		}
-
-// 		if resp == nil || len(resp.VpnConnections) == 0 {
-// 			return nil, "", nil
-// 		}
-
-// 		connection := resp.VpnConnections[0]
-// 		return connection, *connection.State, nil
-// 	}
-// }
-
 func dataSourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
+
+	filters, filtersOk := d.GetOk("filter")
+	vpn, vpnOk := d.GetOk("vpn_connection_id")
+
+	if !filtersOk && !vpnOk {
+		return fmt.Errorf("One of vpn_connection_id or filters must be assigned")
+	}
+
+	params := &fcu.DescribeVpnConnectionsInput{}
+
+	if filtersOk {
+		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if vpnOk {
+		params.VpnConnectionIds = []*string{aws.String(vpn.(string))}
+	}
 
 	var resp *fcu.DescribeVpnConnectionsOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
-			VpnConnectionIds: []*string{aws.String(d.Id())},
-		})
+		resp, err = conn.VM.DescribeVpnConnections(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -257,24 +139,16 @@ func dataSourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
-			d.SetId("")
-			return nil
-		} else {
-			log.Printf("[ERROR] Error finding VPN connection: %s", err)
-			return err
-		}
+		return err
 	}
-
-	if len(resp.VpnConnections) != 1 {
-		return fmt.Errorf("[ERROR] Error finding VPN connection: %s", d.Id())
+	if resp == nil || len(resp.VpnConnections) == 0 {
+		return fmt.Errorf("no matching VPN connection found: %#v", params)
+	}
+	if len(resp.VpnConnections) > 1 {
+		return fmt.Errorf("multiple VPN connections matched; use additional constraints to reduce matches to a single VPN connection")
 	}
 
 	vpnConnection := resp.VpnConnections[0]
-	if vpnConnection == nil || *vpnConnection.State == "deleted" {
-		d.SetId("")
-		return nil
-	}
 
 	options := map[string]interface{}{
 		"static_routes_only": vpnConnection.Options.StaticRoutesOnly,
@@ -315,7 +189,10 @@ func dataSourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{
 
 	d.Set("vgw_telemetry", vgws)
 	d.Set("vpn_connection_id", vpnConnection.VpnConnectionId)
+	d.Set("vpn_gateway_id", vpnConnection.VpnGatewayId)
+	d.Set("type", vpnConnection.Type)
 	d.Set("request_id", resp.RequestId)
+	d.SetId(resource.UniqueId())
 
 	return nil
 }

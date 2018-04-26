@@ -169,7 +169,9 @@ resource "outscale_lin" "test" {
 	cidr_block = "10.0.0.0/16"
 }
 
-resource "outscale_vpn_gateway" "test" { }
+resource "outscale_vpn_gateway" "test" { 
+	type = "ipsec.1" 
+}
 
 resource "outscale_vpn_gateway_link" "test" {
 	vpc_id = "${outscale_lin.test.id}"

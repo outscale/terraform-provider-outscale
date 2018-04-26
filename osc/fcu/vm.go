@@ -100,6 +100,10 @@ type VMService interface {
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
 	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
+	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
+	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
+	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
+	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1310,6 +1314,95 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 	if input == nil {
 		input = &CreateCustomerGatewayInput{}
 
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeAvailabilityZones"
+	output := &DescribeAvailabilityZonesOutput{}
+
+	if input == nil {
+		input = &DescribeAvailabilityZonesInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribePrefixLists"
+	output := &DescribePrefixListsOutput{}
+
+	if input == nil {
+		input = &DescribePrefixListsInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeQuotas"
+	output := &DescribeQuotasOutput{}
+
+	if input == nil {
+		input = &DescribeQuotasInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeRegions"
+	output := &DescribeRegionsOutput{}
+
+	if input == nil {
+		input = &DescribeRegionsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
