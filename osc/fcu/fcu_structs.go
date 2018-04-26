@@ -6995,3 +6995,146 @@ type ProductType struct {
 	ProductTypeId *string `locationName:"productTypeId" type:"string"`
 	Vendor        *string `locationName:"vendor" type:"string"`
 }
+
+type DescribeReservedInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// Describes whether the Reserved Instance is Standard or Convertible.
+	AvailabilityZone *string `type:"string" enum:"AvailabilityZone"`
+
+	OfferingClass *string `type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type. If you are using tools that predate
+	// the 2011-11-01 API version, you only have access to the Medium Utilization
+	// Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// One or more Reserved Instance IDs.
+	//
+	// Default: Describes all your Reserved Instances, or only those otherwise specified.
+	ReservedInstancesIds []*string `locationName:"ReservedInstancesId" locationNameList:"ReservedInstancesId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeReservedInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeReservedInstancesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeReservedInstancesInput) SetDryRun(v bool) *DescribeReservedInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeReservedInstancesInput) SetFilters(v []*Filter) *DescribeReservedInstancesInput {
+	s.Filters = v
+	return s
+}
+
+// SetOfferingClass sets the OfferingClass field's value.
+func (s *DescribeReservedInstancesInput) SetOfferingClass(v string) *DescribeReservedInstancesInput {
+	s.OfferingClass = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *DescribeReservedInstancesInput) SetOfferingType(v string) *DescribeReservedInstancesInput {
+	s.OfferingType = &v
+	return s
+}
+
+// SetReservedInstancesIds sets the ReservedInstancesIds field's value.
+func (s *DescribeReservedInstancesInput) SetReservedInstancesIds(v []*string) *DescribeReservedInstancesInput {
+	s.ReservedInstancesIds = v
+	return s
+}
+
+type DescribeReservedInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of Reserved Instances.
+	ReservedInstances []*ReservedInstances `locationName:"reservedInstancesSet" locationNameList:"item" type:"list"`
+	RequestId         *string              `locationName:"requestId" type:"string"`
+}
+type ReservedInstances struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone in which the Reserved Instance can be used.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The currency of the Reserved Instance. It's specified using ISO 4217 standard
+	// currency codes. At this time, the only supported currency is USD.
+	CurrencyCode *string `locationName:"currencyCode" type:"string" enum:"CurrencyCodeValues"`
+
+	// The duration of the Reserved Instance, in seconds.
+	Duration *int64 `locationName:"duration" type:"long"`
+
+	// The time when the Reserved Instance expires.
+	End *time.Time `locationName:"end" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The purchase price of the Reserved Instance.
+	FixedPrice *float64 `locationName:"fixedPrice" type:"float"`
+
+	// The number of reservations purchased.
+	InstanceCount *int64 `locationName:"instanceCount" type:"integer"`
+
+	// The tenancy of the instance.
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// The instance type on which the Reserved Instance can be used.
+	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
+
+	// The offering class of the Reserved Instance.
+	OfferingClass *string `locationName:"offeringClass" type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// The Reserved Instance product platform description.
+	ProductDescription *string `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+
+	// The recurring charge tag assigned to the resource.
+	RecurringCharges []*RecurringCharge `locationName:"recurringCharges" locationNameList:"item" type:"list"`
+
+	// The ID of the Reserved Instance.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
+
+	// The scope of the Reserved Instance.
+	Scope *string `locationName:"scope" type:"string" enum:"scope"`
+
+	// The date and time the Reserved Instance started.
+	Start *time.Time `locationName:"start" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The state of the Reserved Instance purchase.
+	State *string `locationName:"state" type:"string" enum:"ReservedInstanceState"`
+
+	// Any tags assigned to the resource.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The usage price of the Reserved Instance, per hour.
+	UsagePrice *float64 `locationName:"usagePrice" type:"float"`
+}
+
+type RecurringCharge struct {
+	_ struct{} `type:"structure"`
+
+	// The amount of the recurring charge.
+	Amount *float64 `locationName:"amount" type:"double"`
+
+	// The frequency of the recurring charge.
+	Frequency *string `locationName:"frequency" type:"string" enum:"RecurringChargeFrequency"`
+}
