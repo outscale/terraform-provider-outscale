@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -27,20 +28,21 @@ func resourceOutscaleImageTasks() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"export_to_osu": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:     schema.TypeMap,
+				Required: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disk_image_format": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 						"manifest_url": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 						"osu_ak_sk": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -65,6 +67,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 			"image_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -80,7 +83,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 							Computed: true,
 						},
 						"export_to_osu": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -93,7 +96,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 										Computed: true,
 									},
 									"osu_ak_sk": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeMap,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -116,7 +119,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 							},
 						},
 						"image_export": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -154,12 +157,14 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	eto, etoOk := d.GetOk("export_to_osu")
-
+	v, ok := d.GetOk("image_id")
 	request := &fcu.CreateImageExportTaskInput{}
 
-	if v, ok := d.GetOk("image_id"); ok {
-		request.ImageId = aws.String(v.(string))
+	if !etoOk && !ok {
+		return fmt.Errorf("Please provide the required attributes export_to_osu and image_id")
 	}
+
+	request.ImageId = aws.String(v.(string))
 
 	if etoOk {
 		e := eto.(map[string]interface{})
@@ -201,7 +206,13 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[DEBUG] Error image task %s", err)
 	}
 
-	d.SetId(*resp.ImageExportTask.ImageExportTaskId)
+	id := *resp.ImageExportTask.ImageExportTaskId
+	d.SetId(id)
+
+	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn, 1)
+	if err != nil {
+		return err
+	}
 
 	return resourceImageTasksRead(d, meta)
 }
@@ -211,6 +222,8 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp *fcu.DescribeImageExportTasksOutput
 	var err error
+
+	fmt.Printf("[DEBUG] DESCRIBE IMAGE TASK")
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
@@ -250,7 +263,7 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 
 		exportToOsu["osu_ak_sk"] = osuAkSk
 
-		i["exportToOsu"] = exportToOsu
+		i["export_to_osu"] = exportToOsu
 
 		imageExportTask[k] = i
 	}
@@ -269,4 +282,67 @@ func resourceImageTasksDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 
 	return nil
+}
+
+func resourceOutscaleImageTaskWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
+	fmt.Printf("Waiting for Image Task %s to become available...", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "pending/queued", "queued"},
+		Target:     []string{"available"},
+		Refresh:    ImageTaskStateRefreshFunc(client, id),
+		Timeout:    OutscaleImageRetryTimeout,
+		Delay:      OutscaleImageRetryDelay,
+		MinTimeout: OutscaleImageRetryMinTimeout,
+	}
+
+	info, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", id, err)
+	}
+	return info.(*fcu.Image), nil
+}
+
+func ImageTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		emptyResp := &fcu.DescribeImageExportTasksOutput{}
+
+		var resp *fcu.DescribeImageExportTasksOutput
+		var err error
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = client.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
+				ImageExportTaskId: []*string{aws.String(id)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				return emptyResp, "destroyed", nil
+
+			} else if resp != nil && len(resp.ImageExportTask) == 0 {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				return emptyResp, "destroyed", nil
+			} else {
+				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
+			}
+		}
+
+		if resp == nil || resp.ImageExportTask == nil || len(resp.ImageExportTask) == 0 {
+			return emptyResp, "destroyed", nil
+		}
+
+		log.Printf("[INFO] OMI %s state %s", *resp.ImageExportTask[0].ImageId, *resp.ImageExportTask[0].State)
+
+		// OMI is valid, so return it's state
+		return resp.ImageExportTask[0], *resp.ImageExportTask[0].State, nil
+	}
 }

@@ -56,6 +56,10 @@ resource "outscale_image" "outscale_image" {
 resource "outscale_image_tasks" "outscale_image_tasks" {
     count = 1
 
+		export_to_osu {
+			disk_image_format = "raw"
+			osu_bucket = "test"
+		}
     image_id = "${outscale_image.outscale_image.image_id}"
 }
 `

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 )
@@ -101,6 +102,12 @@ type VMService interface {
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
 	CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error)
 	DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error)
+	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
+	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
+	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
+	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
+	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
+	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1134,8 +1141,6 @@ func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysIn
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
-
-	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
 	if err != nil {
 		return nil, err
 	}
@@ -1335,7 +1340,34 @@ func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (
 
 	if input == nil {
 		input = &CreateImageExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("[DEBUG] CreateImageExportTask REQ")
+	fmt.Println(string(requestDump))
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeAvailabilityZones"
+	output := &DescribeAvailabilityZonesOutput{}
+
+	if input == nil {
+		input = &DescribeAvailabilityZonesInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1358,7 +1390,34 @@ func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksIn
 
 	if input == nil {
 		input = &DescribeImageExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("[DEBUG] CreateImageExportTask REQ")
+	fmt.Println(string(requestDump))
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribePrefixLists"
+	output := &DescribePrefixListsOutput{}
+
+	if input == nil {
+		input = &DescribePrefixListsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1372,5 +1431,47 @@ func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksIn
 	}
 
 	return output, nil
+}
 
+func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeQuotas"
+	output := &DescribeQuotasOutput{}
+
+	if input == nil {
+		input = &DescribeQuotasInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeRegions"
+	output := &DescribeRegionsOutput{}
+
+	if input == nil {
+		input = &DescribeRegionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
