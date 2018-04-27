@@ -108,6 +108,8 @@ type VMService interface {
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
 	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
+	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
+	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1454,6 +1456,28 @@ func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuota
 
 	return output, nil
 }
+func (v VMOperations) CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshotExportTask"
+	output := &CreateSnapshotExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateSnapshotExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeRegions"
@@ -1461,6 +1485,28 @@ func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeReg
 
 	if input == nil {
 		input = &DescribeRegionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshotExportTasks"
+	output := &DescribeSnapshotExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotExportTasksInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

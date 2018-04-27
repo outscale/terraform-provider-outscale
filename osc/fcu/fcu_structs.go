@@ -6382,6 +6382,50 @@ func (s DetachVpnGatewayOutput) GoString() string {
 	return s.String()
 }
 
+type DescribeSnapshotExportTasksInput struct {
+	SnapshotExportTaskId []*string `locationName:"snapshotExportTaskId" locationNameList:"item" type:"list"`
+}
+type DescribeSnapshotExportTasksOutput struct {
+	SnapshotExportTask []*SnapshotExportTask `locationName:"snapshotExportTask" type:"structure"`
+	RequestId          *string               `locationName:"requestId" type:"string"`
+}
+
+type CreateSnapshotExportTaskInput struct {
+	_           struct{}                      `type:"structure"`
+	ExportToOsu *ExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	SnapshotId  *string                       `locationName:"snapshotId" type:"string"`
+}
+
+type CreateSnapshotExportTaskOutput struct {
+	_                  struct{}            `type:"structure"`
+	SnapshotExportTask *SnapshotExportTask `locationName:"snapshotExportTask" type:"structure"`
+	RequestId          *string             `locationName:"requestId" type:"string"`
+}
+
+type SnapshotExportTask struct {
+	_                    struct{}                      `type:"structure"`
+	Completion           *int64                        `locationName:"completion" type:"string"`
+	ExportToOsu          *ExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	SnapshotExport       *SnapshotExport               `locationName:"snapshotExport" type:"structure"`
+	SnapshotExportTaskId *string                       `locationName:"snapshotExportTaskId" type:"string"`
+	SnapshotId           *string                       `locationName:"SnapshotId" type:"string"`
+	State                *string                       `locationName:"state" type:"string"`
+	StatusMessage        *string                       `locationName:"statusMessage" type:"string"`
+}
+
+type SnapshotExport struct {
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+}
+
+type ExportToOsuTaskSpecification struct {
+	_               struct{}                           `type:"structure"`
+	DiskImageFormat *string                            `locationName:"diskImageFormat" type:"string"`
+	AkSk            *ExportToOsuAccessKeySpecification `locationName:"akSk" type:"structure"`
+	OsuBucket       *string                            `locationName:"osuBucket" type:"string"`
+	OsuKey          *string                            `locationName:"osuKey" type:"string"`
+	OsuPrefix       *string                            `locationName:"osuPrefix" type:"string"`
+}
+
 type CreateImageExportTaskInput struct {
 	_           struct{}                           `type:"structure"`
 	ExportToOsu *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
