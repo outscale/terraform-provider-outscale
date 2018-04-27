@@ -64,6 +64,7 @@ func datasourceOutscaleKeyPairsRead(d *schema.ResourceData, meta interface{}) er
 		keypairs[k] = keypair
 	}
 	d.Set("key_set", keypairs)
+	d.Set("request_id", resp.RequestId)
 	return nil
 }
 
@@ -99,7 +100,6 @@ func datasourceOutscaleKeyPairs() *schema.Resource {
 			},
 			"request_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 		},

@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -41,55 +43,29 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		keyName = resource.UniqueId()
 		d.Set("key_name", keyName)
 	}
-	if publicKey, ok := d.GetOk("key_material"); ok {
-		req := &fcu.ImportKeyPairInput{
-			KeyName:           aws.String(keyName),
-			PublicKeyMaterial: []byte(publicKey.(string)),
-		}
 
-		var resp *fcu.ImportKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.ImportKeyPair(req)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(err)
-		})
-
-		if err != nil {
-			return fmt.Errorf("Error import KeyPair: %s", err)
-		}
-		d.SetId(*resp.KeyName)
-
-	} else {
-		req := &fcu.CreateKeyPairInput{
-			KeyName: aws.String(keyName),
-		}
-
-		var resp *fcu.CreateKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.CreateKeyPair(req)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(err)
-		})
-		if err != nil {
-			return fmt.Errorf("Error creating KeyPair: %s", err)
-		}
-		d.SetId(*resp.KeyName)
-		d.Set("key_material", *resp.KeyMaterial)
+	req := &fcu.CreateKeyPairInput{
+		KeyName: aws.String(keyName),
 	}
+
+	var resp *fcu.CreateKeyPairOutput
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.CreateKeyPair(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+	if err != nil {
+		return fmt.Errorf("Error creating KeyPair: %s", err)
+	}
+	d.SetId(*resp.KeyName)
+	d.Set("key_material", *resp.KeyMaterial)
 	return resourceKeyPairRead(d, meta)
 }
 
@@ -126,17 +102,14 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error retrieving KeyPair: %s", err)
 	}
 
-	for _, keyPair := range resp.KeyPairs {
-		if *keyPair.KeyName == d.Id() {
-			d.Set("key_name", keyPair.KeyName)
-			d.Set("key_fingerprint", keyPair.KeyFingerprint)
-		}
-		d.Set("request_id", *resp.RequestId)
-		return nil
+	fmt.Println("\n\n[DEBUG] RESP")
+	utils.PrintToJSON(resp, "KEY_PAIR")
 
-	}
+	d.Set("key_name", resp.KeyPairs[0].KeyName)
+	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
+	d.Set("request_id", resp.RequestId)
 
-	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
+	return nil
 }
 
 func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {

@@ -83,10 +83,6 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("ERROR Creating key, %s", err)
 	}
 
-	if createResp.AccessKey == nil || createResp.AccessKey.SecretAccessKey == nil {
-		return fmt.Errorf("[ERR] CreateAccessKey response did not contain a Secret Access Key as expected")
-	}
-
 	d.SetId(*createResp.AccessKey.AccessKeyId)
 
 	return resourceOutscaleIamAccessKeyRead(d, meta)
@@ -123,7 +119,7 @@ func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("owner_id", getResp.AccessKeyMetadata[0].OwnerId)
 	d.Set("status", getResp.AccessKeyMetadata[0].Status)
 	d.Set("tag_set", tagsToMapC(getResp.AccessKeyMetadata[0].Tags))
-	d.Set("request_id", getResp.RequestId)
+	d.Set("request_id", getResp.ResponseMetadata.RequestId)
 
 	return nil
 }

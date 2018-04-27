@@ -68,14 +68,20 @@ Nested ebs blocks have the following structure:
 * `volume_size` - The size of the volume, in Gibibytes (GiB).
 If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
-* `volume_type` - The type of the volume (standard | io1 | gp2 | sc1 | st1).
-### Timeouts
+* `volume_type` - The type of the volume (`standard` | `io1` | `gp2` | `sc1` | `st1`).
 
 The timeouts block allows you to specify timeouts for certain actions:
 
 * `create` - (Defaults to 40 mins) Used when creating the Image
 * `update` - (Defaults to 40 mins) Used when updating the Image
 * `delete` - (Defaults to 90 mins) Used when deregistering the Image
+
+
+# Attributes
+
+* `image_id` - The ID of the new OMI.
+* `request_id` - The ID of the request.
+
 
 See detailed information in [Create Image](http://docs.outscale.com/api_fcu/operations/Action_CreateImage_get.html#_api_fcu-action_createimage_get).
 See detailed information in [Describe Images](http://docs.outscale.com/api_fcu/operations/Action_DescribeImages_get.html#_api_fcu-action_describeimages_get).

@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -42,8 +41,7 @@ func resourceOutscaleRouteTable() *schema.Resource {
 
 			"propagating_vgw_set": {
 				Type:     schema.TypeList,
-				ForceNew: true,
-				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
@@ -125,7 +123,7 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 	createOpts := &fcu.CreateRouteTableInput{
 		VpcId: aws.String(d.Get("vpc_id").(string)),
 	}
-	log.Printf("[DEBUG] RouteTable create config: %#v", createOpts)
+	fmt.Printf("[DEBUG] RouteTable create config: %#v", createOpts)
 
 	var resp *fcu.CreateRouteTableOutput
 	var err error
@@ -146,9 +144,9 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 
 	rt := resp.RouteTable
 	d.SetId(*rt.RouteTableId)
-	log.Printf("[INFO] Route Table ID: %s", d.Id())
+	fmt.Printf("[INFO] Route Table ID: %s", d.Id())
 
-	log.Printf(
+	fmt.Printf(
 		"[DEBUG] Waiting for route table (%s) to become available",
 		d.Id())
 	stateConf := &resource.StateChangeConf{
@@ -201,7 +199,7 @@ func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) er
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			resp = nil
 		} else {
-			log.Printf("Error on RouteTableStateRefresh: %s", err)
+			fmt.Printf("Error on RouteTableStateRefresh: %s", err)
 			return err
 		}
 	}
@@ -249,7 +247,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 	rt := rtRaw.(*fcu.RouteTable)
 
 	for _, a := range rt.Associations {
-		log.Printf("[INFO] Disassociating association: %s", *a.RouteTableAssociationId)
+		fmt.Printf("[INFO] Disassociating association: %s", *a.RouteTableAssociationId)
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -273,7 +271,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
+	fmt.Printf("[INFO] Deleting Route Table: %s", d.Id())
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteRouteTable(&fcu.DeleteRouteTableInput{
@@ -296,7 +294,7 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error deleting route table: %s", err)
 	}
 
-	log.Printf(
+	fmt.Printf(
 		"[DEBUG] Waiting for route table (%s) to become destroyed",
 		d.Id())
 
@@ -337,7 +335,7 @@ func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) res
 			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 				resp = nil
 			} else {
-				log.Printf("Error on RouteTableStateRefresh: %s", err)
+				fmt.Printf("Error on RouteTableStateRefresh: %s", err)
 				return nil, "", err
 			}
 		}

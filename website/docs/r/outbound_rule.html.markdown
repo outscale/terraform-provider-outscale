@@ -3,10 +3,13 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_outbound_rule"
 sidebar_current: "docs-outscale-resource-outbound_rule"
 description: |-
-Adds one or more egress rules to a security group for use with a VPC.
+  Adds one or more egress rules to a security group for use with a VPC.
+---
+
+# outscale_outbound_rule
+
 It allows instances to send traffic to either one or more destination CIDR IP address ranges or destination security groups for the same VPC.
 We recommand to use a set of IP permissions to authorize outbound access to a destination security group. We also recommand to specify the protocol in a set of IP permissions.
----
 
 * NOTE - By default, traffic between two security groups is allowed through both public and private IP addresses. To restrict it to private IP addresses only, contact our Support team: support@outscale.com.
 

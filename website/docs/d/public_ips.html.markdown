@@ -21,12 +21,12 @@ By default, this action returns information about all your EIPs: available, asso
 
 The following arguments are supported:
 
-* `AllocationId` - (Optional) One or more allocation IDs.
-* `Filter.N` - (Optional) One or more filters.
-* `PublicIp` - (Optional) One or more External IP address.
+* `allocation_id` - (Optional) One or more allocation IDs.
+* `filter` - (Optional) One or more filters.
+* `public_ip` - (Optional) One or more External IP address.
 
 
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Outscale Public IPs](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
 
 ## Filters
 
@@ -53,4 +53,4 @@ The following attributes are exported:
 
 
 
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+See detailed information in [Describe Public IPs](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).

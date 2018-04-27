@@ -73,7 +73,7 @@ type CreateAccessKeyOutput struct {
 	// A structure with details about the access key.
 	//
 	// AccessKey is a required field
-	AccessKey *AccessKey `type:"structure" required:"true"`
+	AccessKey *AccessKey `json:"accessKey" type:"structure" required:"true"`
 }
 
 // String returns the string representation
@@ -334,7 +334,7 @@ type ListAccessKeysInput struct {
 	// a response indicating that the results are truncated. Set it to the value
 	// of the Marker element in the response that you received to indicate where
 	// the next call should start.
-	Marker *string `min:"1" type:"string"`
+	// Marker *string `min:"1" type:"string"`
 
 	// (Optional) Use this only when paginating results to indicate the maximum
 	// number of items you want in the response. If additional items exist beyond
@@ -345,23 +345,23 @@ type ListAccessKeysInput struct {
 	// case, the IsTruncated response element returns true and Marker contains a
 	// value to include in the subsequent call that tells the service where to continue
 	// from.
-	MaxItems *int64 `min:"1" type:"integer"`
+	// MaxItems *int64 `min:"1" type:"integer"`
 
 	// The name of the user.
 	//
 	// This parameter allows (per its regex pattern (http://wikipedia.org/wiki/regex))
 	// a string of characters consisting of upper and lowercase alphanumeric characters
 	// with no spaces. You can also include any of the following characters: _+=,.@-
-	UserName *string `min:"1" type:"string"`
+	// UserName *string `min:"1" type:"string"`
 
-	Tags []*common.Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+	// Tags []*common.Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
 // SetTags sets the Tags field's value.
-func (s *ListAccessKeysInput) SetTags(v []*common.Tag) *ListAccessKeysInput {
-	s.Tags = v
-	return s
-}
+// func (s *ListAccessKeysInput) SetTags(v []*common.Tag) *ListAccessKeysInput {
+// 	s.Tags = v
+// 	return s
+// }
 
 // String returns the string representation
 func (s ListAccessKeysInput) String() string {
@@ -373,42 +373,23 @@ func (s ListAccessKeysInput) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *ListAccessKeysInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ListAccessKeysInput"}
-	if s.Marker != nil && len(*s.Marker) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("Marker", 1))
-	}
-	if s.MaxItems != nil && *s.MaxItems < 1 {
-		invalidParams.Add(request.NewErrParamMinValue("MaxItems", 1))
-	}
-	if s.UserName != nil && len(*s.UserName) < 1 {
-		invalidParams.Add(request.NewErrParamMinLen("UserName", 1))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
 // SetMarker sets the Marker field's value.
-func (s *ListAccessKeysInput) SetMarker(v string) *ListAccessKeysInput {
-	s.Marker = &v
-	return s
-}
+// func (s *ListAccessKeysInput) SetMarker(v string) *ListAccessKeysInput {
+// 	s.Marker = &v
+// 	return s
+// }
 
-// SetMaxItems sets the MaxItems field's value.
-func (s *ListAccessKeysInput) SetMaxItems(v int64) *ListAccessKeysInput {
-	s.MaxItems = &v
-	return s
-}
+// // SetMaxItems sets the MaxItems field's value.
+// func (s *ListAccessKeysInput) SetMaxItems(v int64) *ListAccessKeysInput {
+// 	s.MaxItems = &v
+// 	return s
+// }
 
-// SetUserName sets the UserName field's value.
-func (s *ListAccessKeysInput) SetUserName(v string) *ListAccessKeysInput {
-	s.UserName = &v
-	return s
-}
+// // SetUserName sets the UserName field's value.
+// func (s *ListAccessKeysInput) SetUserName(v string) *ListAccessKeysInput {
+// 	s.UserName = &v
+// 	return s
+// }
 
 // Contains the response to a successful ListAccessKeys request.
 type ListAccessKeysOutput struct {
@@ -417,7 +398,7 @@ type ListAccessKeysOutput struct {
 	// A list of objects containing metadata about the access keys.
 	//
 	// AccessKeyMetadata is a required field
-	AccessKeyMetadata []*AccessKeyMetadata `type:"list" required:"true"`
+	AccessKeyMetadata []*AccessKeyMetadata `json:"accessKeys" locationName:"accessKeys" type:"list" required:"true"`
 
 	// A flag that indicates whether there are more items to return. If your results
 	// were truncated, you can make a subsequent pagination request using the Marker
@@ -431,7 +412,11 @@ type ListAccessKeysOutput struct {
 	// to use for the Marker parameter in a subsequent pagination request.
 	Marker *string `min:"1" type:"string"`
 
-	RequestId *string `locationName:"requestId" type:"string"`
+	ResponseMetadata RequestId `json:"ResponseMetadata" locationName:"requestId" type:"string"`
+}
+
+type RequestId struct {
+	RequestId *string `json:"RequestId"  locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -479,7 +464,7 @@ type AccessKeyMetadata struct {
 	UserName        *string       `min:"1" type:"string"`
 	OwnerId         *string       `type:"string"`
 	SecretAccessKey *string       `type:"string"`
-	Tags            []*common.Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+	Tags            []*common.Tag `locationName:"tags" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation

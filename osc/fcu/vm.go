@@ -2,7 +2,6 @@ package fcu
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
@@ -91,6 +90,24 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error)
+	DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error)
+	DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error)
+	CreateVpnGateway(input *CreateVpnGatewayInput) (*CreateVpnGatewayOutput, error)
+	DescribeVpnGateways(input *DescribeVpnGatewaysInput) (*DescribeVpnGatewaysOutput, error)
+	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
+	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
+	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
+	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
+	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
+	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
+	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
+	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
+	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
+	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
+	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
+	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
+	DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1124,8 +1141,6 @@ func (v VMOperations) DescribeCustomerGateways(input *DescribeCustomerGatewaysIn
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
-
-	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
 	if err != nil {
 		return nil, err
 	}
@@ -1303,6 +1318,183 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 	if input == nil {
 		input = &CreateCustomerGatewayInput{}
 
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeAvailabilityZones"
+	output := &DescribeAvailabilityZonesOutput{}
+
+	if input == nil {
+		input = &DescribeAvailabilityZonesInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribePrefixLists"
+	output := &DescribePrefixListsOutput{}
+
+	if input == nil {
+		input = &DescribePrefixListsInput{}
+
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeQuotas"
+	output := &DescribeQuotasOutput{}
+
+	if input == nil {
+		input = &DescribeQuotasInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeRegions"
+	output := &DescribeRegionsOutput{}
+
+	if input == nil {
+		input = &DescribeRegionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeProductTypes"
+	output := &DescribeProductTypesOutput{}
+
+	if input == nil {
+		input = &DescribeProductTypesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstances"
+	output := &DescribeReservedInstancesOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceTypes"
+	output := &DescribeInstanceTypesOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceTypesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstancesOfferings"
+	output := &DescribeReservedInstancesOfferingsOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesOfferingsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

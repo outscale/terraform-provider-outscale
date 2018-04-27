@@ -2,7 +2,6 @@ package icu
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
@@ -30,8 +29,8 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 		input = &CreateAccessKeyInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
-	fmt.Printf("[DEBUG ERROR] REQ => %+v => ERR %s", req, err)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -39,8 +38,6 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 
 	err = v.client.Do(context.TODO(), req, output)
 	if err != nil {
-		fmt.Printf("[DEBUG ERROR] DO => %v => ERR %s", output, err)
-
 		return nil, err
 	}
 
@@ -55,7 +52,8 @@ func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAcce
 		input = &DeleteAccessKeyInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -77,7 +75,8 @@ func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAcce
 		input = &UpdateAccessKeyInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -99,7 +98,8 @@ func (v ICUOperations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKe
 		input = &ListAccessKeysInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err

@@ -10,19 +10,19 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 )
 
-func TestAccOutscaleAccessKey_basic(t *testing.T) {
+func TestAccOutscaleOAPIAccessKey_basic(t *testing.T) {
 	var conf icu.AccessKeyMetadata
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleAccessKeyDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleAccessKeyConfig,
+				Config: testAccOutscaleOAPIAccessKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists("outscale_oapi_api_key.a_key", &conf),
-					testAccCheckOutscaleAccessKeyAttributes(&conf),
+					testAccCheckOutscaleOAPIAccessKeyExists("outscale_oapi_api_key.a_key", &conf),
+					testAccCheckOutscaleOAPIAccessKeyAttributes(&conf),
 					resource.TestCheckResourceAttrSet("outscale_oapi_api_key.a_key", "secret_key"),
 				),
 			},
@@ -30,7 +30,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIAccessKeyDestroy(s *terraform.State) error {
 	client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
 
 	for _, rs := range s.RootModule().Resources {
@@ -55,7 +55,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIAccessKeyExists(n string, res *icu.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -83,7 +83,7 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 	}
 }
 
-func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMetadata) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *accessKeyMetadata.Status != "Active" {
 			return fmt.Errorf("Bad status: %s", *accessKeyMetadata.Status)
@@ -93,7 +93,7 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 	}
 }
 
-const testAccOutscaleAccessKeyConfig = `
+const testAccOutscaleOAPIAccessKeyConfig = `
 resource "outscale_oapi_api_key" "a_key" {
 	#api_key_id = "7E4U4AQ0CGLTWB78Q38V"
 	#secret_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"

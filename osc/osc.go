@@ -3,10 +3,12 @@ package osc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
@@ -82,14 +84,35 @@ func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time,
 
 // NewRequest creates a request and signs it
 func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr string, body interface{}) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
+	rel, errp := url.Parse(urlStr)
+	if errp != nil {
+		return nil, errp
 	}
 
-	b, err := c.MarshalHander(body, operation, "2017-12-15")
-	if err != nil {
-		return nil, err
+	var b interface{}
+	var err error
+	if method != http.MethodPost {
+		b, err = c.MarshalHander(body, operation, "2017-12-15")
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		v := struct {
+			Action               string `json:"Action"`
+			Version              string `json:"Version"`
+			AuthenticationMethod string `json:"AuthenticationMethod"`
+		}{operation, "2017-12-15", "accesskey"}
+
+		var m map[string]string
+
+		ja, _ := json.Marshal(v)
+		json.Unmarshal(ja, &m)
+		jb, _ := json.Marshal(body)
+		json.Unmarshal(jb, &m)
+
+		jm, _ := json.Marshal(m)
+
+		b = string(jm)
 	}
 
 	u := c.Config.BaseURL.ResolveReference(rel)
@@ -101,9 +124,17 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	fmt.Println(rel.Opaque)
 
-	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
-	if err != nil {
-		return nil, err
+	if strings.Contains(operation, "AccessKey") {
+		c.SetHeaders(req, "TinaIcuService", operation)
+		_, err := c.Sign(req, reader, time.Now(), c.Config.Target)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return req, nil
@@ -121,14 +152,20 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	fmt.Printf("\n\n[DEBUG ERROR] RESP => %+v => ERR %s\n\n", resp, err)
 
+	err = c.checkResponse(resp)
 	if err != nil {
 		return err
 	}
 
-	err = c.checkResponse(resp)
-	if err != nil {
+	if req.Method == "POST" {
+		defer resp.Body.Close()
+
+		err = json.NewDecoder(resp.Body).Decode(v)
+		if err != nil {
+			return err
+		}
+
 		return err
 	}
 

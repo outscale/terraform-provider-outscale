@@ -3,14 +3,17 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_inbound_rule"
 sidebar_current: "docs-outscale-resource-inbound_rule"
 description: |-
-Adds one or more ingress rules to a security group.
+  Adds one or more ingress rules to a security group.
+---
+
+# outscale_inbound_rule
+
 The modifications are effective at instances level as quickly as possible, but a small delay may occur.
 In the public Cloud, this action allows one or more CIDR IP address ranges to access a security group for your account, or allows one or more security groups (source groups) to access a security group for your own Outscale account or another one.
 In a VPC, this action allows one or more CIDR IP address ranges to access a security group for your VPC, or allows one or more other security groups (source groups) to access a security group for your VPC. All the security groups must be for the same VPC.
 To create a rule with a specific IP protocol and a specific port range, we recommand to use a set of IP permissions. We also recommand to specify the protocol in a set of IP permissions.
----
 
-* NOTE - 
+* NOTE -
 By default, traffic between two security groups is allowed through both public and private IP addresses. To restrict it to private IP addresses only, contact our Support team: support@outscale.com.
 
 ## Example Usage

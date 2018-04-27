@@ -123,7 +123,7 @@ func resourceOutscaleOAPIIamAccessKeyRead(d *schema.ResourceData, meta interface
 	d.Set("account_id", getResp.AccessKeyMetadata[0].OwnerId)
 	d.Set("state", getResp.AccessKeyMetadata[0].Status)
 	d.Set("tag_set", tagsToMapC(getResp.AccessKeyMetadata[0].Tags))
-	d.Set("request_id", getResp.RequestId)
+	d.Set("request_id", getResp.ResponseMetadata.RequestId)
 
 	return nil
 }

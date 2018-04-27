@@ -93,7 +93,7 @@ func dataSourceOutscaleOAPIIamAccessKeyRead(d *schema.ResourceData, meta interfa
 
 	d.SetId(resource.UniqueId())
 	d.Set("api_key_id", acc)
-	d.Set("request_id", getResp.RequestId)
+	d.Set("request_id", getResp.ResponseMetadata.RequestId)
 
 	return nil
 }

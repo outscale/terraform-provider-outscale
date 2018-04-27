@@ -22,6 +22,10 @@ func dataSourceOutscaleRouteTables() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"route_table_set": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -197,6 +201,8 @@ func dataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 
 		route_table_set[k] = route_table
 	}
+
+	d.Set("request_id", resp.RequestId)
 
 	d.SetId(resource.UniqueId())
 

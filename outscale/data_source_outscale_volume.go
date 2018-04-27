@@ -94,6 +94,10 @@ func datasourceOutscaleVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -147,6 +151,8 @@ func datasourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		// Query returned single result.
 		volume = filteredVolumes[0]
 	}
+
+	d.Set("request_id", resp.RequestId)
 
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", *volume.VolumeId)
 	return volumeDescriptionAttributes(d, volume)
