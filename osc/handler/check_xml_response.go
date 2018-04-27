@@ -20,16 +20,6 @@ func UnmarshalXML(v interface{}, r *http.Response) error {
 		return nil
 	}
 
-	// var bodyBytes []byte
-	// if r.Body != nil {
-	// 	bodyBytes, _ = ioutil.ReadAll(r.Body)
-	// }
-	// // Restore the io.ReadCloser to its original state
-	// r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-	// // Use the content
-	// bodyString := string(bodyBytes)
-	// fmt.Println(bodyString)
-
 	decoder := xml.NewDecoder(r.Body)
 	err := xmlutil.UnmarshalXML(v, decoder, "")
 

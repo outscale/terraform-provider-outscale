@@ -30,14 +30,14 @@ func TestAccOutscaleNatService_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nat_service.gateway",
+		IDRefreshName: "outscale_nat_service.outscale_nat_service",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckNatGatewayDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccNatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNatGatewayExists("outscale_nat_service.gateway", &natGateway),
+					testAccCheckNatGatewayExists("outscale_nat_service.outscale_nat_service", &natGateway),
 				),
 			},
 		},
@@ -138,20 +138,53 @@ func testAccCheckNatGatewayExists(n string, ng *fcu.NatGateway) resource.TestChe
 }
 
 const testAccNatGatewayConfig = `
-resource "outscale_lin" "vpc" {
-	cidr_block = "10.0.0.0/16"
-}
-resource "outscale_subnet" "subnet" {
-	cidr_block = "10.0.0.0/24"
-	vpc_id = "${outscale_lin.vpc.id}"
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
 }
 
-resource "outscale_public_ip" "bar" {
-	domain = "standard"
+resource "outscale_subnet" "outscale_subnet" {
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+
+  cidr_block = "10.0.0.0/18"
 }
 
-resource "outscale_nat_service" "gateway" {
-    allocation_id = "${outscale_public_ip.bar.allocation_id}"
-    subnet_id = "${outscale_subnet.subnet.id}"
+resource "outscale_public_ip" "outscale_public_ip" {
+  #domain               = "Standard"       # BUG doc API
+
+  domain = ""
+}
+
+resource "outscale_nat_service" "outscale_nat_service" {
+  depends_on = ["outscale_route.outscale_route"]
+
+  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+
+  allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
+}
+
+resource "outscale_route_table" "outscale_route_table" {
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+}
+
+resource "outscale_route" "outscale_route" {
+  destination_cidr_block = "0.0.0.0/0"
+
+  gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+
+  route_table_id = "${outscale_route_table.outscale_route_table.id}"
+}
+
+resource "outscale_route_table_link" "outscale_route_table_link" {
+  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+
+  route_table_id = "${outscale_route_table.outscale_route_table.id}"
+}
+
+resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
+
+resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+
+  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
 }
 `

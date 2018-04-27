@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -158,13 +157,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	if err != nil {
 		return err
 	}
-
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("[DEBUG] RESPONSE")
-	fmt.Println(string(requestDump))
 
 	if req.Method == "POST" {
 		defer resp.Body.Close()

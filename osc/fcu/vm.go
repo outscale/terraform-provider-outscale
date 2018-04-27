@@ -2,9 +2,7 @@ package fcu
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 )
@@ -1345,13 +1343,6 @@ func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("[DEBUG] CreateImageExportTask REQ")
-	fmt.Println(string(requestDump))
-
 	if err != nil {
 		return nil, err
 	}
@@ -1394,13 +1385,6 @@ func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksIn
 		input = &DescribeImageExportTasksInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
-
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("[DEBUG] CreateImageExportTask REQ")
-	fmt.Println(string(requestDump))
 
 	if err != nil {
 		return nil, err
