@@ -17,7 +17,7 @@ func TestAccOutscaleSnapshotExportTask_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleSnapshotExportTaskConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotExportTaskExists("outscale_image_tasks.outscale_image_tasks"),
+					testAccCheckOutscaleSnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 		},
@@ -40,26 +40,13 @@ func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFu
 }
 
 var testAccOutscaleSnapshotExportTaskConfig = `
-resource "outscale_vm" "outscale_vm" {
-    count = 1
-
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
-
-}
-
-resource "outscale_image" "outscale_image" {
-    name            = "image_${outscale_vm.outscale_vm.id}"
-    instance_id     = "${outscale_vm.outscale_vm.id}"
-}
-
-resource "outscale_image_tasks" "outscale_image_tasks" {
+resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
     count = 1
 
 		export_to_osu {
 			disk_image_format = "raw"
 			osu_bucket = "test"
 		}
-    image_id = "${outscale_image.outscale_image.image_id}"
+    snapshot_id = "snap-5bcc0764"
 }
 `

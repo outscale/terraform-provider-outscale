@@ -176,28 +176,39 @@
 #   type       = "ipsec.1"
 #   }
 
-resource "outscale_lin" "outscale_lin" {
+# resource "outscale_lin" "outscale_lin" {
+#   count = 1
+
+#   cidr_block = "10.0.0.0/16"
+# }
+
+# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+#   type = "ipsec.1"
+# }
+
+# resource "outscale_vpn_gateway_link" "test" {
+#   vpc_id         = "${outscale_lin.outscale_lin.id}"
+#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+# }
+
+# resource "outscale_route_table" "outscale_route_table" {
+#   count = 1
+
+#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+# }
+
+# resource "outscale_vpn_gateway_route_propagation" "foo" {
+#   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+#   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+# }
+
+resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
   count = 1
 
-  cidr_block = "10.0.0.0/16"
-}
+  export_to_osu {
+    disk_image_format = "raw"
+    osu_bucket        = "test"
+  }
 
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-  type = "ipsec.1"
-}
-
-resource "outscale_vpn_gateway_link" "test" {
-  vpc_id         = "${outscale_lin.outscale_lin.id}"
-  vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-}
-
-resource "outscale_route_table" "outscale_route_table" {
-  count = 1
-
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-}
-
-resource "outscale_vpn_gateway_route_propagation" "foo" {
-  gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-  route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+  snapshot_id = "snap-5bcc0764"
 }

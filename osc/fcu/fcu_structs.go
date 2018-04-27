@@ -6386,7 +6386,7 @@ type DescribeSnapshotExportTasksInput struct {
 	SnapshotExportTaskId []*string `locationName:"snapshotExportTaskId" locationNameList:"item" type:"list"`
 }
 type DescribeSnapshotExportTasksOutput struct {
-	SnapshotExportTask []*SnapshotExportTask `locationName:"snapshotExportTask" type:"structure"`
+	SnapshotExportTask []*SnapshotExportTask `locationName:"snapshotExportTaskSet" locationNameList:"item" type:"list"`
 	RequestId          *string               `locationName:"requestId" type:"string"`
 }
 
