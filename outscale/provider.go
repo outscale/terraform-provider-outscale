@@ -133,6 +133,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_reserved_vms":          GetDatasource(fcu, "outscale_reserved_vms")(),
 			"outscale_vm_type":               GetDatasource(fcu, "outscale_vm_type")(),
 			"outscale_vm_types":              GetDatasource(fcu, "outscale_vm_types")(),
+			"outscale_reserved_vms_offer":    GetDatasource(fcu, "outscale_reserved_vms_offer")(),
+			"outscale_reserved_vms_offers":   GetDatasource(fcu, "outscale_reserved_vms_offers")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
