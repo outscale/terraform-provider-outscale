@@ -33,19 +33,17 @@ The following arguments are supported:
 
 * `Type` - (Required)	The type of VPN connection supported by the virtual private gateway (only ipsec.1 is supported).
 
-See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
+See detailed information in [Outscale VPN Gateway](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `attachment_set` - Information about your volume attachment.
+* `attachments`	The VPC to which the virtual private gateway is attached.
+* `state`	The state of the virtual private gateway (pending | available | deleting | deleted).
+* `tag_set`	One or more tags associated with the virtual private gateway.
+* `type`	The type of VPN connection supported by the virtual private gateway (only ipsec.1 is supported)
+* `vpn_gateway_id`	The ID of the virtual private gateway.
+* `request_id`	The ID of the request.
 
-* `Attachments`	The VPC to which the virtual private gateway is attached.
-* `State`	The state of the virtual private gateway (pending | available | deleting | deleted).
-* `TagSet`	One or more tags associated with the virtual private gateway.
-* `Type`	The type of VPN connection supported by the virtual private gateway (only ipsec.1 is supported)
-* `VpnGatewayId`	The ID of the virtual private gateway.
-* `requestId`	The ID of the request.
-
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/definitions/VpnGateway.html#_api_fcu-vpngateway).
+See detailed information in [Describe VPN Gateway](http://docs.outscale.com/api_fcu/definitions/VpnGateway.html#_api_fcu-vpngateway).
