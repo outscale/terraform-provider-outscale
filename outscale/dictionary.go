@@ -108,6 +108,7 @@ func init() {
 			"outscale_vpn_gateway":           dataSourceOutscaleVpnGateway,
 			"outscale_api_key":               dataSourceOutscaleIamAccessKey,
 			"outscale_vpn_gateways":          dataSourceOutscaleVpnGateways,
+			"outscale_vpn_connection":        dataSourceOutscaleVpnConnection,
 			"outscale_sub_region":            dataSourceOutscaleAvailabilityZone,
 			"outscale_prefix_list":           dataSourceOutscalePrefixList,
 			"outscale_quota":                 dataSourceOutscaleQuota,
@@ -116,6 +117,8 @@ func init() {
 			"outscale_region":                dataSourceOutscaleRegion,
 			"outscale_sub_regions":           dataSourceOutscaleAvailabilityZones,
 			"outscale_regions":               dataSourceOutscaleRegions,
+			"outscale_vpn_connections":       dataSourceOutscaleVpnConnections,
+			"outscale_product_types":         dataSourceOutscaleProductTypes,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

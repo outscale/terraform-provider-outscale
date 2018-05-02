@@ -121,6 +121,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_gateway":           GetDatasource(fcu, "outscale_vpn_gateway")(),
 			"outscale_api_key":               GetDatasource(fcu, "outscale_api_key")(),
 			"outscale_vpn_gateways":          GetDatasource(fcu, "outscale_vpn_gateways")(),
+			"outscale_vpn_connection":        GetDatasource(fcu, "outscale_vpn_connection")(),
 			"outscale_sub_region":            GetDatasource(fcu, "outscale_sub_region")(),
 			"outscale_prefix_list":           GetDatasource(fcu, "outscale_prefix_list")(),
 			"outscale_quota":                 GetDatasource(fcu, "outscale_quota")(),
@@ -129,6 +130,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_region":                GetDatasource(fcu, "outscale_region")(),
 			"outscale_sub_regions":           GetDatasource(fcu, "outscale_sub_regions")(),
 			"outscale_regions":               GetDatasource(fcu, "outscale_regions")(),
+			"outscale_vpn_connections":       GetDatasource(fcu, "outscale_vpn_connections")(),
+			"outscale_product_types":         GetDatasource(fcu, "outscale_product_types")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
