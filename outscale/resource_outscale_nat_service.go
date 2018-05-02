@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -105,10 +106,10 @@ func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	// Get the ID and store it
 	ng := natResp.NatGateway
 	d.SetId(*ng.NatGatewayId)
-	fmt.Printf("\n\n[INFO] NAT Gateway ID: %s", d.Id())
+	log.Printf("\n\n[INFO] NAT Gateway ID: %s", d.Id())
 
 	// Wait for the NAT Gateway to become available
-	fmt.Printf("\n\n[DEBUG] Waiting for NAT Gateway (%s) to become available", d.Id())
+	log.Printf("\n\n[DEBUG] Waiting for NAT Gateway (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
@@ -139,7 +140,7 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if _, ok := status[strings.ToLower(state)]; ngRaw == nil || ok {
-		fmt.Printf("\n\n[INFO] Removing %s from Terraform state as it is not found or in the deleted state.", d.Id())
+		log.Printf("\n\n[INFO] Removing %s from Terraform state as it is not found or in the deleted state.", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -211,7 +212,7 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	deleteOpts := &fcu.DeleteNatGatewayInput{
 		NatGatewayId: aws.String(d.Id()),
 	}
-	fmt.Printf("\n\n[INFO] Deleting NAT Gateway: %s", d.Id())
+	log.Printf("\n\n[INFO] Deleting NAT Gateway: %s", d.Id())
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
@@ -275,7 +276,7 @@ func NGStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 			if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
 				return nil, "", nil
 			} else {
-				fmt.Printf("\n\nError on NGStateRefresh: %s", err)
+				log.Printf("\n\nError on NGStateRefresh: %s", err)
 				return nil, "", err
 			}
 		}
