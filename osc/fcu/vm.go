@@ -100,12 +100,16 @@ type VMService interface {
 	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
 	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
+	CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error)
+	DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error)
 	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
 	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
 	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
+	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
+	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
 	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
 	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
 	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
@@ -1335,6 +1339,27 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 	return output, nil
 }
 
+func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateImageExportTask"
+	output := &CreateImageExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateImageExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) CopyImage(input *CopyImageInput) (*CopyImageOutput, error) {
 	inURL := "/"
 	endpoint := "CopyImage"
@@ -1363,7 +1388,6 @@ func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZones
 
 	if input == nil {
 		input = &DescribeAvailabilityZonesInput{}
-
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1379,6 +1403,27 @@ func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZones
 	return output, nil
 }
 
+func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeImageExportTasks"
+	output := &DescribeImageExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeImageExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeSnapshots"
@@ -1407,7 +1452,6 @@ func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*Des
 
 	if input == nil {
 		input = &DescribePrefixListsInput{}
-
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1444,6 +1488,28 @@ func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuota
 
 	return output, nil
 }
+func (v VMOperations) CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshotExportTask"
+	output := &CreateSnapshotExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateSnapshotExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeRegions"
@@ -1466,6 +1532,27 @@ func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeReg
 	return output, nil
 }
 
+func (v VMOperations) DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshotExportTasks"
+	output := &DescribeSnapshotExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeProductTypes"
