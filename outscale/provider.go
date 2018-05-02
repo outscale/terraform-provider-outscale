@@ -89,9 +89,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot_export_task":          GetResource(fcu, "outscale_snapshot_export_task")(),
 			"outscale_snapshot":                      GetResource(fcu, "outscale_snapshot")(),
 			"outscale_image_register":                GetResource(fcu, "outscale_image_register")(),
-			"outscale_vpn_gateway_link":              GetResource(fcu, "outscale_vpn_gateway_link")(),
-			"outscale_vpn_connection_route":          GetResource(fcu, "outscale_vpn_connection_route")(),
-			"outscale_vpn_gateway_route_propagation": GetResource(fcu, "outscale_vpn_gateway_route_propagation")(),
 			"outscale_keypair_importation":           GetResource(fcu, "outscale_keypair_importation")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -143,6 +140,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vm_types":              GetDatasource(fcu, "outscale_vm_types")(),
 			"outscale_reserved_vms_offer":    GetDatasource(fcu, "outscale_reserved_vms_offer")(),
 			"outscale_reserved_vms_offers":   GetDatasource(fcu, "outscale_reserved_vms_offers")(),
+			"outscale_snapshot":              GetDatasource(fcu, "outscale_snapshot")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
