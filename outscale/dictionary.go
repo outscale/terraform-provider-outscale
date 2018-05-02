@@ -156,6 +156,7 @@ func init() {
 			"outscale_client_endpoints":      dataSourceOutscaleOAPICustomerGateways,
 			"outscale_route_table":           dataSourceOutscaleOAPIRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleOAPIRouteTables,
+			"outscale_snapshot":              dataSourceOutscaleOAPISnapshot,
 		},
 	}
 }
