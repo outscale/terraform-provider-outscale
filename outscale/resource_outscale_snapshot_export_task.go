@@ -267,7 +267,7 @@ func resourceImageExportTasksDelete(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.SnapshotExportTask, error) {
-	fmt.Printf("Waiting for Image Task %s to become available...", id)
+	log.Printf("Waiting for Image Task %s to become available...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},

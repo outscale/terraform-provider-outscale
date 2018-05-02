@@ -108,6 +108,9 @@ type VMService interface {
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
 	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
+	CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error)
+	DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error)
+	DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1491,6 +1494,72 @@ func (v VMOperations) DescribeSnapshotExportTasks(input *DescribeSnapshotExportT
 
 	if input == nil {
 		input = &DescribeSnapshotExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshot"
+	output := &Snapshot{}
+
+	if input == nil {
+		input = &CreateSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshots"
+	output := &DescribeSnapshotsOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSnapshot"
+	output := &DeleteSnapshotOutput{}
+
+	if input == nil {
+		input = &DeleteSnapshotInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

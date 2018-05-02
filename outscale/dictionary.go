@@ -49,6 +49,7 @@ func init() {
 			"outscale_vpn_gateway_route_propagation": resourceOutscaleVpnGatewayRoutePropagation,
 			"outscale_vpn_gateway_link":              resourceOutscaleVpnGatewayLink,
 			"outscale_snapshot_export_task":          resourceOutscaleImageExportTasks,
+			"outscale_snapshot":                      resourceOutscaleSnapshot,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                       resourceOutscaleOApiVM,
