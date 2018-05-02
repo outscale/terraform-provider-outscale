@@ -66,7 +66,7 @@ func dataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tag_set": dataSourceTagsSchema(),
+			"tag_set": tagsSchemaComputed(),
 		},
 	}
 }

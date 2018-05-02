@@ -130,6 +130,7 @@ func init() {
 			"outscale_reserved_vms_offers":   dataSourceOutscaleReservedVMOffers,
 			"outscale_reserved_vms_offer":    dataSourceOutscaleReservedVMOffer,
 			"outscale_snapshot":              dataSourceOutscaleSnapshot,
+			"outscale_snapshots":             dataSourceOutscaleSnapshots,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
