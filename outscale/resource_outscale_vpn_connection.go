@@ -324,6 +324,7 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 
 	d.Set("vgw_telemetry", vgws)
 	d.Set("vpn_connection_id", vpnConnection.VpnConnectionId)
+	d.Set("vpn_gateway_id", vpnConnection.VpnGatewayId)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

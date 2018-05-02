@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -584,10 +583,6 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 		return fmt.Errorf("Error reading the DescribeInstanceAttribute %s", err)
 	}
 
-	pretty, err := json.MarshalIndent(resp, "", "  ")
-
-	fmt.Print("\n\n[DEBUG] RESPONSE ", string(pretty))
-
 	d.Set("instance_id", *resp.InstanceId)
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
@@ -691,8 +686,6 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 
 		for k, v := range resp.InstanceStatuses {
 			instance := make(map[string]interface{})
-
-			fmt.Printf("\n\n[DEBUG] RESPONSEINSTANCE %+v", v)
 
 			if v.AvailabilityZone != nil {
 				instance["availability_zone"] = *v.AvailabilityZone

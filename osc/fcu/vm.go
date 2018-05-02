@@ -90,6 +90,8 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CopyImage(input *CopyImageInput) (*CopyImageOutput, error)
+	DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error)
 	CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error)
 	DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error)
 	DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error)
@@ -109,8 +111,11 @@ type VMService interface {
 	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
 	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
 	CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error)
-	DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error)
 	DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error)
+	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
+	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
+	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
+	DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1357,6 +1362,27 @@ func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (
 
 	return output, nil
 }
+func (v VMOperations) CopyImage(input *CopyImageInput) (*CopyImageOutput, error) {
+	inURL := "/"
+	endpoint := "CopyImage"
+	output := &CopyImageOutput{}
+
+	if input == nil {
+		input = &CopyImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeAvailabilityZones"
@@ -1386,6 +1412,27 @@ func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksIn
 
 	if input == nil {
 		input = &DescribeImageExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshots"
+	output := &DescribeSnapshotsOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1530,14 +1577,57 @@ func (v VMOperations) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, err
 
 	return output, nil
 }
-
-func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
+func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
 	inURL := "/"
-	endpoint := "DescribeSnapshots"
-	output := &DescribeSnapshotsOutput{}
+	endpoint := "DescribeProductTypes"
+	output := &DescribeProductTypesOutput{}
 
 	if input == nil {
-		input = &DescribeSnapshotsInput{}
+		input = &DescribeProductTypesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstances"
+	output := &DescribeReservedInstancesOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceTypes"
+	output := &DescribeInstanceTypesOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceTypesInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1560,6 +1650,27 @@ func (v VMOperations) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapsho
 
 	if input == nil {
 		input = &DeleteSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstancesOfferings"
+	output := &DescribeReservedInstancesOfferingsOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesOfferingsInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
