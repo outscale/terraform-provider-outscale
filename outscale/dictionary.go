@@ -70,6 +70,7 @@ func init() {
 			"outscale_route":                    resourceOutscaleRoute,
 			"outscale_route_table":              resourceOutscaleRouteTable,
 			"outscale_route_table_link":         resourceOutscaleRouteTableAssociation,
+			"outscale_snapshot":                 resourceOutscaleOAPISnapshot,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,

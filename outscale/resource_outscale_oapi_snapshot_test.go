@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleSnapshot_basic(t *testing.T) {
+func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -22,7 +22,7 @@ func TestAccOutscaleSnapshot_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 	var v fcu.Snapshot
@@ -31,16 +31,16 @@ func TestAccOutscaleSnapshot_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSnapshotConfig,
+				Config: testAccOutscaleOAPISnapshotConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
+func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -48,7 +48,7 @@ func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 	var v fcu.Snapshot
@@ -57,9 +57,9 @@ func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSnapshotConfigWithDescription,
+				Config: testAccOutscaleOAPISnapshotConfigWithDescription,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
 				),
 			},
@@ -67,7 +67,7 @@ func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
 	})
 }
 
-func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFunc {
+func testAccCheckOAPISnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -107,7 +107,7 @@ func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFun
 	}
 }
 
-const testAccOutscaleSnapshotConfig = `
+const testAccOutscaleOAPISnapshotConfig = `
 resource "outscale_volume" "test" {
 	availability_zone = "eu-west-2a"
 	size = 1
@@ -118,7 +118,7 @@ resource "outscale_snapshot" "test" {
 }
 `
 
-const testAccOutscaleSnapshotConfigWithDescription = `
+const testAccOutscaleOAPISnapshotConfigWithDescription = `
 resource "outscale_volume" "description_test" {
 	availability_zone = "us-west-2a"
 	size = 1
