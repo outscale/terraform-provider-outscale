@@ -158,6 +158,7 @@ func init() {
 			"outscale_route_table":           dataSourceOutscaleOAPIRouteTable,
 			"outscale_route_tables":          dataSourceOutscaleOAPIRouteTables,
 			"outscale_snapshot":              dataSourceOutscaleOAPISnapshot,
+			"outscale_snapshots":             dataSourceOutscaleOAPISnapshots,
 		},
 	}
 }
