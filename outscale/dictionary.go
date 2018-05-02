@@ -120,6 +120,10 @@ func init() {
 			"outscale_vpn_connections":       dataSourceOutscaleVpnConnections,
 			"outscale_product_types":         dataSourceOutscaleProductTypes,
 			"outscale_reserved_vms":          dataSourceOutscaleReservedVMS,
+			"outscale_vm_type":               dataSourceOutscaleVMType,
+			"outscale_vm_types":              dataSourceOutscaleVMTypes,
+			"outscale_reserved_vms_offers":   dataSourceOutscaleReservedVMOffers,
+			"outscale_reserved_vms_offer":    dataSourceOutscaleReservedVMOffer,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,

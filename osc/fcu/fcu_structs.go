@@ -7611,3 +7611,57 @@ type RecurringCharge struct {
 	// The frequency of the recurring charge.
 	Frequency *string `locationName:"frequency" type:"string" enum:"RecurringChargeFrequency"`
 }
+
+type DescribeInstanceTypesInput struct {
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+type DescribeInstanceTypesOutput struct {
+	InstanceTypeSet []*InstanceType `locationName:"instanceTypeSet" locationNameList:"item" type:"list"`
+	RequestId       *string         `locationName:"requestId" type:"string"`
+}
+
+type InstanceType struct {
+	EbsOptimizedAvailable *bool   `locationName:"ebsOptimizedAvailable" type:"bool"`
+	MaxIpAddresses        *int64  `locationName:"maxIpAddresses" type:"int64"`
+	Memory                *int64  `locationName:"memory" type:"int64"`
+	Name                  *string `locationName:"name" type:"string"`
+	StorageCount          *int64  `locationName:"storageCount" type:"int64"`
+	StorageSize           *int64  `locationName:"storageSize" type:"int64"`
+	Vcpu                  *int64  `locationName:"vcpu" type:"int64"`
+}
+
+type DescribeReservedInstancesOfferingsInput struct {
+	AvailabilityZone            *string   `locationName:"availabilityZone" type:"string"`
+	Filters                     []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+	InstanceTenancy             *string   `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+	InstanceType                *string   `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	OfferingType                *string   `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+	ProductDescription          *string   `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+	ReservedInstancesOfferingId []*string `locationName:"reservedInstancesOfferingId" type:"string"`
+}
+
+type DescribeReservedInstancesOfferingsOutput struct {
+	ReservedInstancesOfferingsSet []*ReservedInstancesOffering `locationName:"reservedInstancesOfferingsSet" locationNameList:"item" type:"list"`
+	RequestId                     *string                      `locationName:"requestId" type:"string"`
+}
+
+type ReservedInstancesOffering struct {
+	AvailabilityZone            *string            `locationName:"availabilityZone" type:"string"`
+	CurrencyCode                *string            `locationName:"currencyCode" type:"string"`
+	Duration                    *string            `locationName:"duration" type:"string"`
+	FixedPrice                  *int64             `locationName:"fixedPrice" type:"int64"`
+	InstanceTenancy             *string            `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+	InstanceType                *string            `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	Martketplace                *bool              `locationName:"martketplace" type:"bool"`
+	OfferingType                *string            `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+	ProductDescription          *string            `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+	PricingDetailsSet           []*PricingDetail   `locationName:"pricingDetail" locationNameList:"item" type:"list"`
+	RecurringCharges            []*RecurringCharge `locationName:"recurringCharges" locationNameList:"item" type:"list"`
+	ReservedInstancesOfferingId *string            `locationName:"reservedInstancesOfferingId" type:"string"`
+	UsagePrice                  *int64             `locationName:"usagePrice" type:"int64"`
+}
+
+type PricingDetail struct {
+	Count *int64 `locationName:"count" type:"int64"`
+}
