@@ -186,10 +186,6 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	pretty, err := json.MarshalIndent(resp, "", "  ")
-
-	fmt.Print("\n\n[DEBUG] RESPONSE ", string(pretty))
-
 	instance := resp.Reservations[0].Instances[0]
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(instance.BlockDeviceMappings))

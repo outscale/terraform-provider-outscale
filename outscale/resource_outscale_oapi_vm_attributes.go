@@ -658,8 +658,6 @@ func readDescribeOAPIVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 		return fmt.Errorf("Error reading the DescribeInstanceAttribute %s", err)
 	}
 
-	fmt.Printf("\n\n[DEBUG] RESPONSE %+v", resp)
-
 	d.Set("vm_id", resp.InstanceId)
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
@@ -723,8 +721,6 @@ func readDescribeOAPIVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 
 		for k, v := range resp.InstanceStatuses {
 			instance := make(map[string]interface{})
-
-			fmt.Printf("\n\n[DEBUG] RESPONSEINSTANCE %+v", v)
 
 			if v.AvailabilityZone != nil {
 				instance["availability_zone"] = *v.AvailabilityZone
