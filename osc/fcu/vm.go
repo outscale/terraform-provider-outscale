@@ -110,6 +110,8 @@ type VMService interface {
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
 	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
 	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
+	CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error)
+	DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error)
 	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
 	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
 	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
@@ -1553,6 +1555,28 @@ func (v VMOperations) DescribeSnapshotExportTasks(input *DescribeSnapshotExportT
 
 	return output, nil
 }
+
+func (v VMOperations) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshot"
+	output := &Snapshot{}
+
+	if input == nil {
+		input = &CreateSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeProductTypes"
@@ -1619,6 +1643,27 @@ func (v VMOperations) DescribeInstanceTypes(input *DescribeInstanceTypesInput) (
 	return output, nil
 }
 
+func (v VMOperations) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSnapshot"
+	output := &DeleteSnapshotOutput{}
+
+	if input == nil {
+		input = &DeleteSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeReservedInstancesOfferings"

@@ -7552,6 +7552,197 @@ func (s *Region) SetRegionName(v string) *Region {
 	return s
 }
 
+type CreateSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the snapshot.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the EBS volume.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateSnapshotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateSnapshotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateSnapshotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateSnapshotInput"}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateSnapshotInput) SetDescription(v string) *CreateSnapshotInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateSnapshotInput) SetDryRun(v bool) *CreateSnapshotInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *CreateSnapshotInput) SetVolumeId(v string) *CreateSnapshotInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Describes the snapshot created from the imported disk.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotDetail
+type SnapshotDetail struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// The block device mapping for the snapshot.
+	DeviceName *string `locationName:"deviceName" type:"string"`
+
+	// The size of the disk in the snapshot, in GiB.
+	DiskImageSize *float64 `locationName:"diskImageSize" type:"double"`
+
+	// The format of the disk image from which the snapshot is created.
+	Format *string `locationName:"format" type:"string"`
+
+	// The percentage of progress for the task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The snapshot ID of the disk being imported.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// A brief status of the snapshot creation.
+	Status *string `locationName:"status" type:"string"`
+
+	// A detailed status message for the snapshot creation.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// The URL used to access the disk image.
+	Url *string `locationName:"url" type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucketDetails `locationName:"userBucket" type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SnapshotDetail) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotDetail) SetDescription(v string) *SnapshotDetail {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceName sets the DeviceName field's value.
+func (s *SnapshotDetail) SetDeviceName(v string) *SnapshotDetail {
+	s.DeviceName = &v
+	return s
+}
+
+// SetDiskImageSize sets the DiskImageSize field's value.
+func (s *SnapshotDetail) SetDiskImageSize(v float64) *SnapshotDetail {
+	s.DiskImageSize = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotDetail) SetFormat(v string) *SnapshotDetail {
+	s.Format = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *SnapshotDetail) SetProgress(v string) *SnapshotDetail {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *SnapshotDetail) SetSnapshotId(v string) *SnapshotDetail {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SnapshotDetail) SetStatus(v string) *SnapshotDetail {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *SnapshotDetail) SetStatusMessage(v string) *SnapshotDetail {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotDetail) SetUrl(v string) *SnapshotDetail {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotDetail) SetUserBucket(v *UserBucketDetails) *SnapshotDetail {
+	s.UserBucket = v
+	return s
+}
+
+// The disk container object for the import snapshot request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotDiskContainer
+type SnapshotDiskContainer struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the disk image being imported.
+	Description *string `type:"string"`
+
+	// The format of the disk image being imported.
+	//
+	// Valid values: RAW | VHD | VMDK | OVA
+	Format *string `type:"string"`
+
+	// The URL to the Amazon S3-based disk image being imported. It can either be
+	// a https URL (https://..) or an Amazon S3 URL (s3://..).
+	Url *string `type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucket `type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotDiskContainer) String() string {
+	return awsutil.Prettify(s)
+}
+
 type DescribeProductTypesInput struct {
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 }
@@ -7600,6 +7791,260 @@ func (s DescribeReservedInstancesInput) String() string {
 }
 
 // GoString returns the string representation
+func (s SnapshotDiskContainer) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotDiskContainer) SetDescription(v string) *SnapshotDiskContainer {
+	s.Description = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotDiskContainer) SetFormat(v string) *SnapshotDiskContainer {
+	s.Format = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotDiskContainer) SetUrl(v string) *SnapshotDiskContainer {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotDiskContainer) SetUserBucket(v *UserBucket) *SnapshotDiskContainer {
+	s.UserBucket = v
+	return s
+}
+
+// Details about the import snapshot task.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotTaskDetail
+type SnapshotTaskDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// The size of the disk in the snapshot, in GiB.
+	DiskImageSize *float64 `locationName:"diskImageSize" type:"double"`
+
+	// The format of the disk image from which the snapshot is created.
+	Format *string `locationName:"format" type:"string"`
+
+	// The percentage of completion for the import snapshot task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The snapshot ID of the disk being imported.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// A brief status for the import snapshot task.
+	Status *string `locationName:"status" type:"string"`
+
+	// A detailed status message for the import snapshot task.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// The URL of the disk image from which the snapshot is created.
+	Url *string `locationName:"url" type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucketDetails `locationName:"userBucket" type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotTaskDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SnapshotTaskDetail) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotTaskDetail) SetDescription(v string) *SnapshotTaskDetail {
+	s.Description = &v
+	return s
+}
+
+// SetDiskImageSize sets the DiskImageSize field's value.
+func (s *SnapshotTaskDetail) SetDiskImageSize(v float64) *SnapshotTaskDetail {
+	s.DiskImageSize = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotTaskDetail) SetFormat(v string) *SnapshotTaskDetail {
+	s.Format = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *SnapshotTaskDetail) SetProgress(v string) *SnapshotTaskDetail {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *SnapshotTaskDetail) SetSnapshotId(v string) *SnapshotTaskDetail {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SnapshotTaskDetail) SetStatus(v string) *SnapshotTaskDetail {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *SnapshotTaskDetail) SetStatusMessage(v string) *SnapshotTaskDetail {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotTaskDetail) SetUrl(v string) *SnapshotTaskDetail {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotTaskDetail) SetUserBucket(v *UserBucketDetails) *SnapshotTaskDetail {
+	s.UserBucket = v
+	return s
+}
+
+type UserBucketDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The S3 bucket from which the disk image was created.
+	S3Bucket *string `locationName:"s3Bucket" type:"string"`
+
+	// The file name of the disk image.
+	S3Key *string `locationName:"s3Key" type:"string"`
+}
+
+// String returns the string representation
+func (s UserBucketDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UserBucketDetails) GoString() string {
+	return s.String()
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *UserBucketDetails) SetS3Bucket(v string) *UserBucketDetails {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *UserBucketDetails) SetS3Key(v string) *UserBucketDetails {
+	s.S3Key = &v
+	return s
+}
+
+type UserBucket struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the S3 bucket where the disk image is located.
+	S3Bucket *string `type:"string"`
+
+	// The file name of the disk image.
+	S3Key *string `type:"string"`
+}
+
+// String returns the string representation
+func (s UserBucket) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UserBucket) GoString() string {
+	return s.String()
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *UserBucket) SetS3Bucket(v string) *UserBucket {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *UserBucket) SetS3Key(v string) *UserBucket {
+	s.S3Key = &v
+	return s
+}
+
+type DeleteSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the EBS snapshot.
+	//
+	// SnapshotId is a required field
+	SnapshotId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteSnapshotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteSnapshotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteSnapshotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteSnapshotInput"}
+	if s.SnapshotId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SnapshotId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteSnapshotInput) SetDryRun(v bool) *DeleteSnapshotInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *DeleteSnapshotInput) SetSnapshotId(v string) *DeleteSnapshotInput {
+	s.SnapshotId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSnapshotOutput
+type DeleteSnapshotOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteSnapshotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteSnapshotOutput) GoString() string {
+	return s.String()
+}
+
 func (s DescribeReservedInstancesInput) GoString() string {
 	return s.String()
 }
