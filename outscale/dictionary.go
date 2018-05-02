@@ -52,9 +52,6 @@ func init() {
 			"outscale_snapshot_export_task":          resourceOutscaleImageExportTasks,
 			"outscale_snapshot":                      resourceOutscaleSnapshot,
 			"outscale_image_register":                resourceOutscaleImageRegister,
-			"outscale_vpn_gateway_link":              resourceOutscaleVpnGatewayLink,
-			"outscale_vpn_connection_route":          resourceOutscaleVpnConnectionRoute,
-			"outscale_vpn_gateway_route_propagation": resourceOutscaleVpnGatewayRoutePropagation,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                   resourceOutscaleOApiVM,
@@ -132,6 +129,7 @@ func init() {
 			"outscale_vm_types":              dataSourceOutscaleVMTypes,
 			"outscale_reserved_vms_offers":   dataSourceOutscaleReservedVMOffers,
 			"outscale_reserved_vms_offer":    dataSourceOutscaleReservedVMOffer,
+			"outscale_snapshot":              dataSourceOutscaleSnapshot,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
