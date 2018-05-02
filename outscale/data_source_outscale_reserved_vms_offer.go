@@ -11,6 +11,25 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
+<<<<<<< HEAD
+func dataSourceOutscaleSubnet() *schema.Resource {
+	return &schema.Resource{
+		Read: dataSourceOutscaleSubnetRead,
+
+		Schema: map[string]*schema.Schema{
+			"filter": dataSourceFiltersSchema(),
+			"availability_zone": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"cidr_block": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"subnet_id": {
+=======
 func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleReservedVMOfferRead,
@@ -45,10 +64,32 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 				Computed: true,
 			},
 			"offering_type": &schema.Schema{
+>>>>>>> TPD-451
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
+<<<<<<< HEAD
+
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"tag_set": dataSourceTagsSchema(),
+
+			"vpc_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"available_ip_address_count": {
+				Type:     schema.TypeInt,
+=======
 			"product_description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
@@ -80,12 +121,34 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 			},
 			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
+>>>>>>> TPD-451
 				Computed: true,
 			},
 		},
 	}
 }
 
+<<<<<<< HEAD
+func dataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).FCU
+
+	req := &fcu.DescribeSubnetsInput{}
+
+	if id := d.Get("subnet_id"); id != "" {
+		req.SubnetIds = []*string{aws.String(id.(string))}
+	}
+
+	filters, filtersOk := d.GetOk("filter")
+
+	if filtersOk {
+		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+
+	var resp *fcu.DescribeSubnetsOutput
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.VM.DescribeSubNet(req)
+=======
 func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
@@ -129,18 +192,44 @@ func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interfac
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		resp, err = conn.VM.DescribeReservedInstancesOfferings(req)
+>>>>>>> TPD-451
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 		}
+<<<<<<< HEAD
+
+		return resource.NonRetryableError(err)
+=======
 		return nil
+>>>>>>> TPD-451
 	})
 
 	if err != nil {
 		return err
 	}
 
+<<<<<<< HEAD
+	if resp == nil || len(resp.Subnets) == 0 {
+		return fmt.Errorf("no matching subnet found")
+	}
+
+	if len(resp.Subnets) > 1 {
+		return fmt.Errorf("multiple subnets matched; use additional constraints to reduce matches to a single subnet")
+	}
+
+	subnet := resp.Subnets[0]
+
+	d.SetId(*subnet.SubnetId)
+	d.Set("subnet_id", subnet.SubnetId)
+	d.Set("vpc_id", subnet.VpcId)
+	d.Set("availability_zone", subnet.AvailabilityZone)
+	d.Set("cidr_block", subnet.CidrBlock)
+	d.Set("state", subnet.State)
+	d.Set("tag_set", tagsToMap(subnet.Tags))
+	d.Set("available_ip_address_count", subnet.AvailableIpAddressCount)
+=======
 	if resp == nil || len(resp.ReservedInstancesOfferingsSet) == 0 {
 		return fmt.Errorf("no matching reserved VMS Offer found")
 	}
@@ -180,6 +269,7 @@ func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interfac
 
 	d.Set("pricing_details_set", pds)
 
+>>>>>>> TPD-451
 	d.Set("request_id", resp.RequestId)
 
 	return nil
