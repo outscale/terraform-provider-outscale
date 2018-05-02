@@ -40,6 +40,15 @@ func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFu
 }
 
 var testAccOutscaleSnapshotExportTaskConfig = `
+resource "outscale_volume" "test" {
+	availability_zone = "eu-west-2a"
+	size = 1
+}
+
+resource "outscale_snapshot" "test" {
+	volume_id = "${outscale_volume.test.id}"
+}
+
 resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
     count = 1
 
@@ -47,6 +56,6 @@ resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
 			disk_image_format = "raw"
 			osu_bucket = "test"
 		}
-    snapshot_id = "snap-5bcc0764"
+    snapshot_id = "${outscale_snapshot.test.id}"
 }
 `
