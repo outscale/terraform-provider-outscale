@@ -104,6 +104,11 @@ type VMService interface {
 	DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error)
 	DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuotasOutput, error)
 	DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error)
+	CreateNetworkInterface(input *CreateNetworkInterfaceInput) (*CreateNetworkInterfaceOutput, error)
+	DeleteNetworkInterface(input *DeleteNetworkInterfaceInput) (*DeleteNetworkInterfaceOutput, error)
+	DescribeNetworkInterfaces(input *DescribeNetworkInterfacesInput) (*DescribeNetworkInterfacesOutput, error)
+	ModifyNetworkInterfaceAttribute(input *ModifyNetworkInterfaceAttributeInput) (*ModifyNetworkInterfaceAttributeOutput, error)
+	DescribeNetworkInterfaceAttribute(input *DescribeNetworkInterfaceAttributeInput) (*DescribeNetworkInterfaceAttributeOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1403,6 +1408,118 @@ func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeReg
 
 	if input == nil {
 		input = &DescribeRegionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateNetworkInterface(input *CreateNetworkInterfaceInput) (*CreateNetworkInterfaceOutput, error) {
+	inURL := "/"
+	endpoint := "CreateNetworkInterface"
+	output := &CreateNetworkInterfaceOutput{}
+
+	if input == nil {
+		input = &CreateNetworkInterfaceInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteNetworkInterface(input *DeleteNetworkInterfaceInput) (*DeleteNetworkInterfaceOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteNetworkInterface"
+	output := &DeleteNetworkInterfaceOutput{}
+
+	if input == nil {
+		input = &DeleteNetworkInterfaceInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeNetworkInterfaces(input *DescribeNetworkInterfacesInput) (*DescribeNetworkInterfacesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeNetworkInterfaces"
+	output := &DescribeNetworkInterfacesOutput{}
+
+	if input == nil {
+		input = &DescribeNetworkInterfacesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) ModifyNetworkInterfaceAttribute(input *ModifyNetworkInterfaceAttributeInput) (*ModifyNetworkInterfaceAttributeOutput, error) {
+
+	inURL := "/"
+	endpoint := "ModifyNetworkInterfaceAttribute"
+	output := &ModifyNetworkInterfaceAttributeOutput{}
+
+	if input == nil {
+		input = &ModifyNetworkInterfaceAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeNetworkInterfaceAttribute(input *DescribeNetworkInterfaceAttributeInput) (*DescribeNetworkInterfaceAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeNetworkInterfaceAttribute"
+	output := &DescribeNetworkInterfaceAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeNetworkInterfaceAttributeInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

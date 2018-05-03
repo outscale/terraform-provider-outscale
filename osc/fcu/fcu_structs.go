@@ -1,6 +1,7 @@
 package fcu
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awsutil"
@@ -6978,5 +6979,1135 @@ func (s *Region) SetEndpoint(v string) *Region {
 // SetRegionName sets the RegionName field's value.
 func (s *Region) SetRegionName(v string) *Region {
 	s.RegionName = &v
+	return s
+}
+
+//
+//
+// Create Network Interface
+
+// Contains the parameters for CreateNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInterfaceRequest
+type CreateNetworkInterfaceInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the network interface.
+	Description *string `locationName:"description" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The IDs of one or more security groups.
+	Groups []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
+
+	// The number of IPv6 addresses to assign to a network interface. Amazon EC2
+	// automatically selects the IPv6 addresses from the subnet range. You can't
+	// use this option if specifying specific IPv6 addresses. If your subnet has
+	// the AssignIpv6AddressOnCreation attribute set to true, you can specify 0
+	// to override this setting.
+	Ipv6AddressCount *int64 `locationName:"ipv6AddressCount" type:"integer"`
+
+	// One or more specific IPv6 addresses from the IPv6 CIDR block range of your
+	// subnet. You can't use this option if you're specifying a number of IPv6 addresses.
+	Ipv6Addresses []*InstanceIpv6Address `locationName:"ipv6Addresses" locationNameList:"item" type:"list"`
+
+	// The primary private IPv4 address of the network interface. If you don't specify
+	// an IPv4 address, Amazon EC2 selects one for you from the subnet's IPv4 CIDR
+	// range. If you specify an IP address, you cannot indicate any IP addresses
+	// specified in privateIpAddresses as primary (only one IP address can be designated
+	// as primary).
+	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
+
+	// One or more private IPv4 addresses.
+	PrivateIpAddresses []*PrivateIpAddressSpecification `locationName:"privateIpAddresses" locationNameList:"item" type:"list"`
+
+	// The number of secondary private IPv4 addresses to assign to a network interface.
+	// When you specify a number of secondary IPv4 addresses, Amazon EC2 selects
+	// these IP addresses within the subnet's IPv4 CIDR range. You can't specify
+	// this option and specify more than one private IP address using privateIpAddresses.
+	//
+	// The number of IP addresses you can assign to a network interface varies by
+	// instance type. For more information, see IP Addresses Per ENI Per Instance
+	// Type (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#AvailableIpPerENI)
+	// in the Amazon Virtual Private Cloud User Guide.
+	SecondaryPrivateIpAddressCount *int64 `locationName:"secondaryPrivateIpAddressCount" type:"integer"`
+
+	// The ID of the subnet to associate with the network interface.
+	//
+	// SubnetId is a required field
+	SubnetId *string `locationName:"subnetId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateNetworkInterfaceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateNetworkInterfaceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateNetworkInterfaceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateNetworkInterfaceInput"}
+	if s.SubnetId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetId"))
+	}
+	if s.PrivateIpAddresses != nil {
+		for i, v := range s.PrivateIpAddresses {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PrivateIpAddresses", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateNetworkInterfaceInput) SetDescription(v string) *CreateNetworkInterfaceInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateNetworkInterfaceInput) SetDryRun(v bool) *CreateNetworkInterfaceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetGroups sets the Groups field's value.
+func (s *CreateNetworkInterfaceInput) SetGroups(v []*string) *CreateNetworkInterfaceInput {
+	s.Groups = v
+	return s
+}
+
+// SetIpv6AddressCount sets the Ipv6AddressCount field's value.
+func (s *CreateNetworkInterfaceInput) SetIpv6AddressCount(v int64) *CreateNetworkInterfaceInput {
+	s.Ipv6AddressCount = &v
+	return s
+}
+
+// SetIpv6Addresses sets the Ipv6Addresses field's value.
+func (s *CreateNetworkInterfaceInput) SetIpv6Addresses(v []*InstanceIpv6Address) *CreateNetworkInterfaceInput {
+	s.Ipv6Addresses = v
+	return s
+}
+
+// SetPrivateIpAddress sets the PrivateIpAddress field's value.
+func (s *CreateNetworkInterfaceInput) SetPrivateIpAddress(v string) *CreateNetworkInterfaceInput {
+	s.PrivateIpAddress = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *CreateNetworkInterfaceInput) SetPrivateIpAddresses(v []*PrivateIpAddressSpecification) *CreateNetworkInterfaceInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+// SetSecondaryPrivateIpAddressCount sets the SecondaryPrivateIpAddressCount field's value.
+func (s *CreateNetworkInterfaceInput) SetSecondaryPrivateIpAddressCount(v int64) *CreateNetworkInterfaceInput {
+	s.SecondaryPrivateIpAddressCount = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *CreateNetworkInterfaceInput) SetSubnetId(v string) *CreateNetworkInterfaceInput {
+	s.SubnetId = &v
+	return s
+}
+
+// Contains the output of CreateNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateNetworkInterfaceResult
+type CreateNetworkInterfaceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the network interface.
+	NetworkInterface *NetworkInterface `locationName:"networkInterface" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateNetworkInterfaceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateNetworkInterfaceOutput) GoString() string {
+	return s.String()
+}
+
+// SetNetworkInterface sets the NetworkInterface field's value.
+func (s *CreateNetworkInterfaceOutput) SetNetworkInterface(v *NetworkInterface) *CreateNetworkInterfaceOutput {
+	s.NetworkInterface = v
+	return s
+}
+
+// Contains the parameters for DeleteNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInterfaceRequest
+type DeleteNetworkInterfaceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteNetworkInterfaceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteNetworkInterfaceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteNetworkInterfaceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteNetworkInterfaceInput"}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteNetworkInterfaceInput) SetDryRun(v bool) *DeleteNetworkInterfaceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *DeleteNetworkInterfaceInput) SetNetworkInterfaceId(v string) *DeleteNetworkInterfaceInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteNetworkInterfaceOutput
+type DeleteNetworkInterfaceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteNetworkInterfaceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteNetworkInterfaceOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for DescribeNetworkInterfaces.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfacesRequest
+type DescribeNetworkInterfacesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * addresses.private-ip-address - The private IPv4 addresses associated
+	//    with the network interface.
+	//
+	//    * addresses.primary - Whether the private IPv4 address is the primary
+	//    IP address associated with the network interface.
+	//
+	//    * addresses.association.public-ip - The association ID returned when the
+	//    network interface was associated with the Elastic IP address (IPv4).
+	//
+	//    * addresses.association.owner-id - The owner ID of the addresses associated
+	//    with the network interface.
+	//
+	//    * association.association-id - The association ID returned when the network
+	//    interface was associated with an IPv4 address.
+	//
+	//    * association.allocation-id - The allocation ID returned when you allocated
+	//    the Elastic IP address (IPv4) for your network interface.
+	//
+	//    * association.ip-owner-id - The owner of the Elastic IP address (IPv4)
+	//    associated with the network interface.
+	//
+	//    * association.public-ip - The address of the Elastic IP address (IPv4)
+	//    bound to the network interface.
+	//
+	//    * association.public-dns-name - The public DNS name for the network interface
+	//    (IPv4).
+	//
+	//    * attachment.attachment-id - The ID of the interface attachment.
+	//
+	//    * attachment.attach.time - The time that the network interface was attached
+	//    to an instance.
+	//
+	//    * attachment.delete-on-termination - Indicates whether the attachment
+	//    is deleted when an instance is terminated.
+	//
+	//    * attachment.device-index - The device index to which the network interface
+	//    is attached.
+	//
+	//    * attachment.instance-id - The ID of the instance to which the network
+	//    interface is attached.
+	//
+	//    * attachment.instance-owner-id - The owner ID of the instance to which
+	//    the network interface is attached.
+	//
+	//    * attachment.nat-gateway-id - The ID of the NAT gateway to which the network
+	//    interface is attached.
+	//
+	//    * attachment.status - The status of the attachment (attaching | attached
+	//    | detaching | detached).
+	//
+	//    * availability-zone - The Availability Zone of the network interface.
+	//
+	//    * description - The description of the network interface.
+	//
+	//    * group-id - The ID of a security group associated with the network interface.
+	//
+	//    * group-name - The name of a security group associated with the network
+	//    interface.
+	//
+	//    * ipv6-addresses.ipv6-address - An IPv6 address associated with the network
+	//    interface.
+	//
+	//    * mac-address - The MAC address of the network interface.
+	//
+	//    * network-interface-id - The ID of the network interface.
+	//
+	//    * owner-id - The AWS account ID of the network interface owner.
+	//
+	//    * private-ip-address - The private IPv4 address or addresses of the network
+	//    interface.
+	//
+	//    * private-dns-name - The private DNS name of the network interface (IPv4).
+	//
+	//    * requester-id - The ID of the entity that launched the instance on your
+	//    behalf (for example, AWS Management Console, Auto Scaling, and so on).
+	//
+	//    * requester-managed - Indicates whether the network interface is being
+	//    managed by an AWS service (for example, AWS Management Console, Auto Scaling,
+	//    and so on).
+	//
+	//    * source-desk-check - Indicates whether the network interface performs
+	//    source/destination checking. A value of true means checking is enabled,
+	//    and false means checking is disabled. The value must be false for the
+	//    network interface to perform network address translation (NAT) in your
+	//    VPC.
+	//
+	//    * status - The status of the network interface. If the network interface
+	//    is not attached to an instance, the status is available; if a network
+	//    interface is attached to an instance the status is in-use.
+	//
+	//    * subnet-id - The ID of the subnet for the network interface.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-id - The ID of the VPC for the network interface.
+	Filters []*Filter `locationName:"filter" locationNameList:"Filter" type:"list"`
+
+	// One or more network interface IDs.
+	//
+	// Default: Describes all your network interfaces.
+	NetworkInterfaceIds []*string `locationName:"NetworkInterfaceId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeNetworkInterfacesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNetworkInterfacesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeNetworkInterfacesInput) SetDryRun(v bool) *DescribeNetworkInterfacesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeNetworkInterfacesInput) SetFilters(v []*Filter) *DescribeNetworkInterfacesInput {
+	s.Filters = v
+	return s
+}
+
+// SetNetworkInterfaceIds sets the NetworkInterfaceIds field's value.
+func (s *DescribeNetworkInterfacesInput) SetNetworkInterfaceIds(v []*string) *DescribeNetworkInterfacesInput {
+	s.NetworkInterfaceIds = v
+	return s
+}
+
+// Contains the output of DescribeNetworkInterfaces.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfacesResult
+type DescribeNetworkInterfacesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about one or more network interfaces.
+	NetworkInterfaces []*NetworkInterface `locationName:"networkInterfaceSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeNetworkInterfacesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNetworkInterfacesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNetworkInterfaces sets the NetworkInterfaces field's value.
+func (s *DescribeNetworkInterfacesOutput) SetNetworkInterfaces(v []*NetworkInterface) *DescribeNetworkInterfacesOutput {
+	s.NetworkInterfaces = v
+	return s
+}
+
+// Contains the parameters for ModifyNetworkInterfaceAttribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyNetworkInterfaceAttributeRequest
+type ModifyNetworkInterfaceAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the interface attachment. If modifying the 'delete on termination'
+	// attribute, you must specify the ID of the interface attachment.
+	Attachment *NetworkInterfaceAttachmentChanges `locationName:"attachment" type:"structure"`
+
+	// A description for the network interface.
+	Description *AttributeValue `locationName:"description" type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Changes the security groups for the network interface. The new set of groups
+	// you specify replaces the current set. You must specify at least one group,
+	// even if it's just the default security group in the VPC. You must specify
+	// the ID of the security group, not the name.
+	Groups []*string `locationName:"SecurityGroupId" locationNameList:"SecurityGroupId" type:"list"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+
+	// Indicates whether source/destination checking is enabled. A value of true
+	// means checking is enabled, and false means checking is disabled. This value
+	// must be false for a NAT instance to perform NAT. For more information, see
+	// NAT Instances (http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html)
+	// in the Amazon Virtual Private Cloud User Guide.
+	SourceDestCheck *AttributeBooleanValue `locationName:"sourceDestCheck" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyNetworkInterfaceAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyNetworkInterfaceAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyNetworkInterfaceAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyNetworkInterfaceAttributeInput"}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttachment sets the Attachment field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetAttachment(v *NetworkInterfaceAttachmentChanges) *ModifyNetworkInterfaceAttributeInput {
+	s.Attachment = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetDescription(v *AttributeValue) *ModifyNetworkInterfaceAttributeInput {
+	s.Description = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetDryRun(v bool) *ModifyNetworkInterfaceAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetGroups sets the Groups field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetGroups(v []*string) *ModifyNetworkInterfaceAttributeInput {
+	s.Groups = v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetNetworkInterfaceId(v string) *ModifyNetworkInterfaceAttributeInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetSourceDestCheck sets the SourceDestCheck field's value.
+func (s *ModifyNetworkInterfaceAttributeInput) SetSourceDestCheck(v *AttributeBooleanValue) *ModifyNetworkInterfaceAttributeInput {
+	s.SourceDestCheck = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyNetworkInterfaceAttributeOutput
+type ModifyNetworkInterfaceAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyNetworkInterfaceAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyNetworkInterfaceAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for DescribeNetworkInterfaceAttribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfaceAttributeRequest
+type DescribeNetworkInterfaceAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The attribute of the network interface. This parameter is required.
+	Attribute *string `locationName:"attribute" type:"string" enum:"NetworkInterfaceAttribute"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeNetworkInterfaceAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNetworkInterfaceAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeNetworkInterfaceAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeNetworkInterfaceAttributeInput"}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeNetworkInterfaceAttributeInput) SetAttribute(v string) *DescribeNetworkInterfaceAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeNetworkInterfaceAttributeInput) SetDryRun(v bool) *DescribeNetworkInterfaceAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *DescribeNetworkInterfaceAttributeInput) SetNetworkInterfaceId(v string) *DescribeNetworkInterfaceAttributeInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// Contains the output of DescribeNetworkInterfaceAttribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeNetworkInterfaceAttributeResult
+type DescribeNetworkInterfaceAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The attachment (if any) of the network interface.
+	Attachment *NetworkInterfaceAttachment `locationName:"attachment" type:"structure"`
+
+	// The description of the network interface.
+	Description *AttributeValue `locationName:"description" type:"structure"`
+
+	// The security groups associated with the network interface.
+	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// Indicates whether source/destination checking is enabled.
+	SourceDestCheck *AttributeBooleanValue `locationName:"sourceDestCheck" type:"structure"`
+}
+
+// String returns the string representation
+func (s DescribeNetworkInterfaceAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeNetworkInterfaceAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttachment sets the Attachment field's value.
+func (s *DescribeNetworkInterfaceAttributeOutput) SetAttachment(v *NetworkInterfaceAttachment) *DescribeNetworkInterfaceAttributeOutput {
+	s.Attachment = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeNetworkInterfaceAttributeOutput) SetDescription(v *AttributeValue) *DescribeNetworkInterfaceAttributeOutput {
+	s.Description = v
+	return s
+}
+
+// SetGroups sets the Groups field's value.
+func (s *DescribeNetworkInterfaceAttributeOutput) SetGroups(v []*GroupIdentifier) *DescribeNetworkInterfaceAttributeOutput {
+	s.Groups = v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *DescribeNetworkInterfaceAttributeOutput) SetNetworkInterfaceId(v string) *DescribeNetworkInterfaceAttributeOutput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetSourceDestCheck sets the SourceDestCheck field's value.
+func (s *DescribeNetworkInterfaceAttributeOutput) SetSourceDestCheck(v *AttributeBooleanValue) *DescribeNetworkInterfaceAttributeOutput {
+	s.SourceDestCheck = v
+	return s
+}
+
+// Describes a network interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterface
+type NetworkInterface struct {
+	_ struct{} `type:"structure"`
+
+	// The association information for an Elastic IP address (IPv4) associated with
+	// the network interface.
+	Association *NetworkInterfaceAssociation `locationName:"association" type:"structure"`
+
+	// The network interface attachment.
+	Attachment *NetworkInterfaceAttachment `locationName:"attachment" type:"structure"`
+
+	// The Availability Zone.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// A description.
+	Description *string `locationName:"description" type:"string"`
+
+	// Any security groups for the network interface.
+	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
+
+	// The type of interface.
+	InterfaceType *string `locationName:"interfaceType" type:"string" enum:"NetworkInterfaceType"`
+
+	// The IPv6 addresses associated with the network interface.
+	Ipv6Addresses []*NetworkInterfaceIpv6Address `locationName:"ipv6AddressesSet" locationNameList:"item" type:"list"`
+
+	// The MAC address.
+	MacAddress *string `locationName:"macAddress" type:"string"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
+
+	// The AWS account ID of the owner of the network interface.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The private DNS name.
+	PrivateDnsName *string `locationName:"privateDnsName" type:"string"`
+
+	// The IPv4 address of the network interface within the subnet.
+	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
+
+	// The private IPv4 addresses associated with the network interface.
+	PrivateIpAddresses []*NetworkInterfacePrivateIpAddress `locationName:"privateIpAddressesSet" locationNameList:"item" type:"list"`
+
+	// The ID of the entity that launched the instance on your behalf (for example,
+	// AWS Management Console or Auto Scaling).
+	RequesterId *string `locationName:"requesterId" type:"string"`
+
+	// Indicates whether the network interface is being managed by AWS.
+	RequesterManaged *bool `locationName:"requesterManaged" type:"boolean"`
+
+	// Indicates whether traffic to or from the instance is validated.
+	SourceDestCheck *bool `locationName:"sourceDestCheck" type:"boolean"`
+
+	// The status of the network interface.
+	Status *string `locationName:"status" type:"string" enum:"NetworkInterfaceStatus"`
+
+	// The ID of the subnet.
+	SubnetId *string `locationName:"subnetId" type:"string"`
+
+	// Any tags assigned to the network interface.
+	TagSet []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s NetworkInterface) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterface) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *NetworkInterface) SetAssociation(v *NetworkInterfaceAssociation) *NetworkInterface {
+	s.Association = v
+	return s
+}
+
+// SetAttachment sets the Attachment field's value.
+func (s *NetworkInterface) SetAttachment(v *NetworkInterfaceAttachment) *NetworkInterface {
+	s.Attachment = v
+	return s
+}
+
+// SetAvailabilityZone sets the AvailabilityZone field's value.
+func (s *NetworkInterface) SetAvailabilityZone(v string) *NetworkInterface {
+	s.AvailabilityZone = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *NetworkInterface) SetDescription(v string) *NetworkInterface {
+	s.Description = &v
+	return s
+}
+
+// SetGroups sets the Groups field's value.
+func (s *NetworkInterface) SetGroups(v []*GroupIdentifier) *NetworkInterface {
+	s.Groups = v
+	return s
+}
+
+// SetInterfaceType sets the InterfaceType field's value.
+func (s *NetworkInterface) SetInterfaceType(v string) *NetworkInterface {
+	s.InterfaceType = &v
+	return s
+}
+
+// SetIpv6Addresses sets the Ipv6Addresses field's value.
+func (s *NetworkInterface) SetIpv6Addresses(v []*NetworkInterfaceIpv6Address) *NetworkInterface {
+	s.Ipv6Addresses = v
+	return s
+}
+
+// SetMacAddress sets the MacAddress field's value.
+func (s *NetworkInterface) SetMacAddress(v string) *NetworkInterface {
+	s.MacAddress = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *NetworkInterface) SetNetworkInterfaceId(v string) *NetworkInterface {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *NetworkInterface) SetOwnerId(v string) *NetworkInterface {
+	s.OwnerId = &v
+	return s
+}
+
+// SetPrivateDnsName sets the PrivateDnsName field's value.
+func (s *NetworkInterface) SetPrivateDnsName(v string) *NetworkInterface {
+	s.PrivateDnsName = &v
+	return s
+}
+
+// SetPrivateIpAddress sets the PrivateIpAddress field's value.
+func (s *NetworkInterface) SetPrivateIpAddress(v string) *NetworkInterface {
+	s.PrivateIpAddress = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *NetworkInterface) SetPrivateIpAddresses(v []*NetworkInterfacePrivateIpAddress) *NetworkInterface {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+// SetRequesterId sets the RequesterId field's value.
+func (s *NetworkInterface) SetRequesterId(v string) *NetworkInterface {
+	s.RequesterId = &v
+	return s
+}
+
+// SetRequesterManaged sets the RequesterManaged field's value.
+func (s *NetworkInterface) SetRequesterManaged(v bool) *NetworkInterface {
+	s.RequesterManaged = &v
+	return s
+}
+
+// SetSourceDestCheck sets the SourceDestCheck field's value.
+func (s *NetworkInterface) SetSourceDestCheck(v bool) *NetworkInterface {
+	s.SourceDestCheck = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *NetworkInterface) SetStatus(v string) *NetworkInterface {
+	s.Status = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *NetworkInterface) SetSubnetId(v string) *NetworkInterface {
+	s.SubnetId = &v
+	return s
+}
+
+// SetTagSet sets the TagSet field's value.
+func (s *NetworkInterface) SetTagSet(v []*Tag) *NetworkInterface {
+	s.TagSet = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *NetworkInterface) SetVpcId(v string) *NetworkInterface {
+	s.VpcId = &v
+	return s
+}
+
+// Describes association information for an Elastic IP address (IPv4 only).
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterfaceAssociation
+type NetworkInterfaceAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The allocation ID.
+	AllocationId *string `locationName:"allocationId" type:"string"`
+
+	// The association ID.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The ID of the Elastic IP address owner.
+	IpOwnerId *string `locationName:"ipOwnerId" type:"string"`
+
+	// The public DNS name.
+	PublicDnsName *string `locationName:"publicDnsName" type:"string"`
+
+	// The address of the Elastic IP address bound to the network interface.
+	PublicIp *string `locationName:"publicIp" type:"string"`
+}
+
+// String returns the string representation
+func (s NetworkInterfaceAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterfaceAssociation) GoString() string {
+	return s.String()
+}
+
+// SetAllocationId sets the AllocationId field's value.
+func (s *NetworkInterfaceAssociation) SetAllocationId(v string) *NetworkInterfaceAssociation {
+	s.AllocationId = &v
+	return s
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *NetworkInterfaceAssociation) SetAssociationId(v string) *NetworkInterfaceAssociation {
+	s.AssociationId = &v
+	return s
+}
+
+// SetIpOwnerId sets the IpOwnerId field's value.
+func (s *NetworkInterfaceAssociation) SetIpOwnerId(v string) *NetworkInterfaceAssociation {
+	s.IpOwnerId = &v
+	return s
+}
+
+// SetPublicDnsName sets the PublicDnsName field's value.
+func (s *NetworkInterfaceAssociation) SetPublicDnsName(v string) *NetworkInterfaceAssociation {
+	s.PublicDnsName = &v
+	return s
+}
+
+// SetPublicIp sets the PublicIp field's value.
+func (s *NetworkInterfaceAssociation) SetPublicIp(v string) *NetworkInterfaceAssociation {
+	s.PublicIp = &v
+	return s
+}
+
+// Describes a network interface attachment.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterfaceAttachment
+type NetworkInterfaceAttachment struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp indicating when the attachment initiated.
+	AttachTime *time.Time `locationName:"attachTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The ID of the network interface attachment.
+	AttachmentId *string `locationName:"attachmentId" type:"string"`
+
+	// Indicates whether the network interface is deleted when the instance is terminated.
+	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
+
+	// The device index of the network interface attachment on the instance.
+	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer"`
+
+	// The ID of the instance.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The AWS account ID of the owner of the instance.
+	InstanceOwnerId *string `locationName:"instanceOwnerId" type:"string"`
+
+	// The attachment state.
+	Status *string `locationName:"status" type:"string" enum:"AttachmentStatus"`
+}
+
+// String returns the string representation
+func (s NetworkInterfaceAttachment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterfaceAttachment) GoString() string {
+	return s.String()
+}
+
+// SetAttachTime sets the AttachTime field's value.
+func (s *NetworkInterfaceAttachment) SetAttachTime(v time.Time) *NetworkInterfaceAttachment {
+	s.AttachTime = &v
+	return s
+}
+
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *NetworkInterfaceAttachment) SetAttachmentId(v string) *NetworkInterfaceAttachment {
+	s.AttachmentId = &v
+	return s
+}
+
+// SetDeleteOnTermination sets the DeleteOnTermination field's value.
+func (s *NetworkInterfaceAttachment) SetDeleteOnTermination(v bool) *NetworkInterfaceAttachment {
+	s.DeleteOnTermination = &v
+	return s
+}
+
+// SetDeviceIndex sets the DeviceIndex field's value.
+func (s *NetworkInterfaceAttachment) SetDeviceIndex(v int64) *NetworkInterfaceAttachment {
+	s.DeviceIndex = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *NetworkInterfaceAttachment) SetInstanceId(v string) *NetworkInterfaceAttachment {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceOwnerId sets the InstanceOwnerId field's value.
+func (s *NetworkInterfaceAttachment) SetInstanceOwnerId(v string) *NetworkInterfaceAttachment {
+	s.InstanceOwnerId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *NetworkInterfaceAttachment) SetStatus(v string) *NetworkInterfaceAttachment {
+	s.Status = &v
+	return s
+}
+
+// Describes an IPv6 address associated with a network interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterfaceIpv6Address
+type NetworkInterfaceIpv6Address struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv6 address.
+	Ipv6Address *string `locationName:"ipv6Address" type:"string"`
+}
+
+// String returns the string representation
+func (s NetworkInterfaceIpv6Address) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterfaceIpv6Address) GoString() string {
+	return s.String()
+}
+
+// SetIpv6Address sets the Ipv6Address field's value.
+func (s *NetworkInterfaceIpv6Address) SetIpv6Address(v string) *NetworkInterfaceIpv6Address {
+	s.Ipv6Address = &v
+	return s
+}
+
+// Describes the private IPv4 address of a network interface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterfacePrivateIpAddress
+type NetworkInterfacePrivateIpAddress struct {
+	_ struct{} `type:"structure"`
+
+	// The association information for an Elastic IP address (IPv4) associated with
+	// the network interface.
+	Association *NetworkInterfaceAssociation `locationName:"association" type:"structure"`
+
+	// Indicates whether this IPv4 address is the primary private IPv4 address of
+	// the network interface.
+	Primary *bool `locationName:"primary" type:"boolean"`
+
+	// The private DNS name.
+	PrivateDnsName *string `locationName:"privateDnsName" type:"string"`
+
+	// The private IPv4 address.
+	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
+}
+
+// String returns the string representation
+func (s NetworkInterfacePrivateIpAddress) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterfacePrivateIpAddress) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *NetworkInterfacePrivateIpAddress) SetAssociation(v *NetworkInterfaceAssociation) *NetworkInterfacePrivateIpAddress {
+	s.Association = v
+	return s
+}
+
+// SetPrimary sets the Primary field's value.
+func (s *NetworkInterfacePrivateIpAddress) SetPrimary(v bool) *NetworkInterfacePrivateIpAddress {
+	s.Primary = &v
+	return s
+}
+
+// SetPrivateDnsName sets the PrivateDnsName field's value.
+func (s *NetworkInterfacePrivateIpAddress) SetPrivateDnsName(v string) *NetworkInterfacePrivateIpAddress {
+	s.PrivateDnsName = &v
+	return s
+}
+
+// SetPrivateIpAddress sets the PrivateIpAddress field's value.
+func (s *NetworkInterfacePrivateIpAddress) SetPrivateIpAddress(v string) *NetworkInterfacePrivateIpAddress {
+	s.PrivateIpAddress = &v
+	return s
+}
+
+// Describes an IPv6 address.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/InstanceIpv6Address
+type InstanceIpv6Address struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv6 address.
+	Ipv6Address *string `locationName:"ipv6Address" type:"string"`
+}
+
+// String returns the string representation
+func (s InstanceIpv6Address) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InstanceIpv6Address) GoString() string {
+	return s.String()
+}
+
+// SetIpv6Address sets the Ipv6Address field's value.
+func (s *InstanceIpv6Address) SetIpv6Address(v string) *InstanceIpv6Address {
+	s.Ipv6Address = &v
+	return s
+}
+
+// Describes an attachment change.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/NetworkInterfaceAttachmentChanges
+type NetworkInterfaceAttachmentChanges struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface attachment.
+	AttachmentId *string `locationName:"attachmentId" type:"string"`
+
+	// Indicates whether the network interface is deleted when the instance is terminated.
+	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
+}
+
+// String returns the string representation
+func (s NetworkInterfaceAttachmentChanges) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterfaceAttachmentChanges) GoString() string {
+	return s.String()
+}
+
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *NetworkInterfaceAttachmentChanges) SetAttachmentId(v string) *NetworkInterfaceAttachmentChanges {
+	s.AttachmentId = &v
+	return s
+}
+
+// SetDeleteOnTermination sets the DeleteOnTermination field's value.
+func (s *NetworkInterfaceAttachmentChanges) SetDeleteOnTermination(v bool) *NetworkInterfaceAttachmentChanges {
+	s.DeleteOnTermination = &v
 	return s
 }
