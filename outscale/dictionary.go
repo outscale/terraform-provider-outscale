@@ -53,6 +53,7 @@ func init() {
 			"outscale_snapshot":                      resourceOutscaleSnapshot,
 			"outscale_image_register":                resourceOutscaleImageRegister,
 			"outscale_image_launch_permission":       resourceOutscaleImageLaunchPermission,
+			"outscale_lin_peering":                   resourceOutscaleLinPeeringConnection,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                      resourceOutscaleOApiVM,
@@ -76,6 +77,7 @@ func init() {
 			"outscale_api_key":                 resourceOutscaleOAPIIamAccessKey,
 			"outscale_keypair_importation":     resourceOutscaleOAPIKeyPairImportation,
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission,
+			"outscale_lin_peering":             resourceOutscaleOAPILinPeeringConnection,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
