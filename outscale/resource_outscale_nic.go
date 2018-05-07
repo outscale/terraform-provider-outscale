@@ -300,7 +300,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	//	conn := meta.(*OutscaleClient).FCU
 
-	conn := meta.(*AWSClient).ec2conn
+	conn := meta.(*OutscaleClient).FCU
 	describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{aws.String(d.Id())},
 	}
@@ -346,7 +346,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 //Delete Nic
 func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	//	conn := meta.(*OutscaleClient).FCU
-	conn := meta.(*AWSClient).ec2conn
+	conn := meta.(*OutscaleClient).FCU
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
@@ -355,7 +355,7 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 		return detach_err
 	}
 
-	deleteEniOpts := ec2.DeleteNetworkInterfaceInput{
+	deleteEniOpts := fcu.DeleteNetworkInterfaceInput{
 		NetworkInterfaceId: aws.String(d.Id()),
 	}
 	if _, err := conn.DeleteNetworkInterface(&deleteEniOpts); err != nil {
@@ -368,7 +368,7 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 //Update Nic
 func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	//	conn := meta.(*OutscaleClient).FCU
-	conn := meta.(*AWSClient).ec2conn
+	conn := meta.(*OutscaleClient).FCU
 	d.Partial(true)
 
 	if d.HasChange("attachment") {
@@ -540,7 +540,7 @@ func resourceAwsEniAttachmentHash(v interface{}) int {
 	return hashcode.String(buf.String())
 }
 
-func networkInterfaceAttachmentRefreshFunc(conn *ec2.EC2, id string) resource.StateRefreshFunc {
+func networkInterfaceAttachmentRefreshFunc(*fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
