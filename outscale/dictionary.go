@@ -54,6 +54,7 @@ func init() {
 			"outscale_image_register":                resourceOutscaleImageRegister,
 			"outscale_image_launch_permission":       resourceOutscaleImageLaunchPermission,
 			"outscale_lin_peering":                   resourceOutscaleLinPeeringConnection,
+			"outscale_lin_peering_acceptation":       resourceOutscaleLinPeeringConnectionAccepter,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                      resourceOutscaleOApiVM,

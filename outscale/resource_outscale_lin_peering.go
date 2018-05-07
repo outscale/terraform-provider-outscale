@@ -66,6 +66,10 @@ func resourceOutscaleLinPeeringConnection() *schema.Resource {
 			"requester_vpc_info": vpcPeeringConnectionOptionsSchema(),
 			"tag_set":            tagsSchemaComputed(),
 			"tag":                tagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -109,7 +113,7 @@ func resourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 	if err := setTags(conn, d); err != nil {
 		return err
 	} else {
-		d.SetPartial("tags")
+		d.SetPartial("tag_set")
 	}
 
 	log.Printf("[INFO] VPC Peering Connection ID: %s", d.Id())
@@ -134,19 +138,42 @@ func resourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 func resourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	pcRaw, status, err := resourceOutscaleLinPeeringConnectionStateRefreshFunc(conn, d.Id())()
+	var resp *fcu.DescribeVpcPeeringConnectionsOutput
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = conn.VM.DescribeVpcPeeringConnections(&fcu.DescribeVpcPeeringConnectionsInput{
+			VpcPeeringConnectionIds: []*string{aws.String(d.Id())},
+		})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
+			resp = nil
+		} else {
+			log.Printf("Error reading VPC Peering Connection details: %s", err)
+			return err
+		}
+	}
+
+	pc := resp.VpcPeeringConnections[0]
+
 	// Allow a failed VPC Peering Connection to fallthrough,
 	// to allow rest of the logic below to do its work.
-	if err != nil && status != "failed" {
+	if err != nil && *pc.Status.Code != "failed" {
 		return err
 	}
 
-	if pcRaw == nil {
+	if resp == nil {
 		d.SetId("")
 		return nil
 	}
-
-	pc := pcRaw.(*fcu.VpcPeeringConnection)
 
 	// The failed status is a status that we can assume just means the
 	// connection is gone. Destruction isn't allowed, and it eventually
@@ -204,6 +231,8 @@ func resourceOutscaleLinPeeringRead(d *schema.ResourceData, meta interface{}) er
 	if err := d.Set("tag_set", tagsToMap(pc.Tags)); err != nil {
 		return errwrap.Wrapf("Error setting VPC Peering Connection tags: {{err}}", err)
 	}
+
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
