@@ -8366,3 +8366,540 @@ func (s *DescribeImageAttributeOutput) SetSriovNetSupport(v *AttributeValue) *De
 	s.SriovNetSupport = v
 	return s
 }
+
+type CreateVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The AWS account ID of the owner of the peer VPC.
+	//
+	// Default: Your AWS account ID
+	PeerOwnerId *string `locationName:"peerOwnerId" type:"string"`
+
+	// The ID of the VPC with which you are creating the VPC peering connection.
+	PeerVpcId *string `locationName:"peerVpcId" type:"string"`
+
+	// The ID of the requester VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVpcPeeringConnectionInput) SetDryRun(v bool) *CreateVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPeerOwnerId sets the PeerOwnerId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetPeerOwnerId(v string) *CreateVpcPeeringConnectionInput {
+	s.PeerOwnerId = &v
+	return s
+}
+
+// SetPeerVpcId sets the PeerVpcId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetPeerVpcId(v string) *CreateVpcPeeringConnectionInput {
+	s.PeerVpcId = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetVpcId(v string) *CreateVpcPeeringConnectionInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of CreateVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcPeeringConnectionResult
+type CreateVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection.
+	VpcPeeringConnection *VpcPeeringConnection `locationName:"vpcPeeringConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnection sets the VpcPeeringConnection field's value.
+func (s *CreateVpcPeeringConnectionOutput) SetVpcPeeringConnection(v *VpcPeeringConnection) *CreateVpcPeeringConnectionOutput {
+	s.VpcPeeringConnection = v
+	return s
+}
+
+type VpcPeeringConnection struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the accepter VPC. CIDR block information is not returned
+	// when creating a VPC peering connection, or when describing a VPC peering
+	// connection that's in the initiating-request or pending-acceptance state.
+	AccepterVpcInfo *VpcPeeringConnectionVpcInfo `locationName:"accepterVpcInfo" type:"structure"`
+
+	// The time that an unaccepted VPC peering connection will expire.
+	ExpirationTime *time.Time `locationName:"expirationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Information about the requester VPC.
+	RequesterVpcInfo *VpcPeeringConnectionVpcInfo `locationName:"requesterVpcInfo" type:"structure"`
+
+	// The status of the VPC peering connection.
+	Status *VpcPeeringConnectionStateReason `locationName:"status" type:"structure"`
+
+	// Any tags assigned to the resource.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+type VpcPeeringConnectionVpcInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR block for the VPC.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// The IPv6 CIDR block for the VPC.
+	Ipv6CidrBlockSet []*Ipv6CidrBlock `locationName:"ipv6CidrBlockSet" locationNameList:"item" type:"list"`
+
+	// The AWS account ID of the VPC owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// Information about the VPC peering connection options for the accepter or
+	// requester VPC.
+	PeeringOptions *VpcPeeringConnectionOptionsDescription `locationName:"peeringOptions" type:"structure"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+type Ipv6CidrBlock struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv6 CIDR block.
+	Ipv6CidrBlock *string `locationName:"ipv6CidrBlock" type:"string"`
+}
+
+type VpcPeeringConnectionOptionsDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether a local VPC can resolve public DNS hostnames to private
+	// IP addresses when queried from instances in a peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `locationName:"allowDnsResolutionFromRemoteVpc" type:"boolean"`
+
+	// Indicates whether a local ClassicLink connection can communicate with the
+	// peer VPC over the VPC peering connection.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `locationName:"allowEgressFromLocalClassicLinkToRemoteVpc" type:"boolean"`
+
+	// Indicates whether a local VPC can communicate with a ClassicLink connection
+	// in the peer VPC over the VPC peering connection.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `locationName:"allowEgressFromLocalVpcToRemoteClassicLink" type:"boolean"`
+}
+
+type VpcPeeringConnectionStateReason struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the VPC peering connection.
+	Code *string `locationName:"code" type:"string" enum:"VpcPeeringConnectionStateReasonCode"`
+
+	// A message that provides more information about the status, if applicable.
+	Message *string `locationName:"message" type:"string"`
+}
+
+type DescribeVpcPeeringConnectionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * accepter-vpc-info.cidr-block - The IPv4 CIDR block of the peer VPC.
+	//
+	//    * accepter-vpc-info.owner-id - The AWS account ID of the owner of the
+	//    peer VPC.
+	//
+	//    * accepter-vpc-info.vpc-id - The ID of the peer VPC.
+	//
+	//    * expiration-time - The expiration date and time for the VPC peering connection.
+	//
+	//    * requester-vpc-info.cidr-block - The IPv4 CIDR block of the requester's
+	//    VPC.
+	//
+	//    * requester-vpc-info.owner-id - The AWS account ID of the owner of the
+	//    requester VPC.
+	//
+	//    * requester-vpc-info.vpc-id - The ID of the requester VPC.
+	//
+	//    * status-code - The status of the VPC peering connection (pending-acceptance
+	//    | failed | expired | provisioning | active | deleted | rejected).
+	//
+	//    * status-message - A message that provides more information about the
+	//    status of the VPC peering connection, if applicable.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-peering-connection-id - The ID of the VPC peering connection.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more VPC peering connection IDs.
+	//
+	// Default: Describes all your VPC peering connections.
+	VpcPeeringConnectionIds []*string `locationName:"VpcPeeringConnectionId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVpcPeeringConnectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcPeeringConnectionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetDryRun(v bool) *DescribeVpcPeeringConnectionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetFilters(v []*Filter) *DescribeVpcPeeringConnectionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpcPeeringConnectionIds sets the VpcPeeringConnectionIds field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetVpcPeeringConnectionIds(v []*string) *DescribeVpcPeeringConnectionsInput {
+	s.VpcPeeringConnectionIds = v
+	return s
+}
+
+// Contains the output of DescribeVpcPeeringConnections.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcPeeringConnectionsResult
+type DescribeVpcPeeringConnectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connections.
+	VpcPeeringConnections []*VpcPeeringConnection `locationName:"vpcPeeringConnectionSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVpcPeeringConnectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcPeeringConnectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnections sets the VpcPeeringConnections field's value.
+func (s *DescribeVpcPeeringConnectionsOutput) SetVpcPeeringConnections(v []*VpcPeeringConnection) *DescribeVpcPeeringConnectionsOutput {
+	s.VpcPeeringConnections = v
+	return s
+}
+
+type AcceptVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+// String returns the string representation
+func (s AcceptVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AcceptVpcPeeringConnectionInput) SetDryRun(v bool) *AcceptVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *AcceptVpcPeeringConnectionInput) SetVpcPeeringConnectionId(v string) *AcceptVpcPeeringConnectionInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Contains the output of AcceptVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptVpcPeeringConnectionResult
+type AcceptVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection.
+	VpcPeeringConnection *VpcPeeringConnection `locationName:"vpcPeeringConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s AcceptVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnection sets the VpcPeeringConnection field's value.
+func (s *AcceptVpcPeeringConnectionOutput) SetVpcPeeringConnection(v *VpcPeeringConnection) *AcceptVpcPeeringConnectionOutput {
+	s.VpcPeeringConnection = v
+	return s
+}
+
+type ModifyVpcPeeringConnectionOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC peering connection options for the accepter VPC.
+	AccepterPeeringConnectionOptions *PeeringConnectionOptionsRequest `type:"structure"`
+
+	// Checks whether you have the required permissions for the operation, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The VPC peering connection options for the requester VPC.
+	RequesterPeeringConnectionOptions *PeeringConnectionOptionsRequest `type:"structure"`
+
+	// The ID of the VPC peering connection.
+	//
+	// VpcPeeringConnectionId is a required field
+	VpcPeeringConnectionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpcPeeringConnectionOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpcPeeringConnectionOptionsInput"}
+	if s.VpcPeeringConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcPeeringConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccepterPeeringConnectionOptions sets the AccepterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetAccepterPeeringConnectionOptions(v *PeeringConnectionOptionsRequest) *ModifyVpcPeeringConnectionOptionsInput {
+	s.AccepterPeeringConnectionOptions = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetDryRun(v bool) *ModifyVpcPeeringConnectionOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRequesterPeeringConnectionOptions sets the RequesterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetRequesterPeeringConnectionOptions(v *PeeringConnectionOptionsRequest) *ModifyVpcPeeringConnectionOptionsInput {
+	s.RequesterPeeringConnectionOptions = v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetVpcPeeringConnectionId(v string) *ModifyVpcPeeringConnectionOptionsInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcPeeringConnectionOptionsResult
+type ModifyVpcPeeringConnectionOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection options for the accepter VPC.
+	AccepterPeeringConnectionOptions *PeeringConnectionOptions `locationName:"accepterPeeringConnectionOptions" type:"structure"`
+
+	// Information about the VPC peering connection options for the requester VPC.
+	RequesterPeeringConnectionOptions *PeeringConnectionOptions `locationName:"requesterPeeringConnectionOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccepterPeeringConnectionOptions sets the AccepterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsOutput) SetAccepterPeeringConnectionOptions(v *PeeringConnectionOptions) *ModifyVpcPeeringConnectionOptionsOutput {
+	s.AccepterPeeringConnectionOptions = v
+	return s
+}
+
+// SetRequesterPeeringConnectionOptions sets the RequesterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsOutput) SetRequesterPeeringConnectionOptions(v *PeeringConnectionOptions) *ModifyVpcPeeringConnectionOptionsOutput {
+	s.RequesterPeeringConnectionOptions = v
+	return s
+}
+
+type PeeringConnectionOptions struct {
+	_ struct{} `type:"structure"`
+
+	// If true, enables a local VPC to resolve public DNS hostnames to private IP
+	// addresses when queried from instances in the peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `locationName:"allowDnsResolutionFromRemoteVpc" type:"boolean"`
+
+	// If true, enables outbound communication from an EC2-Classic instance that's
+	// linked to a local VPC via ClassicLink to instances in a peer VPC.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `locationName:"allowEgressFromLocalClassicLinkToRemoteVpc" type:"boolean"`
+
+	// If true, enables outbound communication from instances in a local VPC to
+	// an EC2-Classic instance that's linked to a peer VPC via ClassicLink.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `locationName:"allowEgressFromLocalVpcToRemoteClassicLink" type:"boolean"`
+}
+
+type PeeringConnectionOptionsRequest struct {
+	_ struct{} `type:"structure"`
+
+	// If true, enables a local VPC to resolve public DNS hostnames to private IP
+	// addresses when queried from instances in the peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `type:"boolean"`
+
+	// If true, enables outbound communication from an EC2-Classic instance that's
+	// linked to a local VPC via ClassicLink to instances in a peer VPC.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `type:"boolean"`
+
+	// If true, enables outbound communication from instances in a local VPC to
+	// an EC2-Classic instance that's linked to a peer VPC via ClassicLink.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `type:"boolean"`
+}
+
+type DeleteVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC peering connection.
+	//
+	// VpcPeeringConnectionId is a required field
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpcPeeringConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcPeeringConnectionInput"}
+	if s.VpcPeeringConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcPeeringConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVpcPeeringConnectionInput) SetDryRun(v bool) *DeleteVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *DeleteVpcPeeringConnectionInput) SetVpcPeeringConnectionId(v string) *DeleteVpcPeeringConnectionInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Contains the output of DeleteVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcPeeringConnectionResult
+type DeleteVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns true if the request succeeds; otherwise, it returns an error.
+	Return *bool `locationName:"return" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DeleteVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetReturn sets the Return field's value.
+func (s *DeleteVpcPeeringConnectionOutput) SetReturn(v bool) *DeleteVpcPeeringConnectionOutput {
+	s.Return = &v
+	return s
+}
