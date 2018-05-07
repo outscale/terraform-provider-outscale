@@ -8208,3 +8208,161 @@ type ReservedInstancesOffering struct {
 type PricingDetail struct {
 	Count *int64 `locationName:"count" type:"int64"`
 }
+
+type DescribeImageAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The AMI attribute.
+	//
+	// Note: Depending on your account privileges, the blockDeviceMapping attribute
+	// may return a Client.AuthFailure error. If this happens, use DescribeImages
+	// to get information about the block device mapping for the AMI.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"ImageAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the AMI.
+	//
+	// ImageId is a required field
+	ImageId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeImageAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeImageAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeImageAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeImageAttributeInput"}
+	if s.Attribute == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attribute"))
+	}
+	if s.ImageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImageId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeImageAttributeInput) SetAttribute(v string) *DescribeImageAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeImageAttributeInput) SetDryRun(v bool) *DescribeImageAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *DescribeImageAttributeInput) SetImageId(v string) *DescribeImageAttributeInput {
+	s.ImageId = &v
+	return s
+}
+
+// Describes an image attribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImageAttribute
+type DescribeImageAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more block device mapping entries.
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+
+	// A description for the AMI.
+	Description *AttributeValue `locationName:"description" type:"structure"`
+
+	// The ID of the AMI.
+	ImageId *string `locationName:"imageId" type:"string"`
+
+	// The kernel ID.
+	KernelId *AttributeValue `locationName:"kernel" type:"structure"`
+
+	// One or more launch permissions.
+	LaunchPermissions []*LaunchPermission `locationName:"launchPermission" locationNameList:"item" type:"list"`
+
+	// One or more product codes.
+	ProductCodes []*ProductCode `locationName:"productCodes" locationNameList:"item" type:"list"`
+
+	// The RAM disk ID.
+	RamdiskId *AttributeValue `locationName:"ramdisk" type:"structure"`
+
+	// Indicates whether enhanced networking with the Intel 82599 Virtual Function
+	// interface is enabled.
+	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
+	RequestId       *string         `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeImageAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeImageAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *DescribeImageAttributeOutput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *DescribeImageAttributeOutput {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeImageAttributeOutput) SetDescription(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.Description = v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *DescribeImageAttributeOutput) SetImageId(v string) *DescribeImageAttributeOutput {
+	s.ImageId = &v
+	return s
+}
+
+// SetKernelId sets the KernelId field's value.
+func (s *DescribeImageAttributeOutput) SetKernelId(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.KernelId = v
+	return s
+}
+
+// SetLaunchPermissions sets the LaunchPermissions field's value.
+func (s *DescribeImageAttributeOutput) SetLaunchPermissions(v []*LaunchPermission) *DescribeImageAttributeOutput {
+	s.LaunchPermissions = v
+	return s
+}
+
+// SetProductCodes sets the ProductCodes field's value.
+func (s *DescribeImageAttributeOutput) SetProductCodes(v []*ProductCode) *DescribeImageAttributeOutput {
+	s.ProductCodes = v
+	return s
+}
+
+// SetRamdiskId sets the RamdiskId field's value.
+func (s *DescribeImageAttributeOutput) SetRamdiskId(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.RamdiskId = v
+	return s
+}
+
+// SetSriovNetSupport sets the SriovNetSupport field's value.
+func (s *DescribeImageAttributeOutput) SetSriovNetSupport(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.SriovNetSupport = v
+	return s
+}
