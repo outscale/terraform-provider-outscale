@@ -136,6 +136,7 @@ func init() {
 			"outscale_reserved_vms_offer":    dataSourceOutscaleReservedVMOffer,
 			"outscale_snapshot":              dataSourceOutscaleSnapshot,
 			"outscale_snapshots":             dataSourceOutscaleSnapshots,
+			"outscale_lin_peering":           dataSourceOutscaleLinPeeringConnection,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -164,6 +165,7 @@ func init() {
 			"outscale_route_tables":          dataSourceOutscaleOAPIRouteTables,
 			"outscale_snapshot":              dataSourceOutscaleOAPISnapshot,
 			"outscale_snapshots":             dataSourceOutscaleOAPISnapshots,
+			"outscale_lin_peering":           dataSourceOutscaleOAPILinPeeringConnection,
 		},
 	}
 }
