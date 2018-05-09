@@ -17,14 +17,14 @@ func TestAccOutscaleENI_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nic.bar",
+		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleENIDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOutscaleENIConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.bar", &conf),
+					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
 					testAccCheckOutscaleENIAttributes(&conf),
 				),
 			},

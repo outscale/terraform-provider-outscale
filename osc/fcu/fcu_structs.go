@@ -7062,7 +7062,7 @@ func (s *CreateNetworkInterfaceInput) Validate() error {
 			if v == nil {
 				continue
 			}
-			if err := v.Validate(); err != nil {
+			if err := s.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PrivateIpAddresses", i), err.(request.ErrInvalidParams))
 			}
 		}

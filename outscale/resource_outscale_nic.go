@@ -164,7 +164,7 @@ func getNicSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"association": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -286,6 +286,9 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("tag_set")
 	}
 
+	d.Set("tag_set", make([]map[string]interface{}, 0))
+	d.Set("private_ip_address_set", make([]map[string]interface{}, 0))
+
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
 	return resourceOutscaleNicRead(d, meta)
@@ -339,22 +342,30 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("subnet_id", eni.SubnetId)
 
 	b := make(map[string]interface{})
-	b["allocation_id"] = aws.StringValue(eni.Association.AllocationId)
-	b["association_id"] = aws.StringValue(eni.Association.AssociationId)
-	b["ip_owner_id"] = aws.StringValue(eni.Association.IpOwnerId)
-	b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
-	b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
-	d.Set("association", b)
+	if eni.Association != nil {
+		b["allocation_id"] = aws.StringValue(eni.Association.AllocationId)
+		b["association_id"] = aws.StringValue(eni.Association.AssociationId)
+		b["ip_owner_id"] = aws.StringValue(eni.Association.IpOwnerId)
+		b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
+		b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
+	}
+	if err := d.Set("association", b); err != nil {
+		return err
+	}
 
 	aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
-	bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-	bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-	bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-	bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-	bb["status"] = aws.StringValue(eni.Attachment.Status)
+	if eni.Attachment != nil {
+		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
+		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
+		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		bb["status"] = aws.StringValue(eni.Attachment.Status)
+	}
 	aa[0] = bb
-	d.Set("attachment", aa)
+	if err := d.Set("attachment", aa); err != nil {
+		return err
+	}
 
 	d.Set("availability_zone", aws.StringValue(eni.PrivateIpAddress))
 
@@ -365,7 +376,9 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		b["group_name"] = aws.StringValue(v.GroupName)
 		x[k] = b
 	}
-	d.Set("group_set", x)
+	if err := d.Set("group_set", x); err != nil {
+		return err
+	}
 
 	d.Set("mac_address", aws.StringValue(eni.MacAddress))
 	d.Set("network_interface_id", aws.StringValue(eni.NetworkInterfaceId))
@@ -374,23 +387,29 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("private_ip_address", aws.StringValue(eni.PrivateIpAddress))
 
 	y := make([]map[string]interface{}, len(eni.PrivateIpAddresses))
-	for k, v := range eni.PrivateIpAddresses {
-		b := make(map[string]interface{})
+	if eni.PrivateIpAddresses != nil {
+		for k, v := range eni.PrivateIpAddresses {
+			b := make(map[string]interface{})
 
-		d := make(map[string]interface{})
-		d["allocation_id"] = aws.StringValue(v.Association.AllocationId)
-		d["association_id"] = aws.StringValue(v.Association.AssociationId)
-		d["ip_owner_id"] = aws.StringValue(v.Association.IpOwnerId)
-		d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
-		d["public_ip"] = aws.StringValue(v.Association.PublicIp)
-		b["association"] = d
-		b["primary"] = aws.BoolValue(v.Primary)
-		b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
-		b["private_ip_address"] = aws.StringValue(v.PrivateIpAddress)
+			d := make(map[string]interface{})
+			if v.Association != nil {
+				d["allocation_id"] = aws.StringValue(v.Association.AllocationId)
+				d["association_id"] = aws.StringValue(v.Association.AssociationId)
+				d["ip_owner_id"] = aws.StringValue(v.Association.IpOwnerId)
+				d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
+				d["public_ip"] = aws.StringValue(v.Association.PublicIp)
+			}
+			b["association"] = d
+			b["primary"] = aws.BoolValue(v.Primary)
+			b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
+			b["private_ip_address"] = aws.StringValue(v.PrivateIpAddress)
 
-		y[k] = b
+			y[k] = b
+		}
 	}
-	d.Set("private_ip_address_set", y)
+	if err := d.Set("private_ip_address_set", y); err != nil {
+		return err
+	}
 
 	d.Set("request_id", describeResp.RequestId)
 
@@ -444,7 +463,7 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string) error {
 	// if there was an old attachment, remove it
-	if oa != nil && len(oa) > 0 {
+	if oa != nil && len(oa) > 0 && oa[0] != nil {
 		old_attachment := oa[0].(map[string]interface{})
 		detach_request := &fcu.DetachNetworkInterfaceInput{
 			AttachmentId: aws.String(old_attachment["attachment_id"].(string)),
@@ -532,72 +551,67 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("attachment")
 	}
 
-	// if d.HasChange("private_ip_address_set") {
-	// 	o, n := d.GetChange("private_ip_address_set")
-	// 	if o == nil {
-	// 		o = new([]interface{})
-	// 	}
-	// 	if n == nil {
-	// 		n = new([]interface{})
-	// 	}
+	if d.HasChange("private_ip_address_set") {
+		o, n := d.GetChange("private_ip_address_set")
+		if o == nil {
+			o = new([]interface{})
+		}
+		if n == nil {
+			n = new([]interface{})
+		}
 
-	// 	os := o.([]interface{})
-	// 	ns := n.([]interface{})
+		// Unassign old IP addresses
+		if len(o.([]interface{})) != 0 {
+			input := &fcu.UnassignPrivateIpAddressesInput{
+				NetworkInterfaceId: aws.String(d.Id()),
+				PrivateIpAddresses: expandStringList(o.([]interface{})),
+			}
 
-	// 	// Unassign old IP addresses
-	// 	unassignIps := os.Difference(ns)
-	// 	if unassignIps.Len() != 0 {
-	// 		input := &fcu.UnassignPrivateIpAddressesInput{
-	// 			NetworkInterfaceId: aws.String(d.Id()),
-	// 			PrivateIpAddresses: expandStringList(unassignIps.List()),
-	// 		}
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-	// 		var err error
-	// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, err = conn.VM.UnassignPrivateIpAddresses(input)
+				if err != nil {
+					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
 
-	// 			_, err = conn.VM.UnassignPrivateIpAddresses(input)
-	// 			if err != nil {
-	// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-	// 					return resource.RetryableError(err)
-	// 				}
-	// 				return resource.NonRetryableError(err)
-	// 			}
-	// 			return nil
-	// 		})
+			if err != nil {
+				return fmt.Errorf("Failure to unassign Private IPs: %s", err)
+			}
+		}
 
-	// 		if err != nil {
-	// 			return fmt.Errorf("Failure to unassign Private IPs: %s", err)
-	// 		}
-	// 	}
+		// Assign new IP addresses
+		if len(n.([]interface{})) != 0 {
+			input := &fcu.AssignPrivateIpAddressesInput{
+				NetworkInterfaceId: aws.String(d.Id()),
+				PrivateIpAddresses: expandStringList(n.([]interface{})),
+			}
 
-	// 	// Assign new IP addresses
-	// 	assignIps := ns.Difference(os)
-	// 	if assignIps.Len() != 0 {
-	// 		input := &fcu.AssignPrivateIpAddressesInput{
-	// 			NetworkInterfaceId: aws.String(d.Id()),
-	// 			PrivateIpAddresses: expandStringList(assignIps.List()),
-	// 		}
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-	// 		var err error
-	// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, err = conn.VM.AssignPrivateIpAddresses(input)
+				if err != nil {
+					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
 
-	// 			_, err = conn.VM.AssignPrivateIpAddresses(input)
-	// 			if err != nil {
-	// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-	// 					return resource.RetryableError(err)
-	// 				}
-	// 				return resource.NonRetryableError(err)
-	// 			}
-	// 			return nil
-	// 		})
+			if err != nil {
+				return fmt.Errorf("Failure to assign Private IPs: %s", err)
+			}
+		}
 
-	// 		if err != nil {
-	// 			return fmt.Errorf("Failure to assign Private IPs: %s", err)
-	// 		}
-	// 	}
-
-	// 	d.SetPartial("private_ips")
-	// }
+		d.SetPartial("private_ip_address_set")
+	}
 
 	request := &fcu.ModifyNetworkInterfaceAttributeInput{
 		NetworkInterfaceId: aws.String(d.Id()),
