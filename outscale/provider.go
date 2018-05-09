@@ -149,6 +149,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshots":             GetDatasource(fcu, "outscale_snapshots")(),
 			"outscale_lin_peering":           GetDatasource(fcu, "outscale_lin_peering")(),
 			"outscale_lin_peerings":          GetDatasource(fcu, "outscale_lin_peerings")(),
+			"outscale_load_balancer":         GetDatasource(fcu, "outscale_load_balancer")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

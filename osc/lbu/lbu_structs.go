@@ -78,6 +78,8 @@ type DescribeLoadBalancersOutput struct {
 
 	LoadBalancerDescriptions []*LoadBalancerDescription `locationName:"loadBalancerDescriptions" type:"list"`
 
+	RequestID *string `locationName:"requestId" type:"string"`
+
 	NextMarker *string `locationName:"nextMarker" type:"string"`
 }
 
@@ -208,6 +210,8 @@ type DescribeLoadBalancerAttributesOutput struct {
 	_ struct{} `type:"structure"`
 
 	LoadBalancerAttributes *LoadBalancerAttributes `locationName:"loadBalancerAttributes" type:"structure"`
+
+	RequestID *string `locationName:"requestId" type:"string"`
 }
 
 // LoadBalancerAttributes ...

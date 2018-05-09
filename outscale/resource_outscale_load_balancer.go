@@ -378,7 +378,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
-	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
+	d.Set("availability_zones_member", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
 	if *lb.HealthCheck.Target != "" {
 		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
@@ -419,6 +419,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("source_security_group", ssg)
 	d.Set("subnets_member", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", lb.VPCId)
+	d.Set("request_id", describeResp.RequestID)
 
 	return nil
 }

@@ -172,6 +172,10 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleOAPISnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleOAPILinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleOAPILinPeeringsConnection,
+			"outscale_load_balancer":         dataSourceOutscaleOAPILoadBalancer,
+		},
+		"lbu": ResourceMap{
+			"outscale_load_balancer": dataSourceOutscaleLoadBalancer,
 		},
 	}
 }
