@@ -7385,6 +7385,8 @@ type DescribeNetworkInterfacesOutput struct {
 
 	// Information about one or more network interfaces.
 	NetworkInterfaces []*NetworkInterface `locationName:"networkInterfaceSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -8110,4 +8112,379 @@ func (s *NetworkInterfaceAttachmentChanges) SetAttachmentId(v string) *NetworkIn
 func (s *NetworkInterfaceAttachmentChanges) SetDeleteOnTermination(v bool) *NetworkInterfaceAttachmentChanges {
 	s.DeleteOnTermination = &v
 	return s
+}
+
+// String returns the string representation
+func (s PrivateIpAddressSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PrivateIpAddressSpecification) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PrivateIpAddressSpecification) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PrivateIpAddressSpecification"}
+	if s.PrivateIpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddress"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPrimary sets the Primary field's value.
+func (s *PrivateIpAddressSpecification) SetPrimary(v bool) *PrivateIpAddressSpecification {
+	s.Primary = &v
+	return s
+}
+
+// SetPrivateIpAddress sets the PrivateIpAddress field's value.
+func (s *PrivateIpAddressSpecification) SetPrivateIpAddress(v string) *PrivateIpAddressSpecification {
+	s.PrivateIpAddress = &v
+	return s
+}
+
+// Contains the parameters for DetachNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachNetworkInterfaceRequest
+type DetachNetworkInterfaceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the attachment.
+	//
+	// AttachmentId is a required field
+	AttachmentId *string `locationName:"attachmentId" type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether to force a detachment.
+	Force *bool `locationName:"force" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DetachNetworkInterfaceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachNetworkInterfaceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachNetworkInterfaceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachNetworkInterfaceInput"}
+	if s.AttachmentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AttachmentId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *DetachNetworkInterfaceInput) SetAttachmentId(v string) *DetachNetworkInterfaceInput {
+	s.AttachmentId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DetachNetworkInterfaceInput) SetDryRun(v bool) *DetachNetworkInterfaceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetForce sets the Force field's value.
+func (s *DetachNetworkInterfaceInput) SetForce(v bool) *DetachNetworkInterfaceInput {
+	s.Force = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DetachNetworkInterfaceOutput
+type DetachNetworkInterfaceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DetachNetworkInterfaceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DetachNetworkInterfaceOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for AttachNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachNetworkInterfaceRequest
+type AttachNetworkInterfaceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The index of the device for the network interface attachment.
+	//
+	// DeviceIndex is a required field
+	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the instance.
+	//
+	// InstanceId is a required field
+	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AttachNetworkInterfaceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachNetworkInterfaceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachNetworkInterfaceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachNetworkInterfaceInput"}
+	if s.DeviceIndex == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeviceIndex"))
+	}
+	if s.InstanceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceId"))
+	}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeviceIndex sets the DeviceIndex field's value.
+func (s *AttachNetworkInterfaceInput) SetDeviceIndex(v int64) *AttachNetworkInterfaceInput {
+	s.DeviceIndex = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AttachNetworkInterfaceInput) SetDryRun(v bool) *AttachNetworkInterfaceInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *AttachNetworkInterfaceInput) SetInstanceId(v string) *AttachNetworkInterfaceInput {
+	s.InstanceId = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *AttachNetworkInterfaceInput) SetNetworkInterfaceId(v string) *AttachNetworkInterfaceInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// Contains the output of AttachNetworkInterface.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AttachNetworkInterfaceResult
+type AttachNetworkInterfaceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface attachment.
+	AttachmentId *string `locationName:"attachmentId" type:"string"`
+}
+
+// String returns the string representation
+func (s AttachNetworkInterfaceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AttachNetworkInterfaceOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttachmentId sets the AttachmentId field's value.
+func (s *AttachNetworkInterfaceOutput) SetAttachmentId(v string) *AttachNetworkInterfaceOutput {
+	s.AttachmentId = &v
+	return s
+}
+
+// Contains the parameters for AssignPrivateIpAddresses.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignPrivateIpAddressesRequest
+type AssignPrivateIpAddressesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether to allow an IP address that is already assigned to another
+	// network interface or instance to be reassigned to the specified network interface.
+	AllowReassignment *bool `locationName:"allowReassignment" type:"boolean"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+
+	// One or more IP addresses to be assigned as a secondary private IP address
+	// to the network interface. You can't specify this parameter when also specifying
+	// a number of secondary IP addresses.
+	//
+	// If you don't specify an IP address, Amazon EC2 automatically selects an IP
+	// address within the subnet range.
+	PrivateIpAddresses []*string `locationName:"privateIpAddress" locationNameList:"PrivateIpAddress" type:"list"`
+
+	// The number of secondary IP addresses to assign to the network interface.
+	// You can't specify this parameter when also specifying private IP addresses.
+	SecondaryPrivateIpAddressCount *int64 `locationName:"secondaryPrivateIpAddressCount" type:"integer"`
+}
+
+// String returns the string representation
+func (s AssignPrivateIpAddressesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssignPrivateIpAddressesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssignPrivateIpAddressesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssignPrivateIpAddressesInput"}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllowReassignment sets the AllowReassignment field's value.
+func (s *AssignPrivateIpAddressesInput) SetAllowReassignment(v bool) *AssignPrivateIpAddressesInput {
+	s.AllowReassignment = &v
+	return s
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *AssignPrivateIpAddressesInput) SetNetworkInterfaceId(v string) *AssignPrivateIpAddressesInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *AssignPrivateIpAddressesInput) SetPrivateIpAddresses(v []*string) *AssignPrivateIpAddressesInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+// SetSecondaryPrivateIpAddressCount sets the SecondaryPrivateIpAddressCount field's value.
+func (s *AssignPrivateIpAddressesInput) SetSecondaryPrivateIpAddressCount(v int64) *AssignPrivateIpAddressesInput {
+	s.SecondaryPrivateIpAddressCount = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AssignPrivateIpAddressesOutput
+type AssignPrivateIpAddressesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s AssignPrivateIpAddressesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssignPrivateIpAddressesOutput) GoString() string {
+	return s.String()
+}
+
+// Contains the parameters for UnassignPrivateIpAddresses.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateIpAddressesRequest
+type UnassignPrivateIpAddressesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface.
+	//
+	// NetworkInterfaceId is a required field
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string" required:"true"`
+
+	// The secondary private IP addresses to unassign from the network interface.
+	// You can specify this option multiple times to unassign more than one IP address.
+	//
+	// PrivateIpAddresses is a required field
+	PrivateIpAddresses []*string `locationName:"privateIpAddress" locationNameList:"PrivateIpAddress" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s UnassignPrivateIpAddressesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UnassignPrivateIpAddressesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UnassignPrivateIpAddressesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UnassignPrivateIpAddressesInput"}
+	if s.NetworkInterfaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
+	}
+	if s.PrivateIpAddresses == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddresses"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *UnassignPrivateIpAddressesInput) SetNetworkInterfaceId(v string) *UnassignPrivateIpAddressesInput {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
+func (s *UnassignPrivateIpAddressesInput) SetPrivateIpAddresses(v []*string) *UnassignPrivateIpAddressesInput {
+	s.PrivateIpAddresses = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateIpAddressesOutput
+type UnassignPrivateIpAddressesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s UnassignPrivateIpAddressesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UnassignPrivateIpAddressesOutput) GoString() string {
+	return s.String()
 }
