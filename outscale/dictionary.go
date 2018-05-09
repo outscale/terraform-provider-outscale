@@ -79,9 +79,13 @@ func init() {
 			"outscale_keypair_importation":     resourceOutscaleOAPIKeyPairImportation,
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission,
 			"outscale_lin_peering":             resourceOutscaleOAPILinPeeringConnection,
+			"outscale_load_balancer":           resourceOutscaleOAPILoadBalancer,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
+		},
+		"lbu": ResourceMap{
+			"outscale_load_balancer": resourceOutscaleLoadBalancer,
 		},
 	}
 	datasources = Dictionary{
