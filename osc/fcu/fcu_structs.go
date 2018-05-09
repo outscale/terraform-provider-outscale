@@ -6383,6 +6383,161 @@ func (s DetachVpnGatewayOutput) GoString() string {
 	return s.String()
 }
 
+type DescribeSnapshotExportTasksInput struct {
+	SnapshotExportTaskId []*string `locationName:"snapshotExportTaskId" locationNameList:"item" type:"list"`
+}
+type DescribeSnapshotExportTasksOutput struct {
+	SnapshotExportTask []*SnapshotExportTask `locationName:"snapshotExportTaskSet" locationNameList:"item" type:"list"`
+	RequestId          *string               `locationName:"requestId" type:"string"`
+}
+
+type CreateSnapshotExportTaskInput struct {
+	_           struct{}                      `type:"structure"`
+	ExportToOsu *ExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	SnapshotId  *string                       `locationName:"snapshotId" type:"string"`
+}
+
+type CreateSnapshotExportTaskOutput struct {
+	_                  struct{}            `type:"structure"`
+	SnapshotExportTask *SnapshotExportTask `locationName:"snapshotExportTask" type:"structure"`
+	RequestId          *string             `locationName:"requestId" type:"string"`
+}
+
+type SnapshotExportTask struct {
+	_                    struct{}                      `type:"structure"`
+	Completion           *int64                        `locationName:"completion" type:"string"`
+	ExportToOsu          *ExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	SnapshotExport       *SnapshotExport               `locationName:"snapshotExport" type:"structure"`
+	SnapshotExportTaskId *string                       `locationName:"snapshotExportTaskId" type:"string"`
+	SnapshotId           *string                       `locationName:"SnapshotId" type:"string"`
+	State                *string                       `locationName:"state" type:"string"`
+	StatusMessage        *string                       `locationName:"statusMessage" type:"string"`
+}
+
+type SnapshotExport struct {
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+}
+
+type ExportToOsuTaskSpecification struct {
+	_               struct{}                           `type:"structure"`
+	DiskImageFormat *string                            `locationName:"diskImageFormat" type:"string"`
+	AkSk            *ExportToOsuAccessKeySpecification `locationName:"akSk" type:"structure"`
+	OsuBucket       *string                            `locationName:"osuBucket" type:"string"`
+	OsuKey          *string                            `locationName:"osuKey" type:"string"`
+	OsuPrefix       *string                            `locationName:"osuPrefix" type:"string"`
+}
+
+type CreateImageExportTaskInput struct {
+	_           struct{}                           `type:"structure"`
+	ExportToOsu *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	ImageId     *string                            `locationName:"imageId" type:"string"`
+}
+
+type ImageExportToOsuTaskSpecification struct {
+	_               struct{}                           `type:"structure"`
+	DiskImageFormat *string                            `locationName:"diskImageFormat" type:"string"`
+	OsuAkSk         *ExportToOsuAccessKeySpecification `locationName:"osuAkSk" type:"structure"`
+	OsuBucket       *string                            `locationName:"osuBucket" type:"string"`
+	OsuManifestUrl  *string                            `locationName:"osuManifestUrl" type:"string"`
+	OsuPrefix       *string                            `locationName:"osuPrefix" type:"string"`
+}
+
+type ExportToOsuAccessKeySpecification struct {
+	_         struct{} `type:"structure"`
+	AccessKey *string  `locationName:"accessKey" type:"string"`
+	SecretKey *string  `locationName:"secretKey" type:"string"`
+}
+
+type CreateImageExportTaskOutput struct {
+	_               struct{}         `type:"structure"`
+	ImageExportTask *ImageExportTask `locationName:"imageExportTask" type:"structure"`
+	RequestId       *string          `locationName:"requestId" type:"string"`
+}
+
+type ImageExportTask struct {
+	_                 struct{}                           `type:"structure"`
+	Completion        *int64                             `locationName:"completion" type:"string"`
+	ExportToOsu       *ImageExportToOsuTaskSpecification `locationName:"exportToOsu" type:"structure"`
+	ImageExport       *ImageExport                       `locationName:"imageExport" type:"structure"`
+	ImageExportTaskId *string                            `locationName:"imageExportTaskId" type:"string"`
+	ImageId           *string                            `locationName:"imageId" type:"string"`
+	State             *string                            `locationName:"state" type:"string"`
+	StatusMessage     *string                            `locationName:"statusMessage" type:"string"`
+}
+
+type ImageExport struct {
+	_       struct{} `type:"structure"`
+	ImageId *string  `locationName:"imageId" type:"string"`
+}
+
+type DescribeImageExportTasksInput struct {
+	_                 struct{}  `type:"structure"`
+	ImageExportTaskId []*string `locationName:"imageExportTaskId" locationNameList:"item" type:"list"`
+}
+
+type DescribeImageExportTasksOutput struct {
+	_               struct{}           `type:"structure"`
+	ImageExportTask []*ImageExportTask `locationName:"imageExportTask" locationNameList:"item" type:"list"`
+	RequestId       *string            `locationName:"requestId" type:"string"`
+}
+
+// Contains the parameters for CopyImage.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyImageRequest
+type CopyImageInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure idempotency of the
+	// request. For more information, see How to Ensure Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	ClientToken *string `type:"string"`
+
+	// A description for the new AMI in the destination region.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the destination snapshots of the copied image should be
+	// encrypted. The default CMK for EBS is used unless a non-default AWS Key Management
+	// Service (AWS KMS) CMK is specified with KmsKeyId. For more information, see
+	// Amazon EBS Encryption (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html)
+	// in the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) CMK to use when
+	// encrypting the snapshots of an image during a copy operation. This parameter
+	// is only required if you want to use a non-default CMK; if this parameter
+	// is not specified, the default CMK for EBS is used. The ARN contains the arn:aws:kms
+	// namespace, followed by the region of the CMK, the AWS account ID of the CMK
+	// owner, the key namespace, and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// The specified CMK must exist in the region that the snapshot is being copied
+	// to. If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The name of the new AMI in the destination region.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// The ID of the AMI to copy.
+	//
+	// SourceImageId is a required field
+	SourceImageId *string `type:"string" required:"true"`
+
+	// The name of the region that contains the AMI to copy.
+	//
+	// SourceRegion is a required field
+	SourceRegion *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CopyImageInput) String() string {
+	return awsutil.Prettify(s)
+}
+
 type CreateVpnConnectionRouteInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6403,11 +6558,31 @@ func (s CreateVpnConnectionRouteInput) String() string {
 }
 
 // GoString returns the string representation
+func (s CopyImageInput) GoString() string {
+	return s.String()
+}
 func (s CreateVpnConnectionRouteInput) GoString() string {
 	return s.String()
 }
 
 // Validate inspects the fields of the type to determine if they are valid.
+func (s *CopyImageInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CopyImageInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.SourceImageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceImageId"))
+	}
+	if s.SourceRegion == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceRegion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
 func (s *CreateVpnConnectionRouteInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateVpnConnectionRouteInput"}
 	if s.DestinationCidrBlock == nil {
@@ -6421,6 +6596,68 @@ func (s *CreateVpnConnectionRouteInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CopyImageInput) SetClientToken(v string) *CopyImageInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CopyImageInput) SetDescription(v string) *CopyImageInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CopyImageInput) SetDryRun(v bool) *CopyImageInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *CopyImageInput) SetEncrypted(v bool) *CopyImageInput {
+	s.Encrypted = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *CopyImageInput) SetKmsKeyId(v string) *CopyImageInput {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CopyImageInput) SetName(v string) *CopyImageInput {
+	s.Name = &v
+	return s
+}
+
+// SetSourceImageId sets the SourceImageId field's value.
+func (s *CopyImageInput) SetSourceImageId(v string) *CopyImageInput {
+	s.SourceImageId = &v
+	return s
+}
+
+// SetSourceRegion sets the SourceRegion field's value.
+func (s *CopyImageInput) SetSourceRegion(v string) *CopyImageInput {
+	s.SourceRegion = &v
+	return s
+}
+
+// Contains the output of CopyImage.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CopyImageResult
+type CopyImageOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new AMI.
+	ImageId *string `locationName:"imageId" type:"string"`
+}
+
+// String returns the string representation
+func (s CopyImageOutput) String() string {
+	return awsutil.Prettify(s)
 }
 
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
@@ -6446,6 +6683,102 @@ func (s CreateVpnConnectionRouteOutput) String() string {
 }
 
 // GoString returns the string representation
+func (s CopyImageOutput) GoString() string {
+	return s.String()
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *CopyImageOutput) SetImageId(v string) *CopyImageOutput {
+	s.ImageId = &v
+	return s
+}
+
+// Contains the parameters for DescribeSnapshots.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotsRequest
+type DescribeSnapshotsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * description - A description of the snapshot.
+	//
+	//    * owner-alias - Value from an Amazon-maintained list (amazon | aws-marketplace
+	//    | microsoft) of snapshot owners. Not to be confused with the user-configured
+	//    AWS account alias, which is set from the IAM consolew.
+	//
+	//    * owner-id - The ID of the AWS account that owns the snapshot.
+	//
+	//    * progress - The progress of the snapshot, as a percentage (for example,
+	//    80%).
+	//
+	//    * snapshot-id - The snapshot ID.
+	//
+	//    * start-time - The time stamp when the snapshot was initiated.
+	//
+	//    * status - The status of the snapshot (pending | completed | error).
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * volume-id - The ID of the volume the snapshot is for.
+	//
+	//    * volume-size - The size of the volume, in GiB.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of snapshot results returned by DescribeSnapshots in paginated
+	// output. When this parameter is used, DescribeSnapshots only returns MaxResults
+	// results in a single page along with a NextToken response element. The remaining
+	// results of the initial request can be seen by sending another DescribeSnapshots
+	// request with the returned NextToken value. This value can be between 5 and
+	// 1000; if MaxResults is given a value larger than 1000, only 1000 results
+	// are returned. If this parameter is not used, then DescribeSnapshots returns
+	// all results. You cannot specify this parameter and the snapshot IDs parameter
+	// in the same request.
+	MaxResults *int64 `type:"integer"`
+
+	// The NextToken value returned from a previous paginated DescribeSnapshots
+	// request where MaxResults was used and the results exceeded the value of that
+	// parameter. Pagination continues from the end of the previous results that
+	// returned the NextToken value. This value is null when there are no more results
+	// to return.
+	NextToken *string `type:"string"`
+
+	// Returns the snapshots owned by the specified owner. Multiple owners can be
+	// specified.
+	OwnerIds []*string `locationName:"Owner" locationNameList:"Owner" type:"list"`
+
+	// One or more AWS accounts IDs that can create volumes from the snapshot.
+	RestorableByUserIds []*string `locationName:"RestorableBy" type:"list"`
+
+	// One or more snapshot IDs.
+	//
+	// Default: Describes snapshots for which you have launch permissions.
+	SnapshotIds []*string `locationName:"SnapshotId" locationNameList:"SnapshotId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeSnapshotsInput) String() string {
+	return s.String()
+}
 func (s CreateVpnConnectionRouteOutput) GoString() string {
 	return s.String()
 }
@@ -6470,6 +6803,157 @@ func (s DeleteVpnConnectionRouteInput) String() string {
 }
 
 // GoString returns the string representation
+func (s DescribeSnapshotsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeSnapshotsInput) SetDryRun(v bool) *DescribeSnapshotsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeSnapshotsInput) SetFilters(v []*Filter) *DescribeSnapshotsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeSnapshotsInput) SetMaxResults(v int64) *DescribeSnapshotsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSnapshotsInput) SetNextToken(v string) *DescribeSnapshotsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetOwnerIds sets the OwnerIds field's value.
+func (s *DescribeSnapshotsInput) SetOwnerIds(v []*string) *DescribeSnapshotsInput {
+	s.OwnerIds = v
+	return s
+}
+
+// SetRestorableByUserIds sets the RestorableByUserIds field's value.
+func (s *DescribeSnapshotsInput) SetRestorableByUserIds(v []*string) *DescribeSnapshotsInput {
+	s.RestorableByUserIds = v
+	return s
+}
+
+// SetSnapshotIds sets the SnapshotIds field's value.
+func (s *DescribeSnapshotsInput) SetSnapshotIds(v []*string) *DescribeSnapshotsInput {
+	s.SnapshotIds = v
+	return s
+}
+
+// Contains the output of DescribeSnapshots.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeSnapshotsResult
+type DescribeSnapshotsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The NextToken value to include in a future DescribeSnapshots request. When
+	// the results of a DescribeSnapshots request exceed MaxResults, this value
+	// can be used to retrieve the next page of results. This value is null when
+	// there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Information about the snapshots.
+	Snapshots []*Snapshot `locationName:"snapshotSet" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeSnapshotsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeSnapshotsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSnapshotsOutput) SetNextToken(v string) *DescribeSnapshotsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSnapshots sets the Snapshots field's value.
+func (s *DescribeSnapshotsOutput) SetSnapshots(v []*Snapshot) *DescribeSnapshotsOutput {
+	s.Snapshots = v
+	return s
+}
+
+// Describes a snapshot.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/Snapshot
+type Snapshot struct {
+	_ struct{} `type:"structure"`
+
+	// The data encryption key identifier for the snapshot. This value is a unique
+	// identifier that corresponds to the data encryption key that was used to encrypt
+	// the original volume or snapshot copy. Because data encryption keys are inherited
+	// by volumes created from snapshots, and vice versa, if snapshots share the
+	// same data encryption key identifier, then they belong to the same volume/snapshot
+	// lineage. This parameter is only returned by the DescribeSnapshots API operation.
+	DataEncryptionKeyId *string `locationName:"dataEncryptionKeyId" type:"string"`
+
+	// The description for the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// Indicates whether the snapshot is encrypted.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) customer master
+	// key (CMK) that was used to protect the volume encryption key for the parent
+	// volume.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// Value from an Amazon-maintained list (amazon | aws-marketplace | microsoft)
+	// of snapshot owners. Not to be confused with the user-configured AWS account
+	// alias, which is set from the IAM console.
+	OwnerAlias *string `locationName:"ownerAlias" type:"string"`
+
+	// The AWS account ID of the EBS snapshot owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The progress of the snapshot, as a percentage.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The ID of the snapshot. Each snapshot receives a unique identifier when it
+	// is created.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// The time stamp when the snapshot was initiated.
+	StartTime *time.Time `locationName:"startTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The snapshot state.
+	State *string `locationName:"status" type:"string" enum:"SnapshotState"`
+
+	// Encrypted Amazon EBS snapshots are copied asynchronously. If a snapshot copy
+	// operation fails (for example, if the proper AWS Key Management Service (AWS
+	// KMS) permissions are not obtained) this field displays error state details
+	// to help you diagnose why the error occurred. This parameter is only returned
+	// by the DescribeSnapshots API operation.
+	StateMessage *string `locationName:"statusMessage" type:"string"`
+
+	// Any tags assigned to the snapshot.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the volume that was used to create the snapshot. Snapshots created
+	// by the CopySnapshot action have an arbitrary volume ID that should not be
+	// used for any purpose.
+	VolumeId *string `locationName:"volumeId" type:"string"`
+
+	// The size of the volume, in GiB.
+	VolumeSize *int64 `locationName:"volumeSize" type:"integer"`
+}
+
+// String returns the string representation
+func (s Snapshot) String() string {
+	return awsutil.Prettify(s)
+}
 func (s DeleteVpnConnectionRouteInput) GoString() string {
 	return s.String()
 }
@@ -6513,6 +6997,93 @@ func (s DeleteVpnConnectionRouteOutput) String() string {
 }
 
 // GoString returns the string representation
+func (s Snapshot) GoString() string {
+	return s.String()
+}
+
+// SetDataEncryptionKeyId sets the DataEncryptionKeyId field's value.
+func (s *Snapshot) SetDataEncryptionKeyId(v string) *Snapshot {
+	s.DataEncryptionKeyId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Snapshot) SetDescription(v string) *Snapshot {
+	s.Description = &v
+	return s
+}
+
+// SetEncrypted sets the Encrypted field's value.
+func (s *Snapshot) SetEncrypted(v bool) *Snapshot {
+	s.Encrypted = &v
+	return s
+}
+
+// SetKmsKeyId sets the KmsKeyId field's value.
+func (s *Snapshot) SetKmsKeyId(v string) *Snapshot {
+	s.KmsKeyId = &v
+	return s
+}
+
+// SetOwnerAlias sets the OwnerAlias field's value.
+func (s *Snapshot) SetOwnerAlias(v string) *Snapshot {
+	s.OwnerAlias = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *Snapshot) SetOwnerId(v string) *Snapshot {
+	s.OwnerId = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *Snapshot) SetProgress(v string) *Snapshot {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *Snapshot) SetSnapshotId(v string) *Snapshot {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *Snapshot) SetStartTime(v time.Time) *Snapshot {
+	s.StartTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Snapshot) SetState(v string) *Snapshot {
+	s.State = &v
+	return s
+}
+
+// SetStateMessage sets the StateMessage field's value.
+func (s *Snapshot) SetStateMessage(v string) *Snapshot {
+	s.StateMessage = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Snapshot) SetTags(v []*Tag) *Snapshot {
+	s.Tags = v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *Snapshot) SetVolumeId(v string) *Snapshot {
+	s.VolumeId = &v
+	return s
+}
+
+// SetVolumeSize sets the VolumeSize field's value.
+func (s *Snapshot) SetVolumeSize(v int64) *Snapshot {
+	s.VolumeSize = &v
+	return s
+}
 func (s DeleteVpnConnectionRouteOutput) GoString() string {
 	return s.String()
 }
@@ -6979,6 +7550,1360 @@ func (s *Region) SetEndpoint(v string) *Region {
 // SetRegionName sets the RegionName field's value.
 func (s *Region) SetRegionName(v string) *Region {
 	s.RegionName = &v
+	return s
+}
+
+type CreateSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the snapshot.
+	Description *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the EBS volume.
+	//
+	// VolumeId is a required field
+	VolumeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateSnapshotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateSnapshotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateSnapshotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateSnapshotInput"}
+	if s.VolumeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VolumeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateSnapshotInput) SetDescription(v string) *CreateSnapshotInput {
+	s.Description = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateSnapshotInput) SetDryRun(v bool) *CreateSnapshotInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVolumeId sets the VolumeId field's value.
+func (s *CreateSnapshotInput) SetVolumeId(v string) *CreateSnapshotInput {
+	s.VolumeId = &v
+	return s
+}
+
+// Describes the snapshot created from the imported disk.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotDetail
+type SnapshotDetail struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// The block device mapping for the snapshot.
+	DeviceName *string `locationName:"deviceName" type:"string"`
+
+	// The size of the disk in the snapshot, in GiB.
+	DiskImageSize *float64 `locationName:"diskImageSize" type:"double"`
+
+	// The format of the disk image from which the snapshot is created.
+	Format *string `locationName:"format" type:"string"`
+
+	// The percentage of progress for the task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The snapshot ID of the disk being imported.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// A brief status of the snapshot creation.
+	Status *string `locationName:"status" type:"string"`
+
+	// A detailed status message for the snapshot creation.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// The URL used to access the disk image.
+	Url *string `locationName:"url" type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucketDetails `locationName:"userBucket" type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SnapshotDetail) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotDetail) SetDescription(v string) *SnapshotDetail {
+	s.Description = &v
+	return s
+}
+
+// SetDeviceName sets the DeviceName field's value.
+func (s *SnapshotDetail) SetDeviceName(v string) *SnapshotDetail {
+	s.DeviceName = &v
+	return s
+}
+
+// SetDiskImageSize sets the DiskImageSize field's value.
+func (s *SnapshotDetail) SetDiskImageSize(v float64) *SnapshotDetail {
+	s.DiskImageSize = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotDetail) SetFormat(v string) *SnapshotDetail {
+	s.Format = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *SnapshotDetail) SetProgress(v string) *SnapshotDetail {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *SnapshotDetail) SetSnapshotId(v string) *SnapshotDetail {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SnapshotDetail) SetStatus(v string) *SnapshotDetail {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *SnapshotDetail) SetStatusMessage(v string) *SnapshotDetail {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotDetail) SetUrl(v string) *SnapshotDetail {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotDetail) SetUserBucket(v *UserBucketDetails) *SnapshotDetail {
+	s.UserBucket = v
+	return s
+}
+
+// The disk container object for the import snapshot request.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotDiskContainer
+type SnapshotDiskContainer struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the disk image being imported.
+	Description *string `type:"string"`
+
+	// The format of the disk image being imported.
+	//
+	// Valid values: RAW | VHD | VMDK | OVA
+	Format *string `type:"string"`
+
+	// The URL to the Amazon S3-based disk image being imported. It can either be
+	// a https URL (https://..) or an Amazon S3 URL (s3://..).
+	Url *string `type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucket `type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotDiskContainer) String() string {
+	return awsutil.Prettify(s)
+}
+
+type DescribeProductTypesInput struct {
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+type DescribeProductTypesOutput struct {
+	ProductTypeSet []*ProductType `locationName:"productTypeSet" locationNameList:"item" type:"list"`
+	RequestId      *string        `locationName:"requestId" type:"string"`
+}
+
+type ProductType struct {
+	Description   *string `locationName:"description" type:"string"`
+	ProductTypeId *string `locationName:"productTypeId" type:"string"`
+	Vendor        *string `locationName:"vendor" type:"string"`
+}
+
+type DescribeReservedInstancesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// Describes whether the Reserved Instance is Standard or Convertible.
+	AvailabilityZone *string `type:"string" enum:"AvailabilityZone"`
+
+	OfferingClass *string `type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type. If you are using tools that predate
+	// the 2011-11-01 API version, you only have access to the Medium Utilization
+	// Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// One or more Reserved Instance IDs.
+	//
+	// Default: Describes all your Reserved Instances, or only those otherwise specified.
+	ReservedInstancesIds []*string `locationName:"ReservedInstancesId" locationNameList:"ReservedInstancesId" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeReservedInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SnapshotDiskContainer) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotDiskContainer) SetDescription(v string) *SnapshotDiskContainer {
+	s.Description = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotDiskContainer) SetFormat(v string) *SnapshotDiskContainer {
+	s.Format = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotDiskContainer) SetUrl(v string) *SnapshotDiskContainer {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotDiskContainer) SetUserBucket(v *UserBucket) *SnapshotDiskContainer {
+	s.UserBucket = v
+	return s
+}
+
+// Details about the import snapshot task.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/SnapshotTaskDetail
+type SnapshotTaskDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the snapshot.
+	Description *string `locationName:"description" type:"string"`
+
+	// The size of the disk in the snapshot, in GiB.
+	DiskImageSize *float64 `locationName:"diskImageSize" type:"double"`
+
+	// The format of the disk image from which the snapshot is created.
+	Format *string `locationName:"format" type:"string"`
+
+	// The percentage of completion for the import snapshot task.
+	Progress *string `locationName:"progress" type:"string"`
+
+	// The snapshot ID of the disk being imported.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	// A brief status for the import snapshot task.
+	Status *string `locationName:"status" type:"string"`
+
+	// A detailed status message for the import snapshot task.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// The URL of the disk image from which the snapshot is created.
+	Url *string `locationName:"url" type:"string"`
+
+	// The S3 bucket for the disk image.
+	UserBucket *UserBucketDetails `locationName:"userBucket" type:"structure"`
+}
+
+// String returns the string representation
+func (s SnapshotTaskDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SnapshotTaskDetail) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *SnapshotTaskDetail) SetDescription(v string) *SnapshotTaskDetail {
+	s.Description = &v
+	return s
+}
+
+// SetDiskImageSize sets the DiskImageSize field's value.
+func (s *SnapshotTaskDetail) SetDiskImageSize(v float64) *SnapshotTaskDetail {
+	s.DiskImageSize = &v
+	return s
+}
+
+// SetFormat sets the Format field's value.
+func (s *SnapshotTaskDetail) SetFormat(v string) *SnapshotTaskDetail {
+	s.Format = &v
+	return s
+}
+
+// SetProgress sets the Progress field's value.
+func (s *SnapshotTaskDetail) SetProgress(v string) *SnapshotTaskDetail {
+	s.Progress = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *SnapshotTaskDetail) SetSnapshotId(v string) *SnapshotTaskDetail {
+	s.SnapshotId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *SnapshotTaskDetail) SetStatus(v string) *SnapshotTaskDetail {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *SnapshotTaskDetail) SetStatusMessage(v string) *SnapshotTaskDetail {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *SnapshotTaskDetail) SetUrl(v string) *SnapshotTaskDetail {
+	s.Url = &v
+	return s
+}
+
+// SetUserBucket sets the UserBucket field's value.
+func (s *SnapshotTaskDetail) SetUserBucket(v *UserBucketDetails) *SnapshotTaskDetail {
+	s.UserBucket = v
+	return s
+}
+
+type UserBucketDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The S3 bucket from which the disk image was created.
+	S3Bucket *string `locationName:"s3Bucket" type:"string"`
+
+	// The file name of the disk image.
+	S3Key *string `locationName:"s3Key" type:"string"`
+}
+
+// String returns the string representation
+func (s UserBucketDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UserBucketDetails) GoString() string {
+	return s.String()
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *UserBucketDetails) SetS3Bucket(v string) *UserBucketDetails {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *UserBucketDetails) SetS3Key(v string) *UserBucketDetails {
+	s.S3Key = &v
+	return s
+}
+
+type UserBucket struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the S3 bucket where the disk image is located.
+	S3Bucket *string `type:"string"`
+
+	// The file name of the disk image.
+	S3Key *string `type:"string"`
+}
+
+// String returns the string representation
+func (s UserBucket) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UserBucket) GoString() string {
+	return s.String()
+}
+
+// SetS3Bucket sets the S3Bucket field's value.
+func (s *UserBucket) SetS3Bucket(v string) *UserBucket {
+	s.S3Bucket = &v
+	return s
+}
+
+// SetS3Key sets the S3Key field's value.
+func (s *UserBucket) SetS3Key(v string) *UserBucket {
+	s.S3Key = &v
+	return s
+}
+
+type DeleteSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the EBS snapshot.
+	//
+	// SnapshotId is a required field
+	SnapshotId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteSnapshotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteSnapshotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteSnapshotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteSnapshotInput"}
+	if s.SnapshotId == nil {
+		invalidParams.Add(request.NewErrParamRequired("SnapshotId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteSnapshotInput) SetDryRun(v bool) *DeleteSnapshotInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetSnapshotId sets the SnapshotId field's value.
+func (s *DeleteSnapshotInput) SetSnapshotId(v string) *DeleteSnapshotInput {
+	s.SnapshotId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteSnapshotOutput
+type DeleteSnapshotOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteSnapshotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteSnapshotOutput) GoString() string {
+	return s.String()
+}
+
+func (s DescribeReservedInstancesInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeReservedInstancesInput) SetDryRun(v bool) *DescribeReservedInstancesInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeReservedInstancesInput) SetFilters(v []*Filter) *DescribeReservedInstancesInput {
+	s.Filters = v
+	return s
+}
+
+// SetOfferingClass sets the OfferingClass field's value.
+func (s *DescribeReservedInstancesInput) SetOfferingClass(v string) *DescribeReservedInstancesInput {
+	s.OfferingClass = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *DescribeReservedInstancesInput) SetOfferingType(v string) *DescribeReservedInstancesInput {
+	s.OfferingType = &v
+	return s
+}
+
+// SetReservedInstancesIds sets the ReservedInstancesIds field's value.
+func (s *DescribeReservedInstancesInput) SetReservedInstancesIds(v []*string) *DescribeReservedInstancesInput {
+	s.ReservedInstancesIds = v
+	return s
+}
+
+type DescribeReservedInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of Reserved Instances.
+	ReservedInstances []*ReservedInstances `locationName:"reservedInstancesSet" locationNameList:"item" type:"list"`
+	RequestId         *string              `locationName:"requestId" type:"string"`
+}
+type ReservedInstances struct {
+	_ struct{} `type:"structure"`
+
+	// The Availability Zone in which the Reserved Instance can be used.
+	AvailabilityZone *string `locationName:"availabilityZone" type:"string"`
+
+	// The currency of the Reserved Instance. It's specified using ISO 4217 standard
+	// currency codes. At this time, the only supported currency is USD.
+	CurrencyCode *string `locationName:"currencyCode" type:"string" enum:"CurrencyCodeValues"`
+
+	// The duration of the Reserved Instance, in seconds.
+	Duration *int64 `locationName:"duration" type:"long"`
+
+	// The time when the Reserved Instance expires.
+	End *time.Time `locationName:"end" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The purchase price of the Reserved Instance.
+	FixedPrice *float64 `locationName:"fixedPrice" type:"float"`
+
+	// The number of reservations purchased.
+	InstanceCount *int64 `locationName:"instanceCount" type:"integer"`
+
+	// The tenancy of the instance.
+	InstanceTenancy *string `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+
+	// The instance type on which the Reserved Instance can be used.
+	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
+
+	// The offering class of the Reserved Instance.
+	OfferingClass *string `locationName:"offeringClass" type:"string" enum:"OfferingClassType"`
+
+	// The Reserved Instance offering type.
+	OfferingType *string `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+
+	// The Reserved Instance product platform description.
+	ProductDescription *string `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+
+	// The recurring charge tag assigned to the resource.
+	RecurringCharges []*RecurringCharge `locationName:"recurringCharges" locationNameList:"item" type:"list"`
+
+	// The ID of the Reserved Instance.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
+
+	// The scope of the Reserved Instance.
+	Scope *string `locationName:"scope" type:"string" enum:"scope"`
+
+	// The date and time the Reserved Instance started.
+	Start *time.Time `locationName:"start" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The state of the Reserved Instance purchase.
+	State *string `locationName:"state" type:"string" enum:"ReservedInstanceState"`
+
+	// Any tags assigned to the resource.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The usage price of the Reserved Instance, per hour.
+	UsagePrice *float64 `locationName:"usagePrice" type:"float"`
+}
+
+type RecurringCharge struct {
+	_ struct{} `type:"structure"`
+
+	// The amount of the recurring charge.
+	Amount *float64 `locationName:"amount" type:"double"`
+
+	// The frequency of the recurring charge.
+	Frequency *string `locationName:"frequency" type:"string" enum:"RecurringChargeFrequency"`
+}
+
+type DescribeInstanceTypesInput struct {
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+}
+
+type DescribeInstanceTypesOutput struct {
+	InstanceTypeSet []*InstanceType `locationName:"instanceTypeSet" locationNameList:"item" type:"list"`
+	RequestId       *string         `locationName:"requestId" type:"string"`
+}
+
+type InstanceType struct {
+	EbsOptimizedAvailable *bool   `locationName:"ebsOptimizedAvailable" type:"bool"`
+	MaxIpAddresses        *int64  `locationName:"maxIpAddresses" type:"int64"`
+	Memory                *int64  `locationName:"memory" type:"int64"`
+	Name                  *string `locationName:"name" type:"string"`
+	StorageCount          *int64  `locationName:"storageCount" type:"int64"`
+	StorageSize           *int64  `locationName:"storageSize" type:"int64"`
+	Vcpu                  *int64  `locationName:"vcpu" type:"int64"`
+}
+
+type DescribeReservedInstancesOfferingsInput struct {
+	AvailabilityZone            *string   `locationName:"availabilityZone" type:"string"`
+	Filters                     []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+	InstanceTenancy             *string   `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+	InstanceType                *string   `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	OfferingType                *string   `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+	ProductDescription          *string   `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+	ReservedInstancesOfferingId []*string `locationName:"reservedInstancesOfferingId" type:"string"`
+}
+
+type DescribeReservedInstancesOfferingsOutput struct {
+	ReservedInstancesOfferingsSet []*ReservedInstancesOffering `locationName:"reservedInstancesOfferingsSet" locationNameList:"item" type:"list"`
+	RequestId                     *string                      `locationName:"requestId" type:"string"`
+}
+
+type ReservedInstancesOffering struct {
+	AvailabilityZone            *string            `locationName:"availabilityZone" type:"string"`
+	CurrencyCode                *string            `locationName:"currencyCode" type:"string"`
+	Duration                    *string            `locationName:"duration" type:"string"`
+	FixedPrice                  *int64             `locationName:"fixedPrice" type:"int64"`
+	InstanceTenancy             *string            `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+	InstanceType                *string            `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	Martketplace                *bool              `locationName:"martketplace" type:"bool"`
+	OfferingType                *string            `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+	ProductDescription          *string            `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+	PricingDetailsSet           []*PricingDetail   `locationName:"pricingDetail" locationNameList:"item" type:"list"`
+	RecurringCharges            []*RecurringCharge `locationName:"recurringCharges" locationNameList:"item" type:"list"`
+	ReservedInstancesOfferingId *string            `locationName:"reservedInstancesOfferingId" type:"string"`
+	UsagePrice                  *int64             `locationName:"usagePrice" type:"int64"`
+}
+
+type PricingDetail struct {
+	Count *int64 `locationName:"count" type:"int64"`
+}
+
+type DescribeImageAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The AMI attribute.
+	//
+	// Note: Depending on your account privileges, the blockDeviceMapping attribute
+	// may return a Client.AuthFailure error. If this happens, use DescribeImages
+	// to get information about the block device mapping for the AMI.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"ImageAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the AMI.
+	//
+	// ImageId is a required field
+	ImageId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DescribeImageAttributeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeImageAttributeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeImageAttributeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeImageAttributeInput"}
+	if s.Attribute == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attribute"))
+	}
+	if s.ImageId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImageId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttribute sets the Attribute field's value.
+func (s *DescribeImageAttributeInput) SetAttribute(v string) *DescribeImageAttributeInput {
+	s.Attribute = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeImageAttributeInput) SetDryRun(v bool) *DescribeImageAttributeInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *DescribeImageAttributeInput) SetImageId(v string) *DescribeImageAttributeInput {
+	s.ImageId = &v
+	return s
+}
+
+// Describes an image attribute.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ImageAttribute
+type DescribeImageAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more block device mapping entries.
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+
+	// A description for the AMI.
+	Description *AttributeValue `locationName:"description" type:"structure"`
+
+	// The ID of the AMI.
+	ImageId *string `locationName:"imageId" type:"string"`
+
+	// The kernel ID.
+	KernelId *AttributeValue `locationName:"kernel" type:"structure"`
+
+	// One or more launch permissions.
+	LaunchPermissions []*LaunchPermission `locationName:"launchPermission" locationNameList:"item" type:"list"`
+
+	// One or more product codes.
+	ProductCodes []*ProductCode `locationName:"productCodes" locationNameList:"item" type:"list"`
+
+	// The RAM disk ID.
+	RamdiskId *AttributeValue `locationName:"ramdisk" type:"structure"`
+
+	// Indicates whether enhanced networking with the Intel 82599 Virtual Function
+	// interface is enabled.
+	SriovNetSupport *AttributeValue `locationName:"sriovNetSupport" type:"structure"`
+	RequestId       *string         `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeImageAttributeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeImageAttributeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBlockDeviceMappings sets the BlockDeviceMappings field's value.
+func (s *DescribeImageAttributeOutput) SetBlockDeviceMappings(v []*BlockDeviceMapping) *DescribeImageAttributeOutput {
+	s.BlockDeviceMappings = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeImageAttributeOutput) SetDescription(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.Description = v
+	return s
+}
+
+// SetImageId sets the ImageId field's value.
+func (s *DescribeImageAttributeOutput) SetImageId(v string) *DescribeImageAttributeOutput {
+	s.ImageId = &v
+	return s
+}
+
+// SetKernelId sets the KernelId field's value.
+func (s *DescribeImageAttributeOutput) SetKernelId(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.KernelId = v
+	return s
+}
+
+// SetLaunchPermissions sets the LaunchPermissions field's value.
+func (s *DescribeImageAttributeOutput) SetLaunchPermissions(v []*LaunchPermission) *DescribeImageAttributeOutput {
+	s.LaunchPermissions = v
+	return s
+}
+
+// SetProductCodes sets the ProductCodes field's value.
+func (s *DescribeImageAttributeOutput) SetProductCodes(v []*ProductCode) *DescribeImageAttributeOutput {
+	s.ProductCodes = v
+	return s
+}
+
+// SetRamdiskId sets the RamdiskId field's value.
+func (s *DescribeImageAttributeOutput) SetRamdiskId(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.RamdiskId = v
+	return s
+}
+
+// SetSriovNetSupport sets the SriovNetSupport field's value.
+func (s *DescribeImageAttributeOutput) SetSriovNetSupport(v *AttributeValue) *DescribeImageAttributeOutput {
+	s.SriovNetSupport = v
+	return s
+}
+
+type CreateVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The AWS account ID of the owner of the peer VPC.
+	//
+	// Default: Your AWS account ID
+	PeerOwnerId *string `locationName:"peerOwnerId" type:"string"`
+
+	// The ID of the VPC with which you are creating the VPC peering connection.
+	PeerVpcId *string `locationName:"peerVpcId" type:"string"`
+
+	// The ID of the requester VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s CreateVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateVpcPeeringConnectionInput) SetDryRun(v bool) *CreateVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetPeerOwnerId sets the PeerOwnerId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetPeerOwnerId(v string) *CreateVpcPeeringConnectionInput {
+	s.PeerOwnerId = &v
+	return s
+}
+
+// SetPeerVpcId sets the PeerVpcId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetPeerVpcId(v string) *CreateVpcPeeringConnectionInput {
+	s.PeerVpcId = &v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateVpcPeeringConnectionInput) SetVpcId(v string) *CreateVpcPeeringConnectionInput {
+	s.VpcId = &v
+	return s
+}
+
+// Contains the output of CreateVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcPeeringConnectionResult
+type CreateVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection.
+	VpcPeeringConnection *VpcPeeringConnection `locationName:"vpcPeeringConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnection sets the VpcPeeringConnection field's value.
+func (s *CreateVpcPeeringConnectionOutput) SetVpcPeeringConnection(v *VpcPeeringConnection) *CreateVpcPeeringConnectionOutput {
+	s.VpcPeeringConnection = v
+	return s
+}
+
+type VpcPeeringConnection struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the accepter VPC. CIDR block information is not returned
+	// when creating a VPC peering connection, or when describing a VPC peering
+	// connection that's in the initiating-request or pending-acceptance state.
+	AccepterVpcInfo *VpcPeeringConnectionVpcInfo `locationName:"accepterVpcInfo" type:"structure"`
+
+	// The time that an unaccepted VPC peering connection will expire.
+	ExpirationTime *time.Time `locationName:"expirationTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Information about the requester VPC.
+	RequesterVpcInfo *VpcPeeringConnectionVpcInfo `locationName:"requesterVpcInfo" type:"structure"`
+
+	// The status of the VPC peering connection.
+	Status *VpcPeeringConnectionStateReason `locationName:"status" type:"structure"`
+
+	// Any tags assigned to the resource.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+type VpcPeeringConnectionVpcInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv4 CIDR block for the VPC.
+	CidrBlock *string `locationName:"cidrBlock" type:"string"`
+
+	// The IPv6 CIDR block for the VPC.
+	Ipv6CidrBlockSet []*Ipv6CidrBlock `locationName:"ipv6CidrBlockSet" locationNameList:"item" type:"list"`
+
+	// The AWS account ID of the VPC owner.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// Information about the VPC peering connection options for the accepter or
+	// requester VPC.
+	PeeringOptions *VpcPeeringConnectionOptionsDescription `locationName:"peeringOptions" type:"structure"`
+
+	// The ID of the VPC.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+type Ipv6CidrBlock struct {
+	_ struct{} `type:"structure"`
+
+	// The IPv6 CIDR block.
+	Ipv6CidrBlock *string `locationName:"ipv6CidrBlock" type:"string"`
+}
+
+type VpcPeeringConnectionOptionsDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether a local VPC can resolve public DNS hostnames to private
+	// IP addresses when queried from instances in a peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `locationName:"allowDnsResolutionFromRemoteVpc" type:"boolean"`
+
+	// Indicates whether a local ClassicLink connection can communicate with the
+	// peer VPC over the VPC peering connection.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `locationName:"allowEgressFromLocalClassicLinkToRemoteVpc" type:"boolean"`
+
+	// Indicates whether a local VPC can communicate with a ClassicLink connection
+	// in the peer VPC over the VPC peering connection.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `locationName:"allowEgressFromLocalVpcToRemoteClassicLink" type:"boolean"`
+}
+
+type VpcPeeringConnectionStateReason struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the VPC peering connection.
+	Code *string `locationName:"code" type:"string" enum:"VpcPeeringConnectionStateReasonCode"`
+
+	// A message that provides more information about the status, if applicable.
+	Message *string `locationName:"message" type:"string"`
+}
+
+type DescribeVpcPeeringConnectionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * accepter-vpc-info.cidr-block - The IPv4 CIDR block of the peer VPC.
+	//
+	//    * accepter-vpc-info.owner-id - The AWS account ID of the owner of the
+	//    peer VPC.
+	//
+	//    * accepter-vpc-info.vpc-id - The ID of the peer VPC.
+	//
+	//    * expiration-time - The expiration date and time for the VPC peering connection.
+	//
+	//    * requester-vpc-info.cidr-block - The IPv4 CIDR block of the requester's
+	//    VPC.
+	//
+	//    * requester-vpc-info.owner-id - The AWS account ID of the owner of the
+	//    requester VPC.
+	//
+	//    * requester-vpc-info.vpc-id - The ID of the requester VPC.
+	//
+	//    * status-code - The status of the VPC peering connection (pending-acceptance
+	//    | failed | expired | provisioning | active | deleted | rejected).
+	//
+	//    * status-message - A message that provides more information about the
+	//    status of the VPC peering connection, if applicable.
+	//
+	//    * tag:key=value - The key/value combination of a tag assigned to the resource.
+	//    Specify the key of the tag in the filter name and the value of the tag
+	//    in the filter value. For example, for the tag Purpose=X, specify tag:Purpose
+	//    for the filter name and X for the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. This filter is
+	//    independent of the tag-value filter. For example, if you use both the
+	//    filter "tag-key=Purpose" and the filter "tag-value=X", you get any resources
+	//    assigned both the tag key Purpose (regardless of what the tag's value
+	//    is), and the tag value X (regardless of what the tag's key is). If you
+	//    want to list only resources where Purpose is X, see the tag:key=value
+	//    filter.
+	//
+	//    * tag-value - The value of a tag assigned to the resource. This filter
+	//    is independent of the tag-key filter.
+	//
+	//    * vpc-peering-connection-id - The ID of the VPC peering connection.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// One or more VPC peering connection IDs.
+	//
+	// Default: Describes all your VPC peering connections.
+	VpcPeeringConnectionIds []*string `locationName:"VpcPeeringConnectionId" locationNameList:"item" type:"list"`
+}
+
+// String returns the string representation
+func (s DescribeVpcPeeringConnectionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcPeeringConnectionsInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetDryRun(v bool) *DescribeVpcPeeringConnectionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetFilters(v []*Filter) *DescribeVpcPeeringConnectionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetVpcPeeringConnectionIds sets the VpcPeeringConnectionIds field's value.
+func (s *DescribeVpcPeeringConnectionsInput) SetVpcPeeringConnectionIds(v []*string) *DescribeVpcPeeringConnectionsInput {
+	s.VpcPeeringConnectionIds = v
+	return s
+}
+
+// Contains the output of DescribeVpcPeeringConnections.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeVpcPeeringConnectionsResult
+type DescribeVpcPeeringConnectionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connections.
+	VpcPeeringConnections []*VpcPeeringConnection `locationName:"vpcPeeringConnectionSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeVpcPeeringConnectionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeVpcPeeringConnectionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnections sets the VpcPeeringConnections field's value.
+func (s *DescribeVpcPeeringConnectionsOutput) SetVpcPeeringConnections(v []*VpcPeeringConnection) *DescribeVpcPeeringConnectionsOutput {
+	s.VpcPeeringConnections = v
+	return s
+}
+
+type AcceptVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC peering connection.
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+}
+
+// String returns the string representation
+func (s AcceptVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *AcceptVpcPeeringConnectionInput) SetDryRun(v bool) *AcceptVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *AcceptVpcPeeringConnectionInput) SetVpcPeeringConnectionId(v string) *AcceptVpcPeeringConnectionInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Contains the output of AcceptVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/AcceptVpcPeeringConnectionResult
+type AcceptVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection.
+	VpcPeeringConnection *VpcPeeringConnection `locationName:"vpcPeeringConnection" type:"structure"`
+}
+
+// String returns the string representation
+func (s AcceptVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AcceptVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcPeeringConnection sets the VpcPeeringConnection field's value.
+func (s *AcceptVpcPeeringConnectionOutput) SetVpcPeeringConnection(v *VpcPeeringConnection) *AcceptVpcPeeringConnectionOutput {
+	s.VpcPeeringConnection = v
+	return s
+}
+
+type ModifyVpcPeeringConnectionOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The VPC peering connection options for the accepter VPC.
+	AccepterPeeringConnectionOptions *PeeringConnectionOptionsRequest `type:"structure"`
+
+	// Checks whether you have the required permissions for the operation, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The VPC peering connection options for the requester VPC.
+	RequesterPeeringConnectionOptions *PeeringConnectionOptionsRequest `type:"structure"`
+
+	// The ID of the VPC peering connection.
+	//
+	// VpcPeeringConnectionId is a required field
+	VpcPeeringConnectionId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyVpcPeeringConnectionOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyVpcPeeringConnectionOptionsInput"}
+	if s.VpcPeeringConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcPeeringConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccepterPeeringConnectionOptions sets the AccepterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetAccepterPeeringConnectionOptions(v *PeeringConnectionOptionsRequest) *ModifyVpcPeeringConnectionOptionsInput {
+	s.AccepterPeeringConnectionOptions = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetDryRun(v bool) *ModifyVpcPeeringConnectionOptionsInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetRequesterPeeringConnectionOptions sets the RequesterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetRequesterPeeringConnectionOptions(v *PeeringConnectionOptionsRequest) *ModifyVpcPeeringConnectionOptionsInput {
+	s.RequesterPeeringConnectionOptions = v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *ModifyVpcPeeringConnectionOptionsInput) SetVpcPeeringConnectionId(v string) *ModifyVpcPeeringConnectionOptionsInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcPeeringConnectionOptionsResult
+type ModifyVpcPeeringConnectionOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the VPC peering connection options for the accepter VPC.
+	AccepterPeeringConnectionOptions *PeeringConnectionOptions `locationName:"accepterPeeringConnectionOptions" type:"structure"`
+
+	// Information about the VPC peering connection options for the requester VPC.
+	RequesterPeeringConnectionOptions *PeeringConnectionOptions `locationName:"requesterPeeringConnectionOptions" type:"structure"`
+}
+
+// String returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ModifyVpcPeeringConnectionOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccepterPeeringConnectionOptions sets the AccepterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsOutput) SetAccepterPeeringConnectionOptions(v *PeeringConnectionOptions) *ModifyVpcPeeringConnectionOptionsOutput {
+	s.AccepterPeeringConnectionOptions = v
+	return s
+}
+
+// SetRequesterPeeringConnectionOptions sets the RequesterPeeringConnectionOptions field's value.
+func (s *ModifyVpcPeeringConnectionOptionsOutput) SetRequesterPeeringConnectionOptions(v *PeeringConnectionOptions) *ModifyVpcPeeringConnectionOptionsOutput {
+	s.RequesterPeeringConnectionOptions = v
+	return s
+}
+
+type PeeringConnectionOptions struct {
+	_ struct{} `type:"structure"`
+
+	// If true, enables a local VPC to resolve public DNS hostnames to private IP
+	// addresses when queried from instances in the peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `locationName:"allowDnsResolutionFromRemoteVpc" type:"boolean"`
+
+	// If true, enables outbound communication from an EC2-Classic instance that's
+	// linked to a local VPC via ClassicLink to instances in a peer VPC.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `locationName:"allowEgressFromLocalClassicLinkToRemoteVpc" type:"boolean"`
+
+	// If true, enables outbound communication from instances in a local VPC to
+	// an EC2-Classic instance that's linked to a peer VPC via ClassicLink.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `locationName:"allowEgressFromLocalVpcToRemoteClassicLink" type:"boolean"`
+}
+
+type PeeringConnectionOptionsRequest struct {
+	_ struct{} `type:"structure"`
+
+	// If true, enables a local VPC to resolve public DNS hostnames to private IP
+	// addresses when queried from instances in the peer VPC.
+	AllowDnsResolutionFromRemoteVpc *bool `type:"boolean"`
+
+	// If true, enables outbound communication from an EC2-Classic instance that's
+	// linked to a local VPC via ClassicLink to instances in a peer VPC.
+	AllowEgressFromLocalClassicLinkToRemoteVpc *bool `type:"boolean"`
+
+	// If true, enables outbound communication from instances in a local VPC to
+	// an EC2-Classic instance that's linked to a peer VPC via ClassicLink.
+	AllowEgressFromLocalVpcToRemoteClassicLink *bool `type:"boolean"`
+}
+
+type DeleteVpcPeeringConnectionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the VPC peering connection.
+	//
+	// VpcPeeringConnectionId is a required field
+	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteVpcPeeringConnectionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpcPeeringConnectionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpcPeeringConnectionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcPeeringConnectionInput"}
+	if s.VpcPeeringConnectionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcPeeringConnectionId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteVpcPeeringConnectionInput) SetDryRun(v bool) *DeleteVpcPeeringConnectionInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetVpcPeeringConnectionId sets the VpcPeeringConnectionId field's value.
+func (s *DeleteVpcPeeringConnectionInput) SetVpcPeeringConnectionId(v string) *DeleteVpcPeeringConnectionInput {
+	s.VpcPeeringConnectionId = &v
+	return s
+}
+
+// Contains the output of DeleteVpcPeeringConnection.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcPeeringConnectionResult
+type DeleteVpcPeeringConnectionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns true if the request succeeds; otherwise, it returns an error.
+	Return *bool `locationName:"return" type:"boolean"`
+}
+
+// String returns the string representation
+func (s DeleteVpcPeeringConnectionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteVpcPeeringConnectionOutput) GoString() string {
+	return s.String()
+}
+
+// SetReturn sets the Return field's value.
+func (s *DeleteVpcPeeringConnectionOutput) SetReturn(v bool) *DeleteVpcPeeringConnectionOutput {
+	s.Return = &v
 	return s
 }
 

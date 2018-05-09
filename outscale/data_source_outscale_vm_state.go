@@ -243,12 +243,6 @@ func getVmStateDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
-		// Need to check this
-		// "instance_id": {
-		// 	Type:     schema.TypeBool,
-		// 	Optional: true,
-		// },
 		"instance_state": {
 			Type:     schema.TypeMap,
 			Computed: true,

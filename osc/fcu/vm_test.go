@@ -143,6 +143,7 @@ func TestVM_GetPasswordData(t *testing.T) {
 }
 
 func TestVM_ModifyInstanceKeyPair(t *testing.T) {
+	t.Skip()
 	setup()
 	defer teardown()
 

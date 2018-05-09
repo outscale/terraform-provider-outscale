@@ -90,6 +90,8 @@ type VMService interface {
 	DeleteRouteTable(input *DeleteRouteTableInput) (*DeleteRouteTableOutput, error)
 	AssociateRouteTable(input *AssociateRouteTableInput) (*AssociateRouteTableOutput, error)
 	ReplaceRouteTableAssociation(input *ReplaceRouteTableAssociationInput) (*ReplaceRouteTableAssociationOutput, error)
+	CopyImage(input *CopyImageInput) (*CopyImageOutput, error)
+	DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error)
 	CreateVpnConnection(input *CreateVpnConnectionInput) (*CreateVpnConnectionOutput, error)
 	DescribeVpnConnections(input *DescribeVpnConnectionsInput) (*DescribeVpnConnectionsOutput, error)
 	DeleteVpnConnection(input *DeleteVpnConnectionInput) (*DeleteVpnConnectionOutput, error)
@@ -98,6 +100,8 @@ type VMService interface {
 	DeleteVpnGateway(input *DeleteVpnGatewayInput) (*DeleteVpnGatewayOutput, error)
 	AttachVpnGateway(input *AttachVpnGatewayInput) (*AttachVpnGatewayOutput, error)
 	DetachVpnGateway(input *DetachVpnGatewayInput) (*DetachVpnGatewayOutput, error)
+	CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error)
+	DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error)
 	CreateVpnConnectionRoute(input *CreateVpnConnectionRouteInput) (*CreateVpnConnectionRouteOutput, error)
 	DeleteVpnConnectionRoute(input *DeleteVpnConnectionRouteInput) (*DeleteVpnConnectionRouteOutput, error)
 	DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error)
@@ -113,6 +117,20 @@ type VMService interface {
 	AttachNetworkInterface(input *AttachNetworkInterfaceInput) (*AttachNetworkInterfaceOutput, error)
 	AssignPrivateIpAddresses(input *AssignPrivateIpAddressesInput) (*AssignPrivateIpAddressesOutput, error)
 	UnassignPrivateIpAddresses(input *UnassignPrivateIpAddressesInput) (*UnassignPrivateIpAddressesOutput, error)
+	CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error)
+	DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error)
+	CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error)
+	DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error)
+	DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error)
+	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
+	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
+	DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error)
+	DescribeImageAttribute(input *DescribeImageAttributeInput) (*DescribeImageAttributeOutput, error)
+	CreateVpcPeeringConnection(input *CreateVpcPeeringConnectionInput) (*CreateVpcPeeringConnectionOutput, error)
+	DescribeVpcPeeringConnections(input *DescribeVpcPeeringConnectionsInput) (*DescribeVpcPeeringConnectionsOutput, error)
+	AcceptVpcPeeringConnection(input *AcceptVpcPeeringConnectionInput) (*AcceptVpcPeeringConnectionOutput, error)
+	ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error)
+	DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1338,6 +1356,48 @@ func (v VMOperations) CreateCustomerGateway(input *CreateCustomerGatewayInput) (
 	return output, nil
 }
 
+func (v VMOperations) CreateImageExportTask(input *CreateImageExportTaskInput) (*CreateImageExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateImageExportTask"
+	output := &CreateImageExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateImageExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CopyImage(input *CopyImageInput) (*CopyImageOutput, error) {
+	inURL := "/"
+	endpoint := "CopyImage"
+	output := &CopyImageOutput{}
+
+	if input == nil {
+		input = &CopyImageInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZonesInput) (*DescribeAvailabilityZonesOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeAvailabilityZones"
@@ -1345,7 +1405,6 @@ func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZones
 
 	if input == nil {
 		input = &DescribeAvailabilityZonesInput{}
-
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1361,6 +1420,48 @@ func (v VMOperations) DescribeAvailabilityZones(input *DescribeAvailabilityZones
 	return output, nil
 }
 
+func (v VMOperations) DescribeImageExportTasks(input *DescribeImageExportTasksInput) (*DescribeImageExportTasksOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeImageExportTasks"
+	output := &DescribeImageExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeImageExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeSnapshots(input *DescribeSnapshotsInput) (*DescribeSnapshotsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshots"
+	output := &DescribeSnapshotsOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*DescribePrefixListsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribePrefixLists"
@@ -1368,7 +1469,6 @@ func (v VMOperations) DescribePrefixLists(input *DescribePrefixListsInput) (*Des
 
 	if input == nil {
 		input = &DescribePrefixListsInput{}
-
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1405,6 +1505,28 @@ func (v VMOperations) DescribeQuotas(input *DescribeQuotasInput) (*DescribeQuota
 
 	return output, nil
 }
+func (v VMOperations) CreateSnapshotExportTask(input *CreateSnapshotExportTaskInput) (*CreateSnapshotExportTaskOutput, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshotExportTask"
+	output := &CreateSnapshotExportTaskOutput{}
+
+	if input == nil {
+		input = &CreateSnapshotExportTaskInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) DescribeRegions(input *DescribeRegionsInput) (*DescribeRegionsOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeRegions"
@@ -1448,6 +1570,27 @@ func (v VMOperations) CreateNetworkInterface(input *CreateNetworkInterfaceInput)
 
 	return output, nil
 }
+func (v VMOperations) DescribeSnapshotExportTasks(input *DescribeSnapshotExportTasksInput) (*DescribeSnapshotExportTasksOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshotExportTasks"
+	output := &DescribeSnapshotExportTasksOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotExportTasksInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 
 func (v VMOperations) DeleteNetworkInterface(input *DeleteNetworkInterfaceInput) (*DeleteNetworkInterfaceOutput, error) {
 	inURL := "/"
@@ -1470,6 +1613,48 @@ func (v VMOperations) DeleteNetworkInterface(input *DeleteNetworkInterfaceInput)
 
 	return output, nil
 }
+func (v VMOperations) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot, error) {
+	inURL := "/"
+	endpoint := "CreateSnapshot"
+	output := &Snapshot{}
+
+	if input == nil {
+		input = &CreateSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeProductTypes(input *DescribeProductTypesInput) (*DescribeProductTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeProductTypes"
+	output := &DescribeProductTypesOutput{}
+
+	if input == nil {
+		input = &DescribeProductTypesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 
 func (v VMOperations) DescribeNetworkInterfaces(input *DescribeNetworkInterfacesInput) (*DescribeNetworkInterfacesOutput, error) {
 	inURL := "/"
@@ -1478,6 +1663,27 @@ func (v VMOperations) DescribeNetworkInterfaces(input *DescribeNetworkInterfaces
 
 	if input == nil {
 		input = &DescribeNetworkInterfacesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstances"
+	output := &DescribeReservedInstancesOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1517,6 +1723,71 @@ func (v VMOperations) ModifyNetworkInterfaceAttribute(input *ModifyNetworkInterf
 	return output, nil
 }
 
+func (v VMOperations) DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceTypes"
+	output := &DescribeInstanceTypesOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceTypesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteSnapshot(input *DeleteSnapshotInput) (*DeleteSnapshotOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteSnapshot"
+	output := &DeleteSnapshotOutput{}
+
+	if input == nil {
+		input = &DeleteSnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeReservedInstancesOfferings"
+	output := &DescribeReservedInstancesOfferingsOutput{}
+
+	if input == nil {
+		input = &DescribeReservedInstancesOfferingsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) DescribeNetworkInterfaceAttribute(input *DescribeNetworkInterfaceAttributeInput) (*DescribeNetworkInterfaceAttributeOutput, error) {
 	inURL := "/"
 	endpoint := "DescribeNetworkInterfaceAttribute"
@@ -1524,6 +1795,27 @@ func (v VMOperations) DescribeNetworkInterfaceAttribute(input *DescribeNetworkIn
 
 	if input == nil {
 		input = &DescribeNetworkInterfaceAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DescribeImageAttribute(input *DescribeImageAttributeInput) (*DescribeImageAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeImageAttribute"
+	output := &DescribeImageAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeImageAttributeInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1546,6 +1838,27 @@ func (v VMOperations) DetachNetworkInterface(input *DetachNetworkInterfaceInput)
 
 	if input == nil {
 		input = &DetachNetworkInterfaceInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) CreateVpcPeeringConnection(input *CreateVpcPeeringConnectionInput) (*CreateVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpcPeeringConnection"
+	output := &CreateVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &CreateVpcPeeringConnectionInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
@@ -1582,6 +1895,51 @@ func (v VMOperations) AttachNetworkInterface(input *AttachNetworkInterfaceInput)
 	}
 
 	return output, nil
+
+}
+
+func (v VMOperations) DescribeVpcPeeringConnections(input *DescribeVpcPeeringConnectionsInput) (*DescribeVpcPeeringConnectionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpcPeeringConnections"
+	output := &DescribeVpcPeeringConnectionsOutput{}
+
+	if input == nil {
+		input = &DescribeVpcPeeringConnectionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AcceptVpcPeeringConnection(input *AcceptVpcPeeringConnectionInput) (*AcceptVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "AcceptVpcPeeringConnection"
+	output := &AcceptVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &AcceptVpcPeeringConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
 
 func (v VMOperations) AssignPrivateIpAddresses(input *AssignPrivateIpAddressesInput) (*AssignPrivateIpAddressesOutput, error) {
@@ -1605,6 +1963,27 @@ func (v VMOperations) AssignPrivateIpAddresses(input *AssignPrivateIpAddressesIn
 
 	return output, nil
 }
+func (v VMOperations) ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyVpcPeeringConnectionOptions"
+	output := &ModifyVpcPeeringConnectionOptionsOutput{}
+
+	if input == nil {
+		input = &ModifyVpcPeeringConnectionOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
 
 func (v VMOperations) UnassignPrivateIpAddresses(input *UnassignPrivateIpAddressesInput) (*UnassignPrivateIpAddressesOutput, error) {
 	inURL := "/"
@@ -1613,6 +1992,27 @@ func (v VMOperations) UnassignPrivateIpAddresses(input *UnassignPrivateIpAddress
 
 	if input == nil {
 		input = &UnassignPrivateIpAddressesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+func (v VMOperations) DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpcPeeringConnection"
+	output := &DeleteVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &DeleteVpcPeeringConnectionInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
