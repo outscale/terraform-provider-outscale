@@ -39,7 +39,7 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"static_routes_only": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
 						},
@@ -284,12 +284,15 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 		d.SetId("")
 		return nil
 	}
-
-	options := map[string]interface{}{
-		"static_routes_only": vpnConnection.Options.StaticRoutesOnly,
+	options := make(map[string]interface{})
+	if vpnConnection.Options != nil {
+		options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(vpnConnection.Options.StaticRoutesOnly))
+	} else {
+		options["static_routes_only"] = strconv.FormatBool(false)
 	}
-
-	d.Set("options", options)
+	if err := d.Set("options", options); err != nil {
+		return err
+	}
 	d.Set("customer_gateway_configuration", vpnConnection.CustomerGatewayConfiguration)
 
 	routes := make([]map[string]interface{}, len(vpnConnection.Routes))
