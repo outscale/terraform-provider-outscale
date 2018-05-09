@@ -116,6 +116,7 @@ type VMService interface {
 	DescribeReservedInstances(input *DescribeReservedInstancesInput) (*DescribeReservedInstancesOutput, error)
 	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
 	DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error)
+	DescribeImageAttribute(input *DescribeImageAttributeInput) (*DescribeImageAttributeOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1671,6 +1672,28 @@ func (v VMOperations) DescribeReservedInstancesOfferings(input *DescribeReserved
 
 	if input == nil {
 		input = &DescribeReservedInstancesOfferingsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeImageAttribute(input *DescribeImageAttributeInput) (*DescribeImageAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeImageAttribute"
+	output := &DescribeImageAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeImageAttributeInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

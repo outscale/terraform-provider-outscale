@@ -90,6 +90,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot":                      GetResource(fcu, "outscale_snapshot")(),
 			"outscale_image_register":                GetResource(fcu, "outscale_image_register")(),
 			"outscale_keypair_importation":           GetResource(fcu, "outscale_keypair_importation")(),
+			"outscale_image_launch_permission":       GetResource(fcu, "outscale_image_launch_permission")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
@@ -141,6 +142,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_reserved_vms_offer":    GetDatasource(fcu, "outscale_reserved_vms_offer")(),
 			"outscale_reserved_vms_offers":   GetDatasource(fcu, "outscale_reserved_vms_offers")(),
 			"outscale_snapshot":              GetDatasource(fcu, "outscale_snapshot")(),
+			"outscale_snapshots":             GetDatasource(fcu, "outscale_snapshots")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
