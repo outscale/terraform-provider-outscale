@@ -267,16 +267,25 @@
 #   nat_gateway_id = "${outscale_nat_service.outscale_nat_service.nat_gateway_id}"
 # }
 
-resource "outscale_vm" "outscale_vm" {
-  image_id                = "ami-880caa66"
-  instance_type           = "c4.large"
-  disable_api_termination = false
+# resource "outscale_vm" "outscale_vm" {
+#   image_id                = "ami-880caa66"
+#   instance_type           = "c4.large"
+#   disable_api_termination = false
+# }
+
+# data "outscale_vms_state" "outscale_vms_state" {
+#   instance_id = ["${outscale_vm.outscale_vm.id}"]
+# }
+
+# data "outscale_vm_state" "outscale_vm_state" {
+#   instance_id = ["${outscale_vm.outscale_vm.id}"]
+# }
+
+resource "outscale_lin" "vpc" {
+  cidr_block = "10.0.0.0/16"
 }
 
-data "outscale_vms_state" "outscale_vms_state" {
-  instance_id = ["${outscale_vm.outscale_vm.id}"]
-}
-
-data "outscale_vm_state" "outscale_vm_state" {
-  instance_id = ["${outscale_vm.outscale_vm.id}"]
+resource "outscale_subnet" "subnet" {
+  cidr_block = "10.0.0.0/16"
+  vpc_id     = "${outscale_lin.vpc.id}"
 }
