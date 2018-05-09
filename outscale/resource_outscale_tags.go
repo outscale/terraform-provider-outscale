@@ -324,6 +324,19 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
+func tagsFromMapC(m map[string]interface{}) []*common.Tag {
+	result := make([]*common.Tag, 0, len(m))
+	for k, v := range m {
+		t := &common.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v.(string)),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
 // tagsToMap turns the list of tag into a map.
 func tagsToMap(ts []*fcu.Tag) []map[string]string {
 	result := make([]map[string]string, len(ts))

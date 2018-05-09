@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
@@ -14,33 +13,33 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
-func resourceOutscaleLoadBalancer() *schema.Resource {
+func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleLoadBalancerCreate,
-		Read:   resourceOutscaleLoadBalancerRead,
-		Update: resourceOutscaleLoadBalancerUpdate,
-		Delete: resourceOutscaleLoadBalancerDelete,
+		Create: resourceOutscaleOAPILoadBalancerCreate,
+		Read:   resourceOutscaleOAPILoadBalancerRead,
+		Update: resourceOutscaleOAPILoadBalancerUpdate,
+		Delete: resourceOutscaleOAPILoadBalancerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"availability_zones_member": &schema.Schema{
+			"sub_region_name": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"listeners_member": &schema.Schema{
+			"listener": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"instance_port": &schema.Schema{
+						"backend_port": &schema.Schema{
 							Type:     schema.TypeInt,
 							Required: true,
 						},
 
-						"instance_protocol": &schema.Schema{
+						"backend_protocol": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -50,11 +49,11 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 							Required: true,
 						},
 
-						"protocol": &schema.Schema{
+						"load_balancer_protocol": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"ssl_certificate_id": &schema.Schema{
+						"server_certificate_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -66,19 +65,19 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"scheme": &schema.Schema{
+			"load_balancer_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
 			},
-			"security_groups_member": &schema.Schema{
+			"firewall_rules_set_name": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"subnets_member": &schema.Schema{
+			"subnet_id": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -86,7 +85,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 			},
 			"tag": tagsSchema(),
 
-			"dns_name": &schema.Schema{
+			"public_dns_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -103,11 +102,11 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"target": &schema.Schema{
+						"checked_vm": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"interval": &schema.Schema{
+						"check_interval": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -118,20 +117,20 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"instances_member": &schema.Schema{
+			"backend_vm_id": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"instance_id": &schema.Schema{
+						"vm_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"listener_descriptions_member": &schema.Schema{
+			"listeners": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -141,11 +140,11 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"instance_port": &schema.Schema{
+									"backend_port": &schema.Schema{
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"instance_protocol": &schema.Schema{
+									"backend_protocol": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -153,18 +152,18 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"protocol": &schema.Schema{
+									"load_balancer_protocol": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"ssl_certificate_id": &schema.Schema{
+									"server_certificate_id": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"policy_names_member": &schema.Schema{
+						"policy_name": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -172,23 +171,23 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"source_security_group": &schema.Schema{
+			"source_firewall_rules_set": &schema.Schema{
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group_name": &schema.Schema{
+						"firewall_rules_set_name": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"owner_alias": &schema.Schema{
+						"account_alias": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"vpc_id": &schema.Schema{
+			"lin_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -197,7 +196,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"app_cookie_stickiness_policies_member": &schema.Schema{
+						"application_sticky_cookie_policy": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -213,7 +212,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"lb_cookie_stickiness_policies_member": &schema.Schema{
+						"load_balancer_sticky_cookie_policy": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -225,7 +224,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"other_policies_member": &schema.Schema{
+						"other_policy": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -241,12 +240,12 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 	}
 }
 
-func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
 	elbOpts := &lbu.CreateLoadBalancerInput{}
 
-	listeners, err := expandListeners(d.Get("listeners_member").([]interface{}))
+	listeners, err := expandOAPIListeners(d.Get("listener").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -262,19 +261,19 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 
 	}
 
-	if v, ok := d.GetOk("scheme"); ok {
+	if v, ok := d.GetOk("load_balancer_type"); ok {
 		elbOpts.Scheme = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("availability_zones_member"); ok {
+	if v, ok := d.GetOk("sub_region_name"); ok {
 		elbOpts.AvailabilityZones = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("security_groups_member"); ok {
+	if v, ok := d.GetOk("firewall_rules_set_name"); ok {
 		elbOpts.SecurityGroups = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("subnets_member"); ok {
+	if v, ok := d.GetOk("subnet_id"); ok {
 		elbOpts.Subnets = expandStringList(v.([]interface{}))
 	}
 
@@ -304,16 +303,16 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	// Enable partial mode and record what we set
 	d.Partial(true)
 	d.SetPartial("load_balancer_name")
-	d.SetPartial("scheme")
-	d.SetPartial("availability_zones_member")
+	d.SetPartial("load_balancer_type")
+	d.SetPartial("sub_region_name")
 	d.SetPartial("listener_member")
-	d.SetPartial("security_groups_member")
-	d.SetPartial("subnets_member")
+	d.SetPartial("firewall_rules_set_name")
+	d.SetPartial("subnet_id")
 
-	return resourceOutscaleLoadBalancerUpdate(d, meta)
+	return resourceOutscaleOAPILoadBalancerUpdate(d, meta)
 }
 
-func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 	elbName := d.Id()
 
@@ -378,15 +377,15 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
-	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
-	d.Set("dns_name", aws.StringValue(lb.DNSName))
+	d.Set("availability_zones", flattenOAPIStringList(lb.AvailabilityZones))
+	d.Set("public_dns_name", aws.StringValue(lb.DNSName))
 	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 	} else {
 		d.Set("health_check", make(map[string]interface{}))
 	}
-	d.Set("instances_member", flattenInstances(lb.Instances))
-	d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions))
+	d.Set("backend_vm_id", flattenOAPIInstances(lb.Instances))
+	d.Set("listeners", flattenOAPIListeners(lb.ListenerDescriptions))
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	policies := make(map[string]interface{})
@@ -398,43 +397,43 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			app[k] = a
 		}
-		policies["app_cookie_stickiness_policies_member"] = app
+		policies["application_sticky_cookie_policy"] = app
 		lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies))
 		for k, v := range lb.Policies.LBCookieStickinessPolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			lbc[k] = a
 		}
-		policies["lb_cookie_stickiness_policies_member"] = lbc
-		policies["other_policies_member"] = flattenStringList(lb.Policies.OtherPolicies)
+		policies["load_balancer_sticky_cookie_policy"] = lbc
+		policies["other_policy"] = flattenOAPIStringList(lb.Policies.OtherPolicies)
 	}
 	d.Set("policies", policies)
-	d.Set("scheme", aws.StringValue(lb.Scheme))
-	d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+	d.Set("load_balancer_type", aws.StringValue(lb.Scheme))
+	d.Set("firewall_rules_set_name", flattenOAPIStringList(lb.SecurityGroups))
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
-		ssg["group_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
-		ssg["owner_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
+		ssg["firewall_rules_set_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
+		ssg["account_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
 	}
-	d.Set("source_security_group", ssg)
-	d.Set("subnets_member", flattenStringList(lb.Subnets))
-	d.Set("vpc_id", lb.VPCId)
+	d.Set("source_firewall_rules_set", ssg)
+	d.Set("subnet_id", flattenOAPIStringList(lb.Subnets))
+	d.Set("lin_id", lb.VPCId)
 
 	return nil
 }
 
-func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
 	d.Partial(true)
 
-	if d.HasChange("listeners_member") {
-		o, n := d.GetChange("listeners_member")
+	if d.HasChange("listener") {
+		o, n := d.GetChange("listener")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 
-		remove, _ := expandListeners(os.Difference(ns).List())
-		add, _ := expandListeners(ns.Difference(os).List())
+		remove, _ := expandOAPIListeners(os.Difference(ns).List())
+		add, _ := expandOAPIListeners(ns.Difference(os).List())
 
 		if len(remove) > 0 {
 			ports := make([]*int64, 0, len(remove))
@@ -506,12 +505,12 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 	// If we currently have instances, or did have instances,
 	// we want to figure out what to add and remove from the load
 	// balancer
-	if d.HasChange("instances_member") {
-		o, n := d.GetChange("instances_member")
+	if d.HasChange("backend_vm_id") {
+		o, n := d.GetChange("backend_vm_id")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
-		remove := expandInstanceString(os.Difference(ns).List())
-		add := expandInstanceString(ns.Difference(os).List())
+		remove := expandOAPIInstanceString(os.Difference(ns).List())
+		add := expandOAPIInstanceString(ns.Difference(os).List())
 
 		if len(add) > 0 {
 			registerInstancesOpts := lbu.RegisterInstancesWithLoadBalancerInput{
@@ -560,7 +559,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("instances_member")
+		d.SetPartial("backend_vm_id")
 	}
 
 	if d.HasChange("health_check") {
@@ -572,8 +571,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				HealthCheck: &lbu.HealthCheck{
 					HealthyThreshold:   aws.Int64(int64(check["healthy_threshold"].(int))),
 					UnhealthyThreshold: aws.Int64(int64(check["unhealthy_threshold"].(int))),
-					Interval:           aws.Int64(int64(check["interval"].(int))),
-					Target:             aws.String(check["target"].(string)),
+					Interval:           aws.Int64(int64(check["check_interval"].(int))),
+					Target:             aws.String(check["checked_vm"].(string)),
 					Timeout:            aws.Int64(int64(check["timeout"].(int))),
 				},
 			}
@@ -598,8 +597,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	if d.HasChange("security_groups_member") {
-		groups := d.Get("security_groups_member").([]interface{})
+	if d.HasChange("firewall_rules_set_name") {
+		groups := d.Get("firewall_rules_set_name").([]interface{})
 
 		applySecurityGroupsOpts := lbu.ApplySecurityGroupsToLoadBalancerInput{
 			LoadBalancerName: aws.String(d.Id()),
@@ -623,11 +622,11 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Failure applying security groups to ELB: %s", err)
 		}
 
-		d.SetPartial("security_groups_member")
+		d.SetPartial("firewall_rules_set_name")
 	}
 
-	if d.HasChange("availability_zones_member") {
-		o, n := d.GetChange("availability_zones_member")
+	if d.HasChange("sub_region_name") {
+		o, n := d.GetChange("sub_region_name")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 
@@ -689,8 +688,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		d.SetPartial("availability_zones")
 	}
 
-	if d.HasChange("subnets_member") {
-		o, n := d.GetChange("subnets_member")
+	if d.HasChange("subnet_id") {
+		o, n := d.GetChange("subnet_id")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 
@@ -703,7 +702,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				Subnets:          removed,
 			}
 
-			log.Printf("[DEBUG] ELB detach subnets_member opts: %s", detachOpts)
+			log.Printf("[DEBUG] ELB detach subnet_id opts: %s", detachOpts)
 
 			var err error
 
@@ -752,15 +751,15 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("subnets_member")
+		d.SetPartial("subnet_id")
 	}
 
 	d.Partial(false)
 
-	return resourceOutscaleLoadBalancerRead(d, meta)
+	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
 
-func resourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
 	log.Printf("[INFO] Deleting ELB: %s", d.Id())
@@ -789,32 +788,28 @@ func resourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func isLoadBalancerNotFound(err error) bool {
-	return strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound")
-}
-
-func expandListeners(configured []interface{}) ([]*lbu.Listener, error) {
+func expandOAPIListeners(configured []interface{}) ([]*lbu.Listener, error) {
 	listeners := make([]*lbu.Listener, 0, len(configured))
 
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int64(data["instance_port"].(int))
+		ip := int64(data["backend_port"].(int))
 		lp := int64(data["load_balancer_port"].(int))
 		l := &lbu.Listener{
 			InstancePort:     &ip,
-			InstanceProtocol: aws.String(data["instance_protocol"].(string)),
+			InstanceProtocol: aws.String(data["backend_protocol"].(string)),
 			LoadBalancerPort: &lp,
-			Protocol:         aws.String(data["protocol"].(string)),
+			Protocol:         aws.String(data["load_balancer_protocol"].(string)),
 		}
 
-		if v, ok := data["ssl_certificate_id"]; ok {
+		if v, ok := data["server_certificate_id"]; ok {
 			l.SSLCertificateId = aws.String(v.(string))
 		}
 
 		var valid bool
 		if l.SSLCertificateId != nil && *l.SSLCertificateId != "" {
-			// validate the protocol is correct
+			// validate the load_balancer_protocol is correct
 			for _, p := range []string{"https", "ssl"} {
 				if (strings.ToLower(*l.InstanceProtocol) == p) || (strings.ToLower(*l.Protocol) == p) {
 					valid = true
@@ -827,14 +822,14 @@ func expandListeners(configured []interface{}) ([]*lbu.Listener, error) {
 		if valid {
 			listeners = append(listeners, l)
 		} else {
-			return nil, fmt.Errorf("[ERR] ELB Listener: ssl_certificate_id may be set only when protocol is 'https' or 'ssl'")
+			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when load_balancer_protocol is 'https' or 'ssl'")
 		}
 	}
 
 	return listeners, nil
 }
 
-func flattenStringList(list []*string) []interface{} {
+func flattenOAPIStringList(list []*string) []interface{} {
 	vs := make([]interface{}, 0, len(list))
 	for _, v := range list {
 		vs = append(vs, *v)
@@ -842,16 +837,16 @@ func flattenStringList(list []*string) []interface{} {
 	return vs
 }
 
-func flattenInstances(list []*lbu.Instance) []map[string]string {
+func flattenOAPIInstances(list []*lbu.Instance) []map[string]string {
 	result := make([]map[string]string, len(list))
 	for _, i := range list {
-		result = append(result, map[string]string{"instance_id": *i.InstanceId})
+		result = append(result, map[string]string{"vm_id": *i.InstanceId})
 	}
 	return result
 }
 
 // Expands an array of String Instance IDs into a []Instances
-func expandInstanceString(list []interface{}) []*lbu.Instance {
+func expandOAPIInstanceString(list []interface{}) []*lbu.Instance {
 	result := make([]*lbu.Instance, 0, len(list))
 	for _, i := range list {
 		result = append(result, &lbu.Instance{InstanceId: aws.String(i.(string))})
@@ -859,47 +854,35 @@ func expandInstanceString(list []interface{}) []*lbu.Instance {
 	return result
 }
 
-// Flattens an array of Backend Descriptions into a a map of instance_port to policy names.
-func flattenBackendPolicies(backends []*lbu.BackendServerDescription) map[int64][]string {
-	policies := make(map[int64][]string)
-	for _, i := range backends {
-		for _, p := range i.PolicyNames {
-			policies[*i.InstancePort] = append(policies[*i.InstancePort], *p)
-		}
-		sort.Strings(policies[*i.InstancePort])
-	}
-	return policies
-}
-
 // Flattens an array of Listeners into a []map[string]interface{}
-func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} {
+func flattenOAPIListeners(list []*lbu.ListenerDescription) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(list))
 
 	for _, i := range list {
 		l := make(map[string]interface{})
 		listener := map[string]interface{}{
-			"instance_port":      aws.Int64Value(i.Listener.InstancePort),
-			"instance_protocol":  strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
-			"load_balancer_port": aws.Int64Value(i.Listener.LoadBalancerPort),
-			"protocol":           strings.ToLower(aws.StringValue(i.Listener.Protocol)),
-			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateId),
+			"backend_port":           aws.Int64Value(i.Listener.InstancePort),
+			"backend_protocol":       strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
+			"load_balancer_port":     aws.Int64Value(i.Listener.LoadBalancerPort),
+			"load_balancer_protocol": strings.ToLower(aws.StringValue(i.Listener.Protocol)),
+			"server_certificate_id":  aws.StringValue(i.Listener.SSLCertificateId),
 		}
 		l["listener"] = listener
-		l["policy_names_member"] = flattenStringList(i.PolicyNames)
+		l["policy_name"] = flattenOAPIStringList(i.PolicyNames)
 		result = append(result, l)
 	}
 	return result
 }
 
-func flattenHealthCheck(check *lbu.HealthCheck) []map[string]interface{} {
+func flattenOAPIHealthCheck(check *lbu.HealthCheck) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, 1)
 
 	chk := make(map[string]interface{})
 	chk["unhealthy_threshold"] = *check.UnhealthyThreshold
 	chk["healthy_threshold"] = *check.HealthyThreshold
-	chk["target"] = *check.Target
+	chk["checked_vm"] = *check.Target
 	chk["timeout"] = *check.Timeout
-	chk["interval"] = *check.Interval
+	chk["check_interval"] = *check.Interval
 
 	result = append(result, chk)
 
