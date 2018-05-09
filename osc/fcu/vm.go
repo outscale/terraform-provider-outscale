@@ -117,6 +117,11 @@ type VMService interface {
 	DescribeInstanceTypes(input *DescribeInstanceTypesInput) (*DescribeInstanceTypesOutput, error)
 	DescribeReservedInstancesOfferings(input *DescribeReservedInstancesOfferingsInput) (*DescribeReservedInstancesOfferingsOutput, error)
 	DescribeImageAttribute(input *DescribeImageAttributeInput) (*DescribeImageAttributeOutput, error)
+	CreateVpcPeeringConnection(input *CreateVpcPeeringConnectionInput) (*CreateVpcPeeringConnectionOutput, error)
+	DescribeVpcPeeringConnections(input *DescribeVpcPeeringConnectionsInput) (*DescribeVpcPeeringConnectionsOutput, error)
+	AcceptVpcPeeringConnection(input *AcceptVpcPeeringConnectionInput) (*AcceptVpcPeeringConnectionOutput, error)
+	ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error)
+	DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -1694,6 +1699,116 @@ func (v VMOperations) DescribeImageAttribute(input *DescribeImageAttributeInput)
 
 	if input == nil {
 		input = &DescribeImageAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateVpcPeeringConnection(input *CreateVpcPeeringConnectionInput) (*CreateVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpcPeeringConnection"
+	output := &CreateVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &CreateVpcPeeringConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DescribeVpcPeeringConnections(input *DescribeVpcPeeringConnectionsInput) (*DescribeVpcPeeringConnectionsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpcPeeringConnections"
+	output := &DescribeVpcPeeringConnectionsOutput{}
+
+	if input == nil {
+		input = &DescribeVpcPeeringConnectionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) AcceptVpcPeeringConnection(input *AcceptVpcPeeringConnectionInput) (*AcceptVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "AcceptVpcPeeringConnection"
+	output := &AcceptVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &AcceptVpcPeeringConnectionInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyVpcPeeringConnectionOptions"
+	output := &ModifyVpcPeeringConnectionOptionsOutput{}
+
+	if input == nil {
+		input = &ModifyVpcPeeringConnectionOptionsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpcPeeringConnection"
+	output := &DeleteVpcPeeringConnectionOutput{}
+
+	if input == nil {
+		input = &DeleteVpcPeeringConnectionInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

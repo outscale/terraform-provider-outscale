@@ -91,6 +91,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_image_register":                GetResource(fcu, "outscale_image_register")(),
 			"outscale_keypair_importation":           GetResource(fcu, "outscale_keypair_importation")(),
 			"outscale_image_launch_permission":       GetResource(fcu, "outscale_image_launch_permission")(),
+			"outscale_lin_peering":                   GetResource(fcu, "outscale_lin_peering")(),
+			"outscale_lin_peering_acceptation":       GetResource(fcu, "outscale_lin_peering_acceptation")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
