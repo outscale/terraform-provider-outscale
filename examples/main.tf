@@ -281,24 +281,10 @@
 #   instance_id = ["${outscale_vm.outscale_vm.id}"]
 # }
 
-resource "outscale_vpn_connection" "outscale_vpn_connection" {
-  customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint.id}"
-  vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-  type                = "ipsec.1"
-}
-
 resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+  count = 1
+
   type = "ipsec.1"
-}
-
-resource "outscale_client_endpoint" "outscale_client_endpoint" {
-  bgp_asn    = "3"
-  ip_address = "171.33.74.122"
-  type       = "ipsec.1"
-}
-
-resource "outscale_lin" "outscale_lin" {
-  cidr_block = "10.0.0.0/16"
 }
 
 resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
@@ -306,4 +292,27 @@ resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
 
   #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+}
+
+resource "outscale_lin" "outscale_lin" {
+  count = 1
+
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "outscale_route_table" "outscale_route_table" {
+  count = 1
+
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+}
+
+resource "outscale_vpn_gateway_route_propagation" "outscale_vpn_gateway_route_propagation" {
+  gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+  route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+}
+
+resource "outscale_api_key" "outscale_api_key" {
+  tag = {
+    Name = "api_key_test"
+  }
 }

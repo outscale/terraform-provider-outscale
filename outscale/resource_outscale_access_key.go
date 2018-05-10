@@ -42,6 +42,7 @@ func resourceOutscaleIamAccessKey() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tag":     tagsSchema(),
 			"tag_set": tagsSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -52,7 +53,8 @@ func resourceOutscaleIamAccessKey() *schema.Resource {
 }
 
 func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
-	iamconn := meta.(*OutscaleClient).ICU
+	conn := meta.(*OutscaleClient)
+	iamconn := conn.ICU
 
 	request := &icu.CreateAccessKeyInput{}
 
@@ -61,6 +63,14 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 	}
 	if v, ok := d.GetOk("secret_access_key"); ok {
 		request.SecretAccessKey = aws.String(v.(string))
+	}
+	if _, ok := d.GetOk("tag"); ok {
+		oraw, nraw := d.GetChange("tag")
+		o := oraw.(map[string]interface{})
+		n := nraw.(map[string]interface{})
+		create, _ := diffTagsCommon(tagsFromMapCommon(o), tagsFromMapCommon(n))
+
+		request.Tags = create
 	}
 
 	fmt.Printf("\n\n[DEBUG] REQUEST BODY %v", request)
@@ -84,6 +94,10 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	d.SetId(*createResp.AccessKey.AccessKeyId)
+
+	t := make([]map[string]interface{}, 0)
+
+	d.Set("tag_set", t)
 
 	return resourceOutscaleIamAccessKeyRead(d, meta)
 }

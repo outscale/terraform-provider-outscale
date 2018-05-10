@@ -22,9 +22,9 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleAccessKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists("outscale_api_key.a_key", &conf),
+					testAccCheckOutscaleAccessKeyExists("outscale_api_key.outscale_api_key", &conf),
 					testAccCheckOutscaleAccessKeyAttributes(&conf),
-					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_access_key"),
+					resource.TestCheckResourceAttrSet("outscale_api_key.outscale_api_key", "secret_access_key"),
 				),
 			},
 		},
@@ -99,5 +99,9 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 }
 
 const testAccOutscaleAccessKeyConfig = `
-resource "outscale_api_key" "a_key" {}
+resource "outscale_api_key" "outscale_api_key" {
+  tag = {
+    Name = "test"
+  }
+}
 `
