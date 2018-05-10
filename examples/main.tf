@@ -281,18 +281,64 @@
 #   instance_id = ["${outscale_vm.outscale_vm.id}"]
 # }
 
-resource "outscale_vm" "outscale_vm" {
-  image_id      = "ami-880caa66"
-  instance_type = "c4.large"
+data "outscale_vpn_connection" "outscale_vpn_connection1" {
+  vpn_connection_id = "${outscale_vpn_connection.outscale_vpn_connection.id}"
 }
 
-resource "outscale_image" "outscale_image" {
-  name        = "image_${outscale_vm.outscale_vm.id}"
-  instance_id = "${outscale_vm.outscale_vm.id}"
-  no_reboot   = "true"
+data "outscale_vpn_connections" "outscale_vpn_connections" {
+  vpn_connection_id = ["${outscale_vpn_connection.outscale_vpn_connection.id}", "${outscale_vpn_connection.outscale_vpn_connection2.id}"]
 }
 
-resource "outscale_image_copy" "outscale_image_copy" {
-  source_image_id = "${outscale_image.outscale_image.image_id}"
-  source_region   = "eu-west-2"
+resource "outscale_vpn_connection" "outscale_vpn_connection" {
+  customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint.id}"
+  vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+  type                = "ipsec.1"
+}
+
+resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+  type = "ipsec.1"
+}
+
+resource "outscale_client_endpoint" "outscale_client_endpoint" {
+  bgp_asn    = "3"
+  ip_address = "171.33.74.125"
+  type       = "ipsec.1"
+}
+
+resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
+  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+
+  #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+  vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+}
+
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "outscale_vpn_connection" "outscale_vpn_connection2" {
+  customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint2.id}"
+  vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
+  type                = "ipsec.1"
+}
+
+resource "outscale_vpn_gateway" "outscale_vpn_gateway2" {
+  type = "ipsec.1"
+}
+
+resource "outscale_client_endpoint" "outscale_client_endpoint2" {
+  bgp_asn    = "3"
+  ip_address = "171.33.74.126"
+  type       = "ipsec.1"
+}
+
+resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link2" {
+  vpc_id = "${outscale_lin.outscale_lin2.vpc_id}"
+
+  #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.vpn_gateway_id}"
+  vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
+}
+
+resource "outscale_lin" "outscale_lin2" {
+  cidr_block = "10.0.0.0/16"
 }

@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,7 +30,7 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"static_routes_only": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -150,8 +151,11 @@ func dataSourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{
 
 	vpnConnection := resp.VpnConnections[0]
 
-	options := map[string]interface{}{
-		"static_routes_only": vpnConnection.Options.StaticRoutesOnly,
+	options := make(map[string]interface{})
+	if vpnConnection.Options != nil {
+		options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(vpnConnection.Options.StaticRoutesOnly))
+	} else {
+		options["static_routes_only"] = strconv.FormatBool(false)
 	}
 
 	d.Set("options", options)
