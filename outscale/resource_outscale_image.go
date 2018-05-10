@@ -56,7 +56,11 @@ func resourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-
+			"client_token": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"architecture": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -271,36 +275,21 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*image.ImageId)
 	d.Set("request_id", res.RequestId)
-	d.Set("architecture", *image.Architecture)
-	if image.CreationDate != nil {
-		d.Set("creation_date", *image.CreationDate)
-	} else {
-		d.Set("creation_date", "")
-	}
-	if image.Description != nil {
-		d.Set("description", *image.Description)
-	} else {
-		d.Set("description", "")
-	}
-	d.Set("hypervisor", *image.Hypervisor)
-	d.Set("image_id", *image.ImageId)
-	d.Set("image_location", *image.ImageLocation)
-	if image.ImageOwnerAlias != nil {
-		d.Set("image_owner_alias", *image.ImageOwnerAlias)
-	} else {
-		d.Set("image_owner_alias", "")
-	}
-	d.Set("image_owner_id", *image.OwnerId)
-	d.Set("image_type", *image.ImageType)
-	d.Set("name", *image.Name)
-	d.Set("is_public", *image.Public)
-	if image.RootDeviceName != nil {
-		d.Set("root_device_name", *image.RootDeviceName)
-	} else {
-		d.Set("root_device_name", "")
-	}
-	d.Set("root_device_type", *image.RootDeviceType)
-	d.Set("image_state", *image.State)
+	d.Set("architecture", aws.StringValue(image.Architecture))
+	d.Set("client_token", aws.StringValue(image.ClientToken))
+	d.Set("creation_date", aws.StringValue(image.CreationDate))
+	d.Set("description", aws.StringValue(image.Description))
+	d.Set("hypervisor", aws.StringValue(image.Hypervisor))
+	d.Set("image_id", aws.StringValue(image.ImageId))
+	d.Set("image_location", aws.StringValue(image.ImageLocation))
+	d.Set("image_owner_alias", aws.StringValue(image.ImageOwnerAlias))
+	d.Set("image_owner_id", aws.StringValue(image.OwnerId))
+	d.Set("image_type", aws.StringValue(image.ImageType))
+	d.Set("name", aws.StringValue(image.Name))
+	d.Set("is_public", aws.BoolValue(image.Public))
+	d.Set("root_device_name", aws.StringValue(image.RootDeviceName))
+	d.Set("root_device_type", aws.StringValue(image.RootDeviceType))
+	d.Set("image_state", aws.StringValue(image.State))
 
 	if err := d.Set("block_device_mapping", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err

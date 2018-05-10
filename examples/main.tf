@@ -281,36 +281,18 @@
 #   instance_id = ["${outscale_vm.outscale_vm.id}"]
 # }
 
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-  count = 1
-
-  type = "ipsec.1"
+resource "outscale_vm" "outscale_vm" {
+  image_id      = "ami-880caa66"
+  instance_type = "c4.large"
 }
 
-resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-
-  #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-  vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+resource "outscale_image" "outscale_image" {
+  name        = "image_${outscale_vm.outscale_vm.id}"
+  instance_id = "${outscale_vm.outscale_vm.id}"
+  no_reboot   = "true"
 }
 
-resource "outscale_lin" "outscale_lin" {
-  count = 1
-
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "outscale_route_table" "outscale_route_table" {
-  count = 1
-
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-}
-
-resource "outscale_vpn_gateway_route_propagation" "outscale_vpn_gateway_route_propagation" {
-  gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-  route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
-}
-
-data "outscale_quota" "outscale_quota" {
-  quota_name = "vm_limit"
+resource "outscale_image_copy" "outscale_image_copy" {
+  source_image_id = "${outscale_image.outscale_image.image_id}"
+  source_region   = "eu-west-2"
 }
