@@ -311,8 +311,6 @@ resource "outscale_vpn_gateway_route_propagation" "outscale_vpn_gateway_route_pr
   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 }
 
-resource "outscale_api_key" "outscale_api_key" {
-  tag = {
-    Name = "api_key_test"
-  }
+data "outscale_quota" "outscale_quota" {
+  quota_name = "vm_limit"
 }
