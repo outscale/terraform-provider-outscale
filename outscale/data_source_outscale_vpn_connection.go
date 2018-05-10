@@ -24,6 +24,10 @@ func dataSourceOutscaleVpnConnection() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"customer_gateway_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"options": {
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -173,6 +177,7 @@ func dataSourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{
 		routes[k] = route
 	}
 
+	d.Set("customer_gateway_id", vpnConnection.CustomerGatewayId)
 	d.Set("routes", routes)
 	d.Set("tag_set", tagsToMap(vpnConnection.Tags))
 
