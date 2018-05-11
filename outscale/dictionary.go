@@ -139,6 +139,7 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleSnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleLinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
+			"outscale_nic":                   dataSourceOutscaleNic,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
