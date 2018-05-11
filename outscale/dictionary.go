@@ -170,6 +170,7 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleOAPISnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleOAPILinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleOAPILinPeeringsConnection,
+			"outscale_nic":                   dataSourceOutscaleOAPINic,
 		},
 	}
 }
