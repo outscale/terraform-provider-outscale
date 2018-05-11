@@ -1,20 +1,20 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nic"
-sidebar_current: "docs-outscale-datasource-nic"
+page_title: "OUTSCALE: outscale_nics"
+sidebar_current: "docs-outscale-datasource-nics"
 description: |-
-  Describes one or more Network Interfaces through Terraform.
+  Describes one or more Network Interfaces.
 
 ---
 
-# outscale_nic
+# outscale_nics
 
-Describes one or more Network Interfaces through Terraform.
+Describes one or more Network Interfaces.
 
 ## Example Usage
 
 ```hcl
-data "outscale_nic" "nic" {
+data "outscale_nics" "nic" {
 		network_interface_id = "NICID"
 		subnet_id = "1"
 }
@@ -24,9 +24,9 @@ data "outscale_nic" "nic" {
 
 The following arguments are supported:
 
-* `network_interface_id` - (Optional)	One or more network interface IDs.
+* `nic_id` - (Optional)	One or more network interface IDs.
 
-See detailed information in [Outscale Network Interface](http://docs.outscale.com/api_fcu/operations/Action_DescribeNetworkInterfaces_get.html#_api_fcu-action_describenetworkinterfaces_get).
+See detailed information in [Outscale Network Interfaces](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
 
 ## Filters
 
@@ -69,22 +69,9 @@ Use the Filter.N parameter to filter the described instances on the following pr
 The following attributes are exported:
 
 * `association` - 	The association information for an External IP associated with the network interface.	false	NetworkInterfaceAssociation
-* `attachment` - 	The network interface attachment.	false	NetworkInterfaceAttachment
-* `availability_zone` - 	The Availability Zone in which the network interface is located.	false	string
-* `description` - 	A description of the network interface.	false	string
-* `group_set` - 	One or more security groups for the network interface.	false	GroupIdentifier
-* `mac_address` - 	The MAC address.	false	string
-* `network_interface_id` - 	The ID of the network interface.	false	string
-* `owner_id` - 	The account ID of the owner of the network interface.	false	string
-* `private_dns_name` - 	The name of the private DNS.	false	string
-* `private_ip_address` - 	The private IP addresses assigned to the network interface, in the CIDR of its subnet.	false	string
-* `private_ip_addresses_set` - 	Information about one or more private IP addresses assigned to the network interface.	false	NetworkInterfacePrivateIpAddress
-* `requester_id` - 	The ID of the requester that launched the instances on your behalf.	false	string
-* `requester_managed` - 	If true, the network interface is being managed by Outscale.	false	boolean
-* `source_dest_check` - 	If true, the traffic to or from the instance is validated.	false	boolean
-* `status` - 	The state of the network interface (available | attaching | in-use | detaching).	false	string
-* `subnet_id` - 	The ID of the subnet.	false	string
-* `tag_set` - 	One or more tags associated with the network interface.	false	Tag
-* `vpc_idd` - 	The ID of the VPC.	false	string
 
-See detailed information in [Describe Outscale Network Interface](http://docs.outscale.com/api_fcu/operations/Action_DescribeNetworkInterfaces_get.html#_api_fcu-action_describenetworkinterfaces_get).
+
+* `nic`	Information about the network interfaces.	
+* `lin_id`	The ID of the VPC.
+
+See detailed information in [Describe Outscale Network Interfaces](http://docs.outscale.com/api_fcu/operations/Action_DescribeNetworkInterfaces_get.html#_api_fcu-action_describenetworkinterfaces_get).
