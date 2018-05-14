@@ -40,7 +40,7 @@ func dataSourceOutscaleRegion() *schema.Resource {
 func dataSourceOutscaleRegionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtbId, rtbOk := d.GetOk("region_name")
+	rtbID, rtbOk := d.GetOk("region_name")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !rtbOk {
@@ -50,7 +50,7 @@ func dataSourceOutscaleRegionRead(d *schema.ResourceData, meta interface{}) erro
 	req := &fcu.DescribeRegionsInput{}
 
 	if rtbOk {
-		req.RegionNames = []*string{aws.String(rtbId.(string))}
+		req.RegionNames = []*string{aws.String(rtbID.(string))}
 	}
 
 	if filterOk {

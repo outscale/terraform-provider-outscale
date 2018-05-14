@@ -232,9 +232,14 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		LoadBalancerName: aws.String(elbName.(string)),
 	}
 
+<<<<<<< Updated upstream
 	var describeAttrsResp *lbu.DescribeLoadBalancerAttributesOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		describeAttrsResp, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
+=======
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
+>>>>>>> Stashed changes
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

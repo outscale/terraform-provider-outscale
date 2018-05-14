@@ -50,7 +50,7 @@ func dataSourceOutscaleRegions() *schema.Resource {
 func dataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	rtbId, rtbOk := d.GetOk("region_name")
+	rtbID, rtbOk := d.GetOk("region_name")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !rtbOk {
@@ -61,7 +61,7 @@ func dataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) err
 
 	if rtbOk {
 		var ids []*string
-		for _, v := range rtbId.([]interface{}) {
+		for _, v := range rtbID.([]interface{}) {
 			ids = append(ids, aws.String(v.(string)))
 		}
 		req.RegionNames = ids

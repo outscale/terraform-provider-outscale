@@ -292,13 +292,11 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 	return nil
 }
 
-func hasOAPILaunchPermission(conn *fcu.Client, image_id string) (bool, error) {
-
-	var attrs *fcu.DescribeImageAttributeOutput
+func hasOAPILaunchPermission(conn *fcu.Client, imageID string) (bool, error) {
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		attrs, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(image_id),
+		_, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
+			ImageId:   aws.String(imageID),
 			Attribute: aws.String("launchPermission"),
 		})
 		if err != nil {
@@ -312,7 +310,7 @@ func hasOAPILaunchPermission(conn *fcu.Client, image_id string) (bool, error) {
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", image_id)
+			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", imageID)
 			return false, nil
 		}
 		return false, err

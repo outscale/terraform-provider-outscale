@@ -67,12 +67,12 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if len(resp.Tags) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	if len(resp.Tags) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
+		return fmt.Errorf("your query returned more than one result, Please try a more " +
+			"specific search criteria")
 	}
 
 	tag := resp.Tags[0]
