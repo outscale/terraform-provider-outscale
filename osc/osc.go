@@ -92,12 +92,16 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	var b interface{}
 	var err error
-	if method != http.MethodPost {
+	isLBU := (strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck"))
+
+	// method for FCU API
+	if (method == http.MethodPost && isLBU) || method != http.MethodPost {
 		b, err = c.MarshalHander(body, operation, "2017-12-15")
 		if err != nil {
 			return nil, err
 		}
-	} else {
+		// method for LBU API
+	} else if method == http.MethodPost && !isLBU {
 		v := struct {
 			Action               string `json:"Action"`
 			Version              string `json:"Version"`
@@ -116,6 +120,8 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		b = string(jm)
 	}
 
+	fmt.Println("B VALUE =>", b)
+
 	u := c.Config.BaseURL.ResolveReference(rel)
 
 	req, reader, err := c.BuildRequestHandler(b, method, u.String())
@@ -125,17 +131,15 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	fmt.Println(rel.Opaque)
 
-	if strings.Contains(operation, "AccessKey") {
+	if strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck") {
+		c.SetHeaders(req, "lbu_20180514", operation)
+	} else if strings.Contains(operation, "AccessKey") {
 		c.SetHeaders(req, "TinaIcuService", operation)
-		_, err := c.Sign(req, reader, time.Now(), c.Config.Target)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
-		if err != nil {
-			return nil, err
-		}
+	}
+
+	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
+	if err != nil {
+		return nil, err
 	}
 
 	requestDump, err := httputil.DumpRequestOut(req, true)
@@ -153,6 +157,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 func (c Client) SetHeaders(req *http.Request, target, operation string) {
 	req.Header.Add("User-Agent", c.Config.UserAgent)
 	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", target, operation))
+	req.Header.Add("Content-Type", mediaTypeURLEncoded)
 }
 
 // Do sends the request to the API's
@@ -161,6 +166,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
+	if err != nil {
+		return err
+	}
 
 	requestDump, err := httputil.DumpResponse(resp, true)
 	if err != nil {

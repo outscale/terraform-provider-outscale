@@ -279,9 +279,8 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	log.Printf("[DEBUG] ELB create configuration: %#v", elbOpts)
-	var resp *lbu.CreateLoadBalancerOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.CreateLoadBalancer(elbOpts)
+		_, err = conn.API.CreateLoadBalancer(elbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
