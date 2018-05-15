@@ -56,6 +56,8 @@ func init() {
 			"outscale_image_launch_permission":       resourceOutscaleImageLaunchPermission,
 			"outscale_lin_peering":                   resourceOutscaleLinPeeringConnection,
 			"outscale_lin_peering_acceptation":       resourceOutscaleLinPeeringConnectionAccepter,
+			"outscale_nic_link":                      resourceOutscaleNetworkInterfaceAttachment,
+			"outscale_nic_private_ip":                resourceOutscaleNetworkInterfacePrivateIP,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                      resourceOutscaleOApiVM,
@@ -143,6 +145,7 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleSnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleLinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
+			"outscale_nics":                  dataSourceOutscaleNics,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -174,10 +177,10 @@ func init() {
 			"outscale_lin_peering":           dataSourceOutscaleOAPILinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleOAPILinPeeringsConnection,
 			"outscale_load_balancer":         dataSourceOutscaleOAPILoadBalancer,
-			"outscale_load_balancers":         dataSourceOutscaleOAPILoadBalancers,
+			"outscale_load_balancers":        dataSourceOutscaleOAPILoadBalancers,
 		},
 		"lbu": ResourceMap{
-			"outscale_load_balancer": dataSourceOutscaleLoadBalancer,
+			"outscale_load_balancer":  dataSourceOutscaleLoadBalancer,
 			"outscale_load_balancers": dataSourceOutscaleLoadBalancers,
 		},
 	}

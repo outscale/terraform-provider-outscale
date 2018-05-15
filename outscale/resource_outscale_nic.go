@@ -299,7 +299,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
-	describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+	dnir := &fcu.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{aws.String(d.Id())},
 	}
 
@@ -307,7 +307,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -367,7 +367,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("availability_zone", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("availability_zone", aws.StringValue(eni.AvailabilityZone))
 
 	x := make([]map[string]interface{}, len(eni.Groups))
 	for k, v := range eni.Groups {
@@ -419,7 +419,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", aws.StringValue(eni.Status))
 	// Tags
 	d.Set("tags", tagsToMap(eni.TagSet))
-	d.Set("vpc_id", eni.VpcId)
+	d.Set("vpc_id", aws.StringValue(eni.VpcId))
 
 	return nil
 }
@@ -778,7 +778,7 @@ func resourceOutscaleEniAttachmentHash(v interface{}) int {
 func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+		dnir := &fcu.DescribeNetworkInterfacesInput{
 			NetworkInterfaceIds: []*string{aws.String(id)},
 		}
 
@@ -786,7 +786,7 @@ func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
