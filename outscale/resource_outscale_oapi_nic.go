@@ -16,12 +16,12 @@ import (
 )
 
 // Creates a network interface in the specified subnet
-func resourceOutscaleNic() *schema.Resource {
+func resourceOutscaleOAPINic() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleNicCreate,
-		Read:   resourceOutscaleNicRead,
-		Delete: resourceOutscaleNicDelete,
-		Update: resourceOutscaleNicUpdate,
+		Create: resourceOutscaleOAPINicCreate,
+		Read:   resourceOutscaleOAPINicRead,
+		Delete: resourceOutscaleOAPINicDelete,
+		Update: resourceOutscaleOAPINicUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,24 +29,24 @@ func resourceOutscaleNic() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: getNicSchema(),
+		Schema: getOAPINicSchema(),
 	}
 }
 
-func getNicSchema() map[string]*schema.Schema {
+func getOAPINicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		//  This is attribute part for schema Nic
+		//  This is attribute part for schema OAPINic
 		"description": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"private_ip_adress": &schema.Schema{
+		"private_ip": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_id": &schema.Schema{
+		"firewall_rules_set_id": &schema.Schema{
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -56,20 +56,20 @@ func getNicSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		// Attributes
-		"association": {
+		"public_ip_link": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"allocation_id": {
+					"reservation_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"association_id": {
+					"link_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ip_owner_id": {
+					"public_ip_account_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -85,32 +85,32 @@ func getNicSchema() map[string]*schema.Schema {
 			},
 		},
 
-		"attachment": {
+		"nic_link": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"attachment_id": {
+					"nic_link_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"delete_on_termination": {
+					"delete_on_vm_deletion": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
-					"device_index": {
+					"nic_sort_number": {
 						Type:     schema.TypeInt,
 						Computed: true,
 					},
-					"instance_id": {
+					"vm_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_owner_id": {
+					"vm_account_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"status": {
+					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -118,20 +118,20 @@ func getNicSchema() map[string]*schema.Schema {
 			},
 		},
 
-		"availability_zone": {
+		"sub_region_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"group_set": {
+		"firewall_rules_set": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": {
+					"firewall_rules_set_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"group_name": {
+					"firewall_rules_set_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -143,11 +143,11 @@ func getNicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"network_interface_id": {
+		"nic_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"owner_id": {
+		"account_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -156,25 +156,25 @@ func getNicSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 
-		"private_ip_address_set": {
+		"private_ips": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"association": {
+					"public_ip_link": {
 						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"allocation_id": {
+								"reservation_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"association_id": {
+								"link_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ip_owner_id": {
+								"public_ip_account_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -189,7 +189,7 @@ func getNicSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"primary": {
+					"pip": {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
@@ -197,7 +197,7 @@ func getNicSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"private_ip_address": {
+					"private_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -212,24 +212,24 @@ func getNicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"source_dest_check": {
+		"activated_check": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"status": {
+		"state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": tagsSchemaComputed(),
-		"vpc_id": {
+		"tag": tagsSchemaComputed(),
+		"lin_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}
 }
 
-//Create Nic
-func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
+//Create OAPINic
+func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 
@@ -241,7 +241,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		request.Description = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("security_group_id"); ok {
+	if v, ok := d.GetOk("firewall_rules_set_id"); ok {
 		m := v.([]interface{})
 		a := make([]*string, len(m))
 		for k, v := range m {
@@ -250,7 +250,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		request.Groups = a
 	}
 
-	if v, ok := d.GetOk("private_ip_adress"); ok {
+	if v, ok := d.GetOk("private_ip"); ok {
 		request.PrivateIpAddress = aws.String(v.(string))
 	}
 
@@ -281,20 +281,20 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		if err := setTags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tag")
 	}
 
-	d.Set("tag_set", make([]map[string]interface{}, 0))
-	d.Set("private_ip_address_set", make([]map[string]interface{}, 0))
+	d.Set("tag", make([]map[string]interface{}, 0))
+	d.Set("private_ip", make([]map[string]interface{}, 0))
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
-	return resourceOutscaleNicRead(d, meta)
+	return resourceOutscaleOAPINicRead(d, meta)
 
 }
 
-//Read Nic
-func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
+//Read OAPINic
+func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 	dnir := &fcu.DescribeNetworkInterfacesInput{
@@ -341,49 +341,49 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	b := make(map[string]interface{})
 	if eni.Association != nil {
-		b["allocation_id"] = aws.StringValue(eni.Association.AllocationId)
-		b["association_id"] = aws.StringValue(eni.Association.AssociationId)
-		b["ip_owner_id"] = aws.StringValue(eni.Association.IpOwnerId)
+		b["reservation_id"] = aws.StringValue(eni.Association.AllocationId)
+		b["link_id"] = aws.StringValue(eni.Association.AssociationId)
+		b["public_ip_account_id"] = aws.StringValue(eni.Association.IpOwnerId)
 		b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
 		b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
 	}
-	if err := d.Set("association", b); err != nil {
+	if err := d.Set("public_ip_link", b); err != nil {
 		return err
 	}
 
 	aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
 	if eni.Attachment != nil {
-		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-		bb["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["status"] = aws.StringValue(eni.Attachment.Status)
+		bb["nic_link_id"] = aws.StringValue(eni.Attachment.AttachmentId)
+		bb["delete_on_vm_deletion"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
+		bb["nic_sort_number"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		bb["vm_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		bb["vm_account_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		bb["state"] = aws.StringValue(eni.Attachment.Status)
 	}
 	aa[0] = bb
-	if err := d.Set("attachment", aa); err != nil {
+	if err := d.Set("nic_link", aa); err != nil {
 		return err
 	}
 
-	d.Set("availability_zone", aws.StringValue(eni.AvailabilityZone))
+	d.Set("sub_region_name", aws.StringValue(eni.AvailabilityZone))
 
 	x := make([]map[string]interface{}, len(eni.Groups))
 	for k, v := range eni.Groups {
 		b := make(map[string]interface{})
-		b["group_id"] = aws.StringValue(v.GroupId)
-		b["group_name"] = aws.StringValue(v.GroupName)
+		b["firewall_rules_set_id"] = aws.StringValue(v.GroupId)
+		b["firewall_rules_set_name"] = aws.StringValue(v.GroupName)
 		x[k] = b
 	}
-	if err := d.Set("group_set", x); err != nil {
+	if err := d.Set("firewall_rules_set", x); err != nil {
 		return err
 	}
 
 	d.Set("mac_address", aws.StringValue(eni.MacAddress))
-	d.Set("network_interface_id", aws.StringValue(eni.NetworkInterfaceId))
-	d.Set("owner_id", aws.StringValue(eni.OwnerId))
+	d.Set("nic_id", aws.StringValue(eni.NetworkInterfaceId))
+	d.Set("account_id", aws.StringValue(eni.OwnerId))
 	d.Set("private_dns_name", aws.StringValue(eni.PrivateDnsName))
-	d.Set("private_ip_address", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("private_ip", aws.StringValue(eni.PrivateIpAddress))
 
 	y := make([]map[string]interface{}, len(eni.PrivateIpAddresses))
 	if eni.PrivateIpAddresses != nil {
@@ -392,21 +392,21 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 			d := make(map[string]interface{})
 			if v.Association != nil {
-				d["allocation_id"] = aws.StringValue(v.Association.AllocationId)
-				d["association_id"] = aws.StringValue(v.Association.AssociationId)
-				d["ip_owner_id"] = aws.StringValue(v.Association.IpOwnerId)
+				d["reservation_id"] = aws.StringValue(v.Association.AllocationId)
+				d["link_id"] = aws.StringValue(v.Association.AssociationId)
+				d["public_ip_account_id"] = aws.StringValue(v.Association.IpOwnerId)
 				d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
 				d["public_ip"] = aws.StringValue(v.Association.PublicIp)
 			}
-			b["association"] = d
-			b["primary"] = aws.BoolValue(v.Primary)
+			b["public_ip_link"] = d
+			b["pip"] = aws.BoolValue(v.Primary)
 			b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
-			b["private_ip_address"] = aws.StringValue(v.PrivateIpAddress)
+			b["private_ip"] = aws.StringValue(v.PrivateIpAddress)
 
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip_address_set", y); err != nil {
+	if err := d.Set("private_ip", y); err != nil {
 		return err
 	}
 
@@ -414,23 +414,23 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("requester_managed", aws.BoolValue(eni.RequesterManaged))
 
-	d.Set("source_dest_check", aws.BoolValue(eni.SourceDestCheck))
-	d.Set("status", aws.StringValue(eni.Status))
+	d.Set("activated_check", aws.BoolValue(eni.SourceDestCheck))
+	d.Set("state", aws.StringValue(eni.Status))
 	// Tags
 	d.Set("tags", tagsToMap(eni.TagSet))
-	d.Set("vpc_id", aws.StringValue(eni.VpcId))
+	d.Set("lin_id", aws.StringValue(eni.VpcId))
 
 	return nil
 }
 
-//Delete Nic
-func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
+//Delete OAPINic
+func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleNicDetach(d.Get("attachment").([]interface{}), meta, d.Id())
+	err := resourceOutscaleOAPINicDetach(d.Get("nic_link").([]interface{}), meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -458,12 +458,12 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string) error {
-	// if there was an old attachment, remove it
+func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniId string) error {
+	// if there was an old nic_link, remove it
 	if oa != nil && len(oa) > 0 && oa[0] != nil {
 		oa := oa[0].(map[string]interface{})
 		dr := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(oa["attachment_id"].(string)),
+			AttachmentId: aws.String(oa["nic_link_id"].(string)),
 			Force:        aws.Bool(true),
 		}
 		conn := meta.(*OutscaleClient).FCU
@@ -503,24 +503,24 @@ func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string)
 	return nil
 }
 
-//Update Nic
-func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
+//Update OAPINic
+func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 	d.Partial(true)
 
-	if d.HasChange("attachment") {
-		oa, na := d.GetChange("attachment")
+	if d.HasChange("nic_link") {
+		oa, na := d.GetChange("nic_link")
 
-		err := resourceOutscaleNicDetach(oa.([]interface{}), meta, d.Id())
+		err := resourceOutscaleOAPINicDetach(oa.([]interface{}), meta, d.Id())
 		if err != nil {
 			return err
 		}
 
-		// if there is a new attachment, attach it
+		// if there is a new nic_link, attach it
 		if na != nil && len(na.([]interface{})) > 0 {
 			na := na.([]interface{})[0].(map[string]interface{})
-			di := na["device_index"].(int)
+			di := na["nic_sort_number"].(int)
 			ar := &fcu.AttachNetworkInterfaceInput{
 				DeviceIndex:        aws.Int64(int64(di)),
 				InstanceId:         aws.String(na["instance"].(string)),
@@ -545,11 +545,11 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("attachment")
+		d.SetPartial("nic_link")
 	}
 
-	if d.HasChange("private_ip_address_set") {
-		o, n := d.GetChange("private_ip_address_set")
+	if d.HasChange("private_ip") {
+		o, n := d.GetChange("private_ip")
 		if o == nil {
 			o = new([]interface{})
 		}
@@ -607,12 +607,12 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("private_ip_address_set")
+		d.SetPartial("private_ip")
 	}
 
 	request := &fcu.ModifyNetworkInterfaceAttributeInput{
 		NetworkInterfaceId: aws.String(d.Id()),
-		SourceDestCheck:    &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("source_dest_check").(bool))},
+		SourceDestCheck:    &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("activated_check").(bool))},
 	}
 
 	// _, err := conn.VM.ModifyNetworkInterfaceAttribute(request)
@@ -633,11 +633,11 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Failure updating ENI: %s", err)
 	}
 
-	d.SetPartial("source_dest_check")
+	d.SetPartial("activated_check")
 
 	if d.HasChange("private_ips_count") {
 		o, n := d.GetChange("private_ips_count")
-		pips := d.Get("private_ips").(*schema.Set).List()
+		pips := d.Get("pips").(*schema.Set).List()
 		prips := pips[:0]
 		pip := d.Get("private_ip")
 
@@ -756,14 +756,15 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := setTags(conn, d); err != nil {
 		return err
 	}
-	d.SetPartial("tag_set")
+
+	d.SetPartial("tag")
 
 	d.Partial(false)
 
-	return resourceOutscaleNicRead(d, meta)
+	return resourceOutscaleOAPINicRead(d, meta)
 }
 
-func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func networkOAPIInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		dnir := &fcu.DescribeNetworkInterfacesInput{
@@ -791,7 +792,7 @@ func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource
 
 		eni := describeResp.NetworkInterfaces[0]
 		hasAttachment := strconv.FormatBool(eni.Attachment != nil)
-		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
+		log.Printf("[DEBUG] ENI %s has nic_link state %s", id, hasAttachment)
 		return eni, hasAttachment, nil
 	}
 }

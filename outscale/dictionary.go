@@ -83,6 +83,9 @@ func init() {
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission,
 			"outscale_lin_peering":             resourceOutscaleOAPILinPeeringConnection,
 			"outscale_load_balancer":           resourceOutscaleOAPILoadBalancer,
+			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP,
+			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment,
+			"outscale_nic":                     resourceOutscaleOAPINic,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
