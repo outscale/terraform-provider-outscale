@@ -209,7 +209,7 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 	return resourceOutscaleVpnConnectionRead(d, meta)
 }
 
-func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.StateRefreshFunc {
+func vpnConnectionRefreshFunc(conn *fcu.Client, connectionID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var resp *fcu.DescribeVpnConnectionsOutput
@@ -217,7 +217,7 @@ func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.St
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
-				VpnConnectionIds: []*string{aws.String(connectionId)},
+				VpnConnectionIds: []*string{aws.String(connectionID)},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -269,10 +269,9 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			log.Printf("[ERROR] Error finding VPN connection: %s", err)
+		} 
+		log.Printf("[ERROR] Error finding VPN connection: %s", err)
 			return err
-		}
 	}
 
 	if len(resp.VpnConnections) != 1 {
@@ -355,10 +354,9 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
-			return err
 		}
+		fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
+			return err
 	}
 
 	stateConf := &resource.StateChangeConf{

@@ -108,14 +108,15 @@ func dataSourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) 
 	for k, v := range vgw.VpcAttachments {
 		vp := make(map[string]interface{})
 
-		vp["state"] = *v.State
-		vp["vpc_id"] = *v.VpcId
+		vp["state"] = aws.StringValue(v.State)
+		vp["vpc_id"] = aws.StringValue(v.VpcId)
 
 		vs[k] = vp
 	}
 
 	d.Set("attachments", vs)
-	d.Set("state", vgw.State)
+	d.Set("state", aws.StringValue(vgw.State))
+	d.Set("type", aws.StringValue(vgw.Type))
 	d.Set("tag_set", tagsToMap(vgw.Tags))
 	d.Set("request_id", resp.RequestId)
 

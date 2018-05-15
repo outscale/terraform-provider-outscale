@@ -128,7 +128,7 @@ func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface
 			vgwID, vpcID, err)
 	}
 
-	d.SetId(vpnGatewayAttachmentId(vpcID, vgwID))
+	d.SetId(vpnGatewayAttachmentID(vpcID, vgwID))
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"detached", "attaching"},
@@ -271,6 +271,6 @@ func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcID, vgwID string) res
 	}
 }
 
-func vpnGatewayAttachmentId(vpcID, vgwID string) string {
+func vpnGatewayAttachmentID(vpcID, vgwID string) string {
 	return fmt.Sprintf("vpn-attachment-%x", hashcode.String(fmt.Sprintf("%s-%s", vpcID, vgwID)))
 }
