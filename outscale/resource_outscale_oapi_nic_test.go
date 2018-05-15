@@ -92,42 +92,6 @@ func testAccCheckOutscaleOAPIENIAttributes(conf *fcu.NetworkInterface) resource.
 	}
 }
 
-func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "aws_network_interface" {
-			continue
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
-		}
-
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.VM.DescribeNetworkInterfaces(dnir)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return nil
-			}
-
-			return err
-		}
-	}
-
-	return nil
-}
-
 const testAccOutscaleOAPIENIConfig = `
 resource "outscale_lin" "outscale_lin" {
     count = 1

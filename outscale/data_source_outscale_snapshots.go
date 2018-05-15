@@ -128,7 +128,7 @@ func dataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if len(resp.Snapshots) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	snapshots := make([]map[string]interface{}, len(resp.Snapshots))

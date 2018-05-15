@@ -218,7 +218,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+	dnri := &fcu.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{aws.String(d.Id())},
 	}
 
@@ -226,7 +226,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -344,12 +344,12 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{}, eniId string) error {
+func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{}, eniID string) error {
 	// if there was an old attachment, remove it
 	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		old_attachment := oa[0].(map[string]interface{})
-		detach_request := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(old_attachment["attachment_id"].(string)),
+		oa := oa[0].(map[string]interface{})
+		dr := &fcu.DetachNetworkInterfaceInput{
+			AttachmentId: aws.String(oa["attachment_id"].(string)),
 			Force:        aws.Bool(true),
 		}
 		conn := meta.(*OutscaleClient).FCU
@@ -357,7 +357,7 @@ func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{},
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DetachNetworkInterface(detach_request)
+			_, err = conn.VM.DetachNetworkInterface(dr)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -373,16 +373,16 @@ func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{},
 			}
 		}
 
-		log.Printf("[DEBUG] Waiting for oAPI ENI (%s) to become dettached", eniId)
+		log.Printf("[DEBUG] Waiting for oAPI ENI (%s) to become dettached", eniID)
 		stateConf := &resource.StateChangeConf{
 			Pending: []string{"true"},
 			Target:  []string{"false"},
-			Refresh: networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn, eniId),
+			Refresh: networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn, eniID),
 			Timeout: 10 * time.Minute,
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
 			return fmt.Errorf(
-				"Error waiting for oAPI ENI (%s) to become dettached: %s", eniId, err)
+				"Error waiting for oAPI ENI (%s) to become dettached: %s", eniID, err)
 		}
 	}
 
@@ -392,7 +392,7 @@ func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{},
 func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+		dnri := &fcu.DescribeNetworkInterfacesInput{
 			NetworkInterfaceIds: []*string{aws.String(id)},
 		}
 
@@ -400,7 +400,7 @@ func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *fcu.Client, id st
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

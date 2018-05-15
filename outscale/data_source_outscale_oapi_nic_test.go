@@ -57,7 +57,7 @@ func testAccCheckOutscaleOAPIENIDataSourceExists(n string, res *fcu.NetworkInter
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+		dnir := &fcu.DescribeNetworkInterfacesInput{
 			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
 		}
 
@@ -65,7 +65,7 @@ func testAccCheckOutscaleOAPIENIDataSourceExists(n string, res *fcu.NetworkInter
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -112,14 +112,14 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+		dnir := &fcu.DescribeNetworkInterfacesInput{
 			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+			_, err = conn.VM.DescribeNetworkInterfaces(dnir)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
