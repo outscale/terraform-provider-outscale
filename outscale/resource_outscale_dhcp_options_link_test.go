@@ -45,7 +45,7 @@ func testAccCheckDHCPOptionsAssociationDestroy(s *terraform.State) error {
 		}
 
 		if len(vpcs) > 0 {
-			return fmt.Errorf("DHCP Options association is still associated to %d VPCs.", len(vpcs))
+			return fmt.Errorf("DHCP Options association is still associated to %d VPCs", len(vpcs))
 		}
 	}
 

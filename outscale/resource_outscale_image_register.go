@@ -30,7 +30,7 @@ func resourceOutscaleImageRegister() *schema.Resource {
 			//Image
 			"instance_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"name": {
@@ -235,9 +235,11 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	if rootDeviceNameOk {
 		request.RootDeviceName = aws.String(rootDeviceName.(string))
 	}
+	if instanceIDOk {
+		request.InstanceId = aws.String(instanceID.(string))
+	}
 
 	request.Name = aws.String(name.(string))
-	request.InstanceId = aws.String(instanceID.(string))
 
 	var registerResp *fcu.RegisterImageOutput
 	var err error
