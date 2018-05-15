@@ -105,12 +105,16 @@ func statusDescriptionAttributes(d *schema.ResourceData, status *fcu.InstanceSta
 	return d.Set("system_status", sst)
 }
 
-func statusSet(status *fcu.InstanceStatusSummary) map[string]interface{} {
+func statusSet(status *fcu.InstanceStatusSummary) []map[string]interface{} {
+	st := make([]map[string]interface{}, 1)
+
 	s := make(map[string]interface{})
 	s["status"] = aws.StringValue(status.Status)
 	s["details"] = detailsSet(status.Details)
 
-	return s
+	st[0] = s
+
+	return st
 }
 
 func detailsSet(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
