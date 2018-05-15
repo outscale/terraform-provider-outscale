@@ -64,10 +64,9 @@ func resourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
 	}
 
-	var resp *fcu.AssignPrivateIpAddressesOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.AssignPrivateIpAddresses(input)
+		_, err = conn.VM.AssignPrivateIpAddresses(input)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

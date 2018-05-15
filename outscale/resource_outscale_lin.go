@@ -118,11 +118,7 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("state", resp.Vpcs[0].State)
 	d.Set("vpc_id", resp.Vpcs[0].VpcId)
 
-	if err := d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags))
 }
 
 func resourceOutscaleLinDelete(d *schema.ResourceData, meta interface{}) error {

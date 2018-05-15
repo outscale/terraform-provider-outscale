@@ -78,7 +78,6 @@ func resourceOutscaleNatService() *schema.Resource {
 func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	// Create the NAT Gateway
 	createOpts := &fcu.CreateNatGatewayInput{
 		AllocationId: aws.String(d.Get("allocation_id").(string)),
 		SubnetId:     aws.String(d.Get("subnet_id").(string)),
@@ -103,17 +102,14 @@ func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error creating NAT Gateway: %s", err)
 	}
 
-	// Get the ID and store it
 	ng := natResp.NatGateway
 	d.SetId(*ng.NatGatewayId)
-	log.Printf("\n\n[INFO] NAT Gateway ID: %s", d.Id())
 
-	// Wait for the NAT Gateway to become available
 	log.Printf("\n\n[DEBUG] Waiting for NAT Gateway (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
-		Refresh: NGStateRefreshFunc(conn, d.Id()),
+		Refresh: ngStateRefreshFunc(conn, d.Id()),
 		Timeout: 10 * time.Minute,
 	}
 
@@ -128,7 +124,7 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	// Refresh the NAT Gateway state
-	ngRaw, state, err := NGStateRefreshFunc(conn, d.Id())()
+	ngRaw, state, err := ngStateRefreshFunc(conn, d.Id())()
 	if err != nil {
 		return err
 	}
@@ -162,48 +158,27 @@ func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
-	if resp.NatGateways[0].NatGatewayId != nil {
-		d.Set("nat_gateway_id", *resp.NatGateways[0].NatGatewayId)
-	} else {
-		d.Set("nat_gateway_id", "")
-	}
-	if resp.NatGateways[0].State != nil {
-		d.Set("state", *resp.NatGateways[0].State)
-	} else {
-		d.Set("state", "")
-	}
-	if resp.NatGateways[0].SubnetId != nil {
-		d.Set("subnet_id", *resp.NatGateways[0].SubnetId)
-	} else {
-		d.Set("subnet_id", "")
-	}
-	if resp.NatGateways[0].VpcId != nil {
-		d.Set("vpc_id", *resp.NatGateways[0].VpcId)
-	} else {
-		d.Set("vpc_id", "")
-	}
+	nat := resp.NatGateways[0]
 
-	addresses := make([]map[string]interface{}, len(resp.NatGateways[0].NatGatewayAddresses))
-	if resp.NatGateways[0].NatGatewayAddresses != nil {
-		for k, v := range resp.NatGateways[0].NatGatewayAddresses {
+	d.Set("nat_gateway_id", aws.StringValue(nat.NatGatewayId))
+	d.Set("state", aws.StringValue(nat.State))
+	d.Set("subnet_id", aws.StringValue(nat.SubnetId))
+	d.Set("vpc_id", aws.StringValue(nat.VpcId))
+
+	addresses := make([]map[string]interface{}, len(nat.NatGatewayAddresses))
+	if nat.NatGatewayAddresses != nil {
+		for k, v := range nat.NatGatewayAddresses {
 			address := make(map[string]interface{})
-			if v.AllocationId != nil {
-				address["allocation_id"] = *v.AllocationId
-			}
-			if v.PublicIp != nil {
-				address["public_ip"] = *v.PublicIp
-			}
+			address["allocation_id"] = aws.StringValue(v.AllocationId)
+			address["public_ip"] = aws.StringValue(v.PublicIp)
+
 			addresses[k] = address
 		}
 	}
 
-	if err := d.Set("nat_gateway_address", addresses); err != nil {
-		return err
-	}
-
 	d.Set("request_id", resp.RequestId)
 
-	return nil
+	return d.Set("nat_gateway_address", addresses)
 }
 
 func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -212,10 +187,9 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	deleteOpts := &fcu.DeleteNatGatewayInput{
 		NatGatewayId: aws.String(d.Id()),
 	}
-	log.Printf("\n\n[INFO] Deleting NAT Gateway: %s", d.Id())
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteNatGateway(deleteOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -227,7 +201,7 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		if strings.Contains(err.Error(), "NatGatewayNotFound:") {
+		if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound:") {
 			return nil
 		}
 
@@ -237,7 +211,7 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted"},
-		Refresh:    NGStateRefreshFunc(conn, d.Id()),
+		Refresh:    ngStateRefreshFunc(conn, d.Id()),
 		Timeout:    30 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -251,12 +225,10 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// NGStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
-// a NAT Gateway.
-func NGStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func ngStateRefreshFunc(conn *fcu.Client, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		opts := &fcu.DescribeNatGatewaysInput{
-			NatGatewayIds: []*string{aws.String(id)},
+			NatGatewayIds: []*string{aws.String(ID)},
 		}
 		var resp *fcu.DescribeNatGatewaysOutput
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -275,10 +247,9 @@ func NGStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
 				return nil, "", nil
-			} else {
-				log.Printf("\n\nError on NGStateRefresh: %s", err)
-				return nil, "", err
 			}
+			log.Printf("\n\nError on NGStateRefresh: %s", err)
+			return nil, "", err
 		}
 
 		ng := resp.NatGateways[0]

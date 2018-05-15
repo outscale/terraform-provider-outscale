@@ -347,34 +347,6 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
 
-	describeAttrsOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName),
-	}
-
-	var describeAttrsResp *lbu.DescribeLoadBalancerAttributesOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeAttrsResp, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving ELB: %s", err)
-	}
-
-	// lbAttrs := describeAttrsResp.LoadBalancerAttributes
-
 	lb := describeResp.LoadBalancerDescriptions[0]
 
 	d.Set("availability_zones_member", flattenStringList(lb.AvailabilityZones))
