@@ -14,7 +14,7 @@ import (
 // Creates a network interface in the specified subnet
 func dataSourceOutscaleOAPINics() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPINicRead,
+		Read:   dataSourceOutscaleOAPINicsRead,
 		Schema: getDSOAPINicsSchema(),
 	}
 }
@@ -221,7 +221,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 }
 
 //Read Nic
-func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 

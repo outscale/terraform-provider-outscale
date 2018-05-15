@@ -14,7 +14,7 @@ import (
 // Creates a network interface in the specified subnet
 func dataSourceOutscaleNics() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleNicRead,
+		Read:   dataSourceOutscaleNicsRead,
 		Schema: getDSNicsSchema(),
 	}
 }
@@ -221,7 +221,7 @@ func getDSNicsSchema() map[string]*schema.Schema {
 }
 
 //Read Nic
-func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
 

@@ -149,6 +149,7 @@ func init() {
 			"outscale_lin_peering":           dataSourceOutscaleLinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
 			"outscale_nics":                  dataSourceOutscaleNics,
+			"outscale_nic":                   dataSourceOutscaleNic,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -181,6 +182,7 @@ func init() {
 			"outscale_lin_peerings":          dataSourceOutscaleOAPILinPeeringsConnection,
 			"outscale_load_balancer":         dataSourceOutscaleOAPILoadBalancer,
 			"outscale_load_balancers":        dataSourceOutscaleOAPILoadBalancers,
+			"outscale_nic":                   dataSourceOutscaleOAPINic,
 			"outscale_nics":                  dataSourceOutscaleOAPINics,
 		},
 		"lbu": ResourceMap{
