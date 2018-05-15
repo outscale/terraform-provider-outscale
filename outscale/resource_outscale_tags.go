@@ -395,6 +395,7 @@ func diffTagsCommon(oldTags, newTags []*common.Tag) ([]*common.Tag, []*common.Ta
 }
 
 // tagsFromMap returns the tag for the given map of data.
+
 func tagsFromMapCommon(m map[string]interface{}) []*common.Tag {
 	result := make([]*common.Tag, 0, len(m))
 	for k, v := range m {

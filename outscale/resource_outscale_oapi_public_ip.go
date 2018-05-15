@@ -177,28 +177,28 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 
 	placement := resourceOutscaleOAPIPublicIPDomain(d)
 
-	v_instance, ok_instance := d.GetOk("vm_id")
-	v_interface, ok_interface := d.GetOk("nic_id")
+	vInstance, okInstance := d.GetOk("vm_id")
+	vInterface, okInterface := d.GetOk("nic_id")
 
-	if ok_instance || ok_interface {
-		instanceId := v_instance.(string)
-		networkInterfaceId := v_interface.(string)
+	if okInstance || okInterface {
+		instanceID := vInstance.(string)
+		networkInterfaceID := vInterface.(string)
 
 		assocOpts := &fcu.AssociateAddressInput{
-			InstanceId: aws.String(instanceId),
+			InstanceId: aws.String(instanceID),
 			PublicIp:   aws.String(d.Id()),
 		}
 
 		if placement == "vpc" {
-			var privateIpAddress *string
+			var privateIPAddress *string
 			if v := d.Get("private_ip").(string); v != "" {
-				privateIpAddress = aws.String(v)
+				privateIPAddress = aws.String(v)
 			}
 			assocOpts = &fcu.AssociateAddressInput{
-				NetworkInterfaceId: aws.String(networkInterfaceId),
-				InstanceId:         aws.String(instanceId),
+				NetworkInterfaceId: aws.String(networkInterfaceID),
+				InstanceId:         aws.String(instanceID),
 				AllocationId:       aws.String(d.Id()),
-				PrivateIpAddress:   privateIpAddress,
+				PrivateIpAddress:   privateIPAddress,
 			}
 		}
 
@@ -237,10 +237,10 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		return nil
 	}
 
-	v_instance, ok_instance := d.GetOk("vm_id")
-	v_association_id, ok_association_id := d.GetOk("link_id")
+	vInstance, okInstance := d.GetOk("vm_id")
+	vAssociationID, okAssociationID := d.GetOk("link_id")
 
-	if (ok_instance && v_instance.(string) != "") || (ok_association_id && v_association_id.(string) != "") {
+	if (okInstance && vInstance.(string) != "") || (okAssociationID && vAssociationID.(string) != "") {
 		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {

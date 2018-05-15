@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,12 +14,40 @@ const mediaTypeURLEncoded = "application/x-www-form-urlencoded"
 // otherwise adds it to the url query
 func BuildURLEncodedRequest(body interface{}, method, url string) (*http.Request, io.ReadSeeker, error) {
 
-	if method == http.MethodPost {
+	isLBU := strings.Contains(url, "lbu")
+
+	if method == http.MethodPost && !isLBU {
 		reader := strings.NewReader(body.(string))
 		req, err := http.NewRequest(method, url, reader)
 		if err != nil {
 			return nil, nil, err
 		}
+		return req, reader, nil
+	}
+
+	if isLBU {
+		value := body.(string)
+		i := strings.Index(value, "&")
+		substring := value[7:i]
+
+		fmt.Println("substring =>", substring)
+
+		v := struct {
+			Action  string `json:"Action"`
+			Version string `json:"Version"`
+		}{substring, "2017-12-15"}
+
+		ja, _ := json.Marshal(v)
+		b := string(ja)
+
+		fmt.Println("READER =>", b)
+
+		reader := strings.NewReader(b)
+		req, err := http.NewRequest(method, url, reader)
+		if err != nil {
+			return nil, nil, err
+		}
+		req.URL.RawQuery = body.(string)
 		return req, reader, nil
 	}
 

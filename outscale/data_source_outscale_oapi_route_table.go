@@ -122,7 +122,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	req := &fcu.DescribeRouteTablesInput{}
-	rtbId, rtbOk := d.GetOk("route_table_id")
+	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !rtbOk {
@@ -130,7 +130,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	}
 
 	if rtbOk {
-		req.RouteTableIds = []*string{aws.String(rtbId.(string))}
+		req.RouteTableIds = []*string{aws.String(rtbID.(string))}
 	}
 
 	if filterOk {
@@ -154,7 +154,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 		return err
 	}
 	if resp == nil || len(resp.RouteTables) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 	if len(resp.RouteTables) > 1 {
 		return fmt.Errorf("Multiple Route Table matched; use additional constraints to reduce matches to a single Route Table")
