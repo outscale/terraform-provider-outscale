@@ -359,6 +359,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
 		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
 		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		bb["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		bb["status"] = aws.StringValue(eni.Attachment.Status)
 	}
