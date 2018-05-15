@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -216,7 +214,7 @@ func dataSourceOutscaleNic() *schema.Resource {
 func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+	dnri := &fcu.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{aws.String(d.Id())},
 	}
 
@@ -224,7 +222,7 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -284,7 +282,7 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("availability_zone", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("availability_zone", aws.StringValue(eni.AvailabilityZone))
 
 	x := make([]map[string]interface{}, len(eni.Groups))
 	for k, v := range eni.Groups {
@@ -335,86 +333,9 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("source_dest_check", aws.BoolValue(eni.SourceDestCheck))
 	d.Set("status", aws.StringValue(eni.Status))
 	// Tags
-	d.Set("tags", tagsToMap(eni.TagSet))
+	d.Set("tag_set", tagsToMap(eni.TagSet))
 	d.Set("vpc_id", eni.VpcId)
+	d.SetId(*eni.NetworkInterfaceId)
 
 	return nil
-}
-
-func resourceOutscaleDataSourceNicDetach(oa []interface{}, meta interface{}, eniId string) error {
-	// if there was an old attachment, remove it
-	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		old_attachment := oa[0].(map[string]interface{})
-		detach_request := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(old_attachment["attachment_id"].(string)),
-			Force:        aws.Bool(true),
-		}
-		conn := meta.(*OutscaleClient).FCU
-
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.VM.DetachNetworkInterface(detach_request)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return fmt.Errorf("Error detaching ENI: %s", err)
-			}
-		}
-
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniId)
-		stateConf := &resource.StateChangeConf{
-			Pending: []string{"true"},
-			Target:  []string{"false"},
-			Refresh: networkInterfaceDataSourceAttachmentRefreshFunc(conn, eniId),
-			Timeout: 10 * time.Minute,
-		}
-		if _, err := stateConf.WaitForState(); err != nil {
-			return fmt.Errorf(
-				"Error waiting for ENI (%s) to become dettached: %s", eniId, err)
-		}
-	}
-
-	return nil
-}
-
-func networkInterfaceDataSourceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(id)},
-		}
-
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
-			return nil, "", err
-		}
-
-		eni := describeResp.NetworkInterfaces[0]
-		hasAttachment := strconv.FormatBool(eni.Attachment != nil)
-		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
-		return eni, hasAttachment, nil
-	}
 }
