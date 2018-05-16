@@ -122,9 +122,6 @@ func dataSourceOutscaleFirewallRuleSetRead(d *schema.ResourceData, meta interfac
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err
 	}
-	if err := d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress)); err != nil {
-		return err
-	}
 
-	return nil
+	return d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress))
 }

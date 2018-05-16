@@ -938,6 +938,8 @@ type Image struct {
 
 	Architecture *string `locationName:"architecture" type:"string" enum:"ArchitectureValues"`
 
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
 	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
 
 	CreationDate *string `locationName:"creationDate" type:"string"`

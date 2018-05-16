@@ -127,6 +127,8 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 		return err
 	}
 
+	d.Set("request_id", *resp.RequestId)
+
 	rt := resp.RouteTables[0]
 
 	exists := false
@@ -140,8 +142,6 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 		d.SetId("")
 		return nil
 	}
-
-	d.Set("request_id", resp.RequestId)
 
 	return nil
 }

@@ -89,11 +89,7 @@ func datasourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta i
 		return err
 	}
 
-	if err := d.Set("tag_set", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 }
 
 func flattenOAPIInternetGwAttachements(attachements []*fcu.InternetGatewayAttachment) []map[string]interface{} {

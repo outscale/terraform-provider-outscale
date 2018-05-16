@@ -109,6 +109,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	fmt.Printf("\n\n[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
+	d.Set("instance_id", *instance.InstanceId)
 
 	if d.IsNewResource() {
 		if err := setTags(conn, d); err != nil {

@@ -20,9 +20,10 @@ type CreateAccessKeyInput struct {
 	// This parameter allows (per its regex pattern (http://wikipedia.org/wiki/regex))
 	// a string of characters consisting of upper and lowercase alphanumeric characters
 	// with no spaces. You can also include any of the following characters: _+=,.@-
-	UserName        *string `min:"1" type:"string"`
-	AccessKeyId     *string `type:"string"`
-	SecretAccessKey *string `type:"string"`
+	UserName        *string       `min:"1" type:"string"`
+	AccessKeyId     *string       `type:"string"`
+	SecretAccessKey *string       `type:"string"`
+	Tags            []*common.Tag `locationName:"tags" locationNameList:"item" type:"list"`
 }
 type CreateApiKey struct {
 	_ struct{} `type:"structure"`

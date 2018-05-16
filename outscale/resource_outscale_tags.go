@@ -288,6 +288,57 @@ func setTags(conn *fcu.Client, d *schema.ResourceData) error {
 	return nil
 }
 
+func setTagsCommon(c *OutscaleClient, d *schema.ResourceData) error {
+	conn := c.FCU
+
+	if d.HasChange("tag") {
+		oraw, nraw := d.GetChange("tag")
+		o := oraw.(map[string]interface{})
+		n := nraw.(map[string]interface{})
+		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
+
+		// Set tag
+		if len(remove) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
+					Resources: []*string{aws.String(d.Id())},
+					Tags:      remove,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if len(create) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
+					Resources: []*string{aws.String(d.Id())},
+					Tags:      create,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // diffTags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
@@ -315,6 +366,40 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {
 		t := &fcu.Tag{
+			Key:   aws.String(k),
+			Value: aws.String(v.(string)),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func diffTagsCommon(oldTags, newTags []*common.Tag) ([]*common.Tag, []*common.Tag) {
+	// First, we're creating everything we have
+	create := make(map[string]interface{})
+	for _, t := range newTags {
+		create[*t.Key] = *t.Value
+	}
+
+	// Build the list of what to remove
+	var remove []*common.Tag
+	for _, t := range oldTags {
+		old, ok := create[*t.Key]
+		if !ok || old != *t.Value {
+			remove = append(remove, t)
+		}
+	}
+
+	return tagsFromMapCommon(create), remove
+}
+
+// tagsFromMap returns the tag for the given map of data.
+
+func tagsFromMapCommon(m map[string]interface{}) []*common.Tag {
+	result := make([]*common.Tag, 0, len(m))
+	for k, v := range m {
+		t := &common.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v.(string)),
 		}

@@ -4,6 +4,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 // Config ...
@@ -32,9 +33,14 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	lbu, err := lbu.NewLBUClient(config)
+	if err != nil {
+		return nil, err
+	}
 	client := &OutscaleClient{
 		FCU: fcu,
 		ICU: icu,
+		LBU: lbu,
 	}
 
 	return client, nil
@@ -44,4 +50,5 @@ func (c *Config) Client() (*OutscaleClient, error) {
 type OutscaleClient struct {
 	FCU *fcu.Client
 	ICU *icu.Client
+	LBU *lbu.Client
 }

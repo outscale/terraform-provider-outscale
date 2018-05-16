@@ -56,6 +56,8 @@ func init() {
 			"outscale_image_launch_permission":       resourceOutscaleImageLaunchPermission,
 			"outscale_lin_peering":                   resourceOutscaleLinPeeringConnection,
 			"outscale_lin_peering_acceptation":       resourceOutscaleLinPeeringConnectionAccepter,
+			"outscale_nic_link":                      resourceOutscaleNetworkInterfaceAttachment,
+			"outscale_nic_private_ip":                resourceOutscaleNetworkInterfacePrivateIP,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                      resourceOutscaleOApiVM,
@@ -80,9 +82,16 @@ func init() {
 			"outscale_keypair_importation":     resourceOutscaleOAPIKeyPairImportation,
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission,
 			"outscale_lin_peering":             resourceOutscaleOAPILinPeeringConnection,
+			"outscale_load_balancer":           resourceOutscaleOAPILoadBalancer,
+			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP,
+			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment,
+			"outscale_nic":                     resourceOutscaleOAPINic,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
+		},
+		"lbu": ResourceMap{
+			"outscale_load_balancer": resourceOutscaleLoadBalancer,
 		},
 	}
 	datasources = Dictionary{
@@ -139,6 +148,8 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleSnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleLinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
+			"outscale_nics":                  dataSourceOutscaleNics,
+			"outscale_nic":                   dataSourceOutscaleNic,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                    dataSourceOutscaleOAPIVM,
@@ -169,6 +180,14 @@ func init() {
 			"outscale_snapshots":             dataSourceOutscaleOAPISnapshots,
 			"outscale_lin_peering":           dataSourceOutscaleOAPILinPeeringConnection,
 			"outscale_lin_peerings":          dataSourceOutscaleOAPILinPeeringsConnection,
+			"outscale_load_balancer":         dataSourceOutscaleOAPILoadBalancer,
+			"outscale_load_balancers":        dataSourceOutscaleOAPILoadBalancers,
+			"outscale_nic":                   dataSourceOutscaleOAPINic,
+			"outscale_nics":                  dataSourceOutscaleOAPINics,
+		},
+		"lbu": ResourceMap{
+			"outscale_load_balancer":  dataSourceOutscaleLoadBalancer,
+			"outscale_load_balancers": dataSourceOutscaleLoadBalancers,
 		},
 	}
 }

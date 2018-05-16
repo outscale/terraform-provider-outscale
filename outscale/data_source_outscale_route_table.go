@@ -130,7 +130,7 @@ func dataSourceOutscaleRouteTable() *schema.Resource {
 func dataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	req := &fcu.DescribeRouteTablesInput{}
-	rtbId, rtbOk := d.GetOk("route_table_id")
+	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !rtbOk {
@@ -138,7 +138,7 @@ func dataSourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if rtbOk {
-		req.RouteTableIds = []*string{aws.String(rtbId.(string))}
+		req.RouteTableIds = []*string{aws.String(rtbID.(string))}
 	}
 
 	if filterOk {

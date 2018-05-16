@@ -107,7 +107,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if numTargets > 1 {
-		return routeTargetValidationError
+		return errRoute
 	}
 
 	createOpts := &fcu.CreateRouteInput{}
@@ -238,11 +238,11 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 	switch setTarget {
 	case "vm_id":
 		if numTargets > 2 || (numTargets == 2 && len(d.Get("nic_id").(string)) == 0) {
-			return routeTargetValidationError
+			return errRoute
 		}
 	default:
 		if numTargets > 1 {
-			return routeTargetValidationError
+			return errRoute
 		}
 	}
 

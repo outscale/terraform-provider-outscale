@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-var routeTargetValidationError = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
+var errRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
 	"egress_only_gateway_id, nat_gateway_id, instance_id, network_interface_id, route_table_id or " +
 	"vpc_peering_connection_id is allowed.")
 
@@ -116,7 +116,7 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if numTargets > 1 {
-		return routeTargetValidationError
+		return errRoute
 	}
 
 	createOpts := &fcu.CreateRouteInput{}
@@ -193,11 +193,11 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 
 func resourceOutscaleRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	routeTableId := d.Get("route_table_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
 	cidr := d.Get("destination_cidr_block").(string)
 
 	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableId},
+		RouteTableIds: []*string{&routeTableID},
 	}
 
 	var resp *fcu.DescribeRouteTablesOutput
@@ -223,7 +223,7 @@ func resourceOutscaleRouteRead(d *schema.ResourceData, meta interface{}) error {
 
 	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
 		return fmt.Errorf("Route Table %q is gone, or route does not exist.",
-			routeTableId)
+			routeTableID)
 	}
 
 	var route *fcu.Route
@@ -273,11 +273,11 @@ func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error
 	switch setTarget {
 	case "instance_id":
 		if numTargets > 2 || (numTargets == 2 && len(d.Get("network_interface_id").(string)) == 0) {
-			return routeTargetValidationError
+			return errRoute
 		}
 	default:
 		if numTargets > 1 {
-			return routeTargetValidationError
+			return errRoute
 		}
 	}
 
@@ -378,10 +378,10 @@ func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error
 
 func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	conn := meta.(*OutscaleClient).FCU
-	routeTableId := d.Get("route_table_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
 
 	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableId},
+		RouteTableIds: []*string{&routeTableID},
 	}
 
 	var res *fcu.DescribeRouteTablesOutput
@@ -403,7 +403,7 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found.", routeTableId)
+			log.Printf("[WARN] Route Table %q could not be found.", routeTableID)
 			return false, nil
 		}
 		return false, fmt.Errorf("Error while checking if route exists: %s", err)
@@ -411,7 +411,7 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 
 	if len(res.RouteTables) < 1 || res.RouteTables[0] == nil {
 		log.Printf("[WARN] Route Table %q is gone, or route does not exist.",
-			routeTableId)
+			routeTableID)
 		return false, nil
 	}
 
