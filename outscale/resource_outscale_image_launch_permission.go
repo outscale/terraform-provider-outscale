@@ -14,7 +14,6 @@ import (
 
 func resourceOutscaleImageLaunchPermission() *schema.Resource {
 	return &schema.Resource{
-		// Exists: resourceOutscaleImageLaunchPermissionExists,
 		Create: resourceOutscaleImageLaunchPermissionCreate,
 		Read:   resourceOutscaleImageLaunchPermissionRead,
 		Delete: resourceOutscaleImageLaunchPermissionDelete,
@@ -108,24 +107,24 @@ func resourceOutscaleImageLaunchPermission() *schema.Resource {
 func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	image_id, iok := d.GetOk("image_id")
-	launch_permission, lok := d.GetOk("launch_permission")
+	id, iok := d.GetOk("image_id")
+	lp, lok := d.GetOk("launch_permission")
 
-	fmt.Println("Creating Outscale Image Launch Permission, image_id", image_id.(string))
+	fmt.Println("Creating Outscale Image Launch Permission, image_id", id.(string))
 
 	if !iok {
 		return fmt.Errorf("please provide the required attribute image_id")
 	}
 
 	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(image_id.(string)),
+		ImageId: aws.String(id.(string)),
 	}
 
 	if lok {
 		request.Attribute = aws.String("launchPermission")
 		launchPermission := &fcu.LaunchPermissionModifications{}
 
-		l := launch_permission.([]interface{})
+		l := lp.([]interface{})
 
 		lp := l[0].(map[string]interface{})
 
@@ -166,7 +165,7 @@ func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		return fmt.Errorf("error creating ami launch permission: %s", err)
 	}
 
-	d.SetId(image_id.(string))
+	d.SetId(id.(string))
 	d.Set("description", map[string]string{"value": ""})
 	d.Set("launch_permissions", make([]map[string]interface{}, 0))
 
@@ -223,28 +222,24 @@ func resourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 		lp[k] = l
 	}
 
-	if err := d.Set("launch_permissions", lp); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("launch_permissions", lp)
 }
 
 func resourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	image_id := d.Get("image_id")
-	launch_permission, lok := d.GetOk("launch_permission")
+	ID := d.Get("image_id")
+	lp, lok := d.GetOk("launch_permission")
 
 	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(image_id.(string)),
+		ImageId: aws.String(ID.(string)),
 	}
 
 	if lok {
 		request.Attribute = aws.String("launchPermission")
 		launchPermission := &fcu.LaunchPermissionModifications{}
 
-		lps := launch_permission.([]interface{})
+		lps := lp.([]interface{})
 		lp := lps[0].(map[string]interface{})
 
 		if a, ok := lp["remove"]; ok {
@@ -292,12 +287,12 @@ func resourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta in
 	return nil
 }
 
-func hasLaunchPermission(conn *fcu.Client, image_id string) (bool, error) {
+func hasLaunchPermission(conn *fcu.Client, ID string) (bool, error) {
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(image_id),
+			ImageId:   aws.String(ID),
 			Attribute: aws.String("launchPermission"),
 		})
 		if err != nil {
@@ -311,7 +306,7 @@ func hasLaunchPermission(conn *fcu.Client, image_id string) (bool, error) {
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", image_id)
+			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", ID)
 			return false, nil
 		}
 		return false, err

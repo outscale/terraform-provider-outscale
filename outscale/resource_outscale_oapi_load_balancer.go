@@ -257,7 +257,7 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 	}
 
 	if v, ok := d.GetOk("tag"); ok {
-		elbOpts.Tags = tagsFromMapC(v.(map[string]interface{}))
+		elbOpts.Tags = tagsFromMapCommon(v.(map[string]interface{}))
 
 	}
 

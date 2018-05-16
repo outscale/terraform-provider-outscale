@@ -68,7 +68,7 @@ func testAccOutscaleVpnConnectionRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		cidrBlock, vpnConnectionId := resourceOutscaleVpnConnectionRouteParseId(rs.Primary.ID)
+		cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(rs.Primary.ID)
 
 		routeFilters := []*fcu.Filter{
 			&fcu.Filter{
@@ -77,7 +77,7 @@ func testAccOutscaleVpnConnectionRouteDestroy(s *terraform.State) error {
 			},
 			&fcu.Filter{
 				Name:   aws.String("vpn-connection-id"),
-				Values: []*string{aws.String(vpnConnectionId)},
+				Values: []*string{aws.String(vpnConnectionID)},
 			},
 		}
 
@@ -109,7 +109,7 @@ func testAccOutscaleVpnConnectionRouteDestroy(s *terraform.State) error {
 		if resp != nil {
 			// range over the connections and isolate the one we created
 			for _, v := range resp.VpnConnections {
-				if *v.VpnConnectionId == vpnConnectionId {
+				if *v.VpnConnectionId == vpnConnectionID {
 					vpnc = v
 				}
 			}
@@ -147,7 +147,7 @@ func testAccOutscaleVpnConnectionRoute(
 			return fmt.Errorf("Not found: %s", vpnConnectionRouteResource)
 		}
 
-		cidrBlock, vpnConnectionId := resourceOutscaleVpnConnectionRouteParseId(route.Primary.ID)
+		cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(route.Primary.ID)
 
 		routeFilters := []*fcu.Filter{
 			&fcu.Filter{
@@ -156,7 +156,7 @@ func testAccOutscaleVpnConnectionRoute(
 			},
 			&fcu.Filter{
 				Name:   aws.String("vpn-connection-id"),
-				Values: []*string{aws.String(vpnConnectionId)},
+				Values: []*string{aws.String(vpnConnectionID)},
 			},
 		}
 

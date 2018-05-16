@@ -26,7 +26,7 @@ func TestAccDataSourceOutscaleVmState(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleVmStateConfig,
+				Config: testAccDataSourceOutscaleVMStateConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleVMStateCheck("data.outscale_vm_state.state"),
 					// testAccDataSourceOutscaleVMStateCheck("data.outscale_public_ip.by_public_ip"),
@@ -65,7 +65,7 @@ func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
 	}
 }
 
-const testAccDataSourceOutscaleVmStateConfig = `
+const testAccDataSourceOutscaleVMStateConfig = `
 resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
 }

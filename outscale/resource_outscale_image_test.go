@@ -36,7 +36,7 @@ func TestAccOutscaleImage_basic(t *testing.T) {
 		CheckDestroy: testAccCheckImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccImageConfig_basic(rInt),
+				Config: testAccImageConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
@@ -92,7 +92,7 @@ func testAccCheckImageDestroy(s *terraform.State) error {
 
 		if len(resp.Images) > 0 {
 			state := resp.Images[0].State
-			return fmt.Errorf("OMI %s still exists in the state: %s.", *resp.Images[0].ImageId, *state)
+			return fmt.Errorf("OMI %s still exists in the state: %s", *resp.Images[0].ImageId, *state)
 		}
 	}
 	return nil
@@ -197,7 +197,7 @@ func testAccCheckAmiEbsBlockDevice(bd *fcu.BlockDeviceMapping, ed *fcu.EbsBlockD
 	}
 }
 
-func testAccImageConfig_basic(rInt int) string {
+func testAccImageConfigBasic(rInt int) string {
 	return fmt.Sprintf(`
 resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"

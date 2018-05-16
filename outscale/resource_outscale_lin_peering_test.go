@@ -142,9 +142,7 @@ func testAccCheckOutscaleLinPeeringConnectionDestroy(s *terraform.State) error {
 			return fmt.Errorf("Found the VPC Peering Connection in an unexpected state: %s", pc)
 		}
 
-		// return error here; we've found the vpc_peering object we want, however
-		// it's not in an expected state
-		return fmt.Errorf("Fall through error for testAccCheckOutscaleLinPeeringConnectionDestroy.")
+		return fmt.Errorf("fall through error for testAccCheckOutscaleLinPeeringConnectionDestroy")
 	}
 
 	return nil
@@ -158,7 +156,7 @@ func testAccCheckOutscaleLinPeeringConnectionExists(n string, connection *fcu.Vp
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPC Peering Connection ID is set.")
+			return fmt.Errorf("No VPC Peering Connection ID is set")
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
@@ -200,7 +198,7 @@ func testAccCheckOutscaleLinPeeringConnectionOptions(n, block string, options *f
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPC Peering Connection ID is set.")
+			return fmt.Errorf("No VPC Peering Connection ID is set")
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU

@@ -125,10 +125,9 @@ func resourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) er
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("\n\n[ERROR] Error finding VpnGateway: %s", err)
-			return err
 		}
+		fmt.Printf("\n\n[ERROR] Error finding VpnGateway: %s", err)
+		return err
 	}
 
 	vpnGateway := resp.VpnGateways[0]

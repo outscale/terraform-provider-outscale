@@ -112,9 +112,9 @@ func resourceOutscaleLinPeeringCreate(d *schema.ResourceData, meta interface{}) 
 
 	if err := setTags(conn, d); err != nil {
 		return err
-	} else {
-		d.SetPartial("tag_set")
 	}
+
+	d.SetPartial("tag_set")
 
 	log.Printf("[INFO] VPC Peering Connection ID: %s", d.Id())
 

@@ -152,10 +152,11 @@ func resourceOutscaleDHCPOptionLinkDelete(d *schema.ResourceData, meta interface
 
 }
 
-func VPCStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+// VPCStateRefreshFunc ...
+func VPCStateRefreshFunc(conn *fcu.Client, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		DescribeVpcOpts := &fcu.DescribeVpcsInput{
-			VpcIds: []*string{aws.String(id)},
+			VpcIds: []*string{aws.String(ID)},
 		}
 		resp, err := conn.VM.DescribeVpcs(DescribeVpcOpts)
 		if err != nil {

@@ -228,34 +228,6 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
 
-	// describeAttrsOpts := &lbu.DescribeLoadBalancerAttributesInput{
-	// 	LoadBalancerName: aws.String(elbName.(string)),
-	// }
-
-	// var describeAttrsResp *lbu.DescribeLoadBalancerAttributesOutput
-	// err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-	// 	describeAttrsResp, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
-
-	// 	if err != nil {
-	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-	// 			return resource.RetryableError(err)
-	// 		}
-	// 		return resource.NonRetryableError(err)
-	// 	}
-	// 	return nil
-	// })
-
-	// if err != nil {
-	// 	if isLoadBalancerNotFound(err) {
-	// 		d.SetId("")
-	// 		return nil
-	// 	}
-
-	// 	return fmt.Errorf("Error retrieving ELB: %s", err)
-	// }
-
-	// lbAttrs := describeAttrsResp.LoadBalancerAttributes
-
 	lb := describeResp.LoadBalancerDescriptions[0]
 
 	d.Set("sub_region_name", flattenStringList(lb.AvailabilityZones))

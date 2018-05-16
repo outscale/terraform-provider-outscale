@@ -171,6 +171,9 @@ func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("source_region"); ok {
 		req.SourceRegion = aws.String(v.(string))
 	}
+	if v, ok := d.GetOk("client_token"); ok {
+		req.ClientToken = aws.String(v.(string))
+	}
 
 	var res *fcu.CopyImageOutput
 

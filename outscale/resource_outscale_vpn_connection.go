@@ -39,7 +39,7 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"static_routes_only": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
 						},
@@ -209,7 +209,7 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 	return resourceOutscaleVpnConnectionRead(d, meta)
 }
 
-func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.StateRefreshFunc {
+func vpnConnectionRefreshFunc(conn *fcu.Client, connectionID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var resp *fcu.DescribeVpnConnectionsOutput
@@ -217,7 +217,7 @@ func vpnConnectionRefreshFunc(conn *fcu.Client, connectionId string) resource.St
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
-				VpnConnectionIds: []*string{aws.String(connectionId)},
+				VpnConnectionIds: []*string{aws.String(connectionID)},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -269,10 +269,9 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			log.Printf("[ERROR] Error finding VPN connection: %s", err)
+		} 
+		log.Printf("[ERROR] Error finding VPN connection: %s", err)
 			return err
-		}
 	}
 
 	if len(resp.VpnConnections) != 1 {
@@ -284,12 +283,15 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 		d.SetId("")
 		return nil
 	}
-
-	options := map[string]interface{}{
-		"static_routes_only": vpnConnection.Options.StaticRoutesOnly,
+	options := make(map[string]interface{})
+	if vpnConnection.Options != nil {
+		options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(vpnConnection.Options.StaticRoutesOnly))
+	} else {
+		options["static_routes_only"] = strconv.FormatBool(false)
 	}
-
-	d.Set("options", options)
+	if err := d.Set("options", options); err != nil {
+		return err
+	}
 	d.Set("customer_gateway_configuration", vpnConnection.CustomerGatewayConfiguration)
 
 	routes := make([]map[string]interface{}, len(vpnConnection.Routes))
@@ -352,10 +354,9 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
-			return err
 		}
+		fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
+			return err
 	}
 
 	stateConf := &resource.StateChangeConf{

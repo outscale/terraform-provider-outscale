@@ -252,11 +252,8 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("ip_permissions", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err
 	}
-	if err := d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress)); err != nil {
-		return err
-	}
 
-	return nil
+	return d.Set("ip_permissions_egress", flattenIPPermissions(sg.IpPermissionsEgress))
 }
 
 func resourceOutscaleSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
@@ -293,48 +290,49 @@ func idHash(rType, protocol string, toPort, fromPort int64, self bool) string {
 	return fmt.Sprintf("rule-%d", hashcode.String(buf.String()))
 }
 
-func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*fcu.GroupIdentifier {
+func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*fcu.GroupIdentifier {
 	result := make([]*fcu.GroupIdentifier, 0, len(list))
 	for _, g := range list {
-		var userId *string
-		if g.UserId != nil && *g.UserId != "" && (ownerId == nil || *ownerId != *g.UserId) {
-			userId = g.UserId
+		var userID *string
+		if g.UserId != nil && *g.UserId != "" && (ownerID == nil || *ownerID != *g.UserId) {
+			userID = g.UserId
 		}
 		// userid nil here for same vpc groups
 
 		vpc := g.GroupName == nil || *g.GroupName == ""
-		var id *string
+		var ID *string
 		if vpc {
-			id = g.GroupId
+			ID = g.GroupId
 		} else {
-			id = g.GroupName
+			ID = g.GroupName
 		}
 
-		// id is groupid for vpcs
-		// id is groupname for non vpc (classic)
+		// ID is groupid for vpcs
+		// ID is groupname for non vpc (classic)
 
-		if userId != nil {
-			id = aws.String(*userId + "/" + *id)
+		if userID != nil {
+			ID = aws.String(*userID + "/" + *ID)
 		}
 
 		if vpc {
 			result = append(result, &fcu.GroupIdentifier{
-				GroupId: id,
+				GroupId: ID,
 			})
 		} else {
 			result = append(result, &fcu.GroupIdentifier{
 				GroupId:   g.GroupId,
-				GroupName: id,
+				GroupName: ID,
 			})
 		}
 	}
 	return result
 }
 
-func SGStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+// SGStateRefreshFunc ...
+func SGStateRefreshFunc(conn *fcu.Client, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		req := &fcu.DescribeSecurityGroupsInput{
-			GroupIds: []*string{aws.String(id)},
+			GroupIds: []*string{aws.String(ID)},
 		}
 
 		var err error

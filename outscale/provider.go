@@ -87,6 +87,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connection_route":          GetResource(fcu, "outscale_vpn_connection_route")(),
 			"outscale_vpn_gateway_route_propagation": GetResource(fcu, "outscale_vpn_gateway_route_propagation")(),
 			"outscale_vpn_gateway_link":              GetResource(fcu, "outscale_vpn_gateway_link")(),
+			"outscale_nic":                           GetResource(fcu, "outscale_nic")(),
 			"outscale_snapshot_export_task":          GetResource(fcu, "outscale_snapshot_export_task")(),
 			"outscale_snapshot":                      GetResource(fcu, "outscale_snapshot")(),
 			"outscale_image_register":                GetResource(fcu, "outscale_image_register")(),
@@ -95,6 +96,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_peering":                   GetResource(fcu, "outscale_lin_peering")(),
 			"outscale_lin_peering_acceptation":       GetResource(fcu, "outscale_lin_peering_acceptation")(),
 			"outscale_load_balancer":                 GetResource(lbu, "outscale_load_balancer")(),
+			"outscale_nic_link":                      GetResource(fcu, "outscale_nic_link")(),
+			"outscale_nic_private_ip":                GetResource(fcu, "outscale_nic_private_ip")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
@@ -151,6 +154,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_peerings":          GetDatasource(fcu, "outscale_lin_peerings")(),
 			"outscale_load_balancer":         GetDatasource(lbu, "outscale_load_balancer")(),
 			"outscale_load_balancers":        GetDatasource(lbu, "outscale_load_balancers")(),
+			"outscale_nics":                  GetDatasource(fcu, "outscale_nics")(),
+			"outscale_nic":                   GetDatasource(fcu, "outscale_nic")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

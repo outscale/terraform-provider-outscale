@@ -117,10 +117,10 @@ func dataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 
 	var snapshot *fcu.Snapshot
 	if len(resp.Snapshots) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("our query returned no results, please change your search criteria and try again")
 	}
 	if len(resp.Snapshots) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more specific search criteria.")
+		return fmt.Errorf("our query returned more than one result, please try a more specific search criteria")
 	}
 
 	snapshot = resp.Snapshots[0]
@@ -141,9 +141,5 @@ func snapshotDescriptionAttributes(d *schema.ResourceData, snapshot *fcu.Snapsho
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
 
-	if err := d.Set("tag_set", tagsToMap(snapshot.Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag_set", tagsToMap(snapshot.Tags))
 }

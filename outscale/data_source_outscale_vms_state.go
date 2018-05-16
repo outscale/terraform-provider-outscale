@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -38,13 +36,7 @@ func dataSourceOutscaleVMSStateRead(d *schema.ResourceData, meta interface{}) er
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if instanceIdsOk {
-		var ids []*string
-
-		for _, id := range instanceIds.(*schema.Set).List() {
-			ids = append(ids, aws.String(id.(string)))
-		}
-
-		params.InstanceIds = ids
+		params.InstanceIds = expandStringList(instanceIds.([]interface{}))
 	}
 
 	params.IncludeAllInstances = aws.Bool(false)
@@ -60,7 +52,7 @@ func dataSourceOutscaleVMSStateRead(d *schema.ResourceData, meta interface{}) er
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -70,7 +62,7 @@ func dataSourceOutscaleVMSStateRead(d *schema.ResourceData, meta interface{}) er
 	filteredStates := resp.InstanceStatuses[:]
 
 	if len(filteredStates) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	states := filteredStates
@@ -83,14 +75,14 @@ func dataSourceOutscaleVMSStateRead(d *schema.ResourceData, meta interface{}) er
 
 func statusesDescriptionAttributes(d *schema.ResourceData, status []*fcu.InstanceStatus) error {
 
-	d.SetId(resource.UniqueIdPrefix)
+	d.SetId(resource.UniqueId())
 
 	statuses := make([]map[string]interface{}, len(status))
 
 	for i, s := range status {
 		statuses[i] = map[string]interface{}{
-			"instance_id":       *s.InstanceId,
-			"availability_zone": *s.AvailabilityZone,
+			"instance_id":       aws.StringValue(s.InstanceId),
+			"availability_zone": aws.StringValue(s.AvailabilityZone),
 			"events_set":        eventsSet(s.Events),
 			"instance_state":    flattenedState(s.InstanceState),
 			"instance_status":   statusSet(s.InstanceStatus),
@@ -98,17 +90,7 @@ func statusesDescriptionAttributes(d *schema.ResourceData, status []*fcu.Instanc
 		}
 	}
 
-	err := d.Set("instance_status_set", statuses)
-
-	return err
-}
-
-func statusSetHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["instance_id"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["availability_zone"].(string)))
-	return hashcode.String(buf.String())
+	return d.Set("instance_status_set", statuses)
 }
 
 func getVMSStateDataSourceSchema() map[string]*schema.Schema {
@@ -116,7 +98,7 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 		// Arguments
 		"filter": dataSourceFiltersSchema(),
 		"instance_id": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -136,7 +118,7 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"events_set": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -183,12 +165,12 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 					},
 
 					"instance_status": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"details": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -211,12 +193,12 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 						},
 					},
 					"system_status": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"details": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{

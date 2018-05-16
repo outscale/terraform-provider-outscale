@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccOutscaleImageCopy(t *testing.T) {
-	var amiId string
+	var amiID string
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -43,15 +43,15 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 						return fmt.Errorf("Image resource not found")
 					}
 
-					amiId = rs.Primary.ID
+					amiID = rs.Primary.ID
 
-					if amiId == "" {
+					if amiID == "" {
 						return fmt.Errorf("Image id is not set")
 					}
 
 					conn := testAccProvider.Meta().(*OutscaleClient).FCU
 					req := &fcu.DescribeImagesInput{
-						ImageIds: []*string{aws.String(amiId)},
+						ImageIds: []*string{aws.String(amiID)},
 					}
 
 					var describe *fcu.DescribeImagesOutput
@@ -109,7 +109,7 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 		CheckDestroy: func(state *terraform.State) error {
 			conn := testAccProvider.Meta().(*OutscaleClient).FCU
 			diReq := &fcu.DescribeImagesInput{
-				ImageIds: []*string{aws.String(amiId)},
+				ImageIds: []*string{aws.String(amiID)},
 			}
 
 			var diRes *fcu.DescribeImagesOutput
@@ -135,14 +135,14 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 
 			if len(diRes.Images) > 0 {
 				state := diRes.Images[0].State
-				return fmt.Errorf("Image %v remains in state %v", amiId, state)
+				return fmt.Errorf("Image %v remains in state %v", amiID, state)
 			}
 
 			stillExist := make([]string, 0, len(snapshots))
 			checkErrors := make(map[string]error)
-			for _, snapshotId := range snapshots {
+			for _, snapshotID := range snapshots {
 				dsReq := &fcu.DescribeSnapshotsInput{
-					SnapshotIds: []*string{aws.String(snapshotId)},
+					SnapshotIds: []*string{aws.String(snapshotID)},
 				}
 
 				var err error
@@ -159,18 +159,18 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 				})
 
 				if err == nil {
-					stillExist = append(stillExist, snapshotId)
+					stillExist = append(stillExist, snapshotID)
 					continue
 				}
 
 				awsErr, ok := err.(awserr.Error)
 				if !ok {
-					checkErrors[snapshotId] = err
+					checkErrors[snapshotID] = err
 					continue
 				}
 
 				if awsErr.Code() != "InvalidSnapshot.NotFound" {
-					checkErrors[snapshotId] = err
+					checkErrors[snapshotID] = err
 					continue
 				}
 			}
@@ -179,16 +179,16 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 				errParts := []string{
 					"Expected all snapshots to be gone, but:",
 				}
-				for _, snapshotId := range stillExist {
+				for _, snapshotID := range stillExist {
 					errParts = append(
 						errParts,
-						fmt.Sprintf("- %v still exists", snapshotId),
+						fmt.Sprintf("- %v still exists", snapshotID),
 					)
 				}
-				for snapshotId, err := range checkErrors {
+				for snapshotID, err := range checkErrors {
 					errParts = append(
 						errParts,
-						fmt.Sprintf("- checking %v gave error: %v", snapshotId, err),
+						fmt.Sprintf("- checking %v gave error: %v", snapshotID, err),
 					)
 				}
 				return errors.New(strings.Join(errParts, "\n"))

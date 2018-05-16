@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,13 +33,17 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"customer_gateway_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"options": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"static_routes_only": {
-										Type:     schema.TypeBool,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -166,13 +171,15 @@ func dataSourceOutscaleVpnConnectionsRead(d *schema.ResourceData, meta interface
 
 	for k, v := range resp.VpnConnections {
 		vc := make(map[string]interface{})
-		options := []map[string]bool{
-			map[string]bool{
-				"static_routes_only": *v.Options.StaticRoutesOnly,
-			},
+		options := make(map[string]interface{})
+		if v.Options != nil {
+			options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(v.Options.StaticRoutesOnly))
+		} else {
+			options["static_routes_only"] = strconv.FormatBool(false)
 		}
 		vc["options"] = options
 		vc["customer_gateway_configuration"] = *v.CustomerGatewayConfiguration
+		vc["customer_gateway_id"] = *v.CustomerGatewayId
 
 		routes := make([]map[string]interface{}, len(v.Routes))
 
