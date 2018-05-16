@@ -343,14 +343,19 @@
 #   cidr_block = "10.0.0.0/16"
 # }
 
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-  type = "ipsec.1"
+resource "outscale_volume" "outscale_volume" {
+  availability_zone = "eu-west-2a"
+  size              = 40
 }
 
-resource "outscale_vpn_gateway" "outscale_vpn_gateway2" {
-  type = "ipsec.1"
+resource "outscale_volume" "outscale_volume2" {
+  availability_zone = "eu-west-2a"
+  size              = 40
 }
 
-data "outscale_vpn_gateways" "outscale_vpn_gateways" {
-  vpn_gateway_id = ["${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}", "${outscale_vpn_gateway.outscale_vpn_gateway2.vpn_gateway_id}"]
+data "outscale_volumes" "outscale_volumes" {
+  filter {
+    name   = "volume-id"
+    values = ["${outscale_volume.outscale_volume.volume_id}", "${outscale_volume.outscale_volume2.volume_id}"]
+  }
 }
