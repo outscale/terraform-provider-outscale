@@ -269,9 +269,9 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} 
+		}
 		log.Printf("[ERROR] Error finding VPN connection: %s", err)
-			return err
+		return err
 	}
 
 	if len(resp.VpnConnections) != 1 {
@@ -356,7 +356,7 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 			return nil
 		}
 		fmt.Printf("[ERROR] Error deleting VPN connection: %s", err)
-			return err
+		return err
 	}
 
 	stateConf := &resource.StateChangeConf{

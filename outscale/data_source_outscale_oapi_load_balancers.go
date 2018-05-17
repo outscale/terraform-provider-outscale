@@ -1,14 +1,7 @@
 package outscale
 
 import (
-	"fmt"
-	"strings"
-	"time"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
@@ -202,100 +195,100 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	// conn := meta.(*OutscaleClient).LBU
 
-	elbName, ok := d.GetOk("load_balancer_name")
+	// elbName, ok := d.GetOk("load_balancer_name")
 
-	if !ok {
-		return fmt.Errorf("please provide the required attribute load_balancer_name")
-	}
+	// if !ok {
+	// 	return fmt.Errorf("please provide the required attribute load_balancer_name")
+	// }
 
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName.(string))},
-	}
+	// describeElbOpts := &lbu.DescribeLoadBalancersInput{
+	// 	LoadBalancerNames: []*string{aws.String(elbName.(string))},
+	// }
 
-	var describeResp *lbu.DescribeLoadBalancersOutput
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+	// var describeResp *lbu.DescribeLoadBalancersOutput
+	// var err error
+	// err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 	describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	// 	if err != nil {
+	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+	// 			return resource.RetryableError(err)
+	// 		}
+	// 		return resource.NonRetryableError(err)
+	// 	}
+	// 	return nil
+	// })
 
-	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
+	// if err != nil {
+	// 	if isLoadBalancerNotFound(err) {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("Error retrieving ELB: %s", err)
-	}
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
-	}
+	// 	return fmt.Errorf("Error retrieving ELB: %s", err)
+	// }
+	// if len(describeResp.LoadBalancerDescriptions) != 1 {
+	// 	return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
+	// }
 
-	lb := describeResp.LoadBalancerDescriptions
+	// lb := describeResp.LoadBalancerDescriptions
 
-	lbs := make([]map[string]interface{}, len(lb))
+	// lbs := make([]map[string]interface{}, len(lb))
 
-	for k, v := range lb {
-		l := make(map[string]interface{})
+	// for k, v := range lb {
+	// 	l := make(map[string]interface{})
 
-		l["availability_zones_member"] = flattenStringList(v.AvailabilityZones)
-		l["dns_name"] = aws.StringValue(v.DNSName)
-		if *v.HealthCheck.Target != "" {
-			l["health_check"] = flattenHealthCheck(v.HealthCheck)
-		} else {
-			l["health_check"] = make(map[string]interface{})
-		}
-		l["instances_member"] = flattenInstances(v.Instances)
-		l["listener_descriptions_member"] = flattenListeners(v.ListenerDescriptions)
-		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
+	// 	l["availability_zones_member"] = flattenStringList(v.AvailabilityZones)
+	// 	l["dns_name"] = aws.StringValue(v.DNSName)
+	// 	if *v.HealthCheck.Target != "" {
+	// 		l["health_check"] = flattenHealthCheck(v.HealthCheck)
+	// 	} else {
+	// 		l["health_check"] = make(map[string]interface{})
+	// 	}
+	// 	l["instances_member"] = flattenInstances(v.Instances)
+	// 	l["listener_descriptions_member"] = flattenListeners(v.ListenerDescriptions)
+	// 	l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
 
-		policies := make(map[string]interface{})
-		if v.Policies != nil {
-			app := make([]map[string]interface{}, len(v.Policies.AppCookieStickinessPolicies))
-			for k, v := range v.Policies.AppCookieStickinessPolicies {
-				a := make(map[string]interface{})
-				a["cookie_name"] = aws.StringValue(v.CookieName)
-				a["policy_name"] = aws.StringValue(v.PolicyName)
-				app[k] = a
-			}
-			policies["app_cookie_stickiness_policies_member"] = app
-			vc := make([]map[string]interface{}, len(v.Policies.LBCookieStickinessPolicies))
-			for k, v := range v.Policies.LBCookieStickinessPolicies {
-				a := make(map[string]interface{})
-				a["policy_name"] = aws.StringValue(v.PolicyName)
-				vc[k] = a
-			}
-			policies["lb_cookie_stickiness_policies_member"] = vc
-			policies["other_policies_member"] = flattenStringList(v.Policies.OtherPolicies)
-		}
+	// 	policies := make(map[string]interface{})
+	// 	if v.Policies != nil {
+	// 		app := make([]map[string]interface{}, len(v.Policies.AppCookieStickinessPolicies))
+	// 		for k, v := range v.Policies.AppCookieStickinessPolicies {
+	// 			a := make(map[string]interface{})
+	// 			a["cookie_name"] = aws.StringValue(v.CookieName)
+	// 			a["policy_name"] = aws.StringValue(v.PolicyName)
+	// 			app[k] = a
+	// 		}
+	// 		policies["app_cookie_stickiness_policies_member"] = app
+	// 		vc := make([]map[string]interface{}, len(v.Policies.LBCookieStickinessPolicies))
+	// 		for k, v := range v.Policies.LBCookieStickinessPolicies {
+	// 			a := make(map[string]interface{})
+	// 			a["policy_name"] = aws.StringValue(v.PolicyName)
+	// 			vc[k] = a
+	// 		}
+	// 		policies["lb_cookie_stickiness_policies_member"] = vc
+	// 		policies["other_policies_member"] = flattenStringList(v.Policies.OtherPolicies)
+	// 	}
 
-		l["policies"] = policies
-		l["scheme"] = aws.StringValue(v.Scheme)
-		l["security_groups_member"] = flattenStringList(v.SecurityGroups)
-		ssg := make(map[string]string)
-		if v.SourceSecurityGroup != nil {
-			ssg["group_name"] = aws.StringValue(v.SourceSecurityGroup.GroupName)
-			ssg["owner_alias"] = aws.StringValue(v.SourceSecurityGroup.OwnerAlias)
-		}
-		l["source_security_group"] = ssg
-		l["subnets_member"] = flattenStringList(v.Subnets)
-		l["vpc_id"] = aws.StringValue(v.VPCId)
+	// 	l["policies"] = policies
+	// 	l["scheme"] = aws.StringValue(v.Scheme)
+	// 	l["security_groups_member"] = flattenStringList(v.SecurityGroups)
+	// 	ssg := make(map[string]string)
+	// 	if v.SourceSecurityGroup != nil {
+	// 		ssg["group_name"] = aws.StringValue(v.SourceSecurityGroup.GroupName)
+	// 		ssg["owner_alias"] = aws.StringValue(v.SourceSecurityGroup.OwnerAlias)
+	// 	}
+	// 	l["source_security_group"] = ssg
+	// 	l["subnets_member"] = flattenStringList(v.Subnets)
+	// 	l["vpc_id"] = aws.StringValue(v.VPCId)
 
-		lbs[k] = l
-	}
+	// 	lbs[k] = l
+	// }
 
-	d.Set("load_balancer_descriptions_member", lbs)
-	d.Set("request_id", describeResp.RequestID)
-	d.SetId(resource.UniqueId())
+	// d.Set("load_balancer_descriptions_member", lbs)
+	// d.Set("request_id", describeResp.RequestID)
+	// d.SetId(resource.UniqueId())
 
 	return nil
 }

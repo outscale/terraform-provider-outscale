@@ -241,183 +241,185 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 }
 
 func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	// conn := meta.(*OutscaleClient).LBU
 
-	elbOpts := &lbu.CreateLoadBalancerInput{}
+	// elbOpts := &lbu.CreateLoadBalancerInput{}
 
-	listeners, err := expandOAPIListeners(d.Get("listener").([]interface{}))
-	if err != nil {
-		return err
-	}
+	// listeners, err := expandOAPIListeners(d.Get("listener").([]interface{}))
+	// if err != nil {
+	// 	return err
+	// }
 
-	elbOpts.Listeners = listeners
+	// elbOpts.Listeners = &lbu.ListenersMember{Member: listeners}
 
-	if v, ok := d.GetOk("load_balancer_name"); ok {
-		elbOpts.LoadBalancerName = aws.String(v.(string))
-	}
+	// if v, ok := d.GetOk("load_balancer_name"); ok {
+	// 	elbOpts.LoadBalancerName = aws.String(v.(string))
+	// }
 
-	if v, ok := d.GetOk("tag"); ok {
-		elbOpts.Tags = tagsFromMapCommon(v.(map[string]interface{}))
+	// if v, ok := d.GetOk("tag"); ok {
+	// 	elbOpts.Tags.Member = tagsFromMapCommon(v.(map[string]interface{}))
 
-	}
+	// }
 
-	if v, ok := d.GetOk("load_balancer_type"); ok {
-		elbOpts.Scheme = aws.String(v.(string))
-	}
+	// if v, ok := d.GetOk("load_balancer_type"); ok {
+	// 	elbOpts.Scheme = aws.String(v.(string))
+	// }
 
-	if v, ok := d.GetOk("sub_region_name"); ok {
-		elbOpts.AvailabilityZones = expandStringList(v.([]interface{}))
-	}
+	// if v, ok := d.GetOk("sub_region_name"); ok {
+	// 	elbOpts.AvailabilityZones = &lbu.AvailabilityZonesMember{
+	// 		Member: expandStringList(v.([]interface{})),
+	// 	}
+	// }
 
-	if v, ok := d.GetOk("firewall_rules_set_name"); ok {
-		elbOpts.SecurityGroups = expandStringList(v.([]interface{}))
-	}
+	// if v, ok := d.GetOk("firewall_rules_set_name"); ok {
+	// 	elbOpts.SecurityGroups.Member = expandStringList(v.([]interface{}))
+	// }
 
-	if v, ok := d.GetOk("subnet_id"); ok {
-		elbOpts.Subnets = expandStringList(v.([]interface{}))
-	}
+	// if v, ok := d.GetOk("subnet_id"); ok {
+	// 	elbOpts.Subnets.Member = expandStringList(v.([]interface{}))
+	// }
 
-	log.Printf("[DEBUG] ELB create configuration: %#v", elbOpts)
-	var resp *lbu.CreateLoadBalancerOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.CreateLoadBalancer(elbOpts)
+	// log.Printf("[DEBUG] ELB create configuration: %#v", elbOpts)
+	// var resp *lbu.CreateLoadBalancerOutput
+	// err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 	resp, err = conn.API.CreateLoadBalancer(elbOpts)
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	// 	if err != nil {
+	// 		if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
+	// 			return resource.RetryableError(
+	// 				fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+	// 		}
+	// 		return resource.NonRetryableError(err)
+	// 	}
+	// 	return nil
+	// })
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	// Assign the lbu's unique identifier for use later
-	d.SetId(*elbOpts.LoadBalancerName)
-	log.Printf("[INFO] ELB ID: %s", d.Id())
+	// // Assign the lbu's unique identifier for use later
+	// d.SetId(*elbOpts.LoadBalancerName)
+	// log.Printf("[INFO] ELB ID: %s", d.Id())
 
-	// Enable partial mode and record what we set
-	d.Partial(true)
-	d.SetPartial("load_balancer_name")
-	d.SetPartial("load_balancer_type")
-	d.SetPartial("sub_region_name")
-	d.SetPartial("listener_member")
-	d.SetPartial("firewall_rules_set_name")
-	d.SetPartial("subnet_id")
+	// // Enable partial mode and record what we set
+	// d.Partial(true)
+	// d.SetPartial("load_balancer_name")
+	// d.SetPartial("load_balancer_type")
+	// d.SetPartial("sub_region_name")
+	// d.SetPartial("listener_member")
+	// d.SetPartial("firewall_rules_set_name")
+	// d.SetPartial("subnet_id")
 
 	return resourceOutscaleOAPILoadBalancerUpdate(d, meta)
 }
 
 func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
-	elbName := d.Id()
+	// conn := meta.(*OutscaleClient).LBU
+	// elbName := d.Id()
 
-	// Retrieve the ELB properties for updating the state
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName)},
-	}
+	// // Retrieve the ELB properties for updating the state
+	// describeElbOpts := &lbu.DescribeLoadBalancersInput{
+	// 	LoadBalancerNames: &lbu.LoadBalancerNamesMember{Member: []*string{aws.String(elbName)}},
+	// }
 
-	var describeResp *lbu.DescribeLoadBalancersOutput
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+	// var describeResp *lbu.DescribeLoadBalancersOutput
+	// var err error
+	// err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 	describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	// 	if err != nil {
+	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+	// 			return resource.RetryableError(err)
+	// 		}
+	// 		return resource.NonRetryableError(err)
+	// 	}
+	// 	return nil
+	// })
 
-	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
+	// if err != nil {
+	// 	if isLoadBalancerNotFound(err) {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("Error retrieving ELB: %s", err)
-	}
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
-	}
+	// 	return fmt.Errorf("Error retrieving ELB: %s", err)
+	// }
+	// if len(describeResp.LoadBalancerDescriptions) != 1 {
+	// 	return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
+	// }
 
-	describeAttrsOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName),
-	}
+	// describeAttrsOpts := &lbu.DescribeLoadBalancerAttributesInput{
+	// 	LoadBalancerName: aws.String(elbName),
+	// }
 
-	var describeAttrsResp *lbu.DescribeLoadBalancerAttributesOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeAttrsResp, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
+	// var describeAttrsResp *lbu.DescribeLoadBalancerAttributesOutput
+	// err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 	describeAttrsResp, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	// 	if err != nil {
+	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+	// 			return resource.RetryableError(err)
+	// 		}
+	// 		return resource.NonRetryableError(err)
+	// 	}
+	// 	return nil
+	// })
 
-	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
+	// if err != nil {
+	// 	if isLoadBalancerNotFound(err) {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("Error retrieving ELB: %s", err)
-	}
+	// 	return fmt.Errorf("Error retrieving ELB: %s", err)
+	// }
 
-	// lbAttrs := describeAttrsResp.LoadBalancerAttributes
+	// // lbAttrs := describeAttrsResp.LoadBalancerAttributes
 
-	lb := describeResp.LoadBalancerDescriptions[0]
+	// lb := describeResp.LoadBalancerDescriptions[0]
 
-	d.Set("availability_zones", flattenOAPIStringList(lb.AvailabilityZones))
-	d.Set("public_dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
-	d.Set("backend_vm_id", flattenOAPIInstances(lb.Instances))
-	d.Set("listeners", flattenOAPIListeners(lb.ListenerDescriptions))
-	d.Set("load_balancer_name", lb.LoadBalancerName)
+	// d.Set("availability_zones", flattenOAPIStringList(lb.AvailabilityZones.Member))
+	// d.Set("public_dns_name", aws.StringValue(lb.DNSName))
+	// if *lb.HealthCheck.Target != "" {
+	// 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+	// } else {
+	// 	d.Set("health_check", make(map[string]interface{}))
+	// }
+	// d.Set("backend_vm_id", flattenOAPIInstances(lb.Instances.Member))
+	// d.Set("listeners", flattenOAPIListeners(lb.ListenerDescriptions))
+	// d.Set("load_balancer_name", lb.LoadBalancerName)
 
-	policies := make(map[string]interface{})
-	if lb.Policies != nil {
-		app := make([]map[string]interface{}, len(lb.Policies.AppCookieStickinessPolicies))
-		for k, v := range lb.Policies.AppCookieStickinessPolicies {
-			a := make(map[string]interface{})
-			a["cookie_name"] = aws.StringValue(v.CookieName)
-			a["policy_name"] = aws.StringValue(v.PolicyName)
-			app[k] = a
-		}
-		policies["application_sticky_cookie_policy"] = app
-		lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies))
-		for k, v := range lb.Policies.LBCookieStickinessPolicies {
-			a := make(map[string]interface{})
-			a["policy_name"] = aws.StringValue(v.PolicyName)
-			lbc[k] = a
-		}
-		policies["load_balancer_sticky_cookie_policy"] = lbc
-		policies["other_policy"] = flattenOAPIStringList(lb.Policies.OtherPolicies)
-	}
-	d.Set("policies", policies)
-	d.Set("load_balancer_type", aws.StringValue(lb.Scheme))
-	d.Set("firewall_rules_set_name", flattenOAPIStringList(lb.SecurityGroups))
-	ssg := make(map[string]string)
-	if lb.SourceSecurityGroup != nil {
-		ssg["firewall_rules_set_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
-		ssg["account_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
-	}
-	d.Set("source_firewall_rules_set", ssg)
-	d.Set("subnet_id", flattenOAPIStringList(lb.Subnets))
-	d.Set("lin_id", lb.VPCId)
+	// policies := make(map[string]interface{})
+	// if lb.Policies != nil {
+	// 	app := make([]map[string]interface{}, len(lb.Policies.AppCookieStickinessPolicies.Member))
+	// 	for k, v := range lb.Policies.AppCookieStickinessPolicies.Member {
+	// 		a := make(map[string]interface{})
+	// 		a["cookie_name"] = aws.StringValue(v.CookieName)
+	// 		a["policy_name"] = aws.StringValue(v.PolicyName)
+	// 		app[k] = a
+	// 	}
+	// 	policies["application_sticky_cookie_policy"] = app
+	// 	lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies.Member))
+	// 	for k, v := range lb.Policies.LBCookieStickinessPolicies.Member {
+	// 		a := make(map[string]interface{})
+	// 		a["policy_name"] = aws.StringValue(v.PolicyName)
+	// 		lbc[k] = a
+	// 	}
+	// 	policies["load_balancer_sticky_cookie_policy"] = lbc
+	// 	policies["other_policy"] = flattenOAPIStringList(lb.Policies.OtherPolicies.Member)
+	// }
+	// d.Set("policies", policies)
+	// d.Set("load_balancer_type", aws.StringValue(lb.Scheme))
+	// d.Set("firewall_rules_set_name", flattenOAPIStringList(lb.SecurityGroups.Member))
+	// ssg := make(map[string]string)
+	// if lb.SourceSecurityGroup != nil {
+	// 	ssg["firewall_rules_set_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
+	// 	ssg["account_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
+	// }
+	// d.Set("source_firewall_rules_set", ssg)
+	// d.Set("subnet_id", flattenOAPIStringList(lb.Subnets.Member))
+	// d.Set("lin_id", lb.VPCId)
 
 	return nil
 }
@@ -469,7 +471,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		if len(add) > 0 {
 			createListenersOpts := &lbu.CreateLoadBalancerListenersInput{
 				LoadBalancerName: aws.String(d.Id()),
-				Listeners:        add,
+				Listeners:        &lbu.CreateListenersMember{Member: add},
 			}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
@@ -804,11 +806,11 @@ func expandOAPIListeners(configured []interface{}) ([]*lbu.Listener, error) {
 		}
 
 		if v, ok := data["server_certificate_id"]; ok {
-			l.SSLCertificateId = aws.String(v.(string))
+			l.SSLCertificateID = aws.String(v.(string))
 		}
 
 		var valid bool
-		if l.SSLCertificateId != nil && *l.SSLCertificateId != "" {
+		if l.SSLCertificateID != nil && *l.SSLCertificateID != "" {
 			// validate the load_balancer_protocol is correct
 			for _, p := range []string{"https", "ssl"} {
 				if (strings.ToLower(*l.InstanceProtocol) == p) || (strings.ToLower(*l.Protocol) == p) {
@@ -840,7 +842,7 @@ func flattenOAPIStringList(list []*string) []interface{} {
 func flattenOAPIInstances(list []*lbu.Instance) []map[string]string {
 	result := make([]map[string]string, len(list))
 	for _, i := range list {
-		result = append(result, map[string]string{"vm_id": *i.InstanceId})
+		result = append(result, map[string]string{"vm_id": *i.InstanceID})
 	}
 	return result
 }
@@ -849,7 +851,7 @@ func flattenOAPIInstances(list []*lbu.Instance) []map[string]string {
 func expandOAPIInstanceString(list []interface{}) []*lbu.Instance {
 	result := make([]*lbu.Instance, 0, len(list))
 	for _, i := range list {
-		result = append(result, &lbu.Instance{InstanceId: aws.String(i.(string))})
+		result = append(result, &lbu.Instance{InstanceID: aws.String(i.(string))})
 	}
 	return result
 }
@@ -865,7 +867,7 @@ func flattenOAPIListeners(list []*lbu.ListenerDescription) []map[string]interfac
 			"backend_protocol":       strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
 			"load_balancer_port":     aws.Int64Value(i.Listener.LoadBalancerPort),
 			"load_balancer_protocol": strings.ToLower(aws.StringValue(i.Listener.Protocol)),
-			"server_certificate_id":  aws.StringValue(i.Listener.SSLCertificateId),
+			"server_certificate_id":  aws.StringValue(i.Listener.SSLCertificateID),
 		}
 		l["listener"] = listener
 		l["policy_name"] = flattenOAPIStringList(i.PolicyNames)

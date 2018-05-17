@@ -14,16 +14,20 @@ var ErrMsg = map[string]string{
 	"HTTP":               "HTTP Error",
 }
 
+// Error ...
 type Error struct {
 	Code    string `xml:"Code"`
-	Message string `xml:Message`
+	Message string `xml:"Message"`
 }
+
+// XMLError ...
 type XMLError struct {
 	XMLName   xml.Name `xml:"Response"`
 	Errors    []Error  `xml:"Errors>Error"`
 	RequestID string   `xml:"RequestID"`
 }
 
+// XMLLBUError ...
 type XMLLBUError struct {
 	XMLName   xml.Name `xml:"ErrorResponse"`
 	Errors    []Error  `xml:"Errors>Error"`
@@ -57,7 +61,7 @@ func SendError(msg XMLError) error {
 	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
 }
 
-// UnmarshalErrorHandler for HTTP Response
+// UnmarshalLBUErrorHandler for HTTP Response
 func UnmarshalLBUErrorHandler(r *http.Response) error {
 	defer r.Body.Close()
 	v := XMLLBUError{}

@@ -6,30 +6,55 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 )
 
+// CreateAvailabilityZonesMember ...
+type CreateAvailabilityZonesMember struct {
+	Member []*string `locationName:"member" locationNameList:"member" type:"list"`
+}
+
+// CreateListenersMember ...
+type CreateListenersMember struct {
+	Member []*Listener `locationName:"member" locationNameList:"member" type:"list"`
+}
+
+// SecurityGroupsMember ...
+type SecurityGroupsMember struct {
+	Member []*string `locationName:"member" locationNameList:"member" type:"list"`
+}
+
+// SubnetsMember ...
+type SubnetsMember struct {
+	Member []*string `locationName:"member" locationNameList:"member" type:"list"`
+}
+
+// TagsMember ...
+type TagsMember struct {
+	Member []*common.Tag `locationName:"member" locationNameList:"member" type:"list"`
+}
+
 // CreateLoadBalancerInput ...
 type CreateLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list"`
+	AvailabilityZones *CreateAvailabilityZonesMember `locationName:"availabilityZones"`
 
-	Listeners []*Listener `locationName:"listeners" type:"list" required:"true"`
+	Listeners *CreateListenersMember `locationName:"listeners" required:"true"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 
 	Scheme *string `locationName:"scheme" type:"string"`
 
-	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
+	SecurityGroups *SecurityGroupsMember `locationName:"securityGroups"`
 
-	Subnets []*string `locationName:"subnets" type:"list"`
+	Subnets *SubnetsMember `locationName:"subnets"`
 
-	Tags []*common.Tag `locationName:"tags" min:"1" type:"list"`
+	Tags *TagsMember `locationName:"tags" min:"1"`
 }
 
 // CreateLoadBalancerListenersInput ...
 type CreateLoadBalancerListenersInput struct {
 	_ struct{} `type:"structure"`
 
-	Listeners []*Listener `locationName:"listeners" type:"list" required:"true"`
+	Listeners *CreateListenersMember `locationName:"listeners"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 }
@@ -58,38 +83,53 @@ type Listener struct {
 
 	Protocol *string `locationName:"protocol" type:"string" required:"true"`
 
-	SSLCertificateId *string `locationName:"sslCertificateId" type:"string"`
+	SSLCertificateID *string `locationName:"sslCertificateId" type:"string"`
+}
+
+// LoadBalancerNamesMember ...
+type LoadBalancerNamesMember struct {
+	Member []*string `locationName:"member" locationNameList:"member" type:"list"`
 }
 
 // DescribeLoadBalancersInput ...
 type DescribeLoadBalancersInput struct {
 	_ struct{} `type:"structure"`
 
-	LoadBalancerNames []*string `locationName:"loadBalancerNames" type:"list"`
+	LoadBalancerNames *LoadBalancerNamesMember `locationName:"loadBalancerNames"`
 
 	Marker *string `locationName:"marker" type:"string"`
 
 	PageSize *int64 `locationName:"pageSize" min:"1" type:"integer"`
 }
 
+// DescribeLoadBalancersResult ...
+type DescribeLoadBalancersResult struct {
+	_ struct{} `type:"structure"`
+
+	LoadBalancerDescriptions []*LoadBalancerDescription `locationName:"loadBalancerDescriptions" locationNameList:"member" type:"list"`
+}
+
 // DescribeLoadBalancersOutput ...
 type DescribeLoadBalancersOutput struct {
 	_ struct{} `type:"structure"`
 
-	LoadBalancerDescriptions []*LoadBalancerDescription `locationName:"loadBalancerDescriptions" type:"list"`
+	DescribeLoadBalancersResult *DescribeLoadBalancersResult `locationName:"describeLoadBalancersResult" type:"structre"`
 
+	ResponseMetadata *RequestID `locationName:"responseMetadata" type:"structre"`
+}
+
+// RequestID ...
+type RequestID struct {
 	RequestID *string `locationName:"requestId" type:"string"`
-
-	NextMarker *string `locationName:"nextMarker" type:"string"`
 }
 
 // LoadBalancerDescription ...
 type LoadBalancerDescription struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list"`
+	AvailabilityZones []*string `locationName:"availabilityZones" locationNameList:"member" type:"list"`
 
-	BackendServerDescriptions []*BackendServerDescription `locationName:"backendServerDescriptions" type:"list"`
+	BackendServerDescriptions []*BackendServerDescription `locationName:"backendServerDescriptions" locationNameList:"member" type:"list"`
 
 	CanonicalHostedZoneName *string `locationName:"canonicalHostedZoneName" type:"string"`
 
@@ -101,9 +141,9 @@ type LoadBalancerDescription struct {
 
 	HealthCheck *HealthCheck `locationName:"healthCheck" type:"structure"`
 
-	Instances []*Instance `locationName:"instances" type:"list"`
+	Instances []*Instance `locationName:"instances" locationNameList:"member" type:"list"`
 
-	ListenerDescriptions []*ListenerDescription `locationName:"listenerDescriptions" type:"list"`
+	ListenerDescriptions []*ListenerDescription `locationName:"listenerDescriptions" locationNameList:"member" type:"list"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string"`
 
@@ -111,11 +151,11 @@ type LoadBalancerDescription struct {
 
 	Scheme *string `locationName:"scheme" type:"string"`
 
-	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
+	SecurityGroups []*string `locationName:"securityGroups" locationNameList:"member" type:"list"`
 
 	SourceSecurityGroup *SourceSecurityGroup `locationName:"sourceSecurityGroup" type:"structure"`
 
-	Subnets []*string `locationName:"subnets" type:"list"`
+	Subnets []*string `locationName:"subnets" locationNameList:"member" type:"list"`
 
 	VPCId *string `locationName:"vpcId" type:"string"`
 }
@@ -126,7 +166,7 @@ type BackendServerDescription struct {
 
 	InstancePort *int64 `locationName:"instancePort" min:"1" type:"integer"`
 
-	PolicyNames []*string `locationName:"policyNames" type:"list"`
+	PolicyNames []*string `locationName:"policyNames" locationNameList:"member" type:"list"`
 }
 
 // HealthCheck ...
@@ -148,7 +188,7 @@ type HealthCheck struct {
 type Instance struct {
 	_ struct{} `type:"structure"`
 
-	InstanceId *string `locationName:"instanceId" type:"string"`
+	InstanceID *string `locationName:"instanceId" type:"string"`
 }
 
 // ListenerDescription ...
@@ -157,7 +197,7 @@ type ListenerDescription struct {
 
 	Listener *Listener `locationName:"listener" type:"structure"`
 
-	PolicyNames []*string `locationName:"policyNames" type:"list"`
+	PolicyNames []*string `locationName:"policyNames" locationNameList:"member" type:"list"`
 }
 
 // SourceSecurityGroup ...
@@ -173,11 +213,11 @@ type SourceSecurityGroup struct {
 type Policies struct {
 	_ struct{} `type:"structure"`
 
-	AppCookieStickinessPolicies []*AppCookieStickinessPolicy `locationName:"appCookieStickinessPolicies" type:"list"`
+	AppCookieStickinessPolicies []*AppCookieStickinessPolicy `locationName:"appCookieStickinessPolicies" locationNameList:"member" type:"list"`
 
-	LBCookieStickinessPolicies []*LBCookieStickinessPolicy `locationName:"lbCookieStickinessPolicies" type:"list"`
+	LBCookieStickinessPolicies []*LBCookieStickinessPolicy `locationName:"lbCookieStickinessPolicies" locationNameList:"member" type:"list"`
 
-	OtherPolicies []*string `locationName:"otherPolicies" type:"list"`
+	OtherPolicies []*string `locationName:"otherPolicies" locationNameList:"member" type:"list"`
 }
 
 // AppCookieStickinessPolicy ...
@@ -220,7 +260,7 @@ type LoadBalancerAttributes struct {
 
 	AccessLog *AccessLog `locationName:"accessLog" type:"structure"`
 
-	AdditionalAttributes []*AdditionalAttribute `locationName:"additionalAttributes" type:"list"`
+	AdditionalAttributes []*AdditionalAttribute `locationName:"additionalAttributes" locationNameList:"member" type:"list"`
 
 	ConnectionDraining *ConnectionDraining `locationName:"connectionDraining" type:"structure"`
 
@@ -280,7 +320,7 @@ type DeleteLoadBalancerListenersInput struct {
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 
-	LoadBalancerPorts []*int64 `locationName:"loadBalancerPorts" type:"list" required:"true"`
+	LoadBalancerPorts []*int64 `locationName:"loadBalancerPorts" locationNameList:"member" type:"list" required:"true"`
 }
 
 // DeleteLoadBalancerListenersOutput ...
@@ -310,21 +350,21 @@ type ApplySecurityGroupsToLoadBalancerInput struct {
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 
-	SecurityGroups []*string `locationName:"securityGroups" type:"list" required:"true"`
+	SecurityGroups []*string `locationName:"securityGroups" locationNameList:"member" type:"list" required:"true"`
 }
 
 // ApplySecurityGroupsToLoadBalancerOutput ...
 type ApplySecurityGroupsToLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	SecurityGroups []*string `locationName:"securityGroups" type:"list"`
+	SecurityGroups []*string `locationName:"securityGroups" locationNameList:"member" type:"list"`
 }
 
 // EnableAvailabilityZonesForLoadBalancerInput ...
 type EnableAvailabilityZonesForLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list" required:"true"`
+	AvailabilityZones []*string `locationName:"availabilityZones" locationNameList:"member" type:"list" required:"true"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 }
@@ -333,14 +373,14 @@ type EnableAvailabilityZonesForLoadBalancerInput struct {
 type EnableAvailabilityZonesForLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list"`
+	AvailabilityZones []*string `locationName:"availabilityZones" locationNameList:"member" type:"list"`
 }
 
 // DisableAvailabilityZonesForLoadBalancerInput ...
 type DisableAvailabilityZonesForLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list" required:"true"`
+	AvailabilityZones []*string `locationName:"availabilityZones" locationNameList:"member" type:"list" required:"true"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 }
@@ -349,7 +389,7 @@ type DisableAvailabilityZonesForLoadBalancerInput struct {
 type DisableAvailabilityZonesForLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	AvailabilityZones []*string `locationName:"availabilityZones" type:"list"`
+	AvailabilityZones []*string `locationName:"availabilityZones" locationNameList:"member" type:"list"`
 }
 
 // AttachLoadBalancerToSubnetsInput ...
@@ -358,14 +398,14 @@ type AttachLoadBalancerToSubnetsInput struct {
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 
-	Subnets []*string `locationName:"subnets" type:"list" required:"true"`
+	Subnets []*string `locationName:"subnets" locationNameList:"member" type:"list" required:"true"`
 }
 
 // AttachLoadBalancerToSubnetsOutput ...
 type AttachLoadBalancerToSubnetsOutput struct {
 	_ struct{} `type:"structure"`
 
-	Subnets []*string `locationName:"subnets" type:"list"`
+	Subnets []*string `locationName:"subnets" locationNameList:"member" type:"list"`
 }
 
 // DeleteLoadBalancerInput ...
@@ -384,7 +424,7 @@ type DeleteLoadBalancerOutput struct {
 type RegisterInstancesWithLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
-	Instances []*Instance `locationName:"instances" type:"list" required:"true"`
+	Instances []*Instance `locationName:"instances" locationNameList:"member" type:"list" required:"true"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 }
@@ -393,14 +433,14 @@ type RegisterInstancesWithLoadBalancerInput struct {
 type RegisterInstancesWithLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	Instances []*Instance `locationName:"instances" type:"list"`
+	Instances []*Instance `locationName:"instances" locationNameList:"member" type:"list"`
 }
 
 // DeregisterInstancesFromLoadBalancerInput ...
 type DeregisterInstancesFromLoadBalancerInput struct {
 	_ struct{} `type:"structure"`
 
-	Instances []*Instance `locationName:"instances" type:"list" required:"true"`
+	Instances []*Instance `locationName:"instances" locationNameList:"member" type:"list" required:"true"`
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 }
@@ -409,7 +449,7 @@ type DeregisterInstancesFromLoadBalancerInput struct {
 type DeregisterInstancesFromLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	Instances []*Instance `locationName:"instances" type:"list"`
+	Instances []*Instance `locationName:"instances" locationNameList:"member" type:"list"`
 }
 
 // DetachLoadBalancerFromSubnetsInput ...
@@ -418,12 +458,12 @@ type DetachLoadBalancerFromSubnetsInput struct {
 
 	LoadBalancerName *string `locationName:"loadBalancerName" type:"string" required:"true"`
 
-	Subnets []*string `locationName:"subnets" type:"list" required:"true"`
+	Subnets []*string `locationName:"subnets" locationNameList:"member" type:"list" required:"true"`
 }
 
 // DetachLoadBalancerFromSubnetsOutput ...
 type DetachLoadBalancerFromSubnetsOutput struct {
 	_ struct{} `type:"structure"`
 
-	Subnets []*string `locationName:"subnets" type:"list"`
+	Subnets []*string `locationName:"subnets" locationNameList:"member" type:"list"`
 }

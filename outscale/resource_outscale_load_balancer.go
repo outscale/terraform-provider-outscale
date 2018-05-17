@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleLoadBalancer() *schema.Resource {
@@ -251,15 +252,18 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	elbOpts.Listeners = listeners
+	elbOpts.Listeners = &lbu.CreateListenersMember{
+		Member: listeners,
+	}
 
 	if v, ok := d.GetOk("load_balancer_name"); ok {
 		elbOpts.LoadBalancerName = aws.String(v.(string))
 	}
 
 	if v, ok := d.GetOk("tag"); ok {
-		elbOpts.Tags = tagsFromMapCommon(v.(map[string]interface{}))
-
+		elbOpts.Tags = &lbu.TagsMember{
+			Member: tagsFromMapCommon(v.(map[string]interface{})),
+		}
 	}
 
 	if v, ok := d.GetOk("scheme"); ok {
@@ -267,15 +271,21 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if v, ok := d.GetOk("availability_zones_member"); ok {
-		elbOpts.AvailabilityZones = expandStringList(v.([]interface{}))
+		elbOpts.AvailabilityZones = &lbu.CreateAvailabilityZonesMember{
+			Member: expandStringList(v.([]interface{})),
+		}
 	}
 
 	if v, ok := d.GetOk("security_groups_member"); ok {
-		elbOpts.SecurityGroups = expandStringList(v.([]interface{}))
+		elbOpts.SecurityGroups = &lbu.SecurityGroupsMember{
+			Member: expandStringList(v.([]interface{})),
+		}
 	}
 
 	if v, ok := d.GetOk("subnets_member"); ok {
-		elbOpts.Subnets = expandStringList(v.([]interface{}))
+		elbOpts.Subnets = &lbu.SubnetsMember{
+			Member: expandStringList(v.([]interface{})),
+		}
 	}
 
 	log.Printf("[DEBUG] ELB create configuration: %#v", elbOpts)
@@ -299,6 +309,7 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	// Assign the lbu's unique identifier for use later
 	d.SetId(*elbOpts.LoadBalancerName)
 	log.Printf("[INFO] ELB ID: %s", d.Id())
+	fmt.Printf("[INFO] ELB ID: %s", d.Id())
 
 	// Enable partial mode and record what we set
 	d.Partial(true)
@@ -309,7 +320,7 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	d.SetPartial("security_groups_member")
 	d.SetPartial("subnets_member")
 
-	return resourceOutscaleLoadBalancerUpdate(d, meta)
+	return resourceOutscaleLoadBalancerRead(d, meta)
 }
 
 func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
@@ -318,16 +329,16 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	// Retrieve the ELB properties for updating the state
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName)},
+		LoadBalancerNames: &lbu.LoadBalancerNamesMember{Member: []*string{aws.String(elbName)}},
 	}
 
-	var describeResp *lbu.DescribeLoadBalancersOutput
+	var resp *lbu.DescribeLoadBalancersOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -343,6 +354,15 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
+
+	utils.PrintToJSON(resp, "RESPONSE")
+
+	describeResp := resp.DescribeLoadBalancersResult
+
+	if describeResp.LoadBalancerDescriptions == nil {
+		return fmt.Errorf("NO ELB FOUND")
+	}
+
 	if len(describeResp.LoadBalancerDescriptions) != 1 {
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
@@ -390,7 +410,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("source_security_group", ssg)
 	d.Set("subnets_member", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", lb.VPCId)
-	d.Set("request_id", describeResp.RequestID)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return nil
 }
@@ -402,11 +422,11 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 	if d.HasChange("listeners_member") {
 		o, n := d.GetChange("listeners_member")
-		os := o.(*schema.Set)
-		ns := n.(*schema.Set)
+		os := o.([]interface{})
+		ns := n.([]interface{})
 
-		remove, _ := expandListeners(os.Difference(ns).List())
-		add, _ := expandListeners(ns.Difference(os).List())
+		remove, _ := expandListeners(ns)
+		add, _ := expandListeners(os)
 
 		if len(remove) > 0 {
 			ports := make([]*int64, 0, len(remove))
@@ -442,14 +462,16 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		if len(add) > 0 {
 			createListenersOpts := &lbu.CreateLoadBalancerListenersInput{
 				LoadBalancerName: aws.String(d.Id()),
-				Listeners:        add,
+				Listeners:        &lbu.CreateListenersMember{Member: add},
 			}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the ELB. Retry here to eliminate that.
-			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				log.Printf("[DEBUG] ELB Create Listeners opts: %s", createListenersOpts)
-				if _, err := conn.API.CreateLoadBalancerListeners(createListenersOpts); err != nil {
+				_, err = conn.API.CreateLoadBalancerListeners(createListenersOpts)
+				if err != nil {
 					if awsErr, ok := err.(awserr.Error); ok {
 						if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
 							log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
@@ -781,11 +803,11 @@ func expandListeners(configured []interface{}) ([]*lbu.Listener, error) {
 		}
 
 		if v, ok := data["ssl_certificate_id"]; ok {
-			l.SSLCertificateId = aws.String(v.(string))
+			l.SSLCertificateID = aws.String(v.(string))
 		}
 
 		var valid bool
-		if l.SSLCertificateId != nil && *l.SSLCertificateId != "" {
+		if l.SSLCertificateID != nil && *l.SSLCertificateID != "" {
 			// validate the protocol is correct
 			for _, p := range []string{"https", "ssl"} {
 				if (strings.ToLower(*l.InstanceProtocol) == p) || (strings.ToLower(*l.Protocol) == p) {
@@ -817,7 +839,7 @@ func flattenStringList(list []*string) []interface{} {
 func flattenInstances(list []*lbu.Instance) []map[string]string {
 	result := make([]map[string]string, len(list))
 	for _, i := range list {
-		result = append(result, map[string]string{"instance_id": *i.InstanceId})
+		result = append(result, map[string]string{"instance_id": *i.InstanceID})
 	}
 	return result
 }
@@ -826,7 +848,7 @@ func flattenInstances(list []*lbu.Instance) []map[string]string {
 func expandInstanceString(list []interface{}) []*lbu.Instance {
 	result := make([]*lbu.Instance, 0, len(list))
 	for _, i := range list {
-		result = append(result, &lbu.Instance{InstanceId: aws.String(i.(string))})
+		result = append(result, &lbu.Instance{InstanceID: aws.String(i.(string))})
 	}
 	return result
 }
@@ -854,7 +876,7 @@ func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} 
 			"instance_protocol":  strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
 			"load_balancer_port": aws.Int64Value(i.Listener.LoadBalancerPort),
 			"protocol":           strings.ToLower(aws.StringValue(i.Listener.Protocol)),
-			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateId),
+			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateID),
 		}
 		l["listener"] = listener
 		l["policy_names_member"] = flattenStringList(i.PolicyNames)
