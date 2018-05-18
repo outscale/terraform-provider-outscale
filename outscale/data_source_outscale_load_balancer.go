@@ -289,7 +289,9 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		policies["lb_cookie_stickiness_policies_member"] = lbc
 		policies["other_policies_member"] = lbc
 	}
-	d.Set("policies", policies)
+	pl := make([]map[string]interface{}, 1)
+	pl[0] = policies
+	d.Set("policies", pl)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
 	if lb.SecurityGroups != nil {
 		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))

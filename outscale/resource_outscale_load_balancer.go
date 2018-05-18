@@ -378,6 +378,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("load_balancer_name", aws.StringValue(lb.LoadBalancerName))
 
 	policies := make(map[string]interface{})
+	pl := make([]map[string]interface{}, 1)
 	if lb.Policies != nil {
 		app := make([]map[string]interface{}, len(lb.Policies.AppCookieStickinessPolicies))
 		for k, v := range lb.Policies.AppCookieStickinessPolicies {
@@ -400,6 +401,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		policies["lb_cookie_stickiness_policies_member"] = lbc
 		policies["other_policies_member"] = lbc
 	}
+	pl[0] = policies
 	d.Set("policies", policies)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
 	if lb.SecurityGroups != nil {
