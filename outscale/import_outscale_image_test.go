@@ -30,7 +30,7 @@ func TestAccOutscaleImage_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckImageDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccImageConfig_basic(rInt),
+				Config: testAccImageConfigBasic(rInt),
 			},
 
 			resource.TestStep{

@@ -126,10 +126,7 @@ func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 			return err
 		}
 
-		if err := resourceOutscaleImageWaitForDestroy(*imageID, conn); err != nil {
-			return err
-		}
-		return nil
+		return resourceOutscaleImageWaitForDestroy(*imageID, conn)
 	}
 }
 

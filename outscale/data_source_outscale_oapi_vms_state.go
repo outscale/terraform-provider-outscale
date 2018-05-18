@@ -1,14 +1,12 @@
 package outscale
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -36,13 +34,7 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if instanceIdsOk {
-		var ids []*string
-
-		for _, id := range instanceIds.(*schema.Set).List() {
-			ids = append(ids, aws.String(id.(string)))
-		}
-
-		params.InstanceIds = ids
+		params.InstanceIds = expandStringList(instanceIds.([]interface{}))
 	}
 
 	params.IncludeAllInstances = aws.Bool(false)
@@ -68,7 +60,7 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 	filteredStates := resp.InstanceStatuses
 
 	if len(filteredStates) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
@@ -100,57 +92,23 @@ func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []*f
 	return d.Set("vm_state_set", states)
 }
 
-func eventsOAPIVMSStateHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["code"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["description"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["not_before"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["not_after"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func statusSetOAPIVMSState(status *fcu.InstanceStatusSummary) *schema.Set {
-	s := &schema.Set{
-		F: statusHash,
-	}
-
-	st := map[string]interface{}{
-		"state": *status.Status,
-		"item":  detailsSet(status.Details),
-	}
-	s.Add(st)
+func statusSetOAPIVMSState(status *fcu.InstanceStatusSummary) map[string]interface{} {
+	s := make(map[string]interface{})
+	s["state"] = aws.StringValue(status.Status)
+	s["item"] = detailsSetOAPIVMSState(status.Details)
 
 	return s
 }
 
-func statusHashOAPIVMSState(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["status"].(string)))
-	return hashcode.String(buf.String())
-}
+func detailsSetOAPIVMSState(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(details))
 
-func detailsHashOAPIVMSState(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["state"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["item"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func detailsSetOAPIVMSState(details []*fcu.InstanceStatusDetails) *schema.Set {
-	s := &schema.Set{
-		F: detailsHash,
-	}
-
-	for _, v := range details {
-
+	for k, v := range details {
 		status := map[string]interface{}{
-			"name":  *v.Name,
-			"state": *v.Status,
+			"name":  aws.StringValue(v.Name),
+			"state": aws.StringValue(v.Status),
 		}
-		s.Add(status)
+		s[k] = status
 	}
 
 	return s
@@ -158,25 +116,21 @@ func detailsSetOAPIVMSState(details []*fcu.InstanceStatusDetails) *schema.Set {
 
 func flattenedStateOAPIVMSState(state *fcu.InstanceState) map[string]interface{} {
 	return map[string]interface{}{
-		"code": fmt.Sprintf("%d", *state.Code),
-		"name": *state.Name,
+		"code": fmt.Sprintf("%d", aws.Int64Value(state.Code)),
+		"name": aws.StringValue(state.Name),
 	}
 }
 
-func eventsSetOAPIVMSState(events []*fcu.InstanceStatusEvent) *schema.Set {
-	s := &schema.Set{
-		//F: eventsHashState,
-		F: eventsOAPIVMSStateHash,
-	}
-	for _, v := range events {
-
+func eventsSetOAPIVMSState(events []*fcu.InstanceStatusEvent) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(events))
+	for k, v := range events {
 		status := map[string]interface{}{
-			"state_code":  *v.Code,
-			"description": *v.Description,
+			"state_code":  aws.StringValue(v.Code),
+			"description": aws.StringValue(v.Description),
 			"not_before":  v.NotBefore.Format(time.RFC3339),
 			"not_after":   v.NotAfter.Format(time.RFC3339),
 		}
-		s.Add(status)
+		s[k] = status
 	}
 	return s
 }
@@ -185,8 +139,13 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Arguments
 		"filter": dataSourceFiltersSchema(),
+		"vm_id": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
 		"vm_state_set": { //events_set
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -195,7 +154,7 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"maintenance_event": { //events_set
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -220,8 +179,8 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 					},
 
 					"vm_id": { //instance_id
-						Type:     schema.TypeBool,
-						Optional: true,
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 					"state": { //instance_state
 						Type:     schema.TypeMap,
@@ -240,12 +199,12 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 						},
 					},
 					"comment": { // instance_status
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"item": { //details
-									Type:     schema.TypeSet,
+									Type:     schema.TypeList,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{

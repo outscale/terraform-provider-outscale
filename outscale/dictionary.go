@@ -112,7 +112,7 @@ func init() {
 			"outscale_nat_services":          dataSourceOutscaleNatServices,
 			"outscale_keypair":               datasourceOutscaleKeyPair,
 			"outscale_keypairs":              datasourceOutscaleKeyPairs,
-			"outscale_vm_state":              dataSourceOutscaleVmState,
+			"outscale_vm_state":              dataSourceOutscaleVMState,
 			"outscale_vms_state":             dataSourceOutscaleVMSState,
 			"outscale_lin_internet_gateway":  datasourceOutscaleLinInternetGateway,
 			"outscale_lin_internet_gateways": datasourceOutscaleLinInternetGateways,

@@ -76,7 +76,7 @@ func TestAccOutscaleRouteTable_complex(t *testing.T) {
 		CheckDestroy: testAccCheckRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRouteTableConfig_complexImport,
+				Config: testAccRouteTableConfigComplexImport,
 			},
 
 			{
@@ -88,7 +88,7 @@ func TestAccOutscaleRouteTable_complex(t *testing.T) {
 	})
 }
 
-const testAccRouteTableConfig_complexImport = `
+const testAccRouteTableConfigComplexImport = `
 resource "outscale_lin" "default" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_hostnames = true

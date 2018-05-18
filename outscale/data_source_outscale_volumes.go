@@ -109,6 +109,10 @@ func datasourceOutscaleVolumes() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -118,9 +122,9 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
-	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
+	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
-	if !filtersOk && !VolumeIdsOk {
+	if !filtersOk && !volumeIdsOk {
 		return fmt.Errorf("One of volume_id or filters must be assigned")
 	}
 
@@ -128,13 +132,8 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	if filtersOk {
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
-	if VolumeIdsOk {
-		var ids []*string
-
-		for _, id := range VolumeIds.([]interface{}) {
-			ids = append(ids, aws.String(id.(string)))
-		}
-		params.VolumeIds = ids
+	if volumeIdsOk {
+		params.VolumeIds = expandStringList(volumeIds.([]interface{}))
 	}
 
 	var resp *fcu.DescribeVolumesOutput
@@ -160,8 +159,10 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	filteredVolumes := resp.Volumes[:]
 
 	if len(filteredVolumes) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
+
+	d.Set("request_id", resp.RequestId)
 
 	return volumesDescriptionAttributes(d, filteredVolumes)
 }
@@ -177,54 +178,29 @@ func volumesDescriptionAttributes(d *schema.ResourceData, volumes []*fcu.Volume)
 			a := make([]map[string]interface{}, len(v.Attachments))
 			for k, v := range v.Attachments {
 				at := make(map[string]interface{})
-				if v.DeleteOnTermination != nil {
-					at["delete_on_termination"] = *v.DeleteOnTermination
-				}
-				if v.Device != nil {
-					at["device"] = *v.Device
-				}
-				if v.InstanceId != nil {
-					at["instance_id"] = *v.InstanceId
-				}
-				if v.State != nil {
-					at["state"] = *v.State
-				}
-				if v.VolumeId != nil {
-					at["volume_id"] = *v.VolumeId
-				}
+				at["delete_on_termination"] = aws.BoolValue(v.DeleteOnTermination)
+				at["device"] = aws.StringValue(v.Device)
+				at["instance_id"] = aws.StringValue(v.InstanceId)
+				at["state"] = aws.StringValue(v.State)
+				at["volume_id"] = aws.StringValue(v.VolumeId)
+
 				a[k] = at
 			}
 			im["attachment_set"] = a
 		}
-		if v.AvailabilityZone != nil {
-			im["availability_zone"] = *v.AvailabilityZone
-		}
-		if v.Iops != nil {
-			im["iops"] = *v.Iops
-		}
-		if v.Size != nil {
-			im["size"] = *v.Size
-		}
-		if v.SnapshotId != nil {
-			im["snapshot_id"] = *v.SnapshotId
-		}
-		if v.Tags != nil {
-			im["tag_set"] = dataSourceTags(v.Tags)
-		}
-		if v.VolumeType != nil {
-			im["volume_type"] = *v.VolumeType
-		}
-		if v.State != nil {
-			im["status"] = *v.State
-		}
-		if v.VolumeId != nil {
-			im["volume_id"] = *v.VolumeId
-		}
+		im["availability_zone"] = aws.StringValue(v.AvailabilityZone)
+		im["iops"] = aws.Int64Value(v.Iops)
+		im["size"] = aws.Int64Value(v.Size)
+		im["snapshot_id"] = aws.StringValue(v.SnapshotId)
+		im["volume_type"] = aws.StringValue(v.VolumeType)
+		im["status"] = aws.StringValue(v.State)
+		im["volume_id"] = aws.StringValue(v.VolumeId)
+		im["tag_set"] = tagsToMap(v.Tags)
+
 		i[k] = im
 	}
 
-	err := d.Set("volume_set", i)
 	d.SetId(resource.UniqueId())
 
-	return err
+	return d.Set("volume_set", i)
 }

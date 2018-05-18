@@ -141,16 +141,15 @@ func datasourceVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	var volume *fcu.Volume
 	if len(filteredVolumes) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	if len(filteredVolumes) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
-	} else {
-		// Query returned single result.
-		volume = filteredVolumes[0]
+		return fmt.Errorf("your query returned more than one result, please try a more " +
+			"specific search criteria")
 	}
+
+	volume = filteredVolumes[0]
 
 	d.Set("request_id", resp.RequestId)
 

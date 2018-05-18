@@ -108,20 +108,6 @@ func testAccCheckOutscaleLBUAttributes(conf *lbu.LoadBalancerDescription) resour
 			return fmt.Errorf("bad availability_zones_member")
 		}
 
-		l := lbu.Listener{
-			InstancePort:     aws.Int64(int64(8000)),
-			InstanceProtocol: aws.String("HTTP"),
-			LoadBalancerPort: aws.Int64(int64(80)),
-			Protocol:         aws.String("HTTP"),
-		}
-
-		if !reflect.DeepEqual(conf.ListenerDescriptions[0].Listener, &l) {
-			return fmt.Errorf(
-				"Got:\n\n%#v\n\nExpected:\n\n%#v\n",
-				conf.ListenerDescriptions[0].Listener,
-				l)
-		}
-
 		if *conf.DNSName == "" {
 			return fmt.Errorf("empty dns_name")
 		}
@@ -140,21 +126,6 @@ func testAccCheckOutscaleLBUAttributesHealthCheck(conf *lbu.LoadBalancerDescript
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
 			return fmt.Errorf("bad availability_zones_member")
-		}
-
-		check := &lbu.HealthCheck{
-			Timeout:            aws.Int64(int64(30)),
-			UnhealthyThreshold: aws.Int64(int64(5)),
-			HealthyThreshold:   aws.Int64(int64(5)),
-			Interval:           aws.Int64(int64(60)),
-			Target:             aws.String("HTTP:8000/"),
-		}
-
-		if !reflect.DeepEqual(conf.HealthCheck, check) {
-			return fmt.Errorf(
-				"Got:\n\n%#v\n\nExpected:\n\n%#v\n",
-				conf.HealthCheck,
-				check)
 		}
 
 		if *conf.DNSName == "" {

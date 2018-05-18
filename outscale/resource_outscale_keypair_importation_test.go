@@ -78,7 +78,7 @@ func testAccCheckOutscaleKeyPairImportationDestroy(s *terraform.State) error {
 
 		if err == nil {
 			if len(resp.KeyPairs) > 0 {
-				return fmt.Errorf("still exist.")
+				return fmt.Errorf("still exist")
 			}
 			return nil
 		}

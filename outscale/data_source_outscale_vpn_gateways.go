@@ -83,12 +83,7 @@ func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{})
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if vpnOk {
-		var ids []*string
-
-		for _, id := range vpn.([]interface{}) {
-			ids = append(ids, aws.String(id.(string)))
-		}
-		params.VpnGatewayIds = ids
+		params.VpnGatewayIds = expandStringList(vpn.([]interface{}))
 	}
 
 	var resp *fcu.DescribeVpnGatewaysOutput
@@ -111,11 +106,6 @@ func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{})
 	if resp == nil || len(resp.VpnGateways) == 0 {
 		return fmt.Errorf("no matching VPN gateway found: %#v", params)
 	}
-	if len(resp.VpnGateways) > 1 {
-		return fmt.Errorf("multiple VPN gateways matched; use additional constraints to reduce matches to a single VPN gateway")
-	}
-
-	vgw := resp.VpnGateways[0]
 
 	vpns := make([]map[string]interface{}, len(resp.VpnGateways))
 
@@ -124,19 +114,18 @@ func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{})
 
 		vs := make([]map[string]interface{}, len(v.VpcAttachments))
 
-		for k, v := range vgw.VpcAttachments {
+		for k, v1 := range v.VpcAttachments {
 			vp := make(map[string]interface{})
-
-			vp["state"] = *v.State
-			vp["vpc_id"] = *v.VpcId
+			vp["state"] = aws.StringValue(v1.State)
+			vp["vpc_id"] = aws.StringValue(v1.VpcId)
 
 			vs[k] = vp
 		}
 
 		vpn["attachments"] = vs
-		vpn["state"] = *v.State
-		vpn["vpn_gateway_id"] = *v.VpnGatewayId
-		vpn["tag_set"] = tagsToMap(vgw.Tags)
+		vpn["state"] = aws.StringValue(v.State)
+		vpn["vpn_gateway_id"] = aws.StringValue(v.VpnGatewayId)
+		vpn["tag_set"] = tagsToMap(v.Tags)
 
 		vpns[k] = vpn
 	}

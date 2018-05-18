@@ -206,10 +206,10 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("[DEBUG] Error image task %s", err)
 	}
 
-	id := *resp.ImageExportTask.ImageExportTaskId
-	d.SetId(id)
+	ID := *resp.ImageExportTask.ImageExportTaskId
+	d.SetId(ID)
 
-	_, err = resourceOutscaleImageTaskWaitForAvailable(id, conn, 1)
+	_, err = resourceOutscaleImageTaskWaitForAvailable(ID, conn, 1)
 	if err != nil {
 		return err
 	}
@@ -284,13 +284,13 @@ func resourceImageTasksDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("Waiting for Image Task %s to become available...", id)
+func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
+	fmt.Printf("Waiting for Image Task %s to become available...", ID)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "pending/queued", "queued"},
 		Target:     []string{"available"},
-		Refresh:    ImageTaskStateRefreshFunc(client, id),
+		Refresh:    ImageTaskStateRefreshFunc(client, ID),
 		Timeout:    OutscaleImageRetryTimeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -298,12 +298,13 @@ func resourceOutscaleImageTaskWaitForAvailable(id string, client *fcu.Client, i 
 
 	info, err := stateConf.WaitForState()
 	if err != nil {
-		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", id, err)
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", ID, err)
 	}
 	return info.(*fcu.Image), nil
 }
 
-func ImageTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
+// ImageTaskStateRefreshFunc ...
+func ImageTaskStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := &fcu.DescribeImageExportTasksOutput{}
 
@@ -312,7 +313,7 @@ func ImageTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefr
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = client.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
-				ImageExportTaskId: []*string{aws.String(id)},
+				ImageExportTaskId: []*string{aws.String(ID)},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -325,11 +326,11 @@ func ImageTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefr
 
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
-				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 
 			} else if resp != nil && len(resp.ImageExportTask) == 0 {
-				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
 				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
