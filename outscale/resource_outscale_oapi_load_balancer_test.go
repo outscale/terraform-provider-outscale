@@ -1,249 +1,203 @@
 package outscale
 
-// import (
-// 	"fmt"
-// 	"os"
-// 	"reflect"
-// 	"sort"
-// 	"strconv"
-// 	"strings"
-// 	"testing"
-// 	"time"
+import (
+	"fmt"
+	"reflect"
+	"sort"
+	"strings"
+	"testing"
+	"time"
 
-// 	"github.com/aws/aws-sdk-go/aws"
-// 	"github.com/aws/aws-sdk-go/aws/awserr"
-// 	"github.com/hashicorp/terraform/helper/resource"
-// 	"github.com/hashicorp/terraform/terraform"
-// 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-// )
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+)
 
-// func TestAccOutscaleOAPILBU_basic(t *testing.T) {
-// 	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPILBUBasic(t *testing.T) {
+	var conf lbu.LoadBalancerDescription
 
-// 	oapi, err := strconv.ParseBool(o)
-// 	if err != nil {
-// 		oapi = false
-// 	}
+	r := acctest.RandIntRange(0, 10)
 
-// 	if !oapi {
-// 		t.Skip()
-// 	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: "outscale_load_balancer.bar",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPILBUConfig(r),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					testAccCheckOutscaleOAPILBUAttributes(&conf),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "sub_region_name.#", "1"),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "sub_region_name.0", "eu-west-2a"),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "listener.0.backend_port", "8000"),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "listener.0.backend_protocol", "HTTP"),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "listener.0.load_balancer_port", "80"),
+					resource.TestCheckResourceAttr(
+						"outscale_load_balancer.bar", "listener.0.load_balancer_protocol", "HTTP"),
+				)},
+		},
+	})
+}
 
-// 	var conf lbu.LoadBalancerDescription
+func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).LBU
 
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:      func() { testAccPreCheck(t) },
-// 		IDRefreshName: "outscale_load_balancer.bar",
-// 		Providers:     testAccProviders,
-// 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccDSOutscaleOAPILBUConfig,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
-// 					testAccCheckOutscaleOAPILBUAttributes(&conf),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "sub_region_name.#", "2"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "sub_region_name.0", "eu-west-2a"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "sub_region_name.1", "eu-west-2b"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "listener.0.backend_port", "8000"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "listener.0.backend_protocol", "http"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "listener.0.load_balancer_port", "80"),
-// 					resource.TestCheckResourceAttr(
-// 						"data.outscale_load_balancer.test", "listener.0.load_balancer_protocol", "http"),
-// 				)},
-// 		},
-// 	})
-// }
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_load_balancer" {
+			continue
+		}
 
-// func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
-// 	conn := testAccProvider.Meta().(*OutscaleClient).LBU
+		var err error
+		var describe *lbu.DescribeLoadBalancersOutput
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
+			})
 
-// 	for _, rs := range s.RootModule().Resources {
-// 		if rs.Type != "outscale_load_balancer" {
-// 			continue
-// 		}
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
 
-// 		var err error
-// 		var describe *lbu.DescribeLoadBalancersOutput
-// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-// 				LoadBalancerNames: &lbu.LoadBalancerNamesMember{Member: []*string{aws.String(rs.Primary.ID)}},
-// 			})
+		if err == nil {
+			if len(describe.LoadBalancerDescriptions) != 0 &&
+				*describe.LoadBalancerDescriptions[0].LoadBalancerName == rs.Primary.ID {
+				return fmt.Errorf("LBU still exists")
+			}
+		}
 
-// 			if err != nil {
-// 				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-// 					return resource.RetryableError(
-// 						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
-// 				}
-// 				return resource.NonRetryableError(err)
-// 			}
-// 			return nil
-// 		})
+		if strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound") {
+			return nil
+		}
 
-// 		if err == nil {
-// 			if len(describe.LoadBalancerDescriptions) != 0 &&
-// 				*describe.LoadBalancerDescriptions[0].LoadBalancerName == rs.Primary.ID {
-// 				return fmt.Errorf("LBU still exists")
-// 			}
-// 		}
+		if err != nil {
+			return err
+		}
+	}
 
-// 		// Verify the error
-// 		providerErr, ok := err.(awserr.Error)
-// 		if !ok {
-// 			return err
-// 		}
+	return nil
+}
 
-// 		if providerErr.Code() != "LoadBalancerNotFound" {
-// 			return fmt.Errorf("Unexpected error: %s", err)
-// 		}
-// 	}
+func testAccCheckOutscaleOAPILBUAttributes(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		zones := []string{"eu-west-2a"}
+		azs := make([]string, 0, len(conf.AvailabilityZones))
+		for _, x := range conf.AvailabilityZones {
+			azs = append(azs, *x)
+		}
+		sort.StringSlice(azs).Sort()
+		if !reflect.DeepEqual(azs, zones) {
+			return fmt.Errorf("bad sub_region_name")
+		}
 
-// 	return nil
-// }
+		if *conf.DNSName == "" {
+			return fmt.Errorf("empty dns_name")
+		}
 
-// func testAccCheckOutscaleOAPILBUAttributes(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		zones := []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"}
-// 		azs := make([]string, 0, len(conf.AvailabilityZones.Member))
-// 		for _, x := range conf.AvailabilityZones.Member {
-// 			azs = append(azs, *x)
-// 		}
-// 		sort.StringSlice(azs).Sort()
-// 		if !reflect.DeepEqual(azs, zones) {
-// 			return fmt.Errorf("bad availability_zones_member")
-// 		}
+		return nil
+	}
+}
 
-// 		l := lbu.Listener{
-// 			InstancePort:     aws.Int64(int64(8000)),
-// 			InstanceProtocol: aws.String("HTTP"),
-// 			LoadBalancerPort: aws.Int64(int64(80)),
-// 			Protocol:         aws.String("HTTP"),
-// 		}
+func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		zones := []string{"eu-west-2a"}
+		azs := make([]string, 0, len(conf.AvailabilityZones))
+		for _, x := range conf.AvailabilityZones {
+			azs = append(azs, *x)
+		}
+		sort.StringSlice(azs).Sort()
+		if !reflect.DeepEqual(azs, zones) {
+			return fmt.Errorf("bad sub_region_name")
+		}
 
-// 		if !reflect.DeepEqual(conf.ListenerDescriptions[0].Listener, &l) {
-// 			return fmt.Errorf(
-// 				"Got:\n\n%#v\n\nExpected:\n\n%#v\n",
-// 				conf.ListenerDescriptions[0].Listener,
-// 				l)
-// 		}
+		if *conf.DNSName == "" {
+			return fmt.Errorf("empty dns_name")
+		}
 
-// 		if *conf.DNSName == "" {
-// 			return fmt.Errorf("empty dns_name")
-// 		}
+		return nil
+	}
+}
 
-// 		return nil
-// 	}
-// }
+func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
 
-// func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		zones := []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"}
-// 		azs := make([]string, 0, len(conf.AvailabilityZones.Member))
-// 		for _, x := range conf.AvailabilityZones.Member {
-// 			azs = append(azs, *x)
-// 		}
-// 		sort.StringSlice(azs).Sort()
-// 		if !reflect.DeepEqual(azs, zones) {
-// 			return fmt.Errorf("bad availability_zones_member")
-// 		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No LBU ID is set")
+		}
 
-// 		check := &lbu.HealthCheck{
-// 			Timeout:            aws.Int64(int64(30)),
-// 			UnhealthyThreshold: aws.Int64(int64(5)),
-// 			HealthyThreshold:   aws.Int64(int64(5)),
-// 			Interval:           aws.Int64(int64(60)),
-// 			Target:             aws.String("HTTP:8000/"),
-// 		}
+		conn := testAccProvider.Meta().(*OutscaleClient).LBU
 
-// 		if !reflect.DeepEqual(conf.HealthCheck, check) {
-// 			return fmt.Errorf(
-// 				"Got:\n\n%#v\n\nExpected:\n\n%#v\n",
-// 				conf.HealthCheck,
-// 				check)
-// 		}
+		var err error
+		var describe *lbu.DescribeLoadBalancersOutput
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
+			})
 
-// 		if *conf.DNSName == "" {
-// 			return fmt.Errorf("empty dns_name")
-// 		}
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
 
-// 		return nil
-// 	}
-// }
+		if err != nil {
+			return err
+		}
 
-// func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescription) resource.TestCheckFunc {
-// 	return func(s *terraform.State) error {
-// 		rs, ok := s.RootModule().Resources[n]
-// 		if !ok {
-// 			return fmt.Errorf("Not found: %s", n)
-// 		}
+		if len(describe.LoadBalancerDescriptions) != 1 ||
+			*describe.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
+			return fmt.Errorf("LBU not found")
+		}
 
-// 		if rs.Primary.ID == "" {
-// 			return fmt.Errorf("No LBU ID is set")
-// 		}
+		*res = *describe.LoadBalancerDescriptions[0]
 
-// 		conn := testAccProvider.Meta().(*OutscaleClient).LBU
+		if res.VPCId != nil {
+			sgid := rs.Primary.Attributes["source_security_group_id"]
+			if sgid == "" {
+				return fmt.Errorf("Expected to find source_security_group_id for LBU, but was empty")
+			}
+		}
 
-// 		var err error
-// 		var describe *lbu.DescribeLoadBalancersOutput
-// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-// 				LoadBalancerNames: &lbu.LoadBalancerNamesMember{Member: []*string{aws.String(rs.Primary.ID)}},
-// 			})
+		return nil
+	}
+}
 
-// 			if err != nil {
-// 				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-// 					return resource.RetryableError(
-// 						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
-// 				}
-// 				return resource.NonRetryableError(err)
-// 			}
-// 			return nil
-// 		})
+func testAccOutscaleOAPILBUConfig(r int) string {
+	return fmt.Sprintf(`
+resource "outscale_load_balancer" "bar" {
+  sub_region_name = ["eu-west-2a"]
+	load_balancer_name               = "foobar-terraform-elb-%d"
+  listener {
+    backend_port = 8000
+    backend_protocol = "HTTP"
+    load_balancer_port = 80
+    load_balancer_protocol = "HTTP"
+  }
 
-// 		if err != nil {
-// 			return err
-// 		}
+	tag {
+		bar = "baz"
+	}
 
-// 		if len(describe.LoadBalancerDescriptions) != 1 ||
-// 			*describe.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
-// 			return fmt.Errorf("LBU not found")
-// 		}
-
-// 		*res = *describe.LoadBalancerDescriptions[0]
-
-// 		// Confirm source_security_group_id for ELBs in a VPC
-// 		// 	See https://github.com/hashicorp/terraform/pull/3780
-// 		if res.VPCId != nil {
-// 			sgid := rs.Primary.Attributes["source_security_group_id"]
-// 			if sgid == "" {
-// 				return fmt.Errorf("Expected to find source_security_group_id for LBU, but was empty")
-// 			}
-// 		}
-
-// 		return nil
-// 	}
-// }
-
-// const testAccOutscaleOAPILBUConfig = `
-// resource "outscale_load_balancer" "bar" {
-//   sub_region_name = ["eu-west-2a", "eu-west-2b"]
-// 	load_balancer_name               = "foobar-terraform-elb"
-//   listener {
-//     backend_port = 8000
-//     backend_protocol = "http"
-//     load_balancer_port = 80
-//     // Protocol should be case insensitive
-//     load_balancer_protocol = "http"
-//   }
-
-// 	tag {
-// 		bar = "baz"
-// 	}
-// }
-// `
+}
+`, r)
+}
