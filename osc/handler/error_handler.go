@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -30,7 +29,7 @@ type XMLError struct {
 // XMLLBUError ...
 type XMLLBUError struct {
 	XMLName   xml.Name `xml:"ErrorResponse"`
-	Errors    []Error  `xml:"Errors>Error"`
+	Errors    Error    `xml:"Error"`
 	RequestID string   `xml:"RequestID"`
 }
 
@@ -57,7 +56,6 @@ func UnmarshalErrorHandler(r *http.Response) error {
 
 // SendError method which receives the message and the error
 func SendError(msg XMLError) error {
-
 	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
 }
 
@@ -76,11 +74,6 @@ func UnmarshalLBUErrorHandler(r *http.Response) error {
 		return fmt.Errorf("error unmarshalling response %v", err)
 	}
 
-	// Response body format is not consistent between metadata endpoints.
-	// Grab the error message as a string and include that as the source error
-
-	pretty, _ := json.MarshalIndent(v, "", "  ")
-
-	return fmt.Errorf("error code: %s", pretty)
+	return fmt.Errorf("%s: %s", v.Errors.Code, v.Errors.Message)
 
 }

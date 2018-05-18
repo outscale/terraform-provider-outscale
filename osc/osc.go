@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -16,9 +15,11 @@ import (
 )
 
 const (
-	libraryVersion      = "1.0"
-	DefaultBaseURL      = "https://%s.%s.outscale.com"
-	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
+	libraryVersion = "1.0"
+	// DefaultBaseURL ...
+	DefaultBaseURL = "https://%s.%s.outscale.com"
+	opaqueBaseURL  = "/%s.%s.outscale.com/%s"
+	// UserAgent ...
 	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
@@ -30,7 +31,7 @@ const (
 type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
 
 // MarshalHander marshals the incoming body to a desired format
-type MarshalHander func(v interface{}, action, version string) (string, error)
+type MarshalHander func(v interface{}, action, version string, isLBU bool) (string, error)
 
 // UnmarshalHandler unmarshals the body request depending on different implementations
 type UnmarshalHandler func(v interface{}, req *http.Response) error
@@ -97,9 +98,11 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	var b interface{}
 	var err error
 
+	isLBU := (strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck"))
+
 	// method for FCU API
 	if method != http.MethodPost {
-		b, err = c.MarshalHander(body, operation, "2018-05-14")
+		b, err = c.MarshalHander(body, operation, "2018-05-14", !isLBU)
 		if err != nil {
 			return nil, err
 		}
@@ -142,14 +145,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	requestDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("##################")
-	fmt.Println("REQUEST")
-	fmt.Println(string(requestDump))
-
 	return req, nil
 }
 
@@ -169,14 +164,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	if err != nil {
 		return err
 	}
-
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("##################")
-	fmt.Println("RESPONSE")
-	fmt.Println(string(requestDump))
 
 	err = c.checkResponse(resp)
 	if err != nil {

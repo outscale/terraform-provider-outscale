@@ -30,13 +30,6 @@ func BuildURLEncodedRequest(body interface{}, method, url string) (*http.Request
 
 		req.URL.RawQuery = body.(string)
 
-		if strings.Contains(url, "lbu") {
-			replacer := strings.NewReplacer("Member", "member")
-			output := replacer.Replace(body.(string))
-
-			req.URL.RawQuery = output
-		}
-
 		return req, nil, nil
 
 	}

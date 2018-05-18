@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -33,17 +32,17 @@ func TestAccOutscaleLBU_basic(t *testing.T) {
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "availability_zones_member.#", "2"),
+						"outscale_load_balancer.bar", "availability_zones_member.#", "1"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "availability_zones_member.0", "eu-west-2a"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listeners_member.0.instance_port", "8000"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.instance_protocol", "http"),
+						"outscale_load_balancer.bar", "listeners_member.0.instance_protocol", "HTTP"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listeners_member.0.load_balancer_port", "80"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.protocol", "http"),
+						"outscale_load_balancer.bar", "listeners_member.0.protocol", "HTTP"),
 				)},
 		},
 	})
@@ -61,13 +60,12 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 		var describe *lbu.DescribeLoadBalancersOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-				LoadBalancerNames: &lbu.LoadBalancerNamesMember{[]*string{aws.String(rs.Primary.ID)}},
+				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-					return resource.RetryableError(
-						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
@@ -75,20 +73,18 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			if len(describe.DescribeLoadBalancersResult.LoadBalancerDescriptions) != 0 &&
-				*describe.DescribeLoadBalancersResult.LoadBalancerDescriptions[0].LoadBalancerName == rs.Primary.ID {
+			if len(describe.LoadBalancerDescriptions) != 0 &&
+				*describe.LoadBalancerDescriptions[0].LoadBalancerName == rs.Primary.ID {
 				return fmt.Errorf("LBU still exists")
 			}
 		}
 
-		// Verify the error
-		providerErr, ok := err.(awserr.Error)
-		if !ok {
-			return err
+		if strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound") {
+			return nil
 		}
 
-		if providerErr.Code() != "LoadBalancerNotFound" {
-			return fmt.Errorf("Unexpected error: %s", err)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -152,13 +148,12 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 		var describe *lbu.DescribeLoadBalancersOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-				LoadBalancerNames: &lbu.LoadBalancerNamesMember{Member: []*string{aws.String(rs.Primary.ID)}},
+				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-					return resource.RetryableError(
-						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
@@ -169,15 +164,13 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 			return err
 		}
 
-		if len(describe.DescribeLoadBalancersResult.LoadBalancerDescriptions) != 1 ||
-			*describe.DescribeLoadBalancersResult.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
+		if len(describe.LoadBalancerDescriptions) != 1 ||
+			*describe.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
 			return fmt.Errorf("LBU not found")
 		}
 
-		*res = *describe.DescribeLoadBalancersResult.LoadBalancerDescriptions[0]
+		*res = *describe.LoadBalancerDescriptions[0]
 
-		// Confirm source_security_group_id for ELBs in a VPC
-		// 	See https://github.com/hashicorp/terraform/pull/3780
 		if res.VPCId != nil {
 			sgid := rs.Primary.Attributes["source_security_group_id"]
 			if sgid == "" {

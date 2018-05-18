@@ -471,7 +471,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		if len(add) > 0 {
 			createListenersOpts := &lbu.CreateLoadBalancerListenersInput{
 				LoadBalancerName: aws.String(d.Id()),
-				Listeners:        &lbu.CreateListenersMember{Member: add},
+				Listeners:        add,
 			}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
@@ -806,11 +806,11 @@ func expandOAPIListeners(configured []interface{}) ([]*lbu.Listener, error) {
 		}
 
 		if v, ok := data["server_certificate_id"]; ok {
-			l.SSLCertificateID = aws.String(v.(string))
+			l.SSLCertificateId = aws.String(v.(string))
 		}
 
 		var valid bool
-		if l.SSLCertificateID != nil && *l.SSLCertificateID != "" {
+		if l.SSLCertificateId != nil && *l.SSLCertificateId != "" {
 			// validate the load_balancer_protocol is correct
 			for _, p := range []string{"https", "ssl"} {
 				if (strings.ToLower(*l.InstanceProtocol) == p) || (strings.ToLower(*l.Protocol) == p) {
@@ -842,7 +842,7 @@ func flattenOAPIStringList(list []*string) []interface{} {
 func flattenOAPIInstances(list []*lbu.Instance) []map[string]string {
 	result := make([]map[string]string, len(list))
 	for _, i := range list {
-		result = append(result, map[string]string{"vm_id": *i.InstanceID})
+		result = append(result, map[string]string{"vm_id": *i.InstanceId})
 	}
 	return result
 }
@@ -851,7 +851,7 @@ func flattenOAPIInstances(list []*lbu.Instance) []map[string]string {
 func expandOAPIInstanceString(list []interface{}) []*lbu.Instance {
 	result := make([]*lbu.Instance, 0, len(list))
 	for _, i := range list {
-		result = append(result, &lbu.Instance{InstanceID: aws.String(i.(string))})
+		result = append(result, &lbu.Instance{InstanceId: aws.String(i.(string))})
 	}
 	return result
 }
@@ -867,7 +867,7 @@ func flattenOAPIListeners(list []*lbu.ListenerDescription) []map[string]interfac
 			"backend_protocol":       strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
 			"load_balancer_port":     aws.Int64Value(i.Listener.LoadBalancerPort),
 			"load_balancer_protocol": strings.ToLower(aws.StringValue(i.Listener.Protocol)),
-			"server_certificate_id":  aws.StringValue(i.Listener.SSLCertificateID),
+			"server_certificate_id":  aws.StringValue(i.Listener.SSLCertificateId),
 		}
 		l["listener"] = listener
 		l["policy_name"] = flattenOAPIStringList(i.PolicyNames)
