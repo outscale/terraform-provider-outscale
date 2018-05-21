@@ -40,7 +40,7 @@ func (v Operations) CreateLoadBalancer(input *CreateLoadBalancerInput) (*CreateL
 		input = &CreateLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (v Operations) DescribeLoadBalancers(input *DescribeLoadBalancersInput) (*D
 		input = &DescribeLoadBalancersInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (v Operations) DescribeLoadBalancerAttributes(input *DescribeLoadBalancerAt
 		input = &DescribeLoadBalancerAttributesInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -112,7 +112,7 @@ func (v Operations) DeleteLoadBalancerListeners(input *DeleteLoadBalancerListene
 		input = &DeleteLoadBalancerListenersInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func (v Operations) CreateLoadBalancerListeners(input *CreateLoadBalancerListene
 		input = &CreateLoadBalancerListenersInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -160,7 +160,7 @@ func (v Operations) ConfigureHealthCheck(input *ConfigureHealthCheckInput) (*Con
 		input = &ConfigureHealthCheckInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (v Operations) ApplySecurityGroupsToLoadBalancer(input *ApplySecurityGroups
 		input = &ApplySecurityGroupsToLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func (v Operations) EnableAvailabilityZonesForLoadBalancer(input *EnableAvailabi
 		input = &EnableAvailabilityZonesForLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -232,7 +232,7 @@ func (v Operations) DisableAvailabilityZonesForLoadBalancer(input *DisableAvaila
 		input = &DisableAvailabilityZonesForLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -256,7 +256,7 @@ func (v Operations) AttachLoadBalancerToSubnets(input *AttachLoadBalancerToSubne
 		input = &AttachLoadBalancerToSubnetsInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -280,7 +280,7 @@ func (v Operations) DeleteLoadBalancer(input *DeleteLoadBalancerInput) (*DeleteL
 		input = &DeleteLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -304,7 +304,7 @@ func (v Operations) RegisterInstancesWithLoadBalancer(input *RegisterInstancesWi
 		input = &RegisterInstancesWithLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -328,7 +328,7 @@ func (v Operations) DeregisterInstancesFromLoadBalancer(input *DeregisterInstanc
 		input = &DeregisterInstancesFromLoadBalancerInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -352,7 +352,7 @@ func (v Operations) DetachLoadBalancerFromSubnets(input *DetachLoadBalancerFromS
 		input = &DetachLoadBalancerFromSubnetsInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 
 	if err != nil {
 		return nil, err

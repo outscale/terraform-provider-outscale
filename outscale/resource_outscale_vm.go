@@ -1394,7 +1394,7 @@ func readBlockDeviceMappingsFromConfig(
 	if v, ok := d.GetOk("root_block_device"); ok {
 		vL := v.([]interface{})
 		if len(vL) > 1 {
-			return nil, errors.New("Cannot specify more than one root_block_device.")
+			return nil, errors.New("Cannot specify more than one root_block_device")
 		}
 		for _, v := range vL {
 			bd := v.(map[string]interface{})
@@ -1427,6 +1427,7 @@ func readBlockDeviceMappingsFromConfig(
 	return blockDevices, nil
 }
 
+// InstanceStateRefreshFunc ...
 func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput
@@ -1497,6 +1498,7 @@ func GetInstanceGetPasswordData(conn *fcu.Client, instanceID, failState string) 
 	}
 }
 
+// InstancePa ...
 func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput

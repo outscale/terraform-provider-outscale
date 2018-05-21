@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -258,8 +259,7 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if v, ok := d.GetOk("tag"); ok {
-		elbOpts.Tags = tagsFromMapCommon(v.(map[string]interface{}))
-
+		elbOpts.Tags = tagsFromMapLBU(v.(map[string]interface{}))
 	}
 
 	if v, ok := d.GetOk("scheme"); ok {
@@ -287,6 +287,10 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 				return resource.RetryableError(
 					fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
 			}
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(
+					fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
@@ -300,16 +304,12 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	d.SetId(*elbOpts.LoadBalancerName)
 	log.Printf("[INFO] ELB ID: %s", d.Id())
 
-	// Enable partial mode and record what we set
-	d.Partial(true)
-	d.SetPartial("load_balancer_name")
-	d.SetPartial("scheme")
-	d.SetPartial("availability_zones_member")
-	d.SetPartial("listener_member")
-	d.SetPartial("security_groups_member")
-	d.SetPartial("subnets_member")
+	if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+		return err
+	}
+	d.Set("policies", make([]map[string]interface{}, 0))
 
-	return resourceOutscaleLoadBalancerUpdate(d, meta)
+	return resourceOutscaleLoadBalancerRead(d, meta)
 }
 
 func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
@@ -327,7 +327,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -343,6 +343,11 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
+
+	if describeResp.LoadBalancerDescriptions == nil {
+		return fmt.Errorf("NO ELB FOUND")
+	}
+
 	if len(describeResp.LoadBalancerDescriptions) != 1 {
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
@@ -356,11 +361,24 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	} else {
 		d.Set("health_check", make(map[string]interface{}))
 	}
-	d.Set("instances_member", flattenInstances(lb.Instances))
-	d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions))
-	d.Set("load_balancer_name", lb.LoadBalancerName)
+	if lb.Instances != nil {
+		d.Set("instances_member", flattenInstances(lb.Instances))
+	} else {
+		d.Set("instances_member", make([]map[string]interface{}, 0))
+	}
+	if lb.ListenerDescriptions != nil {
+		if err := d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+			return err
+		}
+	}
+	d.Set("load_balancer_name", aws.StringValue(lb.LoadBalancerName))
 
 	policies := make(map[string]interface{})
+	pl := make([]map[string]interface{}, 1)
 	if lb.Policies != nil {
 		app := make([]map[string]interface{}, len(lb.Policies.AppCookieStickinessPolicies))
 		for k, v := range lb.Policies.AppCookieStickinessPolicies {
@@ -378,10 +396,19 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		}
 		policies["lb_cookie_stickiness_policies_member"] = lbc
 		policies["other_policies_member"] = flattenStringList(lb.Policies.OtherPolicies)
+	} else {
+		lbc := make([]map[string]interface{}, 0)
+		policies["lb_cookie_stickiness_policies_member"] = lbc
+		policies["other_policies_member"] = lbc
 	}
+	pl[0] = policies
 	d.Set("policies", policies)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
-	d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+	if lb.SecurityGroups != nil {
+		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+	} else {
+		d.Set("security_groups_member", make([]map[string]interface{}, 0))
+	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
 		ssg["group_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
@@ -389,8 +416,8 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	}
 	d.Set("source_security_group", ssg)
 	d.Set("subnets_member", flattenStringList(lb.Subnets))
-	d.Set("vpc_id", lb.VPCId)
-	d.Set("request_id", describeResp.RequestID)
+	d.Set("vpc_id", aws.StringValue(lb.VPCId))
+	// d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return nil
 }
@@ -402,11 +429,11 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 	if d.HasChange("listeners_member") {
 		o, n := d.GetChange("listeners_member")
-		os := o.(*schema.Set)
-		ns := n.(*schema.Set)
+		os := o.([]interface{})
+		ns := n.([]interface{})
 
-		remove, _ := expandListeners(os.Difference(ns).List())
-		add, _ := expandListeners(ns.Difference(os).List())
+		remove, _ := expandListeners(ns)
+		add, _ := expandListeners(os)
 
 		if len(remove) > 0 {
 			ports := make([]*int64, 0, len(remove))
@@ -426,7 +453,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.DeleteLoadBalancerListeners(deleteListenersOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -447,15 +474,21 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the ELB. Retry here to eliminate that.
-			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				log.Printf("[DEBUG] ELB Create Listeners opts: %s", createListenersOpts)
-				if _, err := conn.API.CreateLoadBalancerListeners(createListenersOpts); err != nil {
+				_, err = conn.API.CreateLoadBalancerListeners(createListenersOpts)
+				if err != nil {
 					if awsErr, ok := err.(awserr.Error); ok {
 						if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
 							log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
 							return resource.RetryableError(awsErr)
 						}
 						if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
+							return resource.RetryableError(awsErr)
+						}
+						if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
 							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
 							return resource.RetryableError(awsErr)
 						}
@@ -472,12 +505,9 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("listener")
+		d.SetPartial("listeners_member")
 	}
 
-	// If we currently have instances, or did have instances,
-	// we want to figure out what to add and remove from the load
-	// balancer
 	if d.HasChange("instances_member") {
 		o, n := d.GetChange("instances_member")
 		os := o.(*schema.Set)
@@ -496,7 +526,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.RegisterInstancesWithLoadBalancer(&registerInstancesOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -519,7 +549,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.DeregisterInstancesFromLoadBalancer(&deRegisterInstancesOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -555,7 +585,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.ConfigureHealthCheck(&configureHealthCheckOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -583,7 +613,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			_, err = conn.API.ApplySecurityGroupsToLoadBalancer(&applySecurityGroupsOpts)
 
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				if strings.Contains(err.Error(), "Throttling:") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -619,7 +649,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.EnableAvailabilityZonesForLoadBalancer(enableOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -645,7 +675,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err = conn.API.DisableAvailabilityZonesForLoadBalancer(disableOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -683,7 +713,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				_, err := conn.API.DetachLoadBalancerFromSubnets(detachOpts)
 
 				if err != nil {
-					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					if strings.Contains(err.Error(), "Throttling:") {
 						return resource.RetryableError(err)
 					}
 					return resource.NonRetryableError(err)
@@ -727,6 +757,9 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		d.SetPartial("subnets_member")
 	}
 
+	d.SetPartial("listener_descriptions_member")
+	d.SetPartial("policies")
+
 	d.Partial(false)
 
 	return resourceOutscaleLoadBalancerRead(d, meta)
@@ -746,7 +779,7 @@ func resourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.API.DeleteLoadBalancer(&deleteElbOpts)
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -757,6 +790,8 @@ func resourceOutscaleLoadBalancerDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("Error deleting ELB: %s", err)
 	}
+
+	d.SetId("")
 
 	return nil
 }
@@ -780,7 +815,7 @@ func expandListeners(configured []interface{}) ([]*lbu.Listener, error) {
 			Protocol:         aws.String(data["protocol"].(string)),
 		}
 
-		if v, ok := data["ssl_certificate_id"]; ok {
+		if v, ok := data["ssl_certificate_id"]; ok && v != "" {
 			l.SSLCertificateId = aws.String(v.(string))
 		}
 
@@ -850,9 +885,9 @@ func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} 
 	for _, i := range list {
 		l := make(map[string]interface{})
 		listener := map[string]interface{}{
-			"instance_port":      aws.Int64Value(i.Listener.InstancePort),
+			"instance_port":      strconv.Itoa(int(aws.Int64Value(i.Listener.InstancePort))),
 			"instance_protocol":  strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
-			"load_balancer_port": aws.Int64Value(i.Listener.LoadBalancerPort),
+			"load_balancer_port": strconv.Itoa(int(aws.Int64Value(i.Listener.LoadBalancerPort))),
 			"protocol":           strings.ToLower(aws.StringValue(i.Listener.Protocol)),
 			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateId),
 		}

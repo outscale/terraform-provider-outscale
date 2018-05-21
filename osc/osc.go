@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -16,9 +15,11 @@ import (
 )
 
 const (
-	libraryVersion      = "1.0"
-	DefaultBaseURL      = "https://%s.%s.outscale.com"
-	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
+	libraryVersion = "1.0"
+	// DefaultBaseURL ...
+	DefaultBaseURL = "https://%s.%s.outscale.com"
+	opaqueBaseURL  = "/%s.%s.outscale.com/%s"
+	// UserAgent ...
 	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
@@ -30,10 +31,13 @@ const (
 type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
 
 // MarshalHander marshals the incoming body to a desired format
-type MarshalHander func(v interface{}, action, version string) (string, error)
+type MarshalHander func(v interface{}, action, version string, isLBU bool) (string, error)
 
 // UnmarshalHandler unmarshals the body request depending on different implementations
 type UnmarshalHandler func(v interface{}, req *http.Response) error
+
+// UnmarshalLBUXML ...
+type UnmarshalLBUXML func(v interface{}, req *http.Response, operation string) error
 
 // UnmarshalErrorHandler unmarshals the errors coming from an http respose
 type UnmarshalErrorHandler func(r *http.Response) error
@@ -47,6 +51,7 @@ type Client struct {
 	MarshalHander         MarshalHander
 	BuildRequestHandler   BuildRequestHandler
 	UnmarshalHandler      UnmarshalHandler
+	UnmarshalLBUXML       UnmarshalLBUXML
 	UnmarshalErrorHandler UnmarshalErrorHandler
 }
 
@@ -92,16 +97,16 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	var b interface{}
 	var err error
+
 	isLBU := (strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck"))
 
 	// method for FCU API
-	if (method == http.MethodPost && isLBU) || method != http.MethodPost {
-		b, err = c.MarshalHander(body, operation, "2017-12-15")
+	if method != http.MethodPost {
+		b, err = c.MarshalHander(body, operation, "2018-05-14", !isLBU)
 		if err != nil {
 			return nil, err
 		}
-		// method for LBU API
-	} else if method == http.MethodPost && !isLBU {
+	} else if method == http.MethodPost {
 		v := struct {
 			Action               string `json:"Action"`
 			Version              string `json:"Version"`
@@ -119,8 +124,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 		b = string(jm)
 	}
-
-	fmt.Println("B VALUE =>", b)
 
 	u := c.Config.BaseURL.ResolveReference(rel)
 
@@ -142,14 +145,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	requestDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("##################")
-	fmt.Println("REQUEST")
-	fmt.Println(string(requestDump))
-
 	return req, nil
 }
 
@@ -170,14 +165,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("##################")
-	fmt.Println("RESPONSE")
-	fmt.Println(string(requestDump))
-
 	err = c.checkResponse(resp)
 	if err != nil {
 		return err
@@ -194,7 +181,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	return c.UnmarshalHandler(v, resp)
+	return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
+
+	// return c.UnmarshalHandler(v, resp)
 }
 
 func (c Client) checkResponse(r *http.Response) error {

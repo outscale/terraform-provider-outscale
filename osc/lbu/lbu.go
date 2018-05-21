@@ -43,7 +43,7 @@ func NewLBUClient(config osc.Config) (*Client, error) {
 		Signer:                s,
 		MarshalHander:         handler.URLEncodeMarshalHander,
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
-		UnmarshalHandler:      handler.UnmarshalXML,
+		UnmarshalLBUXML:       handler.UnmarshalLBUXML,
 		UnmarshalErrorHandler: handler.UnmarshalLBUErrorHandler,
 	}
 

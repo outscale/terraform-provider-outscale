@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
@@ -18,6 +18,8 @@ import (
 func TestAccOutscaleLBU_basic(t *testing.T) {
 	var conf lbu.LoadBalancerDescription
 
+	r := acctest.RandIntRange(0, 10)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer.bar",
@@ -25,26 +27,22 @@ func TestAccOutscaleLBU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleLBUConfig,
+				Config: testAccOutscaleLBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "availability_zones_member.#", "2"),
+						"outscale_load_balancer.bar", "availability_zones_member.#", "1"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "availability_zones_member.0", "eu-west-2a"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "availability_zones_member.1", "eu-west-2b"),
-					// resource.TestCheckResourceAttr(
-					// 	"outscale_load_balancer.bar", "subnets.#", "3"),
-					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listeners_member.0.instance_port", "8000"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.instance_protocol", "http"),
+						"outscale_load_balancer.bar", "listeners_member.0.instance_protocol", "HTTP"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listeners_member.0.load_balancer_port", "80"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.protocol", "http"),
+						"outscale_load_balancer.bar", "listeners_member.0.protocol", "HTTP"),
 				)},
 		},
 	})
@@ -66,9 +64,8 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-					return resource.RetryableError(
-						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
@@ -82,14 +79,12 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 			}
 		}
 
-		// Verify the error
-		providerErr, ok := err.(awserr.Error)
-		if !ok {
-			return err
+		if strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound") {
+			return nil
 		}
 
-		if providerErr.Code() != "LoadBalancerNotFound" {
-			return fmt.Errorf("Unexpected error: %s", err)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -98,7 +93,7 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 
 func testAccCheckOutscaleLBUAttributes(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		zones := []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"}
+		zones := []string{"eu-west-2a"}
 		azs := make([]string, 0, len(conf.AvailabilityZones))
 		for _, x := range conf.AvailabilityZones {
 			azs = append(azs, *x)
@@ -118,7 +113,7 @@ func testAccCheckOutscaleLBUAttributes(conf *lbu.LoadBalancerDescription) resour
 
 func testAccCheckOutscaleLBUAttributesHealthCheck(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		zones := []string{"eu-west-2a", "eu-west-2b", "eu-west-2c"}
+		zones := []string{"eu-west-2a"}
 		azs := make([]string, 0, len(conf.AvailabilityZones))
 		for _, x := range conf.AvailabilityZones {
 			azs = append(azs, *x)
@@ -157,9 +152,8 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
-					return resource.RetryableError(
-						fmt.Errorf("[WARN] Error creating ELB Listener with SSL Cert, retrying: %s", err))
+				if strings.Contains(fmt.Sprint(err), "Throttling") {
+					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
@@ -177,8 +171,6 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 
 		*res = *describe.LoadBalancerDescriptions[0]
 
-		// Confirm source_security_group_id for ELBs in a VPC
-		// 	See https://github.com/hashicorp/terraform/pull/3780
 		if res.VPCId != nil {
 			sgid := rs.Primary.Attributes["source_security_group_id"]
 			if sgid == "" {
@@ -190,16 +182,16 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 	}
 }
 
-const testAccOutscaleLBUConfig = `
+func testAccOutscaleLBUConfig(r int) string {
+	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a", "eu-west-2b"]
-	load_balancer_name               = "foobar-terraform-elb"
+  availability_zones_member = ["eu-west-2a"]
+	load_balancer_name               = "foobar-terraform-elb-%d"
   listeners_member {
     instance_port = 8000
-    instance_protocol = "http"
+    instance_protocol = "HTTP"
     load_balancer_port = 80
-    // Protocol should be case insensitive
-    protocol = "http"
+    protocol = "HTTP"
   }
 
 	tag {
@@ -207,4 +199,5 @@ resource "outscale_load_balancer" "bar" {
 	}
 
 }
-`
+`, r)
+}

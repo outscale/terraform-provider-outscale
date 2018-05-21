@@ -165,6 +165,11 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"security_groups_member": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
 						"source_security_group": &schema.Schema{
 							Type:     schema.TypeMap,
 							Computed: true,
@@ -207,11 +212,11 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 	elbName, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
-		return fmt.Errorf("please provide the required attribute load_balancer_name")
+		return fmt.Errorf("load_balancer_name(s) must be provided")
 	}
 
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName.(string))},
+		LoadBalancerNames: expandStringList(elbName.([]interface{})),
 	}
 
 	var describeResp *lbu.DescribeLoadBalancersOutput
@@ -236,15 +241,13 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
+	if len(describeResp.LoadBalancerDescriptions) < 1 {
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
 
-	lb := describeResp.LoadBalancerDescriptions
+	lbs := make([]map[string]interface{}, len(describeResp.LoadBalancerDescriptions))
 
-	lbs := make([]map[string]interface{}, len(lb))
-
-	for k, v := range lb {
+	for k, v := range describeResp.LoadBalancerDescriptions {
 		l := make(map[string]interface{})
 
 		l["availability_zones_member"] = flattenStringList(v.AvailabilityZones)
@@ -259,6 +262,7 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
 
 		policies := make(map[string]interface{})
+		pl := make([]map[string]interface{}, 1)
 		if v.Policies != nil {
 			app := make([]map[string]interface{}, len(v.Policies.AppCookieStickinessPolicies))
 			for k, v := range v.Policies.AppCookieStickinessPolicies {
@@ -278,7 +282,8 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 			policies["other_policies_member"] = flattenStringList(v.Policies.OtherPolicies)
 		}
 
-		l["policies"] = policies
+		pl[0] = policies
+		l["policies"] = pl
 		l["scheme"] = aws.StringValue(v.Scheme)
 		l["security_groups_member"] = flattenStringList(v.SecurityGroups)
 		ssg := make(map[string]string)
@@ -293,9 +298,8 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		lbs[k] = l
 	}
 
-	d.Set("load_balancer_descriptions_member", lbs)
-	d.Set("request_id", describeResp.RequestID)
+	// d.Set("request_id", describeResp.RequestID)
 	d.SetId(resource.UniqueId())
 
-	return nil
+	return d.Set("load_balancer_descriptions_member", lbs)
 }

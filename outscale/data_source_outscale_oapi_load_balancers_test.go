@@ -37,14 +37,14 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 
 const testAccDSOutscaleOAPILBsUConfig = `
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a", "eu-west-2b"]
+  availability_zones_member = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
   listeners_member {
     instance_port = 8000
-    instance_protocol = "http"
+    instance_protocol = "HTTP"
     load_balancer_port = 80
     // Protocol should be case insensitive
-    protocol = "http"
+    protocol = "HTTP"
   }
 
 	tag {

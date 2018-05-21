@@ -35,19 +35,9 @@ func TestAccOutscaleDSLBU_basic(t *testing.T) {
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "availability_zones_member.#", "2"),
+						"data.outscale_load_balancer.test", "availability_zones_member.#", "1"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer.test", "availability_zones_member.0", "eu-west-2a"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "availability_zones_member.1", "eu-west-2b"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "listeners_member.0.instance_port", "8000"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "listeners_member.0.instance_protocol", "http"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "listeners_member.0.load_balancer_port", "80"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "listeners_member.0.protocol", "http"),
 				)},
 		},
 	})
@@ -55,14 +45,13 @@ func TestAccOutscaleDSLBU_basic(t *testing.T) {
 
 const testAccDSOutscaleLBUConfig = `
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a", "eu-west-2b"]
+  availability_zones_member = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
   listeners_member {
     instance_port = 8000
-    instance_protocol = "http"
+    instance_protocol = "HTTP"
     load_balancer_port = 80
-    // Protocol should be case insensitive
-    protocol = "http"
+    protocol = "HTTP"
   }
 
 	tag {

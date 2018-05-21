@@ -88,13 +88,7 @@ func dataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 		params.Filter = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if natGatewayIDOK {
-		ids := make([]*string, len(natGatewayID.([]interface{})))
-
-		for k, v := range natGatewayID.([]interface{}) {
-			ids[k] = aws.String(v.(string))
-		}
-
-		params.NatGatewayIds = ids
+		params.NatGatewayIds = expandStringList(natGatewayID.([]interface{}))
 	}
 
 	var err error

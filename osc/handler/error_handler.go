@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -14,19 +13,23 @@ var ErrMsg = map[string]string{
 	"HTTP":               "HTTP Error",
 }
 
+// Error ...
 type Error struct {
 	Code    string `xml:"Code"`
-	Message string `xml:Message`
+	Message string `xml:"Message"`
 }
+
+// XMLError ...
 type XMLError struct {
 	XMLName   xml.Name `xml:"Response"`
 	Errors    []Error  `xml:"Errors>Error"`
 	RequestID string   `xml:"RequestID"`
 }
 
+// XMLLBUError ...
 type XMLLBUError struct {
 	XMLName   xml.Name `xml:"ErrorResponse"`
-	Errors    []Error  `xml:"Errors>Error"`
+	Errors    Error    `xml:"Error"`
 	RequestID string   `xml:"RequestID"`
 }
 
@@ -53,11 +56,10 @@ func UnmarshalErrorHandler(r *http.Response) error {
 
 // SendError method which receives the message and the error
 func SendError(msg XMLError) error {
-
 	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
 }
 
-// UnmarshalErrorHandler for HTTP Response
+// UnmarshalLBUErrorHandler for HTTP Response
 func UnmarshalLBUErrorHandler(r *http.Response) error {
 	defer r.Body.Close()
 	v := XMLLBUError{}
@@ -72,11 +74,6 @@ func UnmarshalLBUErrorHandler(r *http.Response) error {
 		return fmt.Errorf("error unmarshalling response %v", err)
 	}
 
-	// Response body format is not consistent between metadata endpoints.
-	// Grab the error message as a string and include that as the source error
-
-	pretty, _ := json.MarshalIndent(v, "", "  ")
-
-	return fmt.Errorf("error code: %s", pretty)
+	return fmt.Errorf("%s: %s", v.Errors.Code, v.Errors.Message)
 
 }

@@ -94,7 +94,7 @@ func buildTestHandler(v interface{}, method, url string) (*http.Request, io.Read
 	return req, reader, nil
 }
 
-func testBuildRequestHandler(v interface{}, action, version string) (string, error) {
+func testBuildRequestHandler(v interface{}, action, version string, isLBU bool) (string, error) {
 	return "{}", nil
 }
 

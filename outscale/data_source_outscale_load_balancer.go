@@ -16,16 +16,31 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 		Read: dataSourceOutscaleLoadBalancerRead,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
 			"availability_zones_member": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"load_balancer_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"scheme": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"security_groups_member": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"subnets_member": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"tag": tagsSchema(),
+
 			"dns_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -111,6 +126,26 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
+			"source_security_group": &schema.Schema{
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"group_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"owner_alias": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"vpc_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"policies": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -152,35 +187,6 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"scheme": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"source_security_group": &schema.Schema{
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"group_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"owner_alias": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"subnets_member": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"vpc_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -191,15 +197,17 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 
 func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
-
-	elbName, ok := d.GetOk("load_balancer_name")
+	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
-		return fmt.Errorf("please provide the required attribute load_balancer_name")
+		return fmt.Errorf("please provide the name of the load balancer")
 	}
 
+	elbName := ename.(string)
+
+	// Retrieve the ELB properties for updating the state
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName.(string))},
+		LoadBalancerNames: []*string{aws.String(elbName)},
 	}
 
 	var describeResp *lbu.DescribeLoadBalancersOutput
@@ -208,7 +216,7 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -224,36 +232,14 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
+
+	if describeResp.LoadBalancerDescriptions == nil {
+		return fmt.Errorf("NO ELB FOUND")
+	}
+
 	if len(describeResp.LoadBalancerDescriptions) != 1 {
 		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
 	}
-
-	describeAttrsOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName.(string)),
-	}
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.DescribeLoadBalancerAttributes(describeAttrsOpts)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving ELB: %s", err)
-	}
-
-	// lbAttrs := describeAttrsResp.LoadBalancerAttributes
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
@@ -264,9 +250,21 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 	} else {
 		d.Set("health_check", make(map[string]interface{}))
 	}
-	d.Set("instances_member", flattenInstances(lb.Instances))
-	d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions))
-	d.Set("load_balancer_name", lb.LoadBalancerName)
+	if lb.Instances != nil {
+		d.Set("instances_member", flattenInstances(lb.Instances))
+	} else {
+		d.Set("instances_member", make([]map[string]interface{}, 0))
+	}
+	if lb.ListenerDescriptions != nil {
+		if err := d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+			return err
+		}
+	}
+	d.Set("load_balancer_name", aws.StringValue(lb.LoadBalancerName))
 
 	policies := make(map[string]interface{})
 	if lb.Policies != nil {
@@ -286,10 +284,20 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		}
 		policies["lb_cookie_stickiness_policies_member"] = lbc
 		policies["other_policies_member"] = flattenStringList(lb.Policies.OtherPolicies)
+	} else {
+		lbc := make([]map[string]interface{}, 0)
+		policies["lb_cookie_stickiness_policies_member"] = lbc
+		policies["other_policies_member"] = lbc
 	}
-	d.Set("policies", policies)
+	pl := make([]map[string]interface{}, 1)
+	pl[0] = policies
+	d.Set("policies", pl)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
-	d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+	if lb.SecurityGroups != nil {
+		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+	} else {
+		d.Set("security_groups_member", make([]map[string]interface{}, 0))
+	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
 		ssg["group_name"] = aws.StringValue(lb.SourceSecurityGroup.GroupName)
@@ -297,8 +305,8 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("source_security_group", ssg)
 	d.Set("subnets_member", flattenStringList(lb.Subnets))
-	d.Set("vpc_id", lb.VPCId)
-	d.Set("request_id", describeResp.RequestID)
+	d.Set("vpc_id", aws.StringValue(lb.VPCId))
+	// d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil
