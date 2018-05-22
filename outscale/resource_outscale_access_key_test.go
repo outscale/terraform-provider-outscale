@@ -22,9 +22,9 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleAccessKeyConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleAccessKeyExists("outscale_api_key.a_key", &conf),
+					testAccCheckOutscaleAccessKeyExists("outscale_api_key.outscale_api_key", &conf),
 					testAccCheckOutscaleAccessKeyAttributes(&conf),
-					resource.TestCheckResourceAttrSet("outscale_api_key.a_key", "secret_access_key"),
+					resource.TestCheckResourceAttrSet("outscale_api_key.outscale_api_key", "secret_access_key"),
 				),
 			},
 		},
@@ -32,7 +32,7 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 }
 
 func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
-	client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
+	conn := testAccProvider.Meta().(*OutscaleClient).ICU
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_api_key" {
@@ -40,10 +40,9 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-		var resp *icu.ListAccessKeysOutput
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = client_icu.API.ListAccessKeys(&icu.ListAccessKeysInput{})
+			_, err = conn.API.ListAccessKeys(&icu.ListAccessKeysInput{})
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
@@ -75,9 +74,9 @@ func testAccCheckOutscaleAccessKeyExists(n string, res *icu.AccessKeyMetadata) r
 			return fmt.Errorf("No Role name is set")
 		}
 
-		client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
+		conn := testAccProvider.Meta().(*OutscaleClient).ICU
 
-		resp, err := client_icu.API.ListAccessKeys(nil)
+		resp, err := conn.API.ListAccessKeys(nil)
 		if err != nil {
 			return err
 		}
@@ -99,5 +98,9 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 }
 
 const testAccOutscaleAccessKeyConfig = `
-resource "outscale_api_key" "a_key" {}
+resource "outscale_api_key" "outscale_api_key" {
+  tag = {
+    Name = "test"
+  }
+}
 `

@@ -69,7 +69,7 @@ func TestAccOutscaleVpnGateway_delete(t *testing.T) {
 		return func(s *terraform.State) error {
 			_, ok := s.RootModule().Resources[r]
 			if ok {
-				return fmt.Errorf("VPN Gateway %q should have been deleted.", r)
+				return fmt.Errorf("VPN Gateway %q should have been deleted", r)
 			}
 			return nil
 		}

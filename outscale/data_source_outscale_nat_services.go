@@ -88,13 +88,7 @@ func dataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 		params.Filter = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if natGatewayIDOK {
-		ids := make([]*string, len(natGatewayID.([]interface{})))
-
-		for k, v := range natGatewayID.([]interface{}) {
-			ids[k] = aws.String(v.(string))
-		}
-
-		params.NatGatewayIds = ids
+		params.NatGatewayIds = expandStringList(natGatewayID.([]interface{}))
 	}
 
 	var err error
@@ -117,7 +111,7 @@ func dataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 	}
 
 	if len(res.NatGateways) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	d.Set("request_id", res.RequestId)
@@ -135,34 +129,20 @@ func ngsDescriptionAttributes(d *schema.ResourceData, ngs []*fcu.NatGateway) err
 	for k, v := range ngs {
 		addng := make(map[string]interface{})
 
+		ngas := make([]interface{}, len(v.NatGatewayAddresses))
 		if v.NatGatewayAddresses != nil {
-			ngas := make([]interface{}, len(v.NatGatewayAddresses))
-
 			for i, w := range v.NatGatewayAddresses {
 				nga := make(map[string]interface{})
-				if w.AllocationId != nil {
-					nga["allocation_id"] = *w.AllocationId
-				}
-				if w.PublicIp != nil {
-					nga["public_ip"] = *w.PublicIp
-				}
+				nga["allocation_id"] = aws.StringValue(w.AllocationId)
+				nga["public_ip"] = aws.StringValue(w.PublicIp)
 				ngas[i] = nga
 			}
-			addng["nat_gateway_address"] = ngas
 		}
-
-		if v.NatGatewayId != nil {
-			addng["nat_gateway_id"] = *v.NatGatewayId
-		}
-		if v.State != nil {
-			addng["state"] = *v.State
-		}
-		if v.SubnetId != nil {
-			addng["subnet_id"] = *v.SubnetId
-		}
-		if v.VpcId != nil {
-			addng["vpc_id"] = *v.VpcId
-		}
+		addng["nat_gateway_address"] = ngas
+		addng["nat_gateway_id"] = aws.StringValue(v.NatGatewayId)
+		addng["state"] = aws.StringValue(v.State)
+		addng["subnet_id"] = aws.StringValue(v.SubnetId)
+		addng["vpc_id"] = aws.StringValue(v.VpcId)
 
 		addngs[k] = addng
 	}

@@ -137,11 +137,11 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 	return resourceOutscaleCustomerGatewayRead(d, meta)
 }
 
-func customerGatewayRefreshFunc(conn *fcu.Client, gatewayId string) resource.StateRefreshFunc {
+func customerGatewayRefreshFunc(conn *fcu.Client, gatewayID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		gatewayFilter := &fcu.Filter{
 			Name:   aws.String("customer-gateway-id"),
-			Values: []*string{aws.String(gatewayId)},
+			Values: []*string{aws.String(gatewayID)},
 		}
 
 		var resp *fcu.DescribeCustomerGatewaysOutput
@@ -251,10 +251,9 @@ func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{
 		if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("[ERROR] Error finding CustomerGateway: %s", err)
-			return err
 		}
+		fmt.Printf("[ERROR] Error finding CustomerGateway: %s", err)
+		return err
 	}
 
 	if len(resp.CustomerGateways) != 1 {
@@ -310,10 +309,9 @@ func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interfac
 		if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("[ERROR] Error deleting CustomerGateway: %s", err)
-			return err
 		}
+		fmt.Printf("[ERROR] Error deleting CustomerGateway: %s", err)
+		return err
 	}
 
 	gatewayFilter := &fcu.Filter{

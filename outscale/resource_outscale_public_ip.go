@@ -201,29 +201,29 @@ func resourceOutscalePublicIPUpdate(d *schema.ResourceData, meta interface{}) er
 	domain := resourceOutscalePublicIPDomain(d)
 
 	// Associate to instance or interface if specified
-	v_instance, ok_instance := d.GetOk("instance_id")
-	v_interface, ok_interface := d.GetOk("network_interface_id")
+	vInstance, okInstance := d.GetOk("instance_id")
+	vInterface, okInterface := d.GetOk("network_interface_id")
 
-	if ok_instance || ok_interface {
-		instanceId := v_instance.(string)
-		networkInterfaceId := v_interface.(string)
+	if okInstance || okInterface {
+		instanceID := vInstance.(string)
+		networkInterfaceID := vInterface.(string)
 
 		assocOpts := &fcu.AssociateAddressInput{
-			InstanceId: aws.String(instanceId),
+			InstanceId: aws.String(instanceID),
 			PublicIp:   aws.String(d.Id()),
 		}
 
 		// more unique ID conditionals
 		if domain == "vpc" {
-			var privateIpAddress *string
+			var privateIPAddress *string
 			if v := d.Get("associate_with_private_ip").(string); v != "" {
-				privateIpAddress = aws.String(v)
+				privateIPAddress = aws.String(v)
 			}
 			assocOpts = &fcu.AssociateAddressInput{
-				NetworkInterfaceId: aws.String(networkInterfaceId),
-				InstanceId:         aws.String(instanceId),
+				NetworkInterfaceId: aws.String(networkInterfaceID),
+				InstanceId:         aws.String(instanceID),
 				AllocationId:       aws.String(d.Id()),
-				PrivateIpAddress:   privateIpAddress,
+				PrivateIpAddress:   privateIPAddress,
 			}
 		}
 
@@ -265,11 +265,11 @@ func resourceOutscalePublicIPDelete(d *schema.ResourceData, meta interface{}) er
 		return nil
 	}
 
-	v_instance, ok_instance := d.GetOk("instance")
-	v_association_id, ok_association_id := d.GetOk("association_id")
+	vInstance, okInstance := d.GetOk("instance")
+	vAssociationID, okAssociationID := d.GetOk("association_id")
 
 	// If we are attached to an instance or interface, detach first.
-	if (ok_instance && v_instance.(string) != "") || (ok_association_id && v_association_id.(string) != "") {
+	if (okInstance && vInstance.(string) != "") || (okAssociationID && vAssociationID.(string) != "") {
 		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscalePublicIPDomain(d) {

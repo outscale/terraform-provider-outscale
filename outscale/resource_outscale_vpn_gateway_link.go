@@ -49,14 +49,14 @@ func resourceOutscaleVpnGatewayLink() *schema.Resource {
 func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vgwId := d.Get("vpn_gateway_id").(string)
+	vgwID := d.Get("vpn_gateway_id").(string)
 
 	var resp *fcu.DescribeVpnGatewaysOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeVpnGateways(&fcu.DescribeVpnGatewaysInput{
-			VpnGatewayIds: []*string{aws.String(vgwId)},
+			VpnGatewayIds: []*string{aws.String(vgwID)},
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -70,7 +70,7 @@ func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		awsErr, ok := err.(awserr.Error)
 		if ok && awsErr.Code() == "InvalidVPNGatewayID.NotFound" {
-			log.Printf("[WARN] VPN Gateway %q not found.", vgwId)
+			log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
 			d.SetId("")
 			return nil
 		}
@@ -79,7 +79,7 @@ func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}
 
 	vgw := resp.VpnGateways[0]
 	if *vgw.State == "deleted" {
-		log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwId)
+		log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
 		d.SetId("")
 		return nil
 	}
@@ -100,12 +100,12 @@ func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}
 func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vpcId := d.Get("vpc_id").(string)
-	vgwId := d.Get("vpn_gateway_id").(string)
+	vpcID := d.Get("vpc_id").(string)
+	vgwID := d.Get("vpn_gateway_id").(string)
 
 	createOpts := &fcu.AttachVpnGatewayInput{
-		VpcId:        aws.String(vpcId),
-		VpnGatewayId: aws.String(vgwId),
+		VpcId:        aws.String(vpcID),
+		VpnGatewayId: aws.String(vgwID),
 	}
 	log.Printf("[DEBUG] VPN Gateway attachment options: %#v", *createOpts)
 
@@ -125,15 +125,15 @@ func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface
 
 	if err != nil {
 		return fmt.Errorf("Error attaching VPN Gateway %q to VPC %q: %s",
-			vgwId, vpcId, err)
+			vgwID, vpcID, err)
 	}
 
-	d.SetId(vpnGatewayAttachmentId(vpcId, vgwId))
+	d.SetId(vpnGatewayAttachmentID(vpcID, vgwID))
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"detached", "attaching"},
 		Target:     []string{"attached"},
-		Refresh:    vpnGatewayAttachmentStateRefresh(conn, vpcId, vgwId),
+		Refresh:    vpnGatewayAttachmentStateRefresh(conn, vpcID, vgwID),
 		Timeout:    15 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 5 * time.Second,
@@ -142,9 +142,9 @@ func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("Error waiting for VPN Gateway %q to attach to VPC %q: %s",
-			vgwId, vpcId, err)
+			vgwID, vpcID, err)
 	}
-	log.Printf("[DEBUG] VPN Gateway %q attached to VPC %q.", vgwId, vpcId)
+	log.Printf("[DEBUG] VPN Gateway %q attached to VPC %q.", vgwID, vpcID)
 
 	return resourceOutscaleVpnGatewayLinkRead(d, meta)
 }
@@ -220,7 +220,7 @@ func resourceOutscaleVpnGatewayLinkDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcId, vgwId string) resource.StateRefreshFunc {
+func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcID, vgwID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var err error
@@ -230,10 +230,10 @@ func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcId, vgwId string) res
 				Filters: []*fcu.Filter{
 					&fcu.Filter{
 						Name:   aws.String("attachment.vpc-id"),
-						Values: []*string{aws.String(vpcId)},
+						Values: []*string{aws.String(vpcID)},
 					},
 				},
-				VpnGatewayIds: []*string{aws.String(vgwId)},
+				VpnGatewayIds: []*string{aws.String(vgwID)},
 			})
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
@@ -266,11 +266,11 @@ func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcId, vgwId string) res
 
 		vga := vpnGatewayGetAttachment(vgw)
 
-		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwId, *vga.State)
+		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
 		return vgw, *vga.State, nil
 	}
 }
 
-func vpnGatewayAttachmentId(vpcId, vgwId string) string {
-	return fmt.Sprintf("vpn-attachment-%x", hashcode.String(fmt.Sprintf("%s-%s", vpcId, vgwId)))
+func vpnGatewayAttachmentID(vpcID, vgwID string) string {
+	return fmt.Sprintf("vpn-attachment-%x", hashcode.String(fmt.Sprintf("%s-%s", vpcID, vgwID)))
 }

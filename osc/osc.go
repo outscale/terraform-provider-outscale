@@ -15,9 +15,11 @@ import (
 )
 
 const (
-	libraryVersion      = "1.0"
-	DefaultBaseURL      = "https://%s.%s.outscale.com"
-	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
+	libraryVersion = "1.0"
+	// DefaultBaseURL ...
+	DefaultBaseURL = "https://%s.%s.outscale.com"
+	opaqueBaseURL  = "/%s.%s.outscale.com/%s"
+	// UserAgent ...
 	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
@@ -29,10 +31,13 @@ const (
 type BuildRequestHandler func(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error)
 
 // MarshalHander marshals the incoming body to a desired format
-type MarshalHander func(v interface{}, action, version string) (string, error)
+type MarshalHander func(v interface{}, action, version string, isLBU bool) (string, error)
 
 // UnmarshalHandler unmarshals the body request depending on different implementations
 type UnmarshalHandler func(v interface{}, req *http.Response) error
+
+// UnmarshalLBUXML ...
+type UnmarshalLBUXML func(v interface{}, req *http.Response, operation string) error
 
 // UnmarshalErrorHandler unmarshals the errors coming from an http respose
 type UnmarshalErrorHandler func(r *http.Response) error
@@ -46,6 +51,7 @@ type Client struct {
 	MarshalHander         MarshalHander
 	BuildRequestHandler   BuildRequestHandler
 	UnmarshalHandler      UnmarshalHandler
+	UnmarshalLBUXML       UnmarshalLBUXML
 	UnmarshalErrorHandler UnmarshalErrorHandler
 }
 
@@ -91,12 +97,16 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	var b interface{}
 	var err error
+
+	isLBU := (strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck"))
+
+	// method for FCU API
 	if method != http.MethodPost {
-		b, err = c.MarshalHander(body, operation, "2017-12-15")
+		b, err = c.MarshalHander(body, operation, "2018-05-14", !isLBU)
 		if err != nil {
 			return nil, err
 		}
-	} else {
+	} else if method == http.MethodPost {
 		v := struct {
 			Action               string `json:"Action"`
 			Version              string `json:"Version"`
@@ -124,17 +134,15 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	fmt.Println(rel.Opaque)
 
-	if strings.Contains(operation, "AccessKey") {
+	if strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck") {
+		c.SetHeaders(req, "lbu_20180514", operation)
+	} else if strings.Contains(operation, "AccessKey") {
 		c.SetHeaders(req, "TinaIcuService", operation)
-		_, err := c.Sign(req, reader, time.Now(), c.Config.Target)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
-		if err != nil {
-			return nil, err
-		}
+	}
+
+	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -144,6 +152,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 func (c Client) SetHeaders(req *http.Request, target, operation string) {
 	req.Header.Add("User-Agent", c.Config.UserAgent)
 	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", target, operation))
+	req.Header.Add("Content-Type", mediaTypeURLEncoded)
 }
 
 // Do sends the request to the API's
@@ -152,6 +161,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
+	if err != nil {
+		return err
+	}
 
 	err = c.checkResponse(resp)
 	if err != nil {
@@ -169,7 +181,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	return c.UnmarshalHandler(v, resp)
+	return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
+
+	// return c.UnmarshalHandler(v, resp)
 }
 
 func (c Client) checkResponse(r *http.Response) error {

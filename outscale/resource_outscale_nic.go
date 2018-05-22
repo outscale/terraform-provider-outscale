@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"math"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -299,7 +297,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	conn := meta.(*OutscaleClient).FCU
-	describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+	dnir := &fcu.DescribeNetworkInterfacesInput{
 		NetworkInterfaceIds: []*string{aws.String(d.Id())},
 	}
 
@@ -307,7 +305,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -359,6 +357,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
 		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
 		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		bb["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		bb["status"] = aws.StringValue(eni.Attachment.Status)
 	}
@@ -367,7 +366,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("availability_zone", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("availability_zone", aws.StringValue(eni.AvailabilityZone))
 
 	x := make([]map[string]interface{}, len(eni.Groups))
 	for k, v := range eni.Groups {
@@ -419,7 +418,7 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("status", aws.StringValue(eni.Status))
 	// Tags
 	d.Set("tags", tagsToMap(eni.TagSet))
-	d.Set("vpc_id", eni.VpcId)
+	d.Set("vpc_id", aws.StringValue(eni.VpcId))
 
 	return nil
 }
@@ -431,18 +430,16 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	detach_err := resourceOutscaleNicDetach(d.Get("attachment").([]interface{}), meta, d.Id())
-	if detach_err != nil {
-		return detach_err
+	err := resourceOutscaleNicDetach(d.Get("attachment").([]interface{}), meta, d.Id())
+	if err != nil {
+		return err
 	}
 
 	deleteEniOpts := fcu.DeleteNetworkInterfaceInput{
 		NetworkInterfaceId: aws.String(d.Id()),
 	}
 
-	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
 		_, err = conn.VM.DeleteNetworkInterface(&deleteEniOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -461,12 +458,12 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string) error {
+func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniID string) error {
 	// if there was an old attachment, remove it
 	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		old_attachment := oa[0].(map[string]interface{})
-		detach_request := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(old_attachment["attachment_id"].(string)),
+		oa := oa[0].(map[string]interface{})
+		dr := &fcu.DetachNetworkInterfaceInput{
+			AttachmentId: aws.String(oa["attachment_id"].(string)),
 			Force:        aws.Bool(true),
 		}
 		conn := meta.(*OutscaleClient).FCU
@@ -474,7 +471,7 @@ func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string)
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DetachNetworkInterface(detach_request)
+			_, err = conn.VM.DetachNetworkInterface(dr)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -490,16 +487,16 @@ func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniId string)
 			}
 		}
 
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniId)
+		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniID)
 		stateConf := &resource.StateChangeConf{
 			Pending: []string{"true"},
 			Target:  []string{"false"},
-			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniId),
+			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniID),
 			Timeout: 10 * time.Minute,
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
 			return fmt.Errorf(
-				"Error waiting for ENI (%s) to become dettached: %s", eniId, err)
+				"Error waiting for ENI (%s) to become dettached: %s", eniID, err)
 		}
 	}
 
@@ -515,24 +512,24 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("attachment") {
 		oa, na := d.GetChange("attachment")
 
-		detach_err := resourceOutscaleNicDetach(oa.([]interface{}), meta, d.Id())
-		if detach_err != nil {
-			return detach_err
+		err := resourceOutscaleNicDetach(oa.([]interface{}), meta, d.Id())
+		if err != nil {
+			return err
 		}
 
 		// if there is a new attachment, attach it
 		if na != nil && len(na.([]interface{})) > 0 {
-			new_attachment := na.([]interface{})[0].(map[string]interface{})
-			di := new_attachment["device_index"].(int)
-			attach_request := &fcu.AttachNetworkInterfaceInput{
+			na := na.([]interface{})[0].(map[string]interface{})
+			di := na["device_index"].(int)
+			ar := &fcu.AttachNetworkInterfaceInput{
 				DeviceIndex:        aws.Int64(int64(di)),
-				InstanceId:         aws.String(new_attachment["instance"].(string)),
+				InstanceId:         aws.String(na["instance"].(string)),
 				NetworkInterfaceId: aws.String(d.Id()),
 			}
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, err = conn.VM.AttachNetworkInterface(attach_request)
+				_, err = conn.VM.AttachNetworkInterface(ar)
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -640,17 +637,17 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("private_ips_count") {
 		o, n := d.GetChange("private_ips_count")
-		private_ips := d.Get("private_ips").(*schema.Set).List()
-		private_ips_filtered := private_ips[:0]
-		primary_ip := d.Get("private_ip")
+		pips := d.Get("private_ips").(*schema.Set).List()
+		prips := pips[:0]
+		pip := d.Get("private_ip")
 
-		for _, ip := range private_ips {
-			if ip != primary_ip {
-				private_ips_filtered = append(private_ips_filtered, ip)
+		for _, ip := range pips {
+			if ip != pip {
+				prips = append(prips, ip)
 			}
 		}
 
-		if o != nil && o != 0 && n != nil && n != len(private_ips_filtered) {
+		if o != nil && o != 0 && n != nil && n != len(prips) {
 
 			diff := n.(int) - o.(int)
 
@@ -681,7 +678,7 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			if diff < 0 {
 				input := &fcu.UnassignPrivateIpAddressesInput{
 					NetworkInterfaceId: aws.String(d.Id()),
-					PrivateIpAddresses: expandStringList(private_ips_filtered[0:int(math.Abs(float64(diff)))]),
+					PrivateIpAddresses: expandStringList(prips[0:int(math.Abs(float64(diff)))]),
 				}
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -758,27 +755,18 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if err := setTags(conn, d); err != nil {
 		return err
-	} else {
-		d.SetPartial("tags")
 	}
+	d.SetPartial("tag_set")
 
 	d.Partial(false)
 
 	return resourceOutscaleNicRead(d, meta)
 }
 
-func resourceOutscaleEniAttachmentHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["instance"].(string)))
-	buf.WriteString(fmt.Sprintf("%d-", m["device_index"].(int)))
-	return hashcode.String(buf.String())
-}
-
 func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		describe_network_interfaces_request := &fcu.DescribeNetworkInterfacesInput{
+		dnir := &fcu.DescribeNetworkInterfacesInput{
 			NetworkInterfaceIds: []*string{aws.String(id)},
 		}
 
@@ -786,7 +774,7 @@ func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(describe_network_interfaces_request)
+			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

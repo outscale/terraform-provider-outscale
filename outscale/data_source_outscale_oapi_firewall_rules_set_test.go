@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroups_vpc(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISecurityGroupConfig_vpc(rInt),
+				Config: testAccDataSourceOutscaleOAPISecurityGroupConfigVPC(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_firewall_rules_set.by_id", "firewall_rules_sets.#", "3"),
@@ -39,7 +39,7 @@ func TestAccDataSourceOutscaleOAPISecurityGroups_vpc(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPISecurityGroupConfig_vpc(rInt int) string {
+func testAccDataSourceOutscaleOAPISecurityGroupConfigVPC(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_firewall_rules_set" "test" {
 		lin_id = "vpc-e9d09d63"

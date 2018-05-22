@@ -59,14 +59,14 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"ip_permissions": getIpPermissionsSchema(),
+			"ip_permissions": getIPPermissionsSchema(),
 		},
 	}
 }
 
 var awsMutexKV = mutexkv.NewMutexKV()
 
-func getIpPermissionsSchema() *schema.Schema {
+func getIPPermissionsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
@@ -116,12 +116,12 @@ func getIpPermissionsSchema() *schema.Schema {
 
 func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	sg_id := d.Get("group_id").(string)
+	sgID := d.Get("group_id").(string)
 
-	awsMutexKV.Lock(sg_id)
-	defer awsMutexKV.Unlock(sg_id)
+	awsMutexKV.Lock(sgID)
+	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sg, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
 
 	var autherr error
-	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sg_id, "Egress", perms)
+	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", perms)
 
 	req := &fcu.AuthorizeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
@@ -168,7 +168,7 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 a side effect of a now-fixed Terraform issue causing two security groups with
 identical attributes but different source_security_group_ids to overwrite each
 other in the state. See https://github.com/hashicorp/terraform/pull/2376 for more
-information and instructions for recovery. Error message: %s`, sg_id, "InvalidPermission.Duplicate")
+information and instructions for recovery. Error message: %s`, sgID, "InvalidPermission.Duplicate")
 		}
 
 		return fmt.Errorf(
@@ -176,14 +176,14 @@ information and instructions for recovery. Error message: %s`, sg_id, "InvalidPe
 			ruleType, autherr)
 	}
 
-	id := ipPermissionIDHash(sg_id, ruleType, perms)
+	id := ipPermissionIDHash(sgID, ruleType, perms)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, err := findResourceSecurityGroup(conn, sg_id)
+		sg, err := findResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sg_id, id, err)
+			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
 			return resource.NonRetryableError(err)
 		}
 
@@ -201,7 +201,7 @@ information and instructions for recovery. Error message: %s`, sg_id, "InvalidPe
 
 	if retErr != nil {
 		return fmt.Errorf("Error finding matching %s Security Group Rule (%s) for Group %s",
-			ruleType, id, sg_id)
+			ruleType, id, sgID)
 	}
 
 	d.SetId(id)
@@ -210,15 +210,15 @@ information and instructions for recovery. Error message: %s`, sg_id, "InvalidPe
 
 func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	sg_id := d.Get("group_id").(string)
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sgID := d.Get("group_id").(string)
+	sg, err := findResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sg_id, d.Id(), err)
+		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
@@ -244,7 +244,7 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 
 	if rule == nil {
 		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-			ruleType, d.Id(), sg_id)
+			ruleType, d.Id(), sgID)
 		d.SetId("")
 		return nil
 	}
@@ -257,12 +257,12 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 
 func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	sg_id := d.Get("group_id").(string)
+	sgID := d.Get("group_id").(string)
 
-	awsMutexKV.Lock(sg_id)
-	defer awsMutexKV.Unlock(sg_id)
+	awsMutexKV.Lock(sgID)
+	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sg_id)
+	sg, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 		return err
 	}
 	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
-		sg_id, "egress", perms)
+		sgID, "egress", perms)
 	req := &fcu.RevokeSecurityGroupEgressInput{
 		GroupId:       sg.GroupId,
 		IpPermissions: perms,
@@ -294,7 +294,7 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf(
 			"Error revoking security group %s rules: %s",
-			sg_id, err)
+			sgID, err)
 	}
 
 	d.SetId("")
@@ -376,19 +376,19 @@ func expandIPPerm(d *schema.ResourceData, sg *fcu.SecurityGroup, perms []*fcu.Ip
 			perm.UserIdGroupPairs = make([]*fcu.UserIdGroupPair, len(groups))
 			// build string list of group name/ids
 			var gl []string
-			for k, _ := range groups {
+			for k := range groups {
 				gl = append(gl, k)
 			}
 
 			for i, name := range gl {
-				ownerId, id := "", name
+				ownerID, id := "", name
 				if items := strings.Split(id, "/"); len(items) > 1 {
-					ownerId, id = items[0], items[1]
+					ownerID, id = items[0], items[1]
 				}
 
 				perm.UserIdGroupPairs[i] = &fcu.UserIdGroupPair{
 					GroupId: aws.String(id),
-					UserId:  aws.String(ownerId),
+					UserId:  aws.String(ownerID),
 				}
 
 				if sg.VpcId == nil || *sg.VpcId == "" {
@@ -450,9 +450,9 @@ func validateAwsSecurityGroupRule(ippems []interface{}) error {
 	return nil
 }
 
-func ipPermissionIDHash(sg_id, ruleType string, ips []*fcu.IpPermission) string {
+func ipPermissionIDHash(sgID, ruleType string, ips []*fcu.IpPermission) string {
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s-", sg_id))
+	buf.WriteString(fmt.Sprintf("%s-", sgID))
 
 	for _, ip := range ips {
 		if ip.FromPort != nil && *ip.FromPort > 0 {
@@ -590,6 +590,7 @@ func (err securityGroupNotFound) Error() string {
 		err.id, err.securityGroups)
 }
 
+// ByGroupPair ...
 type ByGroupPair []*fcu.UserIdGroupPair
 
 func (b ByGroupPair) Len() int      { return len(b) }

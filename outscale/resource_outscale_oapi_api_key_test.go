@@ -31,7 +31,7 @@ func TestAccOutscaleOAPIAccessKey_basic(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPIAccessKeyDestroy(s *terraform.State) error {
-	client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
+	conn := testAccProvider.Meta().(*OutscaleClient).ICU
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_oapi_api_key" {
@@ -39,13 +39,13 @@ func testAccCheckOutscaleOAPIAccessKeyDestroy(s *terraform.State) error {
 		}
 
 		// Try to get access key
-		resp, err := client_icu.API.ListAccessKeys(nil)
+		resp, err := conn.API.ListAccessKeys(nil)
 		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
 			return nil
 		}
 		if err == nil {
 			if len(resp.AccessKeyMetadata) > 0 {
-				return fmt.Errorf("still exist.")
+				return fmt.Errorf("still exist")
 			}
 			return nil
 		}
@@ -66,9 +66,9 @@ func testAccCheckOutscaleOAPIAccessKeyExists(n string, res *icu.AccessKeyMetadat
 			return fmt.Errorf("No Role name is set")
 		}
 
-		client_icu := testAccProvider.Meta().(*OutscaleClient).ICU
+		conn := testAccProvider.Meta().(*OutscaleClient).ICU
 
-		resp, err := client_icu.API.ListAccessKeys(nil)
+		resp, err := conn.API.ListAccessKeys(nil)
 		if err != nil {
 			return err
 		}

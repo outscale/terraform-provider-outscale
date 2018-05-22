@@ -89,10 +89,9 @@ func dataSourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interfac
 		if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			fmt.Printf("[ERROR] Error finding CustomerGateway: %s", err)
-			return err
 		}
+		fmt.Printf("[ERROR] Error finding CustomerGateway: %s", err)
+		return err
 	}
 
 	if len(resp.CustomerGateways) == 0 {

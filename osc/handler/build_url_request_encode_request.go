@@ -29,6 +29,7 @@ func BuildURLEncodedRequest(body interface{}, method, url string) (*http.Request
 		}
 
 		req.URL.RawQuery = body.(string)
+
 		return req, nil, nil
 
 	}

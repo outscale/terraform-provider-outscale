@@ -28,7 +28,7 @@ func TestAccDataSourceOutscaleSecurityGroups_vpc(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleSecurityGroupConfig_vpc(rInt),
+				Config: testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleSecurityGroupsCheck("data.outscale_firewall_rules_sets.by_filter"),
 				),
@@ -53,7 +53,7 @@ func testAccDataSourceOutscaleSecurityGroupsCheck(name string) resource.TestChec
 	}
 }
 
-func testAccDataSourceOutscaleSecurityGroupConfig_vpc(rInt int) string {
+func testAccDataSourceOutscaleSecurityGroupConfigVPC(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_outbound_rule" "outscale_outbound_rule1" {
 	ip_permissions = {

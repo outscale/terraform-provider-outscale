@@ -138,7 +138,7 @@ func dataSourceOutscaleRouteTables() *schema.Resource {
 func dataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	req := &fcu.DescribeRouteTablesInput{}
-	rtbId, rtbOk := d.GetOk("route_table_id")
+	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
 	if !filterOk && !rtbOk {
@@ -147,7 +147,7 @@ func dataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 
 	if rtbOk {
 		var ids []*string
-		for _, v := range rtbId.([]interface{}) {
+		for _, v := range rtbID.([]interface{}) {
 			ids = append(ids, aws.String(v.(string)))
 		}
 
@@ -175,36 +175,36 @@ func dataSourceOutscaleRouteTablesRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	if resp == nil || len(resp.RouteTables) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	route_table_set := make([]map[string]interface{}, len(resp.RouteTables))
+	rts := make([]map[string]interface{}, len(resp.RouteTables))
 
 	for k, v := range resp.RouteTables {
-		route_table := make(map[string]interface{})
+		rt := make(map[string]interface{})
 
 		propagatingVGWs := make([]string, 0, len(v.PropagatingVgws))
 		for _, vgw := range v.PropagatingVgws {
 			propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
 		}
-		route_table["propagating_vgw_set"] = propagatingVGWs
+		rt["propagating_vgw_set"] = propagatingVGWs
 
-		route_table["route_table_id"] = *v.RouteTableId
+		rt["route_table_id"] = *v.RouteTableId
 
-		route_table["vpc_id"] = *v.VpcId
+		rt["vpc_id"] = *v.VpcId
 
-		route_table["tag_set"] = tagsToMap(v.Tags)
+		rt["tag_set"] = tagsToMap(v.Tags)
 
-		route_table["route_set"] = setRouteSet(v.Routes)
+		rt["route_set"] = setRouteSet(v.Routes)
 
-		route_table["association_set"] = setAssociactionSet(v.Associations)
+		rt["association_set"] = setAssociactionSet(v.Associations)
 
-		route_table_set[k] = route_table
+		rts[k] = rt
 	}
 
 	d.Set("request_id", resp.RequestId)
 
 	d.SetId(resource.UniqueId())
 
-	return d.Set("route_table_set", route_table_set)
+	return d.Set("route_table_set", rts)
 }

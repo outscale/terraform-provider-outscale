@@ -13,6 +13,7 @@ func Provider() terraform.ResourceProvider {
 
 	fcu := "fcu"
 	icu := "icu"
+	lbu := "lbu"
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -94,6 +95,9 @@ func Provider() terraform.ResourceProvider {
 			"outscale_image_launch_permission":       GetResource(fcu, "outscale_image_launch_permission")(),
 			"outscale_lin_peering":                   GetResource(fcu, "outscale_lin_peering")(),
 			"outscale_lin_peering_acceptation":       GetResource(fcu, "outscale_lin_peering_acceptation")(),
+			"outscale_load_balancer":                 GetResource(lbu, "outscale_load_balancer")(),
+			"outscale_nic_link":                      GetResource(fcu, "outscale_nic_link")(),
+			"outscale_nic_private_ip":                GetResource(fcu, "outscale_nic_private_ip")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
@@ -148,6 +152,10 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshots":             GetDatasource(fcu, "outscale_snapshots")(),
 			"outscale_lin_peering":           GetDatasource(fcu, "outscale_lin_peering")(),
 			"outscale_lin_peerings":          GetDatasource(fcu, "outscale_lin_peerings")(),
+			"outscale_load_balancer":         GetDatasource(lbu, "outscale_load_balancer")(),
+			"outscale_load_balancers":        GetDatasource(lbu, "outscale_load_balancers")(),
+			"outscale_nics":                  GetDatasource(fcu, "outscale_nics")(),
+			"outscale_nic":                   GetDatasource(fcu, "outscale_nic")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

@@ -154,7 +154,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
-	account_ids, ownersOk := d.GetOk("account_ids")
+	aids, ownersOk := d.GetOk("account_ids")
 
 	if executableUsersOk == false && filtersOk == false && ownersOk == false {
 		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
@@ -168,7 +168,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
-		o := expandStringList(account_ids.([]interface{}))
+		o := expandStringList(aids.([]interface{}))
 
 		if len(o) > 0 {
 			params.Owners = o
@@ -196,7 +196,7 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(res.Images) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	return omisOAPIDescriptionAttributes(d, res.Images)

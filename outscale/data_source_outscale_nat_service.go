@@ -97,12 +97,12 @@ func dataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(res.NatGateways) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	if len(res.NatGateways) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
+		return fmt.Errorf("your query returned more than one result, please try a more " +
+			"specific search criteria")
 	}
 
 	d.Set("request_id", res.RequestId)
@@ -115,20 +115,12 @@ func ngDescriptionAttributes(d *schema.ResourceData, ng *fcu.NatGateway) error {
 
 	d.SetId(*ng.NatGatewayId)
 	d.Set("nat_gateway_id", *ng.NatGatewayId)
+	d.Set("state", aws.StringValue(ng.State))
+	d.Set("subnet_id", aws.StringValue(ng.SubnetId))
+	d.Set("vpc_id", aws.StringValue(ng.VpcId))
 
-	if ng.State != nil {
-		d.Set("state", *ng.State)
-	}
-	if ng.SubnetId != nil {
-		d.Set("subnet_id", *ng.SubnetId)
-	}
-	if ng.VpcId != nil {
-		d.Set("vpc_id", *ng.VpcId)
-	}
-
+	addresses := make([]map[string]interface{}, len(ng.NatGatewayAddresses))
 	if ng.NatGatewayAddresses != nil {
-		addresses := make([]map[string]interface{}, len(ng.NatGatewayAddresses))
-
 		for k, v := range ng.NatGatewayAddresses {
 			address := make(map[string]interface{})
 			if v.AllocationId != nil {
@@ -139,9 +131,7 @@ func ngDescriptionAttributes(d *schema.ResourceData, ng *fcu.NatGateway) error {
 			}
 			addresses[k] = address
 		}
-		if err := d.Set("nat_gateway_address", addresses); err != nil {
-			return err
-		}
 	}
-	return nil
+
+	return d.Set("nat_gateway_address", addresses)
 }

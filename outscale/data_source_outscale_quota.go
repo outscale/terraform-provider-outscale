@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -121,17 +122,27 @@ func dataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 	quotas := make([]map[string]interface{}, len(pl.QuotaSet))
 	for k, v := range pl.QuotaSet {
 		quota := make(map[string]interface{})
-		quota["description"] = v.Description
-		quota["display_name"] = v.DisplayName
-		quota["group_name"] = v.GroupName
-		quota["max_quota_value"] = v.MaxQuotaValue
-		quota["name"] = v.Name
-		quota["owner_id"] = v.OwnerId
-		quota["used_quota_value"] = v.UsedQuotaValue
+		quota["description"] = aws.StringValue(v.Description)
+		quota["display_name"] = aws.StringValue(v.DisplayName)
+		quota["group_name"] = aws.StringValue(v.GroupName)
+		i, err := strconv.Atoi(*v.MaxQuotaValue)
+		if err != nil {
+			return err
+		}
+		quota["max_quota_value"] = i
+		quota["name"] = aws.StringValue(v.Name)
+		quota["owner_id"] = aws.StringValue(v.OwnerId)
+		i2, err := strconv.Atoi(*v.MaxQuotaValue)
+		if err != nil {
+			return err
+		}
+		quota["used_quota_value"] = i2
 		quotas[k] = quota
 	}
 
-	d.Set("quota_set", quotas)
+	if err := d.Set("quota_set", quotas); err != nil {
+		return err
+	}
 	d.Set("reference", pl.Reference)
 	d.Set("request_id", resp.RequestId)
 

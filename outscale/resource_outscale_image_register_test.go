@@ -37,17 +37,15 @@ func testAccCheckOutscaleImageRegisterDestroy(s *terraform.State) error {
 		if rs.Type != "outscale_image_register" {
 			continue
 		}
-		amiId := rs.Primary.ID
+		amiID := rs.Primary.ID
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
 		diReq := &fcu.DescribeImagesInput{
-			ImageIds: []*string{aws.String(amiId)},
+			ImageIds: []*string{aws.String(amiID)},
 		}
 
-		var diRes *fcu.DescribeImagesOutput
-
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			diRes, err = conn.VM.DescribeImages(diReq)
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			_, err = conn.VM.DescribeImages(diReq)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

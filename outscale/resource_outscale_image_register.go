@@ -30,7 +30,7 @@ func resourceOutscaleImageRegister() *schema.Resource {
 			//Image
 			"instance_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"name": {
@@ -183,11 +183,11 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	request := &fcu.RegisterImageInput{}
 
 	architecture, architectureOk := d.GetOk("architecture")
-	block_device_mapping, block_device_mappingOk := d.GetOk("block_device_mapping")
+	blockDeviceMapping, blockDeviceMappingOk := d.GetOk("block_device_mapping")
 	description, descriptionOk := d.GetOk("description")
-	image_location, image_locationOk := d.GetOk("image_location")
+	imageLocation, imageLocationOk := d.GetOk("image_location")
 	name, nameOk := d.GetOk("name")
-	root_device_name, root_device_nameOk := d.GetOk("root_device_name")
+	rootDeviceName, rootDeviceNameOk := d.GetOk("root_device_name")
 	instanceID, instanceIDOk := d.GetOk("instance_id")
 
 	if !nameOk && !instanceIDOk {
@@ -197,8 +197,8 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	if architectureOk {
 		request.Architecture = aws.String(architecture.(string))
 	}
-	if block_device_mappingOk {
-		maps := block_device_mapping.([]interface{})
+	if blockDeviceMappingOk {
+		maps := blockDeviceMapping.([]interface{})
 		mappings := []*fcu.BlockDeviceMapping{}
 
 		for _, m := range maps {
@@ -229,15 +229,17 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 	if descriptionOk {
 		request.Description = aws.String(description.(string))
 	}
-	if image_locationOk {
-		request.ImageLocation = aws.String(image_location.(string))
+	if imageLocationOk {
+		request.ImageLocation = aws.String(imageLocation.(string))
 	}
-	if root_device_nameOk {
-		request.RootDeviceName = aws.String(root_device_name.(string))
+	if rootDeviceNameOk {
+		request.RootDeviceName = aws.String(rootDeviceName.(string))
+	}
+	if instanceIDOk {
+		request.InstanceId = aws.String(instanceID.(string))
 	}
 
 	request.Name = aws.String(name.(string))
-	request.InstanceId = aws.String(instanceID.(string))
 
 	var registerResp *fcu.RegisterImageOutput
 	var err error

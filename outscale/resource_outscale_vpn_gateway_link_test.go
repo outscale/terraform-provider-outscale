@@ -48,7 +48,7 @@ func TestAccAWSVpnGatewayAttachment_deleted(t *testing.T) {
 		return func(s *terraform.State) error {
 			_, ok := s.RootModule().Resources[n]
 			if ok {
-				return fmt.Errorf("Expected VPN Gateway attachment resource %q to be deleted.", n)
+				return fmt.Errorf("expected vpn gateway attachment resource %q to be deleted", n)
 			}
 			return nil
 		}
@@ -95,21 +95,21 @@ func testAccCheckVpnGatewayAttachmentExists(n string, vpc *fcu.Vpc, vgw *fcu.Vpn
 			return fmt.Errorf("No ID is set")
 		}
 
-		vpcId := rs.Primary.Attributes["vpc_id"]
-		vgwId := rs.Primary.Attributes["vpn_gateway_id"]
+		vpcID := rs.Primary.Attributes["vpc_id"]
+		vgwID := rs.Primary.Attributes["vpn_gateway_id"]
 
 		if len(vgw.VpcAttachments) == 0 {
-			return fmt.Errorf("VPN Gateway %q has no attachments.", vgwId)
+			return fmt.Errorf("vpn gateway %q has no attachments", vgwID)
 		}
 
 		if *vgw.VpcAttachments[0].State != "attached" {
 			return fmt.Errorf("Expected VPN Gateway %q to be in attached state, but got: %q",
-				vgwId, *vgw.VpcAttachments[0].State)
+				vgwID, *vgw.VpcAttachments[0].State)
 		}
 
 		if *vgw.VpcAttachments[0].VpcId != *vpc.VpcId {
 			return fmt.Errorf("Expected VPN Gateway %q to be attached to VPC %q, but got: %q",
-				vgwId, vpcId, *vgw.VpcAttachments[0].VpcId)
+				vgwID, vpcID, *vgw.VpcAttachments[0].VpcId)
 		}
 
 		return nil
@@ -124,14 +124,14 @@ func testAccCheckVpnGatewayAttachmentDestroy(s *terraform.State) error {
 			continue
 		}
 
-		vgwId := rs.Primary.Attributes["vpn_gateway_id"]
+		vgwID := rs.Primary.Attributes["vpn_gateway_id"]
 
 		var resp *fcu.DescribeVpnGatewaysOutput
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeVpnGateways(&fcu.DescribeVpnGatewaysInput{
-				VpnGatewayIds: []*string{aws.String(vgwId)},
+				VpnGatewayIds: []*string{aws.String(vgwID)},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -149,7 +149,7 @@ func testAccCheckVpnGatewayAttachmentDestroy(s *terraform.State) error {
 		vgw := resp.VpnGateways[0]
 		if *vgw.VpcAttachments[0].State != "detached" {
 			return fmt.Errorf("Expected VPN Gateway %q to be in detached state, but got: %q",
-				vgwId, *vgw.VpcAttachments[0].State)
+				vgwID, *vgw.VpcAttachments[0].State)
 		}
 	}
 

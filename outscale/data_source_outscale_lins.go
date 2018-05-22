@@ -112,7 +112,7 @@ func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetId(resource.UniqueId())
 
-	vpc_set := make([]map[string]interface{}, len(resp.Vpcs))
+	vpcSet := make([]map[string]interface{}, len(resp.Vpcs))
 
 	for i, v := range resp.Vpcs {
 		vpc := make(map[string]interface{})
@@ -124,10 +124,10 @@ func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 		vpc["state"] = *v.State
 		vpc["tag_set"] = tagsToMap(v.Tags)
 
-		vpc_set[i] = vpc
+		vpcSet[i] = vpc
 	}
 
-	d.Set("vpc_set", vpc_set)
+	d.Set("vpc_set", vpcSet)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

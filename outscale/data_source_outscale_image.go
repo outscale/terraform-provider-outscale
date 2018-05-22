@@ -185,12 +185,12 @@ func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	if len(res.Images) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again.")
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	if len(res.Images) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
+		return fmt.Errorf("your query returned more than one result, please try a more " +
+			"specific search criteria")
 	}
 
 	d.Set("request_id", res.RequestId)
@@ -243,9 +243,6 @@ func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
 	if err := d.Set("state_reason", amiStateReason(image.StateReason)); err != nil {
 		return err
 	}
-	if err := d.Set("tag_set", dataSourceTags(image.Tags)); err != nil {
-		return err
-	}
 
-	return nil
+	return d.Set("tag_set", tagsToMap(image.Tags))
 }

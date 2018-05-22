@@ -13,13 +13,23 @@ var ErrMsg = map[string]string{
 	"HTTP":               "HTTP Error",
 }
 
+// Error ...
 type Error struct {
 	Code    string `xml:"Code"`
-	Message string `xml:Message`
+	Message string `xml:"Message"`
 }
+
+// XMLError ...
 type XMLError struct {
 	XMLName   xml.Name `xml:"Response"`
 	Errors    []Error  `xml:"Errors>Error"`
+	RequestID string   `xml:"RequestID"`
+}
+
+// XMLLBUError ...
+type XMLLBUError struct {
+	XMLName   xml.Name `xml:"ErrorResponse"`
+	Errors    Error    `xml:"Error"`
 	RequestID string   `xml:"RequestID"`
 }
 
@@ -46,6 +56,24 @@ func UnmarshalErrorHandler(r *http.Response) error {
 
 // SendError method which receives the message and the error
 func SendError(msg XMLError) error {
-
 	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
+}
+
+// UnmarshalLBUErrorHandler for HTTP Response
+func UnmarshalLBUErrorHandler(r *http.Response) error {
+	defer r.Body.Close()
+	v := XMLLBUError{}
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("Read body: %v", err)
+	}
+
+	err = xml.Unmarshal(data, &v)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling response %v", err)
+	}
+
+	return fmt.Errorf("%s: %s", v.Errors.Code, v.Errors.Message)
+
 }

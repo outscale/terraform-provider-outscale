@@ -50,11 +50,10 @@ func resourceOutscaleVpnConnectionRouteCreate(d *schema.ResourceData, meta inter
 	// Create the route.
 	log.Printf("[DEBUG] Creating VPN connection route")
 
-	var resp *fcu.CreateVpnConnectionRouteOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.CreateVpnConnectionRoute(createOpts)
+		_, err = conn.VM.CreateVpnConnectionRoute(createOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -77,7 +76,7 @@ func resourceOutscaleVpnConnectionRouteCreate(d *schema.ResourceData, meta inter
 func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	cidrBlock, vpnConnectionId := resourceOutscaleVpnConnectionRouteParseId(d.Id())
+	cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(d.Id())
 
 	routeFilters := []*fcu.Filter{
 		&fcu.Filter{
@@ -85,8 +84,8 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 			Values: []*string{aws.String(cidrBlock)},
 		},
 		&fcu.Filter{
-			Name:   aws.String("vpn-connection-id"),
-			Values: []*string{aws.String(vpnConnectionId)},
+			Name:   aws.String("vpn-connection-ID"),
+			Values: []*string{aws.String(vpnConnectionID)},
 		},
 	}
 
@@ -110,10 +109,9 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			log.Printf("[ERROR] Error finding VPN connection route: %s", err)
-			return err
 		}
+		log.Printf("[ERROR] Error finding VPN connection route: %s", err)
+		return err
 	}
 	if resp == nil || len(resp.VpnConnections) == 0 {
 		return fmt.Errorf("No VPN connections returned")
@@ -162,16 +160,15 @@ func resourceOutscaleVpnConnectionRouteDelete(d *schema.ResourceData, meta inter
 		if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
 			d.SetId("")
 			return nil
-		} else {
-			log.Printf("[ERROR] Error deleting VPN connection route: %s", err)
-			return err
 		}
+		log.Printf("[ERROR] Error deleting VPN connection route: %s", err)
+		return err
 	}
 
 	return nil
 }
 
-func resourceOutscaleVpnConnectionRouteParseId(id string) (string, string) {
-	parts := strings.SplitN(id, ":", 2)
+func resourceOutscaleVpnConnectionRouteParseID(ID string) (string, string) {
+	parts := strings.SplitN(ID, ":", 2)
 	return parts[0], parts[1]
 }
