@@ -111,9 +111,9 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 
 	if err := setTags(conn, d); err != nil {
 		return err
-	} else {
-		d.SetPartial("tags")
 	}
+
+	d.SetPartial("tags")
 
 	log.Printf("[INFO] VPC Peering Connection ID: %s", d.Id())
 

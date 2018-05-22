@@ -66,10 +66,9 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 		VpcPeeringConnectionId: aws.String(id),
 	}
 
-	var resp *fcu.AcceptVpcPeeringConnectionOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.AcceptVpcPeeringConnection(req)
+		_, err = conn.VM.AcceptVpcPeeringConnection(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -85,9 +84,9 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 
 	if err := setTags(conn, d); err != nil {
 		return err
-	} else {
-		d.SetPartial("tag_set")
 	}
+
+	d.SetPartial("tag_set")
 
 	return resourceOutscaleOAPILinPeeringRead(d, meta)
 }
