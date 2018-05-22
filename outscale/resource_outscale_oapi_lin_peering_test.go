@@ -139,7 +139,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			if *pc.Status.Code == "deleted" {
 				return nil
 			}
-			return fmt.Errorf("Found the VPC Peering Connection in an unexpected state: %s", pc)
+			return fmt.Errorf("Found the VPC Peering Connection in an unexpected state: %v", pc)
 		}
 
 		// return error here; we've found the vpc_peering object we want, however

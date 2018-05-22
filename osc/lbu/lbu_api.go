@@ -28,6 +28,11 @@ type Service interface {
 	RegisterInstancesWithLoadBalancer(input *RegisterInstancesWithLoadBalancerInput) (*RegisterInstancesWithLoadBalancerOutput, error)
 	DeregisterInstancesFromLoadBalancer(input *DeregisterInstancesFromLoadBalancerInput) (*DeregisterInstancesFromLoadBalancerOutput, error)
 	DetachLoadBalancerFromSubnets(input *DetachLoadBalancerFromSubnetsInput) (*DetachLoadBalancerFromSubnetsOutput, error)
+	CreateLBCookieStickinessPolicy(input *CreateLBCookieStickinessPolicyInput) (*CreateLBCookieStickinessPolicyOutput, error)
+	CreateAppCookieStickinessPolicy(input *CreateAppCookieStickinessPolicyInput) (*CreateAppCookieStickinessPolicyOutput, error)
+	SetLoadBalancerPoliciesOfListener(input *SetLoadBalancerPoliciesOfListenerInput) (*SetLoadBalancerPoliciesOfListenerOutput, error)
+	DescribeLoadBalancerPolicies(input *DescribeLoadBalancerPoliciesInput) (*DescribeLoadBalancerPoliciesOutput, error)
+	DeleteLoadBalancerPolicy(input *DeleteLoadBalancerPolicyInput) (*DeleteLoadBalancerPolicyOutput, error)
 }
 
 // CreateLoadBalancer ...
@@ -350,6 +355,126 @@ func (v Operations) DetachLoadBalancerFromSubnets(input *DetachLoadBalancerFromS
 
 	if input == nil {
 		input = &DetachLoadBalancerFromSubnetsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// CreateLBCookieStickinessPolicy ...
+func (v Operations) CreateLBCookieStickinessPolicy(input *CreateLBCookieStickinessPolicyInput) (*CreateLBCookieStickinessPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "CreateLBCookieStickinessPolicy"
+	output := &CreateLBCookieStickinessPolicyOutput{}
+
+	if input == nil {
+		input = &CreateLBCookieStickinessPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// CreateAppCookieStickinessPolicy ...
+func (v Operations) CreateAppCookieStickinessPolicy(input *CreateAppCookieStickinessPolicyInput) (*CreateAppCookieStickinessPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "CreateAppCookieStickinessPolicy"
+	output := &CreateAppCookieStickinessPolicyOutput{}
+
+	if input == nil {
+		input = &CreateAppCookieStickinessPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// SetLoadBalancerPoliciesOfListener ...
+func (v Operations) SetLoadBalancerPoliciesOfListener(input *SetLoadBalancerPoliciesOfListenerInput) (*SetLoadBalancerPoliciesOfListenerOutput, error) {
+	inURL := "/"
+	endpoint := "SetLoadBalancerPoliciesOfListener"
+	output := &SetLoadBalancerPoliciesOfListenerOutput{}
+
+	if input == nil {
+		input = &SetLoadBalancerPoliciesOfListenerInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DescribeLoadBalancerPolicies ...
+func (v Operations) DescribeLoadBalancerPolicies(input *DescribeLoadBalancerPoliciesInput) (*DescribeLoadBalancerPoliciesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeLoadBalancerPolicies"
+	output := &DescribeLoadBalancerPoliciesOutput{}
+
+	if input == nil {
+		input = &DescribeLoadBalancerPoliciesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteLoadBalancerPolicy ...
+func (v Operations) DeleteLoadBalancerPolicy(input *DeleteLoadBalancerPolicyInput) (*DeleteLoadBalancerPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteLoadBalancerPolicy"
+	output := &DeleteLoadBalancerPolicyOutput{}
+
+	if input == nil {
+		input = &DeleteLoadBalancerPolicyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

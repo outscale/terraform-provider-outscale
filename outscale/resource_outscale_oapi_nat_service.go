@@ -247,10 +247,9 @@ func NGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFu
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
 				return nil, "", nil
-			} else {
-				fmt.Printf("\n\nError on NGStateRefresh: %s", err)
-				return nil, "", err
 			}
+			fmt.Printf("\n\nError on NGStateRefresh: %s", err)
+			return nil, "", err
 		}
 
 		ng := resp.NatGateways[0]

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,6 +19,16 @@ import (
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 	var conf fcu.KeyPairInfo
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -37,6 +49,16 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 	var conf fcu.KeyPairInfo
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -45,7 +67,7 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIKeyPairConfig_retrieveName(rInt),
+				Config: testAccOutscaleOAPIKeyPairConfigRetrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
@@ -59,13 +81,24 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 	var conf fcu.KeyPairInfo
 
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi == false {
+		t.Skip()
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIKeyPairConfig_generatedName,
+				Config: testAccOutscaleOAPIKeyPairConfigGeneratedName,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
@@ -116,7 +149,7 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 
 		if err == nil {
 			if len(resp.KeyPairs) > 0 {
-				return fmt.Errorf("still exist.")
+				return fmt.Errorf("still exist")
 			}
 			return nil
 		}
@@ -183,7 +216,7 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.KeyPairInfo) resou
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPair_namePrefix(t *testing.T) {
+func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
 	var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
@@ -234,7 +267,7 @@ resource "outscale_keypair" "a_key_pair" {
 `, r)
 }
 
-func testAccOutscaleOAPIKeyPairConfig_retrieveName(r int) string {
+func testAccOutscaleOAPIKeyPairConfigRetrieveName(r int) string {
 	return fmt.Sprintf(
 		`
 resource "outscale_keypair" "a_key_pair" {
@@ -243,7 +276,7 @@ resource "outscale_keypair" "a_key_pair" {
 `, r)
 }
 
-const testAccOutscaleOAPIKeyPairConfig_generatedName = `
+const testAccOutscaleOAPIKeyPairConfigGeneratedName = `
 resource "outscale_keypair" "a_key_pair" {
 	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }

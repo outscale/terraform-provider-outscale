@@ -23,6 +23,7 @@ type CreateLoadBalancerInput struct {
 	Tags []*Tag `type:"list"`
 }
 
+// Tag ...
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -571,4 +572,150 @@ type DetachLoadBalancerFromSubnetsOutput struct {
 
 	// The IDs of the remaining subnets for the load balancer.
 	Subnets []*string `type:"list"`
+}
+
+// CreateLBCookieStickinessPolicyInput ...
+type CreateLBCookieStickinessPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The time period, in seconds, after which the cookie should be considered
+	// stale. If you do not specify this parameter, the default value is 0, which
+	// indicates that the sticky session should last for the duration of the browser
+	// session.
+	CookieExpirationPeriod *int64 `type:"long"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+
+	// The name of the policy being created. Policy names must consist of alphanumeric
+	// characters and dashes (-). This name must be unique within the set of policies
+	// for this load balancer.
+	//
+	// PolicyName is a required field
+	PolicyName *string `type:"string" required:"true"`
+}
+
+// CreateLBCookieStickinessPolicyOutput ...
+type CreateLBCookieStickinessPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// CreateAppCookieStickinessPolicyInput ...
+type CreateAppCookieStickinessPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the application cookie used for stickiness.
+	//
+	// CookieName is a required field
+	CookieName *string `type:"string" required:"true"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+
+	// The name of the policy being created. Policy names must consist of alphanumeric
+	// characters and dashes (-). This name must be unique within the set of policies
+	// for this load balancer.
+	//
+	// PolicyName is a required field
+	PolicyName *string `type:"string" required:"true"`
+}
+
+// CreateAppCookieStickinessPolicyOutput ...
+type CreateAppCookieStickinessPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// SetLoadBalancerPoliciesOfListenerInput ...
+type SetLoadBalancerPoliciesOfListenerInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+
+	// The external port of the load balancer.
+	//
+	// LoadBalancerPort is a required field
+	LoadBalancerPort *int64 `type:"integer" required:"true"`
+
+	// The names of the policies. This list must include all policies to be enabled.
+	// If you omit a policy that is currently enabled, it is disabled. If the list
+	// is empty, all current policies are disabled.
+	//
+	// PolicyNames is a required field
+	PolicyNames []*string `type:"list" required:"true"`
+}
+
+// SetLoadBalancerPoliciesOfListenerOutput ...
+type SetLoadBalancerPoliciesOfListenerOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DescribeLoadBalancerPoliciesInput ...
+type DescribeLoadBalancerPoliciesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer.
+	LoadBalancerName *string `type:"string"`
+
+	// The names of the policies.
+	PolicyNames []*string `type:"list"`
+}
+
+// DescribeLoadBalancerPoliciesOutput ...
+type DescribeLoadBalancerPoliciesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the policies.
+	PolicyDescriptions []*PolicyDescription `type:"list"`
+}
+
+// PolicyDescription ...
+type PolicyDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The policy attributes.
+	PolicyAttributeDescriptions []*PolicyAttributeDescription `type:"list"`
+
+	// The name of the policy.
+	PolicyName *string `type:"string"`
+
+	// The name of the policy type.
+	PolicyTypeName *string `type:"string"`
+}
+
+// PolicyAttributeDescription ...
+type PolicyAttributeDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the attribute.
+	AttributeName *string `type:"string"`
+
+	// The value of the attribute.
+	AttributeValue *string `type:"string"`
+}
+
+// DeleteLoadBalancerPolicyInput ...
+type DeleteLoadBalancerPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+
+	// The name of the policy.
+	//
+	// PolicyName is a required field
+	PolicyName *string `type:"string" required:"true"`
+}
+
+// DeleteLoadBalancerPolicyOutput ...
+type DeleteLoadBalancerPolicyOutput struct {
+	_ struct{} `type:"structure"`
 }

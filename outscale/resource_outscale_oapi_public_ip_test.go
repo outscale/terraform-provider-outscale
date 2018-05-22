@@ -107,7 +107,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig_associated,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -115,7 +115,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig_associated_switch,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -300,7 +300,7 @@ resource "outscale_vm" "basic" {
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscaleOAPIPublicIPInstanceConfig_associated = `
+const testAccOutscaleOAPIPublicIPInstanceConfigAssociated = `
 resource "outscale_vm" "foo" {
   image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"
@@ -318,7 +318,7 @@ resource "outscale_vm" "bar" {
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscaleOAPIPublicIPInstanceConfig_associated_switch = `
+const testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch = `
 resource "outscale_vm" "foo" {
  image_id = "ami-8a6a0120"
 	instance_type = "t2.micro"

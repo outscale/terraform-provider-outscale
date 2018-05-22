@@ -458,7 +458,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniId string) error {
+func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniID string) error {
 	// if there was an old nic_link, remove it
 	if oa != nil && len(oa) > 0 && oa[0] != nil {
 		oa := oa[0].(map[string]interface{})
@@ -487,16 +487,16 @@ func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniId str
 			}
 		}
 
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniId)
+		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniID)
 		stateConf := &resource.StateChangeConf{
 			Pending: []string{"true"},
 			Target:  []string{"false"},
-			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniId),
+			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniID),
 			Timeout: 10 * time.Minute,
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
 			return fmt.Errorf(
-				"Error waiting for ENI (%s) to become dettached: %s", eniId, err)
+				"Error waiting for ENI (%s) to become dettached: %s", eniID, err)
 		}
 	}
 

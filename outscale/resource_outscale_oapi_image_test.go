@@ -36,7 +36,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfig_basic(rInt),
+				Config: testAccOAPIImageConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
@@ -92,7 +92,7 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 
 		if len(resp.Images) > 0 {
 			state := resp.Images[0].State
-			return fmt.Errorf("OMI %s still exists in the state: %s.", *resp.Images[0].ImageId, *state)
+			return fmt.Errorf("OMI %s still exists in the state: %s", *resp.Images[0].ImageId, *state)
 		}
 	}
 	return nil
@@ -140,7 +140,7 @@ func testAccCheckOAPIImageExists(n string, ami *fcu.Image) resource.TestCheckFun
 	}
 }
 
-func testAccOAPIImageConfig_basic(rInt int) string {
+func testAccOAPIImageConfigBasic(rInt int) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"

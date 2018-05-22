@@ -58,6 +58,7 @@ func init() {
 			"outscale_lin_peering_acceptation":       resourceOutscaleLinPeeringConnectionAccepter,
 			"outscale_nic_link":                      resourceOutscaleNetworkInterfaceAttachment,
 			"outscale_nic_private_ip":                resourceOutscaleNetworkInterfacePrivateIP,
+			"outscale_load_balancer_cookiepolicy":    resourceOutscaleAppCookieStickinessPolicy,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                      resourceOutscaleOApiVM,

@@ -98,6 +98,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer":                 GetResource(lbu, "outscale_load_balancer")(),
 			"outscale_nic_link":                      GetResource(fcu, "outscale_nic_link")(),
 			"outscale_nic_private_ip":                GetResource(fcu, "outscale_nic_private_ip")(),
+			"outscale_load_balancer_cookiepolicy":    GetResource(fcu, "outscale_load_balancer_cookiepolicy")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
