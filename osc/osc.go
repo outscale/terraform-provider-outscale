@@ -181,9 +181,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
-
-	// return c.UnmarshalHandler(v, resp)
+	return c.UnmarshalHandler(v, resp)
 }
 
 func (c Client) checkResponse(r *http.Response) error {
