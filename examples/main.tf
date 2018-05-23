@@ -343,19 +343,6 @@
 #   cidr_block = "10.0.0.0/16"
 # }
 
-resource "outscale_volume" "outscale_volume" {
-  availability_zone = "eu-west-2a"
-  size              = 40
-}
-
-resource "outscale_volume" "outscale_volume2" {
-  availability_zone = "eu-west-2a"
-  size              = 40
-}
-
-data "outscale_volumes" "outscale_volumes" {
-  filter {
-    name   = "volume-id"
-    values = ["${outscale_volume.outscale_volume.volume_id}", "${outscale_volume.outscale_volume2.volume_id}"]
-  }
+data "outscale_quota" "outscale_quota" {
+  quota_name = "vm_limit"
 }
