@@ -719,3 +719,29 @@ type DeleteLoadBalancerPolicyInput struct {
 type DeleteLoadBalancerPolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// ModifyLoadBalancerAttributesInput ...
+type ModifyLoadBalancerAttributesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The attributes of the load balancer.
+	//
+	// LoadBalancerAttributes is a required field
+	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure" required:"true"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+}
+
+// ModifyLoadBalancerAttributesOutput ...
+type ModifyLoadBalancerAttributesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The attributes for a load balancer.
+	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"`
+
+	// The name of the load balancer.
+	LoadBalancerName *string `type:"string"`
+}

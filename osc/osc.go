@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -145,6 +146,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
+	requestDump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("########################")
+	fmt.Println("##### REQUEST ######")
+	fmt.Println(string(requestDump))
+
 	return req, nil
 }
 
@@ -165,6 +174,14 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("########################")
+	fmt.Println("##### RESPONSE ######")
+	fmt.Println(string(requestDump))
+
 	err = c.checkResponse(resp)
 	if err != nil {
 		return err
@@ -181,9 +198,13 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
+	isLBU := (strings.Contains(req.URL.RawQuery, "LoadBalancer") || strings.Contains(req.URL.RawQuery, "ConfigureHealthCheck"))
 
-	// return c.UnmarshalHandler(v, resp)
+	if isLBU {
+		return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
+	}
+
+	return c.UnmarshalHandler(v, resp)
 }
 
 func (c Client) checkResponse(r *http.Response) error {

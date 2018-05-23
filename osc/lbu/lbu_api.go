@@ -33,6 +33,7 @@ type Service interface {
 	SetLoadBalancerPoliciesOfListener(input *SetLoadBalancerPoliciesOfListenerInput) (*SetLoadBalancerPoliciesOfListenerOutput, error)
 	DescribeLoadBalancerPolicies(input *DescribeLoadBalancerPoliciesInput) (*DescribeLoadBalancerPoliciesOutput, error)
 	DeleteLoadBalancerPolicy(input *DeleteLoadBalancerPolicyInput) (*DeleteLoadBalancerPolicyOutput, error)
+	ModifyLoadBalancerAttributes(input *ModifyLoadBalancerAttributesInput) (*ModifyLoadBalancerAttributesOutput, error)
 }
 
 // CreateLoadBalancer ...
@@ -475,6 +476,30 @@ func (v Operations) DeleteLoadBalancerPolicy(input *DeleteLoadBalancerPolicyInpu
 
 	if input == nil {
 		input = &DeleteLoadBalancerPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ModifyLoadBalancerAttributes ...
+func (v Operations) ModifyLoadBalancerAttributes(input *ModifyLoadBalancerAttributesInput) (*ModifyLoadBalancerAttributesOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyLoadBalancerAttributes"
+	output := &ModifyLoadBalancerAttributesOutput{}
+
+	if input == nil {
+		input = &ModifyLoadBalancerAttributesInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
