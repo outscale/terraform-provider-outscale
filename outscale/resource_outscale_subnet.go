@@ -138,11 +138,7 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("request_id", resp.RequestId)
 
-	if err := d.Set("tag_set", tagsToMap(subnet.Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag_set", tagsToMap(subnet.Tags))
 }
 
 func resourceOutscaleSubNetDelete(d *schema.ResourceData, meta interface{}) error {
@@ -175,6 +171,7 @@ func resourceOutscaleSubNetDelete(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
+// SubnetStateRefreshFunc ...
 func SubnetStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 

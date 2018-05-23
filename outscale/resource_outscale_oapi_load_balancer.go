@@ -443,7 +443,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				LoadBalancerPorts: ports,
 			}
 
-			log.Printf("[DEBUG] Load Balancer Delete Listeners opts: %s", deleteListenersOpts)
+			log.Printf("[DEBUG] Load Balancer Delete Listeners opts: %v", deleteListenersOpts)
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -473,7 +473,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			// other listeners on the Load Balancer. Retry here to eliminate that.
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Load Balancer Create Listeners opts: %s", createListenersOpts)
+				log.Printf("[DEBUG] Load Balancer Create Listeners opts: %v", createListenersOpts)
 				_, err = conn.API.CreateLoadBalancerListeners(createListenersOpts)
 				if err != nil {
 					if awsErr, ok := err.(awserr.Error); ok {
@@ -639,7 +639,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				AvailabilityZones: added,
 			}
 
-			log.Printf("[DEBUG] Load Balancer enable availability zones opts: %s", enableOpts)
+			log.Printf("[DEBUG] Load Balancer enable availability zones opts: %v", enableOpts)
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -665,7 +665,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				AvailabilityZones: removed,
 			}
 
-			log.Printf("[DEBUG] Load Balancer disable availability zones opts: %s", disableOpts)
+			log.Printf("[DEBUG] Load Balancer disable availability zones opts: %v", disableOpts)
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -702,7 +702,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				Subnets:          removed,
 			}
 
-			log.Printf("[DEBUG] Load Balancer detach subnet_id opts: %s", detachOpts)
+			log.Printf("[DEBUG] Load Balancer detach subnet_id opts: %v", detachOpts)
 
 			var err error
 
@@ -730,7 +730,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			}
 			var err error
 
-			log.Printf("[DEBUG] Load Balancer attach subnets opts: %s", attachOpts)
+			log.Printf("[DEBUG] Load Balancer attach subnets opts: %v", attachOpts)
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, err = conn.API.AttachLoadBalancerToSubnets(attachOpts)
 				if err != nil {

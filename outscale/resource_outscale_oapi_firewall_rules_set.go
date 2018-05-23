@@ -235,11 +235,8 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	if err := d.Set("inbound_rules", flattenIPPermissions(sg.IpPermissions)); err != nil {
 		return err
 	}
-	if err := d.Set("outbound_rules", flattenIPPermissions(sg.IpPermissionsEgress)); err != nil {
-		return err
-	}
 
-	return nil
+	return d.Set("outbound_rules", flattenIPPermissions(sg.IpPermissionsEgress))
 }
 
 func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
@@ -265,12 +262,12 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	})
 }
 
-func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*fcu.GroupIdentifier {
+func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*fcu.GroupIdentifier {
 	result := make([]*fcu.GroupIdentifier, 0, len(list))
 	for _, g := range list {
-		var userId *string
-		if g.UserId != nil && *g.UserId != "" && (ownerId == nil || *ownerId != *g.UserId) {
-			userId = g.UserId
+		var userID *string
+		if g.UserId != nil && *g.UserId != "" && (ownerID == nil || *ownerID != *g.UserId) {
+			userID = g.UserId
 		}
 		// userid nil here for same vpc groups
 
@@ -285,8 +282,8 @@ func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*
 		// id is groupid for vpcs
 		// id is groupname for non vpc (classic)
 
-		if userId != nil {
-			id = aws.String(*userId + "/" + *id)
+		if userID != nil {
+			id = aws.String(*userID + "/" + *id)
 		}
 
 		if vpc {
@@ -303,6 +300,7 @@ func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerId *string) []*
 	return result
 }
 
+// SGOAPIStateRefreshFunc ...
 func SGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		req := &fcu.DescribeSecurityGroupsInput{

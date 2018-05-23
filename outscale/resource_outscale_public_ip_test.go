@@ -109,7 +109,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated(rInt),
+				Config: testAccOutscalePublicIPInstanceConfigAssociated(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
@@ -117,7 +117,7 @@ func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig_associated_switch(rInt),
+				Config: testAccOutscalePublicIPInstanceConfigAssociatedSwitch(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscalePublicIPAttributes(&one),
@@ -314,7 +314,7 @@ resource "outscale_public_ip" "bar" {}
 `, r)
 }
 
-func testAccOutscalePublicIPInstanceConfig_associated(r int) string {
+func testAccOutscalePublicIPInstanceConfigAssociated(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
@@ -346,7 +346,7 @@ resource "outscale_public_ip" "bar" {}
 `, r)
 }
 
-func testAccOutscalePublicIPInstanceConfig_associated_switch(r int) string {
+func testAccOutscalePublicIPInstanceConfigAssociatedSwitch(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"

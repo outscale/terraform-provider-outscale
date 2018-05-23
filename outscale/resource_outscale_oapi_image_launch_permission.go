@@ -108,22 +108,22 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 func resourceOutscaleOAPIImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	conn := meta.(*OutscaleClient).FCU
 
-	image_id := d.Get("image_id").(string)
-	return hasOAPILaunchPermission(conn, image_id)
+	imageID := d.Get("image_id").(string)
+	return hasOAPILaunchPermission(conn, imageID)
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	image_id, iok := d.GetOk("image_id")
+	imageID, iok := d.GetOk("image_id")
 	permission, lok := d.GetOk("permission")
 
 	if iok {
-		return fmt.Errorf("please provide the required attribute image_id")
+		return fmt.Errorf("please provide the required attribute imageID")
 	}
 
 	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(image_id.(string)),
+		ImageId: aws.String(imageID.(string)),
 	}
 
 	if lok {
@@ -171,7 +171,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 		return fmt.Errorf("error creating ami launch permission: %s", err)
 	}
 
-	d.SetId(image_id.(string))
+	d.SetId(imageID.(string))
 	d.Set("description", map[string]string{"value": ""})
 	d.Set("permissions", make([]map[string]interface{}, 0))
 	return nil
@@ -229,15 +229,15 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	image_id, iok := d.GetOk("image_id")
+	imageID, iok := d.GetOk("image_id")
 	permission, lok := d.GetOk("permission")
 
 	if iok {
-		return fmt.Errorf("please provide the required attribute image_id")
+		return fmt.Errorf("please provide the required attribute imageID")
 	}
 
 	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(image_id.(string)),
+		ImageId: aws.String(imageID.(string)),
 	}
 
 	if lok {

@@ -78,11 +78,7 @@ func resourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta int
 		return err
 	}
 
-	if err := d.Set("tag", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag", dataSourceTags(resp.InternetGateways[0].Tags))
 }
 
 func resourceOutscaleOAPILinInternetGatewayDelete(d *schema.ResourceData, meta interface{}) error {

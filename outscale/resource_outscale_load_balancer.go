@@ -26,12 +26,12 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"availability_zones_member": &schema.Schema{
+			"availability_zones": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"listeners_member": &schema.Schema{
+			"listeners": &schema.Schema{
 				Type:     schema.TypeList,
 				Required: true,
 				Elem: &schema.Resource{
@@ -73,13 +73,13 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"security_groups_member": &schema.Schema{
+			"security_groups": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"subnets_member": &schema.Schema{
+			"subnets": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -119,7 +119,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"instances_member": &schema.Schema{
+			"instances": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -132,7 +132,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"listener_descriptions_member": &schema.Schema{
+			"listener_descriptions": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -165,7 +165,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"policy_names_member": &schema.Schema{
+						"policy_names": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -198,7 +198,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"app_cookie_stickiness_policies_member": &schema.Schema{
+						"app_cookie_stickiness_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -214,7 +214,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"lb_cookie_stickiness_policies_member": &schema.Schema{
+						"lb_cookie_stickiness_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -226,7 +226,7 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"other_policies_member": &schema.Schema{
+						"other_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -247,7 +247,7 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 
 	elbOpts := &lbu.CreateLoadBalancerInput{}
 
-	listeners, err := expandListeners(d.Get("listeners_member").([]interface{}))
+	listeners, err := expandListeners(d.Get("listeners").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -266,15 +266,15 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 		elbOpts.Scheme = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("availability_zones_member"); ok {
+	if v, ok := d.GetOk("availability_zones"); ok {
 		elbOpts.AvailabilityZones = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("security_groups_member"); ok {
+	if v, ok := d.GetOk("security_groups"); ok {
 		elbOpts.SecurityGroups = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("subnets_member"); ok {
+	if v, ok := d.GetOk("subnets"); ok {
 		elbOpts.Subnets = expandStringList(v.([]interface{}))
 	}
 
@@ -304,7 +304,7 @@ func resourceOutscaleLoadBalancerCreate(d *schema.ResourceData, meta interface{}
 	d.SetId(*elbOpts.LoadBalancerName)
 	log.Printf("[INFO] ELB ID: %s", d.Id())
 
-	if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+	if err := d.Set("listener_descriptions", make([]map[string]interface{}, 0)); err != nil {
 		return err
 	}
 	d.Set("policies", make([]map[string]interface{}, 0))
@@ -354,7 +354,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
-	d.Set("availability_zones_member", flattenStringList(lb.AvailabilityZones))
+	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
 	if *lb.HealthCheck.Target != "" {
 		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
@@ -362,16 +362,16 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		d.Set("health_check", make(map[string]interface{}))
 	}
 	if lb.Instances != nil {
-		d.Set("instances_member", flattenInstances(lb.Instances))
+		d.Set("instances", flattenInstances(lb.Instances))
 	} else {
-		d.Set("instances_member", make([]map[string]interface{}, 0))
+		d.Set("instances", make([]map[string]interface{}, 0))
 	}
 	if lb.ListenerDescriptions != nil {
-		if err := d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions)); err != nil {
+		if err := d.Set("listener_descriptions", flattenListeners(lb.ListenerDescriptions)); err != nil {
 			return err
 		}
 	} else {
-		if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+		if err := d.Set("listener_descriptions", make([]map[string]interface{}, 0)); err != nil {
 			return err
 		}
 	}
@@ -387,27 +387,27 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			app[k] = a
 		}
-		policies["app_cookie_stickiness_policies_member"] = app
+		policies["app_cookie_stickiness_policies"] = app
 		lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies))
 		for k, v := range lb.Policies.LBCookieStickinessPolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			lbc[k] = a
 		}
-		policies["lb_cookie_stickiness_policies_member"] = lbc
-		policies["other_policies_member"] = flattenStringList(lb.Policies.OtherPolicies)
+		policies["lb_cookie_stickiness_policies"] = lbc
+		policies["other_policies"] = flattenStringList(lb.Policies.OtherPolicies)
 	} else {
 		lbc := make([]map[string]interface{}, 0)
-		policies["lb_cookie_stickiness_policies_member"] = lbc
-		policies["other_policies_member"] = lbc
+		policies["lb_cookie_stickiness_policies"] = lbc
+		policies["other_policies"] = lbc
 	}
 	pl[0] = policies
 	d.Set("policies", policies)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
 	} else {
-		d.Set("security_groups_member", make([]map[string]interface{}, 0))
+		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
@@ -415,7 +415,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 		ssg["owner_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
 	}
 	d.Set("source_security_group", ssg)
-	d.Set("subnets_member", flattenStringList(lb.Subnets))
+	d.Set("subnets", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", aws.StringValue(lb.VPCId))
 	// d.Set("request_id", resp.ResponseMetadata.RequestID)
 
@@ -427,8 +427,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 
 	d.Partial(true)
 
-	if d.HasChange("listeners_member") {
-		o, n := d.GetChange("listeners_member")
+	if d.HasChange("listeners") {
+		o, n := d.GetChange("listeners")
 		os := o.([]interface{})
 		ns := n.([]interface{})
 
@@ -445,8 +445,6 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				LoadBalancerName:  aws.String(d.Id()),
 				LoadBalancerPorts: ports,
 			}
-
-			log.Printf("[DEBUG] ELB Delete Listeners opts: %s", deleteListenersOpts)
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -476,24 +474,20 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			// other listeners on the ELB. Retry here to eliminate that.
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] ELB Create Listeners opts: %s", createListenersOpts)
 				_, err = conn.API.CreateLoadBalancerListeners(createListenersOpts)
 				if err != nil {
-					if awsErr, ok := err.(awserr.Error); ok {
-						if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
-							log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
-							return resource.RetryableError(awsErr)
-						}
-						if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-							return resource.RetryableError(awsErr)
-						}
-						if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-							return resource.RetryableError(awsErr)
-						}
+					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
+						log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
+						return resource.RetryableError(err)
 					}
-
+					if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
+						return resource.RetryableError(err)
+					}
+					if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
+						return resource.RetryableError(err)
+					}
 					// Didn't recognize the error, so shouldn't retry.
 					return resource.NonRetryableError(err)
 				}
@@ -505,11 +499,11 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("listeners_member")
+		d.SetPartial("listeners")
 	}
 
-	if d.HasChange("instances_member") {
-		o, n := d.GetChange("instances_member")
+	if d.HasChange("instances") {
+		o, n := d.GetChange("instances")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 		remove := expandInstanceString(os.Difference(ns).List())
@@ -562,7 +556,7 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("instances_member")
+		d.SetPartial("instances")
 	}
 
 	if d.HasChange("health_check") {
@@ -600,8 +594,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	if d.HasChange("security_groups_member") {
-		groups := d.Get("security_groups_member").([]interface{})
+	if d.HasChange("security_groups") {
+		groups := d.Get("security_groups").([]interface{})
 
 		applySecurityGroupsOpts := lbu.ApplySecurityGroupsToLoadBalancerInput{
 			LoadBalancerName: aws.String(d.Id()),
@@ -625,11 +619,11 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Failure applying security groups to ELB: %s", err)
 		}
 
-		d.SetPartial("security_groups_member")
+		d.SetPartial("security_groups")
 	}
 
-	if d.HasChange("availability_zones_member") {
-		o, n := d.GetChange("availability_zones_member")
+	if d.HasChange("availability_zones") {
+		o, n := d.GetChange("availability_zones")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 
@@ -642,7 +636,6 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				AvailabilityZones: added,
 			}
 
-			log.Printf("[DEBUG] ELB enable availability zones opts: %s", enableOpts)
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -668,7 +661,6 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				AvailabilityZones: removed,
 			}
 
-			log.Printf("[DEBUG] ELB disable availability zones opts: %s", disableOpts)
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -691,8 +683,8 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 		d.SetPartial("availability_zones")
 	}
 
-	if d.HasChange("subnets_member") {
-		o, n := d.GetChange("subnets_member")
+	if d.HasChange("subnets") {
+		o, n := d.GetChange("subnets")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 
@@ -704,8 +696,6 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 				LoadBalancerName: aws.String(d.Id()),
 				Subnets:          removed,
 			}
-
-			log.Printf("[DEBUG] ELB detach subnets_member opts: %s", detachOpts)
 
 			var err error
 
@@ -733,16 +723,15 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 			var err error
 
-			log.Printf("[DEBUG] ELB attach subnets opts: %s", attachOpts)
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, err = conn.API.AttachLoadBalancerToSubnets(attachOpts)
 				if err != nil {
-					if awsErr, ok := err.(awserr.Error); ok {
+					if err, ok := err.(awserr.Error); ok {
 						// eventually consistent issue with removing a subnet in AZ1 and
 						// immediately adding a new one in the same AZ
-						if awsErr.Code() == "InvalidConfigurationRequest" && strings.Contains(awsErr.Message(), "cannot be attached to multiple subnets in the same AZ") {
+						if err.Code() == "InvalidConfigurationRequest" && strings.Contains(err.Message(), "cannot be attached to multiple subnets in the same AZ") {
 							log.Printf("[DEBUG] retrying az association")
-							return resource.RetryableError(awsErr)
+							return resource.RetryableError(err)
 						}
 					}
 					return resource.NonRetryableError(err)
@@ -754,10 +743,10 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			}
 		}
 
-		d.SetPartial("subnets_member")
+		d.SetPartial("subnets")
 	}
 
-	d.SetPartial("listener_descriptions_member")
+	d.SetPartial("listener_descriptions")
 	d.SetPartial("policies")
 
 	d.Partial(false)
@@ -892,7 +881,7 @@ func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} 
 			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateId),
 		}
 		l["listener"] = listener
-		l["policy_names_member"] = flattenStringList(i.PolicyNames)
+		l["policy_names"] = flattenStringList(i.PolicyNames)
 		result = append(result, l)
 	}
 	return result

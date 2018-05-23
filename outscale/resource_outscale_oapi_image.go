@@ -287,11 +287,8 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("state_comment", omiOAPIStateReason(image.StateReason)); err != nil {
 		return err
 	}
-	if err := d.Set("tag", dataSourceTags(image.Tags)); err != nil {
-		return err
-	}
 
-	return nil
+	return d.Set("tag", dataSourceTags(image.Tags))
 }
 
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -376,6 +373,7 @@ func resourceOutscaleOAPIImageWaitForAvailable(id string, client *fcu.Client, i 
 	return info.(*fcu.Image), nil
 }
 
+// ImageOAPIStateRefreshFunc ...
 func ImageOAPIStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := &fcu.DescribeImagesOutput{}

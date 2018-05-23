@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfig_basic(),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(&server),
@@ -76,7 +76,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfig_basic(),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(&before),
@@ -297,7 +297,7 @@ func testAccCheckOutscaleOAPIVMAttributes(server *fcu.Instance) resource.TestChe
 	}
 }
 
-func testAccCheckOutscaleOAPIVMConfig_basic() string {
+func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"

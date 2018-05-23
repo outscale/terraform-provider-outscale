@@ -163,7 +163,7 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 		t.Skip()
 	}
 
-	var route_table fcu.RouteTable
+	var rt fcu.RouteTable
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -174,8 +174,8 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfigTags,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &route_table),
-					testAccCheckTags(&route_table.Tags, "foo", "bar"),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt),
+					testAccCheckTags(&rt.Tags, "foo", "bar"),
 				),
 			},
 		},
@@ -210,7 +210,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 
 		if err == nil {
 			if len(resp.RouteTables) > 0 {
-				return fmt.Errorf("still exist.")
+				return fmt.Errorf("still exist")
 			}
 
 			return nil

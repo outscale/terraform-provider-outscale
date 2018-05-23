@@ -2,8 +2,10 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,17 @@ import (
 )
 
 func TestAccOutscaleLBU_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var conf lbu.LoadBalancerDescription
 
 	r := acctest.RandIntRange(0, 10)
@@ -32,17 +45,17 @@ func TestAccOutscaleLBU_basic(t *testing.T) {
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "availability_zones_member.#", "1"),
+						"outscale_load_balancer.bar", "availability_zones.#", "1"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "availability_zones_member.0", "eu-west-2a"),
+						"outscale_load_balancer.bar", "availability_zones.0", "eu-west-2a"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.instance_port", "8000"),
+						"outscale_load_balancer.bar", "listeners.0.instance_port", "8000"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.instance_protocol", "HTTP"),
+						"outscale_load_balancer.bar", "listeners.0.instance_protocol", "HTTP"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.load_balancer_port", "80"),
+						"outscale_load_balancer.bar", "listeners.0.load_balancer_port", "80"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listeners_member.0.protocol", "HTTP"),
+						"outscale_load_balancer.bar", "listeners.0.protocol", "HTTP"),
 				)},
 		},
 	})
@@ -100,7 +113,7 @@ func testAccCheckOutscaleLBUAttributes(conf *lbu.LoadBalancerDescription) resour
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad availability_zones_member")
+			return fmt.Errorf("bad availability_zones")
 		}
 
 		if *conf.DNSName == "" {
@@ -120,7 +133,7 @@ func testAccCheckOutscaleLBUAttributesHealthCheck(conf *lbu.LoadBalancerDescript
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad availability_zones_member")
+			return fmt.Errorf("bad availability_zones")
 		}
 
 		if *conf.DNSName == "" {
@@ -185,9 +198,9 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 func testAccOutscaleLBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a"]
+  availability_zones = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
-  listeners_member {
+  listeners {
     instance_port = 8000
     instance_protocol = "HTTP"
     load_balancer_port = 80

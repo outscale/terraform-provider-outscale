@@ -90,7 +90,7 @@ func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error 
 		})
 		if err == nil {
 			if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
-				return fmt.Errorf("Security Group (%s) still exists.", rs.Primary.ID)
+				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
 			}
 
 			return nil

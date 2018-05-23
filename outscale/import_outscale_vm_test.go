@@ -30,7 +30,7 @@ func TestAccOutscaleInstance_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Config: testAccCheckOutscaleServerConfigBasic(rInt),
 			},
 
 			resource.TestStep{
