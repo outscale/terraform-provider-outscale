@@ -266,10 +266,9 @@ func volumeOAPIStateRefreshFunc(conn *fcu.Client, volumeID string) resource.Stat
 				log.Printf("Error on Volume State Refresh: message: \"%s\", code:\"%s\"", ec2err.Message(), ec2err.Code())
 				resp = nil
 				return nil, "", err
-			} else {
-				log.Printf("Error on Volume State Refresh: %s", err)
-				return nil, "", err
 			}
+			log.Printf("Error on Volume State Refresh: %s", err)
+			return nil, "", err
 		}
 
 		v := resp.Volumes[0]

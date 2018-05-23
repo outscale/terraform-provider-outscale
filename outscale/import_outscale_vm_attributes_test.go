@@ -29,7 +29,7 @@ func TestAccOutscaleVmAttr_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleVMConfig_basic(),
+				Config: testAccCheckOutscaleVMConfigBasic(),
 			},
 
 			resource.TestStep{

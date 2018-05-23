@@ -476,21 +476,18 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, err = conn.API.CreateLoadBalancerListeners(createListenersOpts)
 				if err != nil {
-					if awsErr, ok := err.(awserr.Error); ok {
-						if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
-							log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
-							return resource.RetryableError(awsErr)
-						}
-						if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-							return resource.RetryableError(awsErr)
-						}
-						if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-							log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-							return resource.RetryableError(awsErr)
-						}
+					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
+						log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
+						return resource.RetryableError(err)
 					}
-
+					if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
+						return resource.RetryableError(err)
+					}
+					if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
+						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
+						return resource.RetryableError(err)
+					}
 					// Didn't recognize the error, so shouldn't retry.
 					return resource.NonRetryableError(err)
 				}
@@ -729,12 +726,12 @@ func resourceOutscaleLoadBalancerUpdate(d *schema.ResourceData, meta interface{}
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, err = conn.API.AttachLoadBalancerToSubnets(attachOpts)
 				if err != nil {
-					if awsErr, ok := err.(awserr.Error); ok {
+					if err, ok := err.(awserr.Error); ok {
 						// eventually consistent issue with removing a subnet in AZ1 and
 						// immediately adding a new one in the same AZ
-						if awsErr.Code() == "InvalidConfigurationRequest" && strings.Contains(awsErr.Message(), "cannot be attached to multiple subnets in the same AZ") {
+						if err.Code() == "InvalidConfigurationRequest" && strings.Contains(err.Message(), "cannot be attached to multiple subnets in the same AZ") {
 							log.Printf("[DEBUG] retrying az association")
-							return resource.RetryableError(awsErr)
+							return resource.RetryableError(err)
 						}
 					}
 					return resource.NonRetryableError(err)

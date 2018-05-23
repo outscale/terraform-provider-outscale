@@ -1384,7 +1384,7 @@ func readBlockDeviceMappingsFromConfig(
 			}
 
 			if bdm.NoDevice == nil && aws.StringValue(bdm.VirtualName) == "" {
-				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined.")
+				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined")
 			}
 
 			blockDevices = append(blockDevices, bdm)
@@ -1490,11 +1490,8 @@ func GetInstanceGetPasswordData(conn *fcu.Client, instanceID, failState string) 
 
 		if len(*i) < 0 {
 			return nil, "running", nil
-		} else {
-			return nil, "terminated", nil
 		}
-
-		return nil, "", nil
+		return nil, "terminated", nil
 	}
 }
 

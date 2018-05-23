@@ -185,14 +185,14 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-	routeTableId := d.Get("route_table_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
 
 	destinationCidrBlock := d.Get("destination_ip_range").(string)
 
-	route, err := findResourceOAPIRoute(conn, routeTableId, destinationCidrBlock)
+	route, err := findResourceOAPIRoute(conn, routeTableID, destinationCidrBlock)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableId)
+			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
 			d.SetId("")
 			return nil
 		}
@@ -343,10 +343,10 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 
 func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	conn := meta.(*OutscaleClient).FCU
-	routeTableId := d.Get("route_table_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
 
 	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableId},
+		RouteTableIds: []*string{&routeTableID},
 	}
 
 	var res *fcu.DescribeRouteTablesOutput
@@ -368,7 +368,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found.", routeTableId)
+			log.Printf("[WARN] Route Table %q could not be found.", routeTableID)
 			return false, nil
 		}
 		return false, fmt.Errorf("Error while checking if route exists: %s", err)
@@ -376,7 +376,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 
 	if len(res.RouteTables) < 1 || res.RouteTables[0] == nil {
 		log.Printf("[WARN] Route Table %q is gone, or route does not exist.",
-			routeTableId)
+			routeTableID)
 		return false, nil
 	}
 
@@ -424,7 +424,7 @@ func findResourceOAPIRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Ro
 	}
 
 	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist.",
+		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist",
 			routeTableID)
 	}
 

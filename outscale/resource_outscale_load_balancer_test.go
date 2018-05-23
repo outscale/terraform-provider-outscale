@@ -2,8 +2,10 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,6 +18,17 @@ import (
 )
 
 func TestAccOutscaleLBU_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	var conf lbu.LoadBalancerDescription
 
 	r := acctest.RandIntRange(0, 10)
