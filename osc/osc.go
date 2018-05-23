@@ -181,6 +181,12 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
+	isLBU := (strings.Contains(req.URL.RawQuery, "LoadBalancer") || strings.Contains(req.URL.RawQuery, "ConfigureHealthCheck"))
+
+	if isLBU {
+		return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
+	}
+
 	return c.UnmarshalHandler(v, resp)
 }
 
