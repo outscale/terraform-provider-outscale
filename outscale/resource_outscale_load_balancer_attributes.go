@@ -35,21 +35,24 @@ func resourceOutscaleLoadBalancerAttributes() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"emit_interval": &schema.Schema{
-										Type:     schema.TypeString,
-										Required: true,
+										Type:     schema.TypeInt,
+										Optional: true,
+										Computed: true,
 									},
 									"enabled": &schema.Schema{
-										Type:     schema.TypeString,
+										Type:     schema.TypeBool,
 										Required: true,
 									},
 
 									"s3_bucket_name": &schema.Schema{
 										Type:     schema.TypeString,
-										Required: true,
+										Optional: true,
+										Computed: true,
 									},
 									"s3_bucket_prefix": &schema.Schema{
 										Type:     schema.TypeString,
 										Optional: true,
+										Computed: true,
 									},
 								},
 							},
@@ -88,6 +91,10 @@ func resourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta i
 
 	a := lb["access_log"].(map[string]interface{})
 
+	if v, ok := a["enabled"]; ok && v == "" {
+		return fmt.Errorf("please provide the enable attribute")
+	}
+
 	b, err := strconv.ParseBool(a["enabled"].(string))
 	if err != nil {
 		return err
@@ -97,17 +104,17 @@ func resourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta i
 		Enabled: aws.Bool(b),
 	}
 
-	if v, ok := a["emit_interval"]; ok {
+	if v, ok := a["emit_interval"]; ok && v != "" {
 		i, err := strconv.Atoi(v.(string))
 		if err != nil {
 			return err
 		}
 		access.EmitInterval = aws.Int64(int64(i))
 	}
-	if v, ok := a["s3_bucket_name"]; ok {
+	if v, ok := a["s3_bucket_name"]; ok && v != "" {
 		access.S3BucketName = aws.String(v.(string))
 	}
-	if v, ok := a["s3_bucket_prefix"]; ok {
+	if v, ok := a["s3_bucket_prefix"]; ok && v != "" {
 		access.S3BucketPrefix = aws.String(v.(string))
 	}
 

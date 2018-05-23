@@ -77,7 +77,8 @@ resource "outscale_load_balancer" "bar" {
 resource "outscale_load_balancer_attributes" "bar2" {
 	load_balancer_attributes = {
 		access_log = {
-			enabled = true
+			enabled = "false"
+			s3_bucket_name = "donustestbucket"
 		}
 	}
 	load_balancer_name = "${outscale_load_balancer.bar.id}"
