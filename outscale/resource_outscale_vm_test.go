@@ -95,7 +95,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Config: testAccCheckOutscaleServerConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleServerAttributes(&server),
@@ -134,7 +134,7 @@ func TestAccOutscaleServer_Windows_Password(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic_windows(rInt),
+				Config: testAccCheckOutscaleServerConfigBasicWindows(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.basic_windows", &server),
 					testAccCheckOutscaleWindowsServerAttributes(&server),
@@ -171,7 +171,7 @@ func TestAccOutscaleServer_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleServerConfig_basic(rInt),
+				Config: testAccCheckOutscaleServerConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleServerAttributes(&before),
@@ -424,7 +424,7 @@ func testAccCheckOutscaleWindowsServerAttributes(server *fcu.Instance) resource.
 	}
 }
 
-func testAccCheckOutscaleServerConfig_basic(r int) string {
+func testAccCheckOutscaleServerConfigBasic(r int) string {
 	return fmt.Sprintf(`
 	resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"
@@ -443,7 +443,7 @@ resource "outscale_vm" "basic" {
 }`, r)
 }
 
-func testAccCheckOutscaleServerConfig_basic_windows(r int) string {
+func testAccCheckOutscaleServerConfigBasicWindows(r int) string {
 	return fmt.Sprintf(`
 	resource "outscale_keypair" "a_key_pair" {
 	key_name   = "terraform-key-%d"

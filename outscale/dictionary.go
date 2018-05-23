@@ -94,6 +94,7 @@ func init() {
 		"lbu": ResourceMap{
 			"outscale_load_balancer":              resourceOutscaleLoadBalancer,
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,
+			"outscale_load_balancer_vms":          resourceOutscaleLBUAttachment,
 		},
 	}
 	datasources = Dictionary{
