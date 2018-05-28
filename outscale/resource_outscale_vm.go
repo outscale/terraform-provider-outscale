@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -84,11 +83,6 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	if len(tagsSpec) > 0 {
 		runOpts.TagSpecifications = tagsSpec
 	}
-
-	// Create the instance
-	pretty, err := json.MarshalIndent(runOpts, "", "  ")
-
-	fmt.Print("\n\n[DEBUG] Run configuration ", string(pretty))
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
@@ -1384,7 +1378,7 @@ func readBlockDeviceMappingsFromConfig(
 			}
 
 			if bdm.NoDevice == nil && aws.StringValue(bdm.VirtualName) == "" {
-				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined.")
+				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined")
 			}
 
 			blockDevices = append(blockDevices, bdm)
@@ -1490,11 +1484,8 @@ func GetInstanceGetPasswordData(conn *fcu.Client, instanceID, failState string) 
 
 		if len(*i) < 0 {
 			return nil, "running", nil
-		} else {
-			return nil, "terminated", nil
 		}
-
-		return nil, "", nil
+		return nil, "terminated", nil
 	}
 }
 

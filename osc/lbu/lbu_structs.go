@@ -50,7 +50,7 @@ type CreateLoadBalancerListenersOutput struct {
 type CreateLoadBalancerOutput struct {
 	_ struct{} `type:"structure"`
 
-	DNSName *string `locationName:"dnsName" type:"string"`
+	DNSName *string ` type:"string"`
 }
 
 // Listener ...
@@ -191,7 +191,7 @@ type HealthCheck struct {
 type Instance struct {
 	_ struct{} `type:"structure"`
 
-	InstanceId *string `locationName:"instanceId" type:"string"`
+	InstanceId *string `type:"string"`
 }
 
 // ListenerDescription ...
@@ -312,45 +312,45 @@ type LoadBalancerAttributes struct {
 type AdditionalAttribute struct {
 	_ struct{} `type:"structure"`
 
-	Key *string `locationName:"key" type:"string"`
+	Key *string ` type:"string"`
 
-	Value *string `locationName:"value" type:"string"`
+	Value *string ` type:"string"`
 }
 
 // ConnectionDraining ...
 type ConnectionDraining struct {
 	_ struct{} `type:"structure"`
 
-	Enabled *bool `locationName:"enabled" type:"boolean" required:"true"`
+	Enabled *bool ` type:"boolean" required:"true"`
 
-	Timeout *int64 `locationName:"timeout" type:"integer"`
+	Timeout *int64 ` type:"integer"`
 }
 
 // ConnectionSettings ...
 type ConnectionSettings struct {
 	_ struct{} `type:"structure"`
 
-	IdleTimeout *int64 `locationName:"idleTimeout" min:"1" type:"integer" required:"true"`
+	IdleTimeout *int64 ` min:"1" type:"integer" required:"true"`
 }
 
 // CrossZoneLoadBalancing ...
 type CrossZoneLoadBalancing struct {
 	_ struct{} `type:"structure"`
 
-	Enabled *bool `locationName:"enabled" type:"boolean" required:"true"`
+	Enabled *bool ` type:"boolean" required:"true"`
 }
 
 // AccessLog ...
 type AccessLog struct {
 	_ struct{} `type:"structure"`
 
-	EmitInterval *int64 `locationName:"emitInterval" type:"integer"`
+	EmitInterval *int64 ` type:"integer"`
 
-	Enabled *bool `locationName:"enabled" type:"boolean" required:"true"`
+	Enabled *bool ` type:"boolean" required:"true"`
 
-	S3BucketName *string `locationName:"s3BucketName" type:"string"`
+	S3BucketName *string ` type:"string"`
 
-	S3BucketPrefix *string `locationName:"s3BucketPrefix" type:"string"`
+	S3BucketPrefix *string ` type:"string"`
 }
 
 // DeleteLoadBalancerListenersInput ...

@@ -1081,6 +1081,7 @@ func readBlockDeviceOApiMappingsFromConfig(
 	return blockDevices, nil
 }
 
+// InstanceStateOApiRefreshFunc ...
 func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput
@@ -1116,6 +1117,7 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 	}
 }
 
+// InstanceOApiPa ...
 func InstanceOApiPa(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput

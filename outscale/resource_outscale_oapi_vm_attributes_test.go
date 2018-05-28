@@ -20,15 +20,13 @@ func TestAccOutscaleOAPIVMAttr_Basic(t *testing.T) {
 		t.Skip()
 	}
 
-	// rInt := acctest.RandInt()
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfig_basic(),
+				Config: testAccCheckOutscaleOAPIVMATTRConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_vm.outscale_vm", "deletion_protection", "true"),
@@ -38,7 +36,7 @@ func TestAccOutscaleOAPIVMAttr_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIVMATTRConfig_basic() string {
+func testAccCheckOutscaleOAPIVMATTRConfigBasic() string {
 	return `
 resource "outscale_vm" "outscale_vm" {
   count = 1
