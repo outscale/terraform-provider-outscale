@@ -488,16 +488,16 @@ func tagsDescToMap(ts []*fcu.TagDescription) map[string]string {
 }
 
 func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
-	result := []map[string]string{}
-	for _, t := range ts {
+	result := make([]map[string]string, len(ts))
+	for k, t := range ts {
 		if !tagDescIgnored(t) {
 			r := map[string]string{}
-			r["key"] = *t.Key
+			r["load_balancer_name"] = *t.Key
 			r["value"] = *t.Value
 			r["resource_id"] = *t.ResourceId
 			r["resource_type"] = *t.ResourceType
 
-			result = append(result, r)
+			result[k] = r
 		}
 	}
 

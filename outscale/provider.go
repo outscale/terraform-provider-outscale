@@ -102,6 +102,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_vms":             GetResource(lbu, "outscale_load_balancer_vms")(),
 			"outscale_load_balancer_listeners":       GetResource(lbu, "outscale_load_balancer_listeners")(),
 			"outscale_load_balancer_attributes":      GetResource(lbu, "outscale_load_balancer_attributes")(),
+			"outscale_load_balancer_tags":            GetResource(lbu, "outscale_load_balancer_tags")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                        GetDatasource(fcu, "outscale_vm")(),
@@ -159,6 +160,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer":             GetDatasource(lbu, "outscale_load_balancer")(),
 			"outscale_load_balancers":            GetDatasource(lbu, "outscale_load_balancers")(),
 			"outscale_load_balancer_access_logs": GetDatasource(lbu, "outscale_load_balancer_access_logs")(),
+			"outscale_load_balancer_tags":        GetDatasource(lbu, "outscale_load_balancer_tags")(),
 			"outscale_nics":                      GetDatasource(fcu, "outscale_nics")(),
 			"outscale_nic":                       GetDatasource(fcu, "outscale_nic")(),
 		},

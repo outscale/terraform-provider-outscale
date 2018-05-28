@@ -745,3 +745,81 @@ type ModifyLoadBalancerAttributesOutput struct {
 	// The name of the load balancer.
 	LoadBalancerName *string `type:"string"`
 }
+
+// AddTagsInput ...
+type AddTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer. You can specify one load balancer only.
+	//
+	// LoadBalancerNames is a required field
+	LoadBalancerNames []*string `type:"list"`
+
+	// The tags.
+	//
+	// Tags is a required field
+	Tags []*Tag `type:"list"`
+}
+
+// AddTagsOutput ...
+type AddTagsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DescribeTagsInput ...
+type DescribeTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The names of the load balancers.
+	//
+	// LoadBalancerNames is a required field
+	LoadBalancerNames []*string `min:"1" type:"list" required:"true"`
+}
+
+// DescribeTagsOutput ...
+type DescribeTagsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the tags.
+	TagDescriptions []*TagDescription `type:"list"`
+}
+
+// TagDescription ...
+type TagDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer.
+	LoadBalancerName *string `type:"string"`
+
+	// The tags.
+	Tags []*Tag `min:"1" type:"list"`
+}
+
+// RemoveTagsInput ...
+type RemoveTagsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the load balancer. You can specify a maximum of one load balancer
+	// name.
+	//
+	// LoadBalancerNames is a required field
+	LoadBalancerNames []*string `type:"list" required:"true"`
+
+	// The list of tag keys to remove.
+	//
+	// Tags is a required field
+	Tags []*TagKeyOnly `min:"1" type:"list" required:"true"`
+}
+
+// RemoveTagsOutput ...
+type RemoveTagsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// TagKeyOnly ...
+type TagKeyOnly struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the key.
+	Key *string `min:"1" type:"string"`
+}

@@ -90,6 +90,7 @@ func init() {
 			"outscale_load_balancer_listeners":    resourceOutscaleOAPILoadBalancerListeners,
 			"outscale_load_balancer_attributes":   resourceOutscaleOAPILoadBalancerAttributes,
 			"outscale_load_balancer_vms":          resourceOutscaleOAPILBUAttachment,
+			"outscale_load_balancer_tags":         resourceOutscaleOAPILBUTags,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -100,6 +101,7 @@ func init() {
 			"outscale_load_balancer_vms":          resourceOutscaleLBUAttachment,
 			"outscale_load_balancer_listeners":    resourceOutscaleLoadBalancerListeners,
 			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
+			"outscale_load_balancer_tags":         resourceOutscaleLBUTags,
 		},
 	}
 	datasources = Dictionary{
@@ -192,11 +194,13 @@ func init() {
 			"outscale_load_balancers":        dataSourceOutscaleOAPILoadBalancers,
 			"outscale_nic":                   dataSourceOutscaleOAPINic,
 			"outscale_nics":                  dataSourceOutscaleOAPINics,
+			"outscale_load_balancer_tags":    dataSourceOutscaleOAPILBUTags,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":             dataSourceOutscaleLoadBalancer,
 			"outscale_load_balancers":            dataSourceOutscaleLoadBalancers,
 			"outscale_load_balancer_access_logs": dataSourceOutscaleLoadBalancerAccessLogs,
+			"outscale_load_balancer_tags":        dataSourceOutscaleLBUTags,
 		},
 	}
 }
