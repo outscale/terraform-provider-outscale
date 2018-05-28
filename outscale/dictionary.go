@@ -194,8 +194,9 @@ func init() {
 			"outscale_nics":                  dataSourceOutscaleOAPINics,
 		},
 		"lbu": ResourceMap{
-			"outscale_load_balancer":  dataSourceOutscaleLoadBalancer,
-			"outscale_load_balancers": dataSourceOutscaleLoadBalancers,
+			"outscale_load_balancer":             dataSourceOutscaleLoadBalancer,
+			"outscale_load_balancers":            dataSourceOutscaleLoadBalancers,
+			"outscale_load_balancer_access_logs": dataSourceOutscaleLoadBalancerAccessLogs,
 		},
 	}
 }
