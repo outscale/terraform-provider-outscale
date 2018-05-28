@@ -30,7 +30,14 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vm_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -49,15 +56,14 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	lb := make([]*lbu.Instance, len(i.([]interface{})))
 
 	for k, v := range i.([]interface{}) {
-		lb[k] = &lbu.Instance{InstanceId: aws.String(v.(string))}
+		ins := v.(map[string]interface{})["vm_id"]
+		lb[k] = &lbu.Instance{InstanceId: aws.String(ins.(string))}
 	}
 
 	registerInstancesOpts := lbu.RegisterInstancesWithLoadBalancerInput{
 		LoadBalancerName: aws.String(e.(string)),
 		Instances:        lb,
 	}
-
-	log.Printf("[INFO] registering i %s with ELB %s", i, e)
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -74,7 +80,7 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failure registering backend_vm_id with ELB: %s", err)
+		return fmt.Errorf("Failure registering backend_vm_id with LBU: %s", err)
 	}
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
@@ -84,12 +90,10 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
-	e := d.Get("load_balancer_name").(string)
 
-	// only add the backend_vm_id that was previously defined for this resource
+	e := d.Get("load_balancer_name").(string)
 	expected := d.Get("backend_vm_id").([]interface{})
 
-	// Retrieve the ELB properties to get a list of attachments
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{aws.String(e)},
 	}
@@ -111,25 +115,26 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 
 	if err != nil {
 		if isLoadBalancerNotFound(err) {
-			log.Printf("[ERROR] ELB %s not found", e)
+			log.Printf("[ERROR] LBU %s not found", e)
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving ELB: %s", err)
+		return fmt.Errorf("Error retrieving LBU: %s", err)
 	}
 	if len(resp.LoadBalancerDescriptions) != 1 {
-		log.Printf("[ERROR] Unable to find ELB: %v", resp.LoadBalancerDescriptions)
+		log.Printf("[ERROR] Unable to find LBU: %v", resp.LoadBalancerDescriptions)
 		d.SetId("")
 		return nil
 	}
 
 	found := false
-	for k, i := range resp.LoadBalancerDescriptions[0].Instances {
-		instance := expected[k].(map[string]interface{})["instance_id"].(string)
-
-		if instance == *i.InstanceId {
-			d.Set("backend_vm_id", expected)
-			found = true
+	for _, i := range resp.LoadBalancerDescriptions[0].Instances {
+		for k1 := range expected {
+			instance := expected[k1].(map[string]interface{})["vm_id"].(string)
+			if instance == *i.InstanceId {
+				d.Set("backend_vm_id", expected)
+				found = true
+			}
 		}
 	}
 
@@ -149,7 +154,8 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 	lb := make([]*lbu.Instance, len(i))
 
 	for k, v := range i {
-		lb[k] = &lbu.Instance{InstanceId: aws.String(v.(string))}
+		ins := v.(map[string]interface{})["vm_id"]
+		lb[k] = &lbu.Instance{InstanceId: aws.String(ins.(string))}
 	}
 
 	deRegisterInstancesOpts := lbu.DeregisterInstancesFromLoadBalancerInput{
@@ -172,7 +178,7 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failure deregistering backend_vm_id from ELB: %s", err)
+		return fmt.Errorf("Failure deregistering backend_vm_id from LBU: %s", err)
 	}
 
 	return nil
