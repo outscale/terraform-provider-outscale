@@ -222,7 +222,7 @@ func resourceOutscaleRouteRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return fmt.Errorf("Route Table %q is gone, or route does not exist.",
+		return fmt.Errorf("Route Table %q is gone, or route does not exist",
 			routeTableID)
 	}
 
@@ -459,7 +459,7 @@ func findResourceRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Route,
 	}
 
 	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist.",
+		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist",
 			routeTableID)
 	}
 

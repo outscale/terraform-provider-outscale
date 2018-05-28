@@ -82,7 +82,7 @@ func testAccCheckOutscaleOAPIRouteExists(n string, res *fcu.Route) resource.Test
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s\n", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {

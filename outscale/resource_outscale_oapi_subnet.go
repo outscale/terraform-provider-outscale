@@ -99,11 +99,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	d.Set("ip_range", resp.Subnets[0].CidrBlock)
 	d.Set("lin_id", resp.Subnets[0].VpcId)
 
-	if err := d.Set("tag", dataSourceTags(resp.Subnets[0].Tags)); err != nil {
-		return err
-	}
-
-	return nil
+	return d.Set("tag", tagsToMap(resp.Subnets[0].Tags))
 }
 
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {

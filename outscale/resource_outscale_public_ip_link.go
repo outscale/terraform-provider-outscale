@@ -66,12 +66,11 @@ func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
-			} else {
-				return resource.NonRetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -123,12 +122,11 @@ func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
-			} else {
-				return resource.NonRetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
 
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkRead (%s)", err)
@@ -151,10 +149,10 @@ func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) 
 func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	assocId := d.Get("association_id")
+	assocID := d.Get("association_id")
 
 	opts := &fcu.DisassociateAddressInput{
-		AssociationId: aws.String(assocId.(string)),
+		AssociationId: aws.String(assocID.(string)),
 	}
 
 	var err error
@@ -165,12 +163,12 @@ func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
-			} else {
-				return resource.NonRetryableError(err)
 			}
+			return resource.NonRetryableError(err)
+
 		}
 
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkDelete (%s)", err)

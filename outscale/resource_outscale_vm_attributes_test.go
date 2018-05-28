@@ -32,7 +32,7 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleVMConfig_basic(),
+				Config: testAccCheckOutscaleVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_vm_attributes.outscale_vm_attributes", "ebs_optimized", "false"),
@@ -49,7 +49,7 @@ func testAccCheckOutscaleVMAttributes(server *fcu.Instance) resource.TestCheckFu
 	}
 }
 
-func testAccCheckOutscaleVMConfig_basic() string {
+func testAccCheckOutscaleVMConfigBasic() string {
 	return `
 resource "outscale_vm" "outscale_vm" {
 

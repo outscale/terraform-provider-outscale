@@ -128,12 +128,13 @@ func resourceOutscaleLBUAttachmentRead(d *schema.ResourceData, meta interface{})
 	}
 
 	found := false
-	for k, i := range resp.LoadBalancerDescriptions[0].Instances {
-		instance := expected[k].(map[string]interface{})["instance_id"].(string)
-
-		if instance == *i.InstanceId {
-			d.Set("instances", expected)
-			found = true
+	for _, i := range resp.LoadBalancerDescriptions[0].Instances {
+		for k1 := range expected {
+			instance := expected[k1].(map[string]interface{})["instance_id"].(string)
+			if instance == *i.InstanceId {
+				d.Set("instances", expected)
+				found = true
+			}
 		}
 	}
 

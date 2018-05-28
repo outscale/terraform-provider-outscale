@@ -210,10 +210,9 @@ func resourceOutscaleOAPISnapshotWaitForAvailable(id string, conn *fcu.Client) e
 		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", id, err)
 	}
 	return nil
-
-	return err
 }
 
+// SnapshotOAPIStateRefreshFunc ...
 func SnapshotOAPIStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := &fcu.DescribeSnapshotsOutput{}

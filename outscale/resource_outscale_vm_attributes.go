@@ -812,8 +812,6 @@ func setBlockDevice(v interface{}, conn *fcu.Client, id string) error {
 		InstanceId:          aws.String(id),
 		BlockDeviceMappings: mappings,
 	}
-	if err := modifyInstanceAttr(conn, opts, "block_device_mapping"); err != nil {
-		return err
-	}
-	return nil
+
+	return modifyInstanceAttr(conn, opts, "block_device_mapping")
 }
