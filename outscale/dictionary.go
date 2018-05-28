@@ -97,6 +97,7 @@ func init() {
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,
 			"outscale_load_balancer_vms":          resourceOutscaleLBUAttachment,
 			"outscale_load_balancer_listeners":    resourceOutscaleLoadBalancerListeners,
+			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
 		},
 	}
 	datasources = Dictionary{

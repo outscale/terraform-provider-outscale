@@ -101,6 +101,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_cookiepolicy":    GetResource(lbu, "outscale_load_balancer_cookiepolicy")(),
 			"outscale_load_balancer_vms":             GetResource(lbu, "outscale_load_balancer_vms")(),
 			"outscale_load_balancer_listeners":       GetResource(lbu, "outscale_load_balancer_listeners")(),
+			"outscale_load_balancer_attributes":      GetResource(lbu, "outscale_load_balancer_attributes")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                    GetDatasource(fcu, "outscale_vm")(),
