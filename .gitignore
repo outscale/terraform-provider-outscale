@@ -5,3 +5,5 @@ examples/terraform.tfstate.backup
 
 test/
 terraform-provider-outscale
+
+.DS_Store
