@@ -8,12 +8,25 @@ import (
 )
 
 // URLEncodeMarshalHander encodes the body to url encode
-func URLEncodeMarshalHander(v interface{}, action, version string, isLBU bool) (string, error) {
+func URLEncodeMarshalHander(v interface{}, action, version string) (string, error) {
 	body := url.Values{
 		"Action":  {action},
 		"Version": {version},
 	}
-	if err := queryutil.Parse(body, v, isLBU); err != nil {
+	if err := queryutil.Parse(body, v, true); err != nil {
+		return "", awserr.New("SerializationError", "failed encoding query request", err)
+	}
+
+	return body.Encode(), nil
+}
+
+// URLLBUEncodeMarshalHander ...
+func URLLBUEncodeMarshalHander(v interface{}, action, version string) (string, error) {
+	body := url.Values{
+		"Action":  {action},
+		"Version": {version},
+	}
+	if err := queryutil.Parse(body, v, false); err != nil {
 		return "", awserr.New("SerializationError", "failed encoding query request", err)
 	}
 

@@ -18,7 +18,7 @@ func TestURLEncodeMarshalHander(t *testing.T) {
 		InstanceIds: []*string{&ID1},
 	}
 
-	res, err := URLEncodeMarshalHander(input, "DescribeInstances", "2017-12-15", false)
+	res, err := URLEncodeMarshalHander(input, "DescribeInstances", "2017-12-15")
 	if err != nil {
 		t.Fatalf("Got error: %s", err)
 	}
