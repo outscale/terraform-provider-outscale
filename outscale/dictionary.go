@@ -89,6 +89,7 @@ func init() {
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,
 			"outscale_load_balancer_listeners":    resourceOutscaleOAPILoadBalancerListeners,
 			"outscale_load_balancer_attributes":   resourceOutscaleOAPILoadBalancerAttributes,
+			"outscale_load_balancer_vms":          resourceOutscaleOAPILBUAttachment,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
