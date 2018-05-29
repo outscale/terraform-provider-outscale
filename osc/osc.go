@@ -147,7 +147,12 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 }
 
 func isLBU(operation string) bool {
-	return strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck") || strings.Contains(operation, "AddTags") || strings.Contains(operation, "DescribeTags") || strings.Contains(operation, "RemoveTags")
+	return strings.Contains(operation, "LoadBalancer") ||
+		strings.Contains(operation, "ConfigureHealthCheck") ||
+		strings.Contains(operation, "AddTags") ||
+		strings.Contains(operation, "DescribeTags") ||
+		strings.Contains(operation, "RemoveTags") ||
+		strings.Contains(operation, "DescribeInstanceHealth")
 }
 
 // SetHeaders sets the headers for the request

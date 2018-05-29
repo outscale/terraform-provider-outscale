@@ -37,6 +37,7 @@ type Service interface {
 	AddTags(input *AddTagsInput) (*AddTagsOutput, error)
 	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
 	RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error)
+	DescribeInstanceHealth(input *DescribeInstanceHealthInput) (*DescribeInstanceHealthOutput, error)
 }
 
 // CreateLoadBalancer ...
@@ -575,6 +576,30 @@ func (v Operations) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error
 
 	if input == nil {
 		input = &RemoveTagsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DescribeInstanceHealth ...
+func (v Operations) DescribeInstanceHealth(input *DescribeInstanceHealthInput) (*DescribeInstanceHealthOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeInstanceHealth"
+	output := &DescribeInstanceHealthOutput{}
+
+	if input == nil {
+		input = &DescribeInstanceHealthInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

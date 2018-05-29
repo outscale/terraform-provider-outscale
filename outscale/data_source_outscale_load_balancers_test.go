@@ -29,7 +29,7 @@ func TestAccOutscaleDSLBSU_basic(t *testing.T) {
 			{
 				Config: testAccDSOutscaleLBsUConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer_descriptions_member.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer_descriptions.#", "1"),
 				)},
 		},
 	})
@@ -37,9 +37,9 @@ func TestAccOutscaleDSLBSU_basic(t *testing.T) {
 
 const testAccDSOutscaleLBsUConfig = `
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a"]
+  availability_zones = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
-  listeners_member {
+  listeners {
     instance_port = 8000
     instance_protocol = "HTTP"
     load_balancer_port = 80

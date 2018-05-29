@@ -195,12 +195,14 @@ func init() {
 			"outscale_nic":                   dataSourceOutscaleOAPINic,
 			"outscale_nics":                  dataSourceOutscaleOAPINics,
 			"outscale_load_balancer_tags":    dataSourceOutscaleOAPILBUTags,
+			"outscale_vm_health":             dataSourceOutscaleOAPIVMHealth,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":             dataSourceOutscaleLoadBalancer,
 			"outscale_load_balancers":            dataSourceOutscaleLoadBalancers,
 			"outscale_load_balancer_access_logs": dataSourceOutscaleLoadBalancerAccessLogs,
 			"outscale_load_balancer_tags":        dataSourceOutscaleLBUTags,
+			"outscale_vm_health":                 dataSourceOutscaleVMHealth,
 		},
 	}
 }

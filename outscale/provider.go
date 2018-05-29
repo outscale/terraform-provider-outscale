@@ -161,6 +161,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancers":            GetDatasource(lbu, "outscale_load_balancers")(),
 			"outscale_load_balancer_access_logs": GetDatasource(lbu, "outscale_load_balancer_access_logs")(),
 			"outscale_load_balancer_tags":        GetDatasource(lbu, "outscale_load_balancer_tags")(),
+			"outscale_vm_health":                 GetDatasource(lbu, "outscale_vm_health")(),
 			"outscale_nics":                      GetDatasource(fcu, "outscale_nics")(),
 			"outscale_nic":                       GetDatasource(fcu, "outscale_nic")(),
 		},
