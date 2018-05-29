@@ -13,30 +13,30 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
-func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
+func resourceOutscaleLoadBalancerAttributes() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILoadBalancerAttributesCreate,
-		Read:   resourceOutscaleOAPILoadBalancerAttributesRead,
-		Update: resourceOutscaleOAPILoadBalancerAttributesUpdate,
-		Delete: resourceOutscaleOAPILoadBalancerAttributesDelete,
+		Create: resourceOutscaleLoadBalancerAttributesCreate,
+		Read:   resourceOutscaleLoadBalancerAttributesRead,
+		Update: resourceOutscaleLoadBalancerAttributesUpdate,
+		Delete: resourceOutscaleLoadBalancerAttributesDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"publication_interval": &schema.Schema{
+			"emit_interval": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"is_enabled": &schema.Schema{
+			"enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-			"osu_bucket_name": &schema.Schema{
+			"s3_bucket_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"osu_bucket_prefix": &schema.Schema{
+			"s3_bucket_prefix": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -50,19 +50,19 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"publication_interval": &schema.Schema{
+									"emit_interval": &schema.Schema{
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"is_enabled": &schema.Schema{
+									"enabled": &schema.Schema{
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
-									"osu_bucket_name": &schema.Schema{
+									"s3_bucket_name": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"osu_bucket_prefix": &schema.Schema{
+									"s3_bucket_prefix": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -85,14 +85,14 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
-	v, ok := d.GetOk("is_enabled")
+	v, ok := d.GetOk("enabled")
 	v1, ok1 := d.GetOk("load_balancer_name")
 
 	if !ok && !ok1 {
-		return fmt.Errorf("please provide the is_enabled and load_balancer_name required attributes")
+		return fmt.Errorf("please provide the enabled and load_balancer_name required attributes")
 	}
 
 	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{
@@ -102,13 +102,13 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		Enabled: aws.Bool(v.(bool)),
 	}
 
-	if v, ok := d.GetOk("publication_interval"); ok {
+	if v, ok := d.GetOk("emit_interval"); ok {
 		access.EmitInterval = aws.Int64(int64(v.(int)))
 	}
-	if v, ok := d.GetOk("osu_bucket_name"); ok {
+	if v, ok := d.GetOk("s3_bucket_name"); ok {
 		access.S3BucketName = aws.String(v.(string))
 	}
-	if v, ok := d.GetOk("osu_bucket_prefix"); ok {
+	if v, ok := d.GetOk("s3_bucket_prefix"); ok {
 		access.S3BucketPrefix = aws.String(v.(string))
 	}
 
@@ -137,10 +137,10 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 	d.SetId(*elbOpts.LoadBalancerName)
 	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
 
-	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
+	return resourceOutscaleLoadBalancerAttributesRead(d, meta)
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleLoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 	elbName := d.Id()
 
@@ -180,10 +180,10 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 
 	access := make(map[string]string)
 	ac := make(map[string]interface{})
-	access["publication_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	access["is_enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	access["osu_bucket_name"] = aws.StringValue(a.S3BucketName)
-	access["osu_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
+	access["emit_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
+	access["enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
+	access["s3_bucket_name"] = aws.StringValue(a.S3BucketName)
+	access["s3_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
 	ac["access_log"] = access
 
 	l := make([]map[string]interface{}, 1)
@@ -194,7 +194,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	return d.Set("load_balancer_attributes", l)
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleLoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
 	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{}
@@ -204,8 +204,8 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 
 		elbOpts.LoadBalancerName = aws.String(n.(string))
 	}
-	if d.HasChange("is_enabled") {
-		_, n := d.GetChange("is_enabled")
+	if d.HasChange("enabled") {
+		_, n := d.GetChange("enabled")
 
 		b, err := strconv.ParseBool(n.(string))
 		if err != nil {
@@ -214,8 +214,8 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 
 		access.Enabled = aws.Bool(b)
 	}
-	if d.HasChange("publication_interval") {
-		_, n := d.GetChange("publication_interval")
+	if d.HasChange("emit_interval") {
+		_, n := d.GetChange("emit_interval")
 
 		i, err := strconv.Atoi(n.(string))
 		if err != nil {
@@ -223,13 +223,13 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 		}
 		access.EmitInterval = aws.Int64(int64(i))
 	}
-	if d.HasChange("osu_bucket_name") {
-		_, n := d.GetChange("osu_bucket_name")
+	if d.HasChange("s3_bucket_name") {
+		_, n := d.GetChange("s3_bucket_name")
 
 		access.S3BucketName = aws.String(n.(string))
 	}
-	if d.HasChange("osu_bucket_prefix") {
-		_, n := d.GetChange("osu_bucket_prefix")
+	if d.HasChange("s3_bucket_prefix") {
+		_, n := d.GetChange("s3_bucket_prefix")
 		access.S3BucketPrefix = aws.String(n.(string))
 	}
 
@@ -255,10 +255,10 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 		return err
 	}
 
-	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
+	return resourceOutscaleLoadBalancerAttributesRead(d, meta)
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleLoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 

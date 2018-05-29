@@ -88,6 +88,7 @@ func init() {
 			"outscale_nic":                        resourceOutscaleOAPINic,
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,
 			"outscale_load_balancer_listeners":    resourceOutscaleOAPILoadBalancerListeners,
+			"outscale_load_balancer_attributes":   resourceOutscaleOAPILoadBalancerAttributes,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -95,7 +96,9 @@ func init() {
 		"lbu": ResourceMap{
 			"outscale_load_balancer":              resourceOutscaleLoadBalancer,
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,
+			"outscale_load_balancer_vms":          resourceOutscaleLBUAttachment,
 			"outscale_load_balancer_listeners":    resourceOutscaleLoadBalancerListeners,
+			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
 		},
 	}
 	datasources = Dictionary{

@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -84,11 +83,6 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	if len(tagsSpec) > 0 {
 		runOpts.TagSpecifications = tagsSpec
 	}
-
-	// Create the instance
-	pretty, err := json.MarshalIndent(runOpts, "", "  ")
-
-	fmt.Print("\n\n[DEBUG] Run configuration ", string(pretty))
 
 	var runResp *fcu.Reservation
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
