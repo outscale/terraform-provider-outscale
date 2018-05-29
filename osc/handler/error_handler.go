@@ -50,13 +50,7 @@ func UnmarshalErrorHandler(r *http.Response) error {
 
 	// Response body format is not consistent between metadata endpoints.
 	// Grab the error message as a string and include that as the source error
-	return SendError(v)
-
-}
-
-// SendError method which receives the message and the error
-func SendError(msg XMLError) error {
-	return fmt.Errorf("%s: %s", msg.Errors[0].Code, msg.Errors[0].Message)
+	return fmt.Errorf("%s: %s", v.Errors[0].Code, v.Errors[0].Message)
 }
 
 // UnmarshalLBUErrorHandler for HTTP Response
