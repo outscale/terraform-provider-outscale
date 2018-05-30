@@ -34,6 +34,9 @@ type Service interface {
 	DescribeLoadBalancerPolicies(input *DescribeLoadBalancerPoliciesInput) (*DescribeLoadBalancerPoliciesOutput, error)
 	DeleteLoadBalancerPolicy(input *DeleteLoadBalancerPolicyInput) (*DeleteLoadBalancerPolicyOutput, error)
 	ModifyLoadBalancerAttributes(input *ModifyLoadBalancerAttributesInput) (*ModifyLoadBalancerAttributesOutput, error)
+	AddTags(input *AddTagsInput) (*AddTagsOutput, error)
+	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
+	RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error)
 }
 
 // CreateLoadBalancer ...
@@ -500,6 +503,78 @@ func (v Operations) ModifyLoadBalancerAttributes(input *ModifyLoadBalancerAttrib
 
 	if input == nil {
 		input = &ModifyLoadBalancerAttributesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// AddTags ...
+func (v Operations) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
+	inURL := "/"
+	endpoint := "AddTags"
+	output := &AddTagsOutput{}
+
+	if input == nil {
+		input = &AddTagsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DescribeTags ...
+func (v Operations) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeTags"
+	output := &DescribeTagsOutput{}
+
+	if input == nil {
+		input = &DescribeTagsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// RemoveTags ...
+func (v Operations) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
+	inURL := "/"
+	endpoint := "RemoveTags"
+	output := &RemoveTagsOutput{}
+
+	if input == nil {
+		input = &RemoveTagsInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

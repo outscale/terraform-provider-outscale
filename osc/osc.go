@@ -98,11 +98,9 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	var b interface{}
 	var err error
 
-	isLBU := (strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck"))
-
 	// method for FCU API
 	if method != http.MethodPost {
-		b, err = c.MarshalHander(body, operation, "2018-05-14", !isLBU)
+		b, err = c.MarshalHander(body, operation, "2018-05-14", !isLBU(operation))
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +132,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 
 	fmt.Println(rel.Opaque)
 
-	if strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck") {
+	if isLBU(operation) {
 		c.SetHeaders(req, "lbu_20180514", operation)
 	} else if strings.Contains(operation, "AccessKey") {
 		c.SetHeaders(req, "TinaIcuService", operation)
@@ -146,6 +144,10 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	}
 
 	return req, nil
+}
+
+func isLBU(operation string) bool {
+	return strings.Contains(operation, "LoadBalancer") || strings.Contains(operation, "ConfigureHealthCheck") || strings.Contains(operation, "AddTags") || strings.Contains(operation, "DescribeTags") || strings.Contains(operation, "RemoveTags")
 }
 
 // SetHeaders sets the headers for the request
@@ -181,9 +183,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	isLBU := (strings.Contains(req.URL.RawQuery, "LoadBalancer") || strings.Contains(req.URL.RawQuery, "ConfigureHealthCheck"))
-
-	if isLBU {
+	if isLBU(req.URL.RawQuery) {
 		return c.UnmarshalLBUXML(v, resp, req.URL.RawQuery)
 	}
 
