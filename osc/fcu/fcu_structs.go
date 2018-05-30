@@ -8184,7 +8184,7 @@ type DescribeReservedInstancesOfferingsInput struct {
 	InstanceType                *string   `locationName:"instanceType" type:"string" enum:"InstanceType"`
 	OfferingType                *string   `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
 	ProductDescription          *string   `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
-	ReservedInstancesOfferingId []*string `locationName:"reservedInstancesOfferingId" type:"string"`
+	ReservedInstancesOfferingIds []*string `locationName:"reservedInstancesOfferingId" type:"string"`
 }
 
 type DescribeReservedInstancesOfferingsOutput struct {
