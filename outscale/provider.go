@@ -103,6 +103,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_listeners":       GetResource(lbu, "outscale_load_balancer_listeners")(),
 			"outscale_load_balancer_attributes":      GetResource(lbu, "outscale_load_balancer_attributes")(),
 			"outscale_load_balancer_tags":            GetResource(lbu, "outscale_load_balancer_tags")(),
+			"outscale_reserved_vms_offer_purchase":   GetResource(fcu, "outscale_reserved_vms_offer_purchase")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),

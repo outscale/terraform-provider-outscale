@@ -10363,55 +10363,51 @@ type UnassignPrivateIpAddressesInput struct {
 	PrivateIpAddresses []*string `locationName:"privateIpAddress" locationNameList:"PrivateIpAddress" type:"list" required:"true"`
 }
 
-// String returns the string representation
-func (s UnassignPrivateIpAddressesInput) String() string {
-	return awsutil.Prettify(s)
+type PurchaseReservedInstancesOfferingInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The number of Reserved Instances to purchase.
+	//
+	// InstanceCount is a required field
+	InstanceCount *int64 `type:"integer" required:"true"`
+
+	// Specified for Reserved Instance Marketplace offerings to limit the total
+	// order and ensure that the Reserved Instances are not purchased at unexpected
+	// prices.
+	LimitPrice *ReservedInstanceLimitPrice `locationName:"limitPrice" type:"structure"`
+
+	// The ID of the Reserved Instance offering to purchase.
+	//
+	// ReservedInstancesOfferingId is a required field
+	ReservedInstancesOfferingId *string `type:"string" required:"true"`
 }
 
-// GoString returns the string representation
-func (s UnassignPrivateIpAddressesInput) GoString() string {
-	return s.String()
+type PurchaseReservedInstancesOfferingOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of the purchased Reserved Instances.
+	ReservedInstancesId *string `locationName:"reservedInstancesId" type:"string"`
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *UnassignPrivateIpAddressesInput) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "UnassignPrivateIpAddressesInput"}
-	if s.NetworkInterfaceId == nil {
-		invalidParams.Add(request.NewErrParamRequired("NetworkInterfaceId"))
-	}
-	if s.PrivateIpAddresses == nil {
-		invalidParams.Add(request.NewErrParamRequired("PrivateIpAddresses"))
-	}
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ReservedInstanceLimitPrice
+type ReservedInstanceLimitPrice struct {
+	_ struct{} `type:"structure"`
 
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
+	// Used for Reserved Instance Marketplace offerings. Specifies the limit price
+	// on the total order (instanceCount * price).
+	Amount *float64 `locationName:"amount" type:"double"`
+
+	// The currency in which the limitPrice amount is specified. At this time, the
+	// only supported currency is USD.
+	CurrencyCode *string `locationName:"currencyCode" type:"string" enum:"CurrencyCodeValues"`
 }
 
-// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
-func (s *UnassignPrivateIpAddressesInput) SetNetworkInterfaceId(v string) *UnassignPrivateIpAddressesInput {
-	s.NetworkInterfaceId = &v
-	return s
-}
-
-// SetPrivateIpAddresses sets the PrivateIpAddresses field's value.
-func (s *UnassignPrivateIpAddressesInput) SetPrivateIpAddresses(v []*string) *UnassignPrivateIpAddressesInput {
-	s.PrivateIpAddresses = v
-	return s
-}
-
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/UnassignPrivateIpAddressesOutput
 type UnassignPrivateIpAddressesOutput struct {
 	_ struct{} `type:"structure"`
-}
-
-// String returns the string representation
-func (s UnassignPrivateIpAddressesOutput) String() string {
-	return awsutil.Prettify(s)
-}
-
-// GoString returns the string representation
-func (s UnassignPrivateIpAddressesOutput) GoString() string {
-	return s.String()
 }
