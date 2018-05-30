@@ -119,7 +119,7 @@ func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interfac
 		for _, v := range ri.([]interface{}) {
 			ids = append(ids, aws.String(v.(string)))
 		}
-		req.ReservedInstancesOfferingId = ids
+		req.ReservedInstancesOfferingIds = ids
 	}
 	if filterOk {
 		req.Filters = buildOutscaleDataSourceFilters(filter.(*schema.Set))

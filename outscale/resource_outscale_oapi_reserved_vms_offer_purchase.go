@@ -194,14 +194,14 @@ func resourceOutscaleOAPIReservedVmsOfferPurchaseRead(d *schema.ResourceData, me
 		return fmt.Errorf("outscale_reserved_vms_offer_purchase not found")
 	}
 
-	if len(resp.ReservedInstancesOfferings) == 0 {
+	if len(resp.ReservedInstancesOfferingsSet) == 0 {
 		d.SetId("")
 		return fmt.Errorf("outscale_reserved_vms_offer_purchase not found")
 	}
 
-	rs := make([]map[string]interface{}, len(resp.ReservedInstancesOfferings))
+	rs := make([]map[string]interface{}, len(resp.ReservedInstancesOfferingsSet))
 
-	for k, v := range resp.ReservedInstancesOfferings {
+	for k, v := range resp.ReservedInstancesOfferingsSet {
 		r := make(map[string]interface{})
 
 		r["sub_region"] = *v.AvailabilityZone
@@ -210,13 +210,13 @@ func resourceOutscaleOAPIReservedVmsOfferPurchaseRead(d *schema.ResourceData, me
 		r["fixed_price"] = *v.FixedPrice
 		r["vm_tenancy"] = *v.InstanceTenancy
 		r["vm_type"] = *v.InstanceType
-		r["marketplace"] = *v.Marketplace
+		r["marketplace"] = *v.Martketplace
 		r["offering_type"] = *v.OfferingType
 		r["product_description"] = *v.ProductDescription
 		r["reserved_vms_offer_id"] = *v.ReservedInstancesOfferingId
 		r["usage_price"] = *v.UsagePrice
 		var a []map[string]interface{}
-		for _, j := range v.PricingDetails {
+		for _, j := range v.PricingDetailsSet {
 			a = append(a, map[string]interface{}{
 				"count": *j.Count,
 			})

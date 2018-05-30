@@ -94,6 +94,7 @@ func init() {
 			"outscale_load_balancer_tags":          resourceOutscaleOAPILBUTags,
 			"outscale_image_tasks":                 resourceOutscaleOAPIImageTasks,
 			"outscale_reserved_vms_offer_purchase": resourceOutscaleOAPIReservedVmsOfferPurchase,
+			"outscale_vpn_gateway":                 resourceOutscaleOAPIVpnGateway,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,

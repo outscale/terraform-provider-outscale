@@ -80,7 +80,7 @@ func testAccCheckOutscaleReservedVmsOfferPurchaseExists(n string) resource.TestC
 			return err
 		}
 
-		if len(resp.ReservedInstancesOfferings) > 0 && *resp.ReservedInstancesOfferings[0].ReservedInstancesOfferingId == rs.Primary.ID {
+		if len(resp.ReservedInstancesOfferingsSet) > 0 && *resp.ReservedInstancesOfferingsSet[0].ReservedInstancesOfferingId == rs.Primary.ID {
 			return nil
 		}
 
