@@ -13,7 +13,7 @@ import (
 )
 
 // UnmarshalXML unmarshals a response body for the XML protocol.
-func UnmarshalXML(v interface{}, r *http.Response) error {
+func UnmarshalXML(v interface{}, r *http.Response, operation string) error {
 
 	defer r.Body.Close()
 

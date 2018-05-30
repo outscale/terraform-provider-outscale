@@ -8,7 +8,16 @@ import (
 )
 
 // URLEncodeMarshalHander encodes the body to url encode
-func URLEncodeMarshalHander(v interface{}, action, version string, isLBU bool) (string, error) {
+func URLEncodeMarshalHander(v interface{}, action, version string) (string, error) {
+	return marshal(v, action, version, true)
+}
+
+// URLLBUEncodeMarshalHander ...
+func URLLBUEncodeMarshalHander(v interface{}, action, version string) (string, error) {
+	return marshal(v, action, version, false)
+}
+
+func marshal(v interface{}, action, version string, isLBU bool) (string, error) {
 	body := url.Values{
 		"Action":  {action},
 		"Version": {version},

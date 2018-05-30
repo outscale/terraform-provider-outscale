@@ -343,6 +343,22 @@
 #   cidr_block = "10.0.0.0/16"
 # }
 
-data "outscale_quota" "outscale_quota" {
-  quota_name = "vm_limit"
+resource "outscale_load_balancer" "bar" {
+  availability_zones = ["eu-west-2a"]
+  load_balancer_name = "foobar-terraform-elb"
+
+  listeners {
+    instance_port      = 8000
+    instance_protocol  = "HTTP"
+    load_balancer_port = 80
+    protocol           = "HTTP"
+  }
+
+  tag {
+    bar = "baz"
+  }
+}
+
+data "outscale_load_balancer_listener_description" "test" {
+  load_balancer_name = "${outscale_load_balancer.bar.id}"
 }

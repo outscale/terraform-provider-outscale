@@ -88,17 +88,16 @@ func buildClient() *Client {
 func buildTestHandler(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error) {
 	reader := strings.NewReader("{}")
 	req, _ := http.NewRequest(method, url, reader)
-
 	req.Header.Add("Content-Type", mediaTypeURLEncoded)
 
 	return req, reader, nil
 }
 
-func testBuildRequestHandler(v interface{}, action, version string, isLBU bool) (string, error) {
+func testBuildRequestHandler(v interface{}, action, version string) (string, error) {
 	return "{}", nil
 }
 
-func unmarshalTestHandler(v interface{}, req *http.Response) error {
+func unmarshalTestHandler(v interface{}, req *http.Response, op string) error {
 	return nil
 }
 
