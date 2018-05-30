@@ -31,19 +31,19 @@ func dataSourceOutscaleOAPILoadBalancerAttr() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"emit_interval": &schema.Schema{
+									"publication_interval": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"enabled": &schema.Schema{
+									"is_enabled": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"s3_bucket_name": &schema.Schema{
+									"osu_bucket_name": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"s3_bucket_prefix": &schema.Schema{
+									"osu_bucket_prefix": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -107,10 +107,10 @@ func dataSourceOutscaleOAPILoadBalancerAttrRead(d *schema.ResourceData, meta int
 	ld := make([]map[string]interface{}, 1)
 	acc := make(map[string]interface{})
 
-	acc["emit_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	acc["enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	acc["s3_bucket_name"] = aws.StringValue(a.S3BucketName)
-	acc["s3_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
+	acc["publication_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
+	acc["is_enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
+	acc["osu_bucket_name"] = aws.StringValue(a.S3BucketName)
+	acc["osu_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
 
 	ld[0] = map[string]interface{}{"access_log": acc}
 
