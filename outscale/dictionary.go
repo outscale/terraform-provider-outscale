@@ -91,6 +91,7 @@ func init() {
 			"outscale_load_balancer_attributes":   resourceOutscaleOAPILoadBalancerAttributes,
 			"outscale_load_balancer_vms":          resourceOutscaleOAPILBUAttachment,
 			"outscale_load_balancer_tags":         resourceOutscaleOAPILBUTags,
+			"outscale_image_tasks":                resourceOutscaleOAPIImageTasks,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
