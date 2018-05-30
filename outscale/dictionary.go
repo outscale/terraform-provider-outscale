@@ -198,6 +198,7 @@ func init() {
 			"outscale_vm_health":                          dataSourceOutscaleOAPIVMHealth,
 			"outscale_load_balancer_health_check":         dataSourceOutscaleOAPILoadBalancerHealthCheck,
 			"outscale_load_balancer_listener_description": dataSourceOutscaleOAPILoadBalancerLD,
+			"outscale_load_balancer_attributes":           dataSourceOutscaleOAPILoadBalancerAttr,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                      dataSourceOutscaleLoadBalancer,
@@ -207,6 +208,7 @@ func init() {
 			"outscale_vm_health":                          dataSourceOutscaleVMHealth,
 			"outscale_load_balancer_health_check":         dataSourceOutscaleLoadBalancerHealthCheck,
 			"outscale_load_balancer_listener_description": dataSourceOutscaleLoadBalancerLD,
+			"outscale_load_balancer_attributes":           dataSourceOutscaleLoadBalancerAttr,
 		},
 	}
 }
