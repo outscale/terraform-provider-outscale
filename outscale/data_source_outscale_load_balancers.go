@@ -21,7 +21,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"load_balancer_descriptions_member": &schema.Schema{
+			"load_balancer_descriptions": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -30,7 +30,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"availability_zones_member": &schema.Schema{
+						"availability_zones": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -67,7 +67,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 								},
 							},
 						},
-						"instances_member": &schema.Schema{
+						"instances": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -79,7 +79,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 								},
 							},
 						},
-						"listener_descriptions_member": &schema.Schema{
+						"listener_descriptions": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -112,7 +112,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 											},
 										},
 									},
-									"policy_names_member": &schema.Schema{
+									"policy_names": &schema.Schema{
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -125,7 +125,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"app_cookie_stickiness_policies_member": &schema.Schema{
+									"app_cookie_stickiness_policies": &schema.Schema{
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Resource{
@@ -141,7 +141,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 											},
 										},
 									},
-									"lb_cookie_stickiness_policies_member": &schema.Schema{
+									"lb_cookie_stickiness_policies": &schema.Schema{
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Resource{
@@ -153,7 +153,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 											},
 										},
 									},
-									"other_policies_member": &schema.Schema{
+									"other_policies": &schema.Schema{
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -165,7 +165,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"security_groups_member": &schema.Schema{
+						"security_groups": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -186,7 +186,7 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 								},
 							},
 						},
-						"subnets_member": &schema.Schema{
+						"subnets": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -225,7 +225,7 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -250,15 +250,15 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 	for k, v := range describeResp.LoadBalancerDescriptions {
 		l := make(map[string]interface{})
 
-		l["availability_zones_member"] = flattenStringList(v.AvailabilityZones)
+		l["availability_zones"] = flattenStringList(v.AvailabilityZones)
 		l["dns_name"] = aws.StringValue(v.DNSName)
 		if *v.HealthCheck.Target != "" {
 			l["health_check"] = flattenHealthCheck(v.HealthCheck)
 		} else {
 			l["health_check"] = make(map[string]interface{})
 		}
-		l["instances_member"] = flattenInstances(v.Instances)
-		l["listener_descriptions_member"] = flattenListeners(v.ListenerDescriptions)
+		l["instances"] = flattenInstances(v.Instances)
+		l["listener_descriptions"] = flattenListeners(v.ListenerDescriptions)
 		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
 
 		policies := make(map[string]interface{})
@@ -271,28 +271,28 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 				a["policy_name"] = aws.StringValue(v.PolicyName)
 				app[k] = a
 			}
-			policies["app_cookie_stickiness_policies_member"] = app
+			policies["app_cookie_stickiness_policies"] = app
 			vc := make([]map[string]interface{}, len(v.Policies.LBCookieStickinessPolicies))
 			for k, v := range v.Policies.LBCookieStickinessPolicies {
 				a := make(map[string]interface{})
 				a["policy_name"] = aws.StringValue(v.PolicyName)
 				vc[k] = a
 			}
-			policies["lb_cookie_stickiness_policies_member"] = vc
-			policies["other_policies_member"] = flattenStringList(v.Policies.OtherPolicies)
+			policies["lb_cookie_stickiness_policies"] = vc
+			policies["other_policies"] = flattenStringList(v.Policies.OtherPolicies)
 		}
 
 		pl[0] = policies
 		l["policies"] = pl
 		l["scheme"] = aws.StringValue(v.Scheme)
-		l["security_groups_member"] = flattenStringList(v.SecurityGroups)
+		l["security_groups"] = flattenStringList(v.SecurityGroups)
 		ssg := make(map[string]string)
 		if v.SourceSecurityGroup != nil {
 			ssg["group_name"] = aws.StringValue(v.SourceSecurityGroup.GroupName)
 			ssg["owner_alias"] = aws.StringValue(v.SourceSecurityGroup.OwnerAlias)
 		}
 		l["source_security_group"] = ssg
-		l["subnets_member"] = flattenStringList(v.Subnets)
+		l["subnets"] = flattenStringList(v.Subnets)
 		l["vpc_id"] = aws.StringValue(v.VPCId)
 
 		lbs[k] = l
@@ -301,5 +301,5 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 	// d.Set("request_id", describeResp.RequestID)
 	d.SetId(resource.UniqueId())
 
-	return d.Set("load_balancer_descriptions_member", lbs)
+	return d.Set("load_balancer_descriptions", lbs)
 }

@@ -823,3 +823,45 @@ type TagKeyOnly struct {
 	// The name of the key.
 	Key *string `min:"1" type:"string"`
 }
+
+// DescribeInstanceHealthInput ...
+type DescribeInstanceHealthInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of the instances.
+	Instances []*Instance `type:"list"`
+
+	// The name of the load balancer.
+	//
+	// LoadBalancerName is a required field
+	LoadBalancerName *string `type:"string" required:"true"`
+}
+
+// DescribeInstanceHealthOutput ...
+type DescribeInstanceHealthOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the health of the instances.
+	InstanceStates []*InstanceState `type:"list"`
+}
+
+// InstanceState ...
+type InstanceState struct {
+	_ struct{} `type:"structure"`
+
+	Description *string `type:"string"`
+
+	// The ID of the instance.
+	InstanceId *string `type:"string"`
+
+	// Information about the cause of OutOfService instances. Specifically, whether
+	// the cause is Elastic Load Balancing or the instance.
+	//
+	// Valid values: ELB | Instance | N/A
+	ReasonCode *string `type:"string"`
+
+	// The current state of the instance.
+	//
+	// Valid values: InService | OutOfService | Unknown
+	State *string `type:"string"`
+}

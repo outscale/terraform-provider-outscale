@@ -9,7 +9,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
-func TestAccOutscaleDSLBU_basic(t *testing.T) {
+func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -30,28 +30,27 @@ func TestAccOutscaleDSLBU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleLBUConfig,
+				Config: testAccDSOutscaleOAPILBUHConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
-					testAccCheckOutscaleLBUAttributes(&conf),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "availability_zones.#", "1"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "availability_zones.0", "eu-west-2a"),
+					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_load_balancer_health_check.test", "healthy_threshold"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_load_balancer_health_check.test", "check_interval"),
 				)},
 		},
 	})
 }
 
-const testAccDSOutscaleLBUConfig = `
+const testAccDSOutscaleOAPILBUHConfig = `
 resource "outscale_load_balancer" "bar" {
-  availability_zones = ["eu-west-2a"]
+  sub_regions = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
-  listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
+  listener {
+    backend_port = 8000
+    backend_protocol = "HTTP"
     load_balancer_port = 80
-    protocol = "HTTP"
+    load_balancer_protocol = "HTTP"
   }
 
 	tag {
@@ -59,7 +58,7 @@ resource "outscale_load_balancer" "bar" {
 	}
 }
 
-data "outscale_load_balancer" "test" {
+data "outscale_load_balancer_health_check" "test" {
 	load_balancer_name = "${outscale_load_balancer.bar.id}"
 }
 `

@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
-func TestAccOutscaleDSLBSU_basic(t *testing.T) {
+func TestAccOutscaleDSLBUH_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -20,6 +21,8 @@ func TestAccOutscaleDSLBSU_basic(t *testing.T) {
 		t.Skip()
 	}
 
+	var conf lbu.LoadBalancerDescription
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer.bar",
@@ -27,15 +30,19 @@ func TestAccOutscaleDSLBSU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleLBsUConfig,
+				Config: testAccDSOutscaleLBUHConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer_descriptions.#", "1"),
+					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_load_balancer_health_check.test", "healthy_threshold"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_load_balancer_health_check.test", "interval"),
 				)},
 		},
 	})
 }
 
-const testAccDSOutscaleLBsUConfig = `
+const testAccDSOutscaleLBUHConfig = `
 resource "outscale_load_balancer" "bar" {
   availability_zones = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
@@ -43,7 +50,6 @@ resource "outscale_load_balancer" "bar" {
     instance_port = 8000
     instance_protocol = "HTTP"
     load_balancer_port = 80
-    // Protocol should be case insensitive
     protocol = "HTTP"
   }
 
@@ -52,7 +58,7 @@ resource "outscale_load_balancer" "bar" {
 	}
 }
 
-data "outscale_load_balancers" "test" {
-	load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+data "outscale_load_balancer_health_check" "test" {
+	load_balancer_name = "${outscale_load_balancer.bar.id}"
 }
 `

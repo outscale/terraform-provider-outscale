@@ -16,7 +16,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 		Read: dataSourceOutscaleLoadBalancerRead,
 
 		Schema: map[string]*schema.Schema{
-			"availability_zones_member": &schema.Schema{
+			"availability_zones": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -29,12 +29,12 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"security_groups_member": &schema.Schema{
+			"security_groups": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"subnets_member": &schema.Schema{
+			"subnets": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -73,7 +73,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"instances_member": &schema.Schema{
+			"instances": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -85,7 +85,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"listener_descriptions_member": &schema.Schema{
+			"listener_descriptions": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -118,7 +118,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"policy_names_member": &schema.Schema{
+						"policy_names": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -151,7 +151,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"app_cookie_stickiness_policies_member": &schema.Schema{
+						"app_cookie_stickiness_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -167,7 +167,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"lb_cookie_stickiness_policies_member": &schema.Schema{
+						"lb_cookie_stickiness_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -179,7 +179,7 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 								},
 							},
 						},
-						"other_policies_member": &schema.Schema{
+						"other_policies": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -243,7 +243,7 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
-	d.Set("availability_zones_member", flattenStringList(lb.AvailabilityZones))
+	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
 	if *lb.HealthCheck.Target != "" {
 		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
@@ -251,16 +251,16 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		d.Set("health_check", make(map[string]interface{}))
 	}
 	if lb.Instances != nil {
-		d.Set("instances_member", flattenInstances(lb.Instances))
+		d.Set("instances", flattenInstances(lb.Instances))
 	} else {
-		d.Set("instances_member", make([]map[string]interface{}, 0))
+		d.Set("instances", make([]map[string]interface{}, 0))
 	}
 	if lb.ListenerDescriptions != nil {
-		if err := d.Set("listener_descriptions_member", flattenListeners(lb.ListenerDescriptions)); err != nil {
+		if err := d.Set("listener_descriptions", flattenListeners(lb.ListenerDescriptions)); err != nil {
 			return err
 		}
 	} else {
-		if err := d.Set("listener_descriptions_member", make([]map[string]interface{}, 0)); err != nil {
+		if err := d.Set("listener_descriptions", make([]map[string]interface{}, 0)); err != nil {
 			return err
 		}
 	}
@@ -275,28 +275,28 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			app[k] = a
 		}
-		policies["app_cookie_stickiness_policies_member"] = app
+		policies["app_cookie_stickiness_policies"] = app
 		lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies))
 		for k, v := range lb.Policies.LBCookieStickinessPolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = aws.StringValue(v.PolicyName)
 			lbc[k] = a
 		}
-		policies["lb_cookie_stickiness_policies_member"] = lbc
-		policies["other_policies_member"] = flattenStringList(lb.Policies.OtherPolicies)
+		policies["lb_cookie_stickiness_policies"] = lbc
+		policies["other_policies"] = flattenStringList(lb.Policies.OtherPolicies)
 	} else {
 		lbc := make([]map[string]interface{}, 0)
-		policies["lb_cookie_stickiness_policies_member"] = lbc
-		policies["other_policies_member"] = lbc
+		policies["lb_cookie_stickiness_policies"] = lbc
+		policies["other_policies"] = lbc
 	}
 	pl := make([]map[string]interface{}, 1)
 	pl[0] = policies
 	d.Set("policies", pl)
 	d.Set("scheme", aws.StringValue(lb.Scheme))
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
 	} else {
-		d.Set("security_groups_member", make([]map[string]interface{}, 0))
+		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
@@ -304,7 +304,7 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 		ssg["owner_alias"] = aws.StringValue(lb.SourceSecurityGroup.OwnerAlias)
 	}
 	d.Set("source_security_group", ssg)
-	d.Set("subnets_member", flattenStringList(lb.Subnets))
+	d.Set("subnets", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", aws.StringValue(lb.VPCId))
 	// d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(*lb.LoadBalancerName)
