@@ -431,7 +431,7 @@ func (v VMOperations) ReleaseAddress(input *ReleaseAddressInput) (*ReleaseAddres
 
 func (v VMOperations) RegisterImage(input *RegisterImageInput) (*RegisterImageOutput, error) {
 	inURL := "/"
-	endpoint := "CreateImage"
+	endpoint := "RegisterImage"
 	output := &RegisterImageOutput{}
 
 	if input == nil {
