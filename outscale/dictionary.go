@@ -97,6 +97,8 @@ func init() {
 			"outscale_vpn_gateway":                   resourceOutscaleOAPIVpnGateway,
 			"outscale_vpn_gateway_route_propagation": resourceOutscaleOAPIVpnGatewayRoutePropagation,
 			"outscale_snapshot_export_task":          resourceOutscaleOAPIImageExportTasks,
+			"outscale_vpn_connection_route":          resourceOutscaleOAPIVpnConnectionRoute,
+			"outscale_vpn_connection":                resourceOutscaleOAPIVpnConnection,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -206,6 +208,9 @@ func init() {
 			"outscale_load_balancer_listener_description":  dataSourceOutscaleOAPILoadBalancerLD,
 			"outscale_load_balancer_listener_descriptions": dataSourceOutscaleOAPILoadBalancerLDs,
 			"outscale_load_balancer_attributes":            dataSourceOutscaleOAPILoadBalancerAttr,
+			"outscale_regions":                             dataSourceOutscaleOAPIRegions,
+			"outscale_reserved_vms_offer":                  dataSourceOutscaleOAPIReservedVMOffer,
+			"outscale_reserved_vms":                        dataSourceOutscaleOAPIReservedVMS,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,

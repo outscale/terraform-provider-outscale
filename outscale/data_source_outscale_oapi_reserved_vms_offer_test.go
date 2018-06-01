@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIReservedVMSOffer(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	t.Skip()
@@ -18,7 +18,7 @@ func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleReservedVMSOfferConfig,
+				Config: testAccDataSourceOutscaleOAPIReservedVMSOfferConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.outscale_reserved_vms_offer.test", "reserved_instances_offering_id"),
 				),
@@ -36,6 +36,6 @@ func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleReservedVMSOfferConfig = `
+const testAccDataSourceOutscaleOAPIReservedVMSOfferConfig = `
 data "outscale_reserved_vms_offer" "test" {}
 `
