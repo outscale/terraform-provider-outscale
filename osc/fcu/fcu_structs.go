@@ -1381,40 +1381,25 @@ func (s *DescribeSecurityGroupsOutput) SetRequestId(v string) *DescribeSecurityG
 }
 
 type SecurityGroup struct {
-	_ struct{} `type:"structure"`
-
-	Description *string `locationName:"groupDescription" type:"string"`
-
-	GroupId *string `locationName:"groupId" type:"string"`
-
-	GroupName *string `locationName:"groupName" type:"string"`
-
-	IpPermissions []*IpPermission `locationName:"ipPermissions" locationNameList:"item" type:"list"`
-
+	_                   struct{}        `type:"structure"`
+	Description         *string         `locationName:"groupDescription" type:"string"`
+	GroupId             *string         `locationName:"groupId" type:"string"`
+	GroupName           *string         `locationName:"groupName" type:"string"`
+	IpPermissions       []*IpPermission `locationName:"ipPermissions" locationNameList:"item" type:"list"`
 	IpPermissionsEgress []*IpPermission `locationName:"ipPermissionsEgress" locationNameList:"item" type:"list"`
-
-	OwnerId *string `locationName:"ownerId" type:"string"`
-
-	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
-
-	VpcId *string `locationName:"vpcId" type:"string"`
+	OwnerId             *string         `locationName:"ownerId" type:"string"`
+	Tags                []*Tag          `locationName:"tagSet" locationNameList:"item" type:"list"`
+	VpcId               *string         `locationName:"vpcId" type:"string"`
 }
 
 type IpPermission struct {
-	_ struct{} `type:"structure"`
-
-	FromPort *int64 `locationName:"fromPort" type:"integer"`
-
-	IpProtocol *string `locationName:"ipProtocol" type:"string"`
-
-	IpRanges []*IpRange `locationName:"ipRanges" locationNameList:"item" type:"list"`
-
-	Ipv6Ranges []*Ipv6Range `locationName:"ipv6Ranges" locationNameList:"item" type:"list"`
-
-	PrefixListIds []*PrefixListId `locationName:"prefixListIds" locationNameList:"item" type:"list"`
-
-	ToPort *int64 `locationName:"toPort" type:"integer"`
-
+	_                struct{}           `type:"structure"`
+	FromPort         *int64             `locationName:"fromPort" type:"integer"`
+	IpProtocol       *string            `locationName:"ipProtocol" type:"string"`
+	IpRanges         []*IpRange         `locationName:"ipRanges" locationNameList:"item" type:"list"`
+	Ipv6Ranges       []*Ipv6Range       `locationName:"ipv6Ranges" locationNameList:"item" type:"list"`
+	PrefixListIds    []*PrefixListId    `locationName:"prefixListIds" locationNameList:"item" type:"list"`
+	ToPort           *int64             `locationName:"toPort" type:"integer"`
 	UserIdGroupPairs []*UserIdGroupPair `locationName:"groups" locationNameList:"item" type:"list"`
 }
 
@@ -8178,12 +8163,12 @@ type InstanceType struct {
 }
 
 type DescribeReservedInstancesOfferingsInput struct {
-	AvailabilityZone            *string   `locationName:"availabilityZone" type:"string"`
-	Filters                     []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
-	InstanceTenancy             *string   `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
-	InstanceType                *string   `locationName:"instanceType" type:"string" enum:"InstanceType"`
-	OfferingType                *string   `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
-	ProductDescription          *string   `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
+	AvailabilityZone             *string   `locationName:"availabilityZone" type:"string"`
+	Filters                      []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+	InstanceTenancy              *string   `locationName:"instanceTenancy" type:"string" enum:"Tenancy"`
+	InstanceType                 *string   `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	OfferingType                 *string   `locationName:"offeringType" type:"string" enum:"OfferingTypeValues"`
+	ProductDescription           *string   `locationName:"productDescription" type:"string" enum:"RIProductDescription"`
 	ReservedInstancesOfferingIds []*string `locationName:"reservedInstancesOfferingId" type:"string"`
 }
 
@@ -10409,5 +10394,169 @@ type ReservedInstanceLimitPrice struct {
 }
 
 type UnassignPrivateIpAddressesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// Contains the parameters for CreateVpcEndpoint.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcEndpointRequest
+type CreateVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure the idempotency of
+	// the request. For more information, see How to Ensure Idempotency (http://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// A policy to attach to the endpoint that controls access to the service. The
+	// policy must be in valid JSON format. If this parameter is not specified,
+	// we attach a default policy that allows full access to the service.
+	PolicyDocument *string `type:"string"`
+
+	// One or more route table IDs.
+	RouteTableIds []*string `locationName:"RouteTableId" locationNameList:"item" type:"list"`
+
+	// The AWS service name, in the form com.amazonaws.region.service. To get a
+	// list of available services, use the DescribeVpcEndpointServices request.
+	//
+	// ServiceName is a required field
+	ServiceName *string `type:"string" required:"true"`
+
+	// The ID of the VPC in which the endpoint will be used.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// Contains the output of CreateVpcEndpoint.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateVpcEndpointResult
+type CreateVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier you provide to ensure the idempotency of
+	// the request.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Information about the endpoint.
+	VpcEndpoint *VpcEndpoint `locationName:"vpcEndpoint" type:"structure"`
+}
+
+// Describes a VPC endpoint.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/VpcEndpoint
+type VpcEndpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time the VPC endpoint was created.
+	CreationTimestamp *time.Time `locationName:"creationTimestamp" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The policy document associated with the endpoint.
+	PolicyDocument *string `locationName:"policyDocument" type:"string"`
+
+	// One or more route tables associated with the endpoint.
+	RouteTableIds []*string `locationName:"routeTableIdSet" locationNameList:"item" type:"list"`
+
+	// The name of the AWS service to which the endpoint is associated.
+	ServiceName *string `locationName:"serviceName" type:"string"`
+
+	// The state of the VPC endpoint.
+	State *string `locationName:"state" type:"string" enum:"State"`
+
+	// The ID of the VPC endpoint.
+	VpcEndpointId *string `locationName:"vpcEndpointId" type:"string"`
+
+	// The ID of the VPC to which the endpoint is associated.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// Contains the parameters for DescribeVpcEndpoints.
+type DescribeVpcEndpointsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * service-name: The name of the service.
+	//
+	//    * vpc-id: The ID of the VPC in which the endpoint resides.
+	//
+	//    * vpc-endpoint-id: The ID of the endpoint.
+	//
+	//    * vpc-endpoint-state: The state of the endpoint. (pending | available
+	//    | deleting | deleted)
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of items to return for this request. The request returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	//
+	// Constraint: If the value is greater than 1000, we return only 1000 items.
+	MaxResults *int64 `type:"integer"`
+
+	// The token for the next set of items to return. (You received this token from
+	// a prior call.)
+	NextToken *string `type:"string"`
+
+	// One or more endpoint IDs.
+	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list"`
+}
+
+// Contains the output of DescribeVpcEndpoints.
+type DescribeVpcEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use when requesting the next set of items. If there are no additional
+	// items to return, the string is empty.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Information about the endpoints.
+	VpcEndpoints []*VpcEndpoint `locationName:"vpcEndpointSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+type ModifyVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun              *bool     `type:"boolean"`
+	PolicyDocument      *string   `type:"string"`                                                         // A policy document to attach to the endpoint. The policy must be in valid JSON format.
+	RemoveRouteTableIds []*string `locationName:"RemoveRouteTableId" locationNameList:"item" type:"list"` // One or more route table IDs to disassociate from the endpoint.
+	ResetPolicy         *bool     `type:"boolean"`                                                        // Specify true to reset the policy document to the default policy. The default policy allows access to the service.
+	VpcEndpointId       *string   `type:"string" required:"true"`                                         //The ID of the endpoint. VpcEndpointId is a required field
+	AddRouteTableIds    []*string `locationName:"AddRouteTableId" locationNameList:"item" type:"list"`    // One or more route tables IDs to associate with the endpoint.
+}
+
+// Contains the output of ModifyVpcEndpoint.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/ModifyVpcEndpointResult
+type ModifyVpcEndpointOutput struct {
+	_      struct{} `type:"structure"`
+	Return *bool    `locationName:"return" type:"boolean"` // Returns true if the request succeeds; otherwise, it returns an error.
+}
+
+type DeleteVpcEndpointsInput struct {
+	_              struct{}  `type:"structure"`
+	VpcEndpointIds []*string `locationName:"VpcEndpointId" locationNameList:"item" type:"list" required:"true"` // One or more endpoint IDs. VpcEndpointIds is a required field
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+}
+
+// Contains the output of DeleteVpcEndpoints.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteVpcEndpointsResult
+type DeleteVpcEndpointsOutput struct {
 	_ struct{} `type:"structure"`
 }
