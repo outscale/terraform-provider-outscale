@@ -8,17 +8,15 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIRegions(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
-
-	t.Skip()
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 
@@ -27,15 +25,22 @@ func TestAccDataSourceOutscaleReservedVMSOffer(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleReservedVMSOfferConfig,
+				Config: testAccDataSourceOutscaleOAPIRegionsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.outscale_reserved_vms_offer.test", "reserved_instances_offering_id"),
+					resource.TestCheckResourceAttr("data.outscale_regions.by_name_current", "region_info.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-const testAccDataSourceOutscaleReservedVMSOfferConfig = `
-data "outscale_reserved_vms_offer" "test" {}
+const testAccDataSourceOutscaleOAPIRegionsConfig = `
+data "outscale_regions" "by_name_current" {
+  filter {
+		name = "region-name"
+		values = ["eu-west-2"]
+	}
+}
+
+
 `

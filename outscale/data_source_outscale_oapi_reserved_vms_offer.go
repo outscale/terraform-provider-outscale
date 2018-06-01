@@ -11,35 +11,35 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleReservedVMOffer() *schema.Resource {
+func dataSourceOutscaleOAPIReservedVMOffer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleReservedVMOfferRead,
+		Read: dataSourceOutscaleOAPIReservedVMOfferRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"reserved_instances_offering_id": &schema.Schema{
+			"reserved_vms_offer_id": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"pricing_details_set": &schema.Schema{
+			"pricing_detail": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"count": &schema.Schema{
+						"vm_count": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"availability_zone": &schema.Schema{
+			"sub_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"instance_tenancy": &schema.Schema{
+			"tenancy": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -49,7 +49,7 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"product_description": &schema.Schema{
+			"product_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -58,7 +58,7 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"instance_type": &schema.Schema{
+			"type": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -66,7 +66,7 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"recurring_charges": &schema.Schema{
+			"recurring_charge": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -86,15 +86,15 @@ func dataSourceOutscaleReservedVMOffer() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIReservedVMOfferRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	az, azok := d.GetOk("availability_zone")
-	it, itok := d.GetOk("instance_tenancy")
-	ity, ityok := d.GetOk("instance_type")
-	pd, pdok := d.GetOk("product_description")
+	az, azok := d.GetOk("sub_region_name")
+	it, itok := d.GetOk("tenancy")
+	ity, ityok := d.GetOk("type")
+	pd, pdok := d.GetOk("product_type")
 	ot, otok := d.GetOk("offering_type")
-	ri, riok := d.GetOk("reserved_instances_offering_id")
+	ri, riok := d.GetOk("reserved_vms_offer_id")
 	filter, filterOk := d.GetOk("filter")
 
 	req := &fcu.DescribeReservedInstancesOfferingsInput{}
@@ -153,14 +153,14 @@ func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interfac
 
 	v := resp.ReservedInstancesOfferingsSet[0]
 
-	d.Set("availability_zone", v.AvailabilityZone)
+	d.Set("sub_region_name", v.AvailabilityZone)
 	d.Set("currency_code", v.CurrencyCode)
-	d.Set("instance_tenancy", v.InstanceTenancy)
-	d.Set("instance_type", v.InstanceType)
+	d.Set("tenancy", v.InstanceTenancy)
+	d.Set("type", v.InstanceType)
 	d.Set("marketplace", v.Martketplace)
 	d.Set("offering_type", v.OfferingType)
-	d.Set("product_description", v.ProductDescription)
-	d.Set("reserved_instances_offering_id", v.ReservedInstancesOfferingId)
+	d.Set("product_type", v.ProductDescription)
+	d.Set("reserved_vms_offer_id", v.ReservedInstancesOfferingId)
 
 	rcs := make([]map[string]interface{}, len(v.RecurringCharges))
 	for k1, v1 := range v.RecurringCharges {
@@ -169,16 +169,16 @@ func dataSourceOutscaleReservedVMOfferRead(d *schema.ResourceData, meta interfac
 		rcs[k1] = rc
 	}
 
-	d.Set("recurring_charges", rcs)
+	d.Set("recurring_charge", rcs)
 
 	pds := make([]map[string]interface{}, len(v.PricingDetailsSet))
 	for k1, v1 := range v.PricingDetailsSet {
 		rc := make(map[string]interface{})
-		rc["count"] = v1.Count
+		rc["vm_count"] = v1.Count
 		rcs[k1] = rc
 	}
 
-	d.Set("pricing_details_set", pds)
+	d.Set("pricing_detail", pds)
 
 	d.Set("request_id", resp.RequestId)
 

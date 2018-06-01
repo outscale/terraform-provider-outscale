@@ -131,6 +131,7 @@ type VMService interface {
 	AcceptVpcPeeringConnection(input *AcceptVpcPeeringConnectionInput) (*AcceptVpcPeeringConnectionOutput, error)
 	ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error)
 	DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error)
+	PurchaseReservedInstancesOffering(input *PurchaseReservedInstancesOfferingInput) (*PurchaseReservedInstancesOfferingOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -430,7 +431,7 @@ func (v VMOperations) ReleaseAddress(input *ReleaseAddressInput) (*ReleaseAddres
 
 func (v VMOperations) RegisterImage(input *RegisterImageInput) (*RegisterImageOutput, error) {
 	inURL := "/"
-	endpoint := "CreateImage"
+	endpoint := "RegisterImage"
 	output := &RegisterImageOutput{}
 
 	if input == nil {
@@ -2026,4 +2027,27 @@ func (v VMOperations) DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnecti
 	}
 
 	return output, nil
+}
+
+func (v VMOperations) PurchaseReservedInstancesOffering(input *PurchaseReservedInstancesOfferingInput) (*PurchaseReservedInstancesOfferingOutput, error) {
+	inURL := "/"
+	endpoint := "PurchaseReservedInstancesOffering"
+	output := &PurchaseReservedInstancesOfferingOutput{}
+
+	if input == nil {
+		input = &PurchaseReservedInstancesOfferingInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }
