@@ -59,7 +59,7 @@ func init() {
 			"outscale_nic_link":                      resourceOutscaleNetworkInterfaceAttachment,
 			"outscale_nic_private_ip":                resourceOutscaleNetworkInterfacePrivateIP,
 			"outscale_reserved_vms_offer_purchase":   resourceOutscaleReservedVmsOfferPurchase,
-			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
+			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,

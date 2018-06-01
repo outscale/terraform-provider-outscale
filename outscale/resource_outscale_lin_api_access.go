@@ -16,12 +16,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleOAPIVpcEndpoint() *schema.Resource {
+func resourceOutscaleVpcEndpoint() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIVpcEndpointCreate,
-		Read:   resourceOutscaleOAPIVpcEndpointRead,
-		Update: resourceOutscaleOAPIVpcEndpointUpdate,
-		Delete: resourceOutscaleOAPIVpcEndpointDelete,
+		Create: resourceOutscaleVpcEndpointCreate,
+		Read:   resourceOutscaleVpcEndpointRead,
+		Update: resourceOutscaleVpcEndpointUpdate,
+		Delete: resourceOutscaleVpcEndpointDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -74,7 +74,7 @@ func resourceOutscaleOAPIVpcEndpoint() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIVpcEndpointCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleVpcEndpointCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.CreateVpcEndpointInput{
@@ -111,10 +111,10 @@ func resourceOutscaleOAPIVpcEndpointCreate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	return resourceOutscaleOAPIVpcEndpointRead(d, meta)
+	return resourceOutscaleVpcEndpointRead(d, meta)
 }
 
-func resourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleVpcEndpointRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var resp *fcu.DescribeVpcEndpointsOutput
@@ -161,7 +161,7 @@ func resourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interface{
 	return vpcEndpointAttributes(d, vpce, conn)
 }
 
-func resourceOutscaleOAPIVpcEndpointUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleVpcEndpointUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.ModifyVpcEndpointInput{
@@ -207,10 +207,10 @@ func resourceOutscaleOAPIVpcEndpointUpdate(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	return resourceOutscaleOAPIVpcEndpointRead(d, meta)
+	return resourceOutscaleVpcEndpointRead(d, meta)
 }
 
-func resourceOutscaleOAPIVpcEndpointDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleVpcEndpointDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	log.Printf("[DEBUG] Deleting VPC Endpoint: %s", d.Id())
