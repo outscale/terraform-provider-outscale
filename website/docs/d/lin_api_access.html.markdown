@@ -40,7 +40,7 @@ data "outscale_lin_api_access" "test" {
 
 The following arguments are supported:
 
-* `vpc_enpoint_id` - (Required) The ID of the VPC Endpoint.
+* `vpc_enpoint_id` - (Optional) The ID of the VPC Endpoint.
 * `filter.N` - (Optional) One or more filters.
 
 ## Attributes
