@@ -170,6 +170,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_attributes":            GetDatasource(lbu, "outscale_load_balancer_attributes")(),
 			"outscale_nics":                                GetDatasource(fcu, "outscale_nics")(),
 			"outscale_nic":                                 GetDatasource(fcu, "outscale_nic")(),
+			"outscale_lin_api_access":                      GetDatasource(fcu, "outscale_lin_api_access")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
