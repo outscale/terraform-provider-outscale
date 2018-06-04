@@ -52,7 +52,10 @@ func dataSourceOutscaleVpcEndpoints() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"lin_api_access_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -148,6 +151,7 @@ func dataSourceOutscaleVpcEndpointsRead(d *schema.ResourceData, meta interface{}
 		vpce["prefix_list_id"] = aws.StringValue(plID)
 		vpce["vpc_id"] = aws.StringValue(v.VpcEndpointId)
 		vpce["service_name"] = aws.StringValue(v.ServiceName)
+		vpce["lin_api_access_id"] = aws.StringValue(v.VpcEndpointId)
 		vpce["route_table_id"] = flattenStringList(v.RouteTableIds)
 		vpce["policy"] = policy
 		vpce["state"] = aws.StringValue(v.State)

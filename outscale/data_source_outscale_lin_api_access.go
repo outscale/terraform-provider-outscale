@@ -169,7 +169,6 @@ func getPrefixList(conn *fcu.Client, serviceName string) (*string, []interface{}
 
 		return pl.PrefixListId, flattenStringList(pl.Cidrs), nil
 
-	} else {
-		return nil, make([]interface{}, 0), nil
 	}
+	return nil, make([]interface{}, 0), nil
 }
