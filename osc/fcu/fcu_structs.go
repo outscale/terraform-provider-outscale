@@ -10652,4 +10652,6 @@ type DescribeSnapshotAttributeOutput struct {
 
 	// The ID of the EBS snapshot.
 	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
