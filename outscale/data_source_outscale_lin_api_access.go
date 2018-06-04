@@ -22,7 +22,6 @@ func dataSourceOutscaleVpcEndpoint() *schema.Resource {
 			"vpc_endpoint_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"vpc_id": {
 				Type:     schema.TypeString,
@@ -33,17 +32,14 @@ func dataSourceOutscaleVpcEndpoint() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"policy": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -74,7 +70,7 @@ func dataSourceOutscaleVpcEndpointRead(d *schema.ResourceData, meta interface{})
 	v, ok2 := d.GetOk("filter")
 
 	if ok1 == false && ok2 == false {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+		return fmt.Errorf("One of filters, or vpc_endpoint_id must be assigned")
 	}
 
 	if ok1 {
