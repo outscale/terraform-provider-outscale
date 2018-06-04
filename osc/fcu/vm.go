@@ -138,6 +138,7 @@ type VMService interface {
 	DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error)
 	ModifyVpcEndpoint(input *ModifyVpcEndpointInput) (*ModifyVpcEndpointOutput, error)
 	DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*DeleteVpcEndpointsOutput, error)
+	ImportSnapshot(input *ImportSnapshotInput) (*ImportSnapshotOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -2181,6 +2182,29 @@ func (v VMOperations) DescribeSnapshotAttribute(input *DescribeSnapshotAttribute
 
 	if input == nil {
 		input = &DescribeSnapshotAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) ImportSnapshot(input *ImportSnapshotInput) (*ImportSnapshotOutput, error) {
+	inURL := "/"
+	endpoint := "ImportSnapshot"
+	output := &ImportSnapshotOutput{}
+
+	if input == nil {
+		input = &ImportSnapshotInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

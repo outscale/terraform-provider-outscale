@@ -6849,6 +6849,8 @@ type DescribeSnapshotsOutput struct {
 
 	// Information about the snapshots.
 	Snapshots []*Snapshot `locationName:"snapshotSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation
@@ -10654,4 +10656,62 @@ type DescribeSnapshotAttributeOutput struct {
 	SnapshotId *string `locationName:"snapshotId" type:"string"`
 
 	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+type ImportSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// The client-specific data.
+	ClientData *ClientData `type:"structure"`
+
+	// Token to enable idempotency for VM import requests.
+	ClientToken *string `type:"string"`
+
+	// The description string for the import snapshot task.
+	Description *string `type:"string"`
+
+	// Information about the disk container.
+	DiskContainer *SnapshotDiskContainer `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The name of the role to use when not using the default role, 'vmimport'.
+	RoleName         *string `type:"string"`
+	SnapshotLocation *string `type:"string"`
+	SnapshotSize     *string `type:"string"`
+}
+
+type ImportSnapshotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A description of the import snapshot task.
+	Description *string `locationName:"description" type:"string"`
+
+	// The ID of the import snapshot task.
+	ImportTaskId *string `locationName:"importTaskId" type:"string"`
+
+	// Information about the import snapshot task.
+	SnapshotTaskDetail *SnapshotTaskDetail `locationName:"snapshotTaskDetail" type:"structure"`
+
+	Id *string `locationName:"id" type:"string"`
+}
+
+type ClientData struct {
+	_ struct{} `type:"structure"`
+
+	// A user-defined comment about the disk upload.
+	Comment *string `type:"string"`
+
+	// The time that the disk upload ends.
+	UploadEnd *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// The size of the uploaded disk image, in GiB.
+	UploadSize *float64 `type:"double"`
+
+	// The time that the disk upload starts.
+	UploadStart *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }

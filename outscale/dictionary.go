@@ -61,6 +61,7 @@ func init() {
 			"outscale_reserved_vms_offer_purchase":   resourceOutscaleReservedVmsOfferPurchase,
 			"outscale_snapshot_attributes":           resourcedOutscaleSnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
+			"outscale_snapshot_import":               resourcedOutscaleSnapshotImport,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,
