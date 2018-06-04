@@ -134,10 +134,15 @@ type VMService interface {
 	PurchaseReservedInstancesOffering(input *PurchaseReservedInstancesOfferingInput) (*PurchaseReservedInstancesOfferingOutput, error)
 	ModifySnapshotAttribute(input *ModifySnapshotAttributeInput) (*ModifySnapshotAttributeOutput, error)
 	DescribeSnapshotAttribute(input *DescribeSnapshotAttributeInput) (*DescribeSnapshotAttributeOutput, error)
+	CreateVpcEndpoint(input *CreateVpcEndpointInput) (*CreateVpcEndpointOutput, error)
+	DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error)
+	ModifyVpcEndpoint(input *ModifyVpcEndpointInput) (*ModifyVpcEndpointOutput, error)
+	DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*DeleteVpcEndpointsOutput, error)
 }
 
 const opRunInstances = "RunInstances"
 
+//RunInstance ...
 func (v VMOperations) RunInstance(input *RunInstancesInput) (*Reservation, error) {
 	req, err := v.client.NewRequest(context.Background(), opRunInstances, http.MethodGet, "/", input)
 	if err != nil {
@@ -2051,7 +2056,99 @@ func (v VMOperations) PurchaseReservedInstancesOffering(input *PurchaseReservedI
 	}
 
 	return output, nil
+}
 
+//CreateVpcEndpoint creates a CreateVpcEndpoint
+func (v VMOperations) CreateVpcEndpoint(input *CreateVpcEndpointInput) (*CreateVpcEndpointOutput, error) {
+	inURL := "/"
+	endpoint := "CreateVpcEndpoint"
+	output := &CreateVpcEndpointOutput{}
+
+	if input == nil {
+		input = &CreateVpcEndpointInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+//DescribeVpcEndpoints describe VPC Enpoints
+func (v VMOperations) DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpcEndpoints"
+	output := &DescribeVpcEndpointsOutput{}
+
+	if input == nil {
+		input = &DescribeVpcEndpointsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//ModifyVpcEndpoint ...
+func (v VMOperations) ModifyVpcEndpoint(input *ModifyVpcEndpointInput) (*ModifyVpcEndpointOutput, error) {
+	inURL := "/"
+	endpoint := "ModifyVpcEndpoint"
+	output := &ModifyVpcEndpointOutput{}
+
+	if input == nil {
+		input = &ModifyVpcEndpointInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//DeleteVpcEndpoints ...
+func (v VMOperations) DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*DeleteVpcEndpointsOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVpcEndpoints"
+	output := &DeleteVpcEndpointsOutput{}
+
+	if input == nil {
+		input = &DeleteVpcEndpointsInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
 }
 
 func (v VMOperations) ModifySnapshotAttribute(input *ModifySnapshotAttributeInput) (*ModifySnapshotAttributeOutput, error) {
