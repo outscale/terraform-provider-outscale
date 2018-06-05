@@ -139,6 +139,7 @@ type VMService interface {
 	ModifyVpcEndpoint(input *ModifyVpcEndpointInput) (*ModifyVpcEndpointOutput, error)
 	DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*DeleteVpcEndpointsOutput, error)
 	CopySnapshot(input *CopySnapshotInput) (*CopySnapshotOutput, error)
+	DescribeVpcEndpointServices(input *DescribeVpcEndpointServicesInput) (*DescribeVpcEndpointServicesOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -2152,6 +2153,29 @@ func (v VMOperations) DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*Delet
 	return output, nil
 }
 
+//DescribeVpcEndpointServices ...
+func (v VMOperations) DescribeVpcEndpointServices(input *DescribeVpcEndpointServicesInput) (*DescribeVpcEndpointServicesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVpcEndpointServices"
+	output := &DescribeVpcEndpointServicesOutput{}
+
+	if input == nil {
+		input = &DescribeVpcEndpointServicesInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 func (v VMOperations) ModifySnapshotAttribute(input *ModifySnapshotAttributeInput) (*ModifySnapshotAttributeOutput, error) {
 	inURL := "/"
 	endpoint := "ModifySnapshotAttribute"
@@ -2172,7 +2196,6 @@ func (v VMOperations) ModifySnapshotAttribute(input *ModifySnapshotAttributeInpu
 	}
 
 	return output, nil
-
 }
 
 func (v VMOperations) DescribeSnapshotAttribute(input *DescribeSnapshotAttributeInput) (*DescribeSnapshotAttributeOutput, error) {
@@ -2218,5 +2241,4 @@ func (v VMOperations) CopySnapshot(input *CopySnapshotInput) (*CopySnapshotOutpu
 	}
 
 	return output, nil
-
 }
