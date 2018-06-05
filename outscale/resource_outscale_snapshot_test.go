@@ -120,7 +120,7 @@ resource "outscale_snapshot" "test" {
 
 const testAccOutscaleSnapshotConfigWithDescription = `
 resource "outscale_volume" "description_test" {
-	availability_zone = "us-west-2a"
+	availability_zone = "eu-west-2a"
 	size = 1
 }
 

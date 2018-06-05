@@ -132,6 +132,8 @@ type VMService interface {
 	ModifyVpcPeeringConnectionOptions(input *ModifyVpcPeeringConnectionOptionsInput) (*ModifyVpcPeeringConnectionOptionsOutput, error)
 	DeleteVpcPeeringConnection(input *DeleteVpcPeeringConnectionInput) (*DeleteVpcPeeringConnectionOutput, error)
 	PurchaseReservedInstancesOffering(input *PurchaseReservedInstancesOfferingInput) (*PurchaseReservedInstancesOfferingOutput, error)
+	ModifySnapshotAttribute(input *ModifySnapshotAttributeInput) (*ModifySnapshotAttributeOutput, error)
+	DescribeSnapshotAttribute(input *DescribeSnapshotAttributeInput) (*DescribeSnapshotAttributeOutput, error)
 	CreateVpcEndpoint(input *CreateVpcEndpointInput) (*CreateVpcEndpointOutput, error)
 	DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error)
 	ModifyVpcEndpoint(input *ModifyVpcEndpointInput) (*ModifyVpcEndpointOutput, error)
@@ -2147,4 +2149,50 @@ func (v VMOperations) DeleteVpcEndpoints(input *DeleteVpcEndpointsInput) (*Delet
 	}
 
 	return output, nil
+}
+
+func (v VMOperations) ModifySnapshotAttribute(input *ModifySnapshotAttributeInput) (*ModifySnapshotAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "ModifySnapshotAttribute"
+	output := &ModifySnapshotAttributeOutput{}
+
+	if input == nil {
+		input = &ModifySnapshotAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
+}
+
+func (v VMOperations) DescribeSnapshotAttribute(input *DescribeSnapshotAttributeInput) (*DescribeSnapshotAttributeOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeSnapshotAttribute"
+	output := &DescribeSnapshotAttributeOutput{}
+
+	if input == nil {
+		input = &DescribeSnapshotAttributeInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+
 }
