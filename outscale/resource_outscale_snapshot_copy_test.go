@@ -64,7 +64,7 @@ resource "outscale_snapshot" "test" {
 }
 
 resource "outscale_snapshot_copy" "test" {
-	source_region =  "eu-west-2b"
+	source_region =  "eu-west-2"
 	source_snapshot_id = "${outscale_snapshot.test.id}"
 }
 `)
