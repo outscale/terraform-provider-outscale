@@ -25,6 +25,7 @@ None
 
 The following attributes are exported:
 
-* `service_name_set.N` - The names of the services you can use for VPC endpoints.
+* `service_name_set` - The names of the services you can use for VPC endpoints.
+* `request_id` - The ID of the request.
 
-[See detailed information](http://docs.outscale.com/api_fcu/operations/Action_DescribeNetworkInterfaces_get.html#_api_fcu-action_describenetworkinterfaces_get).
+See detailed information in [Outscale DescribeVPCEndpointServices](http://docs.outscale.com/api_fcu/operations/Action_DescribeVpcEndpointServices_get.html#_api_fcu-action_describevpcendpointservices_get).
