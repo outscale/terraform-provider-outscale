@@ -25,8 +25,6 @@ The following arguments are supported:
 * `filter` -One or more filters. 
 * `prefix_list_id` -One or more prefix list IDs
 
-See detailed information in [Outscale Prefix List](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
 ## Filters
 
 Use the Filter.N parameter to filter the described Prefix List on the following properties:

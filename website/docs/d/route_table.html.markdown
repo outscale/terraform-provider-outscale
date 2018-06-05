@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_route_table"
 sidebar_current: "docs-outscale-datasource-route-table"
 description: |-
-Describes a route table
+  Describes a route table
 ---
 
 # outscale_route_table

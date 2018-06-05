@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_api_key"
 sidebar_current: "docs-outscale-datasource-api-key"
 description: |-
-Describes client endpoint
+  Describes client endpoint
 ---
 
 # outscale_api_key

@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_nic_link"
 sidebar_current: "docs-outscale-resource-nic-link"
 description: |-
-	Attaches a network interface to an instance.
+  Attaches a network interface to an instance.
 ---
 
 # outscale_nic_link

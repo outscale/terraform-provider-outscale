@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_client_endpoints"
 sidebar_current: "docs-outscale-datasource-client-endpoints"
 description: |-
-Describes client endpoints
+  Describes client endpoints
 ---
 
 # outscale_client_endpoints

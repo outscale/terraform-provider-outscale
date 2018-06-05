@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_snapshot"
 sidebar_current: "docs-outscale-datasource-outscale-snapshot"
 description: |-
-Describes one or more snapshots that are available to you.
+  Describes one or more snapshots that are available to you.
 ---
 
 # outscale_snapshot

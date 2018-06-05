@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_nic"
 sidebar_current: "docs-outscale-resource-nic"
 description: |-
-	Creates a network interface in the specified subnet.
+  Creates a network interface in the specified subnet.
 ---
 
 # outscale_nic

@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_nic_private_ip"
 sidebar_current: "docs-outscale-resource-nic-private-ip"
 description: |-
-	Assigns one or more secondary private IP addresses to a specified network interface.
+  Assigns one or more secondary private IP addresses to a specified network interface.
 ---
 
 # outscale_nic_private_ip

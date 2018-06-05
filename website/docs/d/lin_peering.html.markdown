@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_lin_peering"
 sidebar_current: "docs-outscale-datasource-lin-peering"
 description: |-
-Describes one or more peering connections between two Virtual Private Clouds (VPCs).
+  Describes one or more peering connections between two Virtual Private Clouds (VPCs).
 ---
 
 # outscale_lin_peering

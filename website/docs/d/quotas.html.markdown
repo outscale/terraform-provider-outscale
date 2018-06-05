@@ -24,8 +24,6 @@ The following arguments are supported:
 	 
 * `quota_name`-	(Optional) One or more names of quota.	
 
-See detailed information in [Outscale Quota](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
 ## Filters
 
 Use the Filter.N parameter to filter the described quotas on the following properties:

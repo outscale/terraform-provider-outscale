@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancers"
 sidebar_current: "docs-outscale-datasource-load-balancers"
 description: |-
-Describes one or more load balancers
+  Describes one or more load balancers
 ---
 
 # outscale_load_balancers

@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_image_launch_permission"
 sidebar_current: "docs-outscale-resource-image-launch-permission"
 description: |-
-	Modifies the specified attribute of an Outscale machine image (OMI).
+  Modifies the specified attribute of an Outscale machine image (OMI).
 ---
 
 # outscale_image_launch_permission

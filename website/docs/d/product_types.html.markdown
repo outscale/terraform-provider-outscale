@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_product_types"
 sidebar_current: "docs-outscale-datasource-product-types"
 description: |-
-Describes one or more product types.
+  Describes one or more product types.
 ---
 
 # outscale_product_types
