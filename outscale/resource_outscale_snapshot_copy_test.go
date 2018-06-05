@@ -29,7 +29,7 @@ func TestAccOutscaleSnapshotCopy_Basic(t *testing.T) {
 				Config: testAccOutscaleSnapshotCopyConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleSnapshotCopyExists("outscale_snapshot_copy.test"),
-					resource.TestCheckNoResourceAttr("outscale_snapshot_copy.test", "snapshot_id"),
+					resource.TestCheckResourceAttrSet("outscale_snapshot_copy.test", "snapshot_id"),
 				),
 			},
 		},
