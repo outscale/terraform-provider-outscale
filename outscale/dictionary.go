@@ -59,6 +59,7 @@ func init() {
 			"outscale_nic_link":                      resourceOutscaleNetworkInterfaceAttachment,
 			"outscale_nic_private_ip":                resourceOutscaleNetworkInterfacePrivateIP,
 			"outscale_reserved_vms_offer_purchase":   resourceOutscaleReservedVmsOfferPurchase,
+			"outscale_snapshot_attributes":           resourcedOutscaleSnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
 		},
 		"oapi": ResourceMap{
@@ -102,6 +103,7 @@ func init() {
 			"outscale_vpn_connection":                resourceOutscaleOAPIVpnConnection,
 			"outscale_image_copy":                    resourceOutscaleOAPIImageCopy,
 			"outscale_vpn_gateway_link":              resourceOutscaleOAPIVpnGatewayLink,
+			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 		},
@@ -173,6 +175,8 @@ func init() {
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
 			"outscale_nics":                  dataSourceOutscaleNics,
 			"outscale_nic":                   dataSourceOutscaleNic,
+			"outscale_lin_api_access":        dataSourceOutscaleVpcEndpoint,
+			"outscale_lin_api_accesses":      dataSourceOutscaleVpcEndpoints,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                                  dataSourceOutscaleOAPIVM,

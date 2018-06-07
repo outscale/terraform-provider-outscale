@@ -10562,3 +10562,98 @@ type DeleteVpcEndpointsInput struct {
 type DeleteVpcEndpointsOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+type ModifySnapshotAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The snapshot attribute to modify.
+	//
+	// Only volume creation permissions may be modified at the customer level.
+	Attribute *string `type:"string" enum:"SnapshotAttributeName"`
+
+	// A JSON representation of the snapshot attribute modification.
+	CreateVolumePermission *CreateVolumePermissionModifications `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The group to modify for the snapshot.
+	GroupNames []*string `locationName:"UserGroup" locationNameList:"GroupName" type:"list"`
+
+	// The type of operation to perform to the attribute.
+	OperationType *string `type:"string" enum:"OperationType"`
+
+	// The ID of the snapshot.
+	//
+	// SnapshotId is a required field
+	SnapshotId *string `type:"string" required:"true"`
+
+	// The account ID to modify for the snapshot.
+	UserIds []*string `locationName:"UserId" locationNameList:"UserId" type:"list"`
+}
+
+type CreateVolumePermissionModifications struct {
+	_ struct{} `type:"structure"`
+
+	// Adds a specific AWS account ID or group to a volume's list of create volume
+	// permissions.
+	Add []*CreateVolumePermission `locationNameList:"item" type:"list"`
+
+	// Removes a specific AWS account ID or group from a volume's list of create
+	// volume permissions.
+	Remove []*CreateVolumePermission `locationNameList:"item" type:"list"`
+}
+
+type CreateVolumePermission struct {
+	_ struct{} `type:"structure"`
+
+	// The specific group that is to be added or removed from a volume's list of
+	// create volume permissions.
+	Group *string `locationName:"group" type:"string" enum:"PermissionGroup"`
+
+	// The specific AWS account ID that is to be added or removed from a volume's
+	// list of create volume permissions.
+	UserId *string `locationName:"userId" type:"string"`
+}
+
+type ModifySnapshotAttributeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+type DescribeSnapshotAttributeInput struct {
+	_ struct{} `type:"structure"`
+
+	// The snapshot attribute you would like to view.
+	//
+	// Attribute is a required field
+	Attribute *string `type:"string" required:"true" enum:"SnapshotAttributeName"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The ID of the EBS snapshot.
+	//
+	// SnapshotId is a required field
+	SnapshotId *string `type:"string" required:"true"`
+}
+
+type DescribeSnapshotAttributeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of permissions for creating volumes from the snapshot.
+	CreateVolumePermissions []*CreateVolumePermission `locationName:"createVolumePermission" locationNameList:"item" type:"list"`
+
+	// A list of product codes.
+	ProductCodes []*ProductCode `locationName:"productCodes" locationNameList:"item" type:"list"`
+
+	// The ID of the EBS snapshot.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}

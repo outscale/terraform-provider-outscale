@@ -104,6 +104,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_attributes":      GetResource(lbu, "outscale_load_balancer_attributes")(),
 			"outscale_load_balancer_tags":            GetResource(lbu, "outscale_load_balancer_tags")(),
 			"outscale_reserved_vms_offer_purchase":   GetResource(fcu, "outscale_reserved_vms_offer_purchase")(),
+			"outscale_snapshot_attributes":           GetResource(fcu, "outscale_snapshot_attributes")(),
 			"outscale_lin_api_access":                GetResource(fcu, "outscale_lin_api_access")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -170,6 +171,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_attributes":            GetDatasource(lbu, "outscale_load_balancer_attributes")(),
 			"outscale_nics":                                GetDatasource(fcu, "outscale_nics")(),
 			"outscale_nic":                                 GetDatasource(fcu, "outscale_nic")(),
+			"outscale_lin_api_access":                      GetDatasource(fcu, "outscale_lin_api_access")(),
+			"outscale_lin_api_accesses":                    GetDatasource(fcu, "outscale_lin_api_accesses")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
