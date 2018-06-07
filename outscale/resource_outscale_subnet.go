@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -30,7 +28,6 @@ func resourceOutscaleSubNet() *schema.Resource {
 	}
 }
 
-//Create SubNet
 func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
@@ -59,7 +56,6 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error creating subnet: %s", err)
 	}
 
-	// Get the ID and store it
 	subnet := res.Subnet
 	d.SetId(*subnet.SubnetId)
 	log.Printf("[INFO] Subnet ID: %s", *subnet.SubnetId)
@@ -71,7 +67,6 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 		d.SetPartial("tag_set")
 	}
 
-	// Wait for the Subnet to become available
 	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", *subnet.SubnetId)
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
@@ -90,8 +85,6 @@ func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) erro
 
 	return resourceOutscaleSubNetRead(d, meta)
 }
-
-//Read SubNet
 
 func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
@@ -114,7 +107,6 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 
 	if err != nil {
 		if strings.Contains(err.Error(), "InvalidSubnetID.NotFound") {
-			// Update state to indicate the subnet no longer exists.
 			d.SetId("")
 			return nil
 		}
@@ -124,15 +116,12 @@ func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	fmt.Println("[DEBUG]")
-	utils.PrintToJSON(resp, "SUBNET")
-
 	subnet := resp.Subnets[0]
 
-	d.Set("subnet_id", subnet.SubnetId)
-	d.Set("availability_zone", subnet.AvailabilityZone)
-	d.Set("cidr_block", subnet.CidrBlock)
-	d.Set("vpc_id", subnet.VpcId)
+	d.Set("subnet_id", aws.StringValue(subnet.SubnetId))
+	d.Set("availability_zone", aws.StringValue(subnet.AvailabilityZone))
+	d.Set("cidr_block", aws.StringValue(subnet.CidrBlock))
+	d.Set("vpc_id", aws.StringValue(subnet.VpcId))
 	d.Set("state", aws.StringValue(subnet.State))
 	d.Set("available_ip_address_count", aws.Int64Value(subnet.AvailableIpAddressCount))
 
@@ -201,8 +190,6 @@ func SubnetStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFu
 		}
 
 		if resp == nil {
-			// Sometimes AWS just has consistency issues and doesn't see
-			// our instance yet. Return an empty state.
 			return nil, "", nil
 		}
 
@@ -213,7 +200,6 @@ func SubnetStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFu
 
 func getSubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		//This is attribute part for schema SubNet
 		"vpc_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,

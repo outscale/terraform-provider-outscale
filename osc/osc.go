@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -104,7 +105,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 			Action               string `json:"Action"`
 			Version              string `json:"Version"`
 			AuthenticationMethod string `json:"AuthenticationMethod"`
-		}{operation, "2017-12-15", "accesskey"}
+		}{operation, "2018-05-14", "accesskey"}
 
 		var m map[string]string
 
@@ -125,8 +126,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	fmt.Println(rel.Opaque)
-
 	if strings.Contains(operation, "AccessKey") {
 		c.SetHeaders(req, "TinaIcuService", operation)
 	}
@@ -135,6 +134,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	if err != nil {
 		return nil, err
 	}
+
+	requestDump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("#################")
+	fmt.Println("###### REQUEST #####")
+	fmt.Println(string(requestDump))
 
 	return req, nil
 }
@@ -155,6 +162,14 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	if err != nil {
 		return err
 	}
+
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("#################")
+	fmt.Println("###### RESPONSE #####")
+	fmt.Println(string(requestDump))
 
 	err = c.checkResponse(resp)
 	if err != nil {

@@ -6849,6 +6849,8 @@ type DescribeSnapshotsOutput struct {
 
 	// Information about the snapshots.
 	Snapshots []*Snapshot `locationName:"snapshotSet" locationNameList:"item" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 // String returns the string representation

@@ -424,19 +424,15 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetId(id)
 
+	d.Set("instance_status_set", make([]map[string]interface{}, 0))
+
 	return resourceVMAttributesRead(d, meta)
 }
 
 func resourceVMAttributesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	if err := readDescribeVMAttr(d, conn); err != nil {
-		return err
-	}
-
-	// return readDescribeVMStatus(d, conn)
-
-	return nil
+	return readDescribeVMAttr(d, conn)
 }
 
 func resourceVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -591,17 +587,22 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 
 	if resp.DisableApiTermination != nil {
 		d.Set("disable_api_termination", *resp.DisableApiTermination.Value)
+	} else {
+		d.Set("disable_api_termination", false)
 	}
 
 	if resp.EbsOptimized != nil {
 		d.Set("ebs_optimized", *resp.EbsOptimized.Value)
+	} else {
+		d.Set("ebs_optimized", false)
 	}
 
 	if resp.Groups != nil {
-		err = d.Set("group_set", getGroupSet(resp.Groups))
-		if err != nil {
-			fmt.Println(getGroupSet(resp.Groups))
+		if err := d.Set("group_set", getGroupSet(resp.Groups)); err != nil {
+			return err
 		}
+	} else {
+		d.Set("group_set", make([]map[string]interface{}, 0))
 	}
 
 	if resp.InstanceInitiatedShutdownBehavior != nil {
@@ -687,41 +688,24 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 		for k, v := range resp.InstanceStatuses {
 			instance := make(map[string]interface{})
 
-			if v.AvailabilityZone != nil {
-				instance["availability_zone"] = *v.AvailabilityZone
-			}
+			instance["availability_zone"] = aws.StringValue(v.AvailabilityZone)
 			if v.Events != nil {
 				events := make([]map[string]interface{}, len(v.Events))
 				for i, e := range v.Events {
 					event := make(map[string]interface{})
-					if e.Code != nil {
-						event["code"] = *e.Code
-					}
-					if e.Description != nil {
-						event["description"] = *e.Description
-					}
-					if e.NotAfter != nil {
-						event["not_after"] = *e.NotAfter
-					}
-					if e.NotBefore != nil {
-						event["not_before"] = *e.NotBefore
-					}
+					event["code"] = aws.StringValue(e.Code)
+					event["description"] = aws.StringValue(e.Description)
+					event["not_after"] = fmt.Sprint(aws.TimeValue(e.NotAfter))
+					event["not_before"] = fmt.Sprint(aws.TimeValue(e.NotBefore))
 					events[i] = event
 				}
 				instance["events"] = events
 			}
-			if v.InstanceId != nil {
-				instance["instance_id"] = *v.InstanceId
-			}
+			instance["instance_id"] = aws.StringValue(v.InstanceId)
 			if v.InstanceState != nil {
 				state := make(map[string]interface{})
-
-				if v.InstanceState.Code != nil {
-					state["code"] = fmt.Sprint(*v.InstanceState.Code)
-				}
-				if v.InstanceState.Name != nil {
-					state["name"] = *v.InstanceState.Name
-				}
+				state["code"] = fmt.Sprint(aws.Int64Value(v.InstanceState.Code))
+				state["name"] = aws.StringValue(v.InstanceState.Name)
 				instance["instance_state"] = state
 			}
 			if v.InstanceStatus != nil {
@@ -731,19 +715,13 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 					details := make([]map[string]interface{}, len(v.InstanceStatus.Details))
 					for j, d := range v.InstanceStatus.Details {
 						detail := make(map[string]interface{})
-						if d.Name != nil {
-							detail["name"] = *d.Name
-						}
-						if d.Status != nil {
-							detail["status"] = *d.Status
-						}
+						detail["name"] = aws.StringValue(d.Name)
+						detail["status"] = aws.StringValue(d.Status)
 						details[j] = detail
 					}
 					state["details"] = details
 				}
-				if v.InstanceStatus.Status != nil {
-					state["status"] = *v.InstanceStatus.Status
-				}
+				state["status"] = aws.StringValue(v.InstanceStatus.Status)
 				instance["instance_status"] = state
 			}
 			if v.SystemStatus != nil {
@@ -753,19 +731,13 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 					details := make([]map[string]interface{}, len(v.SystemStatus.Details))
 					for j, d := range v.SystemStatus.Details {
 						detail := make(map[string]interface{})
-						if d.Name != nil {
-							detail["name"] = *d.Name
-						}
-						if d.Status != nil {
-							detail["status"] = *d.Status
-						}
+						detail["name"] = aws.StringValue(d.Name)
+						detail["status"] = aws.StringValue(d.Status)
 						details[j] = detail
 					}
 					state["details"] = details
 				}
-				if v.SystemStatus.Status != nil {
-					state["status"] = *v.SystemStatus.Status
-				}
+				state["status"] = aws.StringValue(v.SystemStatus.Status)
 				instance["system_status"] = state
 			}
 
@@ -777,7 +749,10 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 		if err := d.Set("instance_status_set", instances); err != nil {
 			return err
 		}
+	} else {
+		d.Set("instance_status_set", make([]map[string]interface{}, 0))
 	}
+
 	return nil
 }
 

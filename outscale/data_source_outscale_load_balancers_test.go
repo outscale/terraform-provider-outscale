@@ -22,37 +22,57 @@ func TestAccOutscaleDSLBSU_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_load_balancer.bar",
+		IDRefreshName: "outscale_load_balancer.outscale_load_balancer",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOutscaleLBsUConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer_descriptions.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancers.outscale_load_balancers", "load_balancer_descriptions.#", "2"),
 				)},
 		},
 	})
 }
 
 const testAccDSOutscaleLBsUConfig = `
-resource "outscale_load_balancer" "bar" {
+resource "outscale_load_balancer" "outscale_load_balancer" {
+  count = 1
+
+  load_balancer_name = "foobar-terraform-elb"
+
   availability_zones = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb"
+
   listeners {
-    instance_port = 8000
+    instance_port = 1024
+
     instance_protocol = "HTTP"
-    load_balancer_port = 80
-    // Protocol should be case insensitive
+
+    load_balancer_port = 25
+
     protocol = "HTTP"
   }
-
-	tag {
-		bar = "baz"
-	}
 }
 
-data "outscale_load_balancers" "test" {
-	load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+resource "outscale_load_balancer" "outscale_load_balancer2" {
+  count = 1
+
+  load_balancer_name = "foobar-terraform-elb2"
+
+  availability_zones = ["eu-west-2a"]
+
+  listeners {
+    instance_port = 1024
+
+    instance_protocol = "HTTP"
+
+    load_balancer_port = 25
+
+    protocol = "HTTP"
+  }
+}
+
+data "outscale_load_balancers" "outscale_load_balancers" {
+  load_balancer_name = ["${outscale_load_balancer.outscale_load_balancer.load_balancer_name}", "${outscale_load_balancer.outscale_load_balancer2.load_balancer_name}"]
 }
 `

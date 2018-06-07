@@ -191,8 +191,6 @@ func dataSourceOutscaleFirewallRulesSetsRead(d *schema.ResourceData, meta interf
 		sg[k] = s
 	}
 
-	fmt.Printf("[DEBUG] security_group_info %s", sg)
-
 	d.Set("request_id", resp.RequestId)
 
 	d.SetId(resource.UniqueId())

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -19,14 +18,11 @@ func dataSourceOutscaleNic() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			// This is attribute part for schema Nic
-			// Argument
 			"network_interface_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			// Attributes
 			"association": {
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -95,7 +91,6 @@ func dataSourceOutscaleNic() *schema.Resource {
 			},
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"group_set": {
@@ -130,7 +125,6 @@ func dataSourceOutscaleNic() *schema.Resource {
 
 			"private_ip_adress": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"private_ip_address_set": {
@@ -199,7 +193,7 @@ func dataSourceOutscaleNic() *schema.Resource {
 			},
 			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"tag_set": tagsSchemaComputed(),
 			"vpc_id": {
@@ -214,15 +208,26 @@ func dataSourceOutscaleNic() *schema.Resource {
 func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	dnri := &fcu.DescribeNetworkInterfacesInput{
-		NetworkInterfaceIds: []*string{aws.String(d.Id())},
+	filters, filtersOk := d.GetOk("filter")
+	n, nok := d.GetOk("network_interface_id")
+
+	if filtersOk == false && nok == false {
+		return fmt.Errorf("filters, or owner must be assigned, or nat_gateway_id must be provided")
+	}
+
+	params := &fcu.DescribeNetworkInterfacesInput{}
+	if filtersOk {
+		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	}
+	if nok {
+		params.NetworkInterfaceIds = []*string{aws.String(n.(string))}
 	}
 
 	var describeResp *fcu.DescribeNetworkInterfacesOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
+		describeResp, err = conn.VM.DescribeNetworkInterfaces(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -233,28 +238,16 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-
 		return fmt.Errorf("Error describing Network Interfaces : %s", err)
 	}
 
-	if err != nil {
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidNetworkInterfaceID.NotFound" {
-			// The ENI is gone now, so just remove it from the state
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving ENI: %s", err)
-	}
-	if len(describeResp.NetworkInterfaces) != 1 {
+	if len(describeResp.NetworkInterfaces) < 1 {
 		return fmt.Errorf("Unable to find ENI: %#v", describeResp.NetworkInterfaces)
 	}
 
 	eni := describeResp.NetworkInterfaces[0]
-	if eni.Description != nil {
-		d.Set("description", eni.Description)
-	}
-	d.Set("subnet_id", eni.SubnetId)
+	d.Set("description", aws.StringValue(eni.Description))
+	d.Set("subnet_id", aws.StringValue(eni.SubnetId))
 
 	b := make(map[string]interface{})
 	if eni.Association != nil {

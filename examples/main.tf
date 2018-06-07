@@ -343,22 +343,51 @@
 #   cidr_block = "10.0.0.0/16"
 # }
 
-resource "outscale_load_balancer" "bar" {
-  availability_zones = ["eu-west-2a"]
+# resource "outscale_volume" "test" {
+#   availability_zone = "eu-west-2a"
+#   size              = 1
+# }
+
+# resource "outscale_snapshot" "test" {
+#   volume_id = "${outscale_volume.test.id}"
+# }
+
+resource "outscale_load_balancer" "outscale_load_balancer" {
+  count = 1
+
   load_balancer_name = "foobar-terraform-elb"
 
-  listeners {
-    instance_port      = 8000
-    instance_protocol  = "HTTP"
-    load_balancer_port = 80
-    protocol           = "HTTP"
-  }
+  availability_zones = ["eu-west-2a"]
 
-  tag {
-    bar = "baz"
+  listeners {
+    instance_port = 1024
+
+    instance_protocol = "HTTP"
+
+    load_balancer_port = 25
+
+    protocol = "HTTP"
   }
 }
 
-data "outscale_load_balancer_listener_description" "test" {
-  load_balancer_name = "${outscale_load_balancer.bar.id}"
+resource "outscale_load_balancer" "outscale_load_balancer2" {
+  count = 1
+
+  load_balancer_name = "foobar-terraform-elb2"
+
+  availability_zones = ["eu-west-2a"]
+
+  listeners {
+    instance_port = 1024
+
+    instance_protocol = "HTTP"
+
+    load_balancer_port = 25
+
+    protocol = "HTTP"
+  }
+}
+
+data "outscale_load_balancers" "outscale_load_balancers" {
+  load_balancer_name = ["${outscale_load_balancer.outscale_load_balancer.load_balancer_name}", "${outscale_load_balancer.outscale_load_balancer2.load_balancer_name}"]
 }
