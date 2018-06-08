@@ -302,6 +302,7 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	id := i.(string)
 
 	if v, ok := d.GetOk("disable_api_termination"); ok {
+		log.Printf("value = ", v.(bool))
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
 			DisableApiTermination: &fcu.AttributeBooleanValue{

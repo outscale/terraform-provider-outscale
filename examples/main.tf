@@ -329,29 +329,60 @@
 # data "outscale_load_balancers" "outscale_load_balancers" {
 #   load_balancer_name = ["${outscale_load_balancer.outscale_load_balancer.load_balancer_name}", "${outscale_load_balancer.outscale_load_balancer2.load_balancer_name}"]
 # }
+# resource "outscale_lin" "outscale_lin" {
+#   count = 1
+#   cidr_block = "10.0.0.0/16"
+# }
+# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+#   type = "ipsec.1"
+# }
+# resource "outscale_vpn_gateway_link" "test" {
+#   vpc_id         = "${outscale_lin.outscale_lin.id}"
+#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+# }
+# resource "outscale_route_table" "outscale_route_table" {
+#   count = 1
+#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+# }
+# resource "outscale_vpn_gateway_route_propagation" "foo" {
+#   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+#   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+# }
 
-resource "outscale_lin" "outscale_lin" {
+resource "outscale_vm" "outscale_vm" {
   count = 1
 
-  cidr_block = "10.0.0.0/16"
+  image_id = "ami-880caa66"
+
+  instance_type = "c4.large"
+
+  #key_name = "integ_sut_keypair"
+
+
+  #security_group = ["sg-c73d3b6b"]
+
+  disable_api_termination = true
+
+  #ebs_optimized = true
 }
 
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-  type = "ipsec.1"
-}
+resource "outscale_vm_attributes" "outscale_vm_attributes" {
+  instance_id = "${outscale_vm.outscale_vm.0.id}"
 
-resource "outscale_vpn_gateway_link" "test" {
-  vpc_id         = "${outscale_lin.outscale_lin.id}"
-  vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-}
+  attribute               = "disableApiTermination"
+  disable_api_termination = false
 
-resource "outscale_route_table" "outscale_route_table" {
-  count = 1
+  #attribute = "instanceType"
+  #instance_type = "t2.micro"
 
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-}
+  #attribute = "ebsOptimized"
+  #ebs_optimized = false
 
-resource "outscale_vpn_gateway_route_propagation" "foo" {
-  gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-  route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+  #attribute = "blockDeviceMapping"
+  #block_device_mapping {
+  #	device_name = "/dev/sda1"
+  #		ebs {
+  #			delete_on_termination = true
+  #		}
+  #}
 }
