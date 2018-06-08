@@ -62,6 +62,7 @@ func init() {
 			"outscale_snapshot_attributes":           resourcedOutscaleSnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
 			"outscale_snapshot_import":               resourcedOutscaleSnapshotImport,
+			"outscale_snapshot_copy":                 resourcedOutscaleSnapshotCopy,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,
@@ -106,6 +107,7 @@ func init() {
 			"outscale_vpn_gateway_link":              resourceOutscaleOAPIVpnGatewayLink,
 			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
+			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -175,6 +177,8 @@ func init() {
 			"outscale_lin_peerings":          dataSourceOutscaleLinPeeringsConnection,
 			"outscale_nics":                  dataSourceOutscaleNics,
 			"outscale_nic":                   dataSourceOutscaleNic,
+			"outscale_lin_api_access":        dataSourceOutscaleVpcEndpoint,
+			"outscale_lin_api_accesses":      dataSourceOutscaleVpcEndpoints,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                                  dataSourceOutscaleOAPIVM,
