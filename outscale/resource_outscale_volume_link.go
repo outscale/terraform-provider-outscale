@@ -277,7 +277,6 @@ func resourceVolumeLinkRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("request_id", vols.RequestId)
 
 	return nil
-
 }
 
 func resourceVolumeLinkDelete(d *schema.ResourceData, meta interface{}) error {

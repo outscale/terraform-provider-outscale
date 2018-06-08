@@ -46,9 +46,10 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	log.Printf("\n\n[INFO] Enabling VGW propagation from %s to %s", gwID, rtID)
 
 	var err error
+	var resp *fcu.EnableVgwRoutePropagationOutput
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.EnableVgwRoutePropagation(&fcu.EnableVgwRoutePropagationInput{
+		resp, err = conn.VM.EnableVgwRoutePropagation(&fcu.EnableVgwRoutePropagationInput{
 			GatewayId:    aws.String(gwID),
 			RouteTableId: aws.String(rtID),
 		})
@@ -66,6 +67,8 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	}
 
 	d.SetId(fmt.Sprintf("%s_%s", gwID, rtID))
+	d.Set("request_id", *resp.RequestId)
+
 	return nil
 }
 
@@ -125,8 +128,6 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, 
 	if err != nil {
 		return err
 	}
-
-	d.Set("request_id", *resp.RequestId)
 
 	rt := resp.RouteTables[0]
 

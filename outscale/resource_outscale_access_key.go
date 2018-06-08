@@ -70,7 +70,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		n := nraw.(map[string]interface{})
 		create, _ := diffTagsCommon(tagsFromMapCommon(o), tagsFromMapCommon(n))
 
-		request.Tags = create
+		request.Tag = create
 	}
 
 	fmt.Printf("\n\n[DEBUG] REQUEST BODY %v", request)
@@ -95,9 +95,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(*createResp.AccessKey.AccessKeyId)
 
-	t := make([]map[string]interface{}, 0)
-
-	d.Set("tag_set", t)
+	d.Set("tag_set", make([]map[string]interface{}, 0))
 
 	return resourceOutscaleIamAccessKeyRead(d, meta)
 }

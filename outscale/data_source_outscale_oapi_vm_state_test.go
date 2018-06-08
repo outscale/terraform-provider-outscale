@@ -40,8 +40,6 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
-		fmt.Printf("\n[DEBUG] TEST RS %s \n", s.RootModule().Resources)
-
 		if !ok {
 			return fmt.Errorf("root module has no resource called %s", name)
 		}

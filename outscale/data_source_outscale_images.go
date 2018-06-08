@@ -3,7 +3,6 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -303,7 +302,6 @@ func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{
 			mapping["no_device"] = *v.NoDevice
 		}
 
-		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
 		s[k] = mapping
 	}
 	return s

@@ -88,7 +88,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_gateway_route_propagation": GetResource(fcu, "outscale_vpn_gateway_route_propagation")(),
 			"outscale_vpn_gateway_link":              GetResource(fcu, "outscale_vpn_gateway_link")(),
 			"outscale_nic":                           GetResource(fcu, "outscale_nic")(),
-			"outscale_snapshot_export_task":          GetResource(fcu, "outscale_snapshot_export_task")(),
+			"outscale_snapshot_export_tasks":         GetResource(fcu, "outscale_snapshot_export_tasks")(),
 			"outscale_snapshot":                      GetResource(fcu, "outscale_snapshot")(),
 			"outscale_image_register":                GetResource(fcu, "outscale_image_register")(),
 			"outscale_keypair_importation":           GetResource(fcu, "outscale_keypair_importation")(),

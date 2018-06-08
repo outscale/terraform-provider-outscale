@@ -43,7 +43,7 @@ func resourceOutscaleSnapshot() *schema.Resource {
 				Computed: true,
 			},
 			"snapshot_id": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"volume_size": {
@@ -102,7 +102,6 @@ func resourceOutscaleSnapshotCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	d.SetId(*res.SnapshotId)
-	d.Set("snapshot_id", res.SnapshotId)
 
 	if d.IsNewResource() {
 		if err := setTags(conn, d); err != nil {
@@ -148,15 +147,17 @@ func resourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 
 	snapshot := res.Snapshots[0]
 
-	d.Set("description", snapshot.Description)
-	d.Set("owner_id", snapshot.OwnerId)
-	d.Set("progress", snapshot.Progress)
-	d.Set("owner_alias", snapshot.OwnerAlias)
-	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("status", snapshot.State)
-	d.Set("status_message", snapshot.StateMessage)
-	d.Set("volume_size", snapshot.VolumeSize)
+	d.Set("description", aws.StringValue(snapshot.Description))
+	d.Set("owner_id", aws.StringValue(snapshot.OwnerId))
+	d.Set("progress", aws.StringValue(snapshot.Progress))
+	d.Set("owner_alias", aws.StringValue(snapshot.OwnerAlias))
+	d.Set("volume_id", aws.StringValue(snapshot.VolumeId))
+	d.Set("status", aws.StringValue(snapshot.State))
+	d.Set("status_message", aws.StringValue(snapshot.StateMessage))
+	d.Set("volume_size", aws.Int64Value(snapshot.VolumeSize))
 	d.Set("tag_set", tagsToMap(snapshot.Tags))
+	d.Set("snapshot_id", aws.StringValue(snapshot.SnapshotId))
+	d.Set("request_id", res.RequestId)
 
 	return nil
 }

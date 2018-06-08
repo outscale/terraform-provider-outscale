@@ -23,7 +23,7 @@ type CreateAccessKeyInput struct {
 	UserName        *string       `min:"1" type:"string"`
 	AccessKeyId     *string       `type:"string"`
 	SecretAccessKey *string       `type:"string"`
-	Tags            []*common.Tag `locationName:"tags" locationNameList:"item" type:"list"`
+	Tag             []*common.Tag `locationName:"tag" locationNameList:"item" type:"list"`
 }
 type CreateApiKey struct {
 	_ struct{} `type:"structure"`

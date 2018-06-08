@@ -175,190 +175,214 @@
 #   ip_address = "171.33.74.122"
 #   type       = "ipsec.1"
 #   }
-
 # resource "outscale_lin" "outscale_lin" {
 #   count = 1
-
 #   cidr_block = "10.0.0.0/16"
 # }
-
 # resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
 #   type = "ipsec.1"
 # }
-
 # resource "outscale_vpn_gateway_link" "test" {
 #   vpc_id         = "${outscale_lin.outscale_lin.id}"
 #   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
 # }
-
 # resource "outscale_route_table" "outscale_route_table" {
 #   count = 1
-
 #   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
 # }
-
 # resource "outscale_vpn_gateway_route_propagation" "foo" {
 #   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
 #   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
-
 # resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
 #   count = 1
-
 #   export_to_osu {
 #     disk_image_format = "raw"
 #     osu_bucket        = "test"
 #   }
-
 #   snapshot_id = "snap-5bcc0764"
 # }
-
 # resource "outscale_lin" "outscale_lin" {
 #   cidr_block = "10.0.0.0/16"
 # }
-
 # resource "outscale_subnet" "outscale_subnet" {
 #   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-
 #   cidr_block = "10.0.0.0/18"
 # }
-
 # resource "outscale_public_ip" "outscale_public_ip" {
 #   #domain               = "Standard"       # BUG doc API
-
 #   domain = ""
 # }
-
 # resource "outscale_nat_service" "outscale_nat_service" {
 #   depends_on = ["outscale_route.outscale_route"]
-
 #   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-
 #   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
 # }
-
 # resource "outscale_route_table" "outscale_route_table" {
 #   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
 # }
-
 # resource "outscale_route" "outscale_route" {
 #   destination_cidr_block = "0.0.0.0/0"
-
 #   gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-
 #   route_table_id = "${outscale_route_table.outscale_route_table.id}"
 # }
-
 # resource "outscale_route_table_link" "outscale_route_table_link" {
 #   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-
 #   route_table_id = "${outscale_route_table.outscale_route_table.id}"
 # }
-
 # resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-
 # resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
 #   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-
 #   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
 # }
-
 # data "outscale_nat_service" "outscale_nat_service" {
 #   nat_gateway_id = "${outscale_nat_service.outscale_nat_service.nat_gateway_id}"
 # }
-
 # resource "outscale_vm" "outscale_vm" {
 #   image_id                = "ami-880caa66"
 #   instance_type           = "c4.large"
 #   disable_api_termination = false
 # }
-
 # data "outscale_vms_state" "outscale_vms_state" {
 #   instance_id = ["${outscale_vm.outscale_vm.id}"]
 # }
-
 # data "outscale_vm_state" "outscale_vm_state" {
 #   instance_id = ["${outscale_vm.outscale_vm.id}"]
 # }
-
 # data "outscale_vpn_connection" "outscale_vpn_connection1" {
 #   vpn_connection_id = "${outscale_vpn_connection.outscale_vpn_connection.id}"
 # }
-
 # data "outscale_vpn_connections" "outscale_vpn_connections" {
 #   vpn_connection_id = ["${outscale_vpn_connection.outscale_vpn_connection.id}", "${outscale_vpn_connection.outscale_vpn_connection2.id}"]
 # }
-
 # resource "outscale_vpn_connection" "outscale_vpn_connection" {
 #   customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint.id}"
 #   vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
 #   type                = "ipsec.1"
 # }
-
 # resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
 #   type = "ipsec.1"
 # }
-
 # resource "outscale_client_endpoint" "outscale_client_endpoint" {
 #   bgp_asn    = "3"
 #   ip_address = "171.33.74.125"
 #   type       = "ipsec.1"
 # }
-
 # resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
 #   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-
 #   #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
 #   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
 # }
-
 # resource "outscale_lin" "outscale_lin" {
 #   cidr_block = "10.0.0.0/16"
 # }
-
 # resource "outscale_vpn_connection" "outscale_vpn_connection2" {
 #   customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint2.id}"
 #   vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
 #   type                = "ipsec.1"
 # }
-
 # resource "outscale_vpn_gateway" "outscale_vpn_gateway2" {
 #   type = "ipsec.1"
 # }
-
 # resource "outscale_client_endpoint" "outscale_client_endpoint2" {
 #   bgp_asn    = "3"
 #   ip_address = "171.33.74.126"
 #   type       = "ipsec.1"
 # }
-
 # resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link2" {
 #   vpc_id = "${outscale_lin.outscale_lin2.vpc_id}"
-
 #   #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.vpn_gateway_id}"
 #   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
 # }
-
 # resource "outscale_lin" "outscale_lin2" {
 #   cidr_block = "10.0.0.0/16"
 # }
+# resource "outscale_volume" "test" {
+#   availability_zone = "eu-west-2a"
+#   size              = 1
+# }
+# resource "outscale_snapshot" "test" {
+#   volume_id = "${outscale_volume.test.id}"
+# }
+# resource "outscale_load_balancer" "outscale_load_balancer" {
+#   count = 1
+#   load_balancer_name = "foobar-terraform-elb"
+#   availability_zones = ["eu-west-2a"]
+#   listeners {
+#     instance_port = 1024
+#     instance_protocol = "HTTP"
+#     load_balancer_port = 25
+#     protocol = "HTTP"
+#   }
+# }
+# resource "outscale_load_balancer" "outscale_load_balancer2" {
+#   count = 1
+#   load_balancer_name = "foobar-terraform-elb2"
+#   availability_zones = ["eu-west-2a"]
+#   listeners {
+#     instance_port = 1024
+#     instance_protocol = "HTTP"
+#     load_balancer_port = 25
+#     protocol = "HTTP"
+#   }
+# }
+# data "outscale_load_balancers" "outscale_load_balancers" {
+#   load_balancer_name = ["${outscale_load_balancer.outscale_load_balancer.load_balancer_name}", "${outscale_load_balancer.outscale_load_balancer2.load_balancer_name}"]
+# }
+# resource "outscale_lin" "outscale_lin" {
+#   count = 1
+#   cidr_block = "10.0.0.0/16"
+# }
+# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+#   type = "ipsec.1"
+# }
+# resource "outscale_vpn_gateway_link" "test" {
+#   vpc_id         = "${outscale_lin.outscale_lin.id}"
+#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+# }
+# resource "outscale_route_table" "outscale_route_table" {
+#   count = 1
+#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+# }
+# resource "outscale_vpn_gateway_route_propagation" "foo" {
+#   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+#   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+# }
 
-resource "outscale_load_balancer" "bar" {
-  availability_zones = ["eu-west-2a"]
-  load_balancer_name = "foobar-terraform-elb"
+resource "outscale_vm" "outscale_vm" {
+  count = 1
 
-  listeners {
-    instance_port      = 8000
-    instance_protocol  = "HTTP"
-    load_balancer_port = 80
-    protocol           = "HTTP"
-  }
+  image_id = "ami-880caa66"
 
-  tag {
-    bar = "baz"
-  }
+  instance_type = "c4.large"
+
+  #key_name = "integ_sut_keypair"
+
+
+  #security_group = ["sg-c73d3b6b"]
+
+  disable_api_termination = true
+
+  #ebs_optimized = true
 }
 
-data "outscale_load_balancer_listener_description" "test" {
-  load_balancer_name = "${outscale_load_balancer.bar.id}"
+resource "outscale_vm_attributes" "outscale_vm_attributes" {
+  instance_id = "${outscale_vm.outscale_vm.0.id}"
+
+  attribute               = "disableApiTermination"
+  disable_api_termination = false
+
+  #attribute = "instanceType"
+  #instance_type = "t2.micro"
+
+  #attribute = "ebsOptimized"
+  #ebs_optimized = false
+
+  #attribute = "blockDeviceMapping"
+  #block_device_mapping {
+  #	device_name = "/dev/sda1"
+  #		ebs {
+  #			delete_on_termination = true
+  #		}
+  #}
 }
