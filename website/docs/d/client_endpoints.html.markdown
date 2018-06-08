@@ -14,17 +14,17 @@ Describes one or more of your customer gateways.
 
 ```hcl
 resource "outscale_client_endpoint" "foo" {
-			bgp_asn = 123
-			ip_address = "172.0.0.1"
-			type = "ipsec.1"
-			tag {
-				Name = "foo-gateway"
-			}
-		}
+    bgp_asn = 123
+    ip_address = "172.0.0.1"
+    type = "ipsec.1"
+    tag {
+        Name = "foo-gateway"
+    }
+}
 
-		data "outscale_client_endpoints" "test" {
-			customer_gateway_id = ["${outscale_client_endpoint.foo.id}"]
-		}
+  data "outscale_client_endpoints" "test" {
+      customer_gateway_id = ["${outscale_client_endpoint.foo.id}"]
+  }
 ```
 
 ## Argument Reference

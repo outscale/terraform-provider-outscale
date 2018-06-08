@@ -15,37 +15,37 @@ In your Virtual Private Cloud (VPC), each subnet must be associated with a route
 
 ```hcl
 resource "outscale_lin" "test" {
-  cidr_block = "172.16.0.0/16"
+    cidr_block = "172.16.0.0/16"
 
-  tag {
-    Name = "terraform-testacc-data-source"
-  }
+    tag {
+        Name = "terraform-testacc-data-source"
+    }
 }
 
 resource "outscale_subnet" "test" {
-  cidr_block = "172.16.0.0/24"
-  vpc_id     = "${outscale_lin.test.id}"
-  tag {
-    Name = "terraform-testacc-data-source"
-  }
+    cidr_block = "172.16.0.0/24"
+    vpc_id     = "${outscale_lin.test.id}"
+    tag {
+        Name = "terraform-testacc-data-source"
+    }
 }
 
 resource "outscale_route_table" "test" {
-  vpc_id = "${outscale_lin.test.id}"
-  tag {
-    Name = "terraform-testacc-routetable-data-source"
-  }
+    vpc_id = "${outscale_lin.test.id}"
+    tag {
+        Name = "terraform-testacc-routetable-data-source"
+    }
 }
 
 data "outscale_route_tables" "by_filter" {
-  filter {
-    name = "route-table-id"
-    values = ["${outscale_route_table.test.id}"]
-  }
+    filter {
+      name = "route-table-id"
+      values = ["${outscale_route_table.test.id}"]
+    }
 }
 
 data "outscale_route_tables" "by_id" {
-  route_table_id = ["${outscale_route_table.test.id}"]
+    route_table_id = ["${outscale_route_table.test.id}"]
 }
 ```
 
@@ -83,8 +83,8 @@ You can use the Filter.N parameter to filter the route tables on the following p
 The following attributes are exported:
 
 * `route_table_set.N` - Information about one or more route tables, each containing the following attributes:
-  - `association_set.N` - One or more associations between the route table and the subnets.	false	RouteTableAssociation
-  - `propagating_vgw_set.N` - Information about virtual private gateways propagating routes.	false	PropagatingVgw
+  - `association_set.N` - One or more associations between the route table and the subnets.
+  - `propagating_vgw_set.N` - Information about virtual private gateways propagating routes.
   - `route_set.N` - One or more routes in the route table.
   - `route_table_id` - The ID of the route table.
   - `tag_set.N` - One or more tags associated with the route table.

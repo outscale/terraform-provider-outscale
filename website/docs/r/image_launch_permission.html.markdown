@@ -23,7 +23,7 @@ resource "outscale_vm" "outscale_instance" {
 resource "outscale_image" "outscale_image" {
     name        = "terraform test-123"
     instance_id = "${outscale_vm.outscale_instance.id}"
-		no_reboot   = "true"
+    no_reboot   = "true"
 }
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
@@ -31,11 +31,11 @@ resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     launch_permission {
         add {
             user_id = "520679080430"
-			}
-		remove {
+        }
+        remove {
             user_id = "520679080430"
-            }
-		}
+        }
+    }
 }
 ```
 

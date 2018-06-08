@@ -14,7 +14,7 @@ Describes one or more of your quotas.
 
 ```hcl
 data "outscale_quotas" "s3_by_id" {
-  quota_name = ["vm_limit"]
+    quota_name = ["vm_limit"]
 }
 ```
 

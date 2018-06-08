@@ -15,7 +15,7 @@ The private IP addresses to be assigned can be added individually using the Priv
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "outscale_instance" {                 
+resource "outscale_vm" "outscale_instance" {
     image_id                    = "ami-880caa66"
     instance_type               = "c4.large"
     subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
@@ -36,7 +36,7 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-    	network_interface_id    = "${outscale_nic.outscale_nic.id}"
+    network_interface_id    = "${outscale_nic.outscale_nic.id}"
 }
 ```
 

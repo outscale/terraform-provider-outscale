@@ -14,7 +14,7 @@ Describes Prefix List through Terraform.
 
 ```hcl
 data "outscale_prefix_lists" "s3_by_id" {
-  prefix_list_id = ["pl-a14a8cdc"]
+    prefix_list_id = ["pl-a14a8cdc"]
 }
 ```
 

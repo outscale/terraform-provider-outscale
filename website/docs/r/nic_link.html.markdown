@@ -14,7 +14,7 @@ The interface and the instance must be in the same Availability Zone (AZ). The i
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "outscale_instance" {                 
+resource "outscale_vm" "outscale_instance" {
     image_id                    = "ami-880caa66"
     instance_type               = "c4.large"
     subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
@@ -35,8 +35,8 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic_link" "outscale_nic_link" {
-		device_index            = "1"	
-		instance_id             = "${outscale_vm.outscale_instance.id}"
+    device_index            = "1"
+    instance_id             = "${outscale_vm.outscale_instance.id}"
     network_interface_id    = "${outscale_nic.outscale_nic.id}"
 }
 ```

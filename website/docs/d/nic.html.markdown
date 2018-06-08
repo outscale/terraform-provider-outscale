@@ -15,8 +15,8 @@ Describes one or more Network Interfaces through Terraform.
 
 ```hcl
 data "outscale_nic" "nic" {
-		network_interface_id = "NICID"
-		subnet_id = "1"
+    network_interface_id = "NICID"
+    subnet_id = "1"
 }
 ```
 

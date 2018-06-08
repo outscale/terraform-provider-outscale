@@ -62,7 +62,7 @@ You can also use the Filter.N parameter to filter the snapshots on the following
 
 The following attributes are exported:
 
-* `snapshot_set.N` - Information about one or more snapshots; each described with the following attributes.
+* `snapshot_set.N` - Information about one or more snapshots; each described with the following attributes:
   - `progress` - The progress of the snapshot, as a percentage.
   - `status` - The state of the snapshot (in-queue| pending | completed).
   - `owner_alias` - The account alias of the owner of the snapshot.

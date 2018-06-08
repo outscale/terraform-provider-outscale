@@ -40,9 +40,9 @@ The following arguments are supported:
 
 * `subnet_id` - The ID of the subnet
 * `description` - (Optional) A description of the network interface.
-* `private_ip_adress` - (Optional) The private IP address of the network interface.\
-\- This IP address must be in the CIDR of the subnet you specify with the SubnetId attribute. \
-\- If you do not specify a private IP address, Outscale selects one in the CIDR of the subnet.
+* `private_ip_adress` - (Optional) The private IP address of the network interface.
+    This IP address must be in the CIDR of the subnet you specify with the SubnetId attribute.
+    If you do not specify a private IP address, Outscale selects one in the CIDR of the subnet.
 * `security_group_id.N` - One or more security group IDs for the network interface.
 
 ## Attributes

@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_load_balancer"
 sidebar_current: "docs-outscale-resource-load-balancer"
 description: |-
-	Creates a load balancer.
+  Creates a load balancer.
 ---
 
 # outscale_load_balancer
@@ -16,18 +16,18 @@ By default, this action creates an Internet-facing load balancer, resolving to p
 
 ```hcl
 resource "outscale_load_balancer" "bar" {
-  availability_zones = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb-1"
-  listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
-    load_balancer_port = 80
-    protocol = "HTTP"
-  }
+    availability_zones = ["eu-west-2a"]
+    load_balancer_name               = "foobar-terraform-elb-1"
+    listeners {
+        instance_port = 8000
+        instance_protocol = "HTTP"
+        load_balancer_port = 80
+        protocol = "HTTP"
+    }
 
-	tag {
-		bar = "baz"
-	}
+    tag {
+        bar = "baz"
+    }
 
 }
 ```
@@ -49,16 +49,16 @@ The following arguments are supported:
 
 * `security_groups_member.N` - The security groups for the load balancer. Valid only for load balancers in a VPC.
 * `subnets_member.N` - The IDs of the subnets for the load balancer.
-* `listener_descriptions_member.N` - The listeners for the load balancer. 
+* `listener_descriptions_member.N` - The listeners for the load balancer.
 * `policies` - The policies defined for the load balancer.
 * `health_check` - Information about the health checks conducted on the load balancer.
 * `instances_member.N` - The IDs of the instances for the load balancer.
 * `availability_zones_member.N` - The Availability Zones for the load balancer.
-* `scheme` - The type of load balancer. Valid only for load balancers in a VPC.\
-If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address.\
-If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
-* `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.\
-To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
+* `scheme` - The type of load balancer. Valid only for load balancers in a VPC.
+  If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address.
+  If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
+* `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.
+  To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
 * `vpc_id` - The ID of the VPC for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 * `load_balancer_name` - The unique name of the load balancer.

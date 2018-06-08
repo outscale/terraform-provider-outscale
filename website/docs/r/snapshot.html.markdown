@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_snapshot"
 sidebar_current: "docs-outscale-resource-snapshot"
 description: |-
-	Creates a snapshot of a BSU volume.
+  Creates a snapshot of a BSU volume.
 ---
 
 # outscale_snapshot
@@ -15,12 +15,12 @@ Snapshots are point-in-time images of a volume you can use to back up your data 
 
 ```hcl
 resource "outscale_volume" "test" {
-	availability_zone = "eu-west-2a"
-	size = 1
+    availability_zone = "eu-west-2a"
+    size = 1
 }
 
 resource "outscale_snapshot" "test" {
-	volume_id = "${outscale_volume.test.id}"
+    volume_id = "${outscale_volume.test.id}"
 }
 ```
 

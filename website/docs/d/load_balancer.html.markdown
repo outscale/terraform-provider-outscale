@@ -14,14 +14,14 @@ Describes one or more load balancers
 
 ```hcl
 resource "outscale_load_balancer" "bar" {
-  availability_zones_member = ["eu-west-2a"]
-    load_balancer_name               = "foobar-terraform-elb"
-  listeners_member {
-    instance_port = 8000
-    instance_protocol = "HTTP"
-    load_balancer_port = 80
-    protocol = "HTTP"
-  }
+    availability_zones_member = ["eu-west-2a"]
+    load_balancer_name = "foobar-terraform-elb"
+    listeners_member {
+        instance_port = 8000
+        instance_protocol = "HTTP"
+        load_balancer_port = 80
+        protocol = "HTTP"
+    }
 
     tag {
         bar = "baz"
@@ -50,11 +50,11 @@ The following attributes are exported:
 * `health_check` - Information about the health checks conducted on the load balancer.
 * `instances_member.N` - The IDs of the instances for the load balancer.
 * `availability_zones_member.N` - The Availability Zones for the load balancer.
-* `scheme` - The type of load balancer. Valid only for load balancers in a VPC.\
-If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address.\
-If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
-* `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.\
-To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
+* `scheme` - The type of load balancer. Valid only for load balancers in a VPC.
+  If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address.  
+  If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
+* `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.
+  To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
 * `vpc_id` - The ID of the VPC for the load balancer.
 * `dns_name` - The DNS name of the load balancer.
 

@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_lin_peering"
 sidebar_current: "docs-outscale-resource-lin-peering"
 description: |-
-	Requests a VPC peering connection between a VPC you own and a peer VPC that can belong to another Outscale account.
+  Requests a VPC peering connection between a VPC you own and a peer VPC that can belong to another Outscale account.
 ---
 
 # outscale_lin_peering
@@ -16,19 +16,19 @@ The created VPC peering connection remains in the pending-acceptance state until
 
 ```hcl
 resource "outscale_lin" "foo" {
-	cidr_block = "10.0.0.0/16"
-	tag {
-		Name = "TestAccOutscaleLinPeeringConnection_basic"
-	}
+    cidr_block = "10.0.0.0/16"
+    tag {
+        Name = "TestAccOutscaleLinPeeringConnection_basic"
+    }
 }
 
 resource "outscale_lin" "bar" {
-	cidr_block = "10.1.0.0/16"
+    cidr_block = "10.1.0.0/16"
 }
 
 resource "outscale_lin_peering" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-	peer_vpc_id = "${outscale_lin.bar.id}"
+    vpc_id = "${outscale_lin.foo.id}"
+    peer_vpc_id = "${outscale_lin.bar.id}"
 }
 ```
 
