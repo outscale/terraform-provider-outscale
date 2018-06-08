@@ -9,237 +9,154 @@ import (
 )
 
 const (
+	//InstanceAttributeNameUserData represents user data attribute.
 	InstanceAttributeNameUserData = "userData"
 )
 
+//DescribeInstancesInput ...
 type DescribeInstancesInput struct {
-	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
-
+	Filters     []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 	InstanceIds []*string `locationName:"InstanceId" locationNameList:"InstanceId" type:"list"`
-
-	MaxResults *int64 `locationName:"maxResults" type:"integer"`
-
-	NextToken *string `locationName:"nextToken" type:"string"`
+	MaxResults  *int64    `locationName:"maxResults" type:"integer"`
+	NextToken   *string   `locationName:"nextToken" type:"string"`
 }
 
 type Filter struct {
-	Name *string `type:"string"`
-
+	Name   *string   `type:"string"`
 	Values []*string `locationName:"Value" locationNameList:"item" type:"list"`
 }
 
 type DescribeInstancesOutput struct {
-	_ struct{} `type:"structure"`
-
-	NextToken *string `locationName:"nextToken" type:"string"`
-
-	OwnerId *string `locationName:"ownerId" locationNameList:"item" type:"string"`
-
-	RequestId *string `locationName:"requestId" type:"string"`
-
-	ReservationId *string `locationName:"reservationId" locationNameList:"item" type:"string"`
-
-	Reservations []*Reservation `locationName:"reservationSet" locationNameList:"item" type:"list"`
-
-	GroupSet []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
+	_             struct{}           `type:"structure"`
+	NextToken     *string            `locationName:"nextToken" type:"string"`
+	OwnerId       *string            `locationName:"ownerId" locationNameList:"item" type:"string"`
+	RequestId     *string            `locationName:"requestId" type:"string"`
+	ReservationId *string            `locationName:"reservationId" locationNameList:"item" type:"string"`
+	Reservations  []*Reservation     `locationName:"reservationSet" locationNameList:"item" type:"list"`
+	GroupSet      []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
 }
 
 type GroupIdentifier struct {
-	_ struct{} `type:"structure"`
-
-	GroupId *string `locationName:"groupId" type:"string"`
-
-	GroupName *string `locationName:"groupName" type:"string"`
+	_         struct{} `type:"structure"`
+	GroupId   *string  `locationName:"groupId" type:"string"`
+	GroupName *string  `locationName:"groupName" type:"string"`
 }
 
 type Reservation struct {
-	_ struct{} `type:"structure"`
-
-	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
-
-	Instances []*Instance `locationName:"instancesSet" locationNameList:"item" type:"list"`
-
-	OwnerId *string `locationName:"ownerId" type:"string"`
-
-	RequestId *string `locationName:"requestId" type:"string"`
-
-	ReservationId *string `locationName:"reservationId" type:"string"`
+	_             struct{}           `type:"structure"`
+	Groups        []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
+	Instances     []*Instance        `locationName:"instancesSet" locationNameList:"item" type:"list"`
+	OwnerId       *string            `locationName:"ownerId" type:"string"`
+	RequestId     *string            `locationName:"requestId" type:"string"`
+	ReservationId *string            `locationName:"reservationId" type:"string"`
 }
 
 type Instance struct {
-	AmiLaunchIndex *int64 `locationName:"amiLaunchIndex" type:"integer"`
-
-	Architecture *string `locationName:"architecture" type:"string" enum:"ArchitectureValues"`
-
-	BlockDeviceMappings []*InstanceBlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
-
-	ClientToken *string `locationName:"clientToken" type:"string"`
-
-	DnsName *string `locationName:"dnsName" type:"string"`
-
-	EbsOptimized *bool `locationName:"ebsOptimized" type:"boolean"`
-
-	GroupSet []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
-
-	Hypervisor *string `locationName:"hypervisor" type:"string" enum:"HypervisorType"`
-
-	IamInstanceProfile *IamInstanceProfile `locationName:"iamInstanceProfile" type:"structure"`
-
-	ImageId *string `locationName:"imageId" type:"string"`
-
-	InstanceId *string `locationName:"instanceId" type:"string"`
-
-	InstanceLifecycle *string `locationName:"instanceLifecycle" type:"string" enum:"InstanceLifecycleType"`
-
-	InstanceState *InstanceState `locationName:"instanceState" type:"structure"`
-
-	InstanceType *string `locationName:"instanceType" type:"string" enum:"InstanceType"`
-
-	IpAddress *string `locationName:"ipAddress" type:"string"`
-
-	KernelId *string `locationName:"kernelId" type:"string"`
-
-	KeyName *string `locationName:"keyName" type:"string"`
-
-	Monitoring *Monitoring `locationName:"monitoring" type:"structure"`
-
-	NetworkInterfaces []*InstanceNetworkInterface `locationName:"networkInterfaceSet" locationNameList:"item" type:"list"`
-
-	Placement *Placement `locationName:"placement" type:"structure"`
-
-	Platform *string `locationName:"platform" type:"string" enum:"PlatformValues"`
-
-	PrivateDnsName *string `locationName:"privateDnsName" type:"string"`
-
-	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
-
-	ProductCodes []*ProductCode `locationName:"productCodes" locationNameList:"item" type:"list"`
-
-	RamdiskId *string `locationName:"ramdiskId" type:"string"`
-
-	Reason *string `locationName:"reason" type:"string"`
-
-	RootDeviceName *string `locationName:"rootDeviceName" type:"string"`
-
-	RootDeviceType *string `locationName:"rootDeviceType" type:"string" enum:"DeviceType"`
-
-	SourceDestCheck *bool `locationName:"sourceDestCheck" type:"boolean"`
-
-	SpotInstanceRequestId *string `locationName:"spotInstanceRequestId" type:"string"`
-
-	SriovNetSupport *string `locationName:"sriovNetSupport" type:"string"`
-
-	State *InstanceState `locationName:"instanceState" type:"structure"`
-
-	StateReason *StateReason `locationName:"stateReason" type:"structure"`
-
-	SubnetId *string `locationName:"subnetId" type:"string"`
-
-	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
-
-	VirtualizationType *string `locationName:"virtualizationType" type:"string" enum:"VirtualizationType"`
-
-	VpcId *string `locationName:"vpcId" type:"string"`
+	AmiLaunchIndex        *int64                        `locationName:"amiLaunchIndex" type:"integer"`
+	Architecture          *string                       `locationName:"architecture" type:"string" enum:"ArchitectureValues"`
+	BlockDeviceMappings   []*InstanceBlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"item" type:"list"`
+	ClientToken           *string                       `locationName:"clientToken" type:"string"`
+	DnsName               *string                       `locationName:"dnsName" type:"string"`
+	EbsOptimized          *bool                         `locationName:"ebsOptimized" type:"boolean"`
+	GroupSet              []*GroupIdentifier            `locationName:"groupSet" locationNameList:"item" type:"list"`
+	Hypervisor            *string                       `locationName:"hypervisor" type:"string" enum:"HypervisorType"`
+	IamInstanceProfile    *IamInstanceProfile           `locationName:"iamInstanceProfile" type:"structure"`
+	ImageId               *string                       `locationName:"imageId" type:"string"`
+	InstanceId            *string                       `locationName:"instanceId" type:"string"`
+	InstanceLifecycle     *string                       `locationName:"instanceLifecycle" type:"string" enum:"InstanceLifecycleType"`
+	InstanceState         *InstanceState                `locationName:"instanceState" type:"structure"`
+	InstanceType          *string                       `locationName:"instanceType" type:"string" enum:"InstanceType"`
+	IpAddress             *string                       `locationName:"ipAddress" type:"string"`
+	KernelId              *string                       `locationName:"kernelId" type:"string"`
+	KeyName               *string                       `locationName:"keyName" type:"string"`
+	Monitoring            *Monitoring                   `locationName:"monitoring" type:"structure"`
+	NetworkInterfaces     []*InstanceNetworkInterface   `locationName:"networkInterfaceSet" locationNameList:"item" type:"list"`
+	Placement             *Placement                    `locationName:"placement" type:"structure"`
+	Platform              *string                       `locationName:"platform" type:"string" enum:"PlatformValues"`
+	PrivateDnsName        *string                       `locationName:"privateDnsName" type:"string"`
+	PrivateIpAddress      *string                       `locationName:"privateIpAddress" type:"string"`
+	ProductCodes          []*ProductCode                `locationName:"productCodes" locationNameList:"item" type:"list"`
+	RamdiskId             *string                       `locationName:"ramdiskId" type:"string"`
+	Reason                *string                       `locationName:"reason" type:"string"`
+	RootDeviceName        *string                       `locationName:"rootDeviceName" type:"string"`
+	RootDeviceType        *string                       `locationName:"rootDeviceType" type:"string" enum:"DeviceType"`
+	SourceDestCheck       *bool                         `locationName:"sourceDestCheck" type:"boolean"`
+	SpotInstanceRequestId *string                       `locationName:"spotInstanceRequestId" type:"string"`
+	SriovNetSupport       *string                       `locationName:"sriovNetSupport" type:"string"`
+	State                 *InstanceState                `locationName:"instanceState" type:"structure"`
+	StateReason           *StateReason                  `locationName:"stateReason" type:"structure"`
+	SubnetId              *string                       `locationName:"subnetId" type:"string"`
+	Tags                  []*Tag                        `locationName:"tagSet" locationNameList:"item" type:"list"`
+	VirtualizationType    *string                       `locationName:"virtualizationType" type:"string" enum:"VirtualizationType"`
+	VpcId                 *string                       `locationName:"vpcId" type:"string"`
 }
 
 type InstanceBlockDeviceMapping struct {
-	DeviceName *string `locationName:"deviceName" type:"string"`
-
-	Ebs *EbsInstanceBlockDevice `locationName:"ebs" type:"structure"`
+	DeviceName *string                 `locationName:"deviceName" type:"string"`
+	Ebs        *EbsInstanceBlockDevice `locationName:"ebs" type:"structure"`
 }
 
 type InstanceBlockDeviceMappingSpecification struct {
-	_ struct{} `type:"structure"`
-
-	DeviceName *string `locationName:"deviceName" type:"string"`
-
-	Ebs *EbsInstanceBlockDeviceSpecification `locationName:"ebs" type:"structure"`
-
-	NoDevice *string `locationName:"noDevice" type:"string"`
-
-	VirtualName *string `locationName:"virtualName" type:"string"`
+	_           struct{}                             `type:"structure"`
+	DeviceName  *string                              `locationName:"deviceName" type:"string"`
+	Ebs         *EbsInstanceBlockDeviceSpecification `locationName:"ebs" type:"structure"`
+	NoDevice    *string                              `locationName:"noDevice" type:"string"`
+	VirtualName *string                              `locationName:"virtualName" type:"string"`
 }
 
 type InstanceCapacity struct {
-	_ struct{} `type:"structure"`
-
-	AvailableCapacity *int64 `locationName:"availableCapacity" type:"integer"`
-
-	InstanceType *string `locationName:"instanceType" type:"string"`
-
-	TotalCapacity *int64 `locationName:"totalCapacity" type:"integer"`
+	_                 struct{} `type:"structure"`
+	AvailableCapacity *int64   `locationName:"availableCapacity" type:"integer"`
+	InstanceType      *string  `locationName:"instanceType" type:"string"`
+	TotalCapacity     *int64   `locationName:"totalCapacity" type:"integer"`
 }
 
 type InstanceCount struct {
-	_ struct{} `type:"structure"`
-
-	InstanceCount *int64 `locationName:"instanceCount" type:"integer"`
-
-	State *string `locationName:"state" type:"string" enum:"ListingState"`
+	_             struct{} `type:"structure"`
+	InstanceCount *int64   `locationName:"instanceCount" type:"integer"`
+	State         *string  `locationName:"state" type:"string" enum:"ListingState"`
 }
 
 type InstanceExportDetails struct {
-	_ struct{} `type:"structure"`
-
-	InstanceId *string `locationName:"instanceId" type:"string"`
-
-	TargetEnvironment *string `locationName:"targetEnvironment" type:"string" enum:"ExportEnvironment"`
+	_                 struct{} `type:"structure"`
+	InstanceId        *string  `locationName:"instanceId" type:"string"`
+	TargetEnvironment *string  `locationName:"targetEnvironment" type:"string" enum:"ExportEnvironment"`
 }
 
 type InstanceMonitoring struct {
-	_ struct{} `type:"structure"`
-
-	InstanceId *string `locationName:"instanceId" type:"string"`
-
+	_          struct{}    `type:"structure"`
+	InstanceId *string     `locationName:"instanceId" type:"string"`
 	Monitoring *Monitoring `locationName:"monitoring" type:"structure"`
 }
 
 type InstanceNetworkInterface struct {
-	Association *InstanceNetworkInterfaceAssociation `locationName:"association" type:"structure"`
-
-	Attachment *InstanceNetworkInterfaceAttachment `locationName:"attachment" type:"structure"`
-
-	Description *string `locationName:"description" type:"string"`
-
-	Groups []*GroupIdentifier `locationName:"groupSet" locationNameList:"item" type:"list"`
-
-	MacAddress *string `locationName:"macAddress" type:"string"`
-
-	NetworkInterfaceId *string `locationName:"networkInterfaceId" type:"string"`
-
-	OwnerId *string `locationName:"ownerId" type:"string"`
-
-	PrivateDnsName *string `locationName:"privateDnsName" type:"string"`
-
-	PrivateIpAddress *string `locationName:"privateIpAddress" type:"string"`
-
-	PrivateIpAddresses []*InstancePrivateIpAddress `locationName:"privateIpAddressesSet" locationNameList:"item" type:"list"`
-
-	SourceDestCheck *bool `locationName:"sourceDestCheck" type:"bool"`
-
-	Status *string `locationName:"status" type:"string" enum:"NetworkInterfaceStatus"`
-
-	SubnetId *string `locationName:"subnetId" type:"string"`
-
-	VpcId *string `locationName:"vpcId" type:"string"`
+	Association        *InstanceNetworkInterfaceAssociation `locationName:"association" type:"structure"`
+	Attachment         *InstanceNetworkInterfaceAttachment  `locationName:"attachment" type:"structure"`
+	Description        *string                              `locationName:"description" type:"string"`
+	Groups             []*GroupIdentifier                   `locationName:"groupSet" locationNameList:"item" type:"list"`
+	MacAddress         *string                              `locationName:"macAddress" type:"string"`
+	NetworkInterfaceId *string                              `locationName:"networkInterfaceId" type:"string"`
+	OwnerId            *string                              `locationName:"ownerId" type:"string"`
+	PrivateDnsName     *string                              `locationName:"privateDnsName" type:"string"`
+	PrivateIpAddress   *string                              `locationName:"privateIpAddress" type:"string"`
+	PrivateIpAddresses []*InstancePrivateIpAddress          `locationName:"privateIpAddressesSet" locationNameList:"item" type:"list"`
+	SourceDestCheck    *bool                                `locationName:"sourceDestCheck" type:"bool"`
+	Status             *string                              `locationName:"status" type:"string" enum:"NetworkInterfaceStatus"`
+	SubnetId           *string                              `locationName:"subnetId" type:"string"`
+	VpcId              *string                              `locationName:"vpcId" type:"string"`
 }
 
 type InstanceNetworkInterfaceAssociation struct {
-	IpOwnerId *string `locationName:"ipOwnerId" type:"string"`
-
+	IpOwnerId     *string `locationName:"ipOwnerId" type:"string"`
 	PublicDnsName *string `locationName:"publicDnsName" type:"string"`
-
-	PublicIp *string `locationName:"publicIp" type:"string"`
+	PublicIp      *string `locationName:"publicIp" type:"string"`
 }
 
 type InstanceNetworkInterfaceAttachment struct {
-	AttachmentId *string `locationName:"attachmentId" type:"string"`
-
-	DeleteOnTermination *bool `locationName:"deleteOnTermination" type:"boolean"`
-
-	DeviceIndex *int64 `locationName:"deviceIndex" type:"integer"`
-
-	Status *string `locationName:"status" type:"string" enum:"AttachmentStatus"`
+	AttachmentId        *string `locationName:"attachmentId" type:"string"`
+	DeleteOnTermination *bool   `locationName:"deleteOnTermination" type:"boolean"`
+	DeviceIndex         *int64  `locationName:"deviceIndex" type:"integer"`
+	Status              *string `locationName:"status" type:"string" enum:"AttachmentStatus"`
 }
 
 type InstanceNetworkInterfaceSpecification struct {
@@ -1404,37 +1321,28 @@ type IpPermission struct {
 }
 
 type IpRange struct {
-	_ struct{} `type:"structure"`
-
-	CidrIp *string `locationName:"cidrIp" type:"string"`
+	_      struct{} `type:"structure"`
+	CidrIp *string  `locationName:"cidrIp" type:"string"`
 }
 
 type Ipv6Range struct {
-	_ struct{} `type:"structure"`
-
-	CidrIpv6 *string `locationName:"cidrIpv6" type:"string"`
+	_        struct{} `type:"structure"`
+	CidrIpv6 *string  `locationName:"cidrIpv6" type:"string"`
 }
 
 type PrefixListId struct {
-	_ struct{} `type:"structure"`
-
-	PrefixListId *string `locationName:"prefixListId" type:"string"`
+	_            struct{} `type:"structure"`
+	PrefixListId *string  `locationName:"prefixListId" type:"string"`
 }
 
 type UserIdGroupPair struct {
-	_ struct{} `type:"structure"`
-
-	GroupId *string `locationName:"groupId" type:"string"`
-
-	GroupName *string `locationName:"groupName" type:"string"`
-
-	PeeringStatus *string `locationName:"peeringStatus" type:"string"`
-
-	UserId *string `locationName:"userId" type:"string"`
-
-	VpcId *string `locationName:"vpcId" type:"string"`
-
-	VpcPeeringConnectionId *string `locationName:"vpcPeeringConnectionId" type:"string"`
+	_                      struct{} `type:"structure"`
+	GroupId                *string  `locationName:"groupId" type:"string"`
+	GroupName              *string  `locationName:"groupName" type:"string"`
+	PeeringStatus          *string  `locationName:"peeringStatus" type:"string"`
+	UserId                 *string  `locationName:"userId" type:"string"`
+	VpcId                  *string  `locationName:"vpcId" type:"string"`
+	VpcPeeringConnectionId *string  `locationName:"vpcPeeringConnectionId" type:"string"`
 }
 
 type RevokeSecurityGroupEgressInput struct {
@@ -10515,16 +10423,10 @@ type DescribeVpcEndpointsInput struct {
 
 // Contains the output of DescribeVpcEndpoints.
 type DescribeVpcEndpointsOutput struct {
-	_ struct{} `type:"structure"`
-
-	// The token to use when requesting the next set of items. If there are no additional
-	// items to return, the string is empty.
-	NextToken *string `locationName:"nextToken" type:"string"`
-
-	// Information about the endpoints.
-	VpcEndpoints []*VpcEndpoint `locationName:"vpcEndpointSet" locationNameList:"item" type:"list"`
-
-	RequestId *string `locationName:"requestId" type:"string"`
+	_            struct{}       `type:"structure"`
+	NextToken    *string        `locationName:"nextToken" type:"string"`
+	VpcEndpoints []*VpcEndpoint `locationName:"vpcEndpointSet" locationNameList:"item" type:"list"` // Information about the endpoints.
+	RequestId    *string        `locationName:"requestId" type:"string"`
 }
 
 type ModifyVpcEndpointInput struct {
@@ -10595,6 +10497,8 @@ type ModifySnapshotAttributeInput struct {
 
 	// The account ID to modify for the snapshot.
 	UserIds []*string `locationName:"UserId" locationNameList:"UserId" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type CreateVolumePermissionModifications struct {
@@ -10658,4 +10562,194 @@ type DescribeSnapshotAttributeOutput struct {
 	SnapshotId *string `locationName:"snapshotId" type:"string"`
 
 	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+type ImportSnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// The client-specific data.
+	ClientData *ClientData `type:"structure"`
+
+	// Token to enable idempotency for VM import requests.
+	ClientToken *string `type:"string"`
+
+	// The description string for the import snapshot task.
+	Description *string `type:"string"`
+
+	// Information about the disk container.
+	DiskContainer *SnapshotDiskContainer `type:"structure"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The name of the role to use when not using the default role, 'vmimport'.
+	RoleName *string `type:"string"`
+}
+
+type CopySnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the EBS snapshot.
+	Description *string `type:"string"`
+
+	// The destination region to use in the PresignedUrl parameter of a snapshot
+	// copy operation. This parameter is only valid for specifying the destination
+	// region in a PresignedUrl parameter, where it is required.
+	//
+	// CopySnapshot sends the snapshot copy to the regional endpoint that you send
+	// the HTTP request to, such as ec2.us-east-1.amazonaws.com (in the AWS CLI,
+	// this is specified with the --region parameter or the default region in your
+	// AWS configuration file).
+	DestinationRegion *string `locationName:"destinationRegion" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the destination snapshot should be encrypted. You can encrypt
+	// a copy of an unencrypted snapshot using this flag, but you cannot use it
+	// to create an unencrypted copy from an encrypted snapshot. Your default CMK
+	// for EBS is used unless a non-default AWS Key Management Service (AWS KMS)
+	// CMK is specified with KmsKeyId. For more information, see Amazon EBS Encryption
+	// (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html) in
+	// the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) CMK to use when
+	// creating the snapshot copy. This parameter is only required if you want to
+	// use a non-default CMK; if this parameter is not specified, the default CMK
+	// for EBS is used. The ARN contains the arn:aws:kms namespace, followed by
+	// the region of the CMK, the AWS account ID of the CMK owner, the key namespace,
+	// and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// The specified CMK must exist in the region that the snapshot is being copied
+	// to. If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The pre-signed URL that facilitates copying an encrypted snapshot. This parameter
+	// is only required when copying an encrypted snapshot with the Amazon EC2 Query
+	// API; it is available as an optional parameter in all other cases. The PresignedUrl
+	// should use the snapshot source endpoint, the CopySnapshot action, and include
+	// the SourceRegion, SourceSnapshotId, and DestinationRegion parameters. The
+	// PresignedUrl must be signed using AWS Signature Version 4. Because EBS snapshots
+	// are stored in Amazon S3, the signing algorithm for this parameter uses the
+	// same logic that is described in Authenticating Requests by Using Query Parameters
+	// (AWS Signature Version 4) (http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
+	// in the Amazon Simple Storage Service API Reference. An invalid or improperly
+	// signed PresignedUrl will cause the copy operation to fail asynchronously,
+	// and the snapshot will move to an error state.
+	PresignedUrl *string `locationName:"presignedUrl" type:"string"`
+
+	// The ID of the region that contains the snapshot to be copied.
+	//
+	// SourceRegion is a required field
+	SourceRegion *string `type:"string" required:"true"`
+
+	// The ID of the EBS snapshot to copy.
+	//
+	// SourceSnapshotId is a required field
+	SourceSnapshotId *string `type:"string" required:"true"`
+}
+
+type ImportSnapshotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A description of the import snapshot task.
+	Description *string `locationName:"description" type:"string"`
+
+	// The ID of the import snapshot task.
+	ImportTaskId *string `locationName:"importTaskId" type:"string"`
+
+	// Information about the import snapshot task.
+	SnapshotTaskDetail *SnapshotTaskDetail `locationName:"snapshotTaskDetail" type:"structure"`
+
+	Id *string `locationName:"id" type:"string"`
+}
+
+type ClientData struct {
+	_ struct{} `type:"structure"`
+
+	// A user-defined comment about the disk upload.
+	Comment *string `type:"string"`
+
+	// The time that the disk upload ends.
+	UploadEnd *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// The size of the uploaded disk image, in GiB.
+	UploadSize *float64 `type:"double"`
+
+	// The time that the disk upload starts.
+	UploadStart *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+	DryRun      *bool      `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the destination snapshot should be encrypted. You can encrypt
+	// a copy of an unencrypted snapshot using this flag, but you cannot use it
+	// to create an unencrypted copy from an encrypted snapshot. Your default CMK
+	// for EBS is used unless a non-default AWS Key Management Service (AWS KMS)
+	// CMK is specified with KmsKeyId. For more information, see Amazon EBS Encryption
+	// (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html) in
+	// the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) CMK to use when
+	// creating the snapshot copy. This parameter is only required if you want to
+	// use a non-default CMK; if this parameter is not specified, the default CMK
+	// for EBS is used. The ARN contains the arn:aws:kms namespace, followed by
+	// the region of the CMK, the AWS account ID of the CMK owner, the key namespace,
+	// and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// The specified CMK must exist in the region that the snapshot is being copied
+	// to. If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The pre-signed URL that facilitates copying an encrypted snapshot. This parameter
+	// is only required when copying an encrypted snapshot with the Amazon EC2 Query
+	// API; it is available as an optional parameter in all other cases. The PresignedUrl
+	// should use the snapshot source endpoint, the CopySnapshot action, and include
+	// the SourceRegion, SourceSnapshotId, and DestinationRegion parameters. The
+	// PresignedUrl must be signed using AWS Signature Version 4. Because EBS snapshots
+	// are stored in Amazon S3, the signing algorithm for this parameter uses the
+	// same logic that is described in Authenticating Requests by Using Query Parameters
+	// (AWS Signature Version 4) (http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
+	// in the Amazon Simple Storage Service API Reference. An invalid or improperly
+	// signed PresignedUrl will cause the copy operation to fail asynchronously,
+	// and the snapshot will move to an error state.
+	PresignedUrl *string `locationName:"presignedUrl" type:"string"`
+
+	// The ID of the region that contains the snapshot to be copied.
+	//
+	// SourceRegion is a required field
+	SourceRegion *string `type:"string" required:"true"`
+
+	// The ID of the EBS snapshot to copy.
+	//
+	// SourceSnapshotId is a required field
+	SourceSnapshotId *string `type:"string" required:"true"`
+}
+
+type CopySnapshotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new snapshot.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+//DescribeVpcEndpointServicesInput represents input of Describe Request.
+type DescribeVpcEndpointServicesInput struct {
+	_          struct{} `type:"structure"`
+	DryRun     *bool    `type:"boolean"`
+	MaxResults *int64   `type:"integer"`
+	NextToken  *string  `type:"string"`
+}
+
+type DescribeVpcEndpointServicesOutput struct {
+	_            struct{}  `type:"structure"`
+	NextToken    *string   `locationName:"nextToken" type:"string"`                            // The token to use when requesting the next set of items. If there are no additional items to return, the string is empty.
+	ServiceNames []*string `locationName:"serviceNameSet" locationNameList:"item" type:"list"` // A list of supported services.
+	RequestID    *string   `locationName:"requestId" type:"string"`
 }

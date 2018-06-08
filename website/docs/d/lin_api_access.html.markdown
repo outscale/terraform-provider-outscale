@@ -3,8 +3,8 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_lin_api_access"
 sidebar_current: "docs-outscale-datasource-lin-api-access"
 description: |-
- Creates a Virtual Private Cloud (VPC) endpoint to access an Outscale service from this VPC without using the Internet and External IP addresses.
-You specify the service using its prefix list name.
+  Creates a Virtual Private Cloud (VPC) endpoint to access an Outscale service from this VPC without using the Internet and External IP addresses.
+  You specify the service using its prefix list name.
 ---
 
 # outscale_lin_api_access
@@ -26,7 +26,7 @@ resource "outscale_route_table" "foo" {
 resource "outscale_lin_api_access" "link" {
     vpc_id = "${outscale_lin.foo.id}"
     route_table_id = [
-    "${outscale_route_table.foo.id}"
+        "${outscale_route_table.foo.id}"
     ]
     service_name = "com.outscale.eu-west-2.osu"
 }

@@ -46,7 +46,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	return client, nil
 }
 
-// OutscaleClient client
+//OutscaleClient client
 type OutscaleClient struct {
 	FCU *fcu.Client
 	ICU *icu.Client
