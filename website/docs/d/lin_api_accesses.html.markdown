@@ -3,7 +3,7 @@ layout: "outscale"
 page_title: "OUTSCALE: outscale_lin_api_access"
 sidebar_current: "docs-outscale-datasource-lin-api-accesses"
 description: |-
-Describes one or more Virtual Private Cloud (VPC) endpoints.
+  Describes one or more Virtual Private Cloud (VPC) endpoints.
 ---
 
 # outscale_lin_api_accesses
@@ -24,7 +24,7 @@ resource "outscale_route_table" "foo" {
 resource "outscale_lin_api_access" "link" {
     vpc_id = "${outscale_lin.foo.id}"
     route_table_id = [
-    "${outscale_route_table.foo.id}"
+        "${outscale_route_table.foo.id}"
     ]
     service_name = "com.outscale.eu-west-2.osu"
 }
@@ -52,7 +52,6 @@ Use the filter (Filter.N) parameter to filter the described instances on the fol
 * `vpc-id` - The ID of the VPC.
 * `vpc-endpoint-id` The ID of the VPC endpoint.
 * `vpc-endpoint-state` The state of the VPC endpoint (pending | available | deleting | deleted).
-
 
 ## Attributes
 
