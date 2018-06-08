@@ -61,6 +61,7 @@ func init() {
 			"outscale_reserved_vms_offer_purchase":   resourceOutscaleReservedVmsOfferPurchase,
 			"outscale_snapshot_attributes":           resourcedOutscaleSnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
+			"outscale_snapshot_copy":                 resourcedOutscaleSnapshotCopy,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,
@@ -105,6 +106,7 @@ func init() {
 			"outscale_vpn_gateway_link":              resourceOutscaleOAPIVpnGatewayLink,
 			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
+			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,

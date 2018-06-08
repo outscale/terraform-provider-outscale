@@ -10591,6 +10591,8 @@ type ModifySnapshotAttributeInput struct {
 
 	// The account ID to modify for the snapshot.
 	UserIds []*string `locationName:"UserId" locationNameList:"UserId" type:"list"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
 }
 
 type CreateVolumePermissionModifications struct {
@@ -10651,6 +10653,81 @@ type DescribeSnapshotAttributeOutput struct {
 	ProductCodes []*ProductCode `locationName:"productCodes" locationNameList:"item" type:"list"`
 
 	// The ID of the EBS snapshot.
+	SnapshotId *string `locationName:"snapshotId" type:"string"`
+
+	RequestId *string `locationName:"requestId" type:"string"`
+}
+
+type CopySnapshotInput struct {
+	_ struct{} `type:"structure"`
+
+	// A description for the EBS snapshot.
+	Description *string `type:"string"`
+
+	// The destination region to use in the PresignedUrl parameter of a snapshot
+	// copy operation. This parameter is only valid for specifying the destination
+	// region in a PresignedUrl parameter, where it is required.
+	//
+	// CopySnapshot sends the snapshot copy to the regional endpoint that you send
+	// the HTTP request to, such as ec2.us-east-1.amazonaws.com (in the AWS CLI,
+	// this is specified with the --region parameter or the default region in your
+	// AWS configuration file).
+	DestinationRegion *string `locationName:"destinationRegion" type:"string"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// Specifies whether the destination snapshot should be encrypted. You can encrypt
+	// a copy of an unencrypted snapshot using this flag, but you cannot use it
+	// to create an unencrypted copy from an encrypted snapshot. Your default CMK
+	// for EBS is used unless a non-default AWS Key Management Service (AWS KMS)
+	// CMK is specified with KmsKeyId. For more information, see Amazon EBS Encryption
+	// (http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html) in
+	// the Amazon Elastic Compute Cloud User Guide.
+	Encrypted *bool `locationName:"encrypted" type:"boolean"`
+
+	// The full ARN of the AWS Key Management Service (AWS KMS) CMK to use when
+	// creating the snapshot copy. This parameter is only required if you want to
+	// use a non-default CMK; if this parameter is not specified, the default CMK
+	// for EBS is used. The ARN contains the arn:aws:kms namespace, followed by
+	// the region of the CMK, the AWS account ID of the CMK owner, the key namespace,
+	// and then the CMK ID. For example, arn:aws:kms:us-east-1:012345678910:key/abcd1234-a123-456a-a12b-a123b4cd56ef.
+	// The specified CMK must exist in the region that the snapshot is being copied
+	// to. If a KmsKeyId is specified, the Encrypted flag must also be set.
+	KmsKeyId *string `locationName:"kmsKeyId" type:"string"`
+
+	// The pre-signed URL that facilitates copying an encrypted snapshot. This parameter
+	// is only required when copying an encrypted snapshot with the Amazon EC2 Query
+	// API; it is available as an optional parameter in all other cases. The PresignedUrl
+	// should use the snapshot source endpoint, the CopySnapshot action, and include
+	// the SourceRegion, SourceSnapshotId, and DestinationRegion parameters. The
+	// PresignedUrl must be signed using AWS Signature Version 4. Because EBS snapshots
+	// are stored in Amazon S3, the signing algorithm for this parameter uses the
+	// same logic that is described in Authenticating Requests by Using Query Parameters
+	// (AWS Signature Version 4) (http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html)
+	// in the Amazon Simple Storage Service API Reference. An invalid or improperly
+	// signed PresignedUrl will cause the copy operation to fail asynchronously,
+	// and the snapshot will move to an error state.
+	PresignedUrl *string `locationName:"presignedUrl" type:"string"`
+
+	// The ID of the region that contains the snapshot to be copied.
+	//
+	// SourceRegion is a required field
+	SourceRegion *string `type:"string" required:"true"`
+
+	// The ID of the EBS snapshot to copy.
+	//
+	// SourceSnapshotId is a required field
+	SourceSnapshotId *string `type:"string" required:"true"`
+}
+
+type CopySnapshotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the new snapshot.
 	SnapshotId *string `locationName:"snapshotId" type:"string"`
 
 	RequestId *string `locationName:"requestId" type:"string"`

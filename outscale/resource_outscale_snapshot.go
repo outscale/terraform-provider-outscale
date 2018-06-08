@@ -202,7 +202,7 @@ func resourceOutscaleSnapshotWaitForAvailable(id string, conn *fcu.Client) error
 	log.Printf("Waiting for Snapshot %s to become available...", id)
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
+		Pending:    []string{"pending", "pending/queued", "queued", "in-queue"},
 		Target:     []string{"completed"},
 		Refresh:    SnapshotStateRefreshFunc(conn, id),
 		Timeout:    OutscaleImageRetryTimeout,
