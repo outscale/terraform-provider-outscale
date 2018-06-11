@@ -30,23 +30,33 @@ func resourceOutscaleLoadBalancerHealthCheck() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 						"unhealthy_threshold": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 						"target": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 						"interval": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 						"timeout": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
 						},
 					},
 				},
