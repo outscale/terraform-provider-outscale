@@ -10587,6 +10587,9 @@ type ImportSnapshotInput struct {
 
 	// The name of the role to use when not using the default role, 'vmimport'.
 	RoleName *string `type:"string"`
+
+	SnapshotLocation *string `type:"string"`
+	SnapshotSize     *string `type:"string"`
 }
 
 type CopySnapshotInput struct {

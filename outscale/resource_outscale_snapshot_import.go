@@ -40,10 +40,6 @@ func resourcedOutscaleSnapshotImport() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"owner_alias": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,

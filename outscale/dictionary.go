@@ -121,6 +121,9 @@ func init() {
 			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
 			"outscale_load_balancer_tags":         resourceOutscaleLBUTags,
 		},
+		"eim": ResourceMap{
+			"outscale_policy": resourceOutscalePolicy,
+		},
 	}
 	datasources = Dictionary{
 		"fcu": ResourceMap{
