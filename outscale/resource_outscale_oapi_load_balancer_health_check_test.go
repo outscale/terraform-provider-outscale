@@ -4,15 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"testing"
-	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
@@ -27,8 +22,6 @@ func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
 		t.Skip()
 	}
 
-	//var conf lbu.LoadBalancerDescription
-
 	r := acctest.RandIntRange(0, 10)
 
 	resource.Test(t, resource.TestCase{
@@ -40,7 +33,6 @@ func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleHealthCheckConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					//testAccCheckOutscaleOAPIHealthCheckExists("outscale_load_balancer_health_check.test", &conf),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer_health_check.test", "health_check.healthy_threshold", "2"),
 					resource.TestCheckResourceAttr(
@@ -54,57 +46,6 @@ func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
 				)},
 		},
 	})
-}
-
-func testAccCheckOutscaleOAPIHealthCheckExists(n string, res *lbu.LoadBalancerDescription) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No LBU ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).LBU
-
-		var err error
-		var describe *lbu.DescribeLoadBalancersOutput
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
-			})
-
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "Throttling") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(describe.LoadBalancerDescriptions) != 1 ||
-			*describe.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
-			return fmt.Errorf("LBU not found")
-		}
-
-		*res = *describe.LoadBalancerDescriptions[0]
-
-		if res.VPCId != nil {
-			sgid := rs.Primary.Attributes["source_security_group_id"]
-			if sgid == "" {
-				return fmt.Errorf("Expected to find source_security_group_id for LBU, but was empty")
-			}
-		}
-
-		return nil
-	}
 }
 
 func testAccOutscaleOAPIHealthCheckConfig(r int) string {
