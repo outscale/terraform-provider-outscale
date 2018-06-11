@@ -14,6 +14,7 @@ func Provider() terraform.ResourceProvider {
 	fcu := "fcu"
 	icu := "icu"
 	lbu := "lbu"
+	eim := "eim"
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -108,6 +109,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_api_access":                GetResource(fcu, "outscale_lin_api_access")(),
 			"outscale_snapshot_import":               GetResource(fcu, "outscale_snapshot_import")(),
 			"outscale_snapshot_copy":                 GetResource(fcu, "outscale_snapshot_copy")(),
+			"outscale_policy":                        GetResource(eim, "outscale_policy")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),

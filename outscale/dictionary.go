@@ -109,6 +109,7 @@ func init() {
 			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
+			"outscale_policy":                        resourceOutscaleOAPIPolicy,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -120,6 +121,9 @@ func init() {
 			"outscale_load_balancer_listeners":    resourceOutscaleLoadBalancerListeners,
 			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
 			"outscale_load_balancer_tags":         resourceOutscaleLBUTags,
+		},
+		"eim": ResourceMap{
+			"outscale_policy": resourceOutscalePolicy,
 		},
 	}
 	datasources = Dictionary{

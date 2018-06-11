@@ -297,20 +297,15 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Please provide an instance_id")
 	}
 
-	fmt.Printf("\n\n[DEBUG] INSTANCE TO MODIFY (%s)", i)
-
 	id := i.(string)
 
 	if v, ok := d.GetOk("disable_api_termination"); ok {
-		log.Printf("value = ", v.(bool))
 		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(id),
 			DisableApiTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(v.(bool)),
 			},
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
 		if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
 			return err
@@ -335,8 +330,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 			},
 		}
 
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
 		if err := modifyInstanceAttr(conn, opts, "instance_initiated_shutdown_behavior"); err != nil {
 			return err
 		}
@@ -349,8 +342,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 				Value: aws.Bool(v.(bool)),
 			},
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
 		if err := modifyInstanceAttr(conn, opts, "source_dest_check"); err != nil {
 			return err
@@ -365,8 +356,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 			},
 		}
 
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
 		if err := modifyInstanceAttr(conn, opts, "instance_type"); err != nil {
 			return err
 		}
@@ -379,8 +368,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 				Value: v.([]byte),
 			},
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
 		if err := modifyInstanceAttr(conn, opts, "user_data"); err != nil {
 			return err
@@ -395,8 +382,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 			},
 		}
 
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
 		if err := modifyInstanceAttr(conn, opts, "ebs_optimized"); err != nil {
 			return err
 		}
@@ -409,8 +394,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 				Value: aws.Bool(v.(bool)),
 			},
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
 		if err := modifyInstanceAttr(conn, opts, "delete_on_termination"); err != nil {
 			return err
@@ -744,8 +727,6 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 
 			instances[k] = instance
 		}
-
-		fmt.Printf("\n\n[DEBUG] instance_status_set %s", instances)
 
 		if err := d.Set("instance_status_set", instances); err != nil {
 			return err

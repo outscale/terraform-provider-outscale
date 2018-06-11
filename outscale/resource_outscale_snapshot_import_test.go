@@ -10,8 +10,10 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSnapshotCopy_Basic(t *testing.T) {
+func TestAccOutscaleSnapshotImport_Basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
+
+	t.Skip()
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -49,7 +51,7 @@ func testAccOutscaleSnapshotCopyExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleSnapshotCopyConfig() string {
+func testAccOutscaleSnapshotImportConfig() string {
 	return fmt.Sprintf(`
 resource "outscale_snapshot_import" "test" {
 	snapshot_location = ""
