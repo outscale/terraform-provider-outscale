@@ -24,13 +24,11 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			// Argumentos
 			"customer_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-
 			"options": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -46,26 +44,20 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
-
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-
 			"vpn_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-
-			// Atributos
-
 			"customer_gateway_configuration": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"routes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -86,15 +78,12 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
-
 			"tag_set": tagsSchemaComputed(),
 			"tag":     tagsSchema(),
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vgw_telemetry": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -119,12 +108,10 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
-
 			"vpn_connection_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -176,7 +163,7 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -262,7 +249,7 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -279,57 +266,55 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 	}
 
 	vpnConnection := resp.VpnConnections[0]
+
 	if vpnConnection == nil || *vpnConnection.State == "deleted" {
 		d.SetId("")
 		return nil
 	}
 	options := make(map[string]interface{})
-	if vpnConnection.Options != nil {
-		options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(vpnConnection.Options.StaticRoutesOnly))
-	} else {
-		options["static_routes_only"] = strconv.FormatBool(false)
+	opt := "false"
+	if vpnConnection.Options != nil && *vpnConnection.Options.StaticRoutesOnly {
+		opt = "true"
 	}
+	options["static_routes_only"] = opt
 	if err := d.Set("options", options); err != nil {
 		return err
 	}
-	d.Set("customer_gateway_configuration", vpnConnection.CustomerGatewayConfiguration)
+
+	d.Set("customer_gateway_configuration", aws.StringValue(vpnConnection.CustomerGatewayConfiguration))
 
 	routes := make([]map[string]interface{}, len(vpnConnection.Routes))
 
 	for k, v := range vpnConnection.Routes {
 		route := make(map[string]interface{})
 
-		route["destination_cidr_block"] = *v.DestinationCidrBlock
-		route["source"] = *v.Source
-		route["state"] = *v.State
+		route["destination_cidr_block"] = aws.StringValue(v.DestinationCidrBlock)
+		route["source"] = aws.StringValue(v.Source)
+		route["state"] = aws.StringValue(v.State)
 
 		routes[k] = route
 	}
 
 	d.Set("routes", routes)
 	d.Set("tag_set", tagsToMap(vpnConnection.Tags))
-
-	d.Set("state", vpnConnection.State)
+	d.Set("state", aws.StringValue(vpnConnection.State))
 
 	vgws := make([]map[string]interface{}, len(vpnConnection.VgwTelemetry))
 
 	for k, v := range vpnConnection.VgwTelemetry {
 		vgw := make(map[string]interface{})
-
-		vgw["accepted_route_count"] = *v.AcceptedRouteCount
-		vgw["outside_ip_address"] = *v.OutsideIpAddress
-		vgw["status"] = *v.Status
-		vgw["status_message"] = *v.StatusMessage
+		vgw["accepted_route_count"] = aws.Int64Value(v.AcceptedRouteCount)
+		vgw["outside_ip_address"] = aws.StringValue(v.OutsideIpAddress)
+		vgw["status"] = aws.StringValue(v.Status)
+		vgw["status_message"] = aws.StringValue(v.StatusMessage)
 
 		vgws[k] = vgw
 	}
 
-	d.Set("vgw_telemetry", vgws)
 	d.Set("vpn_connection_id", vpnConnection.VpnConnectionId)
-	d.Set("vpn_gateway_id", vpnConnection.VpnGatewayId)
 	d.Set("request_id", resp.RequestId)
 
-	return nil
+	return d.Set("vgw_telemetry", vgws)
 }
 
 func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{}) error {
@@ -360,7 +345,7 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"deleting"},
+		Pending:    []string{"pending", "deleting"},
 		Target:     []string{"deleted"},
 		Refresh:    vpnConnectionRefreshFunc(conn, d.Id()),
 		Timeout:    30 * time.Minute,

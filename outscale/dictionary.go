@@ -124,6 +124,7 @@ func init() {
 		},
 		"eim": ResourceMap{
 			"outscale_policy": resourceOutscalePolicy,
+			"outscale_group":  resourceOutscaleGroup,
 		},
 	}
 	datasources = Dictionary{

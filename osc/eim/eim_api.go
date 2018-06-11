@@ -20,6 +20,10 @@ type Service interface {
 	DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error)
 	DeletePolicyVersion(input *DeletePolicyVersionInput) (*DeletePolicyVersionOutput, error)
 	ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPolicyVersionsOutput, error)
+	CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error)
+	GetGroup(input *GetGroupInput) (*GetGroupOutput, error)
+	UpdateGroup(input *UpdateGroupInput) (*UpdateGroupOutput, error)
+	DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error)
 }
 
 // CreatePolicy ...
@@ -150,6 +154,102 @@ func (v Operations) ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPol
 
 	if input == nil {
 		input = &ListPolicyVersionsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// CreateGroup ...
+func (v Operations) CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error) {
+	inURL := "/"
+	endpoint := "CreateGroup"
+	output := &CreateGroupOutput{}
+
+	if input == nil {
+		input = &CreateGroupInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetGroup ...
+func (v Operations) GetGroup(input *GetGroupInput) (*GetGroupOutput, error) {
+	inURL := "/"
+	endpoint := "GetGroup"
+	output := &GetGroupOutput{}
+
+	if input == nil {
+		input = &GetGroupInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// UpdateGroup ...
+func (v Operations) UpdateGroup(input *UpdateGroupInput) (*UpdateGroupOutput, error) {
+	inURL := "/"
+	endpoint := "UpdateGroup"
+	output := &UpdateGroupOutput{}
+
+	if input == nil {
+		input = &UpdateGroupInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteGroup ...
+func (v Operations) DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteGroup"
+	output := &DeleteGroupOutput{}
+
+	if input == nil {
+		input = &DeleteGroupInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

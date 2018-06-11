@@ -105,3 +105,78 @@ type ListPolicyVersionsOutput struct {
 	Marker      *string          `min:"1" type:"string"`
 	Versions    []*PolicyVersion `type:"list"`
 }
+
+// CreateGroupInput ...
+type CreateGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	Path      *string  `min:"1" type:"string"`
+}
+
+// CreateGroupOutput ...
+type CreateGroupOutput struct {
+	_     struct{} `type:"structure"`
+	Group *Group   `type:"structure" required:"true"`
+}
+
+// Group ...
+type Group struct {
+	_          struct{}   `type:"structure"`
+	Arn        *string    `min:"20" type:"string" required:"true"`
+	CreateDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+	GroupId    *string    `min:"16" type:"string" required:"true"`
+	GroupName  *string    `min:"1" type:"string" required:"true"`
+	Path       *string    `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupInput ...
+type GetGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	Marker    *string  `min:"1" type:"string"`
+	MaxItems  *int64   `min:"1" type:"integer"`
+}
+
+// GetGroupOutput ...
+type GetGroupOutput struct {
+	_           struct{} `type:"structure"`
+	Group       *Group   `type:"structure" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+	Users       []*User  `type:"list" required:"true"`
+}
+
+// User ...
+type User struct {
+	_                struct{}   `type:"structure"`
+	Arn              *string    `min:"20" type:"string" required:"true"`
+	CreateDate       *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+	PasswordLastUsed *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+	Path             *string    `min:"1" type:"string" required:"true"`
+	UserId           *string    `min:"16" type:"string" required:"true"`
+	UserName         *string    `min:"1" type:"string" required:"true"`
+}
+
+// UpdateGroupInput ...
+type UpdateGroupInput struct {
+	_            struct{} `type:"structure"`
+	GroupName    *string  `min:"1" type:"string" required:"true"`
+	NewGroupName *string  `min:"1" type:"string"`
+	NewPath      *string  `min:"1" type:"string"`
+}
+
+// UpdateGroupOutput ...
+type UpdateGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DeleteGroupInput ...
+type DeleteGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteGroupOutput ...
+type DeleteGroupOutput struct {
+	_ struct{} `type:"structure"`
+}

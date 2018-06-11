@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -102,9 +100,6 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error retrieving KeyPair: %s", err)
 	}
 
-	fmt.Println("\n\n[DEBUG] RESP")
-	utils.PrintToJSON(resp, "KEY_PAIR")
-
 	d.Set("key_name", resp.KeyPairs[0].KeyName)
 	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
 	d.Set("request_id", resp.RequestId)
@@ -138,7 +133,6 @@ func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 
 func getKeyPairSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// Attributes
 		"key_fingerprint": {
 			Type:     schema.TypeString,
 			Optional: true,
