@@ -1,6 +1,8 @@
 package eim
 
-import "time"
+import (
+	"time"
+)
 
 // CreatePolicyInput ...
 type CreatePolicyInput struct {
@@ -104,4 +106,31 @@ type ListPolicyVersionsOutput struct {
 	IsTruncated *bool            `type:"boolean"`
 	Marker      *string          `min:"1" type:"string"`
 	Versions    []*PolicyVersion `type:"list"`
+}
+
+// UploadServerCertificateInput ...
+type UploadServerCertificateInput struct {
+	_                     struct{} `type:"structure"`
+	CertificateBody       *string  `min:"1" type:"string" required:"true"`
+	CertificateChain      *string  `min:"1" type:"string"`
+	Path                  *string  `min:"1" type:"string"`
+	PrivateKey            *string  `min:"1" type:"string" required:"true"`
+	ServerCertificateName *string  `min:"1" type:"string" required:"true"`
+}
+
+//UploadServerCertificateOutput Contains the response to a successful UploadServerCertificate request.
+type UploadServerCertificateOutput struct {
+	_                         struct{}                   `type:"structure"`
+	ServerCertificateMetadata *ServerCertificateMetadata `type:"structure"`
+}
+
+// ServerCertificateMetadata ...
+type ServerCertificateMetadata struct {
+	_                     struct{}   `type:"structure"`
+	Arn                   *string    `min:"20" type:"string" required:"true"`
+	Expiration            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+	Path                  *string    `min:"1" type:"string" required:"true"`
+	ServerCertificateId   *string    `min:"16" type:"string" required:"true"`
+	ServerCertificateName *string    `min:"1" type:"string" required:"true"`
+	UploadDate            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }

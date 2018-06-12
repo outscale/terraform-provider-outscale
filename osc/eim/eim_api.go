@@ -20,6 +20,7 @@ type Service interface {
 	DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error)
 	DeletePolicyVersion(input *DeletePolicyVersionInput) (*DeletePolicyVersionOutput, error)
 	ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPolicyVersionsOutput, error)
+	UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error)
 }
 
 // CreatePolicy ...
@@ -150,6 +151,30 @@ func (v Operations) ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPol
 
 	if input == nil {
 		input = &ListPolicyVersionsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// UploadServerCertificate Uploads a server certificate and its matching private key.
+func (v Operations) UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "UploadServerCertificate"
+	output := &UploadServerCertificateOutput{}
+
+	if input == nil {
+		input = &UploadServerCertificateInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
