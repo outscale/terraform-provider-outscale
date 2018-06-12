@@ -111,6 +111,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot_copy":                 GetResource(fcu, "outscale_snapshot_copy")(),
 			"outscale_policy":                        GetResource(eim, "outscale_policy")(),
 			"outscale_group":                         GetResource(eim, "outscale_group")(),
+			"outscale_group_user":                    GetResource(eim, "outscale_group_user")(),
+			"outscale_user":                          GetResource(eim, "outscale_user")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),

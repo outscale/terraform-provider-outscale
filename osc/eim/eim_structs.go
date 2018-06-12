@@ -180,3 +180,92 @@ type DeleteGroupInput struct {
 type DeleteGroupOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// AddUserToGroupInput ...
+type AddUserToGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// AddUserToGroupOutput ...
+type AddUserToGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// RemoveUserFromGroupInput ...
+type RemoveUserFromGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// RemoveUserFromGroupOutput ...
+type RemoveUserFromGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// CreateUserInput ...
+type CreateUserInput struct {
+	_        struct{} `type:"structure"`
+	Path     *string  `min:"1" type:"string"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// CreateUserOutput ...
+type CreateUserOutput struct {
+	_    struct{} `type:"structure"`
+	User *User    `type:"structure"`
+}
+
+// GetUserInput ...
+type GetUserInput struct {
+	_        struct{} `type:"structure"`
+	UserName *string  `min:"1" type:"string"`
+}
+
+// GetUserOutput ...
+type GetUserOutput struct {
+	_    struct{} `type:"structure"`
+	User *User    `type:"structure" required:"true"`
+}
+
+// UpdateUserInput ...
+type UpdateUserInput struct {
+	_           struct{} `type:"structure"`
+	NewPath     *string  `min:"1" type:"string"`
+	NewUserName *string  `min:"1" type:"string"`
+	UserName    *string  `min:"1" type:"string" required:"true"`
+}
+
+// UpdateUserOutput ...
+type UpdateUserOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListGroupsForUserInput ...
+type ListGroupsForUserInput struct {
+	_        struct{} `type:"structure"`
+	Marker   *string  `min:"1" type:"string"`
+	MaxItems *int64   `min:"1" type:"integer"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// ListGroupsForUserOutput ...
+type ListGroupsForUserOutput struct {
+	_           struct{} `type:"structure"`
+	Groups      []*Group `type:"list" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+}
+
+// DeleteUserInput ...
+type DeleteUserInput struct {
+	_        struct{} `type:"structure"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteUserOutput ...
+type DeleteUserOutput struct {
+	_ struct{} `type:"structure"`
+}

@@ -68,7 +68,7 @@ func testAccCheckOutscaleGroupDestroy(s *terraform.State) error {
 				GroupName: aws.String(rs.Primary.ID),
 			})
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				if strings.Contains(err.Error(), "Throttling:") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -107,7 +107,7 @@ func testAccCheckOutscaleGroupExists(n string, res *eim.GetGroupOutput) resource
 				GroupName: aws.String(rs.Primary.ID),
 			})
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				if strings.Contains(err.Error(), "Throttling:") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)

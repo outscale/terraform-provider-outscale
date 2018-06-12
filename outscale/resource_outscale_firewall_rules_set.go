@@ -136,9 +136,6 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 	}
 	securityGroupOpts.GroupName = aws.String(groupName)
 
-	fmt.Printf(
-		"[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
-
 	var createResp *fcu.CreateSecurityGroupOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -160,10 +157,6 @@ func resourceOutscaleSecurityGroupCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*createResp.GroupId)
 
-	fmt.Printf("\n\n[INFO] Security Group ID: %s", d.Id())
-
-	// Wait for the security group to truly exist
-	fmt.Printf("\n\n[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
 		Target:  []string{"exists"},
@@ -259,8 +252,6 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 func resourceOutscaleSecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	fmt.Printf("\n\n[DEBUG] Security Group destroy: %v", d.Id())
-
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err := conn.VM.DeleteSecurityGroup(&fcu.DeleteSecurityGroupInput{
 			GroupId: aws.String(d.Id()),
@@ -297,7 +288,6 @@ func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*fcu.
 		if g.UserId != nil && *g.UserId != "" && (ownerID == nil || *ownerID != *g.UserId) {
 			userID = g.UserId
 		}
-		// userid nil here for same vpc groups
 
 		vpc := g.GroupName == nil || *g.GroupName == ""
 		var ID *string
@@ -306,9 +296,6 @@ func flattenSecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*fcu.
 		} else {
 			ID = g.GroupName
 		}
-
-		// ID is groupid for vpcs
-		// ID is groupname for non vpc (classic)
 
 		if userID != nil {
 			ID = aws.String(*userID + "/" + *ID)
@@ -394,7 +381,6 @@ func protocolForValue(v string) string {
 		}
 	}
 
-	fmt.Printf("\n\n[WARN] Unable to determine valid protocol: no matching protocols found")
 	return protocol
 }
 
