@@ -124,6 +124,7 @@ func init() {
 			"outscale_load_balancer_listeners":    resourceOutscaleLoadBalancerListeners,
 			"outscale_load_balancer_attributes":   resourceOutscaleLoadBalancerAttributes,
 			"outscale_load_balancer_tags":         resourceOutscaleLBUTags,
+			"outscale_load_balancer_health_check": resourceOutscaleLoadBalancerHealthCheck,
 		},
 		"eim": ResourceMap{
 			"outscale_policy":     resourceOutscalePolicy,
