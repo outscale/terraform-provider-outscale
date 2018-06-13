@@ -281,3 +281,66 @@ type SetDefaultPolicyVersionInput struct {
 type SetDefaultPolicyVersionOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// AttachUserPolicyInput ...
+type AttachUserPolicyInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// AttachUserPolicyOutput ...
+type AttachUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListAttachedUserPoliciesInput ...
+type ListAttachedUserPoliciesInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `type:"string"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// ListAttachedUserPoliciesOutput ...
+type ListAttachedUserPoliciesOutput struct {
+	_                struct{}          `type:"structure"`
+	AttachedPolicies []*AttachedPolicy `type:"list"`
+	IsTruncated      *bool             `type:"boolean"`
+	Marker           *string           `min:"1" type:"string"`
+}
+
+// AttachedPolicy ...
+type AttachedPolicy struct {
+	_          struct{} `type:"structure"`
+	PolicyArn  *string  `min:"20" type:"string"`
+	PolicyName *string  `min:"1" type:"string"`
+}
+
+// DetachUserPolicyInput ...
+type DetachUserPolicyInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// DetachUserPolicyOutput ...
+type DetachUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetUserPolicyInput ...
+type GetUserPolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetUserPolicyOutput ...
+type GetUserPolicyOutput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	UserName       *string  `min:"1" type:"string" required:"true"`
+}

@@ -111,15 +111,16 @@ func resourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inte
 
 	if v, ok := d.GetOk("create_volume_permission"); ok {
 		add := v.([]interface{})[0].(map[string]interface{})["add"].([]interface{})
+		if len(add) > 0 {
+			a := make([]*fcu.CreateVolumePermission, len(add))
 
-		a := make([]*fcu.CreateVolumePermission, len(add))
-
-		for k, v1 := range add {
-			data := v1.(map[string]interface{})
-			a[k] = &fcu.CreateVolumePermission{UserId: aws.String(data["user_id"].(string)), Group: aws.String(data["group"].(string))}
-			aid = data["user_id"].(string)
+			for k, v1 := range add {
+				data := v1.(map[string]interface{})
+				a[k] = &fcu.CreateVolumePermission{UserId: aws.String(data["user_id"].(string)), Group: aws.String(data["group"].(string))}
+				aid = data["user_id"].(string)
+			}
+			req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Add: a}
 		}
-		req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Add: a}
 	}
 
 	var err error

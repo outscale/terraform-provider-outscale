@@ -44,8 +44,8 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 		}
 
 		var resp *fcu.ImportKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
+		var err error
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
 			resp, err = conn.VM.ImportKeyPair(req)
 
 			if err != nil {
@@ -54,7 +54,7 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 				}
 				return resource.NonRetryableError(err)
 			}
-			return resource.RetryableError(err)
+			return nil
 		})
 
 		if err != nil {
@@ -68,8 +68,8 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 		}
 
 		var resp *fcu.CreateKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
+		var err error
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
 			resp, err = conn.VM.CreateKeyPair(req)
 
 			if err != nil {
@@ -78,7 +78,7 @@ func resourceKeyPairImportationCreate(d *schema.ResourceData, meta interface{}) 
 				}
 				return resource.NonRetryableError(err)
 			}
-			return resource.RetryableError(err)
+			return nil
 		})
 		if err != nil {
 			return fmt.Errorf("Error creating KeyPairImportation: %s", err)
@@ -97,8 +97,8 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var resp *fcu.DescribeKeyPairsOutput
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeKeyPairs(req)
 
 		if err != nil {
@@ -107,7 +107,7 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -128,8 +128,8 @@ func resourceKeyPairImportationRead(d *schema.ResourceData, meta interface{}) er
 func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteKeyPairs(&fcu.DeleteKeyPairInput{
 			KeyName: aws.String(d.Id()),
 		})
@@ -139,7 +139,7 @@ func resourceKeyPairImportationDelete(d *schema.ResourceData, meta interface{}) 
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {

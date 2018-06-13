@@ -32,6 +32,10 @@ type Service interface {
 	ListGroupsForUserPages(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error)
 	DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error)
 	SetDefaultPolicyVersion(input *SetDefaultPolicyVersionInput) (*SetDefaultPolicyVersionOutput, error)
+	AttachUserPolicy(input *AttachUserPolicyInput) (*AttachUserPolicyOutput, error)
+	ListAttachedUserPolicies(input *ListAttachedUserPoliciesInput) (*ListAttachedUserPoliciesOutput, error)
+	DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserPolicyOutput, error)
+	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
 }
 
 // CreatePolicy ...
@@ -450,6 +454,102 @@ func (v Operations) SetDefaultPolicyVersion(input *SetDefaultPolicyVersionInput)
 
 	if input == nil {
 		input = &SetDefaultPolicyVersionInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// AttachUserPolicy ...
+func (v Operations) AttachUserPolicy(input *AttachUserPolicyInput) (*AttachUserPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "AttachUserPolicy"
+	output := &AttachUserPolicyOutput{}
+
+	if input == nil {
+		input = &AttachUserPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListAttachedUserPolicies ...
+func (v Operations) ListAttachedUserPolicies(input *ListAttachedUserPoliciesInput) (*ListAttachedUserPoliciesOutput, error) {
+	inURL := "/"
+	endpoint := "ListAttachedUserPolicies"
+	output := &ListAttachedUserPoliciesOutput{}
+
+	if input == nil {
+		input = &ListAttachedUserPoliciesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DetachUserPolicy ...
+func (v Operations) DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "DetachUserPolicy"
+	output := &DetachUserPolicyOutput{}
+
+	if input == nil {
+		input = &DetachUserPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetUserPolicy ...
+func (v Operations) GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "GetUserPolicy"
+	output := &GetUserPolicyOutput{}
+
+	if input == nil {
+		input = &GetUserPolicyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

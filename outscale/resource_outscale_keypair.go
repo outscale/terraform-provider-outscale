@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -47,8 +46,8 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp *fcu.CreateKeyPairOutput
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, err = conn.VM.CreateKeyPair(req)
 
 		if err != nil {
@@ -57,7 +56,7 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 	if err != nil {
 		return fmt.Errorf("Error creating KeyPair: %s", err)
@@ -74,8 +73,8 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp *fcu.DescribeKeyPairsOutput
-	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeKeyPairs(req)
 
 		if err != nil {
@@ -84,7 +83,7 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -92,8 +91,7 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		awsErr, ok := err.(awserr.Error)
-		if ok && awsErr.Code() == "InvalidKeyPair.NotFound" {
+		if strings.Contains(fmt.Sprint(err), "InvalidKeyPair.NotFound") {
 			d.SetId("")
 			return nil
 		}
@@ -110,8 +108,8 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteKeyPairs(&fcu.DeleteKeyPairInput{
 			KeyName: aws.String(d.Id()),
 		})
@@ -121,7 +119,7 @@ func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {

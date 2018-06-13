@@ -50,7 +50,7 @@ func resourceOutscalePolicyDefaultVersionCreate(d *schema.ResourceData, meta int
 		})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

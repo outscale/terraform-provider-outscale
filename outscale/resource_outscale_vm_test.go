@@ -431,7 +431,7 @@ func testAccCheckOutscaleServerConfigBasic(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_%d"
   group_description = "Used in the terraform acceptance tests"
 }
 
@@ -440,7 +440,7 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
-}`, r)
+}`, r, r)
 }
 
 func testAccCheckOutscaleServerConfigBasicWindows(r int) string {
@@ -450,7 +450,7 @@ func testAccCheckOutscaleServerConfigBasicWindows(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_%d"
   group_description = "Used in the terraform acceptance tests"
 }
 
@@ -459,7 +459,7 @@ resource "outscale_vm" "basic_windows" {
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
-}`, r)
+}`, r, r)
 }
 
 func testAccInstanceConfigUpdateVMKey(r int) string {
@@ -469,7 +469,7 @@ func testAccInstanceConfigUpdateVMKey(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_%d"
   group_description = "Used in the terraform acceptance tests"
 }
 
@@ -478,5 +478,5 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}`, r)
+}`, r, r)
 }
