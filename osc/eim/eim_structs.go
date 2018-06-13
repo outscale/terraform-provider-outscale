@@ -281,3 +281,58 @@ type SetDefaultPolicyVersionInput struct {
 type SetDefaultPolicyVersionOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// PutUserPolicyInput ...
+type PutUserPolicyInput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	UserName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// PutUserPolicyOutput ...
+type PutUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetUserPolicyInput ...
+type GetUserPolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetUserPolicyOutput ...
+type GetUserPolicyOutput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	UserName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteUserPolicyInput ...
+type DeleteUserPolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteUserPolicyOutput ...
+type DeleteUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetRolePolicyInput ...
+type GetRolePolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	RoleName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetRolePolicyOutput ...
+type GetRolePolicyOutput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	RoleName       *string  `min:"1" type:"string" required:"true"`
+}

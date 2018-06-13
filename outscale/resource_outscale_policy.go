@@ -110,7 +110,7 @@ func resourceOutscalePolicyCreate(d *schema.ResourceData, meta interface{}) erro
 		response, err = conn.API.CreatePolicy(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -142,7 +142,7 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 		getPolicyResponse, err = conn.API.GetPolicy(getPolicyRequest)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -187,7 +187,7 @@ func resourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 		_, err = conn.API.DeletePolicy(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -255,7 +255,7 @@ func eimPolicyDeleteVersion(arn, versionID string, EIM *eim.Client) error {
 		_, err = EIM.API.DeletePolicyVersion(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -280,7 +280,7 @@ func eimPolicyListVersions(arn string, conn *eim.Client) ([]*eim.PolicyVersion, 
 		response, err = conn.API.ListPolicyVersions(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
