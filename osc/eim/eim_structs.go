@@ -269,3 +269,15 @@ type DeleteUserInput struct {
 type DeleteUserOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// SetDefaultPolicyVersionInput ...
+type SetDefaultPolicyVersionInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	VersionId *string  `type:"string" required:"true"`
+}
+
+// SetDefaultPolicyVersionOutput ...
+type SetDefaultPolicyVersionOutput struct {
+	_ struct{} `type:"structure"`
+}

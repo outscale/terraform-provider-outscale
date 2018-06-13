@@ -113,6 +113,7 @@ func init() {
 			"outscale_group":                         resourceOutscaleOAPIGroup,
 			"outscale_group_user":                    resourceOutscaleOAPIGroupUser,
 			"outscale_user":                          resourceOutscaleOAPIUser,
+			"outscale_policy_default_version":        resourceOutscaleOAPIPolicyDefaultVersion,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -127,10 +128,11 @@ func init() {
 			"outscale_load_balancer_health_check": resourceOutscaleLoadBalancerHealthCheck,
 		},
 		"eim": ResourceMap{
-			"outscale_policy":     resourceOutscalePolicy,
-			"outscale_group":      resourceOutscaleGroup,
-			"outscale_group_user": resourceOutscaleGroupUser,
-			"outscale_user":       resourceOutscaleUser,
+			"outscale_policy":                 resourceOutscalePolicy,
+			"outscale_group":                  resourceOutscaleGroup,
+			"outscale_group_user":             resourceOutscaleGroupUser,
+			"outscale_user":                   resourceOutscaleUser,
+			"outscale_policy_default_version": resourceOutscalePolicyDefaultVersion,
 		},
 	}
 	datasources = Dictionary{

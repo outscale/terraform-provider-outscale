@@ -31,6 +31,7 @@ type Service interface {
 	UpdateUser(input *UpdateUserInput) (*UpdateUserOutput, error)
 	ListGroupsForUserPages(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error)
 	DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error)
+	SetDefaultPolicyVersion(input *SetDefaultPolicyVersionInput) (*SetDefaultPolicyVersionOutput, error)
 }
 
 // CreatePolicy ...
@@ -425,6 +426,30 @@ func (v Operations) DeleteUser(input *DeleteUserInput) (*DeleteUserOutput, error
 
 	if input == nil {
 		input = &DeleteUserInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// SetDefaultPolicyVersion ...
+func (v Operations) SetDefaultPolicyVersion(input *SetDefaultPolicyVersionInput) (*SetDefaultPolicyVersionOutput, error) {
+	inURL := "/"
+	endpoint := "SetDefaultPolicyVersion"
+	output := &SetDefaultPolicyVersionOutput{}
+
+	if input == nil {
+		input = &SetDefaultPolicyVersionInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
