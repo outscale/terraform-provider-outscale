@@ -21,6 +21,8 @@ type Service interface {
 	DeletePolicyVersion(input *DeletePolicyVersionInput) (*DeletePolicyVersionOutput, error)
 	ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPolicyVersionsOutput, error)
 	UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error)
+	GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error)
+	DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error)
 }
 
 // CreatePolicy ...
@@ -175,6 +177,54 @@ func (v Operations) UploadServerCertificate(input *UploadServerCertificateInput)
 
 	if input == nil {
 		input = &UploadServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetServerCertificate Gets a server certificate and its matching private key.
+func (v Operations) GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "GetServerCertificate"
+	output := &GetServerCertificateOutput{}
+
+	if input == nil {
+		input = &GetServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteServerCertificate Deletes a server certificate and its matching private key.
+func (v Operations) DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteServerCertificate"
+	output := &DeleteServerCertificateOutput{}
+
+	if input == nil {
+		input = &DeleteServerCertificateInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

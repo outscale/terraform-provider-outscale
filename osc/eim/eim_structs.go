@@ -134,3 +134,34 @@ type ServerCertificateMetadata struct {
 	ServerCertificateName *string    `min:"1" type:"string" required:"true"`
 	UploadDate            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
+
+// GetServerCertificateInput ...
+type GetServerCertificateInput struct {
+	_                     struct{} `type:"structure"`
+	ServerCertificateName *string  `min:"1" type:"string" required:"true"`
+}
+
+//GetServerCertificateOutput Contains the response to a successful GetServerCertificate request.
+type GetServerCertificateOutput struct {
+	_                 struct{}           `type:"structure"`
+	ServerCertificate *ServerCertificate `type:"structure" required:"true"`
+}
+
+// ServerCertificate Contains information about a server certificate.
+type ServerCertificate struct {
+	_                         struct{}                   `type:"structure"`
+	CertificateBody           *string                    `min:"1" type:"string" required:"true"` // The contents of the public key certificate.
+	CertificateChain          *string                    `min:"1" type:"string"`                 // The contents of the public key certificate chain.
+	ServerCertificateMetadata *ServerCertificateMetadata `type:"structure" required:"true"`      // The meta information of the server certificate, such as its name, path, ID, and ARN.
+}
+
+// DeleteServerCertificateInput ...
+type DeleteServerCertificateInput struct {
+	_                     struct{} `type:"structure"`
+	ServerCertificateName *string  `min:"1" type:"string" required:"true"` // The name of the server certificate you want to delete.
+}
+
+// DeleteServerCertificateOutput ...
+type DeleteServerCertificateOutput struct {
+	_ struct{} `type:"structure"`
+}
