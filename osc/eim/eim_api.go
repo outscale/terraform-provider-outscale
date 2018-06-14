@@ -36,6 +36,7 @@ type Service interface {
 	ListAttachedUserPolicies(input *ListAttachedUserPoliciesInput) (*ListAttachedUserPoliciesOutput, error)
 	DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserPolicyOutput, error)
 	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
+	ListUsers(input *ListUsersInput) (*ListUsersOutput, error)
 }
 
 // CreatePolicy ...
@@ -550,6 +551,30 @@ func (v Operations) GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutp
 
 	if input == nil {
 		input = &GetUserPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListUsers ...
+func (v Operations) ListUsers(input *ListUsersInput) (*ListUsersOutput, error) {
+	inURL := "/"
+	endpoint := "ListUsers"
+	output := &ListUsersOutput{}
+
+	if input == nil {
+		input = &ListUsersInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

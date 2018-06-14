@@ -187,6 +187,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_api_access_services":             GetDatasource(fcu, "outscale_lin_api_access_services")(),
 			"outscale_group":                               GetDatasource(eim, "outscale_group")(),
 			"outscale_user":                                GetDatasource(eim, "outscale_user")(),
+			"outscale_users":                               GetDatasource(eim, "outscale_users")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

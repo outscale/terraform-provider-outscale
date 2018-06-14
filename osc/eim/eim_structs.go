@@ -344,3 +344,19 @@ type GetUserPolicyOutput struct {
 	PolicyName     *string  `min:"1" type:"string" required:"true"`
 	UserName       *string  `min:"1" type:"string" required:"true"`
 }
+
+// ListUsersInput ...
+type ListUsersInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `min:"1" type:"string"`
+}
+
+// ListUsersOutput ...
+type ListUsersOutput struct {
+	_           struct{} `type:"structure"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+	Users       []*User  `type:"list" required:"true"`
+}
