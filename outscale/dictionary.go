@@ -255,6 +255,7 @@ func init() {
 			"outscale_product_types":                       dataSourceOutscaleOAPIProductTypes,
 			"outscale_image":                               dataSourceOutscaleOAPIImage,
 			"outscale_lin_api_access_services":             dataSourceOutscaleOAPIVpcEndpointServices,
+			"outscale_group":                               dataSourceOutscaleOAPIGroup,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -266,6 +267,9 @@ func init() {
 			"outscale_load_balancer_listener_description":  dataSourceOutscaleLoadBalancerLD,
 			"outscale_load_balancer_listener_descriptions": dataSourceOutscaleLoadBalancerLDs,
 			"outscale_load_balancer_attributes":            dataSourceOutscaleLoadBalancerAttr,
+		},
+		"eim": ResourceMap{
+			"outscale_group": dataSourceOutscaleGroup,
 		},
 	}
 }

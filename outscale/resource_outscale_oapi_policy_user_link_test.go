@@ -26,14 +26,14 @@ func TestAccOutscaleOAPIPolicyUserLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPolicyUserLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleUserPolicyAttachConfig(rName, policyName1),
+				Config: testAccOutscaleOAPIUserPolicyAttachConfig(rName, policyName1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPolicyUserLinkExists("outscale_policy_user_link.test-attach", 1, &out),
 					testAccCheckOutscaleOAPIPolicyUserLinkAttributes([]string{policyName1}, &out),
 				),
 			},
 			{
-				Config: testAccOutscaleUserPolicyAttachConfigUpdate(rName, policyName1, policyName2, policyName3),
+				Config: testAccOutscaleOAPIUserPolicyAttachConfigUpdate(rName, policyName1, policyName2, policyName3),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPolicyUserLinkExists("outscale_policy_user_link.test-attach", 2, &out),
 					testAccCheckOutscaleOAPIPolicyUserLinkAttributes([]string{policyName2, policyName3}, &out),
@@ -107,7 +107,7 @@ func testAccCheckOutscaleOAPIPolicyUserLinkAttributes(policies []string, out *ei
 	}
 }
 
-func testAccOutscaleUserPolicyAttachConfig(rName, policyName string) string {
+func testAccOutscaleOAPIUserPolicyAttachConfig(rName, policyName string) string {
 	return fmt.Sprintf(`
 resource "outscale_user" "user" {
     user_name = "test-user-%s"
@@ -138,7 +138,7 @@ resource "outscale_policy_user_link" "test-attach" {
 }`, rName, policyName)
 }
 
-func testAccOutscaleUserPolicyAttachConfigUpdate(rName, policyName1, policyName2, policyName3 string) string {
+func testAccOutscaleOAPIUserPolicyAttachConfigUpdate(rName, policyName1, policyName2, policyName3 string) string {
 	return fmt.Sprintf(`
 resource "outscale_user" "user" {
     user_name = "test-user-%s"
