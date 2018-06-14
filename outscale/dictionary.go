@@ -257,6 +257,9 @@ func init() {
 			"outscale_load_balancer_listener_descriptions": dataSourceOutscaleLoadBalancerLDs,
 			"outscale_load_balancer_attributes":            dataSourceOutscaleLoadBalancerAttr,
 		},
+		"eim": ResourceMap{
+			"outscale_policy": dataSourceOutscalePolicy,
+		},
 	}
 }
 
