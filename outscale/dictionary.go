@@ -256,6 +256,7 @@ func init() {
 			"outscale_image":                               dataSourceOutscaleOAPIImage,
 			"outscale_lin_api_access_services":             dataSourceOutscaleOAPIVpcEndpointServices,
 			"outscale_group":                               dataSourceOutscaleOAPIGroup,
+			"outscale_user":                                dataSourceOutscaleOAPIUser,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -270,6 +271,7 @@ func init() {
 		},
 		"eim": ResourceMap{
 			"outscale_group": dataSourceOutscaleGroup,
+			"outscale_user":  dataSourceOutscaleUser,
 		},
 	}
 }
