@@ -38,6 +38,7 @@ type Service interface {
 	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
 	ListUsers(input *ListUsersInput) (*ListUsersOutput, error)
 	ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error)
+	ListGroupsForUser(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error)
 }
 
 // CreatePolicy ...
@@ -600,6 +601,30 @@ func (v Operations) ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error
 
 	if input == nil {
 		input = &ListGroupsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListGroupsForUser ...
+func (v Operations) ListGroupsForUser(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error) {
+	inURL := "/"
+	endpoint := "ListGroupsForUser"
+	output := &ListGroupsForUserOutput{}
+
+	if input == nil {
+		input = &ListGroupsForUserInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

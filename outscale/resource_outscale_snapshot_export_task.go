@@ -210,15 +210,10 @@ func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) erro
 
 	v := resp.SnapshotExportTask[0]
 
-	d.Set("completion", v.Completion)
-	d.Set("snapshot_export_task_id", v.SnapshotExportTaskId)
-	d.Set("state", v.State)
-	d.Set("completion", v.Completion)
-	if v.StatusMessage != nil {
-		d.Set("status_message", v.StatusMessage)
-	} else {
-		d.Set("status_message", "")
-	}
+	d.Set("snapshot_export_task_id", aws.StringValue(v.SnapshotExportTaskId))
+	d.Set("state", aws.StringValue(v.State))
+	d.Set("completion", aws.Int64Value(v.Completion))
+	d.Set("status_message", aws.StringValue(v.StatusMessage))
 
 	exp := make([]map[string]interface{}, 1)
 	exportToOsu := make(map[string]interface{})
@@ -244,9 +239,10 @@ func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) erro
 	exportToOsu["aksk"] = aksk
 
 	snapExp := make(map[string]interface{})
-	snapExp["snapshot_id"] = *v.SnapshotExport.SnapshotId
+	snapExp["snapshot_id"] = aws.StringValue(v.SnapshotExport.SnapshotId)
 
 	d.Set("snapshot_export", snapExp)
+
 	exp[0] = exportToOsu
 	if err := d.Set("export_to_osu", exp); err != nil {
 		return err
