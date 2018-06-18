@@ -23,6 +23,7 @@ type Service interface {
 	UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error)
 	GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error)
 	DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error)
+	ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error)
 }
 
 // CreatePolicy ...
@@ -225,6 +226,30 @@ func (v Operations) DeleteServerCertificate(input *DeleteServerCertificateInput)
 
 	if input == nil {
 		input = &DeleteServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListServerCertificates ...
+func (v Operations) ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error) {
+	inURL := "/"
+	endpoint := "ListServerCertificates"
+	output := &ListServerCertificatesOutput{}
+
+	if input == nil {
+		input = &ListServerCertificatesInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

@@ -145,6 +145,7 @@ type GetServerCertificateInput struct {
 type GetServerCertificateOutput struct {
 	_                 struct{}           `type:"structure"`
 	ServerCertificate *ServerCertificate `type:"structure" required:"true"`
+	ResponseMetadata  *ResponseMetadata  `type:"structure" required:"true"`
 }
 
 // ServerCertificate Contains information about a server certificate.
@@ -164,4 +165,42 @@ type DeleteServerCertificateInput struct {
 // DeleteServerCertificateOutput ...
 type DeleteServerCertificateOutput struct {
 	_ struct{} `type:"structure"`
+}
+
+//ListServerCertificatesInput ...
+type ListServerCertificatesInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`  // Use this parameter only when paginating results and only after you receive a response indicating that the results are truncated. Set it to the value of the Marker element in the response that you received to indicate where the next call should start.
+	MaxItems   *int64   `min:"1" type:"integer"` // (Optional) Use this only when paginating results to indicate the maximum number of items you want in the response. If additional items exist beyond the maximum you specify, the IsTruncated response element is true.
+	PathPrefix *string  `min:"1" type:"string"`  // The path prefix for filtering the results. For example: /company/servercerts would get all server certificates for which the path starts with /company/servercerts.
+}
+
+//ListServerCertificatesOutput Contains the response to a successful ListServerCertificates request.
+type ListServerCertificatesOutput struct {
+	_                             struct{}                     `type:"structure"`
+	IsTruncated                   *bool                        `type:"boolean"`
+	Marker                        *string                      `min:"1" type:"string"`
+	ResponseMetadata              *ResponseMetadata            `type:"structure"`
+	ServerCertificateMetadataList []*ServerCertificateMetadata `type:"list" required:"true"`
+}
+
+// ResponseMetadata ...
+type ResponseMetadata struct {
+	RequestId *string `min:"1" type:"string"`
+}
+
+// ListCertificatesOutput ...
+type ListCertificatesOutput struct {
+	_                      struct{}              `type:"structure"`
+	CertificateSummaryList []*CertificateSummary `type:"list"`           // A list of ACM certificates.
+	NextToken              *string               `min:"1" type:"string"` // When the list is truncated, this value is present and contains the value to use for the NextToken parameter in a subsequent pagination request.
+}
+
+// CertificateSummary ...
+type CertificateSummary struct {
+	_              struct{} `type:"structure"`
+	CertificateArn *string  `min:"20" type:"string"`
+	// Fully qualified domain name (FQDN), such as www.example.com or example.com,
+	// for the certificate.
+	DomainName *string `min:"1" type:"string"`
 }
