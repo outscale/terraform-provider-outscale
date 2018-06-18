@@ -20,7 +20,7 @@ func TestAccOutscaleOAPIDSPolicyUserLink_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleDSUserPolicyAttachConfig(rName, policyName1),
+				Config: testAccOutscaleOAPIDSUserPolicyAttachConfig(rName, policyName1),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIDSPolicyUserLinkExists("data.outscale_policy_user_link.outscale_policy_user_link", 1, &out),
 				),
@@ -44,7 +44,7 @@ func testAccCheckOutscaleOAPIDSPolicyUserLinkExists(n string, c int, out *eim.Li
 	}
 }
 
-func testAccOutscaleDSUserPolicyAttachConfig(rName, policyName string) string {
+func testAccOutscaleOAPIDSUserPolicyAttachConfig(rName, policyName string) string {
 	return fmt.Sprintf(`
 resource "outscale_user" "user" {
     user_name = "test-user-%s"

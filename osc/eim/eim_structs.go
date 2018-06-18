@@ -126,6 +126,7 @@ type Group struct {
 	CreateDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
 	GroupId    *string    `min:"16" type:"string" required:"true"`
 	GroupName  *string    `min:"1" type:"string" required:"true"`
+	UserName   *string    `min:"1" type:"string" required:"true"`
 	Path       *string    `min:"1" type:"string" required:"true"`
 }
 
@@ -359,4 +360,20 @@ type ListUsersOutput struct {
 	IsTruncated *bool    `type:"boolean"`
 	Marker      *string  `min:"1" type:"string"`
 	Users       []*User  `type:"list" required:"true"`
+}
+
+// ListGroupsInput ...
+type ListGroupsInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `min:"1" type:"string"`
+}
+
+// ListGroupsOutput ...
+type ListGroupsOutput struct {
+	_           struct{} `type:"structure"`
+	Groups      []*Group `type:"list" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
 }

@@ -11,12 +11,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 )
 
-func dataSourceOutscaleGroup() *schema.Resource {
+func dataSourceOutscaleGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleGroupRead,
+		Read: dataSourceOutscaleGroupsRead,
 		Schema: map[string]*schema.Schema{
-			"group": &schema.Schema{
-				Type:     schema.TypeMap,
+			"groups": &schema.Schema{
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -32,26 +32,6 @@ func dataSourceOutscaleGroup() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"path": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"users": &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"arn": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"user_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"user_name": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -63,7 +43,7 @@ func dataSourceOutscaleGroup() *schema.Resource {
 					},
 				},
 			},
-			"group_name": &schema.Schema{
+			"path_prefix": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -75,17 +55,17 @@ func dataSourceOutscaleGroup() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleGroupRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).EIM
-	request := &eim.GetGroupInput{
-		GroupName: aws.String(d.Get("group_name").(string)),
+	request := &eim.ListGroupsInput{
+		PathPrefix: aws.String(d.Get("path_prefix").(string)),
 	}
 
-	var getResp *eim.GetGroupOutput
+	var getResp *eim.ListGroupsOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		getResp, err = conn.API.GetGroup(request)
+		getResp, err = conn.API.ListGroups(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
@@ -103,27 +83,22 @@ func dataSourceOutscaleGroupRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Error reading IAM Group %s: %s", d.Id(), err)
 	}
 
-	grp := make(map[string]interface{})
-	grp["arn"] = aws.StringValue(getResp.Group.Arn)
-	grp["group_id"] = aws.StringValue(getResp.Group.GroupId)
-	grp["group_name"] = aws.StringValue(getResp.Group.GroupName)
-	grp["path"] = aws.StringValue(getResp.Group.Path)
-
-	usr := make([]map[string]interface{}, len(getResp.Users))
-	for k, v := range getResp.Users {
-		us := make(map[string]interface{})
-		us["arn"] = aws.StringValue(v.Arn)
-		us["user_id"] = aws.StringValue(v.UserId)
-		us["user_name"] = aws.StringValue(v.UserName)
-		us["path"] = aws.StringValue(v.Path)
-		usr[k] = us
+	if len(getResp.Groups) < 1 {
+		return fmt.Errorf("No results found")
 	}
 
-	if err := d.Set("group", grp); err != nil {
-		return err
+	grps := make([]map[string]interface{}, len(getResp.Groups))
+	for k, v := range getResp.Groups {
+		grp := make(map[string]interface{})
+		grp["arn"] = aws.StringValue(v.Arn)
+		grp["group_id"] = aws.StringValue(v.GroupId)
+		grp["group_name"] = aws.StringValue(v.GroupName)
+		grp["user_name"] = aws.StringValue(v.UserName)
+		grp["path"] = aws.StringValue(v.Path)
+		grps[k] = grp
 	}
 
 	d.SetId(resource.UniqueId())
 
-	return d.Set("users", usr)
+	return d.Set("groups", grps)
 }

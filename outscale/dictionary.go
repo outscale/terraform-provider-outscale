@@ -259,6 +259,7 @@ func init() {
 			"outscale_user":                                dataSourceOutscaleOAPIUser,
 			"outscale_users":                               dataSourceOutscaleOAPIUsers,
 			"outscale_policy_user_link":                    dataSourceOutscaleOAPIPolicyUserLink,
+			"outscale_groups":                              dataSourceOutscaleOAPIGroups,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -276,6 +277,7 @@ func init() {
 			"outscale_user":             dataSourceOutscaleUser,
 			"outscale_users":            dataSourceOutscaleUsers,
 			"outscale_policy_user_link": dataSourceOutscalePolicyUserLink,
+			"outscale_groups":           dataSourceOutscaleGroups,
 		},
 	}
 }
