@@ -11,11 +11,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func resourceOutscaleEIMServerCertificate() *schema.Resource {
@@ -57,6 +57,10 @@ func resourceOutscaleEIMServerCertificate() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validateMaxLength(128),
+			},
+			"server_certificate_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"arn": {
 				Type:     schema.TypeString,
@@ -100,6 +104,7 @@ func resourceOutscaleEIMServerCertificateCreate(d *schema.ResourceData, meta int
 		return fmt.Errorf("[WARN] Error uploading server certificate, error: %s", err)
 	}
 	d.SetId(*resp.ServerCertificateMetadata.ServerCertificateId)
+	d.Set("server_certificate_id", *resp.ServerCertificateMetadata.ServerCertificateId)
 	d.Set("server_certificate_name", sslCertName)
 	return resourceOutscaleEIMServerCertificateRead(d, meta)
 }
@@ -130,6 +135,7 @@ func resourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta inter
 	}
 	d.Set("path", resp.ServerCertificate.ServerCertificateMetadata.Path)
 	d.Set("arn", resp.ServerCertificate.ServerCertificateMetadata.Arn)
+	d.Set("server_certificate_id", *resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateId)
 
 	if resp.ResponseMetadata != nil {
 		d.Set("request_id", resp.ResponseMetadata.RequestId)
@@ -147,6 +153,8 @@ func resourceOutscaleEIMServerCertificateUpdate(d *schema.ResourceData, meta int
 			NewServerCertificateName: aws.String(n.(string)),
 			NewPath:                  aws.String(d.Get("path").(string)),
 		}
+
+		log.Printf("[DEBUG] Updating EIM Server Certificate with opts: %+v", updateOps)
 		_, err := conn.API.UpdateServerCertificate(updateOps)
 
 		if err != nil {
@@ -162,6 +170,7 @@ func resourceOutscaleEIMServerCertificateUpdate(d *schema.ResourceData, meta int
 
 func resourceOutscaleEIMServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).EIM
+	connLBU := meta.(*OutscaleClient).LBU
 	log.Printf("[INFO] Deleting EIM Server Certificate: %s", d.Id())
 	err := resource.Retry(15*time.Minute, func() *resource.RetryError {
 		_, err := conn.API.DeleteServerCertificate(&eim.DeleteServerCertificateInput{
@@ -170,7 +179,7 @@ func resourceOutscaleEIMServerCertificateDelete(d *schema.ResourceData, meta int
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
 				if awsErr.Code() == "DeleteConflict" && strings.Contains(awsErr.Message(), "currently in use by arn") {
-					// TODO: currentlyInUseBy(awsErr.Message(), meta.(*OutscaleClient).LBU)
+					currentlyInUseBy(awsErr.Message(), connLBU)
 					log.Printf("[WARN] Conflict deleting server certificate: %s, retrying", awsErr.Message())
 					return resource.RetryableError(err)
 				}
@@ -193,15 +202,15 @@ func resourceOutscaleEIMServerCertificateImport(
 	// private_key can't be fetched from any API call
 	return []*schema.ResourceData{d}, nil
 }
-func currentlyInUseBy(awsErr string, conn *elb.ELB) {
+func currentlyInUseBy(awsErr string, conn *lbu.Client) {
 	r := regexp.MustCompile(`currently in use by ([a-z0-9:-]+)\/([a-z0-9-]+)\.`)
 	matches := r.FindStringSubmatch(awsErr)
 	if len(matches) > 0 {
 		lbName := matches[2]
-		describeElbOpts := &elb.DescribeLoadBalancersInput{
+		describeElbOpts := &lbu.DescribeLoadBalancersInput{
 			LoadBalancerNames: []*string{aws.String(lbName)},
 		}
-		if _, err := conn.DescribeLoadBalancers(describeElbOpts); err != nil {
+		if _, err := conn.API.DescribeLoadBalancers(describeElbOpts); err != nil {
 
 			if strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound") {
 				log.Printf("[WARN] Load Balancer (%s) causing delete conflict not found", lbName)
