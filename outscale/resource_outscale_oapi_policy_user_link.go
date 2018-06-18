@@ -45,8 +45,25 @@ func resourceOutscaleOAPIPolicyUserLinkCreate(d *schema.ResourceData, meta inter
 	user := d.Get("user_name").(string)
 	arn := d.Get("policy_arn").(string)
 
-	if err := attachPolicyToUser(conn, user, arn); err != nil {
-		return fmt.Errorf("[WARN] Error attaching policy %s to IAM User %s: %v", arn, user, err)
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, err = conn.API.AttachUserPolicy(&eim.AttachUserPolicyInput{
+			UserName:  aws.String(user),
+			PolicyArn: aws.String(arn),
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
 	}
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", user)))
@@ -93,8 +110,26 @@ func resourceOutscaleOAPIPolicyUserLinkDelete(d *schema.ResourceData, meta inter
 	user := d.Get("user_name").(string)
 	arn := d.Get("policy_arn").(string)
 
-	if err := detachPolicyFromUser(conn, user, arn); err != nil {
-		return fmt.Errorf("[WARN] Error removing policy %s from IAM User %s: %v", arn, user, err)
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, err = conn.API.DetachUserPolicy(&eim.DetachUserPolicyInput{
+			UserName:  aws.String(user),
+			PolicyArn: aws.String(arn),
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
 	}
+
 	return nil
 }

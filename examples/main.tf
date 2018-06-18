@@ -349,40 +349,69 @@
 #   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
 
-resource "outscale_vm" "outscale_vm" {
-  count = 1
+# resource "outscale_vm" "outscale_vm" {
+#   count = 1
 
-  image_id = "ami-880caa66"
+#   image_id = "ami-880caa66"
 
-  instance_type = "c4.large"
+#   instance_type = "c4.large"
 
-  #key_name = "integ_sut_keypair"
+#   #key_name = "integ_sut_keypair"
 
+#   #security_group = ["sg-c73d3b6b"]
 
-  #security_group = ["sg-c73d3b6b"]
+#   disable_api_termination = true
 
-  disable_api_termination = true
+#   #ebs_optimized = true
+# }
 
-  #ebs_optimized = true
+# resource "outscale_vm_attributes" "outscale_vm_attributes" {
+#   instance_id = "${outscale_vm.outscale_vm.0.id}"
+
+#   attribute               = "disableApiTermination"
+#   disable_api_termination = false
+
+#   #attribute = "instanceType"
+#   #instance_type = "t2.micro"
+
+#   #attribute = "ebsOptimized"
+#   #ebs_optimized = false
+
+#   #attribute = "blockDeviceMapping"
+#   #block_device_mapping {
+#   #	device_name = "/dev/sda1"
+#   #		ebs {
+#   #			delete_on_termination = true
+#   #		}
+#   #}
+# }
+
+resource "outscale_user" "user" {
+  user_name = "tetetetetete"
 }
 
-resource "outscale_vm_attributes" "outscale_vm_attributes" {
-  instance_id = "${outscale_vm.outscale_vm.0.id}"
+resource "outscale_policy" "policy" {
+  policy_name = "tetetetetete"
 
-  attribute               = "disableApiTermination"
-  disable_api_termination = false
+  #description = "A test policy"
+  policy_document = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "eim:ChangePassword"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    }
+  ]
+}
+EOF
+}
 
-  #attribute = "instanceType"
-  #instance_type = "t2.micro"
-
-  #attribute = "ebsOptimized"
-  #ebs_optimized = false
-
-  #attribute = "blockDeviceMapping"
-  #block_device_mapping {
-  #	device_name = "/dev/sda1"
-  #		ebs {
-  #			delete_on_termination = true
-  #		}
-  #}
+resource "outscale_policy_user_link" "test-attach" {
+  user_name   = "${outscale_user.user.user_name}"
+  policy_arn  = "${outscale_policy.policy.arn}"
+  policy_name = "${outscale_policy.policy.policy_name}"
 }

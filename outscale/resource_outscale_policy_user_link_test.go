@@ -43,6 +43,7 @@ func TestAccOutscalePolicyUserLink_basic(t *testing.T) {
 	})
 }
 func testAccCheckOutscalePolicyUserLinkDestroy(s *terraform.State) error {
+
 	return nil
 }
 
@@ -135,7 +136,8 @@ EOF
 resource "outscale_policy_user_link" "test-attach" {
     user_name = "${outscale_user.user.user_name}"
     policy_arn = "${outscale_policy.policy.arn}"
-}`, rName, policyName)
+}
+`, rName, policyName)
 }
 
 func testAccOutscaleUserPolicyAttachConfigUpdate(rName, policyName1, policyName2, policyName3 string) string {
