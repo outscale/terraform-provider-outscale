@@ -23,6 +23,7 @@ func resourceOutscaleEIMServerCertificate() *schema.Resource {
 		Create: resourceOutscaleEIMServerCertificateCreate,
 		Read:   resourceOutscaleEIMServerCertificateRead,
 		Delete: resourceOutscaleEIMServerCertificateDelete,
+		Update: resourceOutscaleEIMServerCertificateUpdate,
 		Importer: &schema.ResourceImporter{
 			State: resourceOutscaleEIMServerCertificateImport,
 		},
@@ -43,7 +44,6 @@ func resourceOutscaleEIMServerCertificate() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				ForceNew: true,
 			},
 			"private_key": {
 				Type:      schema.TypeString,
@@ -56,7 +56,6 @@ func resourceOutscaleEIMServerCertificate() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ForceNew:     true,
 				ValidateFunc: validateMaxLength(128),
 			},
 			"arn": {
@@ -137,6 +136,30 @@ func resourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta inter
 	}
 	return nil
 }
+
+func resourceOutscaleEIMServerCertificateUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).EIM
+	if d.HasChange("server_certificate_name") {
+		o, n := d.GetChange("server_certificate_name")
+
+		updateOps := &eim.UpdateServerCertificateInput{
+			ServerCertificateName:    aws.String(o.(string)),
+			NewServerCertificateName: aws.String(n.(string)),
+			NewPath:                  aws.String(d.Get("path").(string)),
+		}
+		_, err := conn.API.UpdateServerCertificate(updateOps)
+
+		if err != nil {
+			if awsErr, ok := err.(awserr.Error); ok {
+				return fmt.Errorf("[WARN] Error updating server certificate, error: %s: %s", awsErr.Code(), awsErr.Message())
+			}
+			return fmt.Errorf("[WARN] Error updating server certificate, error: %s", err)
+		}
+	}
+
+	return resourceOutscaleEIMServerCertificateRead(d, meta)
+}
+
 func resourceOutscaleEIMServerCertificateDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).EIM
 	log.Printf("[INFO] Deleting EIM Server Certificate: %s", d.Id())

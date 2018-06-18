@@ -14,6 +14,7 @@ import (
 func TestAccOutscaleEIMServerCertificate_basic(t *testing.T) {
 	var cert eim.ServerCertificate
 	rInt := acctest.RandInt()
+	rIntUp := acctest.RandInt()
 	unixFile := "test-fixtures/eim-ssl-unix-line-endings.pem"
 	winFile := "test-fixtures/eim-ssl-windows-line-endings.pem.winfile"
 	resource.Test(t, resource.TestCase{
@@ -29,6 +30,12 @@ func TestAccOutscaleEIMServerCertificate_basic(t *testing.T) {
 			},
 			{
 				Config: testAccEIMServerCertConfigFile(rInt, winFile),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckCertExists("outscale_server_certificate.test_cert", &cert),
+				),
+			},
+			{
+				Config: testAccEIMServerCertConfigFile(rIntUp, winFile),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckCertExists("outscale_server_certificate.test_cert", &cert),
 				),
