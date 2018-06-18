@@ -204,3 +204,16 @@ type CertificateSummary struct {
 	// for the certificate.
 	DomainName *string `min:"1" type:"string"`
 }
+
+// UpdateServerCertificateInput ...
+type UpdateServerCertificateInput struct {
+	_                        struct{} `type:"structure"`
+	NewPath                  *string  `min:"1" type:"string"`
+	NewServerCertificateName *string  `min:"1" type:"string"`
+	ServerCertificateName    *string  `min:"1" type:"string" required:"true"`
+}
+
+// UpdateServerCertificateOutput ...
+type UpdateServerCertificateOutput struct {
+	_ struct{} `type:"structure"`
+}
