@@ -130,12 +130,17 @@ func init() {
 			"outscale_load_balancer_policy":       resourceOutscaleLoadBalancerPolicy,
 		},
 		"eim": ResourceMap{
+<<<<<<< HEAD
 			"outscale_policy":                 resourceOutscalePolicy,
 			"outscale_group":                  resourceOutscaleGroup,
 			"outscale_group_user":             resourceOutscaleGroupUser,
 			"outscale_user":                   resourceOutscaleUser,
 			"outscale_policy_default_version": resourceOutscalePolicyDefaultVersion,
 			"outscale_policy_user_link":       resourceOutscalePolicyUserLink,
+=======
+			"outscale_policy":             resourceOutscalePolicy,
+			"outscale_server_certificate": resourceOutscaleEIMServerCertificate,
+>>>>>>> develop
 		},
 	}
 	datasources = Dictionary{
@@ -261,6 +266,7 @@ func init() {
 			"outscale_policy_user_link":                    dataSourceOutscaleOAPIPolicyUserLink,
 			"outscale_groups":                              dataSourceOutscaleOAPIGroups,
 			"outscale_groups_for_user":                     dataSourceOutscaleOAPIGroupUser,
+			"outscale_policy":                              resourceOutscaleOAPIPolicy,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -280,6 +286,7 @@ func init() {
 			"outscale_policy_user_link": dataSourceOutscalePolicyUserLink,
 			"outscale_groups":           dataSourceOutscaleGroups,
 			"outscale_groups_for_user":  dataSourceOutscaleGroupUser,
+			"outscale_policy": dataSourceOutscalePolicy,
 		},
 	}
 }
