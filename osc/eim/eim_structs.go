@@ -36,6 +36,10 @@ type Policy struct {
 type GetPolicyInput struct {
 	_         struct{} `type:"structure"`
 	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	GroupName *string  `type:"string"`
+	IsLinked  *bool    `type:"boolean"`
+	Path      *string  `type:"string"`
+	UserName  *string  `type:"string"`
 }
 
 // GetPolicyOutput ...

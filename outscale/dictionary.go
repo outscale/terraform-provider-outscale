@@ -245,6 +245,7 @@ func init() {
 			"outscale_product_types":                       dataSourceOutscaleOAPIProductTypes,
 			"outscale_image":                               dataSourceOutscaleOAPIImage,
 			"outscale_lin_api_access_services":             dataSourceOutscaleOAPIVpcEndpointServices,
+			"outscale_policy":                              resourceOutscaleOAPIPolicy,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
