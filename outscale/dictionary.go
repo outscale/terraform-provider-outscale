@@ -125,7 +125,8 @@ func init() {
 			"outscale_load_balancer_policy":       resourceOutscaleLoadBalancerPolicy,
 		},
 		"eim": ResourceMap{
-			"outscale_policy": resourceOutscalePolicy,
+			"outscale_policy":             resourceOutscalePolicy,
+			"outscale_server_certificate": resourceOutscaleEIMServerCertificate,
 		},
 	}
 	datasources = Dictionary{

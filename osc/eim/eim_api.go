@@ -20,6 +20,11 @@ type Service interface {
 	DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOutput, error)
 	DeletePolicyVersion(input *DeletePolicyVersionInput) (*DeletePolicyVersionOutput, error)
 	ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPolicyVersionsOutput, error)
+	UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error)
+	GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error)
+	DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error)
+	ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error)
+	UpdateServerCertificate(input *UpdateServerCertificateInput) (*UpdateServerCertificateOutput, error)
 }
 
 // CreatePolicy ...
@@ -150,6 +155,126 @@ func (v Operations) ListPolicyVersions(input *ListPolicyVersionsInput) (*ListPol
 
 	if input == nil {
 		input = &ListPolicyVersionsInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// UploadServerCertificate Uploads a server certificate and its matching private key.
+func (v Operations) UploadServerCertificate(input *UploadServerCertificateInput) (*UploadServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "UploadServerCertificate"
+	output := &UploadServerCertificateOutput{}
+
+	if input == nil {
+		input = &UploadServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetServerCertificate Gets a server certificate and its matching private key.
+func (v Operations) GetServerCertificate(input *GetServerCertificateInput) (*GetServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "GetServerCertificate"
+	output := &GetServerCertificateOutput{}
+
+	if input == nil {
+		input = &GetServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteServerCertificate Deletes a server certificate and its matching private key.
+func (v Operations) DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteServerCertificate"
+	output := &DeleteServerCertificateOutput{}
+
+	if input == nil {
+		input = &DeleteServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListServerCertificates ...
+func (v Operations) ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error) {
+	inURL := "/"
+	endpoint := "ListServerCertificates"
+	output := &ListServerCertificatesOutput{}
+
+	if input == nil {
+		input = &ListServerCertificatesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// UpdateServerCertificate ...
+func (v Operations) UpdateServerCertificate(input *UpdateServerCertificateInput) (*UpdateServerCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "UpdateServerCertificate"
+	output := &UpdateServerCertificateOutput{}
+
+	if input == nil {
+		input = &UpdateServerCertificateInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
