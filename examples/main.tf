@@ -386,32 +386,12 @@
 #   #}
 # }
 
-resource "outscale_user" "user" {
-  user_name = "tetetetetete"
+resource "outscale_volume" "description_test" {
+  availability_zone = "eu-west-2a"
+  size              = 1
 }
 
-resource "outscale_policy" "policy" {
-  policy_name = "tetetetetete"
-
-  #description = "A test policy"
-  policy_document = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "eim:ChangePassword"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-}
-
-resource "outscale_policy_user_link" "test-attach" {
-  user_name   = "${outscale_user.user.user_name}"
-  policy_arn  = "${outscale_policy.policy.arn}"
-  policy_name = "${outscale_policy.policy.policy_name}"
+resource "outscale_snapshot" "test" {
+  volume_id   = "${outscale_volume.description_test.id}"
+  description = "Snapshot Acceptance Test"
 }
