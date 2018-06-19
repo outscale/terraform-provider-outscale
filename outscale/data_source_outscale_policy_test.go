@@ -29,7 +29,7 @@ func TestAccOutscalePolicyDataSource_Instance(t *testing.T) {
 				Config: testAccCheckOutscalePolicyDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePolicyDataSourceID("data.outscale_policy.policy_ds"),
-					resource.TestCheckResourceAttr("data.outscale_policy.policy_ds", "policy_name", "test-name1"),
+					resource.TestCheckResourceAttr("data.outscale_policy.policy_ds", "policy_name", "test-name"),
 					resource.TestCheckResourceAttr("data.outscale_policy.policy_ds", "path", "/"),
 				),
 			},
