@@ -1173,7 +1173,11 @@ func buildOutscaleVMOpts(
 	if v := d.Get("security_group"); v != nil {
 		groups = expandStringList(v.(*schema.Set).List())
 	}
-	opts.SecurityGroups = groups
+	if len(groups) > 0 {
+		opts.SecurityGroups = groups
+	} else {
+		opts.SecurityGroups = nil
+	}
 
 	networkInterfaces, interfacesOk := d.GetOk("network_interface")
 	if interfacesOk {

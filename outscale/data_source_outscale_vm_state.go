@@ -3,7 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -72,8 +71,6 @@ func dataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) err
 
 	state = filteredStates[0]
 
-	log.Printf("[DEBUG] outscale_vm_state - Single State found: %s", *state.InstanceId)
-
 	d.Set("request_id", *resp.RequestId)
 
 	return statusDescriptionAttributes(d, state)
@@ -85,46 +82,32 @@ func statusDescriptionAttributes(d *schema.ResourceData, status *fcu.InstanceSta
 
 	d.Set("availability_zone", aws.StringValue(status.AvailabilityZone))
 
-	events := eventsSet(status.Events)
-	if err := d.Set("events_set", events); err != nil {
+	if err := d.Set("events_set", eventsSet(status.Events)); err != nil {
 		return err
 	}
 
-	state := flattenedState(status.InstanceState)
-	if err := d.Set("instance_state", state); err != nil {
+	if err := d.Set("instance_state", flattenedState(status.InstanceState)); err != nil {
 		return err
 	}
 
-	st := statusSet(status.InstanceStatus)
-	if err := d.Set("instance_status", st); err != nil {
+	if err := d.Set("instance_details", detailsSet(status.InstanceStatus.Details)); err != nil {
 		return err
 	}
 
-	sst := statusSet(status.SystemStatus)
+	d.Set("instance_status", aws.StringValue(status.InstanceStatus.Status))
+	d.Set("system_status", aws.StringValue(status.SystemStatus.Status))
 
-	return d.Set("system_status", sst)
-}
-
-func statusSet(status *fcu.InstanceStatusSummary) []map[string]interface{} {
-	st := make([]map[string]interface{}, 1)
-
-	s := make(map[string]interface{})
-	s["status"] = aws.StringValue(status.Status)
-	s["details"] = detailsSet(status.Details)
-
-	st[0] = s
-
-	return st
+	return d.Set("system_details", detailsSet(status.SystemStatus.Details))
 }
 
 func detailsSet(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
 	s := make([]map[string]interface{}, len(details))
 
 	for k, v := range details {
-
 		status := map[string]interface{}{
-			"name":   aws.StringValue(v.Name),
-			"status": aws.StringValue(v.Status),
+			"name":           aws.StringValue(v.Name),
+			"status":         aws.StringValue(v.Status),
+			"impaired_since": aws.TimeValue(v.ImpairedSince).String(),
 		}
 		s[k] = status
 	}
@@ -212,26 +195,43 @@ func getVMStateDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+
 		"instance_status": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"instance_details": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"details": {
-						Type:     schema.TypeList,
+					"impaired_since": {
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"status": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
+					},
+					"name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"status": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"system_details": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"impaired_since": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"name": {
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 					"status": {
 						Type:     schema.TypeString,
@@ -241,32 +241,8 @@ func getVMStateDataSourceSchema() map[string]*schema.Schema {
 			},
 		},
 		"system_status": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeString,
 			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"details": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"details": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"status": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"status": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
 		},
 		"request_id": {
 			Type:     schema.TypeString,

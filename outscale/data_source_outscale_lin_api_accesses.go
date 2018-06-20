@@ -36,18 +36,19 @@ func dataSourceOutscaleVpcEndpoints() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"vpc_endpoint_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"service_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
-						"route_table_id": {
+						"route_table_id_set": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-
 						"policy": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -61,6 +62,10 @@ func dataSourceOutscaleVpcEndpoints() *schema.Resource {
 							Computed: true,
 						},
 						"prefix_list_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"creation_time_stamp": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -149,12 +154,14 @@ func dataSourceOutscaleVpcEndpointsRead(d *schema.ResourceData, meta interface{}
 		}
 
 		vpce["prefix_list_id"] = aws.StringValue(plID)
-		vpce["vpc_id"] = aws.StringValue(v.VpcEndpointId)
+		vpce["vpc_id"] = aws.StringValue(v.VpcId)
+		vpce["vpc_endpoint_id"] = aws.StringValue(v.VpcEndpointId)
 		vpce["service_name"] = aws.StringValue(v.ServiceName)
 		vpce["lin_api_access_id"] = aws.StringValue(v.VpcEndpointId)
-		vpce["route_table_id"] = flattenStringList(v.RouteTableIds)
+		vpce["route_table_id_set"] = flattenStringList(v.RouteTableIds)
 		vpce["policy"] = policy
 		vpce["state"] = aws.StringValue(v.State)
+		vpce["creation_time_stamp"] = aws.TimeValue(v.CreationTimestamp).String()
 		vpce["cidr_blocks"] = cidrs
 
 		vpcEndpoints[k] = vpce
