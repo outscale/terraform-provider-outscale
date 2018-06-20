@@ -366,10 +366,3 @@ resource "outscale_lin_api_access" "link" {
 
   service_name = "com.outscale.eu-west-2.osu"
 }
-
-data "outscale_lin_api_accesses" "test" {
-  filter {
-    name   = "service-name"
-    values = ["${outscale_lin_api_access.link.service_name}"]
-  }
-}
