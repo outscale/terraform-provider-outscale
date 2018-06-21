@@ -353,3 +353,29 @@ resource "outscale_vm" "basic" {
   image_id      = "ami-880caa66"
   instance_type = "t2.micro"
 }
+
+resource "outscale_image" "foo" {
+  name        = "tf-testing-foo"
+  instance_id = "${outscale_vm.basic.id}"
+}
+
+resource "outscale_volume" "outscale_volume" {
+  availability_zone = "eu-west-2a"
+  size              = 40
+}
+
+resource "outscale_snapshot" "outscale_snapshot" {
+  volume_id = "${outscale_volume.outscale_volume.volume_id}"
+}
+
+resource "outscale_image_register" "outscale_image_register" {
+  name = "registeredImageFromSnapshot"
+
+  root_device_name = "/dev/sda1"
+
+  block_device_mapping {
+    ebs {
+      snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
+    }
+  }
+}

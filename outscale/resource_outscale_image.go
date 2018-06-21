@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -113,7 +112,6 @@ func resourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// Complex computed values
 			"block_device_mapping": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -167,7 +165,7 @@ func resourceOutscaleImage() *schema.Resource {
 func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	req := &fcu.RegisterImageInput{
+	req := &fcu.CreateImageInput{
 		Name:       aws.String(d.Get("name").(string)),
 		InstanceId: aws.String(d.Get("instance_id").(string)),
 	}
@@ -182,10 +180,10 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 		req.NoReboot = aws.Bool(a.(bool))
 	}
 
-	var res *fcu.RegisterImageOutput
+	var res *fcu.CreateImageOutput
 	var err error
 	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.RegisterImage(req)
+		res, err = conn.VM.CreateImage(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -202,15 +200,10 @@ func resourceImageCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	ID := *res.ImageId
-	d.SetId(ID)
-	d.Set("image_id", ID)
-	d.Partial(true) // make sure we record the ID even if the rest of this gets interrupted
-	d.Set("ID", ID)
-	d.SetPartial("ID")
-	d.Partial(false)
+	d.SetId(*res.ImageId)
+	d.Set("image_id", *res.ImageId)
 
-	_, err = resourceOutscaleImageWaitForAvailable(ID, conn, 1)
+	_, err = resourceOutscaleImageWaitForAvailable(*res.ImageId, conn, 1)
 	if err != nil {
 		return err
 	}
@@ -240,12 +233,11 @@ func resourceImageRead(d *schema.ResourceData, meta interface{}) error {
 			return resource.NonRetryableError(err)
 		}
 
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
 		if strings.Contains(err.Error(), "InvalidAMIID.NotFound") {
-			fmt.Printf("[DEBUG] %s no longer exists, so we'll drop it from the state", ID)
 			d.SetId("")
 			return nil
 		}
@@ -350,32 +342,27 @@ func resourceImageDelete(d *schema.ResourceData, meta interface{}) error {
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
 
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
 		return fmt.Errorf("Error deleting the image")
 	}
 
-	// Verify that the image is actually removed, if not we need to wait for it to be removed
 	if err := resourceOutscaleImageWaitForDestroy(d.Id(), client); err != nil {
 		return err
 	}
 
-	// No error, OMI was deleted successfully
 	d.SetId("")
 	return nil
 }
 
 func resourceOutscaleImageWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("Waiting for OMI %s to become available...", ID)
-
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
@@ -404,23 +391,20 @@ func ImageStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshF
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					log.Printf("[INFO] Request limit exceeded")
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 
 			}
 
-			return resource.NonRetryableError(err)
+			return nil
 		})
 
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
-				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 
 			} else if resp != nil && len(resp.Images) == 0 {
-				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
 				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
@@ -431,16 +415,11 @@ func ImageStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshF
 			return emptyResp, "destroyed", nil
 		}
 
-		log.Printf("[INFO] OMI %s state %s", *resp.Images[0].ImageId, *resp.Images[0].State)
-
-		// OMI is valid, so return it's state
 		return resp.Images[0], *resp.Images[0].State, nil
 	}
 }
 
 func resourceOutscaleImageWaitForDestroy(ID string, client *fcu.Client) error {
-	fmt.Printf("Waiting for OMI %s to be deleted...", ID)
-
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending", "failed"},
 		Target:     []string{"destroyed"},

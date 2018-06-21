@@ -745,6 +745,16 @@ func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 }
 
 func setBlockDevice(v interface{}, conn *fcu.Client, id string) error {
+
+	opts := &fcu.ModifyInstanceAttributeInput{
+		InstanceId:          aws.String(id),
+		BlockDeviceMappings: readBlockDevice(v),
+	}
+
+	return modifyInstanceAttr(conn, opts, "block_device_mapping")
+}
+
+func readBlockDevice(v interface{}) []*fcu.BlockDeviceMapping {
 	maps := v.([]interface{})
 	mappings := []*fcu.BlockDeviceMapping{}
 
@@ -771,10 +781,5 @@ func setBlockDevice(v interface{}, conn *fcu.Client, id string) error {
 		mappings = append(mappings, mapping)
 	}
 
-	opts := &fcu.ModifyInstanceAttributeInput{
-		InstanceId:          aws.String(id),
-		BlockDeviceMappings: mappings,
-	}
-
-	return modifyInstanceAttr(conn, opts, "block_device_mapping")
+	return mappings
 }
