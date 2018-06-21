@@ -16,7 +16,6 @@ func dataSourceOutscaleSnapshots() *schema.Resource {
 		Read: dataSourceOutscaleSnapshotsRead,
 
 		Schema: map[string]*schema.Schema{
-			//selection criteria
 			"filter": dataSourceFiltersSchema(),
 			"owner": {
 				Type:     schema.TypeList,
@@ -33,7 +32,6 @@ func dataSourceOutscaleSnapshots() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			//Computed values returned
 			"snapshot_set": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -78,6 +76,10 @@ func dataSourceOutscaleSnapshots() *schema.Resource {
 						"tag_set": tagsSchemaComputed(),
 					},
 				},
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -150,6 +152,9 @@ func dataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(resource.UniqueId())
+
+	d.Set("request_id", resp.RequestId)
+
 	//Single Snapshot found so set to state
 	return d.Set("snapshot_set", snapshots)
 }
