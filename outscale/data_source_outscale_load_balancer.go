@@ -46,16 +46,16 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"health_check": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"unhealthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"target": &schema.Schema{
@@ -63,11 +63,11 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"interval": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"timeout": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -245,11 +245,8 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
+	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+
 	if lb.Instances != nil {
 		d.Set("instances", flattenInstances(lb.Instances))
 	} else {

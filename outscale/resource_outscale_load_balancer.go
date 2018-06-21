@@ -92,16 +92,16 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"health_check": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"unhealthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"target": &schema.Schema{
@@ -109,11 +109,11 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"interval": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"timeout": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -357,11 +357,8 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
+	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+
 	if lb.Instances != nil {
 		d.Set("instances", flattenInstances(lb.Instances))
 	} else {
@@ -888,17 +885,16 @@ func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} 
 	return result
 }
 
-func flattenHealthCheck(check *lbu.HealthCheck) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, 1)
-
+func flattenHealthCheck(check *lbu.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
-	chk["unhealthy_threshold"] = *check.UnhealthyThreshold
-	chk["healthy_threshold"] = *check.HealthyThreshold
-	chk["target"] = *check.Target
-	chk["timeout"] = *check.Timeout
-	chk["interval"] = *check.Interval
 
-	result = append(result, chk)
+	if check != nil {
+		chk["unhealthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.UnhealthyThreshold)))
+		chk["healthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.HealthyThreshold)))
+		chk["target"] = aws.StringValue(check.Target)
+		chk["timeout"] = strconv.Itoa(int(aws.Int64Value(check.Timeout)))
+		chk["interval"] = strconv.Itoa(int(aws.Int64Value(check.Interval)))
+	}
 
-	return result
+	return chk
 }

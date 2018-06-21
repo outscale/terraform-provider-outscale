@@ -40,16 +40,16 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 							Computed: true,
 						},
 						"health_check": &schema.Schema{
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"healthy_threshold": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"unhealthy_threshold": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"target": &schema.Schema{
@@ -57,11 +57,11 @@ func dataSourceOutscaleLoadBalancers() *schema.Resource {
 										Computed: true,
 									},
 									"interval": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"timeout": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -252,11 +252,8 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 
 		l["availability_zones"] = flattenStringList(v.AvailabilityZones)
 		l["dns_name"] = aws.StringValue(v.DNSName)
-		if *v.HealthCheck.Target != "" {
-			l["health_check"] = flattenHealthCheck(v.HealthCheck)
-		} else {
-			l["health_check"] = make(map[string]interface{})
-		}
+		l["health_check"] = flattenHealthCheck(v.HealthCheck)
+
 		l["instances"] = flattenInstances(v.Instances)
 		l["listener_descriptions"] = flattenListeners(v.ListenerDescriptions)
 		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)

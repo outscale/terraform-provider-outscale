@@ -91,16 +91,16 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"health_check": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"unhealthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"checked_vm": &schema.Schema{
@@ -108,11 +108,11 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"check_interval": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"timeout": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -356,11 +356,8 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	d.Set("sub_region_name", flattenStringList(lb.AvailabilityZones))
 	d.Set("public_dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+
 	if lb.Instances != nil {
 		d.Set("backend_vm_id", flattenOAPIInstances(lb.Instances))
 	} else {
@@ -863,17 +860,16 @@ func flattenOAPIListeners(list []*lbu.ListenerDescription) []map[string]interfac
 	return result
 }
 
-func flattenOAPIHealthCheck(check *lbu.HealthCheck) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, 1)
-
+func flattenOAPIHealthCheck(check *lbu.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
-	chk["unhealthy_threshold"] = *check.UnhealthyThreshold
-	chk["healthy_threshold"] = *check.HealthyThreshold
-	chk["checked_vm"] = *check.Target
-	chk["timeout"] = *check.Timeout
-	chk["check_interval"] = *check.Interval
 
-	result = append(result, chk)
+	if check != nil {
+		chk["unhealthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.UnhealthyThreshold)))
+		chk["healthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.HealthyThreshold)))
+		chk["target"] = aws.StringValue(check.Target)
+		chk["timeout"] = strconv.Itoa(int(aws.Int64Value(check.Timeout)))
+		chk["interval"] = strconv.Itoa(int(aws.Int64Value(check.Interval)))
+	}
 
-	return result
+	return chk
 }
