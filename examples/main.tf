@@ -349,33 +349,76 @@
 #   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
 
-resource "outscale_vm" "basic" {
+# resource "outscale_vm" "basic" {
+#   image_id      = "ami-880caa66"
+#   instance_type = "t2.micro"
+# }
+
+# resource "outscale_image" "foo" {
+#   name        = "tf-testing-foo"
+#   instance_id = "${outscale_vm.basic.id}"
+# }
+
+# resource "outscale_volume" "outscale_volume" {
+#   availability_zone = "eu-west-2a"
+#   size              = 40
+# }
+
+# resource "outscale_snapshot" "outscale_snapshot" {
+#   volume_id = "${outscale_volume.outscale_volume.volume_id}"
+# }
+
+# resource "outscale_image_register" "outscale_image_register" {
+#   name = "registeredImageFromSnapshot"
+
+#   root_device_name = "/dev/sda1"
+
+#   block_device_mapping {
+#     ebs {
+#       snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
+#     }
+#   }
+# }
+
+# resource "outscale_volume" "example" {
+#   availability_zone = "eu-west-2a"
+#   volume_type       = "gp2"
+#   size              = 40
+
+#   tag {
+#     Name = "External Volume"
+#   }
+# }
+
+# resource "outscale_snapshot" "snapshot" {
+#   volume_id = "${outscale_volume.example.id}"
+# }
+
+# data "outscale_snapshot" "snapshot" {
+#   snapshot_id = "${outscale_snapshot.snapshot.id}"
+# }
+
+resource "outscale_vm" "outscale_instance" {
   image_id      = "ami-880caa66"
-  instance_type = "t2.micro"
+  instance_type = "c4.large"
+  subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
-resource "outscale_image" "foo" {
-  name        = "tf-testing-foo"
-  instance_id = "${outscale_vm.basic.id}"
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
 }
 
-resource "outscale_volume" "outscale_volume" {
+resource "outscale_subnet" "outscale_subnet" {
   availability_zone = "eu-west-2a"
-  size              = 40
+  cidr_block        = "10.0.0.0/16"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
 }
 
-resource "outscale_snapshot" "outscale_snapshot" {
-  volume_id = "${outscale_volume.outscale_volume.volume_id}"
+resource "outscale_nic" "outscale_nic" {
+  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
-resource "outscale_image_register" "outscale_image_register" {
-  name = "registeredImageFromSnapshot"
-
-  root_device_name = "/dev/sda1"
-
-  block_device_mapping {
-    ebs {
-      snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
-    }
-  }
+resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+  network_interface_id               = "${outscale_nic.outscale_nic.id}"
+  secondary_private_ip_address_count = 10
 }

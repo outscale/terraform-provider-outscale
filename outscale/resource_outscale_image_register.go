@@ -196,51 +196,7 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 		request.Architecture = aws.String(architecture.(string))
 	}
 	if blockDeviceMappingOk {
-		maps := blockDeviceMapping.([]interface{})
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName: aws.String(f["device_name"].(string)),
-			}
-
-			if v, ok := f["no_device"]; ok && v != "" {
-				mapping.NoDevice = aws.String(v.(string))
-			}
-			if v, ok := f["virtual_name"]; ok && v != "" {
-				mapping.VirtualName = aws.String(v.(string))
-			}
-
-			e := f["ebs"].(map[string]interface{})
-			ebs := &fcu.EbsBlockDevice{}
-
-			if v, ok := e["delete_on_termination"]; ok && v != "" {
-				if e["delete_on_termination"].(string) == "0" {
-					ebs.DeleteOnTermination = aws.Bool(true)
-				} else {
-					ebs.DeleteOnTermination = aws.Bool(false)
-				}
-			}
-			if v, ok := e["iops"]; ok {
-				ebs.Iops = aws.Int64(int64(v.(int)))
-			}
-			if v, ok := e["snapshot_id"]; ok && v != "" {
-				ebs.SnapshotId = aws.String(v.(string))
-			}
-			if v, ok := e["volume_size"]; ok && v != "" {
-				ebs.VolumeSize = aws.Int64(int64(v.(int)))
-			}
-			if v, ok := e["volume_type"]; ok && v != "" {
-				ebs.VolumeType = aws.String(v.(string))
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		request.BlockDeviceMappings = mappings
+		request.BlockDeviceMappings = readBlockDevice(blockDeviceMapping)
 	}
 	if descriptionOk {
 		request.Description = aws.String(description.(string))
