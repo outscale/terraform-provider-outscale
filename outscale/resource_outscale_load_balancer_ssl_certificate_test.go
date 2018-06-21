@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -11,16 +9,19 @@ import (
 )
 
 func TestAccOutscaleLBUSSLCertificate_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	// o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
+	// oapi, err := strconv.ParseBool(o)
+	// if err != nil {
+	// 	oapi = false
+	// }
 
-	if oapi {
-		t.Skip()
-	}
+	// if oapi {
+	// 	t.Skip()
+	// }
+
+	//WIP: Missing correct test case
+	t.Skip()
 
 	rInt := acctest.RandIntRange(0, 10)
 	unixFile := "test-fixtures/eim-ssl-unix-line-endings.pem"
