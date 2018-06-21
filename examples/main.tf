@@ -349,20 +349,7 @@
 #   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
 
-resource "outscale_lin" "foo" {
-  cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_route_table" "foo" {
-  vpc_id = "${outscale_lin.foo.id}"
-}
-
-resource "outscale_lin_api_access" "link" {
-  vpc_id = "${outscale_lin.foo.id}"
-
-  route_table_id = [
-    "${outscale_route_table.foo.id}",
-  ]
-
-  service_name = "com.outscale.eu-west-2.osu"
+resource "outscale_vm" "basic" {
+  image_id      = "ami-880caa66"
+  instance_type = "t2.micro"
 }
