@@ -70,9 +70,10 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 		}
 
 		var err error
-		var describe *lbu.DescribeLoadBalancersOutput
+		var resp *lbu.DescribeLoadBalancersOutput
+		var describe *lbu.DescribeLoadBalancersResult
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
 				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
 
@@ -81,6 +82,9 @@ func testAccCheckOutscaleLBUDestroy(s *terraform.State) error {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
+			}
+			if resp.DescribeLoadBalancersResult != nil {
+				describe = resp.DescribeLoadBalancersResult
 			}
 			return nil
 		})
@@ -158,11 +162,13 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 		conn := testAccProvider.Meta().(*OutscaleClient).LBU
 
 		var err error
-		var describe *lbu.DescribeLoadBalancersOutput
+		var resp *lbu.DescribeLoadBalancersOutput
+		var describe *lbu.DescribeLoadBalancersResult
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
 				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
+			describe = resp.DescribeLoadBalancersResult
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
