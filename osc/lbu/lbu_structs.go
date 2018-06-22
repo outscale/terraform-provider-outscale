@@ -32,6 +32,12 @@ type CreateLoadBalancerListenersInput struct {
 
 // CreateLoadBalancerListenersOutput ...
 type CreateLoadBalancerListenersOutput struct {
+	CreateLoadBalancerListenersResult *CreateLoadBalancerListenersResult `type:"structure"`
+	ResponseMetadata                  *ResponseMetadata                  `type:"structure"`
+}
+
+//CreateLoadBalancerListenersOutput ...
+type CreateLoadBalancerListenersResult struct {
 	_ struct{} `type:"structure"`
 }
 
@@ -61,12 +67,14 @@ type DescribeLoadBalancersInput struct {
 
 // DescribeLoadBalancersOutput ...
 type DescribeLoadBalancersOutput struct {
-	_                        struct{}                   `type:"structure"`
+	DescribeLoadBalancersResult *DescribeLoadBalancersResult `type:"structure"`
+	ResponseMetadata            *ResponseMetadata            `type:"structure"`
+}
+
+// DescribeLoadBalancersResult ...
+type DescribeLoadBalancersResult struct {
 	LoadBalancerDescriptions []*LoadBalancerDescription `type:"list"`
-
-	NextMarker *string `type:"string"`
-
-	ResponseMetadata *ResponseMetadata `type:"structre"`
+	NextMarker               *string                    `type:"string"`
 }
 
 // LoadBalancerDescription ...
@@ -565,7 +573,18 @@ type CreateAppCookieStickinessPolicyInput struct {
 
 // CreateAppCookieStickinessPolicyOutput ...
 type CreateAppCookieStickinessPolicyOutput struct {
+	CreateAppCookieStickinessPolicyResult *CreateAppCookieStickinessPolicyResult `type:"structure"`
+	ResponseMatadata                      *ResponseMetadata                      `type:"structure"`
+}
+
+//CreateAppCookieStickinessPolicyResult inner result
+type CreateAppCookieStickinessPolicyResult struct {
 	_ struct{} `type:"structure"`
+}
+
+//ResponseMetadata ...
+type ResponseMetadata struct {
+	RequestID *string `locationName:"RequestId" type:"string"`
 }
 
 // SetLoadBalancerPoliciesOfListenerInput ...
@@ -817,10 +836,4 @@ type SetLoadBalancerListenerSSLCertificateInput struct {
 type SetLoadBalancerListenerSSLCertificateOutput struct {
 	_                struct{}          `type:"structure"`
 	ResponseMetadata *ResponseMetadata `type:"structure"`
-}
-
-//ResponseMetadata ...
-type ResponseMetadata struct {
-	_         struct{} `type:"structure"`
-	RequestId *string  `type:"string" required:"true"`
 }
