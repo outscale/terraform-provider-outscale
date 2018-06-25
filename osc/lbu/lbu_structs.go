@@ -222,21 +222,19 @@ type AccessLog struct {
 
 // DeleteLoadBalancerListenersInput ...
 type DeleteLoadBalancerListenersInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The client port numbers of the listeners.
-	//
-	// LoadBalancerPorts is a required field
-	LoadBalancerPorts []*int64 `type:"list" required:"true"`
+	_                 struct{} `type:"structure"`
+	LoadBalancerName  *string  `type:"string" required:"true"` //The name of the load balancer.
+	LoadBalancerPorts []*int64 `type:"list" required:"true"`   // The client port numbers of the listeners.
 }
 
 // DeleteLoadBalancerListenersOutput ...
 type DeleteLoadBalancerListenersOutput struct {
+	DeleteLoadBalancerListenersResult *DeleteLoadBalancerListenersResult `type:"structure"`
+	ResponseMetadata                  *ResponseMetadata                  `type:"structure"`
+}
+
+// DeleteLoadBalancerListenersResult ...
+type DeleteLoadBalancerListenersResult struct {
 	_ struct{} `type:"structure"`
 }
 
@@ -261,126 +259,102 @@ type ConfigureHealthCheckResult struct {
 
 // ApplySecurityGroupsToLoadBalancerInput ...
 type ApplySecurityGroupsToLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The IDs of the security groups to associate with the load balancer. Note
-	// that you cannot specify the name of the security group.
-	//
-	// SecurityGroups is a required field
-	SecurityGroups []*string `type:"list" required:"true"`
+	_                struct{}  `type:"structure"`
+	LoadBalancerName *string   `type:"string" required:"true"` // The name of the load balancer.
+	SecurityGroups   []*string `type:"list" required:"true"`   // The IDs of the security groups to associate with the load balancer. Note that you cannot specify the name of the security group.
 }
 
 // ApplySecurityGroupsToLoadBalancerOutput ...
 type ApplySecurityGroupsToLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
+	ApplySecurityGroupsToLoadBalancerResult *ApplySecurityGroupsToLoadBalancerResult `type:"structure"`
+	ResponseMetadata                        *ResponseMetadata                        `type:"structure"`
+}
 
-	// The IDs of the security groups associated with the load balancer.
-	SecurityGroups []*string `type:"list"`
+// ApplySecurityGroupsToLoadBalancerResult ...
+type ApplySecurityGroupsToLoadBalancerResult struct {
+	_              struct{}  `type:"structure"`
+	SecurityGroups []*string `type:"list"` // The IDs of the security groups associated with the load balancer.
 }
 
 // EnableAvailabilityZonesForLoadBalancerInput ...
 type EnableAvailabilityZonesForLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The Availability Zones. These must be in the same region as the load balancer.
-	//
-	// AvailabilityZones is a required field
-	AvailabilityZones []*string `type:"list" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                 struct{}  `type:"structure"`
+	AvailabilityZones []*string `type:"list" required:"true"`   //The Availability Zones. These must be in the same region as the load balancer.
+	LoadBalancerName  *string   `type:"string" required:"true"` //The name of the load balancer.
 }
 
 // EnableAvailabilityZonesForLoadBalancerOutput ...
 type EnableAvailabilityZonesForLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
+	EnableAvailabilityZonesForLoadBalancerResult *EnableAvailabilityZonesForLoadBalancerResult `type:"structure"`
+	ResponseMetadata                             *ResponseMetadata                             `type:"structure"`
+}
 
-	// The updated list of Availability Zones for the load balancer.
-	AvailabilityZones []*string `type:"list"`
+// EnableAvailabilityZonesForLoadBalancerResult ...
+type EnableAvailabilityZonesForLoadBalancerResult struct {
+	_                 struct{}  `type:"structure"`
+	AvailabilityZones []*string `type:"list"` // The updated list of Availability Zones for the load balancer.
 }
 
 // DisableAvailabilityZonesForLoadBalancerInput ...
 type DisableAvailabilityZonesForLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The Availability Zones.
-	//
-	// AvailabilityZones is a required field
-	AvailabilityZones []*string `type:"list" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                 struct{}  `type:"structure"`
+	AvailabilityZones []*string `type:"list" required:"true"`   // The Availability Zones.
+	LoadBalancerName  *string   `type:"string" required:"true"` // The name of the load balancer.
 }
 
 // DisableAvailabilityZonesForLoadBalancerOutput ...
 type DisableAvailabilityZonesForLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
+	DisableAvailabilityZonesForLoadBalancerResult *DisableAvailabilityZonesForLoadBalancerResult `type:"structure"`
+	ResponseMetadata                              *ResponseMetadata                              `type:"structure"`
+}
 
-	// The remaining Availability Zones for the load balancer.
-	AvailabilityZones []*string `type:"list"`
+// DisableAvailabilityZonesForLoadBalancerResult ...
+type DisableAvailabilityZonesForLoadBalancerResult struct {
+	_                 struct{}  `type:"structure"`
+	AvailabilityZones []*string `type:"list"` // The remaining Availability Zones for the load balancer.
 }
 
 // AttachLoadBalancerToSubnetsInput ...
 type AttachLoadBalancerToSubnetsInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The IDs of the subnets to add. You can add only one subnet per Availability
-	// Zone.
-	//
-	// Subnets is a required field
-	Subnets []*string `type:"list" required:"true"`
+	_                struct{}  `type:"structure"`
+	LoadBalancerName *string   `type:"string" required:"true"` //The name of the load balancer.
+	Subnets          []*string `type:"list" required:"true"`   //// The IDs of the subnets to add. You can add only one subnet per Availability Zone.
 }
 
 // AttachLoadBalancerToSubnetsOutput ...
 type AttachLoadBalancerToSubnetsOutput struct {
-	_ struct{} `type:"structure"`
+	AttachLoadBalancerToSubnetsResult *AttachLoadBalancerToSubnetsResult `type:"structure"`
+	ResponseMetadata                  *ResponseMetadata                  `type:"structure"`
+}
 
-	// The IDs of the subnets attached to the load balancer.
-	Subnets []*string `type:"list"`
+// AttachLoadBalancerToSubnetsResult ...
+type AttachLoadBalancerToSubnetsResult struct {
+	_       struct{}  `type:"structure"`
+	Subnets []*string `type:"list"` // The IDs of the subnets attached to the load balancer.
 }
 
 // DeleteLoadBalancerInput ...
 type DeleteLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{} `type:"structure"`
+	LoadBalancerName *string  `type:"string" required:"true"` //The name of the load balancer.
 }
 
 // DeleteLoadBalancerOutput ...
 type DeleteLoadBalancerOutput struct {
+	DeleteLoadBalancerResult *DeleteLoadBalancerResult `type:"structure"`
+	ResponseMetadata         *ResponseMetadata         `type:"structure"`
+}
+
+// DeleteLoadBalancerResult ...
+type DeleteLoadBalancerResult struct {
 	_ struct{} `type:"structure"`
 }
 
 // RegisterInstancesWithLoadBalancerInput ...
 type RegisterInstancesWithLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The IDs of the instances.
-	//
-	// Instances is a required field
-	Instances []*Instance `type:"list" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{}    `type:"structure"`
+	Instances        []*Instance `type:"list" required:"true"`   //The IDs of the instances.
+	LoadBalancerName *string     `type:"string" required:"true"` // The name of the load balancer.
 }
 
 // RegisterInstancesWithLoadBalancerOutput ...
@@ -397,98 +371,68 @@ type RegisterInstancesWithLoadBalancerResult struct {
 
 // DeregisterInstancesFromLoadBalancerInput ...
 type DeregisterInstancesFromLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The IDs of the instances.
-	//
-	// Instances is a required field
-	Instances []*Instance `type:"list" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{}    `type:"structure"`
+	Instances        []*Instance `type:"list" required:"true"`   // The IDs of the instances.
+	LoadBalancerName *string     `type:"string" required:"true"` // The name of the load balancer.
 }
 
 // DeregisterInstancesFromLoadBalancerOutput ...
 type DeregisterInstancesFromLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
+	DeregisterInstancesFromLoadBalancerResult *DeregisterInstancesFromLoadBalancerResult `type:"structure"`
+	ResponseMetadata                          *ResponseMetadata                          `type:"structure"`
+}
 
-	// The remaining instances registered with the load balancer.
-	Instances []*Instance `type:"list"`
+// DeregisterInstancesFromLoadBalancerResult ...
+type DeregisterInstancesFromLoadBalancerResult struct {
+	_         struct{}    `type:"structure"`
+	Instances []*Instance `type:"list"` // The remaining instances registered with the load balancer.
 }
 
 // DetachLoadBalancerFromSubnetsInput ...
 type DetachLoadBalancerFromSubnetsInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The IDs of the subnets.
-	//
-	// Subnets is a required field
-	Subnets []*string `type:"list" required:"true"`
+	_                struct{}  `type:"structure"`
+	LoadBalancerName *string   `type:"string" required:"true"` // The name of the load balancer.
+	Subnets          []*string `type:"list" required:"true"`   // The IDs of the subnets.
 }
 
 // DetachLoadBalancerFromSubnetsOutput ...
 type DetachLoadBalancerFromSubnetsOutput struct {
-	_ struct{} `type:"structure"`
+	DetachLoadBalancerFromSubnetsResult *DetachLoadBalancerFromSubnetsResult `type:"structure"`
+	ResponseMetadata                    *ResponseMetadata                    `type:"structure"`
+}
 
-	// The IDs of the remaining subnets for the load balancer.
-	Subnets []*string `type:"list"`
+// DetachLoadBalancerFromSubnetsResult ...
+type DetachLoadBalancerFromSubnetsResult struct {
+	_       struct{}  `type:"structure"`
+	Subnets []*string `type:"list"` // The IDs of the remaining subnets for the load balancer.
 }
 
 // CreateLBCookieStickinessPolicyInput ...
 type CreateLBCookieStickinessPolicyInput struct {
-	_ struct{} `type:"structure"`
+	_                      struct{} `type:"structure"`
+	CookieExpirationPeriod *int64   `type:"long"`                   // The time period, in seconds, after which the cookie should be considered stale. If you do not specify this parameter, the default value is 0, which indicates that the sticky session should last for the duration of the browser session.
+	LoadBalancerName       *string  `type:"string" required:"true"` // The name of the load balancer.
+	PolicyName             *string  `type:"string" required:"true"` // The name of the policy being created. Policy names must consist of alphanumeric characters and dashes (-). This name must be unique within the set of policies for this load balancer.
 
-	// The time period, in seconds, after which the cookie should be considered
-	// stale. If you do not specify this parameter, the default value is 0, which
-	// indicates that the sticky session should last for the duration of the browser
-	// session.
-	CookieExpirationPeriod *int64 `type:"long"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The name of the policy being created. Policy names must consist of alphanumeric
-	// characters and dashes (-). This name must be unique within the set of policies
-	// for this load balancer.
-	//
-	// PolicyName is a required field
-	PolicyName *string `type:"string" required:"true"`
 }
 
 // CreateLBCookieStickinessPolicyOutput ...
 type CreateLBCookieStickinessPolicyOutput struct {
+	CreateLBCookieStickinessPolicyResult *CreateLBCookieStickinessPolicyResult `type:"structure"`
+	ResponseMetadata                     *ResponseMetadata                     `type:"structure"`
+}
+
+// CreateLBCookieStickinessPolicyResult ...
+type CreateLBCookieStickinessPolicyResult struct {
 	_ struct{} `type:"structure"`
 }
 
 // CreateAppCookieStickinessPolicyInput ...
 type CreateAppCookieStickinessPolicyInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the application cookie used for stickiness.
-	//
-	// CookieName is a required field
-	CookieName *string `type:"string" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The name of the policy being created. Policy names must consist of alphanumeric
-	// characters and dashes (-). This name must be unique within the set of policies
-	// for this load balancer.
-	//
-	// PolicyName is a required field
-	PolicyName *string `type:"string" required:"true"`
+	_                struct{} `type:"structure"`
+	CookieName       *string  `type:"string" required:"true"` // The name of the application cookie used for stickiness.
+	LoadBalancerName *string  `type:"string" required:"true"` // The name of the load balancer.
+	PolicyName       *string  `type:"string" required:"true"` // The name of the policy being created. Policy names must consist of alphanumeric characters and dashes (-). This name must be unique within the set of policies for this load balancer.
 }
 
 // CreateAppCookieStickinessPolicyOutput ...
@@ -509,28 +453,20 @@ type ResponseMetadata struct {
 
 // SetLoadBalancerPoliciesOfListenerInput ...
 type SetLoadBalancerPoliciesOfListenerInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The external port of the load balancer.
-	//
-	// LoadBalancerPort is a required field
-	LoadBalancerPort *int64 `type:"integer" required:"true"`
-
-	// The names of the policies. This list must include all policies to be enabled.
-	// If you omit a policy that is currently enabled, it is disabled. If the list
-	// is empty, all current policies are disabled.
-	//
-	// PolicyNames is a required field
-	PolicyNames []*string `type:"list" required:"true"`
+	_                struct{}  `type:"structure"`
+	LoadBalancerName *string   `type:"string" required:"true"`  // The name of the load balancer.
+	LoadBalancerPort *int64    `type:"integer" required:"true"` // The external port of the load balancer.
+	PolicyNames      []*string `type:"list" required:"true"`    // The names of the policies. This list must include all policies to be enabled.
 }
 
 // SetLoadBalancerPoliciesOfListenerOutput ...
 type SetLoadBalancerPoliciesOfListenerOutput struct {
+	SetLoadBalancerPoliciesOfListenerResult SetLoadBalancerPoliciesOfListenerResult `type:"structure"`
+	ResponseMatadata                        *ResponseMetadata                       `type:"structure"`
+}
+
+// SetLoadBalancerPoliciesOfListenerResult ...
+type SetLoadBalancerPoliciesOfListenerResult struct {
 	_ struct{} `type:"structure"`
 }
 
