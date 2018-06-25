@@ -75,16 +75,20 @@ func dataSourceOutscaleLoadBalancerAttrRead(d *schema.ResourceData, meta interfa
 		LoadBalancerName: aws.String(elbName),
 	}
 
-	var describeResp *lbu.DescribeLoadBalancerAttributesOutput
+	var describeResp *lbu.DescribeLoadBalancerAttributesResult
+	var resp *lbu.DescribeLoadBalancerAttributesOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
+		resp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+		if resp.DescribeLoadBalancerAttributesResult != nil {
+			describeResp = resp.DescribeLoadBalancerAttributesResult
 		}
 		return nil
 	})
@@ -114,7 +118,7 @@ func dataSourceOutscaleLoadBalancerAttrRead(d *schema.ResourceData, meta interfa
 
 	ld[0] = map[string]interface{}{"access_log": acc}
 
-	// d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("load_balancer_attributes", ld)

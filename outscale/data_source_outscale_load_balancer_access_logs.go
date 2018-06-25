@@ -58,16 +58,20 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 		LoadBalancerName: aws.String(elbName.(string)),
 	}
 
-	var describeResp *lbu.DescribeLoadBalancerAttributesOutput
+	var resp *lbu.DescribeLoadBalancerAttributesOutput
+	var describeResp *lbu.DescribeLoadBalancerAttributesResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
+		resp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+		if resp.DescribeLoadBalancerAttributesResult != nil {
+			describeResp = resp.DescribeLoadBalancerAttributesResult
 		}
 		return nil
 	})
@@ -95,7 +99,7 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 	d.Set("s3_bucket_prefix", aws.StringValue(a.S3BucketPrefix))
 
 	d.SetId(elbName.(string))
-	// d.Set("request_id", describeResp.ResponseMetadata.RequestId)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return nil
 }

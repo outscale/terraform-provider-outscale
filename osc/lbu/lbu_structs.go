@@ -159,104 +159,65 @@ type LBCookieStickinessPolicy struct {
 
 // DescribeLoadBalancerAttributesInput ...
 type DescribeLoadBalancerAttributesInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{} `type:"structure"`
+	LoadBalancerName *string  `type:"string" required:"true"` //The name of the load balancer.
 }
 
 // DescribeLoadBalancerAttributesOutput ...
 type DescribeLoadBalancerAttributesOutput struct {
-	_ struct{} `type:"structure"`
+	DescribeLoadBalancerAttributesResult *DescribeLoadBalancerAttributesResult `type:"structure"`
+	ResponseMetadata                     *ResponseMetadata                     `type:"structure"`
+}
 
-	// Information about the load balancer attributes.
-	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"`
-	ResponseMetadata       *ResponseMetadata       `type:"structure"`
+// DescribeLoadBalancerAttributesResult ...
+type DescribeLoadBalancerAttributesResult struct {
+	_                      struct{}                `type:"structure"`
+	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"` // Information about the load balancer attributes.
 }
 
 // LoadBalancerAttributes ...
 type LoadBalancerAttributes struct {
-	_ struct{} `type:"structure"`
-
-	// If enabled, the load balancer captures detailed information of all requests
-	// and delivers the information to the Amazon S3 bucket that you specify.
-	//
-	// For more information, see Enable Access Logs (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html)
-	// in the Classic Load Balancers Guide.
-	AccessLog *AccessLog `type:"structure"`
-
-	// This parameter is reserved.
-	AdditionalAttributes []*AdditionalAttribute `type:"list"`
-
-	// If enabled, the load balancer allows existing requests to complete before
-	// the load balancer shifts traffic away from a deregistered or unhealthy instance.
-	//
-	// For more information, see Configure Connection Draining (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-conn-drain.html)
-	// in the Classic Load Balancers Guide.
-	ConnectionDraining *ConnectionDraining `type:"structure"`
-
-	// If enabled, the load balancer allows the connections to remain idle (no data
-	// is sent over the connection) for the specified duration.
-	//
-	// By default, Elastic Load Balancing maintains a 60-second idle connection
-	// timeout for both front-end and back-end connections of your load balancer.
-	// For more information, see Configure Idle Connection Timeout (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html)
-	// in the Classic Load Balancers Guide.
-	ConnectionSettings *ConnectionSettings `type:"structure"`
-
-	// If enabled, the load balancer routes the request traffic evenly across all
-	// instances regardless of the Availability Zones.
-	//
-	// For more information, see Configure Cross-Zone Load Balancing (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-disable-crosszone-lb.html)
-	// in the Classic Load Balancers Guide.
-	CrossZoneLoadBalancing *CrossZoneLoadBalancing `type:"structure"`
+	_                      struct{}                `type:"structure"`
+	AccessLog              *AccessLog              `type:"structure"` //If enabled, the load balancer captures detailed information of all requests and delivers the information to the Amazon S3 bucket that you specify.
+	AdditionalAttributes   []*AdditionalAttribute  `type:"list"`      // This parameter is reserved.
+	ConnectionDraining     *ConnectionDraining     `type:"structure"` // If enabled, the load balancer allows existing requests to complete before the load balancer shifts traffic away from a deregistered or unhealthy instance.
+	ConnectionSettings     *ConnectionSettings     `type:"structure"` // If enabled, the load balancer allows the connections to remain idle (no data is sent over the connection) for the specified duration.
+	CrossZoneLoadBalancing *CrossZoneLoadBalancing `type:"structure"` // If enabled, the load balancer routes the request traffic evenly across all instances regardless of the Availability Zones.
 }
 
 // AdditionalAttribute ...
 type AdditionalAttribute struct {
-	_ struct{} `type:"structure"`
-
-	Key *string ` type:"string"`
-
-	Value *string ` type:"string"`
+	_     struct{} `type:"structure"`
+	Key   *string  ` type:"string"`
+	Value *string  ` type:"string"`
 }
 
 // ConnectionDraining ...
 type ConnectionDraining struct {
-	_ struct{} `type:"structure"`
-
-	Enabled *bool ` type:"boolean" required:"true"`
-
-	Timeout *int64 ` type:"integer"`
+	_       struct{} `type:"structure"`
+	Enabled *bool    ` type:"boolean" required:"true"`
+	Timeout *int64   ` type:"integer"`
 }
 
 // ConnectionSettings ...
 type ConnectionSettings struct {
-	_ struct{} `type:"structure"`
-
-	IdleTimeout *int64 ` min:"1" type:"integer" required:"true"`
+	_           struct{} `type:"structure"`
+	IdleTimeout *int64   ` min:"1" type:"integer" required:"true"`
 }
 
 // CrossZoneLoadBalancing ...
 type CrossZoneLoadBalancing struct {
-	_ struct{} `type:"structure"`
-
-	Enabled *bool ` type:"boolean" required:"true"`
+	_       struct{} `type:"structure"`
+	Enabled *bool    ` type:"boolean" required:"true"`
 }
 
 // AccessLog ...
 type AccessLog struct {
-	_ struct{} `type:"structure"`
-
-	EmitInterval *int64 ` type:"integer"`
-
-	Enabled *bool ` type:"boolean" required:"true"`
-
-	S3BucketName *string ` type:"string"`
-
-	S3BucketPrefix *string ` type:"string"`
+	_              struct{} `type:"structure"`
+	EmitInterval   *int64   ` type:"integer"`
+	Enabled        *bool    ` type:"boolean" required:"true"`
+	S3BucketName   *string  ` type:"string"`
+	S3BucketPrefix *string  ` type:"string"`
 }
 
 // DeleteLoadBalancerListenersInput ...
@@ -654,13 +615,15 @@ type ModifyLoadBalancerAttributesInput struct {
 
 // ModifyLoadBalancerAttributesOutput ...
 type ModifyLoadBalancerAttributesOutput struct {
-	_ struct{} `type:"structure"`
+	ModifyLoadBalancerAttributesResult *ModifyLoadBalancerAttributesResult `type:"structure"`
+	ResponseMetadata                   *ResponseMetadata                   `type:"structure"`
+}
 
-	// The attributes for a load balancer.
-	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"`
-
-	// The name of the load balancer.
-	LoadBalancerName *string `type:"string"`
+// ModifyLoadBalancerAttributesResult ...
+type ModifyLoadBalancerAttributesResult struct {
+	_                      struct{}                `type:"structure"`
+	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"` // The attributes for a load balancer.
+	LoadBalancerName       *string                 `type:"string"`    // The name of the load balancer.
 }
 
 // AddTagsInput ...
