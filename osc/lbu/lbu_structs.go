@@ -36,7 +36,7 @@ type CreateLoadBalancerListenersOutput struct {
 	ResponseMetadata                  *ResponseMetadata                  `type:"structure"`
 }
 
-//CreateLoadBalancerListenersOutput ...
+//CreateLoadBalancerListenersResult ...
 type CreateLoadBalancerListenersResult struct {
 	_ struct{} `type:"structure"`
 }
@@ -91,111 +91,70 @@ type LoadBalancerDescription struct {
 	ListenerDescriptions      []*ListenerDescription      `type:"list"`                                // The listeners for the load balancer.
 	LoadBalancerName          *string                     `type:"string"`                              // The name of the load balancer.
 	Policies                  *Policies                   `type:"structure"`                           // The policies defined for the load balancer.
-	Scheme                    *string                     `type:"string"`                              // The type of load balancer. Valid only for load balancers in a VPC. If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address. If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
+	Scheme                    *string                     `type:"string"`                              // The type of load balancer. Valid only for load balancers in a VPC.
 	SecurityGroups            []*string                   `type:"list"`                                // The security groups for the load balancer. Valid only for load balancers in a VPC.
-
-	// The security group for the load balancer, which you can use as part of your
-	// inbound rules for your registered instances. To only allow traffic from load
-	// balancers, add a security group rule that specifies this source security
-	// group as the inbound source.
-	SourceSecurityGroup *SourceSecurityGroup `type:"structure"`
-
-	// The IDs of the subnets for the load balancer.
-	Subnets []*string `type:"list"`
-
-	// The ID of the VPC for the load balancer.
-	VPCId *string `type:"string"`
+	SourceSecurityGroup       *SourceSecurityGroup        `type:"structure"`                           // The security group for the load balancer, which you can use as part of your inbound rules for your registered instances. To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
+	Subnets                   []*string                   `type:"list"`                                // The IDs of the subnets for the load balancer.
+	VPCId                     *string                     `type:"string"`                              // The ID of the VPC for the load balancer.
 }
 
 // BackendServerDescription ...
 type BackendServerDescription struct {
-	_ struct{} `type:"structure"`
-
-	// The port on which the EC2 instance is listening.
-	InstancePort *int64 `min:"1" type:"integer"`
-
-	// The names of the policies enabled for the EC2 instance.
-	PolicyNames []*string `type:"list"`
+	_            struct{}  `type:"structure"`
+	InstancePort *int64    `min:"1" type:"integer"` // The port on which the EC2 instance is listening.
+	PolicyNames  []*string `type:"list"`            // The names of the policies enabled for the EC2 instance.
 }
 
 // HealthCheck ...
 type HealthCheck struct {
-	_ struct{} `type:"structure"`
-
-	HealthyThreshold *int64 `min:"2" type:"integer" required:"true"`
-
-	Interval *int64 `min:"5" type:"integer" required:"true"`
-
-	Target *string `type:"string" required:"true"`
-
-	Timeout *int64 `min:"2" type:"integer" required:"true"`
-
-	UnhealthyThreshold *int64 `min:"2" type:"integer" required:"true"`
+	_                  struct{} `type:"structure"`
+	HealthyThreshold   *int64   `min:"2" type:"integer" required:"true"`
+	Interval           *int64   `min:"5" type:"integer" required:"true"`
+	Target             *string  `type:"string" required:"true"`
+	Timeout            *int64   `min:"2" type:"integer" required:"true"`
+	UnhealthyThreshold *int64   `min:"2" type:"integer" required:"true"`
 }
 
 // Instance ...
 type Instance struct {
-	_ struct{} `type:"structure"`
-
-	InstanceId *string `type:"string"`
+	_          struct{} `type:"structure"`
+	InstanceId *string  `type:"string"`
 }
 
 // ListenerDescription ...
 type ListenerDescription struct {
-	_ struct{} `type:"structure"`
-
-	Listener *Listener `type:"structure"`
-
+	_           struct{}  `type:"structure"`
+	Listener    *Listener `type:"structure"`
 	PolicyNames []*string `type:"list"`
 }
 
 // SourceSecurityGroup ...
 type SourceSecurityGroup struct {
-	_ struct{} `type:"structure"`
-
-	GroupName *string `type:"string"`
-
-	OwnerAlias *string `type:"string"`
+	_          struct{} `type:"structure"`
+	GroupName  *string  `type:"string"`
+	OwnerAlias *string  `type:"string"`
 }
 
 // Policies ...
 type Policies struct {
-	_ struct{} `type:"structure"`
-
-	// The stickiness policies created using CreateAppCookieStickinessPolicy.
-	AppCookieStickinessPolicies []*AppCookieStickinessPolicy `type:"list"`
-
-	// The stickiness policies created using CreateLBCookieStickinessPolicy.
-	LBCookieStickinessPolicies []*LBCookieStickinessPolicy `type:"list"`
-
-	// The policies other than the stickiness policies.
-	OtherPolicies []*string `type:"list"`
+	_                           struct{}                     `type:"structure"`
+	AppCookieStickinessPolicies []*AppCookieStickinessPolicy `type:"list"` // The stickiness policies created using CreateAppCookieStickinessPolicy.
+	LBCookieStickinessPolicies  []*LBCookieStickinessPolicy  `type:"list"` // The stickiness policies created using CreateLBCookieStickinessPolicy.
+	OtherPolicies               []*string                    `type:"list"` // The policies other than the stickiness policies.
 }
 
 // AppCookieStickinessPolicy ...
 type AppCookieStickinessPolicy struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the application cookie used for stickiness.
-	CookieName *string `type:"string"`
-
-	// The mnemonic name for the policy being created. The name must be unique within
-	// a set of policies for this load balancer.
-	PolicyName *string `type:"string"`
+	_          struct{} `type:"structure"`
+	CookieName *string  `type:"string"` // The name of the application cookie used for stickiness.
+	PolicyName *string  `type:"string"` // The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
 }
 
 // LBCookieStickinessPolicy ...
 type LBCookieStickinessPolicy struct {
-	_ struct{} `type:"structure"`
-
-	// The time period, in seconds, after which the cookie should be considered
-	// stale. If this parameter is not specified, the stickiness session lasts for
-	// the duration of the browser session.
-	CookieExpirationPeriod *int64 `type:"long"`
-
-	// The name of the policy. This name must be unique within the set of policies
-	// for this load balancer.
-	PolicyName *string `type:"string"`
+	_                      struct{} `type:"structure"`
+	CookieExpirationPeriod *int64   `type:"long"`   // The time period, in seconds, after which the cookie should be considered stale. If this parameter is not specified, the stickiness session lasts for the duration of the browser session.
+	PolicyName             *string  `type:"string"` // The name of the policy. This name must be unique within the set of policies for this load balancer.
 }
 
 // DescribeLoadBalancerAttributesInput ...

@@ -84,17 +84,18 @@ func dataSourceOutscaleOAPILoadBalancerLDsRead(d *schema.ResourceData, meta inte
 		LoadBalancerNames: expandStringList(e.([]interface{})),
 	}
 
-	var describeResp *lbu.DescribeLoadBalancersOutput
+	var resp *lbu.DescribeLoadBalancersOutput
+	var describeResp *lbu.DescribeLoadBalancersResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
-
+		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
+		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -137,7 +138,7 @@ func dataSourceOutscaleOAPILoadBalancerLDsRead(d *schema.ResourceData, meta inte
 		lds[k] = ld
 	}
 
-	// d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("listener", lds)
