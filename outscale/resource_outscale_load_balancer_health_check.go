@@ -122,7 +122,6 @@ func resourceOutscaleLoadBalancerHealthCheckCreate(d *schema.ResourceData, meta 
 		},
 	}
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.API.ConfigureHealthCheck(&configureHealthCheckOpts)
 
@@ -158,18 +157,18 @@ func resourceOutscaleLoadBalancerHealthCheckRead(d *schema.ResourceData, meta in
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{aws.String(elbName)},
 	}
-
-	var describeResp *lbu.DescribeLoadBalancersOutput
+	var resp *lbu.DescribeLoadBalancersOutput
+	var describeResp *lbu.DescribeLoadBalancersResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
-
+		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
+		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -216,9 +215,13 @@ func resourceOutscaleLoadBalancerHealthCheckRead(d *schema.ResourceData, meta in
 
 	d.Set("health_check", healthCheck)
 	d.Set("load_balancer_name", *lb.LoadBalancerName)
-	// d.Set("request_id", describeResp.ResponseMetadata.RequestId)
 
-	return nil
+	reqID := ""
+	if resp.ResponseMetadata != nil {
+		reqID = aws.StringValue(resp.ResponseMetadata.RequestID)
+	}
+
+	return d.Set("request_id", reqID)
 }
 
 func resourceOutscaleLoadBalancerHealthCheckDelete(d *schema.ResourceData, meta interface{}) error {

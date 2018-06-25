@@ -322,25 +322,21 @@ type DeleteLoadBalancerListenersOutput struct {
 
 // ConfigureHealthCheckInput ...
 type ConfigureHealthCheckInput struct {
-	_ struct{} `type:"structure"`
-
-	// The configuration information.
-	//
-	// HealthCheck is a required field
-	HealthCheck *HealthCheck `type:"structure" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{}     `type:"structure"`
+	HealthCheck      *HealthCheck `type:"structure" required:"true"` //The configuration information. HealthCheck is a required field
+	LoadBalancerName *string      `type:"string" required:"true"`    // The name of the load balancer.
 }
 
 // ConfigureHealthCheckOutput ...
 type ConfigureHealthCheckOutput struct {
-	_ struct{} `type:"structure"`
+	ConfigureHealthCheckResult *ConfigureHealthCheckResult `type:"structure"` // The updated health check.
+	ResponseMetadata           *ResponseMetadata           `type:"structure"`
+}
 
-	// The updated health check.
-	HealthCheck *HealthCheck `type:"structure"`
+// ConfigureHealthCheckResult ...
+type ConfigureHealthCheckResult struct {
+	_           struct{}     `type:"structure"`
+	HealthCheck *HealthCheck `type:"structure"` // The updated health check.
 }
 
 // ApplySecurityGroupsToLoadBalancerInput ...
