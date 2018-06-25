@@ -168,13 +168,15 @@ func testAccCheckOutscaleLBUExists(n string, res *lbu.LoadBalancerDescription) r
 			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
 				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
-			describe = resp.DescribeLoadBalancersResult
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
+			}
+			if resp.DescribeLoadBalancersResult != nil {
+				describe = resp.DescribeLoadBalancersResult
 			}
 			return nil
 		})
