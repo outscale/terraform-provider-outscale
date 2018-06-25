@@ -27,11 +27,15 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 		LoadBalancerNames: expandStringList(lbus.([]interface{})),
 	}
 
-	var resp *lbu.DescribeTagsOutput
+	var resp *lbu.DescribeTagsResult
+	var rs *lbu.DescribeTagsOutput
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.API.DescribeTags(params)
+		rs, err = conn.API.DescribeTags(params)
+		if rs != nil {
+			resp = rs.DescribeTagsResult
+		}
 		return resource.RetryableError(err)
 	})
 
@@ -59,8 +63,7 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(resource.UniqueId())
-
-	// d.Set("request_id", resp.RequestId)
+	d.Set("request_id", rs.ResponseMetadata.RequestID)
 
 	return d.Set("tag", td)
 }

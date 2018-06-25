@@ -472,81 +472,61 @@ type SetLoadBalancerPoliciesOfListenerResult struct {
 
 // DescribeLoadBalancerPoliciesInput ...
 type DescribeLoadBalancerPoliciesInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	LoadBalancerName *string `type:"string"`
-
-	// The names of the policies.
-	PolicyNames []*string `type:"list"`
+	_                struct{}  `type:"structure"`
+	LoadBalancerName *string   `type:"string"` // The name of the load balancer.
+	PolicyNames      []*string `type:"list"`   // The names of the policies.
 }
 
 // DescribeLoadBalancerPoliciesOutput ...
 type DescribeLoadBalancerPoliciesOutput struct {
-	_ struct{} `type:"structure"`
+	DescribeLoadBalancerPoliciesResult *DescribeLoadBalancerPoliciesResult `type:"structure"`
+	ResponseMatadata                   *ResponseMetadata                   `type:"structure"`
+}
 
-	// Information about the policies.
-	PolicyDescriptions []*PolicyDescription `type:"list"`
+// DescribeLoadBalancerPoliciesResult ...
+type DescribeLoadBalancerPoliciesResult struct {
+	_                  struct{}             `type:"structure"`
+	PolicyDescriptions []*PolicyDescription `type:"list"` // Information about the policies.
 }
 
 // PolicyDescription ...
 type PolicyDescription struct {
-	_ struct{} `type:"structure"`
-
-	// The policy attributes.
-	PolicyAttributeDescriptions []*PolicyAttributeDescription `type:"list"`
-
-	// The name of the policy.
-	PolicyName *string `type:"string"`
-
-	// The name of the policy type.
-	PolicyTypeName *string `type:"string"`
+	_                           struct{}                      `type:"structure"`
+	PolicyAttributeDescriptions []*PolicyAttributeDescription `type:"list"`   // The policy attributes.
+	PolicyName                  *string                       `type:"string"` // The name of the policy.
+	PolicyTypeName              *string                       `type:"string"` // The name of the policy type.
 }
 
 // PolicyAttributeDescription ...
 type PolicyAttributeDescription struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the attribute.
-	AttributeName *string `type:"string"`
-
-	// The value of the attribute.
-	AttributeValue *string `type:"string"`
+	_              struct{} `type:"structure"`
+	AttributeName  *string  `type:"string"` // The name of the attribute.
+	AttributeValue *string  `type:"string"` // The value of the attribute.
 }
 
 // DeleteLoadBalancerPolicyInput ...
 type DeleteLoadBalancerPolicyInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	// The name of the policy.
-	//
-	// PolicyName is a required field
-	PolicyName *string `type:"string" required:"true"`
+	_                struct{} `type:"structure"`
+	LoadBalancerName *string  `type:"string" required:"true"` // The name of the load balancer.
+	PolicyName       *string  `type:"string" required:"true"` // The name of the policy.
 }
 
 // DeleteLoadBalancerPolicyOutput ...
 type DeleteLoadBalancerPolicyOutput struct {
+	DeleteLoadBalancerPolicyResult *DeleteLoadBalancerPolicyResult `type:"structure"`
+	ResponseMatadata               *ResponseMetadata               `type:"structure"`
+}
+
+// DeleteLoadBalancerPolicyResult ...
+type DeleteLoadBalancerPolicyResult struct {
 	_ struct{} `type:"structure"`
 }
 
 // ModifyLoadBalancerAttributesInput ...
 type ModifyLoadBalancerAttributesInput struct {
-	_ struct{} `type:"structure"`
-
-	// The attributes of the load balancer.
-	//
-	// LoadBalancerAttributes is a required field
-	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure" required:"true"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                      struct{}                `type:"structure"`
+	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure" required:"true"` // The attributes of the load balancer.
+	LoadBalancerName       *string                 `type:"string" required:"true"`    // The name of the load balancer.
 }
 
 // ModifyLoadBalancerAttributesOutput ...
@@ -564,40 +544,38 @@ type ModifyLoadBalancerAttributesResult struct {
 
 // AddTagsInput ...
 type AddTagsInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer. You can specify one load balancer only.
-	//
-	// LoadBalancerNames is a required field
-	LoadBalancerNames []*string `type:"list"`
-
-	// The tags.
-	//
-	// Tags is a required field
-	Tags []*Tag `type:"list"`
+	_                 struct{}  `type:"structure"`
+	LoadBalancerNames []*string `type:"list"` // The name of the load balancer. You can specify one load balancer only.
+	Tags              []*Tag    `type:"list"` // The tags.
 }
 
 // AddTagsOutput ...
 type AddTagsOutput struct {
+	AddTagsResult    *AddTagsResult    `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+// AddTagsResult ...
+type AddTagsResult struct {
 	_ struct{} `type:"structure"`
 }
 
 // DescribeTagsInput ...
 type DescribeTagsInput struct {
-	_ struct{} `type:"structure"`
-
-	// The names of the load balancers.
-	//
-	// LoadBalancerNames is a required field
-	LoadBalancerNames []*string `min:"1" type:"list" required:"true"`
+	_                 struct{}  `type:"structure"`
+	LoadBalancerNames []*string `min:"1" type:"list" required:"true"` // The names of the load balancers.
 }
 
 // DescribeTagsOutput ...
 type DescribeTagsOutput struct {
-	_ struct{} `type:"structure"`
+	DescribeTagsResult *DescribeTagsResult `type:"structure"`
+	ResponseMetadata   *ResponseMetadata   `type:"structure"`
+}
 
-	// Information about the tags.
-	TagDescriptions []*TagDescription `type:"list"`
+// DescribeTagsResult ...
+type DescribeTagsResult struct {
+	_               struct{}          `type:"structure"`
+	TagDescriptions []*TagDescription `type:"list"` // Information about the tags.
 }
 
 // TagDescription ...

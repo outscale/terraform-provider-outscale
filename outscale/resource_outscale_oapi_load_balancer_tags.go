@@ -97,7 +97,7 @@ func resourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) e
 
 	utils.PrintToJSON(resp, "RESULT =>")
 
-	// d.Set("request_id", resp.RequestId)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	// tg := tagsLBUDescToList(resp.TagDescriptions)
 	// err = d.Set("tag", tg)
 

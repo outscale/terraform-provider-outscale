@@ -55,7 +55,7 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 const testAccDSODSutscaleOAPILBUDSTagsConfig = `
 resource "outscale_load_balancer" "bar" {
   sub_region = ["eu-west-2a"]
-	load_balancer_name = "foobar-terraform-elb-ddddd"
+	load_balancer_name = "foobar-terraform-elb-aaaaaa"
   listeners {
     backend_port = 8000
     backend_protocol = "HTTP"
