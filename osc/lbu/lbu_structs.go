@@ -580,29 +580,16 @@ type DescribeTagsResult struct {
 
 // TagDescription ...
 type TagDescription struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer.
-	LoadBalancerName *string `type:"string"`
-
-	// The tags.
-	Tags []*Tag `min:"1" type:"list"`
+	_                struct{} `type:"structure"`
+	LoadBalancerName *string  `type:"string"`       // The name of the load balancer.
+	Tags             []*Tag   `min:"1" type:"list"` // The tags.
 }
 
 // RemoveTagsInput ...
 type RemoveTagsInput struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the load balancer. You can specify a maximum of one load balancer
-	// name.
-	//
-	// LoadBalancerNames is a required field
-	LoadBalancerNames []*string `type:"list" required:"true"`
-
-	// The list of tag keys to remove.
-	//
-	// Tags is a required field
-	Tags []*TagKeyOnly `min:"1" type:"list" required:"true"`
+	_                 struct{}      `type:"structure"`
+	LoadBalancerNames []*string     `type:"list" required:"true"`         // The name of the load balancer. You can specify a maximum of one load balancer name.
+	Tags              []*TagKeyOnly `min:"1" type:"list" required:"true"` // The list of tag keys to remove.
 }
 
 // RemoveTagsOutput ...
@@ -612,52 +599,36 @@ type RemoveTagsOutput struct {
 
 // TagKeyOnly ...
 type TagKeyOnly struct {
-	_ struct{} `type:"structure"`
-
-	// The name of the key.
-	Key *string `min:"1" type:"string"`
+	_   struct{} `type:"structure"`
+	Key *string  `min:"1" type:"string"` // The name of the key.
 }
 
 // DescribeInstanceHealthInput ...
 type DescribeInstanceHealthInput struct {
-	_ struct{} `type:"structure"`
-
-	// The IDs of the instances.
-	Instances []*Instance `type:"list"`
-
-	// The name of the load balancer.
-	//
-	// LoadBalancerName is a required field
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{}    `type:"structure"`
+	Instances        []*Instance `type:"list"`                   // The IDs of the instances.
+	LoadBalancerName *string     `type:"string" required:"true"` // The name of the load balancer.
 }
 
 // DescribeInstanceHealthOutput ...
 type DescribeInstanceHealthOutput struct {
-	_ struct{} `type:"structure"`
+	DescribeInstanceHealthResult *DescribeInstanceHealthResult `type:"structure"`
+	ResponseMetadata             *ResponseMetadata             `type:"structure"`
+}
 
-	// Information about the health of the instances.
-	InstanceStates []*InstanceState `type:"list"`
+// DescribeInstanceHealthResult ...
+type DescribeInstanceHealthResult struct {
+	_              struct{}         `type:"structure"`
+	InstanceStates []*InstanceState `type:"list"` // Information about the health of the instances.
 }
 
 // InstanceState ...
 type InstanceState struct {
-	_ struct{} `type:"structure"`
-
-	Description *string `type:"string"`
-
-	// The ID of the instance.
-	InstanceId *string `type:"string"`
-
-	// Information about the cause of OutOfService instances. Specifically, whether
-	// the cause is Elastic Load Balancing or the instance.
-	//
-	// Valid values: ELB | Instance | N/A
-	ReasonCode *string `type:"string"`
-
-	// The current state of the instance.
-	//
-	// Valid values: InService | OutOfService | Unknown
-	State *string `type:"string"`
+	_           struct{} `type:"structure"`
+	Description *string  `type:"string"`
+	InstanceId  *string  `type:"string"` // The ID of the instance.
+	ReasonCode  *string  `type:"string"` // Information about the cause of OutOfService instances. Specifically, whether the cause is Elastic Load Balancing or the instance.
+	State       *string  `type:"string"` // The current state of the instance. // Valid values: InService | OutOfService | Unknown
 }
 
 // SetLoadBalancerListenerSSLCertificateInput Contains the parameters for SetLoadBalancerListenerSSLCertificate.

@@ -83,16 +83,20 @@ func dataSourceOutscaleOAPIVMHealthRead(d *schema.ResourceData, meta interface{}
 		params.Instances = in
 	}
 
-	var resp *lbu.DescribeInstanceHealthOutput
+	var resp *lbu.DescribeInstanceHealthResult
+	var rs *lbu.DescribeInstanceHealthOutput
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.API.DescribeInstanceHealth(params)
+		rs, err = conn.API.DescribeInstanceHealth(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+		if rs != nil {
+			resp = rs.DescribeInstanceHealthResult
 		}
 		return nil
 	})
@@ -112,7 +116,7 @@ func dataSourceOutscaleOAPIVMHealthRead(d *schema.ResourceData, meta interface{}
 		health[k] = h
 	}
 
-	// d.Set("request_id", resp.RequestId)
+	d.Set("request_id", rs.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("backend_vm_health", health)
