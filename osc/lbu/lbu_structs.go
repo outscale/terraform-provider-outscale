@@ -465,10 +465,14 @@ type RegisterInstancesWithLoadBalancerInput struct {
 
 // RegisterInstancesWithLoadBalancerOutput ...
 type RegisterInstancesWithLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
+	RegisterInstancesWithLoadBalancerResult *RegisterInstancesWithLoadBalancerResult `type:"structure"`
+	ResponseMetadata                        *ResponseMetadata                        `type:"structure"`
+}
 
-	// The updated list of instances for the load balancer.
-	Instances []*Instance `type:"list"`
+// RegisterInstancesWithLoadBalancerResult ...
+type RegisterInstancesWithLoadBalancerResult struct {
+	_         struct{}    `type:"structure"`
+	Instances []*Instance `type:"list"` // The updated list of instances for the load balancer.
 }
 
 // DeregisterInstancesFromLoadBalancerInput ...
