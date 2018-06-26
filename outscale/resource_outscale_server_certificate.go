@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleEIMServerCertificate() *schema.Resource {
@@ -104,8 +103,6 @@ func resourceOutscaleEIMServerCertificateCreate(d *schema.ResourceData, meta int
 		}
 		return fmt.Errorf("[WARN] Error uploading server certificate, error: %s", err)
 	}
-
-	utils.PrintToJSON(rs, "UploadServerCertificate")
 
 	resp := rs.UploadServerCertificateResult
 

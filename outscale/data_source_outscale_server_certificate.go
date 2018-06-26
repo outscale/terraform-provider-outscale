@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleEIMServerCertificate() *schema.Resource {
@@ -72,8 +71,6 @@ func datasourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta int
 	if resp.GetServerCertificateResult == nil {
 		return fmt.Errorf("Could not get Server Certificate information")
 	}
-
-	utils.PrintToJSON(resp, "GetServerCertificate")
 
 	if err != nil {
 		//it is OK?
