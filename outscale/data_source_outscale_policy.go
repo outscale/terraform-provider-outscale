@@ -77,16 +77,20 @@ func dataSourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) erro
 	input := &eim.GetPolicyInput{PolicyArn: aws.String(policyArn.(string))}
 
 	var err error
-	var output *eim.GetPolicyOutput
+	var output *eim.GetPolicyResult
+	var rs *eim.GetPolicyOutput
 
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		output, err = conn.API.GetPolicy(input)
+		rs, err = conn.API.GetPolicy(input)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+		if rs.GetPolicyResult != nil {
+			output = rs.GetPolicyResult
 		}
 		return nil
 	})
@@ -107,7 +111,7 @@ func dataSourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("path", aws.StringValue(output.Policy.Path))
 	d.Set("policy_id", aws.StringValue(output.Policy.PolicyId))
 	d.Set("policy_name", aws.StringValue(output.Policy.PolicyName))
-	d.Set("request_id", aws.StringValue(output.RequestId))
+	d.Set("request_id", aws.StringValue(rs.ResponseMetadata.RequestID))
 	d.SetId(*output.Policy.PolicyId)
 
 	return nil

@@ -15,6 +15,12 @@ type CreatePolicyInput struct {
 
 // CreatePolicyOutput ...
 type CreatePolicyOutput struct {
+	CreatePolicyResult *CreatePolicyResult `type:"structure"`
+	ResponseMetadata   *ResponseMetadata   `type:"structure"`
+}
+
+// CreatePolicyResult ...
+type CreatePolicyResult struct {
 	_      struct{} `type:"structure"`
 	Policy *Policy  `type:"structure"`
 }
@@ -46,9 +52,14 @@ type GetPolicyInput struct {
 
 // GetPolicyOutput ...
 type GetPolicyOutput struct {
-	_         struct{} `type:"structure"`
-	Policy    *Policy  `type:"structure"`
-	RequestId *string  `type:"string"`
+	GetPolicyResult  *GetPolicyResult  `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+// GetPolicyResult ...
+type GetPolicyResult struct {
+	_      struct{} `type:"structure"`
+	Policy *Policy  `type:"structure"`
 }
 
 // GetPolicyVersionInput ...

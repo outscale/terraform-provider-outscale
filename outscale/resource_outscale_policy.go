@@ -75,10 +75,10 @@ func resourceOutscalePolicy() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// "request_id": {
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -104,16 +104,20 @@ func resourceOutscalePolicyCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	var err error
-	var response *eim.CreatePolicyOutput
-
+	var response *eim.CreatePolicyResult
+	var rs *eim.CreatePolicyOutput
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		response, err = conn.API.CreatePolicy(request)
+		rs, err = conn.API.CreatePolicy(request)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+
+		if rs.CreatePolicyResult != nil {
+			response = rs.CreatePolicyResult
 		}
 
 		return nil
@@ -136,10 +140,11 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	var err error
-	var getPolicyResponse *eim.GetPolicyOutput
+	var getPolicyResponse *eim.GetPolicyResult
+	var rs *eim.GetPolicyOutput
 
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		getPolicyResponse, err = conn.API.GetPolicy(getPolicyRequest)
+		rs, err = conn.API.GetPolicy(getPolicyRequest)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
@@ -147,6 +152,11 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 			}
 			return resource.NonRetryableError(err)
 		}
+
+		if rs.GetPolicyResult != nil {
+			getPolicyResponse = rs.GetPolicyResult
+		}
+
 		return nil
 	})
 
@@ -165,8 +175,8 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("is_attachable", aws.BoolValue(getPolicyResponse.Policy.IsAttachable))
 	d.Set("path", aws.StringValue(getPolicyResponse.Policy.Path))
 	d.Set("policy_id", aws.StringValue(getPolicyResponse.Policy.PolicyId))
-	d.Set("`policy_name", aws.StringValue(getPolicyResponse.Policy.PolicyName))
-
+	d.Set("policy_name", aws.StringValue(getPolicyResponse.Policy.PolicyName))
+	d.Set("request_id", aws.StringValue(rs.ResponseMetadata.RequestID))
 	// d.SetId(*getPolicyResponse.RequestId)
 
 	return nil
