@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleEIMServerCertificate() *schema.Resource {
@@ -96,24 +97,30 @@ func resourceOutscaleEIMServerCertificateCreate(d *schema.ResourceData, meta int
 		createOpts.Path = aws.String(v.(string))
 	}
 	log.Printf("[DEBUG] Creating EIM Server Certificate with opts: %+v", createOpts)
-	resp, err := conn.API.UploadServerCertificate(createOpts)
+	rs, err := conn.API.UploadServerCertificate(createOpts)
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			return fmt.Errorf("[WARN] Error uploading server certificate, error: %s: %s", awsErr.Code(), awsErr.Message())
 		}
 		return fmt.Errorf("[WARN] Error uploading server certificate, error: %s", err)
 	}
-	d.SetId(*resp.ServerCertificateMetadata.ServerCertificateId)
-	d.Set("server_certificate_id", *resp.ServerCertificateMetadata.ServerCertificateId)
+
+	utils.PrintToJSON(rs, "UploadServerCertificate")
+
+	resp := rs.UploadServerCertificateResult
+
+	d.SetId(*resp.ServerCertificateMetadata.ServerCertificateID)
+	d.Set("server_certificate_id", *resp.ServerCertificateMetadata.ServerCertificateID)
 	d.Set("server_certificate_name", sslCertName)
 	return resourceOutscaleEIMServerCertificateRead(d, meta)
 }
 func resourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).EIM
 
-	resp, err := conn.API.GetServerCertificate(&eim.GetServerCertificateInput{
+	rs, err := conn.API.GetServerCertificate(&eim.GetServerCertificateInput{
 		ServerCertificateName: aws.String(d.Get("server_certificate_name").(string)),
 	})
+
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok {
 			if awsErr.Code() == "NoSuchEntity" {
@@ -125,7 +132,14 @@ func resourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta inter
 		}
 		return fmt.Errorf("[WARN] Error reading EIM Server Certificate: %s", err)
 	}
-	d.SetId(*resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateId)
+
+	if rs.GetServerCertificateResult == nil {
+		return fmt.Errorf("Could not get Server Certificate information")
+	}
+
+	resp := rs.GetServerCertificateResult
+
+	d.SetId(*resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateID)
 	// these values should always be present, and have a default if not set in
 	// configuration, and so safe to reference with nil checks
 	d.Set("certificate_body", normalizeCert(resp.ServerCertificate.CertificateBody))
@@ -135,10 +149,10 @@ func resourceOutscaleEIMServerCertificateRead(d *schema.ResourceData, meta inter
 	}
 	d.Set("path", resp.ServerCertificate.ServerCertificateMetadata.Path)
 	d.Set("arn", resp.ServerCertificate.ServerCertificateMetadata.Arn)
-	d.Set("server_certificate_id", *resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateId)
+	d.Set("server_certificate_id", *resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateID)
 
-	if resp.ResponseMetadata != nil {
-		d.Set("request_id", resp.ResponseMetadata.RequestId)
+	if rs.ResponseMetadata != nil {
+		d.Set("request_id", rs.ResponseMetadata.RequestID)
 	}
 	return nil
 }

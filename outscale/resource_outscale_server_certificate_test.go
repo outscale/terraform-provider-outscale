@@ -60,7 +60,7 @@ func testAccCheckCertExists(n string, cert *eim.ServerCertificate) resource.Test
 		if err != nil {
 			return err
 		}
-		*cert = *resp.ServerCertificate
+		*cert = *resp.GetServerCertificateResult.ServerCertificate
 		return nil
 	}
 }
@@ -76,7 +76,7 @@ func testAccCheckEIMServerCertificateDestroy(s *terraform.State) error {
 		}
 		resp, err := conn.API.GetServerCertificate(opts)
 		if err == nil {
-			if resp.ServerCertificate != nil {
+			if resp.GetServerCertificateResult.ServerCertificate != nil {
 				return fmt.Errorf("Error: Server Cert still exists")
 			}
 			return nil

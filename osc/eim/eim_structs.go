@@ -124,6 +124,12 @@ type UploadServerCertificateInput struct {
 
 //UploadServerCertificateOutput Contains the response to a successful UploadServerCertificate request.
 type UploadServerCertificateOutput struct {
+	UploadServerCertificateResult *UploadServerCertificateResult `type:"structure"`
+	ResponseMetadata              *ResponseMetadata              `type:"structure" required:"true"`
+}
+
+//UploadServerCertificateResult Contains the response to a successful UploadServerCertificate request.
+type UploadServerCertificateResult struct {
 	_                         struct{}                   `type:"structure"`
 	ServerCertificateMetadata *ServerCertificateMetadata `type:"structure"`
 }
@@ -134,7 +140,7 @@ type ServerCertificateMetadata struct {
 	Arn                   *string    `min:"20" type:"string" required:"true"`
 	Expiration            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 	Path                  *string    `min:"1" type:"string" required:"true"`
-	ServerCertificateId   *string    `min:"16" type:"string" required:"true"`
+	ServerCertificateID   *string    `locationName:"ServerCertificateId" min:"16" type:"string" required:"true"`
 	ServerCertificateName *string    `min:"1" type:"string" required:"true"`
 	UploadDate            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
@@ -147,9 +153,14 @@ type GetServerCertificateInput struct {
 
 //GetServerCertificateOutput Contains the response to a successful GetServerCertificate request.
 type GetServerCertificateOutput struct {
+	GetServerCertificateResult *GetServerCertificateResult `type:"structure"`
+	ResponseMetadata           *ResponseMetadata           `type:"structure" required:"true"`
+}
+
+//GetServerCertificateResult Contains the response to a successful GetServerCertificate request.
+type GetServerCertificateResult struct {
 	_                 struct{}           `type:"structure"`
 	ServerCertificate *ServerCertificate `type:"structure" required:"true"`
-	ResponseMetadata  *ResponseMetadata  `type:"structure" required:"true"`
 }
 
 // ServerCertificate Contains information about a server certificate.
@@ -190,7 +201,7 @@ type ListServerCertificatesOutput struct {
 
 // ResponseMetadata ...
 type ResponseMetadata struct {
-	RequestId *string `min:"1" type:"string"`
+	RequestID *string `locationName:"RequestId" min:"1" type:"string"`
 }
 
 // ListCertificatesOutput ...
