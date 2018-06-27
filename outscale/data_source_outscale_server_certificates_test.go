@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -9,6 +11,17 @@ import (
 )
 
 func TestAccOutscaleDSEIMServerCertificates_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi {
+		t.Skip()
+	}
+
 	rInt := acctest.RandInt()
 	unixFile := "test-fixtures/eim-ssl-unix-line-endings.pem"
 	resource.Test(t, resource.TestCase{
