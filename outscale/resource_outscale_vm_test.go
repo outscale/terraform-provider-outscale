@@ -100,7 +100,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleServerAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "instance_type", "t2.micro"),
 					resource.TestCheckResourceAttr(
@@ -389,7 +389,7 @@ func testAccCheckOutscaleVMExistsWithProviders(n string, i *fcu.Instance, provid
 func testAccCheckOutscaleServerAttributes(server *fcu.Instance) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if *server.ImageId != "ami-8a6a0120" {
+		if *server.ImageId != "ami-880caa66" {
 			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
 		}
 
@@ -431,15 +431,16 @@ func testAccCheckOutscaleServerConfigBasic(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_2"
   group_description = "Used in the terraform acceptance tests"
 }
 
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
+	image_id = "ami-880caa66"
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	#security_group = ["${outscale_firewall_rules_set.web.group_name}"]
+	security_group_id = ["${outscale_firewall_rules_set.web.id}"]
 }`, r)
 }
 

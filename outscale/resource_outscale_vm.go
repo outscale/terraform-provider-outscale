@@ -654,7 +654,8 @@ func getVMSchema() map[string]*schema.Schema {
 		"security_group_id": {
 			Type:     schema.TypeSet,
 			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+
+			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"subnet_id": {
 			Type:     schema.TypeString,
@@ -1207,8 +1208,18 @@ func buildOutscaleVMOpts(
 			groups = append(groups, aws.String(str))
 		}
 	}
-
 	opts.SecurityGroups = groups
+
+	var groupIDs []*string
+	if v := d.Get("security_group_id"); v != nil {
+
+		sgs := v.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			groupIDs = append(groupIDs, aws.String(str))
+		}
+	}
+	opts.SecurityGroupIDs = groupIDs
 
 	networkInterfaces, interfacesOk := d.GetOk("network_interface")
 	if interfacesOk {
@@ -1220,11 +1231,11 @@ func buildOutscaleVMOpts(
 		opts.PrivateIPAddress = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("vpc_security_group_ids"); ok && v.(*schema.Set).Len() > 0 {
-		for _, v1 := range v.(*schema.Set).List() {
-			opts.SecurityGroupIDs = append(opts.SecurityGroupIDs, aws.String(v1.(string)))
-		}
-	}
+	// if v, ok := d.GetOk("vpc_security_group_ids"); ok && v.(*schema.Set).Len() > 0 {
+	// 	for _, v1 := range v.(*schema.Set).List() {
+	// 		opts.SecurityGroupIDs = append(opts.SecurityGroupIDs, aws.String(v1.(string)))
+	// 	}
+	// }
 
 	if v, ok := d.GetOk("ipv6_address_count"); ok {
 		opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
