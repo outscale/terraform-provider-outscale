@@ -262,8 +262,9 @@ func init() {
 			"outscale_load_balancer_attributes":            dataSourceOutscaleLoadBalancerAttr,
 		},
 		"eim": ResourceMap{
-			"outscale_policy":             dataSourceOutscalePolicy,
-			"outscale_server_certificate": datasourceOutscaleEIMServerCertificate,
+			"outscale_policy":              dataSourceOutscalePolicy,
+			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
+			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 		},
 	}
 }

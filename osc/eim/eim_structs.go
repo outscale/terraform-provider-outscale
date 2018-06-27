@@ -203,10 +203,15 @@ type ListServerCertificatesInput struct {
 
 //ListServerCertificatesOutput Contains the response to a successful ListServerCertificates request.
 type ListServerCertificatesOutput struct {
+	ListServerCertificatesResult *ListServerCertificatesResult `type:"structure"`
+	ResponseMetadata             *ResponseMetadata             `type:"structure"`
+}
+
+//ListServerCertificatesResult Contains the response to a successful ListServerCertificates request.
+type ListServerCertificatesResult struct {
 	_                             struct{}                     `type:"structure"`
 	IsTruncated                   *bool                        `type:"boolean"`
 	Marker                        *string                      `min:"1" type:"string"`
-	ResponseMetadata              *ResponseMetadata            `type:"structure"`
 	ServerCertificateMetadataList []*ServerCertificateMetadata `type:"list" required:"true"`
 }
 

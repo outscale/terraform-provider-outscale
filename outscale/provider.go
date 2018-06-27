@@ -183,6 +183,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_lin_api_access_services":             GetDatasource(fcu, "outscale_lin_api_access_services")(),
 			"outscale_policy":                              GetDatasource(eim, "outscale_policy")(),
 			"outscale_server_certificate":                  GetDatasource(eim, "outscale_server_certificate")(),
+			"outscale_server_certificates":                 GetDatasource(eim, "outscale_server_certificates")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
