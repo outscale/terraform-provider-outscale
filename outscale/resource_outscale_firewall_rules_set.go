@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleFirewallRulesSet() *schema.Resource {
@@ -230,6 +231,8 @@ func resourceOutscaleSecurityGroupRead(d *schema.ResourceData, meta interface{})
 	if len(resp.SecurityGroups) > 1 {
 		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
 	}
+
+	utils.PrintToJSON(resp, "RESPONSE")
 
 	sg := resp.SecurityGroups[0]
 

@@ -100,9 +100,9 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 					testAccCheckOutscaleVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleServerAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "t2.micro"),
+						"outscale_vm.basic", "instance_type", "c4.large"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "group_set.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -426,21 +426,58 @@ func testAccCheckOutscaleWindowsServerAttributes(server *fcu.Instance) resource.
 
 func testAccCheckOutscaleServerConfigBasic(r int) string {
 	return fmt.Sprintf(`
-	resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "outscale_subnet" {
+  availability_zone = "eu-west-2a"
+  cidr_block        = "10.0.0.0/16"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
+}
+
+resource "outscale_nic" "outscale_nic" {
+  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+}
+
+resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+  network_interface_id               = "${outscale_nic.outscale_nic.id}"
+  secondary_private_ip_address_count = 10
+}
+
+resource "outscale_keypair" "a_key_pair" {
+  key_name = "terraform-key-%d"
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_%d"
-  group_description = "Used in the terraform acceptance tests"
+  group_name        = "lin_ucP2_sg_allow_me-%d"
+  group_description = "Allow inbound traffic from me"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
+
+  tag {
+    Name = "lin_ucP2_sg_allow_me"
+  }
+}
+
+resource "outscale_inbound_rule" "allow_men2" {
+  ip_permissions = {
+    ip_protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    ip_ranges   = ["10.0.0.0/16"]
+  }
+
+  group_id = "${outscale_firewall_rules_set.web.id}"
 }
 
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-	security_group = ["${outscale_firewall_rules_set.web.id}"]
-}`, r, r)
+  image_id       = "ami-880caa66"
+  instance_type  = "c4.large"
+  subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+  key_name       = "${outscale_keypair.a_key_pair.key_name}"
+  security_group = ["${outscale_firewall_rules_set.web.id}"]
+}
+`, r, r)
 }
 
 func testAccCheckOutscaleServerConfigBasicWindows(r int) string {

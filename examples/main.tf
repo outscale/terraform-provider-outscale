@@ -398,11 +398,11 @@
 #   snapshot_id = "${outscale_snapshot.snapshot.id}"
 # }
 
-resource "outscale_vm" "outscale_instance" {
-  image_id      = "ami-880caa66"
-  instance_type = "c4.large"
-  subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
+# resource "outscale_vm" "outscale_instance" {
+#   image_id      = "ami-880caa66"
+#   instance_type = "c4.large"
+#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
+# }
 
 resource "outscale_lin" "outscale_lin" {
   cidr_block = "10.0.0.0/16"
@@ -415,10 +415,94 @@ resource "outscale_subnet" "outscale_subnet" {
 }
 
 resource "outscale_nic" "outscale_nic" {
-  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+  subnet_id         = "${outscale_subnet.outscale_subnet.subnet_id}"
+  security_group_id = ["${outscale_firewall_rules_set.web.id}"]
+}
+
+resource "outscale_nic_link" "outscale_nic_link" {
+  device_index         = "1"
+  instance_id          = "${outscale_vm.basic.id}"
+  network_interface_id = "${outscale_nic.outscale_nic.id}"
 }
 
 resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
   network_interface_id               = "${outscale_nic.outscale_nic.id}"
-  secondary_private_ip_address_count = 10
+  secondary_private_ip_address_count = 5
 }
+
+resource "outscale_keypair" "a_key_pair" {
+  key_name = "terraform-key-test21"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name        = "lin_ucP2_sg_allow_me"
+  group_description = "Allow inbound traffic from me"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
+
+  tag {
+    Name = "lin_ucP2_sg_allow_me"
+  }
+}
+
+resource "outscale_inbound_rule" "allow_men2" {
+  ip_permissions = {
+    ip_protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    ip_ranges   = ["10.0.0.0/16"]
+  }
+
+  group_id = "${outscale_firewall_rules_set.web.id}"
+}
+
+resource "outscale_vm" "basic" {
+  image_id       = "ami-880caa66"
+  instance_type  = "c4.large"
+  subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+  key_name       = "${outscale_keypair.a_key_pair.key_name}"
+  security_group = ["${outscale_firewall_rules_set.web.id}"]
+}
+
+resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
+
+resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
+  vpc_id              = "${outscale_lin.outscale_lin.id}"
+  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+}
+
+# resource "outscale_nat_service" "outscale_nat_service" {
+#   depends_on    = ["outscale_route.outscale_route"]
+#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
+#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
+# }
+
+
+# resource "outscale_route_table" "outscale_route_table" {
+#   vpc_id = "${outscale_lin.outscale_lin.id}"
+# }
+
+
+# resource "outscale_route" "outscale_route" {
+#   destination_cidr_block = "0.0.0.0/0"
+#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+#   route_table_id         = "${outscale_route_table.outscale_route_table.id}"
+# }
+
+
+# resource "outscale_route_table_link" "outscale_route_table_link" {
+#   subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
+# }
+
+
+# resource "outscale_public_ip" "outscale_public_ip" {
+#   domain = "vpc"
+# }
+
+
+# resource "outscale_public_ip_link" "by_public_ip" {
+#   public_ip   = "${outscale_public_ip.outscale_public_ip.public_ip}"
+#   instance_id = "${outscale_vm.basic.id}"
+#   depends_on  = ["outscale_vm.basic", "outscale_public_ip.outscale_public_ip"]
+# }
+
