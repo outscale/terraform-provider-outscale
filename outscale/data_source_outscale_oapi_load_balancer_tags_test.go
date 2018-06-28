@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -22,12 +23,14 @@ func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 		t.Skip()
 	}
 
+	r := acctest.RandString(4)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSODSutscaleOAPILBUDSTagsConfig,
+				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckODSutscaleOAPILBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
 					resource.TestCheckResourceAttr(
@@ -52,10 +55,11 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 	}
 }
 
-const testAccDSODSutscaleOAPILBUDSTagsConfig = `
+func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string) string {
+	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
   sub_region = ["eu-west-2a"]
-	load_balancer_name = "foobar-terraform-elb-aaaaaa"
+	load_balancer_name = "foobar-terraform-elb-%s"
   listeners {
     backend_port = 8000
     backend_protocol = "HTTP"
@@ -79,4 +83,5 @@ resource "outscale_load_balancer_tags" "tags" {
 data "outscale_load_balancer_tags" "testds" {
 	load_balancer_name = ["${outscale_load_balancer.bar.id}"]
 }
-`
+`, r)
+}
