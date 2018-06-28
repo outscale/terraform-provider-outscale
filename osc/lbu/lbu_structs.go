@@ -6,39 +6,28 @@ import (
 
 // CreateLoadBalancerInput ...
 type CreateLoadBalancerInput struct {
-	_ struct{} `type:"structure"`
-
-	AvailabilityZones []*string `type:"list"`
-
-	Listeners []*Listener `type:"list"`
-
-	LoadBalancerName *string `type:"string" required:"true"`
-
-	Scheme *string `type:"string"`
-
-	SecurityGroups []*string `type:"list"`
-
-	Subnets []*string `type:"list"`
-
-	Tags []*Tag `type:"list"`
+	_                 struct{}    `type:"structure"`
+	AvailabilityZones []*string   `type:"list"`
+	Listeners         []*Listener `type:"list"`
+	LoadBalancerName  *string     `type:"string" required:"true"`
+	Scheme            *string     `type:"string"`
+	SecurityGroups    []*string   `type:"list"`
+	Subnets           []*string   `type:"list"`
+	Tags              []*Tag      `type:"list"`
 }
 
 // Tag ...
 type Tag struct {
-	_ struct{} `type:"structure"`
-
-	Key *string `min:"1" type:"string" required:"true"`
-
-	Value *string `type:"string"`
+	_     struct{} `type:"structure"`
+	Key   *string  `min:"1" type:"string" required:"true"`
+	Value *string  `type:"string"`
 }
 
 // CreateLoadBalancerListenersInput ...
 type CreateLoadBalancerListenersInput struct {
-	_ struct{} `type:"structure"`
-
-	Listeners []*Listener `type:"list"`
-
-	LoadBalancerName *string `type:"string" required:"true"`
+	_                struct{}    `type:"structure"`
+	Listeners        []*Listener `type:"list"`
+	LoadBalancerName *string     `type:"string" required:"true"`
 }
 
 // CreateLoadBalancerListenersOutput ...
@@ -48,41 +37,31 @@ type CreateLoadBalancerListenersOutput struct {
 
 // CreateLoadBalancerOutput ...
 type CreateLoadBalancerOutput struct {
-	_ struct{} `type:"structure"`
-
-	DNSName *string ` type:"string"`
+	_       struct{} `type:"structure"`
+	DNSName *string  ` type:"string"`
 }
 
 // Listener ...
 type Listener struct {
-	_ struct{} `type:"structure"`
-
-	InstancePort *int64 `min:"1" type:"integer" required:"true"`
-
-	InstanceProtocol *string `type:"string"`
-
-	LoadBalancerPort *int64 `type:"integer" required:"true"`
-
-	Protocol *string `type:"string" required:"true"`
-
-	SSLCertificateId *string `type:"string"`
+	_                struct{} `type:"structure"`
+	InstancePort     *int64   `min:"1" type:"integer" required:"true"`
+	InstanceProtocol *string  `type:"string"`
+	LoadBalancerPort *int64   `type:"integer" required:"true"`
+	Protocol         *string  `type:"string" required:"true"`
+	SSLCertificateId *string  `type:"string"`
 }
 
 // DescribeLoadBalancersInput ...
 type DescribeLoadBalancersInput struct {
-	_ struct{} `type:"structure"`
-
+	_                 struct{}  `type:"structure"`
 	LoadBalancerNames []*string `type:"list"`
-
-	Marker *string `type:"string"`
-
-	PageSize *int64 `min:"1" type:"integer"`
+	Marker            *string   `type:"string"`
+	PageSize          *int64    `min:"1" type:"integer"`
 }
 
 // DescribeLoadBalancersOutput ...
 type DescribeLoadBalancersOutput struct {
-	_ struct{} `type:"structure"`
-
+	_                        struct{}                   `type:"structure"`
 	LoadBalancerDescriptions []*LoadBalancerDescription `type:"list"`
 
 	NextMarker *string `type:"string"`
@@ -92,56 +71,20 @@ type DescribeLoadBalancersOutput struct {
 
 // LoadBalancerDescription ...
 type LoadBalancerDescription struct {
-	_ struct{} `type:"structure"`
-
-	// The Availability Zones for the load balancer.
-	AvailabilityZones []*string `type:"list"`
-
-	// Information about your EC2 instances.
-	BackendServerDescriptions []*BackendServerDescription `type:"list"`
-
-	// The DNS name of the load balancer.
-	//
-	// For more information, see Configure a Custom Domain Name (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/using-domain-names-with-elb.html)
-	// in the Classic Load Balancers Guide.
-	CanonicalHostedZoneName *string `type:"string"`
-
-	// The ID of the Amazon Route 53 hosted zone for the load balancer.
-	CanonicalHostedZoneNameID *string `type:"string"`
-
-	// The date and time the load balancer was created.
-	CreatedTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
-
-	// The DNS name of the load balancer.
-	DNSName *string `type:"string"`
-
-	// Information about the health checks conducted on the load balancer.
-	HealthCheck *HealthCheck `type:"structure"`
-
-	// The IDs of the instances for the load balancer.
-	Instances []*Instance `type:"list"`
-
-	// The listeners for the load balancer.
-	ListenerDescriptions []*ListenerDescription `type:"list"`
-
-	// The name of the load balancer.
-	LoadBalancerName *string `type:"string"`
-
-	// The policies defined for the load balancer.
-	Policies *Policies `type:"structure"`
-
-	// The type of load balancer. Valid only for load balancers in a VPC.
-	//
-	// If Scheme is internet-facing, the load balancer has a public DNS name that
-	// resolves to a public IP address.
-	//
-	// If Scheme is internal, the load balancer has a public DNS name that resolves
-	// to a private IP address.
-	Scheme *string `type:"string"`
-
-	// The security groups for the load balancer. Valid only for load balancers
-	// in a VPC.
-	SecurityGroups []*string `type:"list"`
+	_                         struct{}                    `type:"structure"`
+	AvailabilityZones         []*string                   `type:"list"`                                // The Availability Zones for the load balancer.
+	BackendServerDescriptions []*BackendServerDescription `type:"list"`                                // Information about your EC2 instances.
+	CanonicalHostedZoneName   *string                     `type:"string"`                              // The DNS name of the load balancer. For more information, see Configure a Custom Domain Name (http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/using-domain-names-with-elb.html) in the Classic Load Balancers Guide.
+	CanonicalHostedZoneNameID *string                     `type:"string"`                              // The ID of the Amazon Route 53 hosted zone for the load balancer.
+	CreatedTime               *time.Time                  `type:"timestamp" timestampFormat:"iso8601"` // The date and time the load balancer was created.
+	DNSName                   *string                     `type:"string"`                              // The DNS name of the load balancer.
+	HealthCheck               *HealthCheck                `type:"structure"`                           // Information about the health checks conducted on the load balancer.
+	Instances                 []*Instance                 `type:"list"`                                // The IDs of the instances for the load balancer.
+	ListenerDescriptions      []*ListenerDescription      `type:"list"`                                // The listeners for the load balancer.
+	LoadBalancerName          *string                     `type:"string"`                              // The name of the load balancer.
+	Policies                  *Policies                   `type:"structure"`                           // The policies defined for the load balancer.
+	Scheme                    *string                     `type:"string"`                              // The type of load balancer. Valid only for load balancers in a VPC. If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address. If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
+	SecurityGroups            []*string                   `type:"list"`                                // The security groups for the load balancer. Valid only for load balancers in a VPC.
 
 	// The security group for the load balancer, which you can use as part of your
 	// inbound rules for your registered instances. To only allow traffic from load
@@ -862,8 +805,22 @@ type InstanceState struct {
 	State *string `type:"string"`
 }
 
-// ResponseMetadata ...
+// SetLoadBalancerListenerSSLCertificateInput Contains the parameters for SetLoadBalancerListenerSSLCertificate.
+type SetLoadBalancerListenerSSLCertificateInput struct {
+	_                struct{} `type:"structure"`
+	LoadBalancerName *string  `type:"string" required:"true"`  // The name of the load balancer. LoadBalancerName is a required field
+	LoadBalancerPort *int64   `type:"integer" required:"true"` // The port that uses the specified SSL certificate. LoadBalancerPort is a required field
+	SSLCertificateId *string  `type:"string" required:"true"`  // The Outscale Resource Name (ORN) of the SSL certificate. SSLCertificateId is a required field
+}
+
+// SetLoadBalancerListenerSSLCertificateOutput Contains the output of SetLoadBalancerListenerSSLCertificate.
+type SetLoadBalancerListenerSSLCertificateOutput struct {
+	_                struct{}          `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+//ResponseMetadata ...
 type ResponseMetadata struct {
 	_         struct{} `type:"structure"`
-	RequestId *string  `type:"string"`
+	RequestId *string  `type:"string" required:"true"`
 }

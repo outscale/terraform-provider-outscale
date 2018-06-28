@@ -38,6 +38,7 @@ type Service interface {
 	DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error)
 	RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error)
 	DescribeInstanceHealth(input *DescribeInstanceHealthInput) (*DescribeInstanceHealthOutput, error)
+	SetLoadBalancerListenerSSLCertificate(input *SetLoadBalancerListenerSSLCertificateInput) (*SetLoadBalancerListenerSSLCertificateOutput, error)
 }
 
 // CreateLoadBalancer ...
@@ -600,6 +601,30 @@ func (v Operations) DescribeInstanceHealth(input *DescribeInstanceHealthInput) (
 
 	if input == nil {
 		input = &DescribeInstanceHealthInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// SetLoadBalancerListenerSSLCertificate ...
+func (v Operations) SetLoadBalancerListenerSSLCertificate(input *SetLoadBalancerListenerSSLCertificateInput) (*SetLoadBalancerListenerSSLCertificateOutput, error) {
+	inURL := "/"
+	endpoint := "SetLoadBalancerListenerSSLCertificate"
+	output := &SetLoadBalancerListenerSSLCertificateOutput{}
+
+	if input == nil {
+		input = &SetLoadBalancerListenerSSLCertificateInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

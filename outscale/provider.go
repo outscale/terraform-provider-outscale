@@ -119,6 +119,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_policy":          GetResource(lbu, "outscale_load_balancer_policy")(),
 			"outscale_policy_user_link":              GetResource(eim, "outscale_policy_user_link")(),
 			"outscale_server_certificate":            GetResource(eim, "outscale_server_certificate")(),
+			"outscale_load_balancer_ssl_certificate": GetResource(lbu, "outscale_load_balancer_ssl_certificate")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),
