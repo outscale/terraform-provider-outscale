@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -94,8 +93,6 @@ func resourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return err
 	}
-
-	utils.PrintToJSON(rs, "RESULT =>")
 
 	d.Set("request_id", rs.ResponseMetadata.RequestID)
 	// tg := tagsLBUDescToList(resp.TagDescriptions)
