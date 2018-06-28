@@ -73,8 +73,6 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		request.Tag = create
 	}
 
-	fmt.Printf("\n\n[DEBUG] REQUEST BODY %v", request)
-
 	var createResp *icu.CreateAccessKeyOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

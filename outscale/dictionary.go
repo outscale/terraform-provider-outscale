@@ -114,6 +114,9 @@ func init() {
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
 		},
+		"dl": ResourceMap{
+			"outscale_directlink": resourceOutscaleDirectLink,
+		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":              resourceOutscaleLoadBalancer,
 			"outscale_load_balancer_cookiepolicy": resourceOutscaleAppCookieStickinessPolicy,

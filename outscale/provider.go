@@ -15,6 +15,7 @@ func Provider() terraform.ResourceProvider {
 	icu := "icu"
 	lbu := "lbu"
 	eim := "eim"
+	dl := "dl"
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -113,6 +114,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_health_check":    GetResource(lbu, "outscale_load_balancer_health_check")(),
 			"outscale_load_balancer_policy":          GetResource(lbu, "outscale_load_balancer_policy")(),
 			"outscale_server_certificate":            GetResource(eim, "outscale_server_certificate")(),
+			"outscale_directlink":                    GetResource(dl, "outscale_directlink")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),

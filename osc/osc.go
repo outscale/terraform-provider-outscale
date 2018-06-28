@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -106,7 +107,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 			AuthenticationMethod string `json:"AuthenticationMethod"`
 		}{operation, "2018-05-14", "accesskey"}
 
-		var m map[string]string
+		var m map[string]interface{}
 
 		ja, _ := json.Marshal(v)
 		json.Unmarshal(ja, &m)
@@ -134,6 +135,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
+	requestDump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("######################")
+	fmt.Println("####### REQUEST #########")
+	fmt.Println(string(requestDump))
+
 	return req, nil
 }
 
@@ -150,6 +159,14 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
+	requestDump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("######################")
+	fmt.Println("####### RESPONSE #########")
+	fmt.Println(string(requestDump))
+
 	if err != nil {
 		return err
 	}
