@@ -115,6 +115,7 @@ func init() {
 			"outscale_user":                          resourceOutscaleOAPIUser,
 			"outscale_policy_default_version":        resourceOutscaleOAPIPolicyDefaultVersion,
 			"outscale_policy_user_link":              resourceOutscaleOAPIPolicyUserLink,
+			"outscale_server_certificate":            resourceOutscaleOAPServerCertificate,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -263,6 +264,7 @@ func init() {
 			"outscale_groups":                              dataSourceOutscaleOAPIGroups,
 			"outscale_groups_for_user":                     dataSourceOutscaleOAPIGroupUser,
 			"outscale_policy":                              resourceOutscaleOAPIPolicy,
+			"outscale_server_certificate":                  datasourceOutscaleOAPIEIMServerCertificate,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -276,13 +278,15 @@ func init() {
 			"outscale_load_balancer_attributes":            dataSourceOutscaleLoadBalancerAttr,
 		},
 		"eim": ResourceMap{
-			"outscale_group":            dataSourceOutscaleGroup,
-			"outscale_user":             dataSourceOutscaleUser,
-			"outscale_users":            dataSourceOutscaleUsers,
-			"outscale_policy_user_link": dataSourceOutscalePolicyUserLink,
-			"outscale_groups":           dataSourceOutscaleGroups,
-			"outscale_groups_for_user":  dataSourceOutscaleGroupUser,
-			"outscale_policy":           dataSourceOutscalePolicy,
+			"outscale_group":               dataSourceOutscaleGroup,
+			"outscale_user":                dataSourceOutscaleUser,
+			"outscale_users":               dataSourceOutscaleUsers,
+			"outscale_policy_user_link":    dataSourceOutscalePolicyUserLink,
+			"outscale_groups":              dataSourceOutscaleGroups,
+			"outscale_groups_for_user":     dataSourceOutscaleGroupUser,
+			"outscale_policy":              dataSourceOutscalePolicy,
+			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
+			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 		},
 	}
 }
