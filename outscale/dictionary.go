@@ -308,6 +308,9 @@ func init() {
 			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
 			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
 		},
+		"icu": ResourceMap{
+			"outscale_catalog": dataSourceOutscaleCatalog,
+		},
 	}
 }
 

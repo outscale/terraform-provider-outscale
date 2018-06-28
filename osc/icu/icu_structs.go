@@ -101,3 +101,39 @@ type Tag struct {
 	Key   *string  `json:"key" type:"string"`
 	Value *string  `json:"value" type:"string"`
 }
+
+//ReadCatalogInput ...
+type ReadCatalogInput struct {
+	_ struct{} `type:"structure"`
+}
+
+//ReadCatalogOutput ...
+type ReadCatalogOutput struct {
+	Catalog          *Catalog          `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+//Catalog ...
+type Catalog struct {
+	Attributes []*CatalogAttribute `type:"list"`
+	Entries    []*CatalogEntry     `type:"list"`
+}
+
+//CatalogAttribute ...
+type CatalogAttribute struct {
+	Key   *string `type:"string"`
+	Value *string `type:"string"`
+}
+
+//ResponseMetadata ...
+type ResponseMetadata struct {
+	RequestID *string `locationName:"RequestId" type:"string"`
+}
+
+//CatalogEntry ...
+type CatalogEntry struct {
+	Attributes CatalogAttribute `type:"structure"`
+	Key        *string          `type:"string"`
+	Value      *string          `type:"string"`
+	Title      *string          `type:"string"`
+}
