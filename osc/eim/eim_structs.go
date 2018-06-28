@@ -15,6 +15,12 @@ type CreatePolicyInput struct {
 
 // CreatePolicyOutput ...
 type CreatePolicyOutput struct {
+	CreatePolicyResult *CreatePolicyResult `type:"structure"`
+	ResponseMetadata   *ResponseMetadata   `type:"structure"`
+}
+
+// CreatePolicyResult ...
+type CreatePolicyResult struct {
 	_      struct{} `type:"structure"`
 	Policy *Policy  `type:"structure"`
 }
@@ -46,9 +52,14 @@ type GetPolicyInput struct {
 
 // GetPolicyOutput ...
 type GetPolicyOutput struct {
-	_         struct{} `type:"structure"`
-	Policy    *Policy  `type:"structure"`
-	RequestId *string  `type:"string"`
+	GetPolicyResult  *GetPolicyResult  `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+// GetPolicyResult ...
+type GetPolicyResult struct {
+	_      struct{} `type:"structure"`
+	Policy *Policy  `type:"structure"`
 }
 
 // GetPolicyVersionInput ...
@@ -124,6 +135,12 @@ type UploadServerCertificateInput struct {
 
 //UploadServerCertificateOutput Contains the response to a successful UploadServerCertificate request.
 type UploadServerCertificateOutput struct {
+	UploadServerCertificateResult *UploadServerCertificateResult `type:"structure"`
+	ResponseMetadata              *ResponseMetadata              `type:"structure" required:"true"`
+}
+
+//UploadServerCertificateResult Contains the response to a successful UploadServerCertificate request.
+type UploadServerCertificateResult struct {
 	_                         struct{}                   `type:"structure"`
 	ServerCertificateMetadata *ServerCertificateMetadata `type:"structure"`
 }
@@ -134,7 +151,7 @@ type ServerCertificateMetadata struct {
 	Arn                   *string    `min:"20" type:"string" required:"true"`
 	Expiration            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 	Path                  *string    `min:"1" type:"string" required:"true"`
-	ServerCertificateId   *string    `min:"16" type:"string" required:"true"`
+	ServerCertificateID   *string    `locationName:"ServerCertificateId" min:"16" type:"string" required:"true"`
 	ServerCertificateName *string    `min:"1" type:"string" required:"true"`
 	UploadDate            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
@@ -147,9 +164,14 @@ type GetServerCertificateInput struct {
 
 //GetServerCertificateOutput Contains the response to a successful GetServerCertificate request.
 type GetServerCertificateOutput struct {
+	GetServerCertificateResult *GetServerCertificateResult `type:"structure"`
+	ResponseMetadata           *ResponseMetadata           `type:"structure" required:"true"`
+}
+
+//GetServerCertificateResult Contains the response to a successful GetServerCertificate request.
+type GetServerCertificateResult struct {
 	_                 struct{}           `type:"structure"`
 	ServerCertificate *ServerCertificate `type:"structure" required:"true"`
-	ResponseMetadata  *ResponseMetadata  `type:"structure" required:"true"`
 }
 
 // ServerCertificate Contains information about a server certificate.
@@ -181,16 +203,21 @@ type ListServerCertificatesInput struct {
 
 //ListServerCertificatesOutput Contains the response to a successful ListServerCertificates request.
 type ListServerCertificatesOutput struct {
+	ListServerCertificatesResult *ListServerCertificatesResult `type:"structure"`
+	ResponseMetadata             *ResponseMetadata             `type:"structure"`
+}
+
+//ListServerCertificatesResult Contains the response to a successful ListServerCertificates request.
+type ListServerCertificatesResult struct {
 	_                             struct{}                     `type:"structure"`
 	IsTruncated                   *bool                        `type:"boolean"`
 	Marker                        *string                      `min:"1" type:"string"`
-	ResponseMetadata              *ResponseMetadata            `type:"structure"`
 	ServerCertificateMetadataList []*ServerCertificateMetadata `type:"list" required:"true"`
 }
 
 // ResponseMetadata ...
 type ResponseMetadata struct {
-	RequestId *string `min:"1" type:"string"`
+	RequestID *string `locationName:"RequestId" min:"1" type:"string"`
 }
 
 // ListCertificatesOutput ...

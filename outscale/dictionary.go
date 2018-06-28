@@ -110,6 +110,7 @@ func init() {
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 			"outscale_policy":                        resourceOutscaleOAPIPolicy,
+			"outscale_server_certificate":            resourceOutscaleOAPServerCertificate,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -247,6 +248,7 @@ func init() {
 			"outscale_image":                               dataSourceOutscaleOAPIImage,
 			"outscale_lin_api_access_services":             dataSourceOutscaleOAPIVpcEndpointServices,
 			"outscale_policy":                              resourceOutscaleOAPIPolicy,
+			"outscale_server_certificate":                  datasourceOutscaleOAPIEIMServerCertificate,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -260,7 +262,9 @@ func init() {
 			"outscale_load_balancer_attributes":            dataSourceOutscaleLoadBalancerAttr,
 		},
 		"eim": ResourceMap{
-			"outscale_policy": dataSourceOutscalePolicy,
+			"outscale_policy":              dataSourceOutscalePolicy,
+			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
+			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 		},
 	}
 }
