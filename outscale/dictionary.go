@@ -110,6 +110,7 @@ func init() {
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 			"outscale_policy":                        resourceOutscaleOAPIPolicy,
+			"outscale_directlink":                    resourceOutscaleOAPIDirectLink,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -249,7 +250,7 @@ func init() {
 			"outscale_product_types":                       dataSourceOutscaleOAPIProductTypes,
 			"outscale_image":                               dataSourceOutscaleOAPIImage,
 			"outscale_lin_api_access_services":             dataSourceOutscaleOAPIVpcEndpointServices,
-			"outscale_policy":                              resourceOutscaleOAPIPolicy,
+			"outscale_policy":                              dataSourceOutscaleOAPIPolicy,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
