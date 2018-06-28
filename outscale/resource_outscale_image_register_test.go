@@ -84,13 +84,24 @@ func testAccCheckOutscaleImageRegisterExists(n string) resource.TestCheckFunc {
 
 func testAccOutscaleImageRegisterConfig(r int) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_vm" {
-    count = 1
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
+resource "outscale_volume" "outscale_volume" {
+  availability_zone = "eu-west-2a"
+  size              = 40
 }
+
+resource "outscale_snapshot" "outscale_snapshot" {
+  volume_id = "${outscale_volume.outscale_volume.volume_id}"
+}
+
 resource "outscale_image_register" "outscale_image_register" {
-    name        = "image_%d"
-    instance_id = "${outscale_vm.outscale_vm.id}"
+  name = "registeredImageFromSnapshot-%d"
+
+  root_device_name = "/dev/sda1"
+
+  block_device_mapping {
+    ebs {
+      snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
+    }
+  }
 }`, r)
 }

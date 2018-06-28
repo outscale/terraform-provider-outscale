@@ -23,17 +23,19 @@ func resourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-
 			"secondary_private_ip_address_count": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 			},
-
 			"network_interface_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"private_ip_address": {
 				Type:     schema.TypeList,
@@ -55,11 +57,9 @@ func resourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 	if v, ok := d.GetOk("allow_reassignment"); ok {
 		input.AllowReassignment = aws.Bool(v.(bool))
 	}
-
 	if v, ok := d.GetOk("secondary_private_ip_address_count"); ok {
 		input.SecondaryPrivateIpAddressCount = aws.Int64(int64(v.(int)))
 	}
-
 	if v, ok := d.GetOk("private_ip_address"); ok {
 		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
 	}
@@ -98,7 +98,6 @@ func resourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
 		resp, err = conn.VM.DescribeNetworkInterfaces(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -111,7 +110,6 @@ func resourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-			// The ENI is gone now, so just remove the attachment from the state
 			d.SetId("")
 			return nil
 		}
@@ -125,7 +123,6 @@ func resourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 	eni := resp.NetworkInterfaces[0]
 
 	if eni.NetworkInterfaceId == nil {
-		// Interface is no longer attached, remove from state
 		d.SetId("")
 		return nil
 	}
@@ -154,12 +151,12 @@ func resourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, met
 	}
 
 	if v, ok := d.GetOk("private_ip_address"); ok {
-		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
+		input.PrivateIpAddresses = expandStringList(v.([]interface{})[1:])
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.UnassignPrivateIpAddresses(input)
+		_, err = conn.VM.UnassignPrivateIpAddresses(input)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

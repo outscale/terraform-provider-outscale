@@ -83,8 +83,9 @@ func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []*f
 		st := flattenedStateOAPIVMSState(v.InstanceState)
 		state["state"] = st
 
-		st1 := statusSetOAPIVMSState(v.InstanceStatus)
-		state["comment"] = st1
+		st1 := detailsSetOAPIVMSState(v.InstanceStatus.Details)
+		state["comment_item"] = st1
+		state["comment_state"] = aws.StringValue(v.InstanceStatus.Status)
 
 		states[k] = state
 	}
@@ -198,33 +199,25 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"comment": { // instance_status
+					"comment_item": { //details
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"item": { //details
-									Type:     schema.TypeList,
+								"name": {
+									Type:     schema.TypeString,
 									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"state": { //status
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
 								},
-								"state": { //state
+								"state": { //status
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
+					},
+					"comment_state": { //state
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 				},
 			},

@@ -317,9 +317,7 @@ func testAccOutscaleVpnConnectionConfig(rBgpAsn int) string {
 		  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
 		  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
 		  type = "ipsec.1"
-		  options {
-				static_routes_only = true
-			}
+		 
 		}
 		`, rBgpAsn)
 }
@@ -346,33 +344,9 @@ func testAccOutscaleVpnConnectionConfigUpdate(rInt, rBgpAsn int) string {
 	  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
 	  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
 	  type = "ipsec.1"
-	  static_routes_only = false
+	  options {
+			static_routes_only = false
+		}
 	}
 	`, rBgpAsn, rInt)
 }
-
-// Test our VPN tunnel config XML parsing
-const testAccOutscaleVpnTunnelInfoXML = `
-<vpn_connection id="vpn-abc123">
-  <ipsec_tunnel>
-    <vpn_gateway>
-      <tunnel_outside_address>
-        <ip_address>SECOND_ADDRESS</ip_address>
-      </tunnel_outside_address>
-    </vpn_gateway>
-    <ike>
-      <pre_shared_key>SECOND_KEY</pre_shared_key>
-    </ike>
-  </ipsec_tunnel>
-  <ipsec_tunnel>
-    <vpn_gateway>
-      <tunnel_outside_address>
-        <ip_address>FIRST_ADDRESS</ip_address>
-      </tunnel_outside_address>
-    </vpn_gateway>
-    <ike>
-      <pre_shared_key>FIRST_KEY</pre_shared_key>
-    </ike>
-  </ipsec_tunnel>
-</vpn_connection>
-`

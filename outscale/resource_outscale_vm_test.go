@@ -102,7 +102,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "t2.micro"),
+						"outscale_vm.basic", "instance_type", "c4.large"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "group_set.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -426,8 +426,27 @@ func testAccCheckOutscaleWindowsServerAttributes(server *fcu.Instance) resource.
 
 func testAccCheckOutscaleServerConfigBasic(r int) string {
 	return fmt.Sprintf(`
-	resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "outscale_subnet" {
+  availability_zone = "eu-west-2a"
+  cidr_block        = "10.0.0.0/16"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
+}
+
+resource "outscale_nic" "outscale_nic" {
+  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+}
+
+resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+  network_interface_id               = "${outscale_nic.outscale_nic.id}"
+  secondary_private_ip_address_count = 10
+}
+
+resource "outscale_keypair" "a_key_pair" {
+  key_name = "terraform-key-%d"
 }
 
 resource "outscale_firewall_rules_set" "web" {
@@ -451,7 +470,7 @@ func testAccCheckOutscaleServerConfigBasicWindows(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_%d"
   group_description = "Used in the terraform acceptance tests"
 }
 
@@ -460,7 +479,7 @@ resource "outscale_vm" "basic_windows" {
 	instance_type = "t2.micro"
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
-}`, r)
+}`, r, r)
 }
 
 func testAccInstanceConfigUpdateVMKey(r int) string {
@@ -470,7 +489,7 @@ func testAccInstanceConfigUpdateVMKey(r int) string {
 }
 
 resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
+  group_name = "terraform_acceptance_test_example_%d"
   group_description = "Used in the terraform acceptance tests"
 }
 
@@ -479,5 +498,5 @@ resource "outscale_vm" "basic" {
 	instance_type = "t2.micro"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
 	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}`, r)
+}`, r, r)
 }

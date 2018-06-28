@@ -101,11 +101,12 @@ func statusDescriptionOAPIVMStateAttributes(d *schema.ResourceData, status *fcu.
 		return err
 	}
 
-	st := statusSet(status.InstanceStatus)
-	err = d.Set("comment", st)
+	err = d.Set("comment_item", detailsSet(status.InstanceStatus.Details))
 	if err != nil {
 		return err
 	}
+
+	d.Set("comment_state", aws.StringValue(status.InstanceStatus.Status))
 
 	return nil
 }
@@ -190,7 +191,6 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
 		"vm_id": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -211,26 +211,14 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"comment": {
+		"comment_item": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"item": {
-						Type:     schema.TypeList,
+					"name": {
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"state": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
 					},
 					"state": {
 						Type:     schema.TypeString,
@@ -238,6 +226,10 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"comment_state": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"request_id": {
 			Type:     schema.TypeString,

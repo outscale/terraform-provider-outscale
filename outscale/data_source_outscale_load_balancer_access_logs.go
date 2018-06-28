@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
@@ -84,6 +85,8 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 		return fmt.Errorf("NO Attributes FOUND")
 	}
 
+	utils.PrintToJSON(describeResp, "RESPONSE =>")
+
 	a := describeResp.LoadBalancerAttributes.AccessLog
 
 	d.Set("emit_interval", aws.Int64Value(a.EmitInterval))
@@ -92,7 +95,7 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 	d.Set("s3_bucket_prefix", aws.StringValue(a.S3BucketPrefix))
 
 	d.SetId(elbName.(string))
-	// d.Set("request_id", resp.ResponseMetadata.RequestID)
+	// d.Set("request_id", describeResp.ResponseMetadata.RequestId)
 
 	return nil
 }

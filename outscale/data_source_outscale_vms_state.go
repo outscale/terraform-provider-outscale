@@ -85,8 +85,10 @@ func statusesDescriptionAttributes(d *schema.ResourceData, status []*fcu.Instanc
 			"availability_zone": aws.StringValue(s.AvailabilityZone),
 			"events_set":        eventsSet(s.Events),
 			"instance_state":    flattenedState(s.InstanceState),
-			"instance_status":   statusSet(s.InstanceStatus),
-			"system_status":     statusSet(s.SystemStatus),
+			"instance_status":   aws.StringValue(s.InstanceStatus.Status),
+			"instance_details":  detailsSet(s.InstanceStatus.Details),
+			"system_status":     aws.StringValue(s.SystemStatus.Status),
+			"system_details":    detailsSet(s.SystemStatus.Details),
 		}
 	}
 
@@ -106,8 +108,6 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-
-		// Attributes
 		"instance_status_set": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -141,8 +141,6 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-
-					// Need to check this
 					"instance_id": {
 						Type:     schema.TypeString,
 						Optional: true,
@@ -163,27 +161,34 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-
 					"instance_status": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"instance_details": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"status": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"system_details": {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"details": {
-									Type:     schema.TypeList,
+									Type:     schema.TypeString,
 									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"status": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
 								},
 								"status": {
 									Type:     schema.TypeString,
@@ -193,37 +198,12 @@ func getVMSStateDataSourceSchema() map[string]*schema.Schema {
 						},
 					},
 					"system_status": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"details": {
-									Type:     schema.TypeList,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"details": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"status": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"status": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
 					},
 				},
 			},
 		},
-
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,

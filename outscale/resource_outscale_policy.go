@@ -21,17 +21,17 @@ func resourceOutscalePolicy() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"description": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
-			},
+			// "description": {
+			// 	Type:     schema.TypeString,
+			// 	ForceNew: true,
+			// 	Optional: true,
+			// 	Computed: true,
+			// },
 			"path": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
+				Default:  "/",
 			},
 			"policy_document": {
 				Type:     schema.TypeString,
@@ -110,7 +110,7 @@ func resourceOutscalePolicyCreate(d *schema.ResourceData, meta interface{}) erro
 		rs, err = conn.API.CreatePolicy(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -147,7 +147,7 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 		rs, err = conn.API.GetPolicy(getPolicyRequest)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -171,9 +171,9 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("arn", aws.StringValue(getPolicyResponse.Policy.Arn))
 	d.Set("attachment_count", aws.Int64Value(getPolicyResponse.Policy.AttachmentCount))
 	d.Set("default_version_id", aws.StringValue(getPolicyResponse.Policy.DefaultVersionId))
-	d.Set("description", aws.StringValue(getPolicyResponse.Policy.Description))
+	// d.Set("description", aws.StringValue(getPolicyResponse.Policy.Description))
 	d.Set("is_attachable", aws.BoolValue(getPolicyResponse.Policy.IsAttachable))
-	d.Set("path", aws.StringValue(getPolicyResponse.Policy.Path))
+	// d.Set("path", aws.StringValue(getPolicyResponse.Policy.Path))
 	d.Set("policy_id", aws.StringValue(getPolicyResponse.Policy.PolicyId))
 	d.Set("policy_name", aws.StringValue(getPolicyResponse.Policy.PolicyName))
 	d.Set("request_id", aws.StringValue(rs.ResponseMetadata.RequestID))
@@ -197,7 +197,7 @@ func resourceOutscalePolicyDelete(d *schema.ResourceData, meta interface{}) erro
 		_, err = conn.API.DeletePolicy(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -265,7 +265,7 @@ func eimPolicyDeleteVersion(arn, versionID string, EIM *eim.Client) error {
 		_, err = EIM.API.DeletePolicyVersion(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -290,7 +290,7 @@ func eimPolicyListVersions(arn string, conn *eim.Client) ([]*eim.PolicyVersion, 
 		response, err = conn.API.ListPolicyVersions(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

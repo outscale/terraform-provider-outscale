@@ -87,12 +87,7 @@ type DescribeLoadBalancersOutput struct {
 
 	NextMarker *string `type:"string"`
 
-	ResponseMetadata *RequestID `type:"structre"`
-}
-
-// RequestID ...
-type RequestID struct {
-	RequestID *string `type:"string"`
+	ResponseMetadata *ResponseMetadata `type:"structre"`
 }
 
 // LoadBalancerDescription ...
@@ -268,6 +263,7 @@ type DescribeLoadBalancerAttributesOutput struct {
 
 	// Information about the load balancer attributes.
 	LoadBalancerAttributes *LoadBalancerAttributes `type:"structure"`
+	ResponseMetadata       *ResponseMetadata       `type:"structure"`
 }
 
 // LoadBalancerAttributes ...
@@ -864,4 +860,10 @@ type InstanceState struct {
 	//
 	// Valid values: InService | OutOfService | Unknown
 	State *string `type:"string"`
+}
+
+// ResponseMetadata ...
+type ResponseMetadata struct {
+	_         struct{} `type:"structure"`
+	RequestId *string  `type:"string"`
 }

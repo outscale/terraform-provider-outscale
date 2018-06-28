@@ -349,40 +349,160 @@
 #   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
 # }
 
-resource "outscale_vm" "outscale_vm" {
-  count = 1
+# resource "outscale_vm" "basic" {
+#   image_id      = "ami-880caa66"
+#   instance_type = "t2.micro"
+# }
 
-  image_id = "ami-880caa66"
+# resource "outscale_image" "foo" {
+#   name        = "tf-testing-foo"
+#   instance_id = "${outscale_vm.basic.id}"
+# }
 
-  instance_type = "c4.large"
+# resource "outscale_volume" "outscale_volume" {
+#   availability_zone = "eu-west-2a"
+#   size              = 40
+# }
 
-  #key_name = "integ_sut_keypair"
+# resource "outscale_snapshot" "outscale_snapshot" {
+#   volume_id = "${outscale_volume.outscale_volume.volume_id}"
+# }
 
+# resource "outscale_image_register" "outscale_image_register" {
+#   name = "registeredImageFromSnapshot"
 
-  #security_group = ["sg-c73d3b6b"]
+#   root_device_name = "/dev/sda1"
 
-  disable_api_termination = true
+#   block_device_mapping {
+#     ebs {
+#       snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
+#     }
+#   }
+# }
 
-  #ebs_optimized = true
+# resource "outscale_volume" "example" {
+#   availability_zone = "eu-west-2a"
+#   volume_type       = "gp2"
+#   size              = 40
+
+#   tag {
+#     Name = "External Volume"
+#   }
+# }
+
+# resource "outscale_snapshot" "snapshot" {
+#   volume_id = "${outscale_volume.example.id}"
+# }
+
+# data "outscale_snapshot" "snapshot" {
+#   snapshot_id = "${outscale_snapshot.snapshot.id}"
+# }
+
+# resource "outscale_vm" "outscale_instance" {
+#   image_id      = "ami-880caa66"
+#   instance_type = "c4.large"
+#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
+# }
+
+resource "outscale_lin" "outscale_lin" {
+  cidr_block = "10.0.0.0/16"
 }
 
-resource "outscale_vm_attributes" "outscale_vm_attributes" {
-  instance_id = "${outscale_vm.outscale_vm.0.id}"
-
-  attribute               = "disableApiTermination"
-  disable_api_termination = false
-
-  #attribute = "instanceType"
-  #instance_type = "t2.micro"
-
-  #attribute = "ebsOptimized"
-  #ebs_optimized = false
-
-  #attribute = "blockDeviceMapping"
-  #block_device_mapping {
-  #	device_name = "/dev/sda1"
-  #		ebs {
-  #			delete_on_termination = true
-  #		}
-  #}
+resource "outscale_subnet" "outscale_subnet" {
+  availability_zone = "eu-west-2a"
+  cidr_block        = "10.0.0.0/16"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
 }
+
+resource "outscale_nic" "outscale_nic" {
+  subnet_id         = "${outscale_subnet.outscale_subnet.subnet_id}"
+  security_group_id = ["${outscale_firewall_rules_set.web.id}"]
+}
+
+resource "outscale_nic_link" "outscale_nic_link" {
+  device_index         = "1"
+  instance_id          = "${outscale_vm.basic.id}"
+  network_interface_id = "${outscale_nic.outscale_nic.id}"
+}
+
+resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+  network_interface_id               = "${outscale_nic.outscale_nic.id}"
+  secondary_private_ip_address_count = 5
+}
+
+resource "outscale_keypair" "a_key_pair" {
+  key_name = "terraform-key-test21"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name        = "lin_ucP2_sg_allow_me"
+  group_description = "Allow inbound traffic from me"
+  vpc_id            = "${outscale_lin.outscale_lin.id}"
+
+  tag {
+    Name = "lin_ucP2_sg_allow_me"
+  }
+}
+
+resource "outscale_inbound_rule" "allow_men2" {
+  ip_permissions = {
+    ip_protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    ip_ranges   = ["10.0.0.0/16"]
+  }
+
+  group_id = "${outscale_firewall_rules_set.web.id}"
+}
+
+resource "outscale_vm" "basic" {
+  image_id       = "ami-880caa66"
+  instance_type  = "c4.large"
+  subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+  key_name       = "${outscale_keypair.a_key_pair.key_name}"
+  security_group = ["${outscale_firewall_rules_set.web.id}"]
+}
+
+resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
+
+resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
+  vpc_id              = "${outscale_lin.outscale_lin.id}"
+  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+}
+
+# resource "outscale_nat_service" "outscale_nat_service" {
+#   depends_on    = ["outscale_route.outscale_route"]
+#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
+#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
+# }
+
+
+# resource "outscale_route_table" "outscale_route_table" {
+#   vpc_id = "${outscale_lin.outscale_lin.id}"
+# }
+
+
+# resource "outscale_route" "outscale_route" {
+#   destination_cidr_block = "0.0.0.0/0"
+#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+#   route_table_id         = "${outscale_route_table.outscale_route_table.id}"
+# }
+
+
+# resource "outscale_route_table_link" "outscale_route_table_link" {
+#   subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
+#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
+# }
+
+
+# resource "outscale_public_ip" "outscale_public_ip" {
+#   domain = "vpc"
+# }
+
+
+# resource "outscale_public_ip_link" "by_public_ip" {
+#   public_ip   = "${outscale_public_ip.outscale_public_ip.public_ip}"
+#   instance_id = "${outscale_vm.basic.id}"
+#   depends_on  = ["outscale_vm.basic", "outscale_public_ip.outscale_public_ip"]
+# }
+

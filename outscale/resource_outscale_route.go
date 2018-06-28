@@ -154,7 +154,6 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", setTarget)
 	}
-	log.Printf("[DEBUG] Route create config: %s", createOpts)
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
@@ -315,7 +314,6 @@ func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", setTarget)
 	}
-	log.Printf("[DEBUG] Route replace config: %s", replaceOpts)
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
@@ -348,7 +346,6 @@ func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error
 	if v, ok := d.GetOk("destination_cidr_block"); ok {
 		deleteOpts.DestinationCidrBlock = aws.String(v.(string))
 	}
-	log.Printf("[DEBUG] Route delete opts: %s", deleteOpts)
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -361,7 +358,6 @@ func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error
 		}
 
 		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-			log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
 			return resource.RetryableError(err)
 		}
 
@@ -391,7 +387,6 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
 
@@ -403,15 +398,12 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			log.Printf("[WARN] Route Table %q could not be found.", routeTableID)
 			return false, nil
 		}
 		return false, fmt.Errorf("Error while checking if route exists: %s", err)
 	}
 
 	if len(res.RouteTables) < 1 || res.RouteTables[0] == nil {
-		log.Printf("[WARN] Route Table %q is gone, or route does not exist.",
-			routeTableID)
 		return false, nil
 	}
 
@@ -444,7 +436,6 @@ func findResourceRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Route,
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
 

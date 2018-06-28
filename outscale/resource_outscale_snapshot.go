@@ -58,6 +58,10 @@ func resourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"tag":     tagsSchema(),
 			"tag_set": tagsSchemaComputed(),
 		},
