@@ -105,7 +105,7 @@ func resourceOutscaleGroupCreate(d *schema.ResourceData, meta interface{}) error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		createResp, err = conn.API.CreateGroup(request)
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -132,7 +132,7 @@ func resourceOutscaleGroupRead(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		getResp, err = conn.API.GetGroup(request)
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -188,7 +188,7 @@ func resourceOutscaleGroupUpdate(d *schema.ResourceData, meta interface{}) error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, err = conn.API.UpdateGroup(request)
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				if strings.Contains(err.Error(), "Throttling:") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
@@ -214,7 +214,7 @@ func resourceOutscaleGroupDelete(d *schema.ResourceData, meta interface{}) error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err := conn.API.DeleteGroup(request)
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

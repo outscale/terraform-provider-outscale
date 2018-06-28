@@ -116,6 +116,7 @@ func init() {
 			"outscale_policy_default_version":        resourceOutscaleOAPIPolicyDefaultVersion,
 			"outscale_policy_user_link":              resourceOutscaleOAPIPolicyUserLink,
 			"outscale_server_certificate":            resourceOutscaleOAPServerCertificate,
+			"outscale_policy_user":                   resourceOutscaleOAPIUserPolicy,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -138,6 +139,7 @@ func init() {
 			"outscale_policy_default_version": resourceOutscalePolicyDefaultVersion,
 			"outscale_policy_user_link":       resourceOutscalePolicyUserLink,
 			"outscale_server_certificate":     resourceOutscaleEIMServerCertificate,
+			"outscale_policy_user":            resourceOutscaleUserPolicy,
 		},
 	}
 	datasources = Dictionary{

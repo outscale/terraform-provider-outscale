@@ -115,6 +115,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_user":                          GetResource(eim, "outscale_user")(),
 			"outscale_load_balancer_health_check":    GetResource(lbu, "outscale_load_balancer_health_check")(),
 			"outscale_policy_default_version":        GetResource(eim, "outscale_policy_default_version")(),
+			"outscale_policy_user":                   GetResource(eim, "outscale_policy_user")(),
 			"outscale_load_balancer_policy":          GetResource(lbu, "outscale_load_balancer_policy")(),
 			"outscale_policy_user_link":              GetResource(eim, "outscale_policy_user_link")(),
 			"outscale_server_certificate":            GetResource(eim, "outscale_server_certificate")(),

@@ -35,7 +35,6 @@ type Service interface {
 	AttachUserPolicy(input *AttachUserPolicyInput) (*AttachUserPolicyOutput, error)
 	ListAttachedUserPolicies(input *ListAttachedUserPoliciesInput) (*ListAttachedUserPoliciesOutput, error)
 	DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserPolicyOutput, error)
-	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
 	ListUsers(input *ListUsersInput) (*ListUsersOutput, error)
 	ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error)
 	ListGroupsForUser(input *ListGroupsForUserInput) (*ListGroupsForUserOutput, error)
@@ -44,6 +43,10 @@ type Service interface {
 	DeleteServerCertificate(input *DeleteServerCertificateInput) (*DeleteServerCertificateOutput, error)
 	ListServerCertificates(input *ListServerCertificatesInput) (*ListServerCertificatesOutput, error)
 	UpdateServerCertificate(input *UpdateServerCertificateInput) (*UpdateServerCertificateOutput, error)
+	PutUserPolicy(input *PutUserPolicyInput) (*PutUserPolicyOutput, error)
+	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
+	DeleteUserPolicy(input *DeleteUserPolicyInput) (*DeleteUserPolicyOutput, error)
+	GetRolePolicy(input *GetRolePolicyInput) (*GetRolePolicyOutput, error)
 }
 
 // CreatePolicy ...
@@ -646,6 +649,30 @@ func (v Operations) DetachUserPolicy(input *DetachUserPolicyInput) (*DetachUserP
 	return output, nil
 }
 
+// PutUserPolicy ...
+func (v Operations) PutUserPolicy(input *PutUserPolicyInput) (*PutUserPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "PutUserPolicy"
+	output := &PutUserPolicyOutput{}
+
+	if input == nil {
+		input = &PutUserPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 // GetUserPolicy ...
 func (v Operations) GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error) {
 	inURL := "/"
@@ -742,6 +769,30 @@ func (v Operations) ListGroupsForUser(input *ListGroupsForUserInput) (*ListGroup
 	return output, nil
 }
 
+// DeleteUserPolicy ...
+func (v Operations) DeleteUserPolicy(input *DeleteUserPolicyInput) (*DeleteUserPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteUserPolicy"
+	output := &DeleteUserPolicyOutput{}
+
+	if input == nil {
+		input = &DeleteUserPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 // UpdateServerCertificate ...
 func (v Operations) UpdateServerCertificate(input *UpdateServerCertificateInput) (*UpdateServerCertificateOutput, error) {
 	inURL := "/"
@@ -750,6 +801,30 @@ func (v Operations) UpdateServerCertificate(input *UpdateServerCertificateInput)
 
 	if input == nil {
 		input = &UpdateServerCertificateInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetRolePolicy ...
+func (v Operations) GetRolePolicy(input *GetRolePolicyInput) (*GetRolePolicyOutput, error) {
+	inURL := "/"
+	endpoint := "GetRolePolicy"
+	output := &GetRolePolicyOutput{}
+
+	if input == nil {
+		input = &GetRolePolicyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
