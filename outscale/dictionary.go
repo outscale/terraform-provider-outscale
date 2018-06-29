@@ -143,6 +143,7 @@ func init() {
 			"outscale_server_certificate":     resourceOutscaleEIMServerCertificate,
 			"outscale_policy_user":            resourceOutscaleUserPolicy,
 			"outscale_policy_group":           resourceOutscalePolicyGroup,
+			"outscale_policy_group_link":      resourceOutscalePolicyGroupLink,
 		},
 	}
 	datasources = Dictionary{

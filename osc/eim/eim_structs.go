@@ -624,3 +624,50 @@ type DeleteGroupPolicyInput struct {
 type DeleteGroupPolicyOutput struct {
 	_ struct{} `type:"structure"`
 }
+
+// AttachGroupPolicyInput ...
+type AttachGroupPolicyInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+}
+
+// AttachGroupPolicyOutput ...
+type AttachGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DetachGroupPolicyInput ...
+type DetachGroupPolicyInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+}
+
+// DetachGroupPolicyOutput ...
+type DetachGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListAttachedGroupPoliciesInput ...
+type ListAttachedGroupPoliciesInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `type:"string"`
+}
+
+// ListAttachedGroupPoliciesResult ...
+type ListAttachedGroupPoliciesResult struct {
+	_                struct{}          `type:"structure"`
+	AttachedPolicies []*AttachedPolicy `type:"list"`
+	IsTruncated      *bool             `type:"boolean"`
+	Marker           *string           `min:"1" type:"string"`
+}
+
+// ListAttachedGroupPoliciesOutput ...
+type ListAttachedGroupPoliciesOutput struct {
+	ListAttachedGroupPoliciesResult *ListAttachedGroupPoliciesResult `type:"structure"`
+	ResponseMetadata                *ResponseMetadata                `type:"structure"`
+}
