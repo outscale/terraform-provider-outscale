@@ -33,7 +33,7 @@ func TestAccOutscalePolicyGroup_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccEIMGroupPolicyConfigUpdate(rInt),
+				Config: testAccOAPIEIMGroupPolicyConfigUpdate(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckEIMGroupPolicyExists(
 						"outscale_group.group",
@@ -181,7 +181,7 @@ EOF
 	}`, rInt, rInt)
 }
 
-func testAccEIMGroupPolicyConfigUpdate(rInt int) string {
+func testAccOAPIEIMGroupPolicyConfigUpdate(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_group" "group" {
 		group_name = "test_group_%d"

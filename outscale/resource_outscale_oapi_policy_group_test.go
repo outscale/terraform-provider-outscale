@@ -20,12 +20,12 @@ func TestAccOutscaleOAPIPolicyGroup_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckEIMGroupPolicyDestroy,
+		CheckDestroy: testAccCheckOAPIEIMGroupPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccEIMGroupPolicyConfig(rInt),
+				Config: testAccOAPIEIMGroupPolicyConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIMGroupPolicyExists(
+					testAccCheckOAPIEIMGroupPolicyExists(
 						"outscale_group.group",
 						"outscale_policy_group.foo",
 						&groupPolicy1,
@@ -35,7 +35,7 @@ func TestAccOutscaleOAPIPolicyGroup_basic(t *testing.T) {
 			{
 				Config: testAccEIMGroupPolicyConfigUpdate(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckEIMGroupPolicyExists(
+					testAccCheckOAPIEIMGroupPolicyExists(
 						"outscale_group.group",
 						"outscale_policy_group.bar",
 						&groupPolicy2,
@@ -47,7 +47,7 @@ func TestAccOutscaleOAPIPolicyGroup_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckEIMGroupPolicyDestroy(s *terraform.State) error {
+func testAccCheckOAPIEIMGroupPolicyDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).EIM
 
 	for _, rs := range s.RootModule().Resources {
@@ -88,7 +88,7 @@ func testAccCheckEIMGroupPolicyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckEIMGroupPolicyExists(
+func testAccCheckOAPIEIMGroupPolicyExists(
 	iamGroupResource string,
 	iamGroupPolicyResource string,
 	groupPolicy *eim.GetGroupPolicyOutput) resource.TestCheckFunc {
@@ -158,7 +158,7 @@ func testAccCheckOutscaleOAPIPolicyGroupNameMatches(i, j *eim.GetGroupPolicyOutp
 	}
 }
 
-func testAccEIMGroupPolicyConfig(rInt int) string {
+func testAccOAPIEIMGroupPolicyConfig(rInt int) string {
 	return fmt.Sprintf(`
 	resource "outscale_group" "group" {
 		group_name = "test_group_%d"
