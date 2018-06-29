@@ -72,7 +72,7 @@ func resourceOutscaleOAPIGroupCreate(d *schema.ResourceData, meta interface{}) e
 	if err != nil {
 		return fmt.Errorf("Error creating IAM Group %s: %s", name, err)
 	}
-	d.SetId(*createResp.Group.GroupName)
+	d.SetId(*createResp.CreateGroupResult.Group.GroupName)
 	return resourceOutscaleOAPIGroupRead(d, meta)
 }
 
@@ -104,9 +104,9 @@ func resourceOutscaleOAPIGroupRead(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error reading IAM Group %s: %s", d.Id(), err)
 	}
 
-	d.Set("group_id", aws.StringValue(getResp.Group.GroupId))
-	d.Set("group_name", aws.StringValue(getResp.Group.GroupName))
-	d.Set("path", aws.StringValue(getResp.Group.Path))
+	d.Set("group_id", aws.StringValue(getResp.GetGroupResult.Group.GroupId))
+	d.Set("group_name", aws.StringValue(getResp.GetGroupResult.Group.GroupName))
+	d.Set("path", aws.StringValue(getResp.GetGroupResult.Group.Path))
 
 	return nil
 }
