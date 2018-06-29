@@ -147,6 +147,7 @@ func init() {
 			"outscale_policy_group":           resourceOutscalePolicyGroup,
 			"outscale_policy_group_link":      resourceOutscalePolicyGroupLink,
 			"outscale_policy_version":         resourceOutscalePolicyVersion,
+			"outscale_user_api_keys":          resourceOutscaleUserAPIKeys,
 		},
 	}
 	datasources = Dictionary{
