@@ -46,14 +46,18 @@ func dataSourceOutscaleOAPIUserRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	var err error
-	var getResp *eim.GetUserOutput
+	var getResp *eim.GetUserResult
+	var resp *eim.GetUserOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		getResp, err = iamconn.API.GetUser(request)
+		resp, err = iamconn.API.GetUser(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
+		}
+		if resp.GetUserResult != nil {
+			getResp = resp.GetUserResult
 		}
 		return nil
 	})
