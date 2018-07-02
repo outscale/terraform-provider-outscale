@@ -300,6 +300,7 @@ func init() {
 			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
 			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
+			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
 		},
 	}
 }
