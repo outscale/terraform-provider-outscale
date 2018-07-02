@@ -340,12 +340,19 @@ type ListAttachedUserPoliciesInput struct {
 	UserName   *string  `min:"1" type:"string" required:"true"`
 }
 
-// ListAttachedUserPoliciesOutput ...
-type ListAttachedUserPoliciesOutput struct {
+// ListAttachedUserPoliciesResult ...
+type ListAttachedUserPoliciesResult struct {
 	_                struct{}          `type:"structure"`
 	AttachedPolicies []*AttachedPolicy `type:"list"`
 	IsTruncated      *bool             `type:"boolean"`
 	Marker           *string           `min:"1" type:"string"`
+}
+
+// ListAttachedUserPoliciesOutput ...
+type ListAttachedUserPoliciesOutput struct {
+	_                              struct{}                        `type:"structure"`
+	ListAttachedUserPoliciesResult *ListAttachedUserPoliciesResult `type:"structure"`
+	ResponseMetadata               *ResponseMetadata               `type:"structure"`
 }
 
 // AttachedPolicy ...

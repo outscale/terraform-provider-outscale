@@ -11,12 +11,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 )
 
-func dataSourceOutscalePolicyUserLink() *schema.Resource {
+func dataSourceOutscalePolicyGroupLink() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscalePolicyUserLinkRead,
+		Read: dataSourceOutscalePolicyGroupLinkRead,
 
 		Schema: map[string]*schema.Schema{
-			"user_name": &schema.Schema{
+			"group_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -25,13 +25,14 @@ func dataSourceOutscalePolicyUserLink() *schema.Resource {
 				Optional: true,
 			},
 			"attached_policies": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"policy_arn": &schema.Schema{
 							Type:     schema.TypeString,
-							Computed: true,
+							Required: true,
+							ForceNew: true,
 						},
 						"policy_name": &schema.Schema{
 							Type:     schema.TypeString,
@@ -40,30 +41,31 @@ func dataSourceOutscalePolicyUserLink() *schema.Resource {
 					},
 				},
 			},
-			// "request_id": &schema.Schema{
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func dataSourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscalePolicyGroupLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).EIM
-	user := d.Get("user_name").(string)
+	group := d.Get("group_name").(string)
 
-	request := &eim.ListAttachedUserPoliciesInput{
-		UserName: aws.String(user),
+	request := &eim.ListAttachedGroupPoliciesInput{
+		GroupName:  aws.String(group),
+		PathPrefix: aws.String("/"),
 	}
 
 	if v, ok := d.GetOk("path_prefix"); ok {
 		request.PathPrefix = aws.String(v.(string))
 	}
 
+	var attachedPolicies *eim.ListAttachedGroupPoliciesOutput
 	var err error
-	var resp *eim.ListAttachedUserPoliciesOutput
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.API.ListAttachedUserPolicies(request)
+		attachedPolicies, err = conn.API.ListAttachedGroupPolicies(request)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -76,27 +78,20 @@ func dataSourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface
 	})
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
 
-	if len(resp.ListAttachedUserPoliciesResult.AttachedPolicies) < 1 {
-		return fmt.Errorf("No results")
+	a := make([]map[string]interface{}, len(attachedPolicies.ListAttachedGroupPoliciesResult.AttachedPolicies))
+
+	for k, v := range attachedPolicies.ListAttachedGroupPoliciesResult.AttachedPolicies {
+		a[k] = map[string]interface{}{
+			"policy_arn":  aws.StringValue(v.PolicyArn),
+			"policy_name": aws.StringValue(v.PolicyName),
+		}
 	}
 
-	p := make([]map[string]interface{}, len(resp.ListAttachedUserPoliciesResult.AttachedPolicies))
-	for k, v := range resp.ListAttachedUserPoliciesResult.AttachedPolicies {
-		a := make(map[string]interface{})
-		a["policy_arn"] = aws.StringValue(v.PolicyArn)
-		a["policy_name"] = aws.StringValue(v.PolicyName)
-		p[k] = a
-	}
-
+	d.Set("request_id", attachedPolicies.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
-	return d.Set("attached_policies", p)
+	return d.Set("attached_policies", attachedPolicies)
 }

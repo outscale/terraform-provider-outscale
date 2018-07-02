@@ -32,10 +32,10 @@ func resourceOutscalePolicyUserLink() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// "request_id": &schema.Schema{
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -98,7 +98,7 @@ func resourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface{}
 
 	var po string
 	var pn string
-	for _, p := range attachedPolicies.AttachedPolicies {
+	for _, p := range attachedPolicies.ListAttachedUserPoliciesResult.AttachedPolicies {
 		if *p.PolicyArn == arn {
 			po = *p.PolicyArn
 			pn = *p.PolicyName
@@ -111,6 +111,7 @@ func resourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.Set("policy_name", pn)
+	d.Set("request_id", attachedPolicies.ResponseMetadata.RequestID)
 
 	return nil
 }
