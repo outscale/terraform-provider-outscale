@@ -13,19 +13,19 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 )
 
-func TestAccOutscaleUserAPIKey_basic(t *testing.T) {
+func TestAccOutscaleOAPIUserAPIKey_basic(t *testing.T) {
 	var conf eim.AccessKeyMetadata
 	rName := fmt.Sprintf("test-user-%d", acctest.RandInt())
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleUserAPIKeyDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIUserAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleUserAPIKeyConfig(rName),
+				Config: testAccOutscaleOAPIUserAPIKeyConfig(rName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleUserAPIKeyExists("outscale_user_api_keys.a_key", &conf),
-					testAccCheckOutscaleUserAPIKeyAttributes(&conf),
+					testAccCheckOutscaleOAPIUserAPIKeyExists("outscale_user_api_keys.a_key", &conf),
+					testAccCheckOutscaleOAPIUserAPIKeyAttributes(&conf),
 					resource.TestCheckResourceAttrSet("outscale_user_api_keys.a_key", "secret_key"),
 				),
 			},
@@ -33,7 +33,7 @@ func TestAccOutscaleUserAPIKey_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleUserAPIKeyDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIUserAPIKeyDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).EIM
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_user_api_keys" {
@@ -69,7 +69,7 @@ func testAccCheckOutscaleUserAPIKeyDestroy(s *terraform.State) error {
 	}
 	return nil
 }
-func testAccCheckOutscaleUserAPIKeyExists(n string, res *eim.AccessKeyMetadata) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIUserAPIKeyExists(n string, res *eim.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -106,7 +106,7 @@ func testAccCheckOutscaleUserAPIKeyExists(n string, res *eim.AccessKeyMetadata) 
 		return nil
 	}
 }
-func testAccCheckOutscaleUserAPIKeyAttributes(accessKeyMetadata *eim.AccessKeyMetadata) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIUserAPIKeyAttributes(accessKeyMetadata *eim.AccessKeyMetadata) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if !strings.Contains(*accessKeyMetadata.UserName, "test-user") {
 			return fmt.Errorf("Bad username: %s", *accessKeyMetadata.UserName)
@@ -118,7 +118,7 @@ func testAccCheckOutscaleUserAPIKeyAttributes(accessKeyMetadata *eim.AccessKeyMe
 	}
 }
 
-func testAccOutscaleUserAPIKeyConfig(rName string) string {
+func testAccOutscaleOAPIUserAPIKeyConfig(rName string) string {
 	return fmt.Sprintf(`
 resource "outscale_user" "a_user" {
         user_name = "%s"
