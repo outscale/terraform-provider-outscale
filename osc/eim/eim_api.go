@@ -53,6 +53,7 @@ type Service interface {
 	AttachGroupPolicy(input *AttachGroupPolicyInput) (*AttachGroupPolicyOutput, error)
 	DetachGroupPolicy(input *DetachGroupPolicyInput) (*DetachGroupPolicyOutput, error)
 	ListAttachedGroupPolicies(input *ListAttachedGroupPoliciesInput) (*ListAttachedGroupPoliciesOutput, error)
+	CreatePolicyVersion(input *CreatePolicyVersionInput) (*CreatePolicyVersionOutput, error)
 }
 
 // CreatePolicy ...
@@ -975,6 +976,30 @@ func (v Operations) ListAttachedGroupPolicies(input *ListAttachedGroupPoliciesIn
 
 	if input == nil {
 		input = &ListAttachedGroupPoliciesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// CreatePolicyVersion ...
+func (v Operations) CreatePolicyVersion(input *CreatePolicyVersionInput) (*CreatePolicyVersionOutput, error) {
+	inURL := "/"
+	endpoint := "CreatePolicyVersion"
+	output := &CreatePolicyVersionOutput{}
+
+	if input == nil {
+		input = &CreatePolicyVersionInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

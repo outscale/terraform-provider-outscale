@@ -71,6 +71,13 @@ type GetPolicyVersionInput struct {
 
 // GetPolicyVersionOutput ...
 type GetPolicyVersionOutput struct {
+	_                      struct{}                `type:"structure"`
+	GetPolicyVersionResult *GetPolicyVersionResult `type:"structure"`
+	ResponseMetadata       *ResponseMetadata       `type:"structure"`
+}
+
+// GetPolicyVersionResult ...
+type GetPolicyVersionResult struct {
 	_             struct{}       `type:"structure"`
 	PolicyVersion *PolicyVersion `type:"structure"`
 }
@@ -670,4 +677,25 @@ type ListAttachedGroupPoliciesResult struct {
 type ListAttachedGroupPoliciesOutput struct {
 	ListAttachedGroupPoliciesResult *ListAttachedGroupPoliciesResult `type:"structure"`
 	ResponseMetadata                *ResponseMetadata                `type:"structure"`
+}
+
+// CreatePolicyVersionInput ...
+type CreatePolicyVersionInput struct {
+	_              struct{} `type:"structure"`
+	PolicyArn      *string  `min:"20" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	SetAsDefault   *bool    `type:"boolean"`
+}
+
+// CreatePolicyVersionOutput ...
+type CreatePolicyVersionOutput struct {
+	_                         struct{}                   `type:"structure"`
+	CreatePolicyVersionResult *CreatePolicyVersionResult `type:"structure"`
+	ResponseMetadata          *ResponseMetadata          `type:"structure"`
+}
+
+// CreatePolicyVersionResult ...
+type CreatePolicyVersionResult struct {
+	_             struct{}       `type:"structure"`
+	PolicyVersion *PolicyVersion `type:"structure"`
 }
