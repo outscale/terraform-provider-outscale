@@ -119,6 +119,7 @@ func init() {
 			"outscale_policy_user":                   resourceOutscaleOAPIUserPolicy,
 			"outscale_policy_group":                  resourceOutscaleOAPIPolicyGroup,
 			"outscale_policy_group_link":             resourceOutscaleOAPIPolicyGroupLink,
+			"outscale_policy_version":                resourceOutscaleOAPIPolicyVersion,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
