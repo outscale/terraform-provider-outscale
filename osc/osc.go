@@ -134,7 +134,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	// utils.DebugRequest(req)
+	//utils.DebugRequest(req)
 
 	return req, nil
 }
@@ -155,7 +155,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	if err != nil {
 		return err
 	}
-	// utils.DebugResponse(resp)
+	//utils.DebugResponse(resp)
 
 	err = c.checkResponse(resp)
 	if err != nil {
