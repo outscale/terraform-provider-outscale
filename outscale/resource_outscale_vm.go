@@ -3,6 +3,7 @@ package outscale
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -518,9 +519,9 @@ func getVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"network_interface": {
-
-			Type:     schema.TypeSet,
-			Optional: true,
+			ConflictsWith: []string{"subnet_id", "security_group_id", "security_group"},
+			Type:          schema.TypeSet,
+			Optional:      true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_termination": {
@@ -1147,12 +1148,6 @@ func buildOutscaleVMOpts(
 	userData := d.Get("user_data").(string)
 	opts.UserData = &userData
 
-	subnetID, hasSubnet := d.GetOk("subnet_id")
-	if hasSubnet {
-		s := subnetID.(string)
-		opts.SubnetID = &s
-	}
-
 	if t, hasDisableAPITerminartion := d.GetOk("disable_api_termination"); hasDisableAPITerminartion {
 		opts.DisableApiTermination = aws.Bool(t.(bool))
 	} else {
@@ -1173,45 +1168,50 @@ func buildOutscaleVMOpts(
 		}
 	}
 
+	subnetID, hasSubnet := d.GetOk("subnet_id")
+
 	groups := make([]*string, 0)
 	if v := d.Get("security_group"); v != nil {
 		groups = expandStringList(v.(*schema.Set).List())
-	}
-	if len(groups) > 0 {
-		opts.SecurityGroups = groups
-	} else {
-		opts.SecurityGroups = nil
-	}
-	opts.SecurityGroups = groups
-
-	var groupIDs []*string
-	if v := d.Get("security_group_id"); v != nil {
-
-		sgs := v.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			groupIDs = append(groupIDs, aws.String(str))
+		if len(groups) > 0 && hasSubnet {
+			log.Print("[WARN] Deprecated. Attempting to use 'security_group' within a VPC instance. Use 'security_group_id' instead.")
 		}
 	}
-	opts.SecurityGroupIDs = groupIDs
 
 	networkInterfaces, interfacesOk := d.GetOk("network_interface")
-	if interfacesOk {
+	if hasSubnet || interfacesOk {
 		opts.NetworkInterfaces = buildNetworkInterfaceOpts(d, groups, networkInterfaces)
-	}
+	} else {
+		if hasSubnet {
+			s := subnetID.(string)
+			opts.SubnetID = &s
+		}
 
-	if v, ok := d.GetOk("private_ip"); ok {
-		opts.PrivateIPAddress = aws.String(v.(string))
-	}
+		if opts.SubnetID != nil &&
+			*opts.SubnetID != "" {
+			opts.SecurityGroupIDs = groups
+		} else {
+			opts.SecurityGroups = groups
+		}
 
-	// if v, ok := d.GetOk("vpc_security_group_ids"); ok && v.(*schema.Set).Len() > 0 {
-	// 	for _, v1 := range v.(*schema.Set).List() {
-	// 		opts.SecurityGroupIDs = append(opts.SecurityGroupIDs, aws.String(v1.(string)))
-	// 	}
-	// }
+		var groupIDs []*string
+		if v := d.Get("security_group_id"); v != nil {
 
-	if v, ok := d.GetOk("ipv6_address_count"); ok {
-		opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
+			sgs := v.(*schema.Set).List()
+			for _, v := range sgs {
+				str := v.(string)
+				groupIDs = append(groupIDs, aws.String(str))
+			}
+		}
+		opts.SecurityGroupIDs = groupIDs
+
+		if v, ok := d.GetOk("private_ip"); ok {
+			opts.PrivateIPAddress = aws.String(v.(string))
+		}
+
+		if v, ok := d.GetOk("ipv6_address_count"); ok {
+			opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
+		}
 	}
 
 	if v, ok := d.GetOk("key_name"); ok {
@@ -1267,8 +1267,8 @@ func buildNetworkInterfaceOpts(d *schema.ResourceData, groups []*string, nInterf
 			ni.Ipv6AddressCount = aws.Int64(int64(v.(int)))
 		}
 
-		if v := d.Get("vpc_security_group_ids").(*schema.Set); v.Len() > 0 {
-			for _, v := range v.List() {
+		if v, ok := d.GetOk("security_group_id"); ok && v.(*schema.Set).Len() > 0 {
+			for _, v := range v.(*schema.Set).List() {
 				ni.Groups = append(ni.Groups, aws.String(v.(string)))
 			}
 		}
