@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -86,8 +85,6 @@ func resourceOutscaleInboundRuleCreate(d *schema.ResourceData, meta interface{})
 	isVPC := sg.VpcId != nil && *sg.VpcId != ""
 
 	var autherr error
-	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Ingress", perms)
-
 	req := &fcu.AuthorizeSecurityGroupIngressInput{
 		GroupId:       sg.GroupId,
 		IpPermissions: perms,
@@ -108,14 +105,12 @@ func resourceOutscaleInboundRuleCreate(d *schema.ResourceData, meta interface{})
 	})
 
 	if autherr != nil {
-		if awsErr, ok := autherr.(awserr.Error); ok {
-			if awsErr.Code() == "InvalidPermission.Duplicate" {
-				return fmt.Errorf(`[WARN] A duplicate Security Group rule was found on (%s). This may be
+		if strings.Contains(fmt.Sprint(autherr), "InvalidPermission.Duplicate") {
+			return fmt.Errorf(`[WARN] A duplicate Security Group rule was found on (%s). This may be
 a side effect of a now-fixed Terraform issue causing two security groups with
 identical attributes but different source_security_group_ids to overwrite each
 other in the state. See https://github.com/hashicorp/terraform/pull/2376 for more
-information and instructions for recovery. Error message: %s`, sgID, awsErr.Message())
-			}
+information and instructions for recovery. Error message: %s`, sgID, autherr)
 		}
 
 		return fmt.Errorf(
@@ -124,13 +119,11 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 	}
 
 	id := ipPermissionIDHash(sgID, ruleType, perms)
-	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		sg, err := findResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
-			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
 			return resource.NonRetryableError(err)
 		}
 
@@ -140,8 +133,6 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 		rule := findRuleMatch(perms, rules, isVPC)
 
 		if rule == nil {
-			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-				ruleType, id, sgID)
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 

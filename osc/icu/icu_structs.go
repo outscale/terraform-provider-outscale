@@ -465,7 +465,7 @@ type AccessKeyMetadata struct {
 	UserName        *string       `min:"1" type:"string"`
 	OwnerId         *string       `type:"string"`
 	SecretAccessKey *string       `type:"string"`
-	Tags            []*common.Tag `locationName:"tags" locationNameList:"item" type:"list"`
+	Tags            []*common.Tag `locationName:"tag_set" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation

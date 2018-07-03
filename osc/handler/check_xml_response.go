@@ -21,8 +21,6 @@ func UnmarshalXML(v interface{}, r *http.Response, operation string) error {
 		return nil
 	}
 
-	// debugResponse(r)
-
 	decoder := xml.NewDecoder(r.Body)
 	err := xmlutil.UnmarshalXML(v, decoder, "")
 
@@ -39,8 +37,6 @@ func UnmarshalLBUXML(v interface{}, r *http.Response, operation string) error {
 	}
 
 	operationName := operation[7:strings.Index(operation, "&")]
-
-	// debugResponse(r)
 
 	decoder := xml.NewDecoder(r.Body)
 	err := xmlutil.UnmarshalXML(v, decoder, operationName+"Result")

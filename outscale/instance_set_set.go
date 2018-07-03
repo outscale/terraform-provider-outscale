@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
@@ -13,65 +14,35 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 	for i, instance := range instances {
 
 		flattened[i] = map[string]interface{}{
-			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimized":      *instance.EbsOptimized,
-			"architecture":       *instance.Architecture,
-			"client_token":       *instance.ClientToken,
-			"hypervisor":         *instance.Hypervisor,
-			"image_id":           *instance.ImageId,
-			"instance_id":        *instance.InstanceId,
-			"instance_type":      *instance.InstanceType,
-			"kernel_id":          *instance.KernelId,
-			"key_name":           *instance.KeyName,
-			"private_ip_address": *instance.PrivateDnsName,
-			"private_dns_name":   *instance.PrivateDnsName,
-			"root_device_name":   *instance.RootDeviceName,
-		}
-
-		if instance.InstanceLifecycle != nil {
-			flattened[i]["instance_lifecycle"] = *instance.InstanceLifecycle
-		}
-		if instance.RootDeviceType != nil {
-			flattened[i]["root_device_type"] = *instance.RootDeviceType
-		}
-
-		if instance.DnsName != nil {
-			flattened[i]["dns_name"] = *instance.DnsName
-		}
-
-		if instance.IpAddress != nil {
-			flattened[i]["ip_address"] = *instance.IpAddress
-		}
-		if instance.Platform != nil {
-			flattened[i]["platform"] = *instance.Platform
-		}
-		if instance.RamdiskId != nil {
-			flattened[i]["ramdisk_id"] = *instance.RamdiskId
-		}
-		if instance.Reason != nil {
-			flattened[i]["reason"] = *instance.Reason
-		}
-		if instance.SourceDestCheck != nil {
-			flattened[i]["source_dest_check"] = *instance.SourceDestCheck
-		}
-		if instance.SpotInstanceRequestId != nil {
-			flattened[i]["spot_instance_request_id"] = *instance.SpotInstanceRequestId
-		}
-		if instance.SriovNetSupport != nil {
-			flattened[i]["sriov_net_support"] = *instance.SriovNetSupport
-		}
-		if instance.SubnetId != nil {
-			flattened[i]["subnet_id"] = *instance.SubnetId
-		}
-		if instance.VirtualizationType != nil {
-			flattened[i]["virtualization_type"] = *instance.VirtualizationType
-		}
-		if instance.VpcId != nil {
-			flattened[i]["vpc_id"] = *instance.VpcId
+			"ami_launch_index":         aws.Int64Value(instance.AmiLaunchIndex),
+			"ebs_optimized":            aws.BoolValue(instance.EbsOptimized),
+			"architecture":             aws.StringValue(instance.Architecture),
+			"client_token":             aws.StringValue(instance.ClientToken),
+			"hypervisor":               aws.StringValue(instance.Hypervisor),
+			"image_id":                 aws.StringValue(instance.ImageId),
+			"instance_id":              aws.StringValue(instance.InstanceId),
+			"instance_type":            aws.StringValue(instance.InstanceType),
+			"kernel_id":                aws.StringValue(instance.KernelId),
+			"key_name":                 aws.StringValue(instance.KeyName),
+			"private_ip_address":       aws.StringValue(instance.PrivateDnsName),
+			"private_dns_name":         aws.StringValue(instance.PrivateDnsName),
+			"root_device_name":         aws.StringValue(instance.RootDeviceName),
+			"instance_lifecycle":       aws.StringValue(instance.InstanceLifecycle),
+			"root_device_type":         aws.StringValue(instance.RootDeviceType),
+			"dns_name":                 aws.StringValue(instance.DnsName),
+			"ip_address":               aws.StringValue(instance.IpAddress),
+			"platform":                 aws.StringValue(instance.Platform),
+			"ramdisk_id":               aws.StringValue(instance.RamdiskId),
+			"reason":                   aws.StringValue(instance.Reason),
+			"source_dest_check":        aws.BoolValue(instance.SourceDestCheck),
+			"spot_instance_request_id": aws.StringValue(instance.SpotInstanceRequestId),
+			"sriov_net_support":        aws.StringValue(instance.SriovNetSupport),
+			"subnet_id":                aws.StringValue(instance.SubnetId),
+			"virtualization_type":      aws.StringValue(instance.VirtualizationType),
+			"vpc_id":                   aws.StringValue(instance.VpcId),
 		}
 
 		flattened[i]["block_device_mapping"] = flattenedBlockDeviceMapping(instance.BlockDeviceMappings)
-
 		flattened[i]["group_set"] = getGroupSet(instance.GroupSet)
 		flattened[i]["iam_instance_profile"] = getIAMInstanceProfile(instance.IamInstanceProfile)
 		flattened[i]["instance_state"] = getInstanceState(instance.State)
@@ -81,7 +52,6 @@ func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
 		flattened[i]["state_reason"] = getStateReason(instance.StateReason)
 		flattened[i]["product_codes"] = getProductCodes(instance.ProductCodes)
 		flattened[i]["tag_set"] = tagsToMap(instance.Tags)
-
 	}
 
 	return flattened
@@ -91,35 +61,33 @@ func flattenedInstanceSetPassword(instances []*fcu.Instance, conn fcu.VMService)
 	flattened := make([]map[string]interface{}, len(instances))
 	for i, instance := range instances {
 		flattened[i] = map[string]interface{}{
-			"ami_launch_index":   *instance.AmiLaunchIndex,
-			"ebs_optimized":      *instance.EbsOptimized,
-			"architecture":       *instance.Architecture,
-			"client_token":       *instance.ClientToken,
-			"hypervisor":         *instance.Hypervisor,
-			"image_id":           *instance.ImageId,
-			"instance_id":        *instance.InstanceId,
-			"instance_type":      *instance.InstanceType,
-			"kernel_id":          *instance.KernelId,
-			"key_name":           *instance.KeyName,
-			"private_ip_address": *instance.PrivateDnsName,
-			"private_dns_name":   *instance.PrivateDnsName,
-			"root_device_name":   *instance.RootDeviceName,
+			"ami_launch_index":         aws.Int64Value(instance.AmiLaunchIndex),
+			"ebs_optimized":            aws.BoolValue(instance.EbsOptimized),
+			"architecture":             aws.StringValue(instance.Architecture),
+			"client_token":             aws.StringValue(instance.ClientToken),
+			"hypervisor":               aws.StringValue(instance.Hypervisor),
+			"image_id":                 aws.StringValue(instance.ImageId),
+			"instance_id":              aws.StringValue(instance.InstanceId),
+			"instance_type":            aws.StringValue(instance.InstanceType),
+			"kernel_id":                aws.StringValue(instance.KernelId),
+			"key_name":                 aws.StringValue(instance.KeyName),
+			"private_ip_address":       aws.StringValue(instance.PrivateDnsName),
+			"private_dns_name":         aws.StringValue(instance.PrivateDnsName),
+			"root_device_name":         aws.StringValue(instance.RootDeviceName),
+			"instance_lifecycle":       aws.StringValue(instance.InstanceLifecycle),
+			"root_device_type":         aws.StringValue(instance.RootDeviceType),
+			"dns_name":                 aws.StringValue(instance.DnsName),
+			"ip_address":               aws.StringValue(instance.IpAddress),
+			"ramdisk_id":               aws.StringValue(instance.RamdiskId),
+			"reason":                   aws.StringValue(instance.Reason),
+			"source_dest_check":        aws.BoolValue(instance.SourceDestCheck),
+			"spot_instance_request_id": aws.StringValue(instance.SpotInstanceRequestId),
+			"sriov_net_support":        aws.StringValue(instance.SriovNetSupport),
+			"subnet_id":                aws.StringValue(instance.SubnetId),
+			"virtualization_type":      aws.StringValue(instance.VirtualizationType),
+			"vpc_id":                   aws.StringValue(instance.VpcId),
 		}
 
-		if instance.InstanceLifecycle != nil {
-			flattened[i]["instance_lifecycle"] = *instance.InstanceLifecycle
-		}
-		if instance.RootDeviceType != nil {
-			flattened[i]["root_device_type"] = *instance.RootDeviceType
-		}
-
-		if instance.DnsName != nil {
-			flattened[i]["dns_name"] = *instance.DnsName
-		}
-
-		if instance.IpAddress != nil {
-			flattened[i]["ip_address"] = *instance.IpAddress
-		}
 		if instance.Platform != nil {
 			flattened[i]["platform"] = *instance.Platform
 			if *instance.Platform == "windows" {
@@ -130,33 +98,8 @@ func flattenedInstanceSetPassword(instances []*fcu.Instance, conn fcu.VMService)
 				flattened[i]["password_data"] = *pass.PasswordData
 			}
 		}
-		if instance.RamdiskId != nil {
-			flattened[i]["ramdisk_id"] = *instance.RamdiskId
-		}
-		if instance.Reason != nil {
-			flattened[i]["reason"] = *instance.Reason
-		}
-		if instance.SourceDestCheck != nil {
-			flattened[i]["source_dest_check"] = *instance.SourceDestCheck
-		}
-		if instance.SpotInstanceRequestId != nil {
-			flattened[i]["spot_instance_request_id"] = *instance.SpotInstanceRequestId
-		}
-		if instance.SriovNetSupport != nil {
-			flattened[i]["sriov_net_support"] = *instance.SriovNetSupport
-		}
-		if instance.SubnetId != nil {
-			flattened[i]["subnet_id"] = *instance.SubnetId
-		}
-		if instance.VirtualizationType != nil {
-			flattened[i]["virtualization_type"] = *instance.VirtualizationType
-		}
-		if instance.VpcId != nil {
-			flattened[i]["vpc_id"] = *instance.VpcId
-		}
 
 		flattened[i]["block_device_mapping"] = flattenedBlockDeviceMapping(instance.BlockDeviceMappings)
-
 		flattened[i]["group_set"] = getGroupSet(instance.GroupSet)
 		flattened[i]["iam_instance_profile"] = getIAMInstanceProfile(instance.IamInstanceProfile)
 		flattened[i]["instance_state"] = getInstanceState(instance.State)

@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/structure"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
@@ -32,7 +30,11 @@ func dataSourceOutscaleVpcEndpoint() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"route_table_id": {
+			"creation_timestamp": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"route_table_id_set": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -107,10 +109,10 @@ func dataSourceOutscaleVpcEndpointRead(d *schema.ResourceData, meta interface{})
 
 	vpc := resp.VpcEndpoints[0]
 
-	policy, err := structure.NormalizeJsonString(aws.StringValue(vpc.PolicyDocument))
-	if err != nil {
-		return errwrap.Wrapf("policy contains an invalid JSON: {{err}}", err)
-	}
+	// policy, err := structure.NormalizeJsonString(aws.StringValue(vpc.PolicyDocument))
+	// if err != nil {
+	// 	return errwrap.Wrapf("policy contains an invalid JSON: {{err}}", err)
+	// }
 
 	plID, cidrs, err := getPrefixList(conn, aws.StringValue(vpc.ServiceName))
 
@@ -123,11 +125,12 @@ func dataSourceOutscaleVpcEndpointRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(*vpc.VpcEndpointId)
-	d.Set("vpc_id", vpc.VpcEndpointId)
-	d.Set("service_name", vpc.ServiceName)
-	d.Set("route_table_id", flattenStringList(vpc.RouteTableIds))
-	d.Set("policy", policy)
-	d.Set("state", vpc.State)
+	d.Set("vpc_id", aws.StringValue(vpc.VpcEndpointId))
+	d.Set("service_name", aws.StringValue(vpc.ServiceName))
+	d.Set("creation_timestamp", aws.TimeValue(vpc.CreationTimestamp).String())
+	d.Set("route_table_id_set", flattenStringList(vpc.RouteTableIds))
+	d.Set("policy", aws.StringValue(vpc.PolicyDocument))
+	d.Set("state", aws.StringValue(vpc.State))
 	d.Set("cidr_blocks", cidrs)
 	d.Set("request_id", resp.RequestId)
 

@@ -45,6 +45,7 @@ func NewLBUClient(config osc.Config) (*Client, error) {
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
 		UnmarshalHandler:      handler.UnmarshalLBUXML,
 		UnmarshalErrorHandler: handler.UnmarshalLBUErrorHandler,
+		SetHeaders:            handler.SetHeaders,
 	}
 
 	f := &Client{client: &c,

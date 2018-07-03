@@ -11,16 +11,16 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/handler"
 )
 
-//FCU the name of the api for url building
+//ICU the name of the api for url building
 const ICU = "icu"
 
 //Client manages the FCU API
 type Client struct {
 	client *osc.Client
-	API    ICUService
+	API    Service
 }
 
-// NewFCUClient return a client to operate FCU resources
+// NewICUClient return a client to operate FCU resources
 func NewICUClient(config osc.Config) (*Client, error) {
 
 	s := &v4.Signer{
@@ -45,10 +45,11 @@ func NewICUClient(config osc.Config) (*Client, error) {
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
 		UnmarshalHandler:      handler.UnmarshalXML,
 		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
+		SetHeaders:            handler.SetHeadersICU,
 	}
 
 	f := &Client{client: &c,
-		API: ICUOperations{client: &c},
+		API: Operations{client: &c},
 	}
 	return f, nil
 }

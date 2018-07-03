@@ -10756,3 +10756,18 @@ type DescribeVpcEndpointServicesOutput struct {
 	ServiceNames []*string `locationName:"serviceNameSet" locationNameList:"item" type:"list"` // A list of supported services.
 	RequestID    *string   `locationName:"requestId" type:"string"`
 }
+
+type CreateImageInput struct {
+	_                   struct{}              `type:"structure"`
+	BlockDeviceMappings []*BlockDeviceMapping `locationName:"blockDeviceMapping" locationNameList:"BlockDeviceMapping" type:"list"`
+	Description         *string               `locationName:"description" type:"string"`
+	DryRun              *bool                 `locationName:"dryRun" type:"boolean"`
+	InstanceId          *string               `locationName:"instanceId" type:"string" required:"true"`
+	Name                *string               `locationName:"name" type:"string" required:"true"`
+	NoReboot            *bool                 `locationName:"noReboot" type:"boolean"`
+}
+
+type CreateImageOutput struct {
+	_       struct{} `type:"structure"`
+	ImageId *string  `locationName:"imageId" type:"string"`
+}

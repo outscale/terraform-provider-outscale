@@ -62,6 +62,10 @@ func dataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"volume_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -124,6 +128,7 @@ func dataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	snapshot = resp.Snapshots[0]
+	d.Set("request_id", resp.RequestId)
 
 	//Single Snapshot found so set to state
 	return snapshotDescriptionAttributes(d, snapshot)

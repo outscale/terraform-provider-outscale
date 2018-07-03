@@ -24,6 +24,7 @@ func TestOutscalePolicy_namePrefix(t *testing.T) {
 				Config: testAccOutscalePolicyPrefixNameConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscalePolicyExists("outscale_policy.policy", &out),
+					resource.TestCheckResourceAttrSet("outscale_policy.policy", "arn"),
 				),
 			},
 		},

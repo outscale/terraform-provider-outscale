@@ -40,8 +40,6 @@ func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
-		fmt.Printf("\n[DEBUG] TEST RS %s \n", s.RootModule().Resources)
-
 		if !ok {
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
@@ -77,6 +75,6 @@ resource "outscale_vm" "basic" {
 }
 
 data "outscale_vm_state" "state" {
-  instance_id = ["${outscale_vm.basic.id}"]
+  instance_id = "${outscale_vm.basic.id}"
 }
 `

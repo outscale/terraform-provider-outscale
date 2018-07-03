@@ -216,13 +216,9 @@ func resourceOutscaleLoadBalancerHealthCheckRead(d *schema.ResourceData, meta in
 
 	d.Set("health_check", healthCheck)
 	d.Set("load_balancer_name", *lb.LoadBalancerName)
+	// d.Set("request_id", describeResp.ResponseMetadata.RequestId)
 
-	reqID := ""
-	if describeResp.ResponseMetadata != nil {
-		reqID = aws.StringValue(describeResp.ResponseMetadata.RequestID)
-	}
-
-	return d.Set("request_id", reqID)
+	return nil
 }
 
 func resourceOutscaleLoadBalancerHealthCheckDelete(d *schema.ResourceData, meta interface{}) error {

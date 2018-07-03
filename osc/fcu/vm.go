@@ -141,6 +141,7 @@ type VMService interface {
 	ImportSnapshot(input *ImportSnapshotInput) (*ImportSnapshotOutput, error)
 	CopySnapshot(input *CopySnapshotInput) (*CopySnapshotOutput, error)
 	DescribeVpcEndpointServices(input *DescribeVpcEndpointServicesInput) (*DescribeVpcEndpointServicesOutput, error)
+	CreateImage(input *CreateImageInput) (*CreateImageOutput, error)
 }
 
 const opRunInstances = "RunInstances"
@@ -2251,6 +2252,28 @@ func (v VMOperations) CopySnapshot(input *CopySnapshotInput) (*CopySnapshotOutpu
 
 	if input == nil {
 		input = &CopySnapshotInput{}
+	}
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+func (v VMOperations) CreateImage(input *CreateImageInput) (*CreateImageOutput, error) {
+	inURL := "/"
+	endpoint := "CreateImage"
+	output := &CreateImageOutput{}
+
+	if input == nil {
+		input = &CreateImageInput{}
 	}
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
 

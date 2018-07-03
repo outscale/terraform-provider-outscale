@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -48,11 +47,6 @@ func resourceOutscaleRouteTableAssociation() *schema.Resource {
 
 func resourceOutscaleRouteTableAssociationCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-
-	log.Printf(
-		"[INFO] Creating route table association: %s => %s",
-		d.Get("subnet_id").(string),
-		d.Get("route_table_id").(string))
 
 	associationOpts := fcu.AssociateRouteTableInput{
 		RouteTableId: aws.String(d.Get("route_table_id").(string)),
@@ -103,7 +97,6 @@ func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta inte
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			rtRaw = nil
 		} else {
-			log.Printf("Error on RouteTableStateRefresh: %s", err)
 			return err
 		}
 	}
@@ -134,11 +127,6 @@ func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta inte
 func resourceOutscaleRouteTableAssociationUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	log.Printf(
-		"[INFO] Creating route table association: %s => %s",
-		d.Get("subnet_id").(string),
-		d.Get("route_table_id").(string))
-
 	req := &fcu.ReplaceRouteTableAssociationInput{
 		AssociationId: aws.String(d.Id()),
 		RouteTableId:  aws.String(d.Get("route_table_id").(string)),
@@ -165,15 +153,12 @@ func resourceOutscaleRouteTableAssociationUpdate(d *schema.ResourceData, meta in
 	}
 
 	d.SetId(*resp.NewAssociationId)
-	log.Printf("[INFO] Association ID: %s", d.Id())
 
 	return nil
 }
 
 func resourceOutscaleRouteTableAssociationDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-
-	log.Printf("[INFO] Deleting route table association: %s", d.Id())
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

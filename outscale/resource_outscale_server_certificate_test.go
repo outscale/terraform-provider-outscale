@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-nutanix/utils"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 )
 
@@ -54,13 +54,13 @@ func testAccCheckCertExists(n string, cert *eim.ServerCertificate) resource.Test
 		}
 		conn := testAccProvider.Meta().(*OutscaleClient).EIM
 		describeOpts := &eim.GetServerCertificateInput{
-			ServerCertificateName: utils.String(rs.Primary.Attributes["server_certificate_name"]),
+			ServerCertificateName: aws.String(rs.Primary.Attributes["server_certificate_name"]),
 		}
 		resp, err := conn.API.GetServerCertificate(describeOpts)
 		if err != nil {
 			return err
 		}
-		*cert = *resp.ServerCertificate
+		*cert = *resp.GetServerCertificateResult.ServerCertificate
 		return nil
 	}
 }
@@ -72,11 +72,11 @@ func testAccCheckEIMServerCertificateDestroy(s *terraform.State) error {
 		}
 		// Try to find the Cert
 		opts := &eim.GetServerCertificateInput{
-			ServerCertificateName: utils.String(rs.Primary.Attributes["server_certificate_nameonroiroiroirnroinroin"]),
+			ServerCertificateName: aws.String(rs.Primary.Attributes["server_certificate_nameonroiroiroirnroinroin"]),
 		}
 		resp, err := conn.API.GetServerCertificate(opts)
 		if err == nil {
-			if resp.ServerCertificate != nil {
+			if resp.GetServerCertificateResult.ServerCertificate != nil {
 				return fmt.Errorf("Error: Server Cert still exists")
 			}
 			return nil

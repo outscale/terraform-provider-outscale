@@ -25,7 +25,6 @@ func resourceOutscaleVpcEndpoint() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"vpc_id": {
 				Type:     schema.TypeString,
@@ -36,6 +35,10 @@ func resourceOutscaleVpcEndpoint() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+			"creation_timestamp": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"route_table_id": {
 				Type:     schema.TypeSet,
@@ -183,8 +186,6 @@ func resourceOutscaleVpcEndpointUpdate(d *schema.ResourceData, meta interface{})
 
 	setVpcEndpointUpdateLists(d, "route_table_id", &req.AddRouteTableIds, &req.RemoveRouteTableIds)
 
-	log.Printf("[DEBUG] Updating VPC Endpoint: %#v", req)
-
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.ModifyVpcEndpoint(req)
@@ -313,7 +314,9 @@ func vpcEndpointAttributes(d *schema.ResourceData, vpce *fcu.VpcEndpoint, conn *
 	d.Set("vpc_id", vpce.VpcId)
 
 	serviceName := aws.StringValue(vpce.ServiceName)
+
 	d.Set("service_name", serviceName)
+	d.Set("creation_timestamp", aws.TimeValue(vpce.CreationTimestamp).String())
 	d.Set("vpc_endpoint_id", aws.StringValue(vpce.VpcEndpointId))
 
 	policy, err := structure.NormalizeJsonString(aws.StringValue(vpce.PolicyDocument))

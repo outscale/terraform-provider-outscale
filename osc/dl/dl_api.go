@@ -29,7 +29,7 @@ func (v Operations) CreateConnection(input *CreateConnectionInput) (*Connection,
 		input = &CreateConnectionInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (v Operations) DescribeConnections(input *DescribeConnectionsInput) (*Conne
 		input = &DescribeConnectionsInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (v Operations) DeleteConnection(input *DeleteConnectionInput) (*Connection,
 		input = &DeleteConnectionInput{}
 	}
 
-	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 
 	if err != nil {
 		return nil, err

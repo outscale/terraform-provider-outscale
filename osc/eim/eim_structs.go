@@ -15,6 +15,12 @@ type CreatePolicyInput struct {
 
 // CreatePolicyOutput ...
 type CreatePolicyOutput struct {
+	CreatePolicyResult *CreatePolicyResult `type:"structure"`
+	ResponseMetadata   *ResponseMetadata   `type:"structure"`
+}
+
+// CreatePolicyResult ...
+type CreatePolicyResult struct {
 	_      struct{} `type:"structure"`
 	Policy *Policy  `type:"structure"`
 }
@@ -46,9 +52,14 @@ type GetPolicyInput struct {
 
 // GetPolicyOutput ...
 type GetPolicyOutput struct {
-	_         struct{} `type:"structure"`
-	Policy    *Policy  `type:"structure"`
-	RequestId *string  `type:"string"`
+	GetPolicyResult  *GetPolicyResult  `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+}
+
+// GetPolicyResult ...
+type GetPolicyResult struct {
+	_      struct{} `type:"structure"`
+	Policy *Policy  `type:"structure"`
 }
 
 // GetPolicyVersionInput ...
@@ -112,6 +123,291 @@ type ListPolicyVersionsOutput struct {
 	Versions    []*PolicyVersion `type:"list"`
 }
 
+// CreateGroupInput ...
+type CreateGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	Path      *string  `min:"1" type:"string"`
+}
+
+// CreateGroupOutput ...
+type CreateGroupOutput struct {
+	_     struct{} `type:"structure"`
+	Group *Group   `type:"structure" required:"true"`
+}
+
+// Group ...
+type Group struct {
+	_          struct{}   `type:"structure"`
+	Arn        *string    `min:"20" type:"string" required:"true"`
+	CreateDate *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+	GroupId    *string    `min:"16" type:"string" required:"true"`
+	GroupName  *string    `min:"1" type:"string" required:"true"`
+	UserName   *string    `min:"1" type:"string" required:"true"`
+	Path       *string    `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupInput ...
+type GetGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	Marker    *string  `min:"1" type:"string"`
+	MaxItems  *int64   `min:"1" type:"integer"`
+}
+
+// GetGroupOutput ...
+type GetGroupOutput struct {
+	_           struct{} `type:"structure"`
+	Group       *Group   `type:"structure" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+	Users       []*User  `type:"list" required:"true"`
+}
+
+// User ...
+type User struct {
+	_                struct{}   `type:"structure"`
+	Arn              *string    `min:"20" type:"string" required:"true"`
+	CreateDate       *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+	PasswordLastUsed *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+	Path             *string    `min:"1" type:"string" required:"true"`
+	UserId           *string    `min:"16" type:"string" required:"true"`
+	UserName         *string    `min:"1" type:"string" required:"true"`
+}
+
+// UpdateGroupInput ...
+type UpdateGroupInput struct {
+	_            struct{} `type:"structure"`
+	GroupName    *string  `min:"1" type:"string" required:"true"`
+	NewGroupName *string  `min:"1" type:"string"`
+	NewPath      *string  `min:"1" type:"string"`
+}
+
+// UpdateGroupOutput ...
+type UpdateGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DeleteGroupInput ...
+type DeleteGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteGroupOutput ...
+type DeleteGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// AddUserToGroupInput ...
+type AddUserToGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// AddUserToGroupOutput ...
+type AddUserToGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// RemoveUserFromGroupInput ...
+type RemoveUserFromGroupInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// RemoveUserFromGroupOutput ...
+type RemoveUserFromGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// CreateUserInput ...
+type CreateUserInput struct {
+	_        struct{} `type:"structure"`
+	Path     *string  `min:"1" type:"string"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// CreateUserOutput ...
+type CreateUserOutput struct {
+	_    struct{} `type:"structure"`
+	User *User    `type:"structure"`
+}
+
+// GetUserInput ...
+type GetUserInput struct {
+	_        struct{} `type:"structure"`
+	UserName *string  `min:"1" type:"string"`
+}
+
+// GetUserOutput ...
+type GetUserOutput struct {
+	_    struct{} `type:"structure"`
+	User *User    `type:"structure" required:"true"`
+}
+
+// UpdateUserInput ...
+type UpdateUserInput struct {
+	_           struct{} `type:"structure"`
+	NewPath     *string  `min:"1" type:"string"`
+	NewUserName *string  `min:"1" type:"string"`
+	UserName    *string  `min:"1" type:"string" required:"true"`
+}
+
+// UpdateUserOutput ...
+type UpdateUserOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListGroupsForUserInput ...
+type ListGroupsForUserInput struct {
+	_        struct{} `type:"structure"`
+	Marker   *string  `min:"1" type:"string"`
+	MaxItems *int64   `min:"1" type:"integer"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// ListGroupsForUserOutput ...
+type ListGroupsForUserOutput struct {
+	_           struct{} `type:"structure"`
+	Groups      []*Group `type:"list" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+}
+
+// DeleteUserInput ...
+type DeleteUserInput struct {
+	_        struct{} `type:"structure"`
+	UserName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteUserOutput ...
+type DeleteUserOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// SetDefaultPolicyVersionInput ...
+type SetDefaultPolicyVersionInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	VersionId *string  `type:"string" required:"true"`
+}
+
+// SetDefaultPolicyVersionOutput ...
+type SetDefaultPolicyVersionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// AttachUserPolicyInput ...
+type AttachUserPolicyInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// AttachUserPolicyOutput ...
+type AttachUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListAttachedUserPoliciesInput ...
+type ListAttachedUserPoliciesInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `type:"string"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// ListAttachedUserPoliciesOutput ...
+type ListAttachedUserPoliciesOutput struct {
+	_                struct{}          `type:"structure"`
+	AttachedPolicies []*AttachedPolicy `type:"list"`
+	IsTruncated      *bool             `type:"boolean"`
+	Marker           *string           `min:"1" type:"string"`
+}
+
+// AttachedPolicy ...
+type AttachedPolicy struct {
+	_          struct{} `type:"structure"`
+	PolicyArn  *string  `min:"20" type:"string"`
+	PolicyName *string  `min:"1" type:"string"`
+}
+
+// DetachUserPolicyInput ...
+type DetachUserPolicyInput struct {
+	_         struct{} `type:"structure"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+	UserName  *string  `min:"1" type:"string" required:"true"`
+}
+
+// DetachUserPolicyOutput ...
+type DetachUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// PutUserPolicyInput ...
+type PutUserPolicyInput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	UserName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// PutUserPolicyOutput ...
+type PutUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetUserPolicyInput ...
+type GetUserPolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetUserPolicyOutput ...
+type GetUserPolicyOutput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	UserName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// ListUsersInput ...
+type ListUsersInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `min:"1" type:"string"`
+}
+
+// ListUsersOutput ...
+type ListUsersOutput struct {
+	_           struct{} `type:"structure"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+	Users       []*User  `type:"list" required:"true"`
+}
+
+// ListGroupsInput ...
+type ListGroupsInput struct {
+	_          struct{} `type:"structure"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `min:"1" type:"string"`
+}
+
+// ListGroupsOutput ...
+type ListGroupsOutput struct {
+	_           struct{} `type:"structure"`
+	Groups      []*Group `type:"list" required:"true"`
+	IsTruncated *bool    `type:"boolean"`
+	Marker      *string  `min:"1" type:"string"`
+}
+
 // UploadServerCertificateInput ...
 type UploadServerCertificateInput struct {
 	_                     struct{} `type:"structure"`
@@ -124,6 +420,12 @@ type UploadServerCertificateInput struct {
 
 //UploadServerCertificateOutput Contains the response to a successful UploadServerCertificate request.
 type UploadServerCertificateOutput struct {
+	UploadServerCertificateResult *UploadServerCertificateResult `type:"structure"`
+	ResponseMetadata              *ResponseMetadata              `type:"structure" required:"true"`
+}
+
+//UploadServerCertificateResult Contains the response to a successful UploadServerCertificate request.
+type UploadServerCertificateResult struct {
 	_                         struct{}                   `type:"structure"`
 	ServerCertificateMetadata *ServerCertificateMetadata `type:"structure"`
 }
@@ -134,7 +436,7 @@ type ServerCertificateMetadata struct {
 	Arn                   *string    `min:"20" type:"string" required:"true"`
 	Expiration            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 	Path                  *string    `min:"1" type:"string" required:"true"`
-	ServerCertificateId   *string    `min:"16" type:"string" required:"true"`
+	ServerCertificateID   *string    `locationName:"ServerCertificateId" min:"16" type:"string" required:"true"`
 	ServerCertificateName *string    `min:"1" type:"string" required:"true"`
 	UploadDate            *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 }
@@ -147,9 +449,14 @@ type GetServerCertificateInput struct {
 
 //GetServerCertificateOutput Contains the response to a successful GetServerCertificate request.
 type GetServerCertificateOutput struct {
+	GetServerCertificateResult *GetServerCertificateResult `type:"structure"`
+	ResponseMetadata           *ResponseMetadata           `type:"structure" required:"true"`
+}
+
+//GetServerCertificateResult Contains the response to a successful GetServerCertificate request.
+type GetServerCertificateResult struct {
 	_                 struct{}           `type:"structure"`
 	ServerCertificate *ServerCertificate `type:"structure" required:"true"`
-	ResponseMetadata  *ResponseMetadata  `type:"structure" required:"true"`
 }
 
 // ServerCertificate Contains information about a server certificate.
@@ -181,16 +488,21 @@ type ListServerCertificatesInput struct {
 
 //ListServerCertificatesOutput Contains the response to a successful ListServerCertificates request.
 type ListServerCertificatesOutput struct {
+	ListServerCertificatesResult *ListServerCertificatesResult `type:"structure"`
+	ResponseMetadata             *ResponseMetadata             `type:"structure"`
+}
+
+//ListServerCertificatesResult Contains the response to a successful ListServerCertificates request.
+type ListServerCertificatesResult struct {
 	_                             struct{}                     `type:"structure"`
 	IsTruncated                   *bool                        `type:"boolean"`
 	Marker                        *string                      `min:"1" type:"string"`
-	ResponseMetadata              *ResponseMetadata            `type:"structure"`
 	ServerCertificateMetadataList []*ServerCertificateMetadata `type:"list" required:"true"`
 }
 
 // ResponseMetadata ...
 type ResponseMetadata struct {
-	RequestId *string `min:"1" type:"string"`
+	RequestID *string `locationName:"RequestId" min:"1" type:"string"`
 }
 
 // ListCertificatesOutput ...
@@ -220,4 +532,31 @@ type UpdateServerCertificateInput struct {
 // UpdateServerCertificateOutput ...
 type UpdateServerCertificateOutput struct {
 	_ struct{} `type:"structure"`
+}
+
+// DeleteUserPolicyInput ...
+type DeleteUserPolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	UserName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteUserPolicyOutput ...
+type DeleteUserPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetRolePolicyInput ...
+type GetRolePolicyInput struct {
+	_          struct{} `type:"structure"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+	RoleName   *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetRolePolicyOutput ...
+type GetRolePolicyOutput struct {
+	_              struct{} `type:"structure"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+	RoleName       *string  `min:"1" type:"string" required:"true"`
 }

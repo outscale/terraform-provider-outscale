@@ -27,7 +27,6 @@ func resourceOutscaleImageRegister() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			//Image
 			"instance_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -166,7 +165,6 @@ func resourceOutscaleImageRegister() *schema.Resource {
 			},
 			"tag_set": dataSourceTagsSchema(),
 
-			// Image Register
 			"arquitecture": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -198,33 +196,7 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 		request.Architecture = aws.String(architecture.(string))
 	}
 	if blockDeviceMappingOk {
-		maps := blockDeviceMapping.([]interface{})
-		mappings := []*fcu.BlockDeviceMapping{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName: aws.String(f["device_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-			var del bool
-			if e["delete_on_termination"].(string) == "0" {
-				del = false
-			} else {
-				del = true
-			}
-
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(del),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		request.BlockDeviceMappings = mappings
+		request.BlockDeviceMappings = readBlockDevice(blockDeviceMapping)
 	}
 	if descriptionOk {
 		request.Description = aws.String(description.(string))

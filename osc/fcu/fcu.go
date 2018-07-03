@@ -45,6 +45,7 @@ func NewFCUClient(config osc.Config) (*Client, error) {
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
 		UnmarshalHandler:      handler.UnmarshalXML,
 		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
+		SetHeaders:            handler.SetHeaders,
 	}
 
 	f := &Client{client: &c,
