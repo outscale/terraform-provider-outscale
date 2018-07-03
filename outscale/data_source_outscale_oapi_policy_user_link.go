@@ -32,10 +32,10 @@ func dataSourceOutscaleOAPIPolicyUserLink() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// "request_id": &schema.Schema{
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -75,15 +75,16 @@ func dataSourceOutscaleOAPIPolicyUserLinkRead(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	if len(resp.AttachedPolicies) < 1 {
+	if len(resp.ListAttachedUserPoliciesResult.AttachedPolicies) < 1 {
 		return fmt.Errorf("No results")
 	}
 
-	p := resp.AttachedPolicies
+	p := resp.ListAttachedUserPoliciesResult.AttachedPolicies
 
 	d.Set("policy_arn", aws.StringValue(p[0].PolicyArn))
 	d.Set("policy_name", aws.StringValue(p[0].PolicyName))
 	d.SetId(resource.UniqueId())
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return d.Set("attached_policies", p)
 }
