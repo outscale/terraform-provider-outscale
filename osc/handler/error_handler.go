@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -33,6 +34,13 @@ type XMLLBUError struct {
 	RequestID string   `xml:"RequestID"`
 }
 
+//JSONICUError ...
+type JSONICUError struct {
+	Msj     string `json:"message"`
+	Type    string `json:"__type"`
+	Message string `json:"Message"`
+}
+
 // UnmarshalErrorHandler for HTTP Response
 func UnmarshalErrorHandler(r *http.Response) error {
 	defer r.Body.Close()
@@ -51,6 +59,26 @@ func UnmarshalErrorHandler(r *http.Response) error {
 	// Response body format is not consistent between metadata endpoints.
 	// Grab the error message as a string and include that as the source error
 	return fmt.Errorf("%s: %s", v.Errors[0].Code, v.Errors[0].Message)
+}
+
+// UnmarshalJSONErrorHandler for HTTP Response
+func UnmarshalJSONErrorHandler(r *http.Response) error {
+	defer r.Body.Close()
+	v := JSONICUError{}
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("Read body: %v", err)
+	}
+
+	err = json.Unmarshal(data, &v)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling response %v", err)
+	}
+
+	// Response body format is not consistent between metadata endpoints.
+	// Grab the error message as a string and include that as the source error
+	return fmt.Errorf("%s: %s", v.Type, v.Message)
 }
 
 // UnmarshalLBUErrorHandler for HTTP Response

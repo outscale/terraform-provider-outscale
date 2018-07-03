@@ -132,8 +132,8 @@ type ResponseMetadata struct {
 
 //CatalogEntry ...
 type CatalogEntry struct {
-	Attributes CatalogAttribute `type:"structure"`
-	Key        *string          `type:"string"`
-	Value      *string          `type:"string"`
-	Title      *string          `type:"string"`
+	Attributes []*CatalogAttribute `type:"structure"`
+	Key        *string             `type:"string"`
+	Value      *int64              `type:"integer"`
+	Title      *string             `type:"string"`
 }

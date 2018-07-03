@@ -44,7 +44,7 @@ func NewICUClient(config osc.Config) (*Client, error) {
 		MarshalHander:         handler.URLEncodeMarshalHander,
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
 		UnmarshalHandler:      handler.UnmarshalXML,
-		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
+		UnmarshalErrorHandler: handler.UnmarshalJSONErrorHandler,
 		SetHeaders:            handler.SetHeadersICU,
 		BindBody:              handler.BindICU,
 	}
