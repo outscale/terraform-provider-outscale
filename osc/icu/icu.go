@@ -46,6 +46,7 @@ func NewICUClient(config osc.Config) (*Client, error) {
 		UnmarshalHandler:      handler.UnmarshalXML,
 		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
 		SetHeaders:            handler.SetHeadersICU,
+		BindBody:              handler.BindICU,
 	}
 
 	f := &Client{client: &c,

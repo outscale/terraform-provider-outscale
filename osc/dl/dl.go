@@ -46,6 +46,7 @@ func NewDLClient(config osc.Config) (*Client, error) {
 		UnmarshalHandler:      handler.UnmarshalXML,
 		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
 		SetHeaders:            handler.SetHeadersDL,
+		BindBody:              handler.BindDL,
 	}
 
 	f := &Client{client: &c,

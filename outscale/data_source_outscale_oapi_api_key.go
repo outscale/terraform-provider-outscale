@@ -83,17 +83,17 @@ func dataSourceOutscaleOAPIIamAccessKeyRead(d *schema.ResourceData, meta interfa
 
 	for k, v := range getResp.AccessKeyMetadata {
 		ac := make(map[string]interface{})
-		ac["api_key_id"] = *v.AccessKeyId
-		ac["account_id"] = *v.OwnerId
+		ac["api_key_id"] = *v.AccessKeyID
+		ac["account_id"] = *v.OwnerID
 		ac["secret_key"] = *v.SecretAccessKey
 		ac["state"] = *v.Status
-		ac["tag_set"] = tagsToMapC(v.Tags)
+		ac["tag_set"] = tagsToMapI(v.Tags)
 		acc[k] = ac
 	}
 
 	d.SetId(resource.UniqueId())
 	d.Set("api_key_id", acc)
-	d.Set("request_id", getResp.ResponseMetadata.RequestId)
+	d.Set("request_id", getResp.ResponseMetadata.RequestID)
 
 	return nil
 }
