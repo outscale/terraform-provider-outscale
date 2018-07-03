@@ -82,7 +82,6 @@ func dataSourceOutscaleUserAPIKeysRead(d *schema.ResourceData, meta interface{})
 
 	accessKeyMetaList := make([]map[string]interface{}, len(resp.ListAccessKeysResult.AccessKeyMetadata))
 	for i, key := range resp.ListAccessKeysResult.AccessKeyMetadata {
-		fmt.Println("ENTRO")
 		accessKeyMetaList[i] = dataSourceOutscaleEIMAccessKeyReadResult(d, key)
 	}
 

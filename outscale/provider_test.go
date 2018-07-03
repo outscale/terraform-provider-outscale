@@ -47,7 +47,7 @@ func testAccCheckState(n string) resource.TestCheckFunc {
 			return fmt.Errorf("Can't find this `%s` resource", n)
 		}
 
-		utils.PrintToJSON(rs, "STATE")
+		utils.PrintToJSON(rs, "[Debug] State: \n")
 
 		return nil
 	}
