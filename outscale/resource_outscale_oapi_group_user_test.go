@@ -117,13 +117,13 @@ func testAccCheckOutscaleOAPIGroupUserExists(n string, g *eim.GetGroupOutput) re
 
 func testAccCheckOutscaleOAPIGroupUserAttributes(group *eim.GetGroupOutput, users []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if !strings.Contains(*group.Group.GroupName, "test-group") {
-			return fmt.Errorf("Bad group membership: expected %s, got %s", "test-group", *group.Group.GroupName)
+		if !strings.Contains(*group.GetGroupResult.Group.GroupName, "test-group") {
+			return fmt.Errorf("Bad group membership: expected %s, got %s", "test-group", *group.GetGroupResult.Group.GroupName)
 		}
 
 		uc := len(users)
 		for _, u := range users {
-			for _, gu := range group.Users {
+			for _, gu := range group.GetGroupResult.Users {
 				if u == *gu.UserName {
 					uc--
 				}

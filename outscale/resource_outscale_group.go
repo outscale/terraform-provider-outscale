@@ -116,7 +116,9 @@ func resourceOutscaleGroupCreate(d *schema.ResourceData, meta interface{}) error
 	if err != nil {
 		return fmt.Errorf("Error creating IAM Group %s: %s", name, err)
 	}
-	d.SetId(*createResp.Group.GroupName)
+
+	d.SetId(*createResp.CreateGroupResult.Group.GroupName)
+
 	return resourceOutscaleGroupRead(d, meta)
 }
 
@@ -149,13 +151,13 @@ func resourceOutscaleGroupRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	grp := make(map[string]interface{})
-	grp["arn"] = aws.StringValue(getResp.Group.Arn)
-	grp["group_id"] = aws.StringValue(getResp.Group.GroupId)
-	grp["group_name"] = aws.StringValue(getResp.Group.GroupName)
-	grp["path"] = aws.StringValue(getResp.Group.Path)
+	grp["arn"] = aws.StringValue(getResp.GetGroupResult.Group.Arn)
+	grp["group_id"] = aws.StringValue(getResp.GetGroupResult.Group.GroupId)
+	grp["group_name"] = aws.StringValue(getResp.GetGroupResult.Group.GroupName)
+	grp["path"] = aws.StringValue(getResp.GetGroupResult.Group.Path)
 
-	usr := make([]map[string]interface{}, len(getResp.Users))
-	for k, v := range getResp.Users {
+	usr := make([]map[string]interface{}, len(getResp.GetGroupResult.Users))
+	for k, v := range getResp.GetGroupResult.Users {
 		us := make(map[string]interface{})
 		us["arn"] = aws.StringValue(v.Arn)
 		us["user_id"] = aws.StringValue(v.UserId)
@@ -167,6 +169,8 @@ func resourceOutscaleGroupRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("group", grp); err != nil {
 		return err
 	}
+
+	d.Set("request_id", getResp.ResponseMetadata.RequestID)
 
 	return d.Set("users", usr)
 }

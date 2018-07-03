@@ -116,11 +116,13 @@ func resourceOutscaleGroupUserRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	ul = append(ul, map[string]interface{}{
-		"arn":        aws.StringValue(resp.Group.Arn),
-		"group_id":   aws.StringValue(resp.Group.GroupId),
-		"group_name": aws.StringValue(resp.Group.GroupName),
-		"path":       aws.StringValue(resp.Group.Path),
+		"arn":        aws.StringValue(resp.GetGroupResult.Group.Arn),
+		"group_id":   aws.StringValue(resp.GetGroupResult.Group.GroupId),
+		"group_name": aws.StringValue(resp.GetGroupResult.Group.GroupName),
+		"path":       aws.StringValue(resp.GetGroupResult.Group.Path),
 	})
+
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return d.Set("groups", ul)
 }

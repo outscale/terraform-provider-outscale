@@ -47,6 +47,9 @@ type Service interface {
 	GetUserPolicy(input *GetUserPolicyInput) (*GetUserPolicyOutput, error)
 	DeleteUserPolicy(input *DeleteUserPolicyInput) (*DeleteUserPolicyOutput, error)
 	GetRolePolicy(input *GetRolePolicyInput) (*GetRolePolicyOutput, error)
+	PutGroupPolicy(input *PutGroupPolicyInput) (*PutGroupPolicyOutput, error)
+	GetGroupPolicy(input *GetGroupPolicyInput) (*GetGroupPolicyOutput, error)
+	DeleteGroupPolicy(input *DeleteGroupPolicyInput) (*DeleteGroupPolicyOutput, error)
 }
 
 // CreatePolicy ...
@@ -825,6 +828,78 @@ func (v Operations) GetRolePolicy(input *GetRolePolicyInput) (*GetRolePolicyOutp
 
 	if input == nil {
 		input = &GetRolePolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// PutGroupPolicy ...
+func (v Operations) PutGroupPolicy(input *PutGroupPolicyInput) (*PutGroupPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "PutGroupPolicy"
+	output := &PutGroupPolicyOutput{}
+
+	if input == nil {
+		input = &PutGroupPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetGroupPolicy ...
+func (v Operations) GetGroupPolicy(input *GetGroupPolicyInput) (*GetGroupPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "GetGroupPolicy"
+	output := &GetGroupPolicyOutput{}
+
+	if input == nil {
+		input = &GetGroupPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteGroupPolicy ...
+func (v Operations) DeleteGroupPolicy(input *DeleteGroupPolicyInput) (*DeleteGroupPolicyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteGroupPolicy"
+	output := &DeleteGroupPolicyOutput{}
+
+	if input == nil {
+		input = &DeleteGroupPolicyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

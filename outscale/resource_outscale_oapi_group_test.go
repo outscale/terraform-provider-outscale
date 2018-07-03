@@ -127,12 +127,12 @@ func testAccCheckOutscaleOAPIGroupExists(n string, res *eim.GetGroupOutput) reso
 
 func testAccCheckOutscaleOAPIGroupAttributes(group *eim.GetGroupOutput, name string, path string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *group.Group.GroupName != name {
-			return fmt.Errorf("Bad name: %s when %s was expected", *group.Group.GroupName, name)
+		if *group.GetGroupResult.Group.GroupName != name {
+			return fmt.Errorf("Bad name: %s when %s was expected", *group.GetGroupResult.Group.GroupName, name)
 		}
 
-		if *group.Group.Path != path {
-			return fmt.Errorf("Bad path: %s when %s was expected", *group.Group.Path, path)
+		if *group.GetGroupResult.Group.Path != path {
+			return fmt.Errorf("Bad path: %s when %s was expected", *group.GetGroupResult.Group.Path, path)
 		}
 
 		return nil

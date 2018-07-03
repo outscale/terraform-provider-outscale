@@ -97,8 +97,8 @@ func resourceOutscaleOAPIGroupUserRead(d *schema.ResourceData, meta interface{})
 		}
 		return err
 	}
-	d.Set("group_id", aws.StringValue(resp.Group.GroupId))
-	d.Set("path", aws.StringValue(resp.Group.Path))
+	d.Set("group_id", aws.StringValue(resp.GetGroupResult.Group.GroupId))
+	d.Set("path", aws.StringValue(resp.GetGroupResult.Group.Path))
 
 	return nil
 }

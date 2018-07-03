@@ -130,10 +130,16 @@ type CreateGroupInput struct {
 	Path      *string  `min:"1" type:"string"`
 }
 
-// CreateGroupOutput ...
-type CreateGroupOutput struct {
+// CreateGroupResult ...
+type CreateGroupResult struct {
 	_     struct{} `type:"structure"`
 	Group *Group   `type:"structure" required:"true"`
+}
+
+// CreateGroupOutput ...
+type CreateGroupOutput struct {
+	CreateGroupResult *CreateGroupResult `type:"structure"`
+	ResponseMetadata  *ResponseMetadata  `type:"structure"`
 }
 
 // Group ...
@@ -155,13 +161,19 @@ type GetGroupInput struct {
 	MaxItems  *int64   `min:"1" type:"integer"`
 }
 
-// GetGroupOutput ...
-type GetGroupOutput struct {
+// GetGroupResult ...
+type GetGroupResult struct {
 	_           struct{} `type:"structure"`
 	Group       *Group   `type:"structure" required:"true"`
 	IsTruncated *bool    `type:"boolean"`
 	Marker      *string  `min:"1" type:"string"`
 	Users       []*User  `type:"list" required:"true"`
+}
+
+// GetGroupOutput ...
+type GetGroupOutput struct {
+	GetGroupResult   *GetGroupResult   `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
 }
 
 // User ...
@@ -553,10 +565,62 @@ type GetRolePolicyInput struct {
 	RoleName   *string  `min:"1" type:"string" required:"true"`
 }
 
-// GetRolePolicyOutput ...
-type GetRolePolicyOutput struct {
+// GetRolePolicyResult ...
+type GetRolePolicyResult struct {
 	_              struct{} `type:"structure"`
 	PolicyDocument *string  `min:"1" type:"string" required:"true"`
 	PolicyName     *string  `min:"1" type:"string" required:"true"`
 	RoleName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetRolePolicyOutput ...
+type GetRolePolicyOutput struct {
+	GetRolePolicyResult *GetRolePolicyResult `type:"structure"`
+	ResponseMetadata    *ResponseMetadata    `type:"structure"`
+}
+
+// PutGroupPolicyInput ...
+type PutGroupPolicyInput struct {
+	_              struct{} `type:"structure"`
+	GroupName      *string  `min:"1" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+}
+
+// PutGroupPolicyOutput ...
+type PutGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetGroupPolicyInput ...
+type GetGroupPolicyInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupPolicyResult ...
+type GetGroupPolicyResult struct {
+	_              struct{} `type:"structure"`
+	GroupName      *string  `min:"1" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupPolicyOutput ...
+type GetGroupPolicyOutput struct {
+	GetGroupPolicyResult *GetGroupPolicyResult `type:"structure"`
+	ResponseMetadata     *ResponseMetadata     `type:"structure"`
+}
+
+// DeleteGroupPolicyInput ...
+type DeleteGroupPolicyInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteGroupPolicyOutput ...
+type DeleteGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
 }
