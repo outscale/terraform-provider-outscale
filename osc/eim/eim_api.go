@@ -54,6 +54,10 @@ type Service interface {
 	DetachGroupPolicy(input *DetachGroupPolicyInput) (*DetachGroupPolicyOutput, error)
 	ListAttachedGroupPolicies(input *ListAttachedGroupPoliciesInput) (*ListAttachedGroupPoliciesOutput, error)
 	CreatePolicyVersion(input *CreatePolicyVersionInput) (*CreatePolicyVersionOutput, error)
+	CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error)
+	ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error)
+	UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error)
+	DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error)
 }
 
 // CreatePolicy ...
@@ -868,6 +872,29 @@ func (v Operations) PutGroupPolicy(input *PutGroupPolicyInput) (*PutGroupPolicyO
 	if err != nil {
 		return nil, err
 	}
+	return output, nil
+}
+
+//CreateAccessKey ...
+func (v Operations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "CreateAccessKey"
+	output := &CreateAccessKeyOutput{}
+
+	if input == nil {
+		input = &CreateAccessKeyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
 
 	return output, nil
 }
@@ -896,6 +923,30 @@ func (v Operations) GetGroupPolicy(input *GetGroupPolicyInput) (*GetGroupPolicyO
 	return output, nil
 }
 
+//ListAccessKeys ...
+func (v Operations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error) {
+	inURL := "/"
+	endpoint := "ListAccessKeys"
+	output := &ListAccessKeysOutput{}
+
+	if input == nil {
+		input = &ListAccessKeysInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
 // DeleteGroupPolicy ...
 func (v Operations) DeleteGroupPolicy(input *DeleteGroupPolicyInput) (*DeleteGroupPolicyOutput, error) {
 	inURL := "/"
@@ -904,6 +955,30 @@ func (v Operations) DeleteGroupPolicy(input *DeleteGroupPolicyInput) (*DeleteGro
 
 	if input == nil {
 		input = &DeleteGroupPolicyInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//UpdateAccessKey ...
+func (v Operations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "UpdateAccessKey"
+	output := &UpdateAccessKeyOutput{}
+
+	if input == nil {
+		input = &UpdateAccessKeyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
@@ -1000,6 +1075,30 @@ func (v Operations) CreatePolicyVersion(input *CreatePolicyVersionInput) (*Creat
 
 	if input == nil {
 		input = &CreatePolicyVersionInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//DeleteAccessKey ...
+func (v Operations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteAccessKey"
+	output := &DeleteAccessKeyOutput{}
+
+	if input == nil {
+		input = &DeleteAccessKeyInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodGet, inURL, input)

@@ -120,6 +120,7 @@ func init() {
 			"outscale_policy_group":                  resourceOutscaleOAPIPolicyGroup,
 			"outscale_policy_group_link":             resourceOutscaleOAPIPolicyGroupLink,
 			"outscale_policy_version":                resourceOutscaleOAPIPolicyVersion,
+			"outscale_user_api_keys":                 resourceOutscaleOAPIUserAPIKey,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -147,6 +148,7 @@ func init() {
 			"outscale_policy_group":           resourceOutscalePolicyGroup,
 			"outscale_policy_group_link":      resourceOutscalePolicyGroupLink,
 			"outscale_policy_version":         resourceOutscalePolicyVersion,
+			"outscale_user_api_keys":          resourceOutscaleUserAPIKeys,
 		},
 	}
 	datasources = Dictionary{
@@ -298,6 +300,7 @@ func init() {
 			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
 			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
+			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
 		},
 	}
 }
