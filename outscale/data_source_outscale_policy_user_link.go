@@ -83,12 +83,12 @@ func dataSourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	if len(resp.AttachedPolicies) < 1 {
+	if len(resp.ListAttachedUserPoliciesResult.AttachedPolicies) < 1 {
 		return fmt.Errorf("No results")
 	}
 
-	p := make([]map[string]interface{}, len(resp.AttachedPolicies))
-	for k, v := range resp.AttachedPolicies {
+	p := make([]map[string]interface{}, len(resp.ListAttachedUserPoliciesResult.AttachedPolicies))
+	for k, v := range resp.ListAttachedUserPoliciesResult.AttachedPolicies {
 		a := make(map[string]interface{})
 		a["policy_arn"] = aws.StringValue(v.PolicyArn)
 		a["policy_name"] = aws.StringValue(v.PolicyName)
@@ -96,6 +96,7 @@ func dataSourceOutscalePolicyUserLinkRead(d *schema.ResourceData, meta interface
 	}
 
 	d.SetId(resource.UniqueId())
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 
 	return d.Set("attached_policies", p)
 }

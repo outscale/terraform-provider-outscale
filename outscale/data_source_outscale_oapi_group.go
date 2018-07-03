@@ -63,8 +63,8 @@ func dataSourceOutscaleOAPIGroupRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Error reading IAM Group %s: %s", d.Id(), err)
 	}
 
-	d.Set("group_id", aws.StringValue(getResp.Group.GroupId))
-	d.Set("path", aws.StringValue(getResp.Group.Path))
+	d.Set("group_id", aws.StringValue(getResp.GetGroupResult.Group.GroupId))
+	d.Set("path", aws.StringValue(getResp.GetGroupResult.Group.Path))
 
 	d.SetId(resource.UniqueId())
 

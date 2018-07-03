@@ -118,6 +118,10 @@ func init() {
 			"outscale_policy_user_link":              resourceOutscaleOAPIPolicyUserLink,
 			"outscale_server_certificate":            resourceOutscaleOAPServerCertificate,
 			"outscale_policy_user":                   resourceOutscaleOAPIUserPolicy,
+			"outscale_policy_group":                  resourceOutscaleOAPIPolicyGroup,
+			"outscale_policy_group_link":             resourceOutscaleOAPIPolicyGroupLink,
+			"outscale_policy_version":                resourceOutscaleOAPIPolicyVersion,
+			"outscale_user_api_keys":                 resourceOutscaleOAPIUserAPIKey,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -145,6 +149,10 @@ func init() {
 			"outscale_policy_user_link":       resourceOutscalePolicyUserLink,
 			"outscale_server_certificate":     resourceOutscaleEIMServerCertificate,
 			"outscale_policy_user":            resourceOutscaleUserPolicy,
+			"outscale_policy_group":           resourceOutscalePolicyGroup,
+			"outscale_policy_group_link":      resourceOutscalePolicyGroupLink,
+			"outscale_policy_version":         resourceOutscalePolicyVersion,
+			"outscale_user_api_keys":          resourceOutscaleUserAPIKeys,
 		},
 	}
 	datasources = Dictionary{
@@ -270,8 +278,9 @@ func init() {
 			"outscale_policy_user_link":                    dataSourceOutscaleOAPIPolicyUserLink,
 			"outscale_groups":                              dataSourceOutscaleOAPIGroups,
 			"outscale_groups_for_user":                     dataSourceOutscaleOAPIGroupUser,
-			"outscale_policy":                              resourceOutscaleOAPIPolicy,
+			"outscale_policy":                              dataSourceOutscaleOAPIPolicy,
 			"outscale_server_certificate":                  datasourceOutscaleOAPIEIMServerCertificate,
+			"outscale_policy_group_link":                   dataSourceOutscaleOAPIPolicyGroupLink,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -294,6 +303,8 @@ func init() {
 			"outscale_policy":              dataSourceOutscalePolicy,
 			"outscale_server_certificate":  datasourceOutscaleEIMServerCertificate,
 			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
+			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
+			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
 		},
 	}
 }

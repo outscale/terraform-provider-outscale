@@ -71,6 +71,13 @@ type GetPolicyVersionInput struct {
 
 // GetPolicyVersionOutput ...
 type GetPolicyVersionOutput struct {
+	_                      struct{}                `type:"structure"`
+	GetPolicyVersionResult *GetPolicyVersionResult `type:"structure"`
+	ResponseMetadata       *ResponseMetadata       `type:"structure"`
+}
+
+// GetPolicyVersionResult ...
+type GetPolicyVersionResult struct {
 	_             struct{}       `type:"structure"`
 	PolicyVersion *PolicyVersion `type:"structure"`
 }
@@ -130,10 +137,16 @@ type CreateGroupInput struct {
 	Path      *string  `min:"1" type:"string"`
 }
 
-// CreateGroupOutput ...
-type CreateGroupOutput struct {
+// CreateGroupResult ...
+type CreateGroupResult struct {
 	_     struct{} `type:"structure"`
 	Group *Group   `type:"structure" required:"true"`
+}
+
+// CreateGroupOutput ...
+type CreateGroupOutput struct {
+	CreateGroupResult *CreateGroupResult `type:"structure"`
+	ResponseMetadata  *ResponseMetadata  `type:"structure"`
 }
 
 // Group ...
@@ -155,13 +168,19 @@ type GetGroupInput struct {
 	MaxItems  *int64   `min:"1" type:"integer"`
 }
 
-// GetGroupOutput ...
-type GetGroupOutput struct {
+// GetGroupResult ...
+type GetGroupResult struct {
 	_           struct{} `type:"structure"`
 	Group       *Group   `type:"structure" required:"true"`
 	IsTruncated *bool    `type:"boolean"`
 	Marker      *string  `min:"1" type:"string"`
 	Users       []*User  `type:"list" required:"true"`
+}
+
+// GetGroupOutput ...
+type GetGroupOutput struct {
+	GetGroupResult   *GetGroupResult   `type:"structure"`
+	ResponseMetadata *ResponseMetadata `type:"structure"`
 }
 
 // User ...
@@ -232,6 +251,12 @@ type CreateUserInput struct {
 
 // CreateUserOutput ...
 type CreateUserOutput struct {
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+	CreateUserResult *CreateUserResult `type:"structure"`
+}
+
+// CreateUserResult ...
+type CreateUserResult struct {
 	_    struct{} `type:"structure"`
 	User *User    `type:"structure"`
 }
@@ -244,6 +269,12 @@ type GetUserInput struct {
 
 // GetUserOutput ...
 type GetUserOutput struct {
+	ResponseMetadata *ResponseMetadata `type:"structure"`
+	GetUserResult    *GetUserResult    `type:"structure" required:"true"`
+}
+
+// GetUserResult ...
+type GetUserResult struct {
 	_    struct{} `type:"structure"`
 	User *User    `type:"structure" required:"true"`
 }
@@ -321,12 +352,19 @@ type ListAttachedUserPoliciesInput struct {
 	UserName   *string  `min:"1" type:"string" required:"true"`
 }
 
-// ListAttachedUserPoliciesOutput ...
-type ListAttachedUserPoliciesOutput struct {
+// ListAttachedUserPoliciesResult ...
+type ListAttachedUserPoliciesResult struct {
 	_                struct{}          `type:"structure"`
 	AttachedPolicies []*AttachedPolicy `type:"list"`
 	IsTruncated      *bool             `type:"boolean"`
 	Marker           *string           `min:"1" type:"string"`
+}
+
+// ListAttachedUserPoliciesOutput ...
+type ListAttachedUserPoliciesOutput struct {
+	_                              struct{}                        `type:"structure"`
+	ListAttachedUserPoliciesResult *ListAttachedUserPoliciesResult `type:"structure"`
+	ResponseMetadata               *ResponseMetadata               `type:"structure"`
 }
 
 // AttachedPolicy ...
@@ -553,10 +591,222 @@ type GetRolePolicyInput struct {
 	RoleName   *string  `min:"1" type:"string" required:"true"`
 }
 
-// GetRolePolicyOutput ...
-type GetRolePolicyOutput struct {
+// GetRolePolicyResult ...
+type GetRolePolicyResult struct {
 	_              struct{} `type:"structure"`
 	PolicyDocument *string  `min:"1" type:"string" required:"true"`
 	PolicyName     *string  `min:"1" type:"string" required:"true"`
 	RoleName       *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetRolePolicyOutput ...
+type GetRolePolicyOutput struct {
+	GetRolePolicyResult *GetRolePolicyResult `type:"structure"`
+	ResponseMetadata    *ResponseMetadata    `type:"structure"`
+}
+
+// PutGroupPolicyInput ...
+type PutGroupPolicyInput struct {
+	_              struct{} `type:"structure"`
+	GroupName      *string  `min:"1" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+}
+
+// PutGroupPolicyOutput ...
+type PutGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// GetGroupPolicyInput ...
+type GetGroupPolicyInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupPolicyResult ...
+type GetGroupPolicyResult struct {
+	_              struct{} `type:"structure"`
+	GroupName      *string  `min:"1" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	PolicyName     *string  `min:"1" type:"string" required:"true"`
+}
+
+// GetGroupPolicyOutput ...
+type GetGroupPolicyOutput struct {
+	GetGroupPolicyResult *GetGroupPolicyResult `type:"structure"`
+	ResponseMetadata     *ResponseMetadata     `type:"structure"`
+}
+
+// DeleteGroupPolicyInput ...
+type DeleteGroupPolicyInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	PolicyName *string  `min:"1" type:"string" required:"true"`
+}
+
+// DeleteGroupPolicyOutput ...
+type DeleteGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// AttachGroupPolicyInput ...
+type AttachGroupPolicyInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+}
+
+// AttachGroupPolicyOutput ...
+type AttachGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DetachGroupPolicyInput ...
+type DetachGroupPolicyInput struct {
+	_         struct{} `type:"structure"`
+	GroupName *string  `min:"1" type:"string" required:"true"`
+	PolicyArn *string  `min:"20" type:"string" required:"true"`
+}
+
+// DetachGroupPolicyOutput ...
+type DetachGroupPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ListAttachedGroupPoliciesInput ...
+type ListAttachedGroupPoliciesInput struct {
+	_          struct{} `type:"structure"`
+	GroupName  *string  `min:"1" type:"string" required:"true"`
+	Marker     *string  `min:"1" type:"string"`
+	MaxItems   *int64   `min:"1" type:"integer"`
+	PathPrefix *string  `type:"string"`
+}
+
+// ListAttachedGroupPoliciesResult ...
+type ListAttachedGroupPoliciesResult struct {
+	_                struct{}          `type:"structure"`
+	AttachedPolicies []*AttachedPolicy `type:"list"`
+	IsTruncated      *bool             `type:"boolean"`
+	Marker           *string           `min:"1" type:"string"`
+}
+
+// ListAttachedGroupPoliciesOutput ...
+type ListAttachedGroupPoliciesOutput struct {
+	ListAttachedGroupPoliciesResult *ListAttachedGroupPoliciesResult `type:"structure"`
+	ResponseMetadata                *ResponseMetadata                `type:"structure"`
+}
+
+// CreatePolicyVersionInput ...
+type CreatePolicyVersionInput struct {
+	_              struct{} `type:"structure"`
+	PolicyArn      *string  `min:"20" type:"string" required:"true"`
+	PolicyDocument *string  `min:"1" type:"string" required:"true"`
+	SetAsDefault   *bool    `type:"boolean"`
+}
+
+// CreatePolicyVersionOutput ...
+type CreatePolicyVersionOutput struct {
+	_                         struct{}                   `type:"structure"`
+	CreatePolicyVersionResult *CreatePolicyVersionResult `type:"structure"`
+	ResponseMetadata          *ResponseMetadata          `type:"structure"`
+}
+
+// CreatePolicyVersionResult ...
+type CreatePolicyVersionResult struct {
+	_             struct{}       `type:"structure"`
+	PolicyVersion *PolicyVersion `type:"structure"`
+}
+
+// CreateAccessKeyInput ...
+type CreateAccessKeyInput struct {
+	_        struct{} `type:"structure"`
+	UserName *string  `min:"1" type:"string"` // The name of the EIM user that the new key will belong to.
+}
+
+// CreateAccessKeyOutput ...
+type CreateAccessKeyOutput struct {
+	ResponseMetadata      *ResponseMetadata      `type:"structure"`
+	CreateAccessKeyResult *CreateAccessKeyResult `type:"structure" required:"true"` // A structure with details about the access key.
+}
+
+// CreateAccessKeyResult ...
+type CreateAccessKeyResult struct {
+	_         struct{}   `type:"structure"`
+	AccessKey *AccessKey `type:"structure" required:"true"` // A structure with details about the access key.
+}
+
+//AccessKey Contains information about an AWS access key.
+//
+// This data type is used as a response element in the CreateAccessKey and ListAccessKeys
+// operations.
+//
+// The SecretAccessKey value is returned only in response to CreateAccessKey.
+// You can get a secret access key only when you first create an access key;
+// you cannot recover the secret access key later. If you lose a secret access
+// key, you must create a new access key.
+type AccessKey struct {
+	_               struct{}   `type:"structure"`
+	AccessKeyID     *string    `locationName:"AccessKeyId" min:"16" type:"string" required:"true"` // The ID for this access key.
+	CreateDate      *time.Time `type:"timestamp" timestampFormat:"iso8601"`                        // The date when the access key was created.
+	SecretAccessKey *string    `type:"string" required:"true"`                                     // The secret key used to sign requests.
+	Status          *string    `type:"string" required:"true" enum:"statusType"`                   // The status of the access key. Active means that the key is valid for API calls, while Inactive means it is not.
+	UserName        *string    `min:"1" type:"string" required:"true"`                             // The name of the IAM user that the access key is associated with.
+}
+
+// ListAccessKeysInput ..
+type ListAccessKeysInput struct {
+	_        struct{} `type:"structure"`
+	Marker   *string  `min:"1" type:"string"`  // Use this parameter only when paginating results and only after you receive a response indicating that the results are truncated. Set it to the value of the Marker element in the response that you received to indicate where the next call should start.
+	MaxItems *int64   `min:"1" type:"integer"` // (Optional) Use this only when paginating results to indicate the maximum number of items you want in the response. If additional items exist beyond the maximum you specify, the IsTruncated response element is true.
+	UserName *string  `min:"1" type:"string"`  // The name of the user.
+}
+
+//ListAccessKeysOutput Contains the response to a successful ListAccessKeys request.
+type ListAccessKeysOutput struct {
+	ListAccessKeysResult *ListAccessKeysResult `type:"structure"`
+	ResponseMetadata     *ResponseMetadata     `type:"structure"`
+}
+
+//ListAccessKeysResult Contains the response to a successful ListAccessKeys request.
+type ListAccessKeysResult struct {
+	_                 struct{}             `type:"structure"`
+	AccessKeyMetadata []*AccessKeyMetadata `type:"list" required:"true"` // A list of objects containing metadata about the access keys.
+	IsTruncated       *bool                `type:"boolean"`              // A flag that indicates whether there are more items to return.
+	Marker            *string              `min:"1" type:"string"`       // When IsTruncated is true, this element is present and contains the value to use for the Marker parameter in a subsequent pagination request.
+}
+
+// AccessKeyMetadata  Contains information about an AWS access key, without its secret key.
+type AccessKeyMetadata struct {
+	_           struct{}   `type:"structure"`
+	AccessKeyID *string    `locationName:"AccessKeyId" min:"16" type:"string"` // The ID for this access key.
+	CreateDate  *time.Time `type:"timestamp" timestampFormat:"iso8601"`        // The date when the access key was created.
+	Status      *string    `type:"string" enum:"statusType"`                   // The status of the access key. Active means the key is valid for API calls;
+	UserName    *string    `min:"1" type:"string"`                             // The name of the EIM user that the key is associated with.
+}
+
+//UpdateAccessKeyInput ...
+type UpdateAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyID *string  `locationName:"AccessKeyId" min:"16" type:"string" required:"true"` // The access key ID of the secret access key you want to update.
+	Status      *string  `type:"string" required:"true" enum:"statusType"`                   // The status you want to assign to the secret access key. Active means that  the key can be used for API calls to AWS, while Inactive means that the key cannot be used.
+	UserName    *string  `min:"1" type:"string"`                                             // The name of the user whose key you want to update.
+}
+
+//UpdateAccessKeyOutput ...
+type UpdateAccessKeyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+//DeleteAccessKeyInput ...
+type DeleteAccessKeyInput struct {
+	_           struct{} `type:"structure"`
+	AccessKeyID *string  `locationName:"AccessKeyId" min:"16" type:"string" required:"true"` // The access key ID for the access key ID and secret access key you want to delete.
+	UserName    *string  `min:"1" type:"string"`                                             // The name of the user whose access key pair you want to delete.
+}
+
+//DeleteAccessKeyOutput ...
+type DeleteAccessKeyOutput struct {
+	_ struct{} `type:"structure"`
 }

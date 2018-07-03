@@ -62,9 +62,9 @@ func resourceOutscaleOAPILoadBalancerPolicyCreate(d *schema.ResourceData, meta i
 	}
 
 	var err error
-
+	var resp *lbu.SetLoadBalancerPoliciesOfListenerOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.SetLoadBalancerPoliciesOfListener(pInput)
+		resp, err = conn.API.SetLoadBalancerPoliciesOfListener(pInput)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -79,6 +79,10 @@ func resourceOutscaleOAPILoadBalancerPolicyCreate(d *schema.ResourceData, meta i
 	if err != nil {
 		fmt.Printf("POLICY ERROR:%s", err)
 		return err
+	}
+
+	if resp.ResponseMatadata != nil {
+		d.Set("request_id", resp.ResponseMatadata.RequestID)
 	}
 
 	d.SetId(*pInput.LoadBalancerName)

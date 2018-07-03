@@ -218,18 +218,18 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
 		LoadBalancerNames: expandStringList(elbName.([]interface{})),
 	}
-
-	var describeResp *lbu.DescribeLoadBalancersOutput
+	var resp *lbu.DescribeLoadBalancersOutput
+	var describeResp *lbu.DescribeLoadBalancersResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
-
+		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
+		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -298,7 +298,7 @@ func dataSourceOutscaleLoadBalancersRead(d *schema.ResourceData, meta interface{
 		lbs[k] = l
 	}
 
-	// d.Set("request_id", describeResp.RequestID)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("load_balancer_descriptions", lbs)

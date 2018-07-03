@@ -118,12 +118,12 @@ func testAccCheckOutscaleUserExists(n string, res *eim.GetUserOutput) resource.T
 
 func testAccCheckOutscaleUserAttributes(user *eim.GetUserOutput, name string, path string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *user.User.UserName != name {
-			return fmt.Errorf("Bad name: %s", *user.User.UserName)
+		if *user.GetUserResult.User.UserName != name {
+			return fmt.Errorf("Bad name: %s", *user.GetUserResult.User.UserName)
 		}
 
-		if *user.User.Path != path {
-			return fmt.Errorf("Bad path: %s", *user.User.Path)
+		if *user.GetUserResult.User.Path != path {
+			return fmt.Errorf("Bad path: %s", *user.GetUserResult.User.Path)
 		}
 
 		return nil

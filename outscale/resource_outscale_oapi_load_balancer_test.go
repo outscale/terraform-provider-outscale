@@ -57,9 +57,10 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 		}
 
 		var err error
-		var describe *lbu.DescribeLoadBalancersOutput
+		var resp *lbu.DescribeLoadBalancersOutput
+		var describe *lbu.DescribeLoadBalancersResult
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
 				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
 
@@ -68,6 +69,9 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
+			}
+			if resp.DescribeLoadBalancersResult != nil {
+				describe = resp.DescribeLoadBalancersResult
 			}
 			return nil
 		})
@@ -145,17 +149,20 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescriptio
 		conn := testAccProvider.Meta().(*OutscaleClient).LBU
 
 		var err error
-		var describe *lbu.DescribeLoadBalancersOutput
+		var resp *lbu.DescribeLoadBalancersOutput
+		var describe *lbu.DescribeLoadBalancersResult
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
+			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
 				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
 			})
-
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
+			}
+			if resp.DescribeLoadBalancersResult != nil {
+				describe = resp.DescribeLoadBalancersResult
 			}
 			return nil
 		})
@@ -187,7 +194,7 @@ func testAccOutscaleOAPILBUConfig(r int) string {
 resource "outscale_load_balancer" "bar" {
   sub_region_name = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
-  listener {
+  listeners {
     backend_port = 8000
     backend_protocol = "HTTP"
     load_balancer_port = 80

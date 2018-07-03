@@ -1,10 +1,12 @@
 package outscale
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
@@ -20,6 +22,7 @@ func TestAccOutscaleDSLBUH_basic(t *testing.T) {
 	if oapi {
 		t.Skip()
 	}
+	rs := acctest.RandString(5)
 
 	var conf lbu.LoadBalancerDescription
 
@@ -30,7 +33,7 @@ func TestAccOutscaleDSLBUH_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleLBUHConfig,
+				Config: getTestAccDSOutscaleLBUHConfig(rs),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					resource.TestCheckResourceAttrSet(
@@ -42,10 +45,11 @@ func TestAccOutscaleDSLBUH_basic(t *testing.T) {
 	})
 }
 
-const testAccDSOutscaleLBUHConfig = `
+func getTestAccDSOutscaleLBUHConfig(r string) string {
+	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
   availability_zones = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb"
+	load_balancer_name               = "foobar-terraform-elb-%s"
   listeners {
     instance_port = 8000
     instance_protocol = "HTTP"
@@ -61,4 +65,5 @@ resource "outscale_load_balancer" "bar" {
 data "outscale_load_balancer_health_check" "test" {
 	load_balancer_name = "${outscale_load_balancer.bar.id}"
 }
-`
+`, r)
+}

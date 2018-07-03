@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -83,11 +82,11 @@ func resourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error
 		LoadBalancerNames: expandStringList(lbus.([]interface{})),
 	}
 
-	var resp *lbu.DescribeTagsOutput
+	var rs *lbu.DescribeTagsOutput
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.API.DescribeTags(params)
+		rs, err = conn.API.DescribeTags(params)
 		return resource.RetryableError(err)
 	})
 
@@ -95,9 +94,7 @@ func resourceOutscaleLBUTagsRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	utils.PrintToJSON(resp, "RESULT =>")
-
-	// d.Set("request_id", resp.RequestId)
+	d.Set("request_id", rs.ResponseMetadata.RequestID)
 	// tg := tagsLBUDescToList(resp.TagDescriptions)
 	// err = d.Set("tags", tg)
 

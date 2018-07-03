@@ -102,7 +102,7 @@ func TestAccOutscaleServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "instance_type", "c4.large"),
+						"outscale_vm.basic", "instance_type", "t2.micro"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "group_set.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -440,10 +440,10 @@ resource "outscale_nic" "outscale_nic" {
   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
-resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-  network_interface_id               = "${outscale_nic.outscale_nic.id}"
-  secondary_private_ip_address_count = 10
-}
+#resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+#  network_interface_id               = "${outscale_nic.outscale_nic.id}"
+#  secondary_private_ip_address_count = 10
+#}
 
 resource "outscale_keypair" "a_key_pair" {
   key_name = "terraform-key-%d"

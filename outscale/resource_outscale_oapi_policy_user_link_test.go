@@ -79,7 +79,7 @@ func testAccCheckOutscaleOAPIPolicyUserLinkExists(n string, c int, out *eim.List
 		if err != nil {
 			return fmt.Errorf("Error: Failed to get attached policies for user %s (%s)", user, n)
 		}
-		if c != len(attachedPolicies.AttachedPolicies) {
+		if c != len(attachedPolicies.ListAttachedUserPoliciesResult.AttachedPolicies) {
 			return fmt.Errorf("Error: User (%s) has wrong number of policies attached on initial creation", n)
 		}
 
@@ -92,7 +92,7 @@ func testAccCheckOutscaleOAPIPolicyUserLinkAttributes(policies []string, out *ei
 		matched := 0
 
 		for _, p := range policies {
-			for _, ap := range out.AttachedPolicies {
+			for _, ap := range out.ListAttachedUserPoliciesResult.AttachedPolicies {
 				// *ap.PolicyArn like arn:aws:eim::111111111111:policy/test-policy
 				parts := strings.Split(*ap.PolicyArn, "/")
 				if len(parts) == 2 && p == parts[1] {
@@ -100,8 +100,8 @@ func testAccCheckOutscaleOAPIPolicyUserLinkAttributes(policies []string, out *ei
 				}
 			}
 		}
-		if matched != len(policies) || matched != len(out.AttachedPolicies) {
-			return fmt.Errorf("Error: Number of attached policies was incorrect: expected %d matched policies, matched %d of %d", len(policies), matched, len(out.AttachedPolicies))
+		if matched != len(policies) || matched != len(out.ListAttachedUserPoliciesResult.AttachedPolicies) {
+			return fmt.Errorf("Error: Number of attached policies was incorrect: expected %d matched policies, matched %d of %d", len(policies), matched, len(out.ListAttachedUserPoliciesResult.AttachedPolicies))
 		}
 		return nil
 	}

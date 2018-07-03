@@ -21,12 +21,12 @@ func resourceOutscalePolicy() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			// "description": {
-			// 	Type:     schema.TypeString,
-			// 	ForceNew: true,
-			// 	Optional: true,
-			// 	Computed: true,
-			// },
+			"description": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+			},
 			"path": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -171,13 +171,11 @@ func resourceOutscalePolicyRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("arn", aws.StringValue(getPolicyResponse.Policy.Arn))
 	d.Set("attachment_count", aws.Int64Value(getPolicyResponse.Policy.AttachmentCount))
 	d.Set("default_version_id", aws.StringValue(getPolicyResponse.Policy.DefaultVersionId))
-	// d.Set("description", aws.StringValue(getPolicyResponse.Policy.Description))
+	d.Set("description", aws.StringValue(getPolicyResponse.Policy.Description))
 	d.Set("is_attachable", aws.BoolValue(getPolicyResponse.Policy.IsAttachable))
-	// d.Set("path", aws.StringValue(getPolicyResponse.Policy.Path))
 	d.Set("policy_id", aws.StringValue(getPolicyResponse.Policy.PolicyId))
 	d.Set("policy_name", aws.StringValue(getPolicyResponse.Policy.PolicyName))
 	d.Set("request_id", aws.StringValue(rs.ResponseMetadata.RequestID))
-	// d.SetId(*getPolicyResponse.RequestId)
 
 	return nil
 }
