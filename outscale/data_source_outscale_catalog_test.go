@@ -30,7 +30,9 @@ func TestAccOutscaleDSCatalog_basic(t *testing.T) {
 				Config: testAccDSCatalogConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleCatalogDataSourceID("data.outscale_catalog.test"),
-					//resource.TestCheckResourceAttr("data.outscale_api_key.test", "access_key.#", "1"),
+					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.#"),
+					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.0.entries.#"),
+					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.0.attributes.#"),
 				),
 			},
 		},
