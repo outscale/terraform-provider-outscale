@@ -25,30 +25,30 @@ func TestAccOutscaleOAPIEIMGroupPolicyAttachment_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleGroupPolicyAttachmentDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIGroupPolicyAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleGroupPolicyAttachConfig(groupName, policyName),
+				Config: testAccOutscaleOAPIGroupPolicyAttachConfig(groupName, policyName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleGroupPolicyAttachmentExists("outscale_policy_group_link.test-attach", 1, &out),
-					testAccCheckOutscaleGroupPolicyAttachmentAttributes([]string{policyName}, &out),
+					testAccCheckOutscaleOAPIGroupPolicyAttachmentExists("outscale_policy_group_link.test-attach", 1, &out),
+					testAccCheckOutscaleOAPIGroupPolicyAttachmentAttributes([]string{policyName}, &out),
 				),
 			},
 			resource.TestStep{
-				Config: testAccOutscaleGroupPolicyAttachConfigUpdate(groupName, policyName, policyName2, policyName3),
+				Config: testAccOutscaleOAPIGroupPolicyAttachConfigUpdate(groupName, policyName, policyName2, policyName3),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleGroupPolicyAttachmentExists("outscale_policy_group_link.test-attach", 2, &out),
-					testAccCheckOutscaleGroupPolicyAttachmentAttributes([]string{policyName2, policyName3}, &out),
+					testAccCheckOutscaleOAPIGroupPolicyAttachmentExists("outscale_policy_group_link.test-attach", 2, &out),
+					testAccCheckOutscaleOAPIGroupPolicyAttachmentAttributes([]string{policyName2, policyName3}, &out),
 				),
 			},
 		},
 	})
 }
-func testAccCheckOutscaleGroupPolicyAttachmentDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIGroupPolicyAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleGroupPolicyAttachmentExists(n string, c int, out *eim.ListAttachedGroupPoliciesOutput) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIGroupPolicyAttachmentExists(n string, c int, out *eim.ListAttachedGroupPoliciesOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -89,7 +89,7 @@ func testAccCheckOutscaleGroupPolicyAttachmentExists(n string, c int, out *eim.L
 		return nil
 	}
 }
-func testAccCheckOutscaleGroupPolicyAttachmentAttributes(policies []string, out *eim.ListAttachedGroupPoliciesOutput) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIGroupPolicyAttachmentAttributes(policies []string, out *eim.ListAttachedGroupPoliciesOutput) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		matched := 0
 
@@ -109,7 +109,7 @@ func testAccCheckOutscaleGroupPolicyAttachmentAttributes(policies []string, out 
 	}
 }
 
-func testAccOutscaleGroupPolicyAttachConfig(groupName, policyName string) string {
+func testAccOutscaleOAPIGroupPolicyAttachConfig(groupName, policyName string) string {
 	return fmt.Sprintf(`
 resource "outscale_group" "group" {
     group_name = "%s"
@@ -140,7 +140,7 @@ resource "outscale_policy_group_link" "test-attach" {
 `, groupName, policyName)
 }
 
-func testAccOutscaleGroupPolicyAttachConfigUpdate(groupName, policyName, policyName2, policyName3 string) string {
+func testAccOutscaleOAPIGroupPolicyAttachConfigUpdate(groupName, policyName, policyName2, policyName3 string) string {
 	return fmt.Sprintf(`
 resource "outscale_group" "group" {
     group_name = "%s"
