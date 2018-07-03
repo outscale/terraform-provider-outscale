@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
@@ -44,6 +45,10 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -66,8 +71,9 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	}
 
 	var err error
+	var resp *lbu.CreateAppCookieStickinessPolicyOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.CreateAppCookieStickinessPolicy(acspOpts)
+		resp, err = conn.API.CreateAppCookieStickinessPolicy(acspOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -81,6 +87,12 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 
 	if err != nil {
 		return fmt.Errorf("Error creating AppCookieStickinessPolicy: %s", err)
+	}
+
+	utils.PrintToJSON(resp, "RESPONSECookie")
+
+	if resp.ResponseMatadata != nil {
+		d.Set("request_id", aws.StringValue(resp.ResponseMatadata.RequestID))
 	}
 
 	d.SetId(resource.UniqueId())

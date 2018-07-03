@@ -88,7 +88,7 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateCreate(d *schema.ResourceData
 	}
 
 	if resp.ResponseMetadata != nil {
-		d.Set("request_id", resp.ResponseMetadata.RequestId)
+		d.Set("request_id", resp.ResponseMetadata.RequestID)
 	}
 
 	d.SetId(ename.(string))
@@ -128,7 +128,7 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateUpdate(d *schema.ResourceData
 	}
 
 	if resp.ResponseMetadata != nil {
-		d.Set("request_id", resp.ResponseMetadata.RequestId)
+		d.Set("request_id", resp.ResponseMetadata.RequestID)
 	}
 
 	d.SetId(aws.StringValue(opts.LoadBalancerName))

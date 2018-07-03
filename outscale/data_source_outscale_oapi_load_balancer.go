@@ -209,18 +209,18 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	describeElbOpts := &lbu.DescribeLoadBalancersInput{
 		LoadBalancerNames: []*string{aws.String(elbName)},
 	}
-
-	var describeResp *lbu.DescribeLoadBalancersOutput
+	var resp *lbu.DescribeLoadBalancersOutput
+	var describeResp *lbu.DescribeLoadBalancersResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		describeResp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
-
+		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
+		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -304,7 +304,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("firewall_rules_set_name", ssg)
 	d.Set("subnets_member", flattenStringList(lb.Subnets))
 	d.Set("lin_id", aws.StringValue(lb.VPCId))
-	// d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil

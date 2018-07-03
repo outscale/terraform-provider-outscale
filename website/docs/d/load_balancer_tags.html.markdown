@@ -15,7 +15,7 @@ Describes the tags associated with one or more specified load balancers.
 ```hcl
 resource "outscale_load_balancer" "bar" {
     availability_zones = ["eu-west-2a"]
-    load_balancer_name = "foobar-terraform-elb-ddddd"
+    load_balancer_name = "foobar-terraform-elb-aaaaa"
     listeners {
         instance_port = 8000
         instance_protocol = "HTTP"

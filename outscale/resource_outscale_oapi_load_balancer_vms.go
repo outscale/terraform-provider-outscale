@@ -67,7 +67,7 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.API.RegisterInstancesWithLoadBalancer(&registerInstancesOpts)
+		_, err = conn.API.RegisterInstancesWithLoadBalancer(&registerInstancesOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -99,6 +99,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	}
 
 	var resp *lbu.DescribeLoadBalancersOutput
+	var describeResp *lbu.DescribeLoadBalancersResult
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
@@ -109,6 +110,9 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 					fmt.Errorf("[WARN] Error, retrying: %s", err))
 			}
 			return resource.NonRetryableError(err)
+		}
+		if resp.DescribeLoadBalancersResult != nil {
+			describeResp = resp.DescribeLoadBalancersResult
 		}
 		return nil
 	})
@@ -121,14 +125,14 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		}
 		return fmt.Errorf("Error retrieving LBU: %s", err)
 	}
-	if len(resp.LoadBalancerDescriptions) != 1 {
-		log.Printf("[ERROR] Unable to find LBU: %v", resp.LoadBalancerDescriptions)
+	if len(describeResp.LoadBalancerDescriptions) != 1 {
+		log.Printf("[ERROR] Unable to find LBU: %v", describeResp.LoadBalancerDescriptions)
 		d.SetId("")
 		return nil
 	}
 
 	found := false
-	for _, i := range resp.LoadBalancerDescriptions[0].Instances {
+	for _, i := range describeResp.LoadBalancerDescriptions[0].Instances {
 		for k1 := range expected {
 			instance := expected[k1].(map[string]interface{})["vm_id"].(string)
 			if instance == *i.InstanceId {
