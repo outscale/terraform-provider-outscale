@@ -10,16 +10,16 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 )
 
-func dataSourceOutscalePublicCatalog() *schema.Resource {
+func dataSourceOutscaleOAPIPublicCatalog() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscalePublicCatalogRead,
+		Read: dataSourceOutscaleOAPIPublicCatalogRead,
 		Schema: map[string]*schema.Schema{
 			"catalog": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"attributes": {
+						"catalog_attributes": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -35,12 +35,12 @@ func dataSourceOutscalePublicCatalog() *schema.Resource {
 								},
 							},
 						},
-						"entries": {
+						"catalog_entries": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"attributes": {
+									"catalog_attributes": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Resource{
@@ -56,15 +56,15 @@ func dataSourceOutscalePublicCatalog() *schema.Resource {
 											},
 										},
 									},
-									"key": {
+									"entry_key": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"title": {
+									"short_description": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"value": {
+									"entry_value": {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
@@ -82,7 +82,7 @@ func dataSourceOutscalePublicCatalog() *schema.Resource {
 	}
 }
 
-func dataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIPublicCatalogRead(d *schema.ResourceData, meta interface{}) error {
 	icuconn := meta.(*OutscaleClient).ICU
 
 	request := &icu.ReadCatalogInput{}
@@ -111,8 +111,8 @@ func dataSourceOutscalePublicCatalogRead(d *schema.ResourceData, meta interface{
 	// utils.PrintToJSON(getResp, "ReadCatalog")
 
 	catalog := make(map[string]interface{})
-	catalog["attributes"] = flattenAttritbutes(getResp.Catalog.Attributes)
-	catalog["entries"] = flattenEntries(getResp.Catalog.Entries)
+	catalog["catalog_attributes"] = flattenOAPIAttritbutes(getResp.Catalog.Attributes)
+	catalog["catalog_entries"] = flattenOAPIEntries(getResp.Catalog.Entries)
 	catList := make([]map[string]interface{}, 1)
 	catList[0] = catalog
 
