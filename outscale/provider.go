@@ -207,6 +207,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_policy_group_link":                   GetDatasource(eim, "outscale_policy_group_link")(),
 			"outscale_user_api_keys":                       GetDatasource(eim, "outscale_user_api_keys")(),
 			"outscale_catalog":                             GetDatasource(icu, "outscale_catalog")(),
+			"outscale_public_catalog":                      GetDatasource(icu, "outscale_public_catalog")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
