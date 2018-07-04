@@ -283,6 +283,7 @@ func init() {
 			"outscale_policy":                              dataSourceOutscaleOAPIPolicy,
 			"outscale_server_certificate":                  datasourceOutscaleOAPIEIMServerCertificate,
 			"outscale_policy_group_link":                   dataSourceOutscaleOAPIPolicyGroupLink,
+			"outscale_catalog":                             dataSourceOutscaleOAPICatalog,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
