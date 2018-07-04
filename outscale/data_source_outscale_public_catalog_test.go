@@ -29,10 +29,11 @@ func TestAccOutscaleDSPublicCatalog_basic(t *testing.T) {
 			{
 				Config: testAccDSPublicCatalogConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicCatalogDataSourceID("data.outscale_catalog.test"),
-					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.#"),
-					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.0.entries.#"),
-					resource.TestCheckResourceAttrSet("data.outscale_catalog.test", "catalog.0.attributes.#"),
+					testAccCheckState("data.outscale_public_catalog.test"),
+					testAccCheckOutscalePublicCatalogDataSourceID("data.outscale_public_catalog.test"),
+					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.#"),
+					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.0.entries.#"),
+					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.0.attributes.#"),
 				),
 			},
 		},
@@ -55,6 +56,6 @@ func testAccCheckOutscalePublicCatalogDataSourceID(n string) resource.TestCheckF
 
 func testAccDSPublicCatalogConfig() string {
 	return fmt.Sprintf(`
-		data "outscale_catalog" "test" {}
+		data "outscale_public_catalog" "test" {}
 	`)
 }
