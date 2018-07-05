@@ -8,6 +8,7 @@ import (
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -453,6 +454,22 @@ func tagsToMapC(ts []*common.Tag) []map[string]string {
 		result = make([]map[string]string, 0)
 	}
 
+	return result
+}
+
+func tagsToMapI(ts []*icu.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	if len(ts) > 0 {
+		for k, t := range ts {
+			tag := make(map[string]string)
+			tag["key"] = *t.Key
+			tag["value"] = *t.Value
+			result[k] = tag
+		}
+	} else {
+		result = make([]map[string]string, 0)
+	}
+
 	fmt.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
@@ -470,8 +487,6 @@ func tagsToMapL(ts []*lbu.Tag) []map[string]string {
 	} else {
 		result = make([]map[string]string, 0)
 	}
-
-	fmt.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
 }

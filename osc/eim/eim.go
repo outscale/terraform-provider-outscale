@@ -44,6 +44,7 @@ func NewEIMClient(config osc.Config) (*Client, error) {
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
 		UnmarshalHandler:      handler.UnmarshalXML,
 		UnmarshalErrorHandler: handler.UnmarshalLBUErrorHandler,
+		SetHeaders:            handler.SetHeaders,
 	}
 
 	f := &Client{client: &c,

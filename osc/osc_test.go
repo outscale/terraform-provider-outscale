@@ -128,7 +128,7 @@ func TestSetHeaders(t *testing.T) {
 	c := buildClient()
 
 	req, _ := http.NewRequest(http.MethodGet, "http//:example.org/", nil)
-	c.SetHeaders(req, "fcu", "DescribeInstances")
+	c.SetHeaders(c.Config.Target, req, "DescribeInstances")
 
 	q := req.Header
 	targetExpected := "fcu.DescribeInstances"

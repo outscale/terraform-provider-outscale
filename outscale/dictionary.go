@@ -110,6 +110,7 @@ func init() {
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 			"outscale_policy":                        resourceOutscaleOAPIPolicy,
+			"outscale_directlink":                    resourceOutscaleOAPIDirectLink,
 			"outscale_group":                         resourceOutscaleOAPIGroup,
 			"outscale_group_user":                    resourceOutscaleOAPIGroupUser,
 			"outscale_user":                          resourceOutscaleOAPIUser,
@@ -121,9 +122,14 @@ func init() {
 			"outscale_policy_group_link":             resourceOutscaleOAPIPolicyGroupLink,
 			"outscale_policy_version":                resourceOutscaleOAPIPolicyVersion,
 			"outscale_user_api_keys":                 resourceOutscaleOAPIUserAPIKey,
+			"outscale_directlink_interface":          resourceOutscaleOAPIDirectLinkInterface,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
+		},
+		"dl": ResourceMap{
+			"outscale_directlink":           resourceOutscaleDirectLink,
+			"outscale_directlink_interface": resourceOutscaleDirectLinkInterface,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                 resourceOutscaleLoadBalancer,
