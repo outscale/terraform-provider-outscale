@@ -316,6 +316,9 @@ func init() {
 			"outscale_public_catalog":      dataSourceOutscalePublicCatalog,
 			"outscale_account_consumption": dataSourceOutscaleAccountConsumption,
 		},
+		"dl": ResourceMap{
+			"outscale_sites": dataSourceOutscaleSites,
+		},
 	}
 }
 
