@@ -20,6 +20,7 @@ type Service interface {
 	CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error)
 	DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error)
 	DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error)
+	DescribeLocations(input *DescribeLocationsInput) (*DescribeLocationsOutput, error)
 }
 
 // CreateConnection ...
@@ -150,6 +151,30 @@ func (v Operations) DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (
 
 	if input == nil {
 		input = &DeleteVirtualInterfaceInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DescribeLocations ...
+func (v Operations) DescribeLocations(input *DescribeLocationsInput) (*DescribeLocationsOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeLocations"
+	output := &DescribeLocationsOutput{}
+
+	if input == nil {
+		input = &DescribeLocationsInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
