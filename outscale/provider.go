@@ -126,6 +126,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_policy_group_link":             GetResource(eim, "outscale_policy_group_link")(),
 			"outscale_policy_version":                GetResource(eim, "outscale_policy_version")(),
 			"outscale_user_api_keys":                 GetResource(eim, "outscale_user_api_keys")(),
+			"outscale_directlink_interface":          GetResource(dl, "outscale_directlink_interface")(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  GetDatasource(fcu, "outscale_vm")(),

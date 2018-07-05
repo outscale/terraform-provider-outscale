@@ -127,7 +127,8 @@ func init() {
 			"outscale_api_key": resourceOutscaleIamAccessKey,
 		},
 		"dl": ResourceMap{
-			"outscale_directlink": resourceOutscaleDirectLink,
+			"outscale_directlink":           resourceOutscaleDirectLink,
+			"outscale_directlink_interface": resourceOutscaleDirectLinkInterface,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                 resourceOutscaleLoadBalancer,

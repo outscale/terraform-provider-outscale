@@ -27,7 +27,6 @@ func TestAccOutscaleDirectLink_basic(t *testing.T) {
 					testAccCheckOutscaleDirectLinkExists("outscale_directlink.hoge"),
 					resource.TestCheckResourceAttr("outscale_directlink.hoge", "connection_name", connectionName),
 					resource.TestCheckResourceAttr("outscale_directlink.hoge", "bandwidth", "1Gbps"),
-					resource.TestCheckResourceAttr("outscale_directlink.hoge", "location", "EqSe2"),
 				),
 			},
 		},
@@ -85,9 +84,9 @@ func testAccCheckOutscaleDirectLinkExists(name string) resource.TestCheckFunc {
 func testAccDxConnectionConfig(n string) string {
 	return fmt.Sprintf(`
 resource "outscale_directlink" "hoge" {
-  connection_name = "%s"
-  bandwidth = "1Gbps"
-  location = "EqSe2"
+  	bandwidth = "1Gbps"
+    connection_name = "test-directlink-%s"
+    location = "PAR1"
 }
 `, n)
 }

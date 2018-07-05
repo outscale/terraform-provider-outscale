@@ -17,6 +17,9 @@ type Service interface {
 	CreateConnection(input *CreateConnectionInput) (*Connection, error)
 	DescribeConnections(input *DescribeConnectionsInput) (*Connections, error)
 	DeleteConnection(input *DeleteConnectionInput) (*Connection, error)
+	CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error)
+	DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error)
+	DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error)
 }
 
 // CreateConnection ...
@@ -75,6 +78,78 @@ func (v Operations) DeleteConnection(input *DeleteConnectionInput) (*Connection,
 
 	if input == nil {
 		input = &DeleteConnectionInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// CreatePrivateVirtualInterface ...
+func (v Operations) CreatePrivateVirtualInterface(input *CreatePrivateVirtualInterfaceInput) (*VirtualInterface, error) {
+	inURL := "/"
+	endpoint := "CreatePrivateVirtualInterface"
+	output := &VirtualInterface{}
+
+	if input == nil {
+		input = &CreatePrivateVirtualInterfaceInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DescribeVirtualInterfaces ...
+func (v Operations) DescribeVirtualInterfaces(input *DescribeVirtualInterfacesInput) (*DescribeVirtualInterfacesOutput, error) {
+	inURL := "/"
+	endpoint := "DescribeVirtualInterfaces"
+	output := &DescribeVirtualInterfacesOutput{}
+
+	if input == nil {
+		input = &DescribeVirtualInterfacesInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// DeleteVirtualInterface ...
+func (v Operations) DeleteVirtualInterface(input *DeleteVirtualInterfaceInput) (*DeleteVirtualInterfaceOutput, error) {
+	inURL := "/"
+	endpoint := "DeleteVirtualInterface"
+	output := &DeleteVirtualInterfaceOutput{}
+
+	if input == nil {
+		input = &DeleteVirtualInterfaceInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)

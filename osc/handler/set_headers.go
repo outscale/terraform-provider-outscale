@@ -22,7 +22,7 @@ func SetHeadersICU(agent string, req *http.Request, operation string) {
 
 // SetHeadersDL sets the headers for the request
 func SetHeadersDL(agent string, req *http.Request, operation string) {
-	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s_2018-07-03.%s", agent, operation))
+	req.Header.Add("X-Amz-Target", fmt.Sprintf("OvertureService.%s", operation))
 	commonHeadres(agent, mediaType, req)
 }
 
