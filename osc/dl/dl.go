@@ -43,8 +43,8 @@ func NewDLClient(config osc.Config) (*Client, error) {
 		Signer:                s,
 		MarshalHander:         handler.URLEncodeMarshalHander,
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
-		UnmarshalHandler:      handler.UnmarshalXML,
-		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
+		UnmarshalHandler:      handler.UnmarshalDLHandler,
+		UnmarshalErrorHandler: handler.UnmarshalJSONErrorHandler,
 		SetHeaders:            handler.SetHeadersDL,
 		BindBody:              handler.BindDL,
 	}

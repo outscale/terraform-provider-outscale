@@ -1,6 +1,8 @@
 package dl
 
-import "time"
+import (
+	"time"
+)
 
 // CreateConnectionInput ...
 type CreateConnectionInput struct {
@@ -134,4 +136,23 @@ type DeleteVirtualInterfaceInput struct {
 type DeleteVirtualInterfaceOutput struct {
 	_                     struct{} `type:"structure"`
 	VirtualInterfaceState *string  `locationName:"virtualInterfaceState" type:"string" enum:"VirtualInterfaceState"`
+}
+
+//DescribeLocationsInput ...
+type DescribeLocationsInput struct {
+	_ struct{} `type:"structure"`
+}
+
+// DescribeLocationsOutput ...
+type DescribeLocationsOutput struct {
+	_         struct{}    `type:"structure"`
+	Locations []*Location `locationName:"locations" type:"list"` // A list of colocation hubs where network providers have equipment. Most regions have multiple locations available.
+	RequestID *string     `json:"RequestId" type:"string"`
+}
+
+//Location ...
+type Location struct {
+	_            struct{} `type:"structure"`
+	LocationCode *string  `locationName:"locationCode" type:"string"` // The code used to indicate the Outscale Direct Connect location.
+	LocationName *string  `locationName:"locationName" type:"string"` // The name of the Outscale Direct Connect location. The name includes the colocation partner name and the physical site of the lit building.
 }

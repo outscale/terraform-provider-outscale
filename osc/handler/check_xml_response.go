@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -42,6 +43,44 @@ func UnmarshalLBUXML(v interface{}, r *http.Response, operation string) error {
 	err := xmlutil.UnmarshalXML(v, decoder, operationName+"Result")
 
 	return sendError(err)
+}
+
+//UnmarshalDLHandler ...
+func UnmarshalDLHandler(v interface{}, r *http.Response, operation string) error {
+	defer r.Body.Close()
+
+	j := struct {
+		RequestID string `json:"RequestId" type:"string"`
+	}{
+		r.Header.Get("X-Amz-Requestid"),
+	}
+
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
+		return err
+	}
+
+	o := commonStuctre(j, v)
+
+	err = json.Unmarshal([]byte(o), v)
+	if err != nil {
+		return err
+	}
+
+	return err
+
+}
+
+//UnmarshalICUHandler ...
+func UnmarshalICUHandler(v interface{}, r *http.Response, operation string) error {
+	defer r.Body.Close()
+
+	err := json.NewDecoder(r.Body).Decode(v)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
 
 func debugResponse(r *http.Response) {
