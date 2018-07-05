@@ -4,10 +4,8 @@ package osc
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"time"
 
@@ -125,14 +123,6 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	requestDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("######################")
-	fmt.Println("####### REQUEST #########")
-	fmt.Println(string(requestDump))
-
 	return req, nil
 }
 
@@ -142,18 +132,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	requestDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("######################")
-	fmt.Println("####### RESPONSE #########")
-	fmt.Println(string(requestDump))
-
 	if err != nil {
 		return err
 	}
-	//utils.DebugResponse(resp)
 
 	err = c.checkResponse(resp)
 	if err != nil {
