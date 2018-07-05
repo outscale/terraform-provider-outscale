@@ -3,7 +3,6 @@ package osc
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
@@ -132,24 +131,13 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-
+	//utils.DebugResponse(resp)
 	if err != nil {
 		return err
 	}
 
 	err = c.checkResponse(resp)
 	if err != nil {
-		return err
-	}
-
-	if req.Method == "POST" {
-		defer resp.Body.Close()
-
-		err = json.NewDecoder(resp.Body).Decode(v)
-		if err != nil {
-			return err
-		}
-
 		return err
 	}
 
