@@ -311,8 +311,9 @@ func init() {
 			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
 		},
 		"icu": ResourceMap{
-			"outscale_catalog":        dataSourceOutscaleCatalog,
-			"outscale_public_catalog": dataSourceOutscalePublicCatalog,
+			"outscale_catalog":             dataSourceOutscaleCatalog,
+			"outscale_public_catalog":      dataSourceOutscalePublicCatalog,
+			"outscale_account_consumption": dataSourceOutscaleAccountConsumption,
 		},
 	}
 }

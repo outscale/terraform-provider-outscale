@@ -137,3 +137,27 @@ type CatalogEntry struct {
 	Value      *int64              `type:"integer"`
 	Title      *string             `type:"string"`
 }
+
+//ReadConsumptionAccountInput ...
+type ReadConsumptionAccountInput struct {
+	FromDate *string `type:"string"`
+	ToDate   *string `type:"string"`
+}
+
+//ReadConsumptionAccountOutput ...
+type ReadConsumptionAccountOutput struct {
+	Entries          []*ConsumptionEntry `type:"structure"`
+	ResponseMetadata *RequestID          `json:"ResponseMetadata" type:"structure"`
+}
+
+//ConsumptionEntry ...
+type ConsumptionEntry struct {
+	Category  *string  `type:"string"`
+	FromDate  *string  `type:"string"`
+	Operation *string  `type:"string"`
+	Service   *string  `type:"string"`
+	Title     *string  `type:"string"`
+	ToDate    *string  `type:"string"`
+	Type      *string  `type:"string"`
+	Value     *float64 `type:"integer"`
+}

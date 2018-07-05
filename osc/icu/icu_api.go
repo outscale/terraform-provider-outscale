@@ -20,6 +20,7 @@ type Service interface {
 	ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error)
 	ReadCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
 	ReadPublicCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
+	ReadConsumptionAccount(input *ReadConsumptionAccountInput) (*ReadConsumptionAccountOutput, error)
 }
 
 // CreateAccessKey ...
@@ -155,6 +156,30 @@ func (v Operations) ReadPublicCatalog(input *ReadCatalogInput) (*ReadCatalogOutp
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//ReadConsumptionAccount ...
+func (v Operations) ReadConsumptionAccount(input *ReadConsumptionAccountInput) (*ReadConsumptionAccountOutput, error) {
+	inURL := "/"
+	endpoint := "ReadConsumptionAccount"
+	output := &ReadConsumptionAccountOutput{}
+
+	if input == nil {
+		input = &ReadConsumptionAccountInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 
 	if err != nil {
 		return nil, err
