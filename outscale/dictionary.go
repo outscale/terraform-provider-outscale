@@ -285,6 +285,7 @@ func init() {
 			"outscale_policy_group_link":                   dataSourceOutscaleOAPIPolicyGroupLink,
 			"outscale_catalog":                             dataSourceOutscaleOAPICatalog,
 			"outscale_public_catalog":                      dataSourceOutscaleOAPIPublicCatalog,
+			"outscale_account_consumption":                 dataSourceOutscaleOAPIAccountConsumption,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
