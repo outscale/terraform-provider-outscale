@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const mediaTypeURLEncoded = "application/x-www-form-urlencoded"
-
 // BuildURLEncodedRequest the request with a body, if it's post then adds it to the body of the request,
 // otherwise adds it to the url query
 func BuildURLEncodedRequest(body interface{}, method, url string) (*http.Request, io.ReadSeeker, error) {

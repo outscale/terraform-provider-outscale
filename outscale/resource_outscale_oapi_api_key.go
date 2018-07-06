@@ -57,7 +57,7 @@ func resourceOutscaleOAPIIamAccessKeyCreate(d *schema.ResourceData, meta interfa
 	request := &icu.CreateAccessKeyInput{}
 
 	if v, ok := d.GetOk("api_key_id"); ok {
-		request.AccessKeyId = aws.String(v.(string))
+		request.AccessKeyID = aws.String(v.(string))
 	}
 	if v, ok := d.GetOk("secret_key"); ok {
 		request.SecretAccessKey = aws.String(v.(string))
@@ -118,12 +118,12 @@ func resourceOutscaleOAPIIamAccessKeyRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error reading acces key: %s", err)
 	}
 
-	d.Set("api_key_id", getResp.AccessKeyMetadata[0].AccessKeyId)
+	d.Set("api_key_id", getResp.AccessKeyMetadata[0].AccessKeyID)
 	d.Set("secret_key", getResp.AccessKeyMetadata[0].SecretAccessKey)
-	d.Set("account_id", getResp.AccessKeyMetadata[0].OwnerId)
+	d.Set("account_id", getResp.AccessKeyMetadata[0].OwnerID)
 	d.Set("state", getResp.AccessKeyMetadata[0].Status)
-	d.Set("tag_set", tagsToMapC(getResp.AccessKeyMetadata[0].Tags))
-	d.Set("request_id", getResp.ResponseMetadata.RequestId)
+	d.Set("tag_set", tagsToMapI(getResp.AccessKeyMetadata[0].Tags))
+	d.Set("request_id", getResp.ResponseMetadata.RequestID)
 
 	return nil
 }

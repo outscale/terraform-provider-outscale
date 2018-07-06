@@ -39,7 +39,6 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-
 			"cookie_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -91,10 +90,11 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 
 	utils.PrintToJSON(resp, "RESPONSECookie")
 
+	reqID := ""
 	if resp.ResponseMatadata != nil {
-		d.Set("request_id", aws.StringValue(resp.ResponseMatadata.RequestID))
+		reqID = aws.StringValue(resp.ResponseMatadata.RequestID)
 	}
-
+	d.Set("request_id", reqID)
 	d.SetId(resource.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", p.(string))

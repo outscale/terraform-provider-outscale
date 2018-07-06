@@ -99,8 +99,9 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 
 const testAccOutscaleAccessKeyConfig = `
 resource "outscale_api_key" "outscale_api_key" {
-  tag = {
-    Name = "test"
-  }
+	secret_access_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"
+	  tag = {
+        Name = "api_key_test"
+    }
 }
 `

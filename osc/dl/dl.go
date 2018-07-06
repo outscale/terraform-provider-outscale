@@ -1,4 +1,4 @@
-package fcu
+package dl
 
 import (
 	"fmt"
@@ -11,29 +11,29 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/handler"
 )
 
-//FCU the name of the api for url building
-const FCU = "fcu"
+//DL the name of the api for url building
+const DL = "directlink"
 
 //Client manages the FCU API
 type Client struct {
 	client *osc.Client
-	VM     VMService
+	API    Service
 }
 
-// NewFCUClient return a client to operate FCU resources
-func NewFCUClient(config osc.Config) (*Client, error) {
+// NewDLClient return a client to operate DL resources
+func NewDLClient(config osc.Config) (*Client, error) {
 
 	s := &v4.Signer{
 		Credentials: credentials.NewStaticCredentials(config.Credentials.AccessKey,
 			config.Credentials.SecretKey, ""),
 	}
 
-	u, err := url.Parse(fmt.Sprintf(osc.DefaultBaseURL, FCU, config.Credentials.Region))
+	u, err := url.Parse(fmt.Sprintf(osc.DefaultBaseURL, DL, config.Credentials.Region))
 	if err != nil {
 		return nil, err
 	}
 
-	config.Target = FCU
+	config.Target = DL
 	config.BaseURL = u
 	config.UserAgent = osc.UserAgent
 	config.Client = &http.Client{}
@@ -43,13 +43,14 @@ func NewFCUClient(config osc.Config) (*Client, error) {
 		Signer:                s,
 		MarshalHander:         handler.URLEncodeMarshalHander,
 		BuildRequestHandler:   handler.BuildURLEncodedRequest,
-		UnmarshalHandler:      handler.UnmarshalXML,
-		UnmarshalErrorHandler: handler.UnmarshalErrorHandler,
-		SetHeaders:            handler.SetHeaders,
+		UnmarshalHandler:      handler.UnmarshalDLHandler,
+		UnmarshalErrorHandler: handler.UnmarshalJSONErrorHandler,
+		SetHeaders:            handler.SetHeadersDL,
+		BindBody:              handler.BindDL,
 	}
 
 	f := &Client{client: &c,
-		VM: VMOperations{client: &c},
+		API: Operations{client: &c},
 	}
 	return f, nil
 }

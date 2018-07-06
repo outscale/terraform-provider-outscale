@@ -7,20 +7,24 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 )
 
-//VMOperations defines all the operations needed for FCU VMs
-type ICUOperations struct {
+//Operations defines all the operations needed for FCU VMs
+type Operations struct {
 	client *osc.Client
 }
 
-//VMService all the necessary actions for them VM service
-type ICUService interface {
+//Service all the necessary actions for them VM service
+type Service interface {
 	CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error)
 	DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error)
 	UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error)
 	ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error)
+	ReadCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
+	ReadPublicCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
+	ReadConsumptionAccount(input *ReadConsumptionAccountInput) (*ReadConsumptionAccountOutput, error)
 }
 
-func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
+// CreateAccessKey ...
+func (v Operations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "CreateAccessKey"
 	output := &CreateAccessKeyOutput{}
@@ -30,7 +34,6 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
-	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -43,7 +46,9 @@ func (v ICUOperations) CreateAccessKey(input *CreateAccessKeyInput) (*CreateAcce
 
 	return output, nil
 }
-func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
+
+// DeleteAccessKey ...
+func (v Operations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "DeleteAccessKey"
 	output := &DeleteAccessKeyOutput{}
@@ -53,7 +58,6 @@ func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
-	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
 		return nil, err
@@ -66,7 +70,9 @@ func (v ICUOperations) DeleteAccessKey(input *DeleteAccessKeyInput) (*DeleteAcce
 
 	return output, nil
 }
-func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
+
+// UpdateAccessKey ...
+func (v Operations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAccessKeyOutput, error) {
 	inURL := "/"
 	endpoint := "UpdateAccessKey"
 	output := &UpdateAccessKeyOutput{}
@@ -76,6 +82,54 @@ func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAcce
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ListAccessKeys ...
+func (v Operations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error) {
+	inURL := "/"
+	endpoint := "ListAccessKeys"
+	output := &ListAccessKeysOutput{}
+
+	if input == nil {
+		input = &ListAccessKeysInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// ReadCatalog ...
+func (v Operations) ReadCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error) {
+	inURL := "/"
+	endpoint := "ReadCatalog"
+	output := &ReadCatalogOutput{}
+
+	if input == nil {
+		input = &ReadCatalogInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
 
 	if err != nil {
@@ -89,17 +143,43 @@ func (v ICUOperations) UpdateAccessKey(input *UpdateAccessKeyInput) (*UpdateAcce
 
 	return output, nil
 }
-func (v ICUOperations) ListAccessKeys(input *ListAccessKeysInput) (*ListAccessKeysOutput, error) {
+
+// ReadPublicCatalog ...
+func (v Operations) ReadPublicCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error) {
 	inURL := "/"
-	endpoint := "ListAccessKeys"
-	output := &ListAccessKeysOutput{}
+	endpoint := "ReadPublicCatalog"
+	output := &ReadCatalogOutput{}
 
 	if input == nil {
-		input = &ListAccessKeysInput{}
+		input = &ReadCatalogInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 	req.Header.Set("Content-Type", "application/x-amz-json-1.1")
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+//ReadConsumptionAccount ...
+func (v Operations) ReadConsumptionAccount(input *ReadConsumptionAccountInput) (*ReadConsumptionAccountOutput, error) {
+	inURL := "/"
+	endpoint := "ReadConsumptionAccount"
+	output := &ReadConsumptionAccountOutput{}
+
+	if input == nil {
+		input = &ReadConsumptionAccountInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
 
 	if err != nil {
 		return nil, err
