@@ -231,8 +231,6 @@ func resourceOutscaleDirectLinkInterfaceRead(d *schema.ResourceData, meta interf
 
 	vif := resp.VirtualInterfaces[0]
 
-	d.Set("name", vif.VirtualInterfaceName)
-	d.Set("vlan", vif.Vlan)
 	d.Set("asn", vif.Asn)
 	d.Set("auth_key", vif.AuthKey)
 	d.Set("address_family", vif.AddressFamily)
