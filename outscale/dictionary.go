@@ -286,6 +286,7 @@ func init() {
 			"outscale_catalog":                             dataSourceOutscaleOAPICatalog,
 			"outscale_public_catalog":                      dataSourceOutscaleOAPIPublicCatalog,
 			"outscale_account_consumption":                 dataSourceOutscaleOAPIAccountConsumption,
+			"outscale_account":                             dataSourceOutscaleOAPIAccount,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -315,6 +316,7 @@ func init() {
 			"outscale_catalog":             dataSourceOutscaleCatalog,
 			"outscale_public_catalog":      dataSourceOutscalePublicCatalog,
 			"outscale_account_consumption": dataSourceOutscaleAccountConsumption,
+			"outscale_account":             dataSourceOutscaleAccount,
 		},
 		"dl": ResourceMap{
 			"outscale_sites": dataSourceOutscaleSites,
