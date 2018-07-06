@@ -277,6 +277,8 @@ func init() {
 			"outscale_policy":                              dataSourceOutscaleOAPIPolicy,
 			"outscale_server_certificate":                  datasourceOutscaleOAPIEIMServerCertificate,
 			"outscale_policy_group_link":                   dataSourceOutscaleOAPIPolicyGroupLink,
+			"outscale_policy_version":                      dataSourceOutscaleOAPIPolicyVersion,
+			"outscale_policy_versions":                     dataSourceOutscaleOAPIPolicyVersions,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -301,6 +303,8 @@ func init() {
 			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
 			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
+			"outscale_policy_version":      dataSourceOutscalePolicyVersion,
+			"outscale_policy_versions":     dataSourceOutscalePolicyVersions,
 		},
 	}
 }

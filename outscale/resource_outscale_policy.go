@@ -299,5 +299,5 @@ func eimPolicyListVersions(arn string, conn *eim.Client) ([]*eim.PolicyVersion, 
 	if err != nil {
 		return nil, fmt.Errorf("Error listing versions for IAM policy %s: %s", arn, err)
 	}
-	return response.Versions, nil
+	return response.ListPolicyVersionsResult.Versions, nil
 }

@@ -124,6 +124,12 @@ type ListPolicyVersionsInput struct {
 
 // ListPolicyVersionsOutput ...
 type ListPolicyVersionsOutput struct {
+	_                        struct{}                  `type:"structure"`
+	ListPolicyVersionsResult *ListPolicyVersionsResult `type:"structure"`
+}
+
+// ListPolicyVersionsResult ...
+type ListPolicyVersionsResult struct {
 	_           struct{}         `type:"structure"`
 	IsTruncated *bool            `type:"boolean"`
 	Marker      *string          `min:"1" type:"string"`

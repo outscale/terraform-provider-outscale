@@ -203,6 +203,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_server_certificates":                 GetDatasource(eim, "outscale_server_certificates")(),
 			"outscale_policy_group_link":                   GetDatasource(eim, "outscale_policy_group_link")(),
 			"outscale_user_api_keys":                       GetDatasource(eim, "outscale_user_api_keys")(),
+			"outscale_policy_version":                      GetDatasource(eim, "outscale_policy_version")(),
+			"outscale_policy_versions":                     GetDatasource(eim, "outscale_policy_versions")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
