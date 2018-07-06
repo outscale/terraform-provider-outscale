@@ -291,6 +291,7 @@ func init() {
 			"outscale_account":                             dataSourceOutscaleOAPIAccount,
 			"outscale_directlink_vpn_gateways":             dataSourceOutscaleOAPIDLVPNGateways,
 			"outscale_directlink_interface":                dataSourceOutscaleOAPIDirectLinkInterface,
+			"outscale_directlink_interfaces":               dataSourceOutscaleOAPIDirectLinkInterfaces,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -328,13 +329,13 @@ func init() {
 			"outscale_sites":                   dataSourceOutscaleSites,
 			"outscale_directlink_vpn_gateways": dataSourceOutscaleDLVPNGateways,
 			"outscale_directlink":              dataSourceOutscaleDirectLink,
-		},
-		"dl": ResourceMap{
-			"outscale_directlink_interface": dataSourceOutscaleDirectLinkInterface,
+			"outscale_directlink_interface":    dataSourceOutscaleDirectLinkInterface,
+			"outscale_directlink_interfaces":   dataSourceOutscaleDirectLinkInterfaces,
 		},
 	}
 }
 
+// GetResource ...
 func GetResource(api, resource string) SchemaFunc {
 	var a ResourceMap
 
