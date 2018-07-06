@@ -156,3 +156,23 @@ type Location struct {
 	LocationCode *string  `locationName:"locationCode" type:"string"` // The code used to indicate the Outscale Direct Connect location.
 	LocationName *string  `locationName:"locationName" type:"string"` // The name of the Outscale Direct Connect location. The name includes the colocation partner name and the physical site of the lit building.
 }
+
+//DescribeVirtualGatewaysInput ...
+type DescribeVirtualGatewaysInput struct {
+	_ struct{} `type:"structure"`
+}
+
+//DescribeVirtualGatewaysOutput ... A structure containing a list of virtual private gateways.
+type DescribeVirtualGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+	// A list of virtual private gateways.
+	VirtualGateways []*VirtualGateway `locationName:"virtualGateways" type:"list"`
+	RequestID       *string           `json:"RequestId" type:"string"`
+}
+
+// VirtualGateway ...
+type VirtualGateway struct {
+	_                   struct{} `type:"structure"`
+	VirtualGatewayID    *string  `json:"VirtualGatewayId" locationName:"virtualGatewayId" type:"string"`
+	VirtualGatewayState *string  `locationName:"virtualGatewayState" type:"string"`
+}
