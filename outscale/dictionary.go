@@ -286,6 +286,8 @@ func init() {
 			"outscale_catalog":                             dataSourceOutscaleOAPICatalog,
 			"outscale_public_catalog":                      dataSourceOutscaleOAPIPublicCatalog,
 			"outscale_account_consumption":                 dataSourceOutscaleOAPIAccountConsumption,
+			"outscale_policy_version":                      dataSourceOutscaleOAPIPolicyVersion,
+			"outscale_policy_versions":                     dataSourceOutscaleOAPIPolicyVersions,
 			"outscale_account":                             dataSourceOutscaleOAPIAccount,
 		},
 		"lbu": ResourceMap{
@@ -311,6 +313,8 @@ func init() {
 			"outscale_server_certificates": datasourceOutscaleEIMServerCertificates,
 			"outscale_policy_group_link":   dataSourceOutscalePolicyGroupLink,
 			"outscale_user_api_keys":       dataSourceOutscaleUserAPIKeys,
+			"outscale_policy_version":      dataSourceOutscalePolicyVersion,
+			"outscale_policy_versions":     dataSourceOutscalePolicyVersions,
 		},
 		"icu": ResourceMap{
 			"outscale_catalog":             dataSourceOutscaleCatalog,
