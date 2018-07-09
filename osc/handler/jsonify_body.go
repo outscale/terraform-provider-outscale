@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 )
 
 // Bind ...
@@ -20,7 +21,11 @@ func BindICU(operation string, body interface{}) string {
 
 // BindDL ...
 func BindDL(operation string, body interface{}) string {
-	return commonStuctre(nil, body)
+	s, err := json.Marshal(body)
+	if err != nil {
+		log.Printf("[WARN] Error Marshal: %s", err)
+	}
+	return string(s)
 }
 
 func commonStuctre(v, body interface{}) string {
