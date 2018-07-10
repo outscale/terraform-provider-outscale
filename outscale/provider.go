@@ -214,6 +214,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_policy_versions":                     GetDatasource(eim, "outscale_policy_versions")(),
 			"outscale_account":                             GetDatasource(icu, "outscale_account")(),
 			"outscale_directlink_vpn_gateways":             GetDatasource(dl, "outscale_directlink_vpn_gateways")(),
+			"outscale_directlink":                          GetDatasource(dl, "outscale_directlink")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

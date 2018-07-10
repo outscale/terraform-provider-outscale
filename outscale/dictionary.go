@@ -326,6 +326,7 @@ func init() {
 		"dl": ResourceMap{
 			"outscale_sites":                   dataSourceOutscaleSites,
 			"outscale_directlink_vpn_gateways": dataSourceOutscaleDLVPNGateways,
+			"outscale_directlink":              dataSourceOutscaleDirectLink,
 		},
 	}
 }
