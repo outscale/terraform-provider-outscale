@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleImageExportTasks() *schema.Resource {
@@ -81,7 +82,7 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 				Computed: true,
 			},
 			"completion": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"snapshot_export": {
@@ -219,8 +220,10 @@ func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) erro
 	exportToOsu["osu_prefix"] = aws.StringValue(v.ExportToOsu.OsuPrefix)
 
 	osuAkSk := make(map[string]interface{})
-	osuAkSk["access_key"] = aws.StringValue(v.ExportToOsu.AkSk.AccessKey)
-	osuAkSk["secret_key"] = aws.StringValue(v.ExportToOsu.AkSk.SecretKey)
+	if v.ExportToOsu.AkSk != nil {
+		osuAkSk["access_key"] = aws.StringValue(v.ExportToOsu.AkSk.AccessKey)
+		osuAkSk["secret_key"] = aws.StringValue(v.ExportToOsu.AkSk.SecretKey)
+	}
 
 	snapExp := make(map[string]interface{})
 	snapExp["snapshot_id"] = aws.StringValue(v.SnapshotExport.SnapshotId)
@@ -286,6 +289,8 @@ func SnapshotTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateR
 			return nil
 		})
 
+		utils.PrintToJSON(resp, "####Response Refresh")
+
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
@@ -301,6 +306,10 @@ func SnapshotTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateR
 
 		if resp == nil || resp.SnapshotExportTask == nil || len(resp.SnapshotExportTask) == 0 {
 			return emptyResp, "destroyed", nil
+		}
+
+		if *resp.SnapshotExportTask[0].State == "failed" {
+			return resp.SnapshotExportTask[0], *resp.SnapshotExportTask[0].State, fmt.Errorf(*resp.SnapshotExportTask[0].StatusMessage)
 		}
 
 		// OMI is valid, so return it's state
