@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleImageExportTasks() *schema.Resource {
@@ -288,8 +287,6 @@ func SnapshotTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateR
 			}
 			return nil
 		})
-
-		utils.PrintToJSON(resp, "####Response Refresh")
 
 		if err != nil {
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
