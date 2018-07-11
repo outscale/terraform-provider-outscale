@@ -28,7 +28,7 @@ func TestAccOutscaleNicsDataSource(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleNicsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleNicsDataSourceID("data.outscale_nat_services.nat"),
+					testAccCheckOutscaleNicsDataSourceID("data.outscale_nics.outscale_nics"),
 					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "network_interface_set.#", "1"),
 				),
 			},
