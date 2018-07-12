@@ -431,7 +431,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"source_dest_check": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Computed: true,
 								},
 								"spot_instance_request_id": {
