@@ -99,10 +99,8 @@ resource "outscale_image_register" "outscale_image_register" {
   root_device_name = "/dev/sda1"
 
   block_device_mapping {
-    ebs {
 	  snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
-	}
-	device_name = "/dev/sda1"
+	  device_name = "/dev/sda1"
   }
 }`, r)
 }
