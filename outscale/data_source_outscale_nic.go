@@ -53,7 +53,7 @@ func dataSourceOutscaleNic() *schema.Resource {
 			},
 
 			"attachment": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -123,11 +123,11 @@ func dataSourceOutscaleNic() *schema.Resource {
 				Computed: true,
 			},
 
-			"private_ip_adress": &schema.Schema{
+			"private_ip_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"private_ip_address_set": {
+			"private_ip_addresses_set": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -176,6 +176,10 @@ func dataSourceOutscaleNic() *schema.Resource {
 				},
 			},
 			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"requester_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -261,17 +265,15 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	aa := make([]map[string]interface{}, 1)
-	bb := make(map[string]interface{})
+	attach := make(map[string]interface{})
 	if eni.Attachment != nil {
-		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["status"] = aws.StringValue(eni.Attachment.Status)
+		attach["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
+		attach["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
+		attach["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		attach["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		attach["status"] = aws.StringValue(eni.Attachment.Status)
 	}
-	aa[0] = bb
-	if err := d.Set("attachment", aa); err != nil {
+	if err := d.Set("attachment", attach); err != nil {
 		return err
 	}
 
@@ -315,12 +317,12 @@ func dataSourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip_address_set", y); err != nil {
+	if err := d.Set("private_ip_addresses_set", y); err != nil {
 		return err
 	}
 
 	d.Set("request_id", describeResp.RequestId)
-
+	d.Set("requester_id", aws.StringValue(eni.RequesterId))
 	d.Set("requester_managed", aws.BoolValue(eni.RequesterManaged))
 
 	d.Set("source_dest_check", aws.BoolValue(eni.SourceDestCheck))

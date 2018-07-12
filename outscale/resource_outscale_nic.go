@@ -41,7 +41,7 @@ func getNicSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"private_ip_adress": &schema.Schema{
+		"private_ip_address": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
@@ -86,7 +86,7 @@ func getNicSchema() map[string]*schema.Schema {
 		},
 
 		"attachment": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -95,11 +95,11 @@ func getNicSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"delete_on_termination": {
-						Type:     schema.TypeBool,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"device_index": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"instance_id": {
@@ -156,7 +156,7 @@ func getNicSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 
-		"private_ip_address_set": {
+		"private_ip_addresses_set": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -208,6 +208,10 @@ func getNicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"requester_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"requester_managed": {
 			Type:     schema.TypeBool,
 			Computed: true,
@@ -250,7 +254,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 		request.Groups = a
 	}
 
-	if v, ok := d.GetOk("private_ip_adress"); ok {
+	if v, ok := d.GetOk("private_ip_address"); ok {
 		request.PrivateIpAddress = aws.String(v.(string))
 	}
 
@@ -285,7 +289,7 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("tag_set", make([]map[string]interface{}, 0))
-	d.Set("private_ip_address_set", make([]map[string]interface{}, 0))
+	d.Set("private_ip_addresses_set", make([]map[string]interface{}, 0))
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
@@ -351,18 +355,16 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	aa := make([]map[string]interface{}, 1)
-	bb := make(map[string]interface{})
+	attach := make(map[string]interface{})
 	if eni.Attachment != nil {
-		bb["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		bb["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-		bb["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-		bb["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["status"] = aws.StringValue(eni.Attachment.Status)
+		attach["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
+		attach["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
+		attach["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
+		attach["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		attach["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
+		attach["status"] = aws.StringValue(eni.Attachment.Status)
 	}
-	aa[0] = bb
-	if err := d.Set("attachment", aa); err != nil {
+	if err := d.Set("attachment", attach); err != nil {
 		return err
 	}
 
@@ -406,12 +408,13 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip_address_set", y); err != nil {
+	if err := d.Set("private_ip_addresses_set", y); err != nil {
 		return err
 	}
 
 	d.Set("request_id", describeResp.RequestId)
 
+	d.Set("requester_id", eni.RequesterId)
 	d.Set("requester_managed", aws.BoolValue(eni.RequesterManaged))
 
 	d.Set("source_dest_check", aws.BoolValue(eni.SourceDestCheck))
@@ -430,7 +433,8 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleNicDetach(d.Get("attachment").([]interface{}), meta, d.Id())
+	err := resourceOutscaleNicDetachMap(d.Get("attachment").(map[string]interface{}), meta, d.Id())
+
 	if err != nil {
 		return err
 	}
@@ -453,6 +457,50 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 
 		return fmt.Errorf("Error Deleting ENI: %s", err)
+	}
+
+	return nil
+}
+
+func resourceOutscaleNicDetachMap(oa map[string]interface{}, meta interface{}, eniID string) error {
+	// if there was an old attachment, remove it
+	if oa != nil && len(oa) != 0 {
+		dr := &fcu.DetachNetworkInterfaceInput{
+			AttachmentId: aws.String(oa["attachment_id"].(string)),
+			Force:        aws.Bool(true),
+		}
+		conn := meta.(*OutscaleClient).FCU
+
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+			_, err = conn.VM.DetachNetworkInterface(dr)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+				return fmt.Errorf("Error detaching ENI: %s", err)
+			}
+		}
+
+		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniID)
+		stateConf := &resource.StateChangeConf{
+			Pending: []string{"true"},
+			Target:  []string{"false"},
+			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniID),
+			Timeout: 10 * time.Minute,
+		}
+		if _, err := stateConf.WaitForState(); err != nil {
+			return fmt.Errorf(
+				"Error waiting for ENI (%s) to become dettached: %s", eniID, err)
+		}
 	}
 
 	return nil
@@ -512,7 +560,7 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("attachment") {
 		oa, na := d.GetChange("attachment")
 
-		err := resourceOutscaleNicDetach(oa.([]interface{}), meta, d.Id())
+		err := resourceOutscaleNicDetachMap(oa.(map[string]interface{}), meta, d.Id())
 		if err != nil {
 			return err
 		}
@@ -548,8 +596,8 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("attachment")
 	}
 
-	if d.HasChange("private_ip_address_set") {
-		o, n := d.GetChange("private_ip_address_set")
+	if d.HasChange("private_ip_addresses_set") {
+		o, n := d.GetChange("private_ip_addresses_set")
 		if o == nil {
 			o = new([]interface{})
 		}
@@ -607,7 +655,7 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("private_ip_address_set")
+		d.SetPartial("private_ip_addresses_set")
 	}
 
 	request := &fcu.ModifyNetworkInterfaceAttributeInput{
