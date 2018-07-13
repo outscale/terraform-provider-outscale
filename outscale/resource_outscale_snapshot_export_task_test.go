@@ -54,8 +54,8 @@ resource "outscale_snapshot" "test" {
 resource "outscale_snapshot_export_tasks" "outscale_snapshot_export_tasks" {
   snapshot_id = "${outscale_snapshot.test.id}"
 
-	disk_image_format = "raw"
-  osu_bucket = "customer_tooling_%d"
+	export_to_osu_disk_image_format = "raw"
+  export_to_osu_bucket = "customer_tooling_%d"
  
 }
 `, rInt)

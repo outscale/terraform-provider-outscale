@@ -27,49 +27,22 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			// "export_to_osu": {
-			// 	Type:     schema.TypeMap,
-			// 	Required: true,
-			// 	ForceNew: true,
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"disk_image_format": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"osu_bucket": {
-			// 				Type:     schema.TypeString,
-			// 				Required: true,
-			// 			},
-			// 			"osu_key": {
-			// 				Type:     schema.TypeString,
-			// 				Optional: true,
-			// 				Computed: true,
-			// 			},
-			// 			"osu_prefix": {
-			// 				Type:     schema.TypeString,
-			// 				Optional: true,
-			// 				Computed: true,
-			// 			},
-			// 		},
-			// 	},
-			// },
-			"disk_image_format": {
+			"export_to_osu_disk_image_format": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"osu_bucket": {
+			"export_to_osu_bucket": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"osu_key": {
+			"export_to_osu_key": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"osu_prefix": {
+			"export_to_osu_prefix": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -137,14 +110,14 @@ func resourceImageExportTasksCreate(d *schema.ResourceData, meta interface{}) er
 
 	//eto, etoOk := d.GetOk("export_to_osu")
 
-	dif, difOk := d.GetOk("disk_image_format")
-	ob, obOk := d.GetOk("osu_bucket")
+	dif, difOk := d.GetOk("export_to_osu_disk_image_format")
+	ob, obOk := d.GetOk("export_to_osu_bucket")
 
 	v, ok := d.GetOk("snapshot_id")
 	request := &fcu.CreateSnapshotExportTaskInput{}
 
 	if !difOk && !ok && !obOk {
-		return fmt.Errorf("Please provide the required attributes disk_image_format, osu_bucket and snapshot_id")
+		return fmt.Errorf("Please provide the required attributes export_to_osu_disk_image_format, export_to_osu_bucket and snapshot_id")
 	}
 
 	request.SnapshotId = aws.String(v.(string))
@@ -154,11 +127,11 @@ func resourceImageExportTasksCreate(d *schema.ResourceData, meta interface{}) er
 	et.DiskImageFormat = aws.String(dif.(string))
 	et.OsuBucket = aws.String(ob.(string))
 
-	if v, ok := d.GetOk("osu_key"); ok {
+	if v, ok := d.GetOk("export_to_osu_key"); ok {
 		et.OsuKey = aws.String(v.(string))
 	}
 
-	if v, ok := d.GetOk("osu_prefix"); ok {
+	if v, ok := d.GetOk("export_to_osu_prefix"); ok {
 		et.OsuPrefix = aws.String(v.(string))
 	}
 
@@ -230,15 +203,8 @@ func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("state", aws.StringValue(v.State))
 	d.Set("completion", aws.Int64Value(v.Completion))
 	d.Set("status_message", aws.StringValue(v.StatusMessage))
-
-	//exportToOsu := make(map[string]interface{})
-	//exportToOsu["disk_image_format"] = aws.StringValue(v.ExportToOsu.DiskImageFormat)
-	//	exportToOsu["osu_bucket"] = aws.StringValue(v.ExportToOsu.OsuBucket)
-	// exportToOsu["osu_key"] = aws.StringValue(v.ExportToOsu.OsuKey)
-	// exportToOsu["osu_prefix"] = aws.StringValue(v.ExportToOsu.OsuPrefix)
-
-	d.Set("osu_key", aws.StringValue(v.ExportToOsu.OsuKey))
-	d.Set("osu_prefix", aws.StringValue(v.ExportToOsu.OsuPrefix))
+	d.Set("export_to_osu_key", aws.StringValue(v.ExportToOsu.OsuKey))
+	d.Set("export_to_osu_prefix", aws.StringValue(v.ExportToOsu.OsuPrefix))
 
 	osuAkSk := make(map[string]interface{})
 	if v.ExportToOsu.AkSk != nil {

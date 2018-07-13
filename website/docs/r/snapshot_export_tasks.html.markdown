@@ -26,8 +26,8 @@ resource "outscale_snapshot" "test" {
 
 resource "outscale_snapshot_export_tasks" "outscale_snapshot_export_tasks" {
   snapshot_id = "${outscale_snapshot.test.id}"
-  disk_image_format = "raw"
-  osu_bucket = "customer_tooling_%d"
+  export_to_osu_disk_image_format = "raw"
+  export_to_osu_bucket = "customer_tooling_%d"
 }
 
 
@@ -37,10 +37,10 @@ resource "outscale_snapshot_export_tasks" "outscale_snapshot_export_tasks" {
 
 The following arguments are supported:
 
-* `disk_image_format` (Required) - The format of the export disk (qcow2 | vdi | vmdk).
-* `osu_bucket` (Required) - The name of the OSU bucket you want to export the snapshot to.
-* `osu_key` (Optional) - The key of the OSU object corresponding to the snapshot. This element only appears in results.
-* `osu_prefix` (Optional) - The prefix for the key of the OSU object corresponding to the snapshot. This key follows the prefix + snapshot_export_task_id + '.' + disk_image_format format.
+* `export_to_osu_disk_image_format` (Required) - The format of the export disk (qcow2 | vdi | vmdk).
+* `export_to_osu_bucket` (Required) - The name of the OSU bucket you want to export the snapshot to.
+* `export_to_osu_key` (Optional) - The key of the OSU object corresponding to the snapshot. This element only appears in results.
+* `export_to_osu_prefix` (Optional) - The prefix for the key of the OSU object corresponding to the snapshot. This key follows the prefix + snapshot_export_task_id + '.' + disk_image_format format.
 * `export_to_osu_aksk` (Optional) - The access key and secret key of the OSU account used to access the bucket.
   * `access_key` - The access key of the OSU account that enables you to access the bucket.
   * `secret_key` - The secret key of the OSU account that enables you to access the bucket.
