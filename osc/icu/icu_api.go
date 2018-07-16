@@ -21,6 +21,7 @@ type Service interface {
 	ReadCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
 	ReadPublicCatalog(input *ReadCatalogInput) (*ReadCatalogOutput, error)
 	ReadConsumptionAccount(input *ReadConsumptionAccountInput) (*ReadConsumptionAccountOutput, error)
+	GetAccount(input *ReadAccountInput) (*ReadAccountOutput, error)
 }
 
 // CreateAccessKey ...
@@ -177,6 +178,31 @@ func (v Operations) ReadConsumptionAccount(input *ReadConsumptionAccountInput) (
 
 	if input == nil {
 		input = &ReadConsumptionAccountInput{}
+	}
+
+	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = v.client.Do(context.TODO(), req, output)
+	if err != nil {
+		return nil, err
+	}
+
+	return output, nil
+}
+
+// GetAccount gets information about the account that sent the request.
+func (v Operations) GetAccount(input *ReadAccountInput) (*ReadAccountOutput, error) {
+	inURL := "/"
+	endpoint := "GetAccount"
+
+	output := &ReadAccountOutput{}
+
+	if input == nil {
+		input = &ReadAccountInput{}
 	}
 
 	req, err := v.client.NewRequest(context.TODO(), endpoint, http.MethodPost, inURL, input)

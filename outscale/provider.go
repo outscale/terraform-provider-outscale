@@ -212,6 +212,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_sites":                               GetDatasource(dl, "outscale_sites")(),
 			"outscale_policy_version":                      GetDatasource(eim, "outscale_policy_version")(),
 			"outscale_policy_versions":                     GetDatasource(eim, "outscale_policy_versions")(),
+			"outscale_account":                             GetDatasource(icu, "outscale_account")(),
 		},
 
 		ConfigureFunc: providerConfigureClient,

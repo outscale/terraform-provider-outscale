@@ -161,3 +161,34 @@ type ConsumptionEntry struct {
 	Type      *string  `type:"string"`
 	Value     *float64 `type:"integer"`
 }
+
+// ReadAccountInput contains the GetAccount request.
+type ReadAccountInput struct {
+	_ struct{} `type:"structure"`
+}
+
+// ReadAccountOutput contains the response to a successful GetAccount request.
+type ReadAccountOutput struct {
+	_                struct{}   `type:"structure"`
+	Account          *Account   `json:"Account" locationName:"account" type:"structure"`
+	ResponseMetadata *RequestID `json:"ResponseMetadata" type:"structure"`
+}
+
+// Account contains the response to a successful ListAccessKeys request.
+type Account struct {
+	_            struct{} `type:"structure"`
+	AccountPid   *string  `json:"AccountPid"  locationName:"accountPid" type:"string"`
+	City         *string  `json:"City"  locationName:"city" type:"string"`
+	CompanyName  *string  `json:"CompanyName"  locationName:"companyName" type:"string"`
+	Country      *string  `json:"Country"  locationName:"country" type:"string"`
+	CustomerId   *string  `json:"CustomerId"  locationName:"customerId" type:"string"`
+	Email        *string  `json:"Email"  locationName:"email" type:"string"`
+	FirstName    *string  `json:"FirstName"  locationName:"firstName" type:"string"`
+	JobTitle     *string  `json:"JobTitle"  locationName:"jobTitle" type:"string"`
+	LastName     *string  `json:"LastName"  locationName:"lastName" type:"string"`
+	MobileNumber *string  `json:"MobileNumber"  locationName:"mobileNumber" type:"string"`
+	PhoneNumber  *string  `json:"PhoneNumber"  locationName:"phoneNumber" type:"string"`
+	State        *string  `json:"State"  locationName:"state" type:"string"`
+	VatNumber    *string  `json:"VatNumber"  locationName:"vatNumber" type:"string"`
+	Zipcode      *string  `json:"Zipcode"  locationName:"zipcode" type:"string"`
+}
