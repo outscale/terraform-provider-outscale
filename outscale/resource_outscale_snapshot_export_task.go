@@ -108,19 +108,13 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 func resourceImageExportTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	//eto, etoOk := d.GetOk("export_to_osu")
+	dif := d.Get("export_to_osu_disk_image_format")
+	ob := d.Get("export_to_osu_bucket")
+	sID := d.Get("snapshot_id")
 
-	dif, difOk := d.GetOk("export_to_osu_disk_image_format")
-	ob, obOk := d.GetOk("export_to_osu_bucket")
-
-	v, ok := d.GetOk("snapshot_id")
 	request := &fcu.CreateSnapshotExportTaskInput{}
 
-	if !difOk && !ok && !obOk {
-		return fmt.Errorf("Please provide the required attributes export_to_osu_disk_image_format, export_to_osu_bucket and snapshot_id")
-	}
-
-	request.SnapshotId = aws.String(v.(string))
+	request.SnapshotId = aws.String(sID.(string))
 
 	et := &fcu.ExportToOsuTaskSpecification{}
 
