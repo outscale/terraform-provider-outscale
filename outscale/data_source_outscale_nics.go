@@ -193,7 +193,7 @@ func getDSNicsSchema() map[string]*schema.Schema {
 						},
 					},
 					"requester_id": {
-						Type:     schema.TypeBool,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"requester_managed": {
