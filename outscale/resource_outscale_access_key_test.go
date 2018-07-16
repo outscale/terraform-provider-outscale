@@ -101,7 +101,7 @@ const testAccOutscaleAccessKeyConfig = `
 resource "outscale_api_key" "outscale_api_key" {
 	secret_access_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"
 	  tag = {
-        Name = "api_key_test"
+        Name = "Marketplace" # We only are allowed to put this tag.
     }
 }
 `

@@ -12,7 +12,7 @@ type CreateAccessKeyInput struct {
 	UserName        *string       `json:"UserName,omitempty" type:"string"`
 	AccessKeyID     *string       `json:"AccessKeyId,omitempty" type:"string"`
 	SecretAccessKey *string       `json:"SecretAccessKey,omitempty" type:"string"`
-	Tag             []*common.Tag `json:"Tag,omitempty"`
+	Tags            []*common.Tag `json:"Tags,omitempty"`
 }
 
 // CreateApiKey ...
