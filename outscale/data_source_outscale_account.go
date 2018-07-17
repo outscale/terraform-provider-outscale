@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -113,51 +114,23 @@ func dataSourceOutscaleAccountRead(d *schema.ResourceData, meta interface{}) err
 
 	account := resp.Account
 
-	if account.AccountPid != nil {
-		d.Set("account_pid", *account.AccountPid)
-	}
-	if account.City != nil {
-		d.Set("city", *account.City)
-	}
-	if account.CompanyName != nil {
-		d.Set("company_name", *account.CompanyName)
-	}
-	if account.Country != nil {
-		d.Set("country", *account.Country)
-	}
-	if account.CustomerId != nil {
-		d.Set("customer_id", *account.CustomerId)
-	}
-	if account.Email != nil {
-		d.Set("email", *account.Email)
-	}
-	if account.FirstName != nil {
-		d.Set("first_name", *account.FirstName)
-	}
-	if account.JobTitle != nil {
-		d.Set("job_title", *account.JobTitle)
-	}
-	if account.LastName != nil {
-		d.Set("last_name", *account.LastName)
-	}
-	if account.MobileNumber != nil {
-		d.Set("mobile_number", *account.MobileNumber)
-	}
-	if account.PhoneNumber != nil {
-		d.Set("phone_number", *account.PhoneNumber)
-	}
-	if account.State != nil {
-		d.Set("state", *account.State)
-	}
-	if account.VatNumber != nil {
-		d.Set("vat_number", *account.VatNumber)
-	}
-	if account.Zipcode != nil {
-		d.Set("zipcode", *account.Zipcode)
-	}
+	d.Set("account_pid", aws.StringValue(account.AccountPid))
+	d.Set("city", aws.StringValue(account.City))
+	d.Set("company_name", aws.StringValue(account.CompanyName))
+	d.Set("country", aws.StringValue(account.Country))
+	d.Set("customer_id", aws.StringValue(account.CustomerId))
+	d.Set("email", aws.StringValue(account.Email))
+	d.Set("first_name", aws.StringValue(account.FirstName))
+	d.Set("job_title", aws.StringValue(account.JobTitle))
+	d.Set("last_name", aws.StringValue(account.LastName))
+	d.Set("mobile_number", aws.StringValue(account.MobileNumber))
+	d.Set("phone_number", aws.StringValue(account.PhoneNumber))
+	d.Set("state", aws.StringValue(account.State))
+	d.Set("vat_number", aws.StringValue(account.VatNumber))
+	d.Set("zipcode", aws.StringValue(account.Zipcode))
 
-	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.SetId(aws.StringValue(account.AccountPid))
 
-	return nil
+	return d.Set("request_id", resp.ResponseMetadata.RequestID)
+
 }
