@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -114,35 +115,106 @@ func resourceOutscaleLinInternetGatewayLinkRead(d *schema.ResourceData, meta int
 }
 
 func resourceOutscaleLinInternetGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	return resourceOutscaleInternetGatewayDetach(d, meta)
+}
+
+func resourceOutscaleInternetGatewayDetach(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vpcID := d.Get("vpc_id").(string)
-	igID := d.Get("internet_gateway_id").(string)
+	// Get the old VPC ID to detach from
+	vpcID, _ := d.GetChange("vpc_id")
 
-	req := &fcu.DetachInternetGatewayInput{
-		VpcId:             aws.String(vpcID),
-		InternetGatewayId: aws.String(igID),
+	if vpcID.(string) == "" {
+		log.Printf(
+			"[DEBUG] Not detaching Internet Gateway '%s' as no VPC ID is set",
+			d.Id())
+		return nil
 	}
+	log.Printf(
+		"[INFO] Detaching Internet Gateway '%s' from VPC '%s'",
+		d.Id(),
+		vpcID.(string))
 
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DetachInternetGateway(req)
+	// Wait for it to be fully detached before continuing
+	log.Printf("[DEBUG] Waiting for internet gateway (%s) to detach", d.Id())
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
-	})
-	if err != nil {
-		return fmt.Errorf("[DEBUG] Error dettaching Internet Gateway id (%s)", err)
+	stateConf := &resource.StateChangeConf{
+		Pending:        []string{"detaching"},
+		Target:         []string{"detached"},
+		Refresh:        detachIGStateRefreshFunc(conn, d.Id(), vpcID.(string)),
+		Timeout:        15 * time.Minute,
+		Delay:          10 * time.Second,
+		NotFoundChecks: 30,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(
+			"Error waiting for internet gateway (%s) to detach: %s",
+			d.Id(), err)
 	}
 
 	d.SetId("")
-
 	return nil
+}
+
+func detachIGStateRefreshFunc(conn *fcu.Client, gatewayID, vpcID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		req := &fcu.DetachInternetGatewayInput{
+			VpcId:             aws.String(vpcID),
+			InternetGatewayId: aws.String(gatewayID),
+		}
+
+		var err error
+		err = resource.Retry(120*time.Second, func() *resource.RetryError {
+			_, err = conn.VM.DetachInternetGateway(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(err)
+		})
+
+		if err != nil {
+			if ec2err, ok := err.(awserr.Error); ok {
+				switch ec2err.Code() {
+				case "InvalidInternetGatewayID.NotFound":
+					log.Printf("[TRACE] Error detaching Internet Gateway '%s' from VPC '%s': %s", gatewayID, vpcID, err)
+					return nil, "", nil
+				case "Gateway.NotAttached":
+					return 42, "detached", nil
+				case "DependencyViolation":
+					out, err := findPublicNetworkInterfacesForVpcID(conn, vpcID)
+					if err != nil {
+						return 42, "detaching", err
+					}
+					if len(out.NetworkInterfaces) > 0 {
+						log.Printf("[DEBUG] Waiting for the following %d ENIs to be gone: %s",
+							len(out.NetworkInterfaces), out.NetworkInterfaces)
+					}
+					return 42, "detaching", nil
+				}
+			}
+			return 42, "", err
+		}
+		return 42, "detached", nil
+	}
+}
+
+func findPublicNetworkInterfacesForVpcID(conn *fcu.Client, vpcID string) (*fcu.DescribeNetworkInterfacesOutput, error) {
+	return conn.VM.DescribeNetworkInterfaces(&fcu.DescribeNetworkInterfacesInput{
+		Filters: []*fcu.Filter{
+			{
+				Name:   aws.String("vpc-id"),
+				Values: []*string{aws.String(vpcID)},
+			},
+			{
+				Name:   aws.String("association.public-ip"),
+				Values: []*string{aws.String("*")},
+			},
+		},
+	})
 }
 
 func getLinInternetGatewayLinkSchema() map[string]*schema.Schema {
