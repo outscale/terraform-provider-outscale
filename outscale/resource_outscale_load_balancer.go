@@ -91,6 +91,10 @@ func resourceOutscaleLoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"created_time": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"health_check": &schema.Schema{
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -358,6 +362,7 @@ func resourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
 	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+	d.Set("created_time", lb.CreatedTime.String())
 
 	if lb.Instances != nil {
 		d.Set("instances", flattenInstances(lb.Instances))
