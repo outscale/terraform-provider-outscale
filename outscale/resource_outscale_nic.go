@@ -357,9 +357,9 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 	attach := make(map[string]interface{})
 	if eni.Attachment != nil {
+		attach["delete_on_termination"] = strconv.FormatBool(aws.BoolValue(eni.Attachment.DeleteOnTermination))
+		attach["device_index"] = strconv.FormatInt(aws.Int64Value(eni.Attachment.DeviceIndex), 10)
 		attach["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		attach["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-		attach["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
 		attach["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		attach["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
 		attach["status"] = aws.StringValue(eni.Attachment.Status)
