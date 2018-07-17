@@ -33,7 +33,8 @@ func TestAccOutscaleDSLBUListenerDesc_basic(t *testing.T) {
 				Config: testAccDSOutscaleLBUListenerDescConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
-					resource.TestCheckResourceAttr("data.outscale_load_balancer_listener_description.test", "listener.instance_port", "8000"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancer_listener_description.test", "listener_descriptions.0.instance_port", "8000"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancer_listener_description.test", "listener_descriptions.1.instance_port", "8080"),
 				)},
 		},
 	})
@@ -43,12 +44,19 @@ const testAccDSOutscaleLBUListenerDescConfig = `
 resource "outscale_load_balancer" "bar" {
   availability_zones = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb"
-  listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
-    load_balancer_port = 80
-    protocol = "HTTP"
-  }
+	listeners {
+		instance_port = 8000
+		instance_protocol = "HTTP"
+		load_balancer_port = 80
+		protocol = "HTTP"
+	}
+
+	listeners {
+		instance_port = 8080
+		instance_protocol = "HTTP"
+		load_balancer_port = 8080
+		protocol = "HTTP"
+	}
 
 	tag {
 		bar = "baz"

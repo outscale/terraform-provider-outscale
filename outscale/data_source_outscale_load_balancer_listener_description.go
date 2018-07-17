@@ -21,8 +21,8 @@ func dataSourceOutscaleLoadBalancerLD() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"listener": &schema.Schema{
-				Type:     schema.TypeMap,
+			"listener_descriptions": &schema.Schema{
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -111,16 +111,19 @@ func dataSourceOutscaleLoadBalancerLDRead(d *schema.ResourceData, meta interface
 
 	lb := describeResp.LoadBalancerDescriptions[0]
 
-	v := lb.ListenerDescriptions[0]
+	ls := make([]map[string]interface{}, len(lb.ListenerDescriptions))
 
-	l := make(map[string]interface{})
-	l["instance_port"] = strconv.Itoa(int(aws.Int64Value(v.Listener.InstancePort)))
-	l["instance_protocol"] = aws.StringValue(v.Listener.InstanceProtocol)
-	l["load_balancer_port"] = strconv.Itoa(int(aws.Int64Value(v.Listener.LoadBalancerPort)))
-	l["protocol"] = aws.StringValue(v.Listener.Protocol)
-	l["ssl_certificate_id"] = aws.StringValue(v.Listener.SSLCertificateId)
+	for k1, v2 := range lb.ListenerDescriptions {
+		l := make(map[string]interface{})
+		l["instance_port"] = strconv.Itoa(int(aws.Int64Value(v2.Listener.InstancePort)))
+		l["instance_protocol"] = aws.StringValue(v2.Listener.InstanceProtocol)
+		l["load_balancer_port"] = strconv.Itoa(int(aws.Int64Value(v2.Listener.LoadBalancerPort)))
+		l["protocol"] = aws.StringValue(v2.Listener.Protocol)
+		l["ssl_certificate_id"] = aws.StringValue(v2.Listener.SSLCertificateId)
+		ls[k1] = l
+	}
 
-	if err := d.Set("listener", l); err != nil {
+	if err := d.Set("listener_descriptions", ls); err != nil {
 		return err
 	}
 
