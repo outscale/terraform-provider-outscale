@@ -85,7 +85,7 @@ func testAccCheckVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume
 
 const testAccVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
-	image_id = "ami-8a6a0120"
+	image_id      = "ami-880caa66"
 	instance_type = "t1.micro"
 	tag {
 		Name = "HelloWorld"
@@ -96,7 +96,7 @@ resource "outscale_volume" "example" {
 	size = 1
 }
 resource "outscale_volumes_link" "ebs_att" {
-  device = "/dev/sdh"
+   device = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
 	instance_id = "${outscale_vm.web.id}"
 }
