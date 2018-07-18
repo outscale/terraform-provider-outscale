@@ -32,6 +32,7 @@ func TestAccOutscaleDSLBUListenerDescs_basic(t *testing.T) {
 			{
 				Config: testAccDSOutscaleLBUListenerDescsConfig,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckState("data.outscale_load_balancer_listener_descriptions.test"),
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					resource.TestCheckResourceAttr("data.outscale_load_balancer_listener_descriptions.test", "load_balancers.0.listener_descriptions.0.instance_port", "8000"),
 				)},
@@ -50,16 +51,9 @@ resource "outscale_load_balancer" "bar" {
     protocol = "HTTP"
   }
 
-  listeners {
-    instance_port = 8080
-    instance_protocol = "HTTP"
-    load_balancer_port = 8080
-    protocol = "HTTP"
+  tag {
+	bar = "baz"
   }
-
-	tag {
-		bar = "baz"
-	}
 }
 
 resource "outscale_load_balancer" "foo" {
