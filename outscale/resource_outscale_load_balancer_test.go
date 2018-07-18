@@ -42,7 +42,6 @@ func TestAccOutscaleLBU_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleLBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_load_balancer.bar"),
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
