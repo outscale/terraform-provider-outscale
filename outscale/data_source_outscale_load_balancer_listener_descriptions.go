@@ -22,12 +22,16 @@ func dataSourceOutscaleLoadBalancerLDs() *schema.Resource {
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"listener_descriptions": &schema.Schema{
+			"load_balancers": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"listener": &schema.Schema{
+						"load_balancer_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"listener_descriptions": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -122,6 +126,8 @@ func dataSourceOutscaleLoadBalancerLDsRead(d *schema.ResourceData, meta interfac
 		ld := make(map[string]interface{})
 		ls := make([]map[string]interface{}, len(v1.ListenerDescriptions))
 
+		ld["load_balancer_name"] = aws.StringValue(v1.LoadBalancerName)
+
 		for k1, v2 := range v1.ListenerDescriptions {
 			l := make(map[string]interface{})
 			l["instance_port"] = strconv.Itoa(int(aws.Int64Value(v2.Listener.InstancePort)))
@@ -132,7 +138,7 @@ func dataSourceOutscaleLoadBalancerLDsRead(d *schema.ResourceData, meta interfac
 			ls[k1] = l
 		}
 
-		ld["listener"] = ls
+		ld["listener_descriptions"] = ls
 		ld["policy_names"] = flattenStringList(v1.ListenerDescriptions[0].PolicyNames)
 
 		lds[k] = ld
@@ -141,5 +147,5 @@ func dataSourceOutscaleLoadBalancerLDsRead(d *schema.ResourceData, meta interfac
 	d.Set("request_id", resp.ResponseMetadata.RequestID)
 	d.SetId(resource.UniqueId())
 
-	return d.Set("listener_descriptions", lds)
+	return d.Set("load_balancers", lds)
 }

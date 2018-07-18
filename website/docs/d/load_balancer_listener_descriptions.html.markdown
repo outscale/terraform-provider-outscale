@@ -43,13 +43,14 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `listener_descriptions` - The listeners for the load balancer each with the following attributes:
-  - `listener` - the listener with the following attributes:
-    - `instance_port` - The port on which the instance is listening (between 1 and 65535 both included).
-    - `instance_protocol` - (Optional) The protocol for routing traffic to back-end instances (HTTP | TCP).
-    - `load_balancer_port` - The port on which the load balancer is listening (25, 80, 443, 465, 587, or between 1024 and 65535 both included).
-    - `protocol` - TThe routing protocol (HTTP | TCP).
-    - `ssl_certificate_id` - (Optional) The ID of the server certificate.
-  - `policy_names` - the policy names.
+* `load_balancers` - The listeners for the load balancer each with the following attributes.
+  * `listener_descriptions` - The listeners for the load balancer each with the following attributes.
+    * `instance_port` - The port on which the instance is listening (between 1 and 65535 both included).
+    * `instance_protocol` - The protocol for routing traffic to back-end instances (HTTP | TCP).
+    * `load_balancer_port` - The port on which the load balancer is listening (25, 80, 443, 465, 587, or between 1024 and 65535 both included).
+    * `protocol` - TThe routing protocol (HTTP | TCP).
+    * `ssl_certificate_id` - The ID of the server certificate.
+  * `load_balancer_name` - The name of the load balancer.
+  * `policy_names` - the policy names.
 
 [See detailed description](http://docs.outscale.com/api_lbu/operations/Action_DescribeLoadBalancers_get.html#_api_lbu-action_describeloadbalancers_get)
