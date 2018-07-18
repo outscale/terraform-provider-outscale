@@ -32,7 +32,6 @@ func TestAccOutscaleDSLBUListenerDescs_basic(t *testing.T) {
 			{
 				Config: testAccDSOutscaleLBUListenerDescsConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("data.outscale_load_balancer_listener_descriptions.test"),
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
 					resource.TestCheckResourceAttr("data.outscale_load_balancer_listener_descriptions.test", "load_balancers.0.listener_descriptions.0.instance_port", "8000"),
 				)},
