@@ -63,14 +63,15 @@ You can also use the Filter.N parameter to filter the snapshots on the following
 The following attributes are exported:
 
 * `snapshot_set.N` - Information about one or more snapshots; each described with the following attributes:
-  - `progress` - The progress of the snapshot, as a percentage.
-  - `status` - The state of the snapshot (in-queue| pending | completed).
-  - `owner_alias` - The account alias of the owner of the snapshot.
-  - `description` - The description of the snapshot.
-  - `tag_set.N` - One or more tags associated with the snapshot.
-  - `volume_id` - The ID of the volume used to create the snapshot.
-  - `status_message` - The error message in case of snapshot copy operation failure.
-  - `owner_id` - The account ID of owner of the snapshot.
-  - `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
+  * `progress` - The progress of the snapshot, as a percentage.
+  * `status` - The state of the snapshot (in-queue| pending | completed).
+  * `owner_alias` - The account alias of the owner of the snapshot.
+  * `description` - The description of the snapshot.
+  * `tag_set.N` - One or more tags associated with the snapshot.
+  * `volume_id` - The ID of the volume used to create the snapshot.
+  * `status_message` - The error message in case of snapshot copy operation failure.
+   `owner_id` - The account ID of owner of the snapshot.
+  * `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
+  * `start_time` - The time at which the snapshot was initiated.
 
 [See detailed description](http://docs.outscale.com/api_fcu/operations/Action_DescribeSnapshots_get.html#_api_fcu-action_describesnapshots_get)

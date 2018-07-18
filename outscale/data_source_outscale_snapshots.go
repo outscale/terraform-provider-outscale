@@ -73,6 +73,10 @@ func dataSourceOutscaleSnapshots() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
+						"start_time": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"tag_set": tagsSchemaComputed(),
 					},
 				},
@@ -146,6 +150,7 @@ func dataSourceOutscaleSnapshotsRead(d *schema.ResourceData, meta interface{}) e
 		snapshot["status_message"] = aws.StringValue(v.StateMessage)
 		snapshot["volume_id"] = aws.StringValue(v.VolumeId)
 		snapshot["volume_size"] = aws.Int64Value(v.VolumeSize)
+		snapshot["start_time"] = v.StartTime.String()
 		snapshot["tag_set"] = tagsToMap(v.Tags)
 
 		snapshots[k] = snapshot

@@ -63,5 +63,6 @@ The following attributes are exported:
 * `status_message` - The error message in case of snapshot copy operation failure.
 * `owner_id` - The account ID of owner of the snapshot.
 * `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
+* `start_time` - The time at which the snapshot was initiated.
 
 [See detailed description](http://docs.outscale.com/api_fcu/operations/Action_DescribeSnapshots_get.html#_api_fcu-action_describesnapshots_get)

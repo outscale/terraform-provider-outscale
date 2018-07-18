@@ -62,6 +62,10 @@ func dataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"start_time": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -145,6 +149,7 @@ func snapshotDescriptionAttributes(d *schema.ResourceData, snapshot *fcu.Snapsho
 	d.Set("status_message", snapshot.StateMessage)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
+	d.Set("start_time", snapshot.StartTime.String())
 
 	return d.Set("tag_set", tagsToMap(snapshot.Tags))
 }

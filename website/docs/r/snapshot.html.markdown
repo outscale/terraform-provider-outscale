@@ -42,6 +42,7 @@ The following arguments are supported:
 * `status_message` - The error message in case of snapshot copy operation failure.
 * `owner_id` - The account ID of owner of the snapshot.
 * `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
+* `start_time` - The time at which the snapshot was initiated.
 * `request_id` - The ID of the request.
 
 [See detailed information.](http://docs.outscale.com/api_fcu/operations/Action_CreateSnapshot_get.html#_api_fcu-action_createsnapshot_get)

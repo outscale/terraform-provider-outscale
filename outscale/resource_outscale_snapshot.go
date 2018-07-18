@@ -58,6 +58,10 @@ func resourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"start_time": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -161,6 +165,7 @@ func resourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) erro
 	d.Set("volume_size", aws.Int64Value(snapshot.VolumeSize))
 	d.Set("tag_set", tagsToMap(snapshot.Tags))
 	d.Set("snapshot_id", aws.StringValue(snapshot.SnapshotId))
+	d.Set("start_time", snapshot.StartTime.String())
 	d.Set("request_id", res.RequestId)
 
 	return nil
