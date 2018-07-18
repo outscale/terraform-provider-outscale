@@ -38,14 +38,14 @@ func TestAccOutscaleTagsDataSource_basic(t *testing.T) {
 // Lookup based on InstanceID
 const testAccTagsDataSourceConfig = `
 resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
+  image_id = "ami-880caa66"
 	instance_type = "m1.small"
 	tag {
 		foo = "bar"
 	}
 }
 resource "outscale_vm" "basic2" {
-  image_id = "ami-8a6a0120"
+  image_id = "ami-880caa66"
 	instance_type = "m1.small"
 	tag {
 		foo = "baz"
@@ -54,7 +54,12 @@ resource "outscale_vm" "basic2" {
 
 data "outscale_tags" "web" {
 	filter {
-    name = "resource-type"
-    values = ["instance"]
+       name = "resource-type"
+       values = ["instance"]
+	}
+
+	filter {
+       name = "key"
+       values = ["foo"]
 	}
 }`

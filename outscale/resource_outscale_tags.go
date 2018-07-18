@@ -133,7 +133,7 @@ func resourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("request_id", resp.RequestId)
-	tg := tagsDescToList(resp.Tags)
+	tg := tagSetDescToList(resp.Tags)
 	err = d.Set("tag_set", tg)
 
 	return err
@@ -508,6 +508,23 @@ func tagsDescToList(ts []*fcu.TagDescription) []map[string]string {
 		if !tagDescIgnored(t) {
 			r := map[string]string{}
 			r["load_balancer_name"] = *t.Key
+			r["value"] = *t.Value
+			r["resource_id"] = *t.ResourceId
+			r["resource_type"] = *t.ResourceType
+
+			result[k] = r
+		}
+	}
+
+	return result
+}
+
+func tagSetDescToList(ts []*fcu.TagDescription) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	for k, t := range ts {
+		if !tagDescIgnored(t) {
+			r := map[string]string{}
+			r["key"] = *t.Key
 			r["value"] = *t.Value
 			r["resource_id"] = *t.ResourceId
 			r["resource_type"] = *t.ResourceType

@@ -32,8 +32,9 @@ func TestAccOutscaleVM_tags(t *testing.T) {
 			{
 				Config: testAccCheckInstanceConfigTags,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleVMExists("outscale_vm.foo", &v),
-					testAccCheckTags(&v.Tags, "foo", "bar"),
+					testAccCheckState("outscale_tag.outscale_tag"),
+					testAccCheckOutscaleVMExists("outscale_vm.basic", &v),
+					testAccCheckTags(&v.Tags, "name7", "testDataSource7"),
 					testAccCheckTags(&v.Tags, "#", ""),
 				),
 			},
@@ -76,7 +77,7 @@ resource "outscale_firewall_rules_set" "web" {
 }
 
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
+	image_id      = "ami-880caa66"
 	instance_type = "t2.micro"
 	security_group = ["${outscale_firewall_rules_set.web.id}"]
 	key_name = "${outscale_keypair.a_key_pair.key_name}"

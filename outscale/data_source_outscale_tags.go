@@ -77,7 +77,7 @@ func dataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	d.Set("tag_set", tagsDescToList(resp.Tags))
+	d.Set("tag_set", tagSetDescToList(resp.Tags))
 	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 
