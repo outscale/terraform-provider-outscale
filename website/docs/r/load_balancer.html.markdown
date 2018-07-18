@@ -50,8 +50,11 @@ The following arguments are supported:
 * `security_groups_member.N` - The security groups for the load balancer. Valid only for load balancers in a VPC.
 * `subnets_member.N` - The IDs of the subnets for the load balancer.
 * `listener_descriptions_member.N` - The listeners for the load balancer.
-* `policies` - The policies defined for the load balancer.
+* `policies_app_cookie_stickiness_policies` - The stickiness policies created using CreateAppCookieStickinessPolicy.
+* `policies_lb_cookie_stickiness_policies` - The stickiness policies created using CreateLBCookieStickinessPolicy
+* `policies_other_policies` - The policies other than the stickiness policies.
 * `health_check` - Information about the health checks conducted on the load balancer.
+* `created_time` - The date and time the load balancer was created.
 * `instances_member.N` - The IDs of the instances for the load balancer.
 * `availability_zones_member.N` - The Availability Zones for the load balancer.
 * `scheme` - The type of load balancer. Valid only for load balancers in a VPC.
