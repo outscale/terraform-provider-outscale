@@ -44,20 +44,23 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `load_balancer_descriptions_member.N` - Information about one or more load balancers, each containing the following data:
-  - `security_groups_member.N` - The security groups for the load balancer. Valid only for load balancers in a VPC.
-  - `subnets_member.N` - The IDs of the subnets for the load balancer.
-  - `listener_descriptions_member.N` - The listeners for the load balancer. 
-  - `policies` - The policies defined for the load balancer.
-  - `health_check` - Information about the health checks conducted on the load balancer.
-  - `instances_member.N` - The IDs of the instances for the load balancer.
-  - `availability_zones_member.N` - The Availability Zones for the load balancer.
-  - `scheme` - The type of load balancer. Valid only for load balancers in a VPC.
+* `load_balancer_descriptions_member.N` - Information about one or more load balancers, each containing the following data.
+  * `security_groups_member.N` - The security groups for the load balancer. Valid only for load balancers in a VPC.
+  * `subnets_member.N` - The IDs of the subnets for the load balancer.
+  * `listener_descriptions.N` - The listeners for the load balancer.
+  * `policies_app_cookie_stickiness_policies` - The stickiness policies created using CreateAppCookieStickinessPolicy.
+  * `policies_lb_cookie_stickiness_policies` - The stickiness policies created using CreateLBCookieStickinessPolicy
+  * `policies_other_policies` - The policies other than the stickiness policies.
+  * `health_check` - Information about the health checks conducted on the load balancer.
+  * `created_time` - The date and time the load balancer was created.
+  * `instances_member.N` - The IDs of the instances for the load balancer.
+  * `availability_zones_member.N` - The Availability Zones for the load balancer.
+  * `scheme` - The type of load balancer. Valid only for load balancers in a VPC.
   If Scheme is internet-facing, the load balancer has a public DNS name that resolves to a public IP address.
   If Scheme is internal, the load balancer has a public DNS name that resolves to a private IP address.
-  - `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.
+  * `source_security_group` - The security group for the load balancer, which you can use as part of your inbound rules for your registered instances.
   To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
-  - `vpc_id` - The ID of the VPC for the load balancer.
-  - `dns_name` - The DNS name of the load balancer.
+  * `vpc_id` - The ID of the VPC for the load balancer.
+  * `dns_name` - The DNS name of the load balancer.
 
 [See detailed description](http://docs.outscale.com/api_lbu/operations/Action_DescribeLoadBalancers_get.html#_api_lbu-action_describeloadbalancers_get)
