@@ -91,9 +91,8 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 					},
 				},
 			},
-
 			"ebs_optimized": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Optional: true,
 				Computed: true,
 			},
@@ -165,121 +164,6 @@ func resourceOutscaleVMAttributes() *schema.Resource {
 						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
-						},
-					},
-				},
-			},
-
-			// DescribeInstanceStatus schema
-			// Computed
-			"instance_status_set": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"availability_zone": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"events_set": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"description": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"not_after": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"not_before": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"instance_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"instance_state": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"instance_status": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"details": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"status": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"name": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"status": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"system_status": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"details": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"status": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"name": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"status": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -411,8 +295,6 @@ func resourceVMAttributesCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	d.SetId(id)
-
-	d.Set("instance_status_set", make([]map[string]interface{}, 0))
 
 	return resourceVMAttributesRead(d, meta)
 }
@@ -642,10 +524,7 @@ func readDescribeVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
 	} else {
 		d.Set("user_data", "")
 	}
-
-	d.Set("request_id", resp.RequestId)
-
-	return nil
+	return d.Set("request_id", resp.RequestId)
 }
 
 func readDescribeVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
