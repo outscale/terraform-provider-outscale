@@ -60,10 +60,10 @@ func resourceOutscaleLoadBalancerListeners() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			// "request_id": &schema.Schema{
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -84,8 +84,9 @@ func resourceOutscaleLoadBalancerListenersCreate(d *schema.ResourceData, meta in
 		elbOpts.LoadBalancerName = aws.String(v.(string))
 	}
 
+	resp := &lbu.CreateLoadBalancerListenersOutput{}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.CreateLoadBalancerListeners(elbOpts)
+		resp, err = conn.API.CreateLoadBalancerListeners(elbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
@@ -112,33 +113,13 @@ func resourceOutscaleLoadBalancerListenersCreate(d *schema.ResourceData, meta in
 	d.SetId(*elbOpts.LoadBalancerName)
 	log.Printf("[INFO] ELB ID: %s", d.Id())
 
+	d.Set("load_balancer_name", d.Id())
+	d.Set("request_id", *resp.ResponseMetadata.RequestID)
+
 	return resourceOutscaleLoadBalancerListenersRead(d, meta)
 }
 
 func resourceOutscaleLoadBalancerListenersRead(d *schema.ResourceData, meta interface{}) error {
-	listeners, err := expandListeners(d.Get("listeners").([]interface{}))
-	if err != nil {
-		return err
-	}
-
-	result := make([]map[string]interface{}, 0, len(listeners))
-	for _, i := range listeners {
-		listener := map[string]interface{}{
-			"instance_port":      aws.Int64Value(i.InstancePort),
-			"instance_protocol":  aws.StringValue(i.InstanceProtocol),
-			"load_balancer_port": aws.Int64Value(i.LoadBalancerPort),
-			"protocol":           aws.StringValue(i.Protocol),
-			"ssl_certificate_id": aws.StringValue(i.SSLCertificateId),
-		}
-		result = append(result, listener)
-	}
-	if err := d.Set("listeners", result); err != nil {
-		return err
-	}
-	d.Set("load_balancer_name", d.Id())
-
-	// d.Set("request_id", describeResp.ResponseMetadata.RequestID)
-
 	return nil
 }
 

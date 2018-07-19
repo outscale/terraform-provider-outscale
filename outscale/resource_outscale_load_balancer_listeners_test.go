@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -39,6 +40,7 @@ func TestAccOutscaleLBUUpdate_Listener(t *testing.T) {
 					testAccCheckOutscaleLBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer_listeners.bar", "listeners.0.instance_port", "9000"),
+					testAccWait(time.Duration(15)*time.Second),
 				),
 			},
 		},
