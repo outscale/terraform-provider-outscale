@@ -124,14 +124,18 @@ func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error reading acces key: %s", err)
 	}
 
-	d.Set("access_key_id", getResp.AccessKeyMetadata[0].AccessKeyID)
-	d.Set("secret_access_key", getResp.AccessKeyMetadata[0].SecretAccessKey)
-	d.Set("owner_id", getResp.AccessKeyMetadata[0].OwnerID)
-	d.Set("status", getResp.AccessKeyMetadata[0].Status)
-	d.Set("tag_set", tagsToMapI(getResp.AccessKeyMetadata[0].Tags))
-	d.Set("request_id", getResp.ResponseMetadata.RequestID)
-
-	return nil
+	for _, key := range getResp.AccessKeyMetadata {
+		if key.AccessKeyID != nil && *key.AccessKeyID == d.Id() {
+			d.Set("access_key_id", key.AccessKeyID)
+			d.Set("secret_access_key", key.SecretAccessKey)
+			d.Set("owner_id", key.OwnerID)
+			d.Set("status", key.Status)
+			d.Set("tag_set", tagsToMapI(key.Tags))
+			return d.Set("request_id", getResp.ResponseMetadata.RequestID)
+		}
+	}
+	d.SetId("")
+	return fmt.Errorf("AccessKey not found")
 }
 
 func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
