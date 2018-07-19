@@ -345,7 +345,7 @@ func testAccOutscaleVpnConnectionConfigUpdate(rInt, rBgpAsn int) string {
 	  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
 	  type = "ipsec.1"
 	  options {
-			static_routes_only = false
+			static_routes_only = "false"
 		}
 	}
 	`, rBgpAsn, rInt)

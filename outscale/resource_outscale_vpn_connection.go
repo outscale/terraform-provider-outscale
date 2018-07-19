@@ -273,8 +273,8 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 	}
 	options := make(map[string]interface{})
 	opt := "false"
-	if vpnConnection.Options != nil && *vpnConnection.Options.StaticRoutesOnly {
-		opt = "true"
+	if vpnConnection.Options != nil {
+		opt = strconv.FormatBool(*vpnConnection.Options.StaticRoutesOnly)
 	}
 	options["static_routes_only"] = opt
 	if err := d.Set("options", options); err != nil {
