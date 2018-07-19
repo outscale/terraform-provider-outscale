@@ -15,7 +15,7 @@ import (
 func resourceOutscaleImageRegister() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceImageRegisterCreate,
-		Read:   resourceImageRead,
+		Read:   resourceImageRegisterRead,
 		Delete: resourceImageRegisterDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -51,7 +51,7 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 		request.Architecture = aws.String(architecture.(string))
 	}
 	if blockDeviceMappingOk {
-		request.BlockDeviceMappings = readBlockDevice(blockDeviceMapping)
+		request.BlockDeviceMappings = readBlockDeviceImage(blockDeviceMapping)
 	}
 	if descriptionOk {
 		request.Description = aws.String(description.(string))
@@ -95,7 +95,95 @@ func resourceImageRegisterCreate(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	return resourceImageRead(d, meta)
+	return resourceImageRegisterRead(d, meta)
+}
+
+func resourceImageRegisterRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*OutscaleClient).FCU
+	ID := d.Id()
+
+	req := &fcu.DescribeImagesInput{
+		ImageIds: []*string{aws.String(ID)},
+	}
+
+	var res *fcu.DescribeImagesOutput
+	var err error
+	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
+		res, err = client.VM.DescribeImages(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				fmt.Printf("[INFO] Request limit exceeded")
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		if strings.Contains(err.Error(), "InvalidAMIID.NotFound") {
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	if len(res.Images) != 1 {
+		d.SetId("")
+		return nil
+	}
+
+	image := res.Images[0]
+	state := *image.State
+
+	if state == "pending" {
+		image, err = resourceOutscaleImageWaitForAvailable(ID, client, 2)
+		if err != nil {
+			return err
+		}
+		state = *image.State
+	}
+
+	if state == "deregistered" {
+		d.SetId("")
+		return nil
+	}
+
+	if state != "available" {
+		return fmt.Errorf("OMI has become %s", state)
+	}
+
+	d.SetId(*image.ImageId)
+	d.Set("request_id", res.RequestId)
+	d.Set("architecture", aws.StringValue(image.Architecture))
+	d.Set("client_token", aws.StringValue(image.ClientToken))
+	d.Set("creation_date", aws.StringValue(image.CreationDate))
+	d.Set("description", aws.StringValue(image.Description))
+	d.Set("hypervisor", aws.StringValue(image.Hypervisor))
+	d.Set("image_id", aws.StringValue(image.ImageId))
+	d.Set("image_location", aws.StringValue(image.ImageLocation))
+	d.Set("image_owner_alias", aws.StringValue(image.ImageOwnerAlias))
+	d.Set("image_owner_id", aws.StringValue(image.OwnerId))
+	d.Set("image_type", aws.StringValue(image.ImageType))
+	d.Set("name", aws.StringValue(image.Name))
+	d.Set("is_public", aws.BoolValue(image.Public))
+	d.Set("root_device_name", aws.StringValue(image.RootDeviceName))
+	d.Set("root_device_type", aws.StringValue(image.RootDeviceType))
+	d.Set("image_state", aws.StringValue(image.State))
+
+	if err := d.Set("block_device_mapping", amiBlockDeviceMappingsReg(image.BlockDeviceMappings)); err != nil {
+		return err
+	}
+	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
+		return err
+	}
+	if err := d.Set("state_reason", amiStateReason(image.StateReason)); err != nil {
+		return err
+	}
+
+	return d.Set("tag_set", tagsToMap(image.Tags))
 }
 
 func resourceImageRegisterDelete(d *schema.ResourceData, meta interface{}) error {
@@ -122,6 +210,86 @@ func resourceImageRegisterDelete(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("Error Deregister image %s", err)
 	}
 	return nil
+}
+
+func amiBlockDeviceMappingsReg(m []*fcu.BlockDeviceMapping) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(m))
+
+	for k, v := range m {
+		mapping := make(map[string]interface{})
+		if v.Ebs != nil {
+			mapping["volume_type"] = *v.Ebs.VolumeType
+			mapping["volume_size"] = int(*v.Ebs.VolumeSize)
+			mapping["delete_on_termination"] = aws.BoolValue(v.Ebs.DeleteOnTermination)
+
+			if v.Ebs.Iops != nil {
+				mapping["iops"] = int(aws.Int64Value(v.Ebs.Iops))
+			}
+			// snapshot id may not be set
+			if v.Ebs.SnapshotId != nil {
+				mapping["snapshot_id"] = *v.Ebs.SnapshotId
+			}
+		}
+		if v.VirtualName != nil {
+			mapping["virtual_name"] = *v.VirtualName
+		}
+		if v.DeviceName != nil {
+			mapping["device_name"] = *v.DeviceName
+		}
+		if v.NoDevice != nil {
+			mapping["no_device"] = *v.NoDevice
+		}
+
+		s[k] = mapping
+	}
+	return s
+}
+
+func readBlockDeviceImage(v interface{}) []*fcu.BlockDeviceMapping {
+	maps := v.([]interface{})
+	mappings := []*fcu.BlockDeviceMapping{}
+
+	for _, m := range maps {
+		f := m.(map[string]interface{})
+		mapping := &fcu.BlockDeviceMapping{
+			DeviceName: aws.String(f["device_name"].(string)),
+		}
+
+		if v, ok := f["no_device"]; ok && v != "" {
+			mapping.NoDevice = aws.String(v.(string))
+		}
+		if v, ok := f["virtual_name"]; ok && v != "" {
+			mapping.VirtualName = aws.String(v.(string))
+		}
+
+		ebs := &fcu.EbsBlockDevice{}
+
+		if v, ok := f["delete_on_termination"]; ok {
+			ebs.DeleteOnTermination = aws.Bool(v.(bool))
+		}
+		if iops, ok := f["iops"]; ok {
+			if iop := iops.(int); iop != 0 {
+				ebs.Iops = aws.Int64(int64(v.(int)))
+			}
+		}
+		if v, ok := f["snapshot_id"]; ok && v != "" {
+			ebs.SnapshotId = aws.String(v.(string))
+		}
+		if v, ok := f["volume_size"]; ok {
+			if s := v.(int); s != 0 {
+				ebs.VolumeSize = aws.Int64(int64(v.(int)))
+			}
+		}
+		if v, ok := f["volume_type"]; ok && v != "" {
+			ebs.VolumeType = aws.String(v.(string))
+		}
+
+		mapping.Ebs = ebs
+
+		mappings = append(mappings, mapping)
+	}
+
+	return mappings
 }
 
 func getRegisterImageSchema(computed bool) map[string]*schema.Schema {
@@ -247,47 +415,37 @@ func getRegisterImageSchema(computed bool) map[string]*schema.Schema {
 						Optional: true,
 						ForceNew: true,
 					},
-					"ebs": {
-						Type:     schema.TypeMap,
-						Computed: true,
+					"delete_on_termination": &schema.Schema{
+						Type:     schema.TypeBool,
 						Optional: true,
 						ForceNew: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"delete_on_termination": &schema.Schema{
-									Type:     schema.TypeString,
-									Optional: true,
-									ForceNew: true,
-									Computed: false,
-									Default:  deleteEbsOnTerminationDefault,
-								},
-								"iops": &schema.Schema{
-									Type:     schema.TypeString,
-									Optional: true,
-									Computed: false,
-									ForceNew: true,
-								},
-								"snapshot_id": &schema.Schema{
-									Type:     schema.TypeString,
-									Computed: false,
-									ForceNew: true,
-									Optional: true,
-								},
-								"volume_size": &schema.Schema{
-									Type:     schema.TypeString,
-									Computed: true,
-									ForceNew: true,
-									Optional: true,
-								},
-								"volume_type": &schema.Schema{
-									Type:     schema.TypeString,
-									Computed: false,
-									ForceNew: true,
-									Optional: true,
-									Default:  volumeTypeDefault,
-								},
-							},
-						},
+						Computed: false,
+						Default:  deleteEbsOnTerminationDefault,
+					},
+					"iops": &schema.Schema{
+						Type:     schema.TypeInt,
+						Optional: true,
+						Computed: false,
+						ForceNew: true,
+					},
+					"snapshot_id": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: false,
+						ForceNew: true,
+						Optional: true,
+					},
+					"volume_size": &schema.Schema{
+						Type:     schema.TypeInt,
+						Computed: true,
+						ForceNew: true,
+						Optional: true,
+					},
+					"volume_type": &schema.Schema{
+						Type:     schema.TypeString,
+						Computed: false,
+						ForceNew: true,
+						Optional: true,
+						Default:  volumeTypeDefault,
 					},
 				},
 			},
