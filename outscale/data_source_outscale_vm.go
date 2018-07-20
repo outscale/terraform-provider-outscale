@@ -514,7 +514,7 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"vpc_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
