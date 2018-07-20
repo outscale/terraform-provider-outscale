@@ -46,16 +46,16 @@ func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 			},
 			"health_check": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"unhealthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"checked_vm": &schema.Schema{
@@ -63,11 +63,11 @@ func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"check_interval": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"timeout": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -245,11 +245,8 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 
 	d.Set("sub_region_name", flattenStringList(lb.AvailabilityZones))
 	d.Set("public_dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+
 	if lb.Instances != nil {
 		d.Set("backend_vm_id", flattenInstances(lb.Instances))
 	} else {

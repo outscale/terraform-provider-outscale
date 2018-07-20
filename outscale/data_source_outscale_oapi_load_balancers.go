@@ -40,16 +40,16 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 							Computed: true,
 						},
 						"health_check": &schema.Schema{
-							Type:     schema.TypeList,
+							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"healthy_threshold": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"unhealthy_threshold": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"checked_vm": &schema.Schema{
@@ -57,11 +57,11 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 										Computed: true,
 									},
 									"check_interval": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"timeout": &schema.Schema{
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -252,11 +252,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		l["sub_region_name"] = flattenStringList(v.AvailabilityZones)
 		l["public_dns_name"] = aws.StringValue(v.DNSName)
-		if *v.HealthCheck.Target != "" {
-			l["health_check"] = flattenHealthCheck(v.HealthCheck)
-		} else {
-			l["health_check"] = make(map[string]interface{})
-		}
+		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
 		l["backend_vm_id"] = flattenOAPIInstances(v.Instances)
 		l["listeners"] = flattenOAPIListeners(v.ListenerDescriptions)
 		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)

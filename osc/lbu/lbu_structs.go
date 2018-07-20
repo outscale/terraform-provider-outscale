@@ -438,7 +438,7 @@ type CreateAppCookieStickinessPolicyInput struct {
 // CreateAppCookieStickinessPolicyOutput ...
 type CreateAppCookieStickinessPolicyOutput struct {
 	CreateAppCookieStickinessPolicyResult *CreateAppCookieStickinessPolicyResult `type:"structure"`
-	ResponseMatadata                      *ResponseMetadata                      `type:"structure"`
+	ResponseMetadata                      *ResponseMetadata                      `type:"structure"`
 }
 
 //CreateAppCookieStickinessPolicyResult inner result

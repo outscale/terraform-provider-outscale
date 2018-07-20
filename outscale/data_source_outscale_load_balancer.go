@@ -45,17 +45,21 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"created_time": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"health_check": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"unhealthy_threshold": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"target": &schema.Schema{
@@ -63,11 +67,11 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 							Computed: true,
 						},
 						"interval": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"timeout": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -146,46 +150,38 @@ func dataSourceOutscaleLoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"policies": &schema.Schema{
+			"policies_app_cookie_stickiness_policies": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"app_cookie_stickiness_policies": &schema.Schema{
-							Type:     schema.TypeList,
+						"cookie_name": &schema.Schema{
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cookie_name": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"policy_name": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
-						"lb_cookie_stickiness_policies": &schema.Schema{
-							Type:     schema.TypeList,
+						"policy_name": &schema.Schema{
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"policy_name": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"other_policies": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
+			},
+			"policies_lb_cookie_stickiness_policies": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"policies_other_policies": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -245,11 +241,9 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 
 	d.Set("availability_zones", flattenStringList(lb.AvailabilityZones))
 	d.Set("dns_name", aws.StringValue(lb.DNSName))
-	if *lb.HealthCheck.Target != "" {
-		d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
-	} else {
-		d.Set("health_check", make(map[string]interface{}))
-	}
+	d.Set("health_check", flattenHealthCheck(lb.HealthCheck))
+	d.Set("created_time", lb.CreatedTime.String())
+
 	if lb.Instances != nil {
 		d.Set("instances", flattenInstances(lb.Instances))
 	} else {
@@ -266,32 +260,31 @@ func dataSourceOutscaleLoadBalancerRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("load_balancer_name", aws.StringValue(lb.LoadBalancerName))
 
-	policies := make(map[string]interface{})
+	appPolicies := make([]map[string]interface{}, 0)
+	lbPolicies := make([]map[string]interface{}, 0)
+	otherPolicies := make([]interface{}, 0)
+
 	if lb.Policies != nil {
-		app := make([]map[string]interface{}, len(lb.Policies.AppCookieStickinessPolicies))
-		for k, v := range lb.Policies.AppCookieStickinessPolicies {
+		for _, v := range lb.Policies.AppCookieStickinessPolicies {
 			a := make(map[string]interface{})
 			a["cookie_name"] = aws.StringValue(v.CookieName)
 			a["policy_name"] = aws.StringValue(v.PolicyName)
-			app[k] = a
+			appPolicies = append(appPolicies, a)
 		}
-		policies["app_cookie_stickiness_policies"] = app
-		lbc := make([]map[string]interface{}, len(lb.Policies.LBCookieStickinessPolicies))
-		for k, v := range lb.Policies.LBCookieStickinessPolicies {
+
+		for _, v := range lb.Policies.LBCookieStickinessPolicies {
 			a := make(map[string]interface{})
 			a["policy_name"] = aws.StringValue(v.PolicyName)
-			lbc[k] = a
+			lbPolicies = append(lbPolicies, a)
 		}
-		policies["lb_cookie_stickiness_policies"] = lbc
-		policies["other_policies"] = flattenStringList(lb.Policies.OtherPolicies)
-	} else {
-		lbc := make([]map[string]interface{}, 0)
-		policies["lb_cookie_stickiness_policies"] = lbc
-		policies["other_policies"] = lbc
+
+		otherPolicies = flattenStringList(lb.Policies.OtherPolicies)
 	}
-	pl := make([]map[string]interface{}, 1)
-	pl[0] = policies
-	d.Set("policies", pl)
+
+	d.Set("policies_app_cookie_stickiness_policies", appPolicies)
+	d.Set("policies_lb_cookie_stickiness_policies", lbPolicies)
+	d.Set("policies_other_policies", otherPolicies)
+
 	d.Set("scheme", aws.StringValue(lb.Scheme))
 	if lb.SecurityGroups != nil {
 		d.Set("security_groups", flattenStringList(lb.SecurityGroups))

@@ -234,7 +234,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	return nil
+	return d.Set("request_id", aws.StringValue(resp.RequestId))
 }
 
 func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1091,6 +1091,10 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"requester_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
 		"reservation_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -1232,7 +1236,7 @@ func buildOutscaleVMOpts(
 
 	opts.RamdiskId = aws.String(d.Get("ramdisk_id").(string))
 	opts.OwnerId = aws.String(d.Get("owner_id").(string))
-	opts.RequesterId = aws.String(d.Get("request_id").(string))
+	opts.RequesterId = aws.String(d.Get("requester_id").(string))
 	opts.ReservationId = aws.String(d.Get("reservation_id").(string))
 
 	if p := d.Get("password_data"); p != nil {

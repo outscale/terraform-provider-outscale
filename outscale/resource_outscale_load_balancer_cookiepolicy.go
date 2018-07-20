@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
@@ -88,11 +87,11 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		return fmt.Errorf("Error creating AppCookieStickinessPolicy: %s", err)
 	}
 
-	utils.PrintToJSON(resp, "RESPONSECookie")
+	//utils.PrintToJSON(resp, "RESPONSECookie")
 
 	reqID := ""
-	if resp.ResponseMatadata != nil {
-		reqID = aws.StringValue(resp.ResponseMatadata.RequestID)
+	if resp.ResponseMetadata != nil {
+		reqID = aws.StringValue(resp.ResponseMetadata.RequestID)
 	}
 	d.Set("request_id", reqID)
 	d.SetId(resource.UniqueId())

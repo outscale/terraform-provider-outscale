@@ -50,9 +50,9 @@ resource "outscale_load_balancer" "bar" {
     protocol = "HTTP"
   }
 
-  tag {
-	bar = "baz"
-  }
+	tag {
+		bar = "baz"
+	}
 }
 
 resource "outscale_load_balancer" "foo" {
