@@ -24,53 +24,24 @@ func resourceOutscaleLoadBalancerAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"emit_interval": &schema.Schema{
+			"access_log_emit_interval": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				Computed: true,
 			},
-			"enabled": &schema.Schema{
+			"access_log_enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-			"s3_bucket_name": &schema.Schema{
+			"access_log_s3_bucket_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-			},
-			"s3_bucket_prefix": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"load_balancer_attributes": &schema.Schema{
-				Type:     schema.TypeList,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"access_log": &schema.Schema{
-							Type:     schema.TypeMap,
-							Required: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"emit_interval": &schema.Schema{
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"enabled": &schema.Schema{
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-									"s3_bucket_name": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"s3_bucket_prefix": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-					},
-				},
+			},
+			"access_log_s3_bucket_prefix": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"load_balancer_name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -88,11 +59,11 @@ func resourceOutscaleLoadBalancerAttributes() *schema.Resource {
 func resourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
-	v, ok := d.GetOk("enabled")
+	v, ok := d.GetOk("access_log_enabled")
 	v1, ok1 := d.GetOk("load_balancer_name")
 
 	if !ok && !ok1 {
-		return fmt.Errorf("please provide the enabled and load_balancer_name required attributes")
+		return fmt.Errorf("please provide the access_log_enabled and load_balancer_name required attributes")
 	}
 
 	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{
@@ -102,13 +73,13 @@ func resourceOutscaleLoadBalancerAttributesCreate(d *schema.ResourceData, meta i
 		Enabled: aws.Bool(v.(bool)),
 	}
 
-	if v, ok := d.GetOk("emit_interval"); ok {
+	if v, ok := d.GetOk("access_log_emit_interval"); ok {
 		access.EmitInterval = aws.Int64(int64(v.(int)))
 	}
-	if v, ok := d.GetOk("s3_bucket_name"); ok {
+	if v, ok := d.GetOk("access_log_s3_bucket_name"); ok {
 		access.S3BucketName = aws.String(v.(string))
 	}
-	if v, ok := d.GetOk("s3_bucket_prefix"); ok {
+	if v, ok := d.GetOk("access_log_s3_bucket_prefix"); ok {
 		access.S3BucketPrefix = aws.String(v.(string))
 	}
 
@@ -181,45 +152,27 @@ func resourceOutscaleLoadBalancerAttributesRead(d *schema.ResourceData, meta int
 	}
 
 	a := describeResp.LoadBalancerAttributes.AccessLog
+	d.Set("access_log_emit_interval", strconv.Itoa(int(aws.Int64Value(a.EmitInterval))))
+	d.Set("access_log_enabled", strconv.FormatBool(aws.BoolValue(a.Enabled)))
+	d.Set("access_log_s3_bucket_name", aws.StringValue(a.S3BucketName))
+	d.Set("access_log_s3_bucket_prefix", aws.StringValue(a.S3BucketPrefix))
 
-	access := make(map[string]string)
-	ac := make(map[string]interface{})
-	access["emit_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	access["enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	access["s3_bucket_name"] = aws.StringValue(a.S3BucketName)
-	access["s3_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
-	ac["access_log"] = access
-
-	l := make([]map[string]interface{}, 1)
-	l[0] = ac
-
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
-
-	return d.Set("load_balancer_attributes", l)
+	return d.Set("request_id", resp.ResponseMetadata.RequestID)
 }
 
 func resourceOutscaleLoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).LBU
 
-	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{}
+	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{
+		LoadBalancerName: aws.String(d.Get("load_balancer_name").(string)),
+	}
 	access := &lbu.AccessLog{}
-	if d.HasChange("load_balancer_name") {
-		_, n := d.GetChange("load_balancer_name")
-
-		elbOpts.LoadBalancerName = aws.String(n.(string))
+	if d.HasChange("access_log_enabled") {
+		_, n := d.GetChange("access_log_enabled")
+		access.Enabled = aws.Bool(n.(bool))
 	}
-	if d.HasChange("enabled") {
-		_, n := d.GetChange("enabled")
-
-		b, err := strconv.ParseBool(n.(string))
-		if err != nil {
-			return err
-		}
-
-		access.Enabled = aws.Bool(b)
-	}
-	if d.HasChange("emit_interval") {
-		_, n := d.GetChange("emit_interval")
+	if d.HasChange("access_log_emit_interval") {
+		_, n := d.GetChange("access_log_emit_interval")
 
 		i, err := strconv.Atoi(n.(string))
 		if err != nil {
@@ -227,13 +180,13 @@ func resourceOutscaleLoadBalancerAttributesUpdate(d *schema.ResourceData, meta i
 		}
 		access.EmitInterval = aws.Int64(int64(i))
 	}
-	if d.HasChange("s3_bucket_name") {
-		_, n := d.GetChange("s3_bucket_name")
+	if d.HasChange("access_log_s3_bucket_name") {
+		_, n := d.GetChange("access_log_s3_bucket_name")
 
 		access.S3BucketName = aws.String(n.(string))
 	}
-	if d.HasChange("s3_bucket_prefix") {
-		_, n := d.GetChange("s3_bucket_prefix")
+	if d.HasChange("access_log_s3_bucket_prefix") {
+		_, n := d.GetChange("access_log_s3_bucket_prefix")
 		access.S3BucketPrefix = aws.String(n.(string))
 	}
 
