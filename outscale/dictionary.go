@@ -289,6 +289,7 @@ func init() {
 			"outscale_policy_version":                      dataSourceOutscaleOAPIPolicyVersion,
 			"outscale_policy_versions":                     dataSourceOutscaleOAPIPolicyVersions,
 			"outscale_account":                             dataSourceOutscaleOAPIAccount,
+			"outscale_directlink_vpn_gateways":             dataSourceOutscaleOAPIDLVPNGateways,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -323,7 +324,9 @@ func init() {
 			"outscale_account":             dataSourceOutscaleAccount,
 		},
 		"dl": ResourceMap{
-			"outscale_sites": dataSourceOutscaleSites,
+			"outscale_sites":                   dataSourceOutscaleSites,
+			"outscale_directlink_vpn_gateways": dataSourceOutscaleDLVPNGateways,
+			"outscale_directlink":              dataSourceOutscaleDirectLink,
 		},
 	}
 }
