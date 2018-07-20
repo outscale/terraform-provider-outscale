@@ -34,6 +34,7 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckState("outscale_vm_attributes.outscale_vm_attributes"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.outscale_vm", "disable_api_termination", "false"),
 				),
@@ -41,6 +42,7 @@ func TestAccOutscaleVMAttr_Basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckState("outscale_vm_attributes.outscale_vm_attributes"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.outscale_vm", "disable_api_termination", "false"),
 				),
