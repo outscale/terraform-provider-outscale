@@ -79,7 +79,10 @@ func dataSourceOutscaleAccountConsumptionRead(d *schema.ResourceData, meta inter
 		getResp, err = conn.API.ReadConsumptionAccount(request)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
