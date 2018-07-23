@@ -60,6 +60,10 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"ip_permissions": getIPPermissionsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -108,10 +112,6 @@ func getIPPermissionsSchema() *schema.Schema {
 					Optional: true,
 					ForceNew: true,
 					Elem:     &schema.Schema{Type: schema.TypeString},
-				},
-				"request_id": {
-					Type:     schema.TypeString,
-					Computed: true,
 				},
 			},
 		},
