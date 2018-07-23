@@ -84,7 +84,7 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 			Values: []*string{aws.String(cidrBlock)},
 		},
 		&fcu.Filter{
-			Name:   aws.String("vpn-connection-ID"),
+			Name:   aws.String("vpn-connection-id"),
 			Values: []*string{aws.String(vpnConnectionID)},
 		},
 	}

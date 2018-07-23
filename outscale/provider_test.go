@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -49,6 +50,12 @@ func testAccCheckState(n string) resource.TestCheckFunc {
 
 		utils.PrintToJSON(rs, "[Debug] State: \n")
 
+		return nil
+	}
+}
+func testAccWait(n time.Duration) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		time.Sleep(n)
 		return nil
 	}
 }

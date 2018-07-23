@@ -53,7 +53,7 @@ resource "outscale_load_balancer" "bar" {
 }
 
 resource "outscale_vm" "foo1" {
-  image_id = "ami-880caa66"
+    image_id      = "ami-880caa66"
 	instance_type = "t2.micro"
 }
 

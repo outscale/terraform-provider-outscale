@@ -39,6 +39,10 @@ func resourceOutscaleLBUAttachment() *schema.Resource {
 					},
 				},
 			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -85,7 +89,7 @@ func resourceOutscaleLBUAttachmentCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
 
-	return nil
+	return resourceOutscaleLBUAttachmentRead(d, meta)
 }
 
 func resourceOutscaleLBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
@@ -144,7 +148,7 @@ func resourceOutscaleLBUAttachmentRead(d *schema.ResourceData, meta interface{})
 		d.SetId("")
 	}
 
-	return nil
+	return d.Set("request_id", resp.ResponseMetadata.RequestID)
 }
 
 func resourceOutscaleLBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
