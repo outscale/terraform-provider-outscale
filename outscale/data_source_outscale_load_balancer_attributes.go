@@ -21,37 +21,21 @@ func dataSourceOutscaleLoadBalancerAttr() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"load_balancer_attributes": &schema.Schema{
-				Type:     schema.TypeList,
+			"access_log_emit_interval": &schema.Schema{
+				Type:     schema.TypeString,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"access_log": &schema.Schema{
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"emit_interval": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"enabled": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"s3_bucket_name": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"s3_bucket_prefix": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-					},
-				},
+			},
+			"access_log_enabled": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"access_log_s3_bucket_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"access_log_s3_bucket_prefix": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -105,21 +89,13 @@ func dataSourceOutscaleLoadBalancerAttrRead(d *schema.ResourceData, meta interfa
 	if describeResp.LoadBalancerAttributes == nil {
 		return fmt.Errorf("NO ELB FOUND")
 	}
+	d.SetId(elbName)
 
 	a := describeResp.LoadBalancerAttributes.AccessLog
+	d.Set("access_log_emit_interval", strconv.Itoa(int(aws.Int64Value(a.EmitInterval))))
+	d.Set("access_log_enabled", strconv.FormatBool(aws.BoolValue(a.Enabled)))
+	d.Set("access_log_s3_bucket_name", aws.StringValue(a.S3BucketName))
+	d.Set("access_log_s3_bucket_prefix", aws.StringValue(a.S3BucketPrefix))
 
-	ld := make([]map[string]interface{}, 1)
-	acc := make(map[string]interface{})
-
-	acc["emit_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	acc["enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	acc["s3_bucket_name"] = aws.StringValue(a.S3BucketName)
-	acc["s3_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
-
-	ld[0] = map[string]interface{}{"access_log": acc}
-
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
-	d.SetId(resource.UniqueId())
-
-	return d.Set("load_balancer_attributes", ld)
+	return d.Set("request_id", resp.ResponseMetadata.RequestID)
 }

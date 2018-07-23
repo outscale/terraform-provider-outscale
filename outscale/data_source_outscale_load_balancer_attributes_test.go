@@ -37,7 +37,7 @@ func TestAccOutscaleDSLBUAttr_basic(t *testing.T) {
 				Config: testAccDSOutscaleLBUAttrConfig(r),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLBUExists("outscale_load_balancer.bar", &conf),
-					resource.TestCheckResourceAttr("data.outscale_load_balancer_attributes.test", "load_balancer_attributes.0.access_log.enabled", "false"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancer_attributes.test", "access_log_enabled", "false"),
 				)},
 		},
 	})
@@ -62,8 +62,8 @@ resource "outscale_load_balancer" "bar" {
 }
 
 resource "outscale_load_balancer_attributes" "bar2" {
-	enabled = "false"
-			s3_bucket_name = "donustestbucket"
+	access_log_enabled = "false"
+	access_log_s3_bucket_name = "donustestbucket"
 	load_balancer_name = "${outscale_load_balancer.bar.id}"
 }
 
