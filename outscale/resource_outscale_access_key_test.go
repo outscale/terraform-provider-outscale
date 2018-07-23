@@ -100,7 +100,7 @@ func testAccCheckOutscaleAccessKeyAttributes(accessKeyMetadata *icu.AccessKeyMet
 const testAccOutscaleAccessKeyConfig = `
 resource "outscale_api_key" "outscale_api_key" {
 	  tag = {
-        Name = "api_key_test"
+        Name = "Marketplace" # We only are allowed to put this tag.
     }
 }
 `

@@ -70,7 +70,7 @@ func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}
 		n := nraw.(map[string]interface{})
 		create, _ := diffTagsCommon(tagsFromMapCommon(o), tagsFromMapCommon(n))
 
-		request.Tag = create
+		request.Tags = create
 	}
 
 	var createResp *icu.CreateAccessKeyOutput
