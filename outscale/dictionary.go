@@ -290,6 +290,8 @@ func init() {
 			"outscale_policy_versions":                     dataSourceOutscaleOAPIPolicyVersions,
 			"outscale_account":                             dataSourceOutscaleOAPIAccount,
 			"outscale_directlink_vpn_gateways":             dataSourceOutscaleOAPIDLVPNGateways,
+			"outscale_directlink_interface":                dataSourceOutscaleOAPIDirectLinkInterface,
+			"outscale_directlink_interfaces":               dataSourceOutscaleOAPIDirectLinkInterfaces,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,
@@ -327,12 +329,13 @@ func init() {
 			"outscale_sites":                   dataSourceOutscaleSites,
 			"outscale_directlink_vpn_gateways": dataSourceOutscaleDLVPNGateways,
 			"outscale_directlink":              dataSourceOutscaleDirectLink,
+			"outscale_directlink_interface":    dataSourceOutscaleDirectLinkInterface,
+			"outscale_directlink_interfaces":   dataSourceOutscaleDirectLinkInterfaces,
 		},
 	}
 }
 
-//GetResource receives the apu and the name of the resource
-//and returns the corrresponding
+// GetResource ...
 func GetResource(api, resource string) SchemaFunc {
 	var a ResourceMap
 

@@ -14,6 +14,11 @@ import (
 )
 
 func TestAccOutscaleDirectLink_basic(t *testing.T) {
+
+	// Temporary skipped, outscale account does not meet all the requirements
+	// to implement this action
+	t.Skip()
+
 	connectionName := fmt.Sprintf("tf-dx-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
