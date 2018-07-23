@@ -150,7 +150,7 @@ information and instructions for recovery. Error message: %s`, sgID, autherr)
 	}
 
 	d.SetId(id)
-	return nil
+	return resourceOutscaleInboundRuleRead(d, meta)
 }
 
 func resourceOutscaleInboundRuleRead(d *schema.ResourceData, meta interface{}) error {

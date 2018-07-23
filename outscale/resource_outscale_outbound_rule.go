@@ -209,7 +209,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	}
 
 	d.SetId(id)
-	return nil
+	return resourceOutscaleOutboundRuleRead(d, meta)
 }
 
 func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
