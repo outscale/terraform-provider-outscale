@@ -20,49 +20,49 @@ func resourcedOutscaleSnapshotAttributes() *schema.Resource {
 		Delete: resourcedOutscaleSnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"create_volume_permission_add": &schema.Schema{
+			"snapshot_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"create_volume_permission_add": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group": &schema.Schema{
+						"group": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"user_id": &schema.Schema{
+						"user_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
 					},
 				},
 			},
-			"create_volume_permissions": &schema.Schema{
+			"create_volume_permissions": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group": &schema.Schema{
+						"group": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"user_id": &schema.Schema{
+						"user_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"snapshot_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -144,7 +144,7 @@ func resourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inte
 			d.Id(), err)
 	}
 
-	return nil
+	return resourcedOutscaleSnapshotAttributesRead(d, meta)
 }
 
 func resourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
@@ -182,7 +182,7 @@ func resourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interf
 		cvp[k] = c
 	}
 
-	d.Set("request_id", attrs.RequestId)
+	d.Set("request_id", aws.StringValue(attrs.RequestId))
 
 	return d.Set("create_volume_permissions", cvp)
 }

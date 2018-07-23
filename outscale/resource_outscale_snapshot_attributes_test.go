@@ -31,9 +31,10 @@ func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleSnapshotAttributesConfig(true, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_snapshot_attributes.self-test"),
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 					testAccOutscaleSnapshotAttributesExists(&accountID, &snapshotID),
+					testAccCheckState("outscale_snapshot_attributes.self-test"),
+					resource.TestCheckResourceAttrSet("outscale_snapshot_attributes.self-test", "request_id"),
 				),
 			},
 			// Drop just create volume permission to test destruction
