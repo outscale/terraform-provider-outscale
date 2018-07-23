@@ -27,43 +27,19 @@ func resourceOutscaleImageLaunchPermission() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"launch_permission": &schema.Schema{
+			"launch_permission_add": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"add": &schema.Schema{
-							Type:     schema.TypeList,
+						"group": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"user_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
-						"remove": &schema.Schema{
-							Type:     schema.TypeList,
+						"user_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"user_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -108,7 +84,6 @@ func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 	conn := meta.(*OutscaleClient).FCU
 
 	id, iok := d.GetOk("image_id")
-	lp, lok := d.GetOk("launch_permission")
 
 	fmt.Println("Creating Outscale Image Launch Permission, image_id", id.(string))
 
@@ -120,33 +95,22 @@ func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		ImageId: aws.String(id.(string)),
 	}
 
-	if lok {
+	if v, ok := d.GetOk("launch_permission_add"); ok {
 		request.Attribute = aws.String("launchPermission")
-		launchPermission := &fcu.LaunchPermissionModifications{}
 
-		l := lp.([]interface{})
+		add := v.([]interface{})
 
-		lp := l[0].(map[string]interface{})
-
-		if a, ok := lp["add"]; ok {
-			ad := a.([]interface{})
-			if len(ad) > 0 {
-				add := make([]*fcu.LaunchPermission, len(ad))
-				for k, v := range ad {
-					att := v.(map[string]interface{})
-					at := &fcu.LaunchPermission{}
-					if g, ok := att["group"]; ok {
-						at.Group = aws.String(g.(string))
-					}
-					if g, ok := att["user_id"]; ok {
-						at.UserId = aws.String(g.(string))
-					}
-					add[k] = at
+		if len(add) > 0 {
+			a := make([]*fcu.LaunchPermission, len(add))
+			for k, v1 := range add {
+				data := v1.(map[string]interface{})
+				a[k] = &fcu.LaunchPermission{
+					UserId: aws.String(data["user_id"].(string)),
+					Group:  aws.String(data["group"].(string)),
 				}
-				launchPermission.Add = add
 			}
+			request.LaunchPermission = &fcu.LaunchPermissionModifications{Add: a}
 		}
-		request.LaunchPermission = launchPermission
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -165,21 +129,18 @@ func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		return fmt.Errorf("error creating ami launch permission: %s", err)
 	}
 
-	d.SetId(id.(string))
-	d.Set("description", map[string]string{"value": ""})
-	d.Set("launch_permissions", make([]map[string]interface{}, 0))
-
-	return nil
+	d.SetId(fmt.Sprintf("%s-%s", id, "lp"))
+	return resourceOutscaleImageLaunchPermissionRead(d, meta)
 }
 
 func resourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
-
+	id := d.Get("image_id").(string)
 	var attrs *fcu.DescribeImageAttributeOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		attrs, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(d.Id()),
+			ImageId:   aws.String(id),
 			Attribute: aws.String("launchPermission"),
 		})
 		if err != nil {
@@ -200,25 +161,18 @@ func resourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 	}
 
 	d.Set("request_id", attrs.RequestId)
+	desc := make(map[string]interface{})
 
-	d.Set("description", map[string]string{"value": ""})
 	if attrs.Description != nil {
-		d.Set("description", map[string]string{"value": aws.StringValue(attrs.Description.Value)})
+		desc["value"] = aws.StringValue(attrs.Description.Value)
 	}
+	d.Set("description", desc)
 
 	lp := make([]map[string]interface{}, len(attrs.LaunchPermissions))
 	for k, v := range attrs.LaunchPermissions {
 		l := make(map[string]interface{})
-		if v.Group != nil {
-			l["group"] = *v.Group
-		} else {
-			l["group"] = ""
-		}
-		if v.UserId != nil {
-			l["user_id"] = *v.UserId
-		} else {
-			l["user_id"] = ""
-		}
+		l["group"] = aws.StringValue(v.Group)
+		l["user_id"] = aws.StringValue(v.UserId)
 		lp[k] = l
 	}
 
@@ -229,38 +183,25 @@ func resourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta in
 	conn := meta.(*OutscaleClient).FCU
 
 	ID := d.Get("image_id")
-	lp, lok := d.GetOk("launch_permission")
+	lp, lok := d.GetOk("launch_permission_add")
 
 	request := &fcu.ModifyImageAttributeInput{
 		ImageId: aws.String(ID.(string)),
 	}
 
 	if lok {
+		remove := lp.([]interface{})
+		a := make([]*fcu.LaunchPermission, 0)
 		request.Attribute = aws.String("launchPermission")
-		launchPermission := &fcu.LaunchPermissionModifications{}
-
-		lps := lp.([]interface{})
-		lp := lps[0].(map[string]interface{})
-
-		if a, ok := lp["remove"]; ok {
-			ad := a.([]interface{})
-			if len(ad) > 0 {
-				remove := make([]*fcu.LaunchPermission, len(ad))
-				for k, v := range ad {
-					att := v.(map[string]interface{})
-					at := &fcu.LaunchPermission{}
-					if g, ok := att["group"]; ok {
-						at.Group = aws.String(g.(string))
-					}
-					if g, ok := att["user_id"]; ok {
-						at.UserId = aws.String(g.(string))
-					}
-					remove[k] = at
-				}
-				launchPermission.Remove = remove
+		for _, v1 := range remove {
+			data := v1.(map[string]interface{})
+			item := &fcu.LaunchPermission{
+				UserId: aws.String(data["user_id"].(string)),
+				Group:  aws.String(data["group"].(string)),
 			}
+			a = append(a, item)
 		}
-		request.LaunchPermission = launchPermission
+		request.LaunchPermission = &fcu.LaunchPermissionModifications{Remove: a}
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
