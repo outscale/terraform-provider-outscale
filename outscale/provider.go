@@ -214,13 +214,9 @@ func Provider() terraform.ResourceProvider {
 			"outscale_sites":                               GetDatasource(dl, "outscale_sites")(),
 			"outscale_policy_version":                      GetDatasource(eim, "outscale_policy_version")(),
 			"outscale_policy_versions":                     GetDatasource(eim, "outscale_policy_versions")(),
-<<<<<<< HEAD
 			"outscale_account":                             GetDatasource(icu, "outscale_account")(),
 			"outscale_directlink_vpn_gateways":             GetDatasource(dl, "outscale_directlink_vpn_gateways")(),
 			"outscale_directlink":                          GetDatasource(dl, "outscale_directlink")(),
-=======
-			"outscale_directlink_vpn_gateways":             GetDatasource(dl, "outscale_directlink_vpn_gateways")(),
->>>>>>> add ouscale_directlink_vpn_gatways ds for dl and oapi, add doc
 		},
 
 		ConfigureFunc: providerConfigureClient,
