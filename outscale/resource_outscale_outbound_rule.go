@@ -253,10 +253,13 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
+	d.Set("request_id", aws.StringValue(reqID))
+
 	if ips, err := setFromIPPerm(d, sg, p); err != nil {
 		return d.Set("ip_permissions", ips)
 	}
-	return d.Set("request_id", aws.StringValue(reqID))
+
+	return nil
 }
 
 func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
