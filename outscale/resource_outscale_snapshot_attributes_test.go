@@ -31,6 +31,7 @@ func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleSnapshotAttributesConfig(true, accountID),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckState("outscale_snapshot_attributes.self-test"),
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 					testAccOutscaleSnapshotAttributesExists(&accountID, &snapshotID),
 				),
@@ -91,10 +92,8 @@ resource "outscale_snapshot" "test" {
 	return base + fmt.Sprintf(`
 resource "outscale_snapshot_attributes" "self-test" {
 	snapshot_id = "${outscale_snapshot.test.id}"
-	create_volume_permission = [{
-		add = [{
-			user_id = "%s"
-		}]
+	create_volume_permission_add = [{
+		user_id = "%s"
 	}]
 }
 `, aid)

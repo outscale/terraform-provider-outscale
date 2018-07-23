@@ -20,43 +20,19 @@ func resourcedOutscaleSnapshotAttributes() *schema.Resource {
 		Delete: resourcedOutscaleSnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"create_volume_permission": &schema.Schema{
+			"create_volume_permission_add": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"add": &schema.Schema{
-							Type:     schema.TypeList,
+						"group": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"user_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
-						"remove": &schema.Schema{
-							Type:     schema.TypeList,
+						"user_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"group": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"user_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -86,6 +62,10 @@ func resourcedOutscaleSnapshotAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -109,14 +89,17 @@ func resourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inte
 		Attribute:  aws.String("createVolumePermission"),
 	}
 
-	if v, ok := d.GetOk("create_volume_permission"); ok {
-		add := v.([]interface{})[0].(map[string]interface{})["add"].([]interface{})
+	if v, ok := d.GetOk("create_volume_permission_add"); ok {
+		add := v.([]interface{})
 		if len(add) > 0 {
 			a := make([]*fcu.CreateVolumePermission, len(add))
 
-			for k, v1 := range add {
+			for k, v1 := range v.([]interface{}) {
 				data := v1.(map[string]interface{})
-				a[k] = &fcu.CreateVolumePermission{UserId: aws.String(data["user_id"].(string)), Group: aws.String(data["group"].(string))}
+				a[k] = &fcu.CreateVolumePermission{
+					UserId: aws.String(data["user_id"].(string)),
+					Group:  aws.String(data["group"].(string)),
+				}
 				aid = data["user_id"].(string)
 			}
 			req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Add: a}
@@ -208,7 +191,7 @@ func resourcedOutscaleSnapshotAttributesDelete(d *schema.ResourceData, meta inte
 	conn := meta.(*OutscaleClient).FCU
 
 	sid := d.Get("snapshot_id").(string)
-	v := d.Get("create_volume_permission")
+	v := d.Get("create_volume_permission_add")
 	aid := ""
 
 	req := &fcu.ModifySnapshotAttributeInput{
@@ -216,13 +199,17 @@ func resourcedOutscaleSnapshotAttributesDelete(d *schema.ResourceData, meta inte
 		Attribute:  aws.String("createVolumePermission"),
 	}
 
-	remove := v.([]interface{})[0].(map[string]interface{})["add"].([]interface{})
+	remove := v.([]interface{})
 
-	a := make([]*fcu.CreateVolumePermission, len(remove))
+	a := make([]*fcu.CreateVolumePermission, 0)
 
-	for k, v1 := range remove {
+	for _, v1 := range remove {
 		data := v1.(map[string]interface{})
-		a[k] = &fcu.CreateVolumePermission{UserId: aws.String(data["user_id"].(string)), Group: aws.String(data["group"].(string))}
+		item := &fcu.CreateVolumePermission{
+			UserId: aws.String(data["user_id"].(string)),
+			Group:  aws.String(data["group"].(string)),
+		}
+		a = append(a, item)
 		aid = data["user_id"].(string)
 	}
 	req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Remove: a}
