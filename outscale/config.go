@@ -32,10 +32,14 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 
+	u := os.Getenv("OUTSCALE_OAPI")
+
 	oapicfg := &oapi.Config{
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
 		Region:    c.Region,
+		Service:   "oapi",
+		URL:       u,
 	}
 
 	skipClient := &http.Client{
