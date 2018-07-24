@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -55,6 +56,10 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"inbound_rule": getIPOAPIPermissionsSchema(),
+			"reques_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -66,7 +71,7 @@ func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interfac
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -127,7 +132,7 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, err := findResourceSecurityGroup(conn, sgID)
+		sg, _, err := findResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
@@ -160,7 +165,7 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	sgID := d.Get("firewall_rules_set_id").(string)
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, reqID, err := findResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -201,7 +206,7 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 	if ips, err := setFromIPPerm(d, sg, p); err != nil {
 		return d.Set("inbound_rule", ips)
 	}
-	return nil
+	return d.Set("request_id", aws.StringValue(reqID))
 }
 
 func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
@@ -211,7 +216,7 @@ func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interfac
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}

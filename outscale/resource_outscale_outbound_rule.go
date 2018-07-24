@@ -60,6 +60,10 @@ func resourceOutscaleOutboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"ip_permissions": getIPPermissionsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -121,7 +125,7 @@ func resourceOutscaleOutboundRuleCreate(d *schema.ResourceData, meta interface{}
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -180,7 +184,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, err := findResourceSecurityGroup(conn, sgID)
+		sg, _, err := findResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
@@ -205,13 +209,13 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	}
 
 	d.SetId(id)
-	return nil
+	return resourceOutscaleOutboundRuleRead(d, meta)
 }
 
 func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 	sgID := d.Get("group_id").(string)
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, reqID, err := findResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -249,9 +253,12 @@ func resourceOutscaleOutboundRuleRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	}
 
+	d.Set("request_id", aws.StringValue(reqID))
+
 	if ips, err := setFromIPPerm(d, sg, p); err != nil {
 		return d.Set("ip_permissions", ips)
 	}
+
 	return nil
 }
 
@@ -262,7 +269,7 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := findResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -304,7 +311,7 @@ func resourceOutscaleOutboundRuleDelete(d *schema.ResourceData, meta interface{}
 
 // #################################
 
-func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup, error) {
+func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup, *string, error) {
 	req := &fcu.DescribeSecurityGroupsInput{
 		GroupIds: []*string{aws.String(id)},
 	}
@@ -325,19 +332,19 @@ func findResourceSecurityGroup(conn *fcu.Client, id string) (*fcu.SecurityGroup,
 	})
 
 	if err, ok := err.(awserr.Error); ok && err.Code() == "InvalidGroup.NotFound" {
-		return nil, securityGroupNotFound{id, nil}
+		return nil, nil, securityGroupNotFound{id, nil}
 	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if resp == nil {
-		return nil, securityGroupNotFound{id, nil}
+		return nil, nil, securityGroupNotFound{id, nil}
 	}
 	if len(resp.SecurityGroups) != 1 || resp.SecurityGroups[0] == nil {
-		return nil, securityGroupNotFound{id, resp.SecurityGroups}
+		return nil, nil, securityGroupNotFound{id, resp.SecurityGroups}
 	}
 
-	return resp.SecurityGroups[0], nil
+	return resp.SecurityGroups[0], resp.RequestId, nil
 }
 
 func expandIPPermEgress(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
