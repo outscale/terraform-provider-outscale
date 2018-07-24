@@ -1,8 +1,12 @@
 package outscale
 
 import (
+	"crypto/tls"
+	"net/http"
+
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 // Config ...
@@ -28,8 +32,23 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 
+	oapicfg := &oapi.Config{
+		AccessKey: c.AccessKeyID,
+		SecretKey: c.SecretKeyID,
+		Region:    c.Region,
+	}
+
+	skipClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	oapiClient := oapi.NewClient(oapicfg, skipClient)
+
 	client := &OutscaleClient{
-		FCU: fcu,
+		FCU:  fcu,
+		OAPI: oapiClient,
 	}
 
 	return client, nil
@@ -37,5 +56,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 // OutscaleClient client
 type OutscaleClient struct {
-	FCU *fcu.Client
+	FCU  *fcu.Client
+	OAPI *oapi.Client
 }
