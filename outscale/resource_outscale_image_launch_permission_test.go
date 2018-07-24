@@ -27,21 +27,21 @@ func TestAccOutscaleImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			r.TestStep{
-				Config: testAccOutscaleImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			r.TestStep{
-				Config: testAccOutscaleImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(accountID, false, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			r.TestStep{
-				Config: testAccOutscaleImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -49,7 +49,7 @@ func TestAccOutscaleImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			r.TestStep{
-				Config: testAccOutscaleImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleImageDisappears(&imageID),
 				),
@@ -130,8 +130,8 @@ func testAccOutscaleImageDisappears(imageID *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleImageLaunchPermissionConfig(r int) string {
-	return fmt.Sprintf(`
+func testAccOutscaleImageLaunchPermissionConfig(accountID string, includeLaunchPermission bool, r int) string {
+	base := fmt.Sprintf(`
 resource "outscale_vm" "outscale_instance" {
     count = 1
     image_id                    = "ami-880caa66"
@@ -143,17 +143,18 @@ resource "outscale_image" "outscale_image" {
     instance_id = "${outscale_vm.outscale_instance.id}"
 		no_reboot   = "true"
 }
+	`, r)
 
+	if !includeLaunchPermission {
+		return base
+	}
+
+	return base + fmt.Sprintf(`
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
-    launch_permission {
-        add {
-            user_id = "520679080430"
-				}
-				remove {
-            user_id = "520679080430"
-        }
-		}
+    launch_permission_add = [{
+            user_id = "%s"
+	}]
 }
-`, r)
+`, accountID)
 }

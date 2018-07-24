@@ -28,14 +28,9 @@ resource "outscale_image" "outscale_image" {
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
-    launch_permission {
-        add {
-            user_id = "520679080430"
-        }
-        remove {
-            user_id = "520679080430"
-        }
-    }
+    launch_permission_add = [{
+        user_id = "account_id"
+    }]
 }
 ```
 
@@ -44,7 +39,9 @@ resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
 The following arguments are supported:
 
 * `image_id` - The ID of the OMI.
-* `launch_permission` - Permissions to access the OMI.
+* `launch_permission_add` - The account ID you want to add to the list of launch permissions for the OMI.
+  * `group` - The name of the group (all if public).
+  * `user_id` - The account ID of the user.
 
 ## Attributes
 
