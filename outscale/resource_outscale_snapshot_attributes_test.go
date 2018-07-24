@@ -33,6 +33,8 @@ func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 					testAccOutscaleSnapshotAttributesExists(&accountID, &snapshotID),
+					testAccCheckState("outscale_snapshot_attributes.self-test"),
+					resource.TestCheckResourceAttrSet("outscale_snapshot_attributes.self-test", "request_id"),
 				),
 			},
 			// Drop just create volume permission to test destruction
@@ -91,10 +93,8 @@ resource "outscale_snapshot" "test" {
 	return base + fmt.Sprintf(`
 resource "outscale_snapshot_attributes" "self-test" {
 	snapshot_id = "${outscale_snapshot.test.id}"
-	create_volume_permission = [{
-		add = [{
-			user_id = "%s"
-		}]
+	create_volume_permission_add = [{
+		user_id = "%s"
 	}]
 }
 `, aid)

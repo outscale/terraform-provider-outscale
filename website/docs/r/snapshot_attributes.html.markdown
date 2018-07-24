@@ -30,7 +30,9 @@ resource "outscale_snapshot" "test" {
 The following arguments are supported:
 
 * `snapshot_id` - The ID of the snapshot.
-* `create_volume_permission` - (Optional) Enables you to modify the permissions to create a volume for user IDs or groups.
+* `create_volume_permission_add` - (Optional) Enables you to modify the permissions to create a volume for user IDs or groups.
+  * `user_id` (Optional) The account ID of the user.
+  * `group_id` (Optional) The name of the group (all if public).
 
 ## Attributes Reference
 
