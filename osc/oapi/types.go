@@ -2452,10 +2452,11 @@ type ReadPublicIpRangesResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
-// implements the service definition of ReadPublicIpsRequest
 type ReadPublicIpsRequest struct {
-	DryRun  bool    `json:"DryRun,omitempty"`
-	Filters Filters `json:"Filters,omitempty"`
+	DryRun         bool     `json:"DryRun,omitempty"`
+	Filters        Filters  `json:"Filters,omitempty"`
+	PublicIps      []string `json:"PublicIps,omitempty"`
+	ReservationIds []string `json:"ReservationIds,omitempty"`
 }
 
 // implements the service definition of ReadPublicIpsResponse
