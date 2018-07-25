@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
@@ -24,6 +24,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
+
 	var a oapi.PublicIps
 
 	resource.Test(t, resource.TestCase{
@@ -44,7 +45,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIps) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Printf("%#v", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[name]
@@ -59,10 +60,10 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.Address) 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := oapi.ReadPublicIpsRequest{
-			Filters: []oapi.Filter{
-				&oapi.Filter{
-					Name:   aws.String("association-id"),
-					Values: []*string{res.AssociationId},
+			Filters: []oapi.Filters{
+				oapi.Filters{
+					// Name:   aws.String("association-id"),
+					// Values: []*string{res.AssociationId},
 				},
 			},
 		}
@@ -74,8 +75,8 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.Address) 
 			return err
 		}
 
-		if len(describe.Addresses) != 1 ||
-			*describe.Addresses[0].AssociationId != *res.AssociationId {
+		if len(describe.OK.PublicIps) != 1 ||
+			describe.OK.PublicIps[0].ReservationId != res.ReservationId {
 			return fmt.Errorf("Public IP Link not found")
 		}
 
@@ -95,19 +96,19 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 
 		fmt.Printf("%#v", rs.Primary.Attributes)
 
-		id := rs.Primary.Attributes["link_id"]
+		//id := rs.Primary.Attributes["link_id"]
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		request := &oapi.DescribeAddressesInput{
+		request := oapi.ReadPublicIpsRequest{
 			Filters: []oapi.Filters{
-				&oapi.Filters{
-					Name:   aws.String("association-id"),
-					Values: []*string{aws.String(id)},
+				oapi.Filters{
+					// Name:   aws.String("association-id"),
+					// Values: []*string{aws.String(id)},
 				},
 			},
 		}
-		describe, err := conn.FCU.VM.DescribeAddressesRequest(request)
+		describe, err := conn.OAPI.POST_ReadPublicIps(request)
 
 		fmt.Printf("\n [DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
 
@@ -115,14 +116,14 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 			return err
 		}
 
-		if len(describe.Addresses) > 0 {
+		if len(describe.OK.PublicIps) > 0 {
 			return fmt.Errorf("Public IP Link still exists")
 		}
 	}
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -136,30 +137,32 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.Address) resour
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
-			req := &oapi.DescribeAddressesInput{
-				AllocationIds: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				ReservationIds: []string{rs.Primary.ID},
 			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+			resp, err := conn.OAPI.POST_ReadPublicIps(req)
 
 			if err != nil {
 				return err
 			}
 
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].AllocationId != rs.Primary.ID {
+			describe := resp.OK
+
+			if len(describe.PublicIps) != 1 ||
+				describe.PublicIps[0].ReservationId != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = *describe.Addresses[0]
+			*res = describe.PublicIps[0]
 
 		} else {
-			req := &oapi.DescribeAddressesInput{
-				PublicIps: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				PublicIps: []string{rs.Primary.ID},
 			}
 
-			var describe *oapi.DescribeAddressesOutput
+			var describe *oapi.ReadPublicIpsResponse
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+				resp, err := conn.OAPI.POST_ReadPublicIps(req)
 
 				if err != nil {
 					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
@@ -168,7 +171,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.Address) resour
 
 					return resource.NonRetryableError(err)
 				}
-
+				describe = resp.OK
 				return nil
 			})
 
@@ -190,11 +193,11 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.Address) resour
 				return err
 			}
 
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].PublicIp != rs.Primary.ID {
+			if len(describe.PublicIps) != 1 ||
+				describe.PublicIps[0].PublicIp != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = *describe.Addresses[0]
+			*res = describe.PublicIps[0]
 		}
 
 		return nil
@@ -214,5 +217,5 @@ resource "outscale_public_ip" "bar" {}
 resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.public_ip}"
 	vm_id = "${outscale_vm.basic.id}"
-  depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
+    depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
 }`

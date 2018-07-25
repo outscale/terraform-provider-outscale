@@ -10,10 +10,6 @@ import (
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -52,16 +48,17 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
-	var conf fcu.Address
-	rInt := acctest.RandInt()
+	var conf oapi.PublicIps
+
+	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
@@ -69,7 +66,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -77,7 +74,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig2(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -136,53 +133,53 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 		}
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
-			req := &fcu.DescribeAddressesInput{
-				AllocationIds: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				ReservationIds: []string{rs.Primary.ID},
 			}
 
-			var describe *fcu.DescribeAddressesOutput
+			var describe *oapi.ReadPublicIpsResponse
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
-
+				resp, err := conn.OAPI.POST_ReadPublicIps(req)
+				describe = resp.OK
 				return resource.RetryableError(err)
 			})
 
 			if err != nil {
 				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 					return nil
 				}
 
 				return err
 			}
 
-			if len(describe.Addresses) > 0 {
+			if len(describe.PublicIps) > 0 {
 				return fmt.Errorf("still exists")
 			}
 		} else {
-			req := &fcu.DescribeAddressesInput{
-				PublicIps: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				PublicIps: []string{rs.Primary.ID},
 			}
 
-			var describe *fcu.DescribeAddressesOutput
+			var describe *oapi.ReadPublicIpsResponse
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
-
+				resp, err := conn.OAPI.POST_ReadPublicIps(req)
+				describe = resp.OK
 				return resource.RetryableError(err)
 			})
 
 			if err != nil {
 				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 					return nil
 				}
 
 				return err
 			}
 
-			if len(describe.Addresses) > 0 {
+			if len(describe.PublicIps) > 0 {
 				return fmt.Errorf("still exists")
 			}
 		}
@@ -193,7 +190,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 
 func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *conf.PublicIp == "" {
+		if conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
 		}
 
@@ -215,44 +212,46 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		if strings.Contains(rs.Primary.ID, "link") {
-			req := &fcu.DescribeAddressesInput{
-				AllocationIds: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				ReservationIds: []string{rs.Primary.ID},
 			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+			describe, err := conn.OAPI.POST_ReadPublicIps(req)
 
 			if err != nil {
 				return err
 			}
 
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].AllocationId != rs.Primary.ID {
+			if len(describe.OK.PublicIps) != 1 ||
+				describe.OK.PublicIps[0].ReservationId != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = *describe.Addresses[0]
+			*res = describe.OK.PublicIps[0]
 
 		} else {
-			req := &fcu.DescribeAddressesInput{
-				PublicIps: []*string{aws.String(rs.Primary.ID)},
+			req := oapi.ReadPublicIpsRequest{
+				PublicIps: []string{rs.Primary.ID},
 			}
 
-			var describe *fcu.DescribeAddressesOutput
+			var describe *oapi.ReadPublicIpsResponse
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+				resp, err := conn.OAPI.POST_ReadPublicIps(req)
 
 				if err != nil {
-					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 						return resource.RetryableError(err)
 					}
 
 					return resource.NonRetryableError(err)
 				}
 
+				describe = resp.OK
+
 				return nil
 			})
 
 			if err != nil {
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 					return nil
 				}
 
@@ -262,18 +261,18 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 			if err != nil {
 
 				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 					return nil
 				}
 
 				return err
 			}
 
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].PublicIp != rs.Primary.ID {
+			if len(describe.PublicIps) != 1 ||
+				describe.PublicIps[0].PublicIp != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = *describe.Addresses[0]
+			*res = describe.PublicIps[0]
 		}
 
 		return nil
