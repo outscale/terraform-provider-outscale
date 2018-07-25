@@ -1993,8 +1993,14 @@ type PublicIpToNicLink struct {
 
 // implements the service definition of PublicIps
 type PublicIps struct {
-	LinkId   string `json:"LinkId,omitempty"`
-	PublicIp string `json:"PublicIp,omitempty"`
+	LinkId        string `json:"LinkId,omitempty"`
+	PublicIp      string `json:"PublicIp,omitempty"`
+	NicAccountId  string `json:"NicAccountId,omitempty"`
+	NicId         string `json:"NicId,omitempty"`
+	Placement     string `json:"Placement,omitempty"`
+	PrivateIp     string `json:"PrivateIp,omitempty"`
+	ReservationId string `json:"ReservationId,omitempty"`
+	VmId          string `json:"VmId,omitempty"`
 }
 
 // implements the service definition of PurchaseReservedVmsOfferRequest
@@ -2453,10 +2459,10 @@ type ReadPublicIpRangesResponse struct {
 }
 
 type ReadPublicIpsRequest struct {
-	DryRun         bool     `json:"DryRun,omitempty"`
-	Filters        Filters  `json:"Filters,omitempty"`
-	PublicIps      []string `json:"PublicIps,omitempty"`
-	ReservationIds []string `json:"ReservationIds,omitempty"`
+	DryRun         bool      `json:"DryRun,omitempty"`
+	Filters        []Filters `json:"Filters,omitempty"`
+	PublicIps      []string  `json:"PublicIps,omitempty"`
+	ReservationIds []string  `json:"ReservationIds,omitempty"`
 }
 
 // implements the service definition of ReadPublicIpsResponse

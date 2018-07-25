@@ -11,21 +11,20 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
-	var a fcu.Address
+	var a oapi.PublicIps
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -45,7 +44,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Printf("%#v", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[name]
@@ -59,15 +58,15 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *fcu.Address) r
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		request := &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
+		request := oapi.ReadPublicIpsRequest{
+			Filters: []oapi.Filter{
+				&oapi.Filter{
 					Name:   aws.String("association-id"),
 					Values: []*string{res.AssociationId},
 				},
 			},
 		}
-		describe, err := conn.FCU.VM.DescribeAddressesRequest(request)
+		describe, err := conn.OAPI.POST_ReadPublicIps(request)
 
 		fmt.Printf("\n [DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
 
@@ -100,9 +99,9 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		request := &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
+		request := &oapi.DescribeAddressesInput{
+			Filters: []oapi.Filters{
+				&oapi.Filters{
 					Name:   aws.String("association-id"),
 					Values: []*string{aws.String(id)},
 				},
@@ -123,7 +122,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.Address) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -137,7 +136,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *fcu.Address) resourc
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
-			req := &fcu.DescribeAddressesInput{
+			req := &oapi.DescribeAddressesInput{
 				AllocationIds: []*string{aws.String(rs.Primary.ID)},
 			}
 			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
@@ -153,11 +152,11 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *fcu.Address) resourc
 			*res = *describe.Addresses[0]
 
 		} else {
-			req := &fcu.DescribeAddressesInput{
+			req := &oapi.DescribeAddressesInput{
 				PublicIps: []*string{aws.String(rs.Primary.ID)},
 			}
 
-			var describe *fcu.DescribeAddressesOutput
+			var describe *oapi.DescribeAddressesOutput
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
 				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)

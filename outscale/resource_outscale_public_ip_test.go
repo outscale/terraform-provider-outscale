@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
@@ -19,16 +21,16 @@ import (
 func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
 
-	var conf fcu.Address
+	var conf oapi.PublicIps
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -90,15 +92,15 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
-	var one fcu.Address
+	var one oapi.PublicIps
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -189,7 +191,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPAttributes(conf *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
@@ -199,7 +201,7 @@ func testAccCheckOutscaleOAPIPublicIPAttributes(conf *fcu.Address) resource.Test
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPExists(n string, res *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
