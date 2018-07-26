@@ -33,14 +33,14 @@ The following arguments are supported:
 
 Use the Filter.N parameter to filter the described instances on the following properties:
 
-* `domain` Whether the EIP is for use in the public Cloud or in a VPC.
-* `instance-id` The ID of the instance the address is associated with (if any).
-* `public-ip` The EIP.
-* `allocation-id` The allocation ID for the EIP.
-* `association-id` The association ID for the EIP.
-* `network-interface-id` The ID of the network interface the address is associated with (if any).
-* `network-interface-owner-id` The account ID of the owner.
-* `private-ip-address` The private IP address associated with the EIP.
+* `placements` Whether the EIP is for use in the public Cloud or in a VPC.
+* `vm-ids` The ID of the instance the address is associated with (if any).
+* `public-ips` The EIP.
+* `reservation-ids` The allocation ID for the EIP.
+* `link-ids` The association ID for the EIP.
+* `nic-ids` The ID of the network interface the address is associated with (if any).
+* `nic-account-ids` The account ID of the owner.
+* `private-ips` The private IP address associated with the EIP.
 
 ## Attributes Reference
 

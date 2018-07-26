@@ -121,11 +121,22 @@ type CancelExportTaskResponse struct {
 
 // implements the service definition of Catalog
 type Catalog struct {
-	Domain           string `json:"Domain,omitempty"`
-	Instance         string `json:"Instance,omitempty"`
-	SourceRegionName string `json:"SourceRegionName,omitempty"`
-	TargetRegionName string `json:"TargetRegionName,omitempty"`
-	Version          string `json:"Version,omitempty"`
+	CatalogAttributes []CatalogAttributes `json:"CatalogAttributes,omitempty"`
+	CatalogEntries    []CatalogEntries    `json:"CatalogEntries,omitempty"`
+}
+
+// implements the service definition of CatalogAttributes
+type CatalogAttributes struct {
+	Key   string `json:"Key,omitempty"`
+	Value string `json:"Value,omitempty"`
+}
+
+// implements the service definition of CatalogEntries
+type CatalogEntries struct {
+	CatalogAttributes []CatalogAttributes `json:"CatalogAttributes,omitempty"`
+	EntryKey          string              `json:"EntryKey,omitempty"`
+	EntryValue        string              `json:"EntryValue,omitempty"`
+	ShortDescription  string              `json:"ShortDescription,omitempty"`
 }
 
 // implements the service definition of CheckSignatureRequest
@@ -917,8 +928,8 @@ type DeleteListenerRuleResponse struct {
 
 // implements the service definition of DeleteLoadBalancerListenersRequest
 type DeleteLoadBalancerListenersRequest struct {
-	LoadBalancerName  string `json:"LoadBalancerName,omitempty"`
-	LoadBalancerPorts []int  `json:"LoadBalancerPorts,omitempty"`
+	LoadBalancerName  string  `json:"LoadBalancerName,omitempty"`
+	LoadBalancerPorts []int64 `json:"LoadBalancerPorts,omitempty"`
 }
 
 // implements the service definition of DeleteLoadBalancerListenersResponse
@@ -1272,26 +1283,6 @@ type DirectLinks struct {
 	RegionName     string `json:"RegionName,omitempty"`
 	Site           string `json:"Site,omitempty"`
 	State          string `json:"State,omitempty"`
-}
-
-// implements the service definition of Filters
-type Filters struct {
-	LinkMain                      bool     `json:"LinkMain,omitempty"`
-	LinkRouteTableLinkIds         []string `json:"LinkRouteTableLinkIds,omitempty"`
-	LinkSubnetIds                 []string `json:"LinkSubnetIds,omitempty"`
-	NetIds                        []string `json:"NetIds,omitempty"`
-	RouteCreationMethods          []string `json:"RouteCreationMethods,omitempty"`
-	RouteDestinationIpRanges      []string `json:"RouteDestinationIpRanges,omitempty"`
-	RouteDestinationPrefixListIds []string `json:"RouteDestinationPrefixListIds,omitempty"`
-	RouteGatewayIds               []string `json:"RouteGatewayIds,omitempty"`
-	RouteNatServiceIds            []string `json:"RouteNatServiceIds,omitempty"`
-	RouteNetPeeringIds            []string `json:"RouteNetPeeringIds,omitempty"`
-	RouteStates                   []string `json:"RouteStates,omitempty"`
-	RouteTableIds                 []string `json:"RouteTableIds,omitempty"`
-	RouteVmIds                    []string `json:"RouteVmIds,omitempty"`
-	TagKeys                       []string `json:"TagKeys,omitempty"`
-	TagValues                     []string `json:"TagValues,omitempty"`
-	Tags                          []Tags   `json:"Tags,omitempty"`
 }
 
 // implements the service definition of FirewallRulesSetLogging
@@ -1857,7 +1848,11 @@ type Nic struct {
 // implements the service definition of NicLink
 type NicLink struct {
 	DeleteOnVmDeletion bool   `json:"DeleteOnVmDeletion,omitempty"`
+	DeviceNumber       int64  `json:"DeviceNumber,omitempty"`
 	NicLinkId          string `json:"NicLinkId,omitempty"`
+	State              string `json:"State,omitempty"`
+	VmAccountId        string `json:"VmAccountId,omitempty"`
+	VmId               string `json:"VmId,omitempty"`
 }
 
 // implements the service definition of Nics
@@ -1916,8 +1911,8 @@ type Permissions struct {
 
 // implements the service definition of PermissionsToCreateVolumes
 type PermissionsToCreateVolumes struct {
-	AccountId        string `json:"AccountId,omitempty"`
-	GlobalPermission string `json:"GlobalPermission,omitempty"`
+	Additions []Additions `json:"Additions,omitempty"`
+	Removals  []Removals  `json:"Removals,omitempty"`
 }
 
 // implements the service definition of Placement
@@ -1965,10 +1960,8 @@ type PricingDetails struct {
 
 // implements the service definition of PrivateIps
 type PrivateIps struct {
-	IsPrimary         bool              `json:"IsPrimary,omitempty"`
-	PrivateDnsName    string            `json:"PrivateDnsName,omitempty"`
-	PrivateIp         string            `json:"PrivateIp,omitempty"`
-	PublicIpToNicLink PublicIpToNicLink `json:"PublicIpToNicLink,omitempty"`
+	IsPrimary bool   `json:"IsPrimary,omitempty"`
+	PrivateIp string `json:"PrivateIp,omitempty"`
 }
 
 // implements the service definition of ProductCodes
@@ -1986,21 +1979,23 @@ type ProductTypes struct {
 
 // implements the service definition of PublicIpToNicLink
 type PublicIpToNicLink struct {
+	LinkId            string `json:"LinkId,omitempty"`
 	PublicDnsName     string `json:"PublicDnsName,omitempty"`
 	PublicIp          string `json:"PublicIp,omitempty"`
 	PublicIpAccountId string `json:"PublicIpAccountId,omitempty"`
+	ReservationId     string `json:"ReservationId,omitempty"`
 }
 
 // implements the service definition of PublicIps
 type PublicIps struct {
 	LinkId        string `json:"LinkId,omitempty"`
-	PublicIp      string `json:"PublicIp,omitempty"`
-	NicAccountId  string `json:"NicAccountId,omitempty"`
-	NicId         string `json:"NicId,omitempty"`
-	Placement     string `json:"Placement,omitempty"`
-	PrivateIp     string `json:"PrivateIp,omitempty"`
-	ReservationId string `json:"ReservationId,omitempty"`
 	VmId          string `json:"VmId,omitempty"`
+	NicId         string `json:"NicId,omitempty"`
+	NicAccountId  string `json:"NicAccountId,omitempty"`
+	PublicIp      string `json:"PublicIp,omitempty"`
+	PrivateIp     string `json:"PrivateIp,omitempty"`
+	ReservationId string `json"ReservationId,omitempty`
+	Placement     string `json:"Placement,omitempty"`
 }
 
 // implements the service definition of PurchaseReservedVmsOfferRequest
@@ -2083,13 +2078,26 @@ type ReadApiKeysResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadApiLogsFilters
+type ReadApiLogsFilters struct {
+	QueryAccessKeys     []string `json:"QueryAccessKeys,omitempty"`
+	QueryApiNames       []string `json:"QueryApiNames,omitempty"`
+	QueryCallNames      []string `json:"QueryCallNames,omitempty"`
+	QueryDateAfter      string   `json:"QueryDateAfter,omitempty"`
+	QueryDateBefore     string   `json:"QueryDateBefore,omitempty"`
+	QueryIpAddresses    []string `json:"QueryIpAddresses,omitempty"`
+	QueryUserAgents     []string `json:"QueryUserAgents,omitempty"`
+	ResponseIds         []string `json:"ResponseIds,omitempty"`
+	ResponseStatusCodes []int64  `json:"ResponseStatusCodes,omitempty"`
+}
+
 // implements the service definition of ReadApiLogsRequest
 type ReadApiLogsRequest struct {
-	DryRun           bool    `json:"DryRun,omitempty"`
-	Filters          Filters `json:"Filters,omitempty"`
-	MaxResults       int64   `json:"MaxResults,omitempty"`
-	NextResultsToken string  `json:"NextResultsToken,omitempty"`
-	With             With    `json:"With,omitempty"`
+	DryRun           bool               `json:"DryRun,omitempty"`
+	Filters          ReadApiLogsFilters `json:"Filters,omitempty"`
+	MaxResults       int64              `json:"MaxResults,omitempty"`
+	NextResultsToken string             `json:"NextResultsToken,omitempty"`
+	With             With               `json:"With,omitempty"`
 }
 
 // implements the service definition of ReadApiLogsResponse
@@ -2109,11 +2117,17 @@ type ReadCatalogResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadClientEndpointsFilters
+type ReadClientEndpointsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadClientEndpointsRequest
 type ReadClientEndpointsRequest struct {
-	ClientEndpointIds []string  `json:"ClientEndpointIds,omitempty"`
-	DryRun            bool      `json:"DryRun,omitempty"`
-	Filters           []Filters `json:"Filters,omitempty"`
+	ClientEndpointIds []string                     `json:"ClientEndpointIds,omitempty"`
+	DryRun            bool                         `json:"DryRun,omitempty"`
+	Filters           []ReadClientEndpointsFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadClientEndpointsResponse
@@ -2135,11 +2149,17 @@ type ReadConsoleOutputResponse struct {
 	VmId            string          `json:"VmId,omitempty"`
 }
 
+// implements the service definition of ReadDhcpOptionsFilters
+type ReadDhcpOptionsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadDhcpOptionsRequest
 type ReadDhcpOptionsRequest struct {
-	DhcpOptionsSetIds []string  `json:"DhcpOptionsSetIds,omitempty"`
-	DryRun            bool      `json:"DryRun,omitempty"`
-	Filters           []Filters `json:"Filters,omitempty"`
+	DhcpOptionsSetIds []string                 `json:"DhcpOptionsSetIds,omitempty"`
+	DryRun            bool                     `json:"DryRun,omitempty"`
+	Filters           []ReadDhcpOptionsFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadDhcpOptionsResponse
@@ -2171,12 +2191,18 @@ type ReadDirectLinksResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadFirewallRulesSetsFilters
+type ReadFirewallRulesSetsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadFirewallRulesSetsRequest
 type ReadFirewallRulesSetsRequest struct {
-	DryRun              bool      `json:"DryRun,omitempty"`
-	Filters             []Filters `json:"Filters,omitempty"`
-	FirewallRulesSetIds []string  `json:"FirewallRulesSetIds,omitempty"`
-	Names               []string  `json:"Names,omitempty"`
+	DryRun              bool                           `json:"DryRun,omitempty"`
+	Filters             []ReadFirewallRulesSetsFilters `json:"Filters,omitempty"`
+	FirewallRulesSetIds []string                       `json:"FirewallRulesSetIds,omitempty"`
+	Names               []string                       `json:"Names,omitempty"`
 }
 
 // implements the service definition of ReadFirewallRulesSetsResponse
@@ -2225,13 +2251,19 @@ type ReadImageExportTasksResponse struct {
 	ResponseContext  ResponseContext    `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadImagesFilters
+type ReadImagesFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadImagesRequest
 type ReadImagesRequest struct {
-	AccountIds  []string  `json:"AccountIds,omitempty"`
-	DryRun      bool      `json:"DryRun,omitempty"`
-	Filters     []Filters `json:"Filters,omitempty"`
-	ImageIds    []string  `json:"ImageIds,omitempty"`
-	Permissions []string  `json:"Permissions,omitempty"`
+	AccountIds  []string            `json:"AccountIds,omitempty"`
+	DryRun      bool                `json:"DryRun,omitempty"`
+	Filters     []ReadImagesFilters `json:"Filters,omitempty"`
+	ImageIds    []string            `json:"ImageIds,omitempty"`
+	Permissions []string            `json:"Permissions,omitempty"`
 }
 
 // implements the service definition of ReadImagesResponse
@@ -2240,11 +2272,17 @@ type ReadImagesResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadKeypairsFilters
+type ReadKeypairsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadKeypairsRequest
 type ReadKeypairsRequest struct {
-	DryRun       bool      `json:"DryRun,omitempty"`
-	Filters      []Filters `json:"Filters,omitempty"`
-	KeypairNames []string  `json:"KeypairNames,omitempty"`
+	DryRun       bool                  `json:"DryRun,omitempty"`
+	Filters      []ReadKeypairsFilters `json:"Filters,omitempty"`
+	KeypairNames []string              `json:"KeypairNames,omitempty"`
 }
 
 // implements the service definition of ReadKeypairsResponse
@@ -2289,12 +2327,18 @@ type ReadLoadBalancersResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadNatServicesFilters
+type ReadNatServicesFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadNatServicesRequest
 type ReadNatServicesRequest struct {
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NatServiceIds    []string  `json:"NatServiceIds,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
+	Filters          []ReadNatServicesFilters `json:"Filters,omitempty"`
+	MaxResults       int64                    `json:"MaxResults,omitempty"`
+	NatServiceIds    []string                 `json:"NatServiceIds,omitempty"`
+	NextResultsToken string                   `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadNatServicesResponse
@@ -2304,11 +2348,17 @@ type ReadNatServicesResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadNetAccessesFilters
+type ReadNetAccessesFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadNetAccessesRequest
 type ReadNetAccessesRequest struct {
-	DryRun       bool      `json:"DryRun,omitempty"`
-	Filters      []Filters `json:"Filters,omitempty"`
-	NetAccessIds []string  `json:"NetAccessIds,omitempty"`
+	DryRun       bool                     `json:"DryRun,omitempty"`
+	Filters      []ReadNetAccessesFilters `json:"Filters,omitempty"`
+	NetAccessIds []string                 `json:"NetAccessIds,omitempty"`
 }
 
 // implements the service definition of ReadNetAccessesResponse
@@ -2317,11 +2367,17 @@ type ReadNetAccessesResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadNetInternetGatewaysFilters
+type ReadNetInternetGatewaysFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadNetInternetGatewaysRequest
 type ReadNetInternetGatewaysRequest struct {
-	DryRun                bool      `json:"DryRun,omitempty"`
-	Filters               []Filters `json:"Filters,omitempty"`
-	NetInternetGatewayIds []string  `json:"NetInternetGatewayIds,omitempty"`
+	DryRun                bool                             `json:"DryRun,omitempty"`
+	Filters               []ReadNetInternetGatewaysFilters `json:"Filters,omitempty"`
+	NetInternetGatewayIds []string                         `json:"NetInternetGatewayIds,omitempty"`
 }
 
 // implements the service definition of ReadNetInternetGatewaysResponse
@@ -2342,11 +2398,17 @@ type ReadNetOptionsResponse struct {
 	ResponseContext         ResponseContext         `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadNetPeeringsFilters
+type ReadNetPeeringsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadNetPeeringsRequest
 type ReadNetPeeringsRequest struct {
-	DryRun      bool      `json:"DryRun,omitempty"`
-	Filters     []Filters `json:"Filters,omitempty"`
-	NetPeerings []string  `json:"NetPeerings,omitempty"`
+	DryRun      bool                     `json:"DryRun,omitempty"`
+	Filters     []ReadNetPeeringsFilters `json:"Filters,omitempty"`
+	NetPeerings []string                 `json:"NetPeerings,omitempty"`
 }
 
 // implements the service definition of ReadNetPeeringsResponse
@@ -2369,10 +2431,22 @@ type ReadNetServicesResponse struct {
 	ServiceNames     []string        `json:"ServiceNames,omitempty"`
 }
 
+// implements the service definition of ReadNetsFilters
+type ReadNetsFilters struct {
+	DhcpOptionsSetIds []string `json:"DhcpOptionsSetIds,omitempty"`
+	IpRanges          []string `json:"IpRanges,omitempty"`
+	IsDefault         []string `json:"IsDefault,omitempty"`
+	NetIds            []string `json:"NetIds,omitempty"`
+	States            []string `json:"States,omitempty"`
+	TagKeys           []string `json:"TagKeys,omitempty"`
+	TagValues         []string `json:"TagValues,omitempty"`
+	Tags              []Tags   `json:"Tags,omitempty"`
+}
+
 // implements the service definition of ReadNetsRequest
 type ReadNetsRequest struct {
-	DryRun  bool    `json:"DryRun,omitempty"`
-	Filters Filters `json:"Filters,omitempty"`
+	DryRun  bool            `json:"DryRun,omitempty"`
+	Filters ReadNetsFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadNetsResponse
@@ -2381,11 +2455,17 @@ type ReadNetsResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadNicsFilters
+type ReadNicsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadNicsRequest
 type ReadNicsRequest struct {
-	DryRun  bool      `json:"DryRun,omitempty"`
-	Filters []Filters `json:"Filters,omitempty"`
-	NicIds  []string  `json:"NicIds,omitempty"`
+	DryRun  bool              `json:"DryRun,omitempty"`
+	Filters []ReadNicsFilters `json:"Filters,omitempty"`
+	NicIds  []string          `json:"NicIds,omitempty"`
 }
 
 // implements the service definition of ReadNicsResponse
@@ -2411,13 +2491,19 @@ type ReadPoliciesResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadPrefixListsFilters
+type ReadPrefixListsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadPrefixListsRequest
 type ReadPrefixListsRequest struct {
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
-	PrefixListIds    []string  `json:"PrefixListIds,omitempty"`
+	DryRun           bool                     `json:"DryRun,omitempty"`
+	Filters          []ReadPrefixListsFilters `json:"Filters,omitempty"`
+	MaxResults       int64                    `json:"MaxResults,omitempty"`
+	NextResultsToken string                   `json:"NextResultsToken,omitempty"`
+	PrefixListIds    []string                 `json:"PrefixListIds,omitempty"`
 }
 
 // implements the service definition of ReadPrefixListsResponse
@@ -2427,9 +2513,15 @@ type ReadPrefixListsResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadProductTypesFilters
+type ReadProductTypesFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadProductTypesRequest
 type ReadProductTypesRequest struct {
-	Filters []Filters `json:"Filters,omitempty"`
+	Filters []ReadProductTypesFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadProductTypesResponse
@@ -2458,11 +2550,22 @@ type ReadPublicIpRangesResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadPublicIpsFilters
+type ReadPublicIpsFilters struct {
+	LinkIds        []string `json:"LinkIds,omitempty"`
+	NicAccountIds  []string `json:"NicAccountIds,omitempty"`
+	NicIds         []string `json:"NicIds,omitempty"`
+	Placements     []string `json:"Placements,omitempty"`
+	PrivateIps     []string `json:"PrivateIps,omitempty"`
+	PublicIps      []string `json:"PublicIps,omitempty"`
+	ReservationIds []string `json:"ReservationIds,omitempty"`
+	VmIds          []string `json:"VmIds,omitempty"`
+}
+
+// implements the service definition of ReadPublicIpsRequest
 type ReadPublicIpsRequest struct {
-	DryRun         bool      `json:"DryRun,omitempty"`
-	Filters        []Filters `json:"Filters,omitempty"`
-	PublicIps      []string  `json:"PublicIps,omitempty"`
-	ReservationIds []string  `json:"ReservationIds,omitempty"`
+	DryRun  bool                 `json:"DryRun,omitempty"`
+	Filters ReadPublicIpsFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadPublicIpsResponse
@@ -2471,13 +2574,19 @@ type ReadPublicIpsResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadQuotasFilters
+type ReadQuotasFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadQuotasRequest
 type ReadQuotasRequest struct {
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
-	QuotaNames       []string  `json:"QuotaNames,omitempty"`
+	DryRun           bool                `json:"DryRun,omitempty"`
+	Filters          []ReadQuotasFilters `json:"Filters,omitempty"`
+	MaxResults       int64               `json:"MaxResults,omitempty"`
+	NextResultsToken string              `json:"NextResultsToken,omitempty"`
+	QuotaNames       []string            `json:"QuotaNames,omitempty"`
 }
 
 // implements the service definition of ReadQuotasResponse
@@ -2487,11 +2596,17 @@ type ReadQuotasResponse struct {
 	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadRegionsFilters
+type ReadRegionsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadRegionsRequest
 type ReadRegionsRequest struct {
-	DryRun      bool      `json:"DryRun,omitempty"`
-	Filters     []Filters `json:"Filters,omitempty"`
-	RegionNames []string  `json:"RegionNames,omitempty"`
+	DryRun      bool                 `json:"DryRun,omitempty"`
+	Filters     []ReadRegionsFilters `json:"Filters,omitempty"`
+	RegionNames []string             `json:"RegionNames,omitempty"`
 }
 
 // implements the service definition of ReadRegionsResponse
@@ -2500,18 +2615,24 @@ type ReadRegionsResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadReservedVmOffersFilters
+type ReadReservedVmOffersFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadReservedVmOffersRequest
 type ReadReservedVmOffersRequest struct {
-	DryRun              bool      `json:"DryRun,omitempty"`
-	Filters             []Filters `json:"Filters,omitempty"`
-	MaxResults          int64     `json:"MaxResults,omitempty"`
-	NextResultsToken    string    `json:"NextResultsToken,omitempty"`
-	OfferingType        string    `json:"OfferingType,omitempty"`
-	ProductType         string    `json:"ProductType,omitempty"`
-	ReservedVmsOfferIds []string  `json:"ReservedVmsOfferIds,omitempty"`
-	SubRegionName       string    `json:"SubRegionName,omitempty"`
-	Tenancy             string    `json:"Tenancy,omitempty"`
-	Type                string    `json:"Type,omitempty"`
+	DryRun              bool                          `json:"DryRun,omitempty"`
+	Filters             []ReadReservedVmOffersFilters `json:"Filters,omitempty"`
+	MaxResults          int64                         `json:"MaxResults,omitempty"`
+	NextResultsToken    string                        `json:"NextResultsToken,omitempty"`
+	OfferingType        string                        `json:"OfferingType,omitempty"`
+	ProductType         string                        `json:"ProductType,omitempty"`
+	ReservedVmsOfferIds []string                      `json:"ReservedVmsOfferIds,omitempty"`
+	SubRegionName       string                        `json:"SubRegionName,omitempty"`
+	Tenancy             string                        `json:"Tenancy,omitempty"`
+	Type                string                        `json:"Type,omitempty"`
 }
 
 // implements the service definition of ReadReservedVmOffersResponse
@@ -2521,13 +2642,19 @@ type ReadReservedVmOffersResponse struct {
 	ResponseContext   ResponseContext     `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadReservedVmsFilters
+type ReadReservedVmsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadReservedVmsRequest
 type ReadReservedVmsRequest struct {
-	DryRun         bool      `json:"DryRun,omitempty"`
-	Filters        []Filters `json:"Filters,omitempty"`
-	OfferingType   string    `json:"OfferingType,omitempty"`
-	ReservedVmsIds []string  `json:"ReservedVmsIds,omitempty"`
-	SubRegionName  string    `json:"SubRegionName,omitempty"`
+	DryRun         bool                     `json:"DryRun,omitempty"`
+	Filters        []ReadReservedVmsFilters `json:"Filters,omitempty"`
+	OfferingType   string                   `json:"OfferingType,omitempty"`
+	ReservedVmsIds []string                 `json:"ReservedVmsIds,omitempty"`
+	SubRegionName  string                   `json:"SubRegionName,omitempty"`
 }
 
 // implements the service definition of ReadReservedVmsResponse
@@ -2536,10 +2663,30 @@ type ReadReservedVmsResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 }
 
+// implements the service definition of ReadRouteTablesFilters
+type ReadRouteTablesFilters struct {
+	LinkMain                      bool     `json:"LinkMain,omitempty"`
+	LinkRouteTableLinkIds         []string `json:"LinkRouteTableLinkIds,omitempty"`
+	LinkSubnetIds                 []string `json:"LinkSubnetIds,omitempty"`
+	NetIds                        []string `json:"NetIds,omitempty"`
+	RouteCreationMethods          []string `json:"RouteCreationMethods,omitempty"`
+	RouteDestinationIpRanges      []string `json:"RouteDestinationIpRanges,omitempty"`
+	RouteDestinationPrefixListIds []string `json:"RouteDestinationPrefixListIds,omitempty"`
+	RouteGatewayIds               []string `json:"RouteGatewayIds,omitempty"`
+	RouteNatServiceIds            []string `json:"RouteNatServiceIds,omitempty"`
+	RouteNetPeeringIds            []string `json:"RouteNetPeeringIds,omitempty"`
+	RouteStates                   []string `json:"RouteStates,omitempty"`
+	RouteTableIds                 []string `json:"RouteTableIds,omitempty"`
+	RouteVmIds                    []string `json:"RouteVmIds,omitempty"`
+	TagKeys                       []string `json:"TagKeys,omitempty"`
+	TagValues                     []string `json:"TagValues,omitempty"`
+	Tags                          []Tags   `json:"Tags,omitempty"`
+}
+
 // implements the service definition of ReadRouteTablesRequest
 type ReadRouteTablesRequest struct {
-	DryRun  bool    `json:"DryRun,omitempty"`
-	Filters Filters `json:"Filters,omitempty"`
+	DryRun  bool                   `json:"DryRun,omitempty"`
+	Filters ReadRouteTablesFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadRouteTablesResponse
@@ -2597,15 +2744,21 @@ type ReadSnapshotExportTasksResponse struct {
 	SnapshotExportTasks []SnapshotExportTasks `json:"SnapshotExportTasks,omitempty"`
 }
 
+// implements the service definition of ReadSnapshotsFilters
+type ReadSnapshotsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadSnapshotsRequest
 type ReadSnapshotsRequest struct {
-	AccountIds                 []string  `json:"AccountIds,omitempty"`
-	DryRun                     bool      `json:"DryRun,omitempty"`
-	Filters                    []Filters `json:"Filters,omitempty"`
-	MaxResults                 int64     `json:"MaxResults,omitempty"`
-	NextResultsToken           string    `json:"NextResultsToken,omitempty"`
-	PermissionsToCreateVolumes []string  `json:"PermissionsToCreateVolumes,omitempty"`
-	SnapshotIds                []string  `json:"SnapshotIds,omitempty"`
+	AccountIds                 []string               `json:"AccountIds,omitempty"`
+	DryRun                     bool                   `json:"DryRun,omitempty"`
+	Filters                    []ReadSnapshotsFilters `json:"Filters,omitempty"`
+	MaxResults                 int64                  `json:"MaxResults,omitempty"`
+	NextResultsToken           string                 `json:"NextResultsToken,omitempty"`
+	PermissionsToCreateVolumes []string               `json:"PermissionsToCreateVolumes,omitempty"`
+	SnapshotIds                []string               `json:"SnapshotIds,omitempty"`
 }
 
 // implements the service definition of ReadSnapshotsResponse
@@ -2615,11 +2768,17 @@ type ReadSnapshotsResponse struct {
 	Snapshots        []Snapshots     `json:"Snapshots,omitempty"`
 }
 
+// implements the service definition of ReadSubRegionsFilters
+type ReadSubRegionsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadSubRegionsRequest
 type ReadSubRegionsRequest struct {
-	DryRun         bool      `json:"DryRun,omitempty"`
-	Filters        []Filters `json:"Filters,omitempty"`
-	SubRegionNames []string  `json:"SubRegionNames,omitempty"`
+	DryRun         bool                    `json:"DryRun,omitempty"`
+	Filters        []ReadSubRegionsFilters `json:"Filters,omitempty"`
+	SubRegionNames []string                `json:"SubRegionNames,omitempty"`
 }
 
 // implements the service definition of ReadSubRegionsResponse
@@ -2628,11 +2787,17 @@ type ReadSubRegionsResponse struct {
 	SubRegions      []SubRegions    `json:"SubRegions,omitempty"`
 }
 
+// implements the service definition of ReadSubnetsFilters
+type ReadSubnetsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadSubnetsRequest
 type ReadSubnetsRequest struct {
-	DryRun    bool      `json:"DryRun,omitempty"`
-	Filters   []Filters `json:"Filters,omitempty"`
-	SubnetIds []string  `json:"SubnetIds,omitempty"`
+	DryRun    bool                 `json:"DryRun,omitempty"`
+	Filters   []ReadSubnetsFilters `json:"Filters,omitempty"`
+	SubnetIds []string             `json:"SubnetIds,omitempty"`
 }
 
 // implements the service definition of ReadSubnetsResponse
@@ -2641,12 +2806,18 @@ type ReadSubnetsResponse struct {
 	Subnets         []Subnets       `json:"Subnets,omitempty"`
 }
 
+// implements the service definition of ReadTagsFilters
+type ReadTagsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadTagsRequest
 type ReadTagsRequest struct {
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
+	DryRun           bool              `json:"DryRun,omitempty"`
+	Filters          []ReadTagsFilters `json:"Filters,omitempty"`
+	MaxResults       int64             `json:"MaxResults,omitempty"`
+	NextResultsToken string            `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadTagsResponse
@@ -2694,15 +2865,100 @@ type ReadVmAttributeResponse struct {
 	VmInitiatedShutdownBehavior string                `json:"VmInitiatedShutdownBehavior,omitempty"`
 }
 
+// implements the service definition of ReadVmTypesFilters
+type ReadVmTypesFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadVmTypesRequest
 type ReadVmTypesRequest struct {
-	Filters []Filters `json:"Filters,omitempty"`
+	Filters []ReadVmTypesFilters `json:"Filters,omitempty"`
 }
 
 // implements the service definition of ReadVmTypesResponse
 type ReadVmTypesResponse struct {
 	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
 	Types           []Types         `json:"Types,omitempty"`
+}
+
+// implements the service definition of ReadVmsFilters
+type ReadVmsFilters struct {
+	AccountIds                               []string `json:"AccountIds,omitempty"`
+	ActivatedChecks                          []bool   `json:"ActivatedChecks,omitempty"`
+	Architectures                            []string `json:"Architectures,omitempty"`
+	BlockDeviceMappingDeleteOnVmTerminations []bool   `json:"BlockDeviceMappingDeleteOnVmTerminations,omitempty"`
+	BlockDeviceMappingDeviceNames            []string `json:"BlockDeviceMappingDeviceNames,omitempty"`
+	BlockDeviceMappingLinkDates              []string `json:"BlockDeviceMappingLinkDates,omitempty"`
+	BlockDeviceMappingStates                 []string `json:"BlockDeviceMappingStates,omitempty"`
+	BlockDeviceMappingVolumeIds              []string `json:"BlockDeviceMappingVolumeIds,omitempty"`
+	Comments                                 []string `json:"Comments,omitempty"`
+	CreationDates                            []string `json:"CreationDates,omitempty"`
+	DnsNames                                 []string `json:"DnsNames,omitempty"`
+	FirewallRulesSetIds                      []string `json:"FirewallRulesSetIds,omitempty"`
+	FirewallRulesSetNames                    []string `json:"FirewallRulesSetNames,omitempty"`
+	Hypervisors                              []string `json:"Hypervisors,omitempty"`
+	ImageIds                                 []string `json:"ImageIds,omitempty"`
+	KernelIds                                []string `json:"KernelIds,omitempty"`
+	KeypairNames                             []string `json:"KeypairNames,omitempty"`
+	LaunchSortNumbers                        []int64  `json:"LaunchSortNumbers,omitempty"`
+	MonitoringStates                         []string `json:"MonitoringStates,omitempty"`
+	NetIds                                   []string `json:"NetIds,omitempty"`
+	NicAccountIds                            []string `json:"NicAccountIds,omitempty"`
+	NicActivatedChecks                       []bool   `json:"NicActivatedChecks,omitempty"`
+	NicDescriptions                          []string `json:"NicDescriptions,omitempty"`
+	NicFirewallRulesSetIds                   []string `json:"NicFirewallRulesSetIds,omitempty"`
+	NicFirewallRulesSetNames                 []string `json:"NicFirewallRulesSetNames,omitempty"`
+	NicIds                                   []string `json:"NicIds,omitempty"`
+	NicIpsLinkPrivateIpAccountIds            []string `json:"NicIpsLinkPrivateIpAccountIds,omitempty"`
+	NicIpsLinkPublicIps                      []string `json:"NicIpsLinkPublicIps,omitempty"`
+	NicIpsPrimaryIps                         []string `json:"NicIpsPrimaryIps,omitempty"`
+	NicIpsPrivateIps                         []string `json:"NicIpsPrivateIps,omitempty"`
+	NicLinkDates                             []string `json:"NicLinkDates,omitempty"`
+	NicLinkDeleteOnVmDeletions               []bool   `json:"NicLinkDeleteOnVmDeletions,omitempty"`
+	NicLinkIds                               []string `json:"NicLinkIds,omitempty"`
+	NicLinkPublicIpAccountIds                []string `json:"NicLinkPublicIpAccountIds,omitempty"`
+	NicLinkPublicIps                         []string `json:"NicLinkPublicIps,omitempty"`
+	NicLinkReservationIds                    []string `json:"NicLinkReservationIds,omitempty"`
+	NicLinkSortNumbers                       []int64  `json:"NicLinkSortNumbers,omitempty"`
+	NicLinkStates                            []string `json:"NicLinkStates,omitempty"`
+	NicLinkVmAccountIds                      []string `json:"NicLinkVmAccountIds,omitempty"`
+	NicLinkVmIds                             []string `json:"NicLinkVmIds,omitempty"`
+	NicMacAddresses                          []string `json:"NicMacAddresses,omitempty"`
+	NicNetIds                                []string `json:"NicNetIds,omitempty"`
+	NicPrivateDnsNames                       []string `json:"NicPrivateDnsNames,omitempty"`
+	NicRequesterIds                          []string `json:"NicRequesterIds,omitempty"`
+	NicRequesterManaged                      []string `json:"NicRequesterManaged,omitempty"`
+	NicStates                                []string `json:"NicStates,omitempty"`
+	NicSubRegionNames                        []string `json:"NicSubRegionNames,omitempty"`
+	NicSubnetIds                             []string `json:"NicSubnetIds,omitempty"`
+	PlacementGroups                          []string `json:"PlacementGroups,omitempty"`
+	PrivateDnsNames                          []string `json:"PrivateDnsNames,omitempty"`
+	PrivateIps                               []string `json:"PrivateIps,omitempty"`
+	ProductCodes                             []string `json:"ProductCodes,omitempty"`
+	PublicIps                                []string `json:"PublicIps,omitempty"`
+	RamDiskIds                               []string `json:"RamDiskIds,omitempty"`
+	RequesterIds                             []string `json:"RequesterIds,omitempty"`
+	ReservationIds                           []string `json:"ReservationIds,omitempty"`
+	RootDeviceNames                          []string `json:"RootDeviceNames,omitempty"`
+	RootDeviceTypes                          []string `json:"RootDeviceTypes,omitempty"`
+	SpotVmRequestIds                         []string `json:"SpotVmRequestIds,omitempty"`
+	SpotVms                                  []string `json:"SpotVms,omitempty"`
+	StateComments                            []string `json:"StateComments,omitempty"`
+	SubRegionNames                           []string `json:"SubRegionNames,omitempty"`
+	SubnetIds                                []string `json:"SubnetIds,omitempty"`
+	Systems                                  []string `json:"Systems,omitempty"`
+	TagKeys                                  []string `json:"TagKeys,omitempty"`
+	TagValues                                []string `json:"TagValues,omitempty"`
+	Tags                                     []string `json:"Tags,omitempty"`
+	Tenancies                                []string `json:"Tenancies,omitempty"`
+	Tokens                                   []string `json:"Tokens,omitempty"`
+	VirtualizationTypes                      []string `json:"VirtualizationTypes,omitempty"`
+	VmIds                                    []string `json:"VmIds,omitempty"`
+	VmStates                                 []string `json:"VmStates,omitempty"`
+	VmTypes                                  []string `json:"VmTypes,omitempty"`
+	VmsFirewallRulesSetId                    []string `json:"VmsFirewallRulesSetId,omitempty"`
+	VmsFirewallRulesSetName                  []string `json:"VmsFirewallRulesSetName,omitempty"`
 }
 
 // implements the service definition of ReadVmsHealthRequest
@@ -2719,10 +2975,10 @@ type ReadVmsHealthResponse struct {
 
 // implements the service definition of ReadVmsRequest
 type ReadVmsRequest struct {
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
+	DryRun           bool             `json:"DryRun,omitempty"`
+	Filters          []ReadVmsFilters `json:"Filters,omitempty"`
+	MaxResults       int64            `json:"MaxResults,omitempty"`
+	NextResultsToken string           `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadVmsResponse
@@ -2732,13 +2988,24 @@ type ReadVmsResponse struct {
 	Vms              []Vms           `json:"Vms,omitempty"`
 }
 
+// implements the service definition of ReadVmsStateFilters
+type ReadVmsStateFilters struct {
+	MaintenanceEventDescriptions []string `json:"MaintenanceEventDescriptions,omitempty"`
+	MaintenanceEventReasons      []string `json:"MaintenanceEventReasons,omitempty"`
+	MaintenanceEventsNotAfter    []string `json:"MaintenanceEventsNotAfter,omitempty"`
+	MaintenanceEventsNotBefore   []string `json:"MaintenanceEventsNotBefore,omitempty"`
+	SubRegionNames               []string `json:"SubRegionNames,omitempty"`
+	VmIds                        []string `json:"VmIds,omitempty"`
+	VmStates                     []string `json:"VmStates,omitempty"`
+}
+
 // implements the service definition of ReadVmsStateRequest
 type ReadVmsStateRequest struct {
-	AllVms           bool      `json:"AllVms,omitempty"`
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	MaxResults       int64     `json:"MaxResults,omitempty"`
-	NextResultsToken string    `json:"NextResultsToken,omitempty"`
+	AllVms           bool                  `json:"AllVms,omitempty"`
+	DryRun           bool                  `json:"DryRun,omitempty"`
+	Filters          []ReadVmsStateFilters `json:"Filters,omitempty"`
+	MaxResults       int64                 `json:"MaxResults,omitempty"`
+	NextResultsToken string                `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadVmsStateResponse
@@ -2748,12 +3015,25 @@ type ReadVmsStateResponse struct {
 	VmStates         []VmStates      `json:"VmStates,omitempty"`
 }
 
+// implements the service definition of ReadVolumesFilters
+type ReadVolumesFilters struct {
+	CreationDates  []string `json:"CreationDates,omitempty"`
+	SnapshotIds    []string `json:"SnapshotIds,omitempty"`
+	SubRegionNames []string `json:"SubRegionNames,omitempty"`
+	TagKeys        []string `json:"TagKeys,omitempty"`
+	TagValues      []string `json:"TagValues,omitempty"`
+	Tags           []Tags   `json:"Tags,omitempty"`
+	VolumeIds      []string `json:"VolumeIds,omitempty"`
+	VolumeSizes    []int64  `json:"VolumeSizes,omitempty"`
+	VolumeTypes    []string `json:"VolumeTypes,omitempty"`
+}
+
 // implements the service definition of ReadVolumesRequest
 type ReadVolumesRequest struct {
-	DryRun           bool    `json:"DryRun,omitempty"`
-	Filters          Filters `json:"Filters,omitempty"`
-	MaxResults       int64   `json:"MaxResults,omitempty"`
-	NextResultsToken string  `json:"NextResultsToken,omitempty"`
+	DryRun           bool               `json:"DryRun,omitempty"`
+	Filters          ReadVolumesFilters `json:"Filters,omitempty"`
+	MaxResults       int64              `json:"MaxResults,omitempty"`
+	NextResultsToken string             `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadVolumesResponse
@@ -2763,24 +3043,36 @@ type ReadVolumesResponse struct {
 	Volumes          []Volumes       `json:"Volumes,omitempty"`
 }
 
+// implements the service definition of ReadVpnConnectionsFilters
+type ReadVpnConnectionsFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
+}
+
 // implements the service definition of ReadVpnConnectionsRequest
 type ReadVpnConnectionsRequest struct {
-	DryRun           bool      `json:"DryRun,omitempty"`
-	Filters          []Filters `json:"Filters,omitempty"`
-	VpnConnectionIds []string  `json:"VpnConnectionIds,omitempty"`
+	DryRun           bool                        `json:"DryRun,omitempty"`
+	Filters          []ReadVpnConnectionsFilters `json:"Filters,omitempty"`
+	VpnConnectionIds []string                    `json:"VpnConnectionIds,omitempty"`
 }
 
 // implements the service definition of ReadVpnConnectionsResponse
 type ReadVpnConnectionsResponse struct {
 	ResponseContext ResponseContext  `json:"ResponseContext,omitempty"`
-	VpnConnections  []VpnConnections `json:"vpnConnections,omitempty"`
+	VpnConnections  []VpnConnections `json:"VpnConnections,omitempty"`
+}
+
+// implements the service definition of ReadVpnGatewaysFilters
+type ReadVpnGatewaysFilters struct {
+	Name   string   `json:"Name,omitempty"`
+	Values []string `json:"Values,omitempty"`
 }
 
 // implements the service definition of ReadVpnGatewaysRequest
 type ReadVpnGatewaysRequest struct {
-	DryRun        bool      `json:"DryRun,omitempty"`
-	Filters       []Filters `json:"Filters,omitempty"`
-	VpnGatewayIds []string  `json:"VpnGatewayIds,omitempty"`
+	DryRun        bool                     `json:"DryRun,omitempty"`
+	Filters       []ReadVpnGatewaysFilters `json:"Filters,omitempty"`
+	VpnGatewayIds []string                 `json:"VpnGatewayIds,omitempty"`
 }
 
 // implements the service definition of ReadVpnGatewaysResponse
@@ -3579,6 +3871,19 @@ type VpnConnection struct {
 	VpnGatewayId                string   `json:"VpnGatewayId,omitempty"`
 }
 
+// implements the service definition of VpnConnections
+type VpnConnections struct {
+	ClientEndpointConfiguration string   `json:"ClientEndpointConfiguration,omitempty"`
+	ClientEndpointId            string   `json:"ClientEndpointId,omitempty"`
+	Routes                      []Routes `json:"Routes,omitempty"`
+	State                       string   `json:"State,omitempty"`
+	StaticRoutesOnly            bool     `json:"StaticRoutesOnly,omitempty"`
+	Tags                        []Tags   `json:"Tags,omitempty"`
+	Type                        string   `json:"Type,omitempty"`
+	VpnConnectionId             string   `json:"VpnConnectionId,omitempty"`
+	VpnGatewayId                string   `json:"VpnGatewayId,omitempty"`
+}
+
 // implements the service definition of VpnGateway
 type VpnGateway struct {
 	NetToVpnGatewayLinks []NetToVpnGatewayLinks `json:"NetToVpnGatewayLinks,omitempty"`
@@ -3612,19 +3917,6 @@ type With struct {
 	ResponseId         bool `json:"ResponseId,omitempty"`
 	ResponseSize       bool `json:"ResponseSize,omitempty"`
 	ResponseStatusCode bool `json:"ResponseStatusCode,omitempty"`
-}
-
-// implements the service definition of vpnConnections
-type VpnConnections struct {
-	ClientEndpointConfiguration string   `json:"ClientEndpointConfiguration,omitempty"`
-	ClientEndpointId            string   `json:"ClientEndpointId,omitempty"`
-	Routes                      []Routes `json:"Routes,omitempty"`
-	State                       string   `json:"State,omitempty"`
-	StaticRoutesOnly            bool     `json:"StaticRoutesOnly,omitempty"`
-	Tags                        []Tags   `json:"Tags,omitempty"`
-	Type                        string   `json:"Type,omitempty"`
-	VpnConnectionId             string   `json:"VpnConnectionId,omitempty"`
-	VpnGatewayId                string   `json:"VpnGatewayId,omitempty"`
 }
 
 // POST_AcceptNetPeeringParameters holds parameters to POST_AcceptNetPeering

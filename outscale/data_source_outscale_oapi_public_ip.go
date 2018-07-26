@@ -2,10 +2,10 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -65,20 +65,21 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	req := oapi.ReadPublicIpsRequest{}
-
-	if id := d.Get("reservation_id"); id != "" {
-		req.ReservationIds = []string{id.(string)}
-	}
-	if id := d.Get("public_ip"); id != "" {
-		req.PublicIps = []string{id.(string)}
+	req := oapi.ReadPublicIpsRequest{
+		Filters: oapi.ReadPublicIpsFilters{},
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
-	//TODO: get right filters
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+	}
+
+	if id := d.Get("reservation_id"); id != "" {
+		req.Filters.ReservationIds = []string{id.(string)}
+	}
+	if id := d.Get("public_ip"); id != "" {
+		req.Filters.PublicIps = []string{id.(string)}
 	}
 
 	var describeAddresses *oapi.ReadPublicIpsResponse
@@ -152,19 +153,35 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceFilters(set *schema.Set) []oapi.Filters {
-	var filters []oapi.Filters
+func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.ReadPublicIpsFilters {
+	var filters oapi.ReadPublicIpsFilters
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
-		var filterValues []*string
+		var filterValues []string
 		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, aws.String(e.(string)))
+			filterValues = append(filterValues, e.(string))
 		}
-		filters = append(filters, oapi.Filters{
-			//Missing in swagger spec
-			// Name:   aws.String(m["name"].(string)),
-			// Values: filterValues,
-		})
+
+		switch name := m["name"].(string); name {
+		case "reservation-ids":
+			filters.ReservationIds = filterValues
+		case "link-ids":
+			filters.LinkIds = filterValues
+		case "placements":
+			filters.Placements = filterValues
+		case "vm-ids":
+			filters.VmIds = filterValues
+		case "nic-ids":
+			filters.NicIds = filterValues
+		case "nic-account-ids":
+			filters.NicAccountIds = filterValues
+		case "private-ips":
+			filters.PrivateIps = filterValues
+		case "public-ips":
+			filters.PublicIps = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
 	}
 	return filters
 }

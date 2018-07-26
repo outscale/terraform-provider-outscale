@@ -144,22 +144,14 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 
 	if strings.Contains(id, "eipassoc") {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: []oapi.Filters{
-				oapi.Filters{
-					//Missing on swagger spec
-					// Name:   aws.String("association-id"),
-					// Values: []*string{aws.String(id)},
-				},
+			Filters: oapi.ReadPublicIpsFilters{
+				ReservationIds: []string{id},
 			},
 		}
 	} else {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: []oapi.Filters{
-				oapi.Filters{
-					//Missing on swagger spec
-					// Name:   aws.String("public-ip"),
-					// Values: []*string{aws.String(id)},
-				},
+			Filters: oapi.ReadPublicIpsFilters{
+				PublicIps: []string{id},
 			},
 		}
 	}

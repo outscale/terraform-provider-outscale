@@ -134,7 +134,9 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
 			req := oapi.ReadPublicIpsRequest{
-				ReservationIds: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					ReservationIds: []string{rs.Primary.ID},
+				},
 			}
 
 			var describe *oapi.ReadPublicIpsResponse
@@ -159,7 +161,9 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 			}
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				PublicIps: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					PublicIps: []string{rs.Primary.ID},
+				},
 			}
 
 			var describe *oapi.ReadPublicIpsResponse
@@ -213,7 +217,9 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 
 		if strings.Contains(rs.Primary.ID, "link") {
 			req := oapi.ReadPublicIpsRequest{
-				ReservationIds: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					ReservationIds: []string{rs.Primary.ID},
+				},
 			}
 			describe, err := conn.OAPI.POST_ReadPublicIps(req)
 
@@ -229,7 +235,9 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				PublicIps: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					PublicIps: []string{rs.Primary.ID},
+				},
 			}
 
 			var describe *oapi.ReadPublicIpsResponse

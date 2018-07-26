@@ -60,11 +60,8 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIps
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := oapi.ReadPublicIpsRequest{
-			Filters: []oapi.Filters{
-				oapi.Filters{
-					// Name:   aws.String("association-id"),
-					// Values: []*string{res.AssociationId},
-				},
+			Filters: oapi.ReadPublicIpsFilters{
+				LinkIds: []string{res.LinkId},
 			},
 		}
 		describe, err := conn.OAPI.POST_ReadPublicIps(request)
@@ -96,16 +93,13 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 
 		fmt.Printf("%#v", rs.Primary.Attributes)
 
-		//id := rs.Primary.Attributes["link_id"]
+		id := rs.Primary.Attributes["link_id"]
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := oapi.ReadPublicIpsRequest{
-			Filters: []oapi.Filters{
-				oapi.Filters{
-					// Name:   aws.String("association-id"),
-					// Values: []*string{aws.String(id)},
-				},
+			Filters: oapi.ReadPublicIpsFilters{
+				LinkIds: []string{id},
 			},
 		}
 		describe, err := conn.OAPI.POST_ReadPublicIps(request)
@@ -138,7 +132,9 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) reso
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
 			req := oapi.ReadPublicIpsRequest{
-				ReservationIds: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					ReservationIds: []string{rs.Primary.ID},
+				},
 			}
 			resp, err := conn.OAPI.POST_ReadPublicIps(req)
 
@@ -156,7 +152,9 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) reso
 
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				PublicIps: []string{rs.Primary.ID},
+				Filters: oapi.ReadPublicIpsFilters{
+					PublicIps: []string{rs.Primary.ID},
+				},
 			}
 
 			var describe *oapi.ReadPublicIpsResponse

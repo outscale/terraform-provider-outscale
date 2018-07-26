@@ -106,9 +106,9 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	//filters := []oapi.Filters{}
 
 	if placement == "vpc" {
-		req.ReservationIds = []string{id}
+		req.Filters.ReservationIds = []string{id}
 	} else {
-		req.PublicIps = []string{id}
+		req.Filters.PublicIps = []string{id}
 	}
 
 	var describeAddresses *oapi.ReadPublicIpsResponse
