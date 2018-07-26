@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -73,6 +74,7 @@ func buildClient() *Client {
 		MarshalHander:         testBuildRequestHandler,
 		UnmarshalHandler:      unmarshalTestHandler,
 		UnmarshalErrorHandler: testUnmarshalErrorHandler,
+		SetHeaders:            testSetHeaders,
 		Config: Config{
 			UserAgent: "test",
 			Target:    "fcu",
@@ -105,6 +107,12 @@ func testUnmarshalErrorHandler(r *http.Response) error {
 	return errors.New("This is an error")
 }
 
+// SetHeaders sets the headers for the request
+func testSetHeaders(agent string, req *http.Request, operation string) {
+	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", agent, operation))
+	req.Header.Add("User-Agent", "test")
+}
+
 func TestSign(t *testing.T) {
 	req, body := buildRequest("fcu", "eu-west-1", "{}")
 	client.Sign(req, body, time.Unix(0, 0), "fcu")
@@ -127,17 +135,22 @@ func TestSign(t *testing.T) {
 func TestSetHeaders(t *testing.T) {
 	c := buildClient()
 
+	log.Printf("Client: %+v", c)
+
 	req, _ := http.NewRequest(http.MethodGet, "http//:example.org/", nil)
+
+	log.Printf("request: %+v", req)
 	c.SetHeaders(c.Config.Target, req, "DescribeInstances")
 
 	q := req.Header
 	targetExpected := "fcu.DescribeInstances"
 	agentExpected := "test"
 
-	if e, a := agentExpected, q.Get("User-Agent"); e != a {
+	if e, a := targetExpected, q.Get("X-Amz-Target"); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
-	if e, a := targetExpected, q.Get("X-Amz-Target"); e != a {
+
+	if e, a := agentExpected, q.Get("User-Agent"); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
 }
