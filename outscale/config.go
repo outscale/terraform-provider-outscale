@@ -33,13 +33,13 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 
-	u := os.Getenv("OUTSCALE_OAPI")
+	u := os.Getenv("OUTSCALE_OAPI_URL")
 
 	oapicfg := &oapi.Config{
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
 		Region:    c.Region,
-		Service:   "oapi",
+		Service:   "oapi-gtw",
 		URL:       u,
 	}
 

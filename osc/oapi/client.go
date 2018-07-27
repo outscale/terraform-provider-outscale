@@ -41,7 +41,7 @@ type Config struct {
 }
 
 func (c Config) ServiceURL() string {
-	s := fmt.Sprintf("https://%s.%s.%s/", c.Service, c.Region, c.URL)
+	s := fmt.Sprintf("https://%s.%s.%s", c.Service, c.Region, c.URL)
 
 	u, err := url.Parse(s)
 	if err != nil {
