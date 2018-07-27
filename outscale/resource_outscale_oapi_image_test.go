@@ -24,7 +24,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi == false {
+	if !oapi {
 		t.Skip()
 	}
 	var ami fcu.Image

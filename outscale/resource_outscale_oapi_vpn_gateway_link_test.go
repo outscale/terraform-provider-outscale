@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +15,17 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var vpc fcu.Vpc
 	var vgw fcu.VpnGateway
 
@@ -41,6 +54,17 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 }
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var vpc fcu.Vpc
 	var vgw fcu.VpnGateway
 

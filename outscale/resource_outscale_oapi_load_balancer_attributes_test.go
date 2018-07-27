@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -11,6 +13,17 @@ import (
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var conf lbu.LoadBalancerAttributes
 
 	r := acctest.RandIntRange(0, 10)

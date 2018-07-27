@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +15,17 @@ import (
 )
 
 func TestAccOutscaleOAPIENI_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var conf fcu.NetworkInterface
 
 	resource.Test(t, resource.TestCase{

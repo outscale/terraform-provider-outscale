@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -11,6 +12,17 @@ import (
 )
 
 func TestAccOutscaleOAPIDSDirectLinkInterfaces_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	key := "OUTSCALE_CONNECTION_ID"
 	connectionID := os.Getenv(key)
 	if connectionID == "" {

@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +16,17 @@ import (
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	imageID := ""
 	accountID := "520679080430"
 

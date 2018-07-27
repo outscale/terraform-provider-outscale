@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,6 +16,17 @@ import (
 )
 
 func TestAccOutscaleOAPIDirectLinkInterface_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	key := "OUTSCALE_CONNECTION_ID"
 	connectionID := os.Getenv(key)
 	if connectionID == "" {

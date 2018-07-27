@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -10,6 +11,17 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 

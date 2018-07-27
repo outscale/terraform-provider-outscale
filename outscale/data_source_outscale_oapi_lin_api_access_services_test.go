@@ -18,7 +18,7 @@ func TestAccOutscaleOAPIVpcEndpointServicesDataSource_Instance(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{

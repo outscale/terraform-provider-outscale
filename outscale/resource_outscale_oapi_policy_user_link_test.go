@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +16,17 @@ import (
 )
 
 func TestAccOutscaleOAPIPolicyUserLink_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
 	var out eim.ListAttachedUserPoliciesOutput
 	rName := acctest.RandString(10)
 	policyName1 := fmt.Sprintf("test-policy-%s", acctest.RandString(10))
