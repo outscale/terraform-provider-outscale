@@ -150,7 +150,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	d.Set("placement", address.Placement)
 	d.SetId(address.LinkId)
 
-	return nil
+	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
 
 func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.ReadPublicIpsFilters {

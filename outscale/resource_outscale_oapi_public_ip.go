@@ -60,6 +60,10 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -169,7 +173,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		d.SetId(address.PublicIp)
 	}
 
-	return nil
+	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
 
 func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}) error {

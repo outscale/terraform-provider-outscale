@@ -67,6 +67,10 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"reques_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -184,6 +188,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
+	d.Set("request_id", response.ResponseContext.RequestId)
 	return readOutscaleOAPIPublicIPLink(d, response.PublicIps[0])
 }
 
