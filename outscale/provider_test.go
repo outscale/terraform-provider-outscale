@@ -1,9 +1,12 @@
 package outscale
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-nutanix/utils"
 
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -34,4 +37,18 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
+}
+
+func testAccCheckState(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+
+		if !ok {
+			return fmt.Errorf("Can't find this `%s` resource", n)
+		}
+
+		utils.PrintToJSON(rs, "[Debug] State: \n")
+
+		return nil
+	}
 }
