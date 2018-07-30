@@ -78,6 +78,7 @@ func dataSourceOutscaleUserRead(d *schema.ResourceData, meta interface{}) error 
 	d.Set("user_name", aws.StringValue(getResp.User.UserName))
 	d.Set("arn", aws.StringValue(getResp.User.Arn))
 	d.Set("path", aws.StringValue(getResp.User.Path))
+	d.Set("request_id", aws.StringValue(resp.ResponseMetadata.RequestID))
 	d.SetId(resource.UniqueId())
 
 	return d.Set("user_id", aws.StringValue(getResp.User.UserId))
