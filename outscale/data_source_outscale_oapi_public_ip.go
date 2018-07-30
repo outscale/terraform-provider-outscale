@@ -148,7 +148,12 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	d.Set("reservation_id", address.ReservationId)
 	d.Set("public_ip", address.PublicIp)
 	d.Set("placement", address.Placement)
-	d.SetId(address.LinkId)
+
+	if address.Placement == "vpc" {
+		d.SetId(address.ReservationId)
+	} else {
+		d.SetId(address.PublicIp)
+	}
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
