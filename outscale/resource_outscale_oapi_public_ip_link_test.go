@@ -35,6 +35,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPIPublicIPLinkConfig,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckState("outscale_public_ip_link.by_public_ip"),
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.bar", &a),
 					testAccCheckOutscaleOAPIPublicIPLinkExists(
@@ -203,17 +204,18 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) reso
 }
 
 const testAccOutscaleOAPIPublicIPLinkConfig = `
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	subnet_id = "subnet-861fbecc"
-}
+#resource "outscale_vm" "basic" {
+#	image_id = "ami-8a6a0120"
+#	instance_type = "t2.micro"
+#	key_name = "terraform-basic"
+#	subnet_id = "subnet-861fbecc"
+#}
 
 resource "outscale_public_ip" "bar" {}
 
 resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.public_ip}"
-	vm_id = "${outscale_vm.basic.id}"
-    depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
+	#vm_id = "${outscale_vm.basic.id}"
+	vm_id = "i-ccdf0eeb"
+	#depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
 }`

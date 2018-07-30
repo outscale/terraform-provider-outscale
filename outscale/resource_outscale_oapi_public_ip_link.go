@@ -66,7 +66,7 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"reques_id": &schema.Schema{
+			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
