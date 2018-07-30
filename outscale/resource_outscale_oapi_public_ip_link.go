@@ -35,7 +35,6 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 			"allow_relink": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"vm_id": &schema.Schema{
