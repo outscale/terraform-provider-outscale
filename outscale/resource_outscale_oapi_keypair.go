@@ -169,12 +169,12 @@ func getOAPIKeyPairSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"PrivateKey": {
+		"private_key": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"keyperName": {
+		"keypair_name": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,

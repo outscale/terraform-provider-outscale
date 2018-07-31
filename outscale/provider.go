@@ -26,6 +26,12 @@ func Provider() terraform.ResourceProvider {
 
 	if isoapi {
 		fcu = "oapi"
+
+		//will add this too
+		// icu := "oapi"
+		// lbu := "oapi"
+		// eim := "oapi"
+		// dl := "oapi"
 	}
 
 	return &schema.Provider{

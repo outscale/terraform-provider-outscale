@@ -70,12 +70,17 @@ func init() {
 			"outscale_image":                         resourceOutscaleOAPIImage,
 			"outscale_keypair":                       resourceOutscaleOAPIKeyPair,
 			"outscale_public_ip":                     resourceOutscaleOAPIPublicIP,
+			"outscale_public_ip_link":                resourceOutscaleOAPIPublicIPLink,
+			"outscale_volume":                        resourceOutscaleOAPIVolume,
+			"outscale_volumes_link":                  resourceOutscaleOAPIVolumeLink,
+			"outscale_vm_attributes":                 resourceOutscaleOAPIVMAttributes,
 			"outscale_inbound_rule":                  resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule":                 resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":                           resourceOutscaleOAPITags,
 			"outscale_lin_attributes":                resourceOutscaleOAPILinAttributes,
 			"outscale_lin":                           resourceOutscaleOAPILin,
 			"outscale_lin_internet_gateway":          resourceOutscaleOAPILinInternetGateway,
+			"outscale_lin_internet_gateway_link":     resourceOutscaleOAPILinInternetGatewayLink,
 			"outscale_nat_service":                   resourceOutscaleOAPINatService,
 			"outscale_subnet":                        resourceOutscaleOAPISubNet,
 			"outscale_client_endpoint":               resourceOutscaleCustomerGateway,
@@ -123,6 +128,10 @@ func init() {
 			"outscale_policy_version":                resourceOutscaleOAPIPolicyVersion,
 			"outscale_user_api_keys":                 resourceOutscaleOAPIUserAPIKey,
 			"outscale_directlink_interface":          resourceOutscaleOAPIDirectLinkInterface,
+			"outscale_dhcp_option":                   resourceOutscaleDHCPOption,     //TODO: OAPI
+			"outscale_dhcp_option_link":              resourceOutscaleDHCPOptionLink, //TODO: OAPI
+			"outscale_lin_peering_acceptation":       resourceOutscaleOAPILinPeeringConnectionAccepter,
+			"outscale_snapshot_import":               resourcedOutscaleOAPISnapshotImport,
 		},
 		"icu": ResourceMap{
 			"outscale_api_key": resourceOutscaleIamAccessKey,
@@ -292,6 +301,15 @@ func init() {
 			"outscale_directlink_vpn_gateways":             dataSourceOutscaleOAPIDLVPNGateways,
 			"outscale_directlink_interface":                dataSourceOutscaleOAPIDirectLinkInterface,
 			"outscale_directlink_interfaces":               dataSourceOutscaleOAPIDirectLinkInterfaces,
+			"outscale_public_ip":                           dataSourceOutscaleOAPIPublicIP,
+			"outscale_public_ips":                          dataSourceOutscalePublicIPS, //TODO: OAPI
+			"outscale_nat_service":                         dataSourceOutscaleOAPINatService,
+			"outscale_nat_services":                        dataSourceOutscaleOAPINatServices,
+			"outscale_api_key":                             dataSourceOutscaleOAPIIamAccessKey,
+			"outscale_vpn_connection":                      dataSourceOutscaleVpnConnection,     //TODO: OAPI
+			"outscale_sub_regions":                         dataSourceOutscaleAvailabilityZones, //TODO: OAPI
+			"outscale_lin_api_access":                      dataSourceOutscaleOAPIVpcEndpoint,
+			"outscale_lin_api_accesses":                    dataSourceOutscaleOAPIVpcEndpoints,
 		},
 		"lbu": ResourceMap{
 			"outscale_load_balancer":                       dataSourceOutscaleLoadBalancer,

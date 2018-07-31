@@ -1,6 +1,12 @@
 package outscale
 
 import (
+	"crypto/tls"
+	"net/http"
+	"os"
+
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/dl"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
@@ -20,11 +26,12 @@ type Config struct {
 
 //OutscaleClient client
 type OutscaleClient struct {
-	FCU *fcu.Client
-	ICU *icu.Client
-	LBU *lbu.Client
-	EIM *eim.Client
-	DL  *dl.Client
+	FCU  *fcu.Client
+	ICU  *icu.Client
+	LBU  *lbu.Client
+	EIM  *eim.Client
+	DL   *dl.Client
+	OAPI *oapi.Client
 }
 
 // Client ...
@@ -56,12 +63,32 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	u := os.Getenv("OUTSCALE_OAPI_URL")
+
+	oapicfg := &oapi.Config{
+		AccessKey: c.AccessKeyID,
+		SecretKey: c.SecretKeyID,
+		Region:    c.Region,
+		Service:   "oapi-gtw",
+		URL:       u,
+	}
+
+	skipClient := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	oapiClient := oapi.NewClient(oapicfg, skipClient)
+
 	client := &OutscaleClient{
-		FCU: fcu,
-		ICU: icu,
-		LBU: lbu,
-		EIM: eim,
-		DL:  dl,
+		FCU:  fcu,
+		ICU:  icu,
+		LBU:  lbu,
+		EIM:  eim,
+		DL:   dl,
+		OAPI: oapiClient,
 	}
 
 	return client, nil

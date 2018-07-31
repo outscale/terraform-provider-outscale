@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
@@ -36,7 +35,6 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 			"allow_relink": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
 			},
 			"vm_id": &schema.Schema{
@@ -68,43 +66,47 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
 func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.AssociateAddressInput{}
+	request := oapi.LinkPublicIpRequest{}
 
 	if v, ok := d.GetOk("reservation_id"); ok {
 		fmt.Println(v.(string))
-		request.AllocationId = aws.String(v.(string))
+		request.ReservationId = v.(string)
 	}
 	if v, ok := d.GetOk("allow_relink"); ok {
-		request.AllowReassociation = aws.Bool(v.(bool))
+		request.AllowRelink = v.(bool)
 	}
 	if v, ok := d.GetOk("vm_id"); ok {
-		request.InstanceId = aws.String(v.(string))
+		request.VmId = v.(string)
 	}
 	if v, ok := d.GetOk("nic_id"); ok {
-		request.NetworkInterfaceId = aws.String(v.(string))
+		request.NicId = v.(string)
 	}
 	if v, ok := d.GetOk("private_ip"); ok {
-		request.PrivateIpAddress = aws.String(v.(string))
+		request.PrivateIp = v.(string)
 	}
 	if v, ok := d.GetOk("public_ip"); ok {
-		request.PublicIp = aws.String(v.(string))
+		request.PublicIp = v.(string)
 	}
 
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
 
-	var resp *fcu.AssociateAddressOutput
+	var resp *oapi.LinkPublicIpResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		resp, err = conn.VM.AssociateAddress(request)
+		response, err := conn.POST_LinkPublicIp(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -112,7 +114,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 
 			return resource.NonRetryableError(err)
 		}
-
+		resp = response.OK
 		return nil
 	})
 
@@ -121,54 +123,55 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	if resp != nil && resp.AssociationId != nil && len(*resp.AssociationId) > 0 {
-		d.SetId(*resp.AssociationId)
-	} else {
-		d.SetId(*request.PublicIp)
-	}
+	//Missing on swagger spec
+	// if resp != nil && resp.ReservationId != "" && len(*resp.ReservationId) > 0 {
+	// 	d.SetId(*resp.AssociationId)
+	// } else {
+	// 	d.SetId(*request.PublicIp)
+	// }
 
+	//Using validation with request.
+	if resp != nil && request.ReservationId != "" && len(request.ReservationId) > 0 {
+		d.SetId(resp.LinkId)
+	} else {
+		d.SetId(request.PublicIp)
+	}
 	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
 
 func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
-	var request *fcu.DescribeAddressesInput
+	var request oapi.ReadPublicIpsRequest
 
 	if strings.Contains(id, "eipassoc") {
-		request = &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
-					Name:   aws.String("association-id"),
-					Values: []*string{aws.String(id)},
-				},
+		request = oapi.ReadPublicIpsRequest{
+			Filters: oapi.ReadPublicIpsFilters{
+				ReservationIds: []string{id},
 			},
 		}
 	} else {
-		request = &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
-					Name:   aws.String("public-ip"),
-					Values: []*string{aws.String(id)},
-				},
+		request = oapi.ReadPublicIpsRequest{
+			Filters: oapi.ReadPublicIpsFilters{
+				PublicIps: []string{id},
 			},
 		}
 	}
 
-	var response *fcu.DescribeAddressesOutput
+	var response *oapi.ReadPublicIpsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		response, err = conn.VM.DescribeAddressesRequest(request)
+		res, err := conn.POST_ReadPublicIps(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-
+		response = res.OK
 		return nil
 	})
 
@@ -178,29 +181,30 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("reservation_id").(string), err)
 	}
 
-	if response.Addresses == nil || len(response.Addresses) == 0 {
+	if response.PublicIps == nil || len(response.PublicIps) == 0 {
 		log.Printf("[INFO] EIP Association ID Not Found. Refreshing from state")
 		d.SetId("")
 		return nil
 	}
 
-	return readOutscaleOAPIPublicIPLink(d, response.Addresses[0])
+	d.Set("request_id", response.ResponseContext.RequestId)
+	return readOutscaleOAPIPublicIPLink(d, response.PublicIps[0])
 }
 
 func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	assocID := d.Get("link_id")
 
-	opts := &fcu.DisassociateAddressInput{
-		AssociationId: aws.String(assocID.(string)),
+	opts := oapi.UnlinkPublicIpRequest{
+		LinkId: assocID.(string),
 	}
 
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		_, err = conn.VM.DisassociateAddress(opts)
+		_, err = conn.POST_UnlinkPublicIp(opts)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -220,23 +224,23 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *fcu.Address) error {
-	if err := d.Set("reservation_id", address.AllocationId); err != nil {
+func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address oapi.PublicIps) error {
+	if err := d.Set("reservation_id", address.ReservationId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("vm_id", address.InstanceId); err != nil {
+	if err := d.Set("vm_id", address.VmId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("nic_id", address.NetworkInterfaceId); err != nil {
+	if err := d.Set("nic_id", address.NicId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("private_ip", address.PrivateIpAddress); err != nil {
+	if err := d.Set("private_ip", address.PrivateIp); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
 
 		return err
@@ -247,7 +251,7 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *fcu.Address) 
 		return err
 	}
 
-	if err := d.Set("link_id", address.AssociationId); err != nil {
+	if err := d.Set("link_id", address.LinkId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
