@@ -13,12 +13,12 @@ import (
 func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 

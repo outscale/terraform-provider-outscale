@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOAPIVolume() *schema.Resource {
@@ -100,24 +100,27 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 
 func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	params := &fcu.DescribeVolumesInput{}
+	params := &oapi.ReadVolumesRequest{
+		Filters: oapi.ReadVolumesFilters{},
+	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
 	if VolumeIdsOk {
-		params.VolumeIds = []*string{aws.String(VolumeIds.(string))}
+		params.Filters.VolumeIds = []string{VolumeIds.(string)}
 	}
 
-	var resp *fcu.DescribeVolumesOutput
+	var resp *oapi.ReadVolumesResponse
+	var rs *oapi.POST_ReadVolumesResponses
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVolumes(params)
+		rs, err = conn.POST_ReadVolumes(*params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -127,6 +130,8 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return resource.NonRetryableError(err)
 	})
 
+	resp = rs.OK
+
 	if err != nil {
 		return err
 	}
@@ -135,7 +140,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	filteredVolumes := resp.Volumes[:]
 
-	var volume *fcu.Volume
+	var volume *oapi.Volumes
 	if len(filteredVolumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -146,60 +151,58 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Query returned single result.
-	volume = filteredVolumes[0]
+	volume = &filteredVolumes[0]
 
-	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", *volume.VolumeId)
+	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.VolumeId)
 	return volumeOAPIDescriptionAttributes(d, volume)
 
 }
 
-func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *fcu.Volume) error {
-	d.SetId(*volume.VolumeId)
+func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volumes) error {
+	d.SetId(volume.VolumeId)
 	d.Set("volume_id", volume.VolumeId)
 
-	d.Set("sub_region_name", *volume.AvailabilityZone)
-	if volume.Size != nil {
-		d.Set("size", *volume.Size)
+	d.Set("sub_region_name", volume.SubRegionName)
+	//if volume.Size != "" {
+	d.Set("size", volume.Size)
+	//}
+	if volume.SnapshotId != "" {
+		d.Set("snapshot_id", volume.SnapshotId)
 	}
-	if volume.SnapshotId != nil {
-		d.Set("snapshot_id", *volume.SnapshotId)
-	}
-	if volume.VolumeType != nil {
-		d.Set("type", *volume.VolumeType)
+	if volume.Type != "" {
+		d.Set("type", volume.Type)
 	}
 
-	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
-		if volume.Iops != nil {
-			d.Set("iops", *volume.Iops)
-		}
+	if volume.Type != "" && volume.Type == "io1" {
+		//if volume.Iops != "" {
+		d.Set("iops", volume.Iops)
+		//}
 	}
-	if volume.State != nil {
-		d.Set("state", *volume.State)
+	if volume.State != "" {
+		d.Set("state", volume.State)
 	}
-	if volume.VolumeId != nil {
-		d.Set("volume_id", *volume.VolumeId)
+	if volume.VolumeId != "" {
+		d.Set("volume_id", volume.VolumeId)
 	}
-	if volume.VolumeType != nil {
-		d.Set("type", *volume.VolumeType)
-	}
-	if volume.Attachments != nil {
-		res := make([]map[string]interface{}, len(volume.Attachments))
-		for k, g := range volume.Attachments {
+
+	if volume.LinkedVolumes != nil {
+		res := make([]map[string]interface{}, len(volume.LinkedVolumes))
+		for k, g := range volume.LinkedVolumes {
 			r := make(map[string]interface{})
-			if g.DeleteOnTermination != nil {
-				r["delete_on_vm_deletion"] = *g.DeleteOnTermination
+			//if g.DeleteOnVmDeletion != "" {
+			r["delete_on_vm_termination"] = g.DeleteOnVmDeletion
+			//}
+			if g.DeviceName != "" {
+				r["device"] = g.DeviceName
 			}
-			if g.Device != nil {
-				r["device_name"] = *g.Device
+			if g.VmId != "" {
+				r["vm_id"] = g.VmId
 			}
-			if g.InstanceId != nil {
-				r["instance_id"] = *g.InstanceId
+			if g.State != "" {
+				r["state"] = g.State
 			}
-			if g.State != nil {
-				r["state"] = *g.State
-			}
-			if g.VolumeId != nil {
-				r["volume_id"] = *g.VolumeId
+			if g.VolumeId != "" {
+				r["volume_id"] = g.VolumeId
 			}
 
 			res[k] = r
@@ -212,30 +215,65 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *fcu.Volume)
 	} else {
 		if err := d.Set("linked_volumes", []map[string]interface{}{
 			map[string]interface{}{
-				"delete_on_vm_deletion": false,
-				"device_name":           "none",
-				"instance_id":           "none",
-				"state":                 "none",
-				"volume_id":             "none",
+				"delete_on_vm_termination": false,
+				"device":                   "none",
+				"vm_id":                    "none",
+				"state":                    "none",
+				"volume_id":                "none",
 			},
 		}); err != nil {
 			return err
 		}
 	}
-	if volume.Tags != nil {
-		if err := d.Set("tag", dataSourceTags(volume.Tags)); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set("tags", []map[string]string{
-			map[string]string{
-				"key":   "",
-				"value": "",
-			},
-		}); err != nil {
-			return err
-		}
-	}
+	// if volume.Tags != nil {
+	// 	if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	if err := d.Set("tags", []map[string]string{
+	// 		map[string]string{
+	// 			"key":   "",
+	// 			"value": "",
+	// 		},
+	// 	}); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	return nil
+}
+
+func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.ReadVolumesFilters {
+	var filters oapi.ReadVolumesFilters
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "creation-date":
+			filters.CreationDates = filterValues
+		case "snapshot-id":
+			filters.SnapshotIds = filterValues
+		case "sub-region-name":
+			filters.SubRegionNames = filterValues
+		case "tag-key":
+			filters.TagKeys = filterValues
+		// case "tags":
+		// 	filters.Tags = filterValues
+		case "tag-value":
+			filters.TagValues = filterValues
+		case "volume-id":
+			filters.VolumeIds = filterValues
+		case "volume-size":
+			filters.VolumeSizes = utils.StringSliceToInt64Slice(filterValues)
+		case "volume-type":
+			filters.VolumeTypes = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

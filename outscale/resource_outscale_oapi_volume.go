@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -111,60 +110,63 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 }
 
 func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.CreateVolumeInput{
-		AvailabilityZone: aws.String(d.Get("sub_region_name").(string)),
+	request := &oapi.CreateVolumeRequest{
+		SubRegionName: d.Get("sub_region_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
-		request.Size = aws.Int64(int64(value.(int)))
+		request.Size = int64(value.(int))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
-		request.SnapshotId = aws.String(value.(string))
+		request.SnapshotId = value.(string)
 	}
 
 	var t string
 	if value, ok := d.GetOk("type"); ok {
 		t = value.(string)
-		request.VolumeType = aws.String(t)
+		request.Type = t
 	}
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
 		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
-		request.Iops = aws.Int64(int64(iops))
+		request.Iops = int64(iops)
 	}
 
-	tagsSpec := make([]*fcu.TagSpecification, 0)
+	// Missing on Swagger Spec
+	// tagsSpec := make([]*oapi.Tags, 0)
 
-	if v, ok := d.GetOk("tag"); ok {
-		tag := tagsFromMap(v.(map[string]interface{}))
+	// if v, ok := d.GetOk("tag"); ok {
+	// 	tag := tagsFromMap(v.(map[string]interface{}))
 
-		spec := &fcu.TagSpecification{
-			ResourceType: aws.String("volume"),
-			Tags:         tag,
-		}
+	// 	spec := &oapi.TagSpecification{
+	// 		ResourceType: aws.String("volume"),
+	// 		Tags:         tag,
+	// 	}
 
-		tagsSpec = append(tagsSpec, spec)
-	}
+	// 	tagsSpec = append(tagsSpec, spec)
+	// }
 
-	if len(tagsSpec) > 0 {
-		request.TagSpecifications = tagsSpec
-	}
+	// if len(tagsSpec) > 0 {
+	// 	request.TagSpecifications = tagsSpec
+	// }
 
-	var result *fcu.Volume
+	var result *oapi.CreateVolumeResponse
+	var resp *oapi.POST_CreateVolumeResponses
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		result, err = conn.VM.CreateVolume(request)
+		resp, err = conn.POST_CreateVolume(*request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		result = resp.OK
+		return nil
 	})
 
 	if err != nil {
@@ -176,7 +178,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, *result.VolumeId),
+		Refresh:    volumeOAPIStateRefreshFunc(conn, result.VolumeId),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -186,42 +188,46 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return fmt.Errorf(
 			"Error waiting for Volume (%s) to become available: %s",
-			*result.VolumeId, err)
+			result.VolumeId, err)
 	}
 
-	d.SetId(*result.VolumeId)
+	d.SetId(result.VolumeId)
 
-	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
-			return err
-		}
-		d.SetPartial("tags")
-	}
+	//Missing in swagger spec
+	// if d.IsNewResource() {
+	// 	if err := setTags(conn, d); err != nil {
+	// 		return err
+	// 	}
+	// 	d.SetPartial("tags")
+	// }
 
-	return readOAPIVolume(d, result)
+	return resourceOAPIVolumeRead(d, meta)
 }
 
 func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.DescribeVolumesInput{
-		VolumeIds: []*string{aws.String(d.Id())},
+	request := &oapi.ReadVolumesRequest{
+		Filters: oapi.ReadVolumesFilters{VolumeIds: []string{d.Id()}},
 	}
 
-	var response *fcu.DescribeVolumesOutput
+	var response *oapi.ReadVolumesResponse
+	var resp *oapi.POST_ReadVolumesResponses
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		response, err = conn.VM.DescribeVolumes(request)
+		resp, err = conn.POST_ReadVolumes(*request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
+
+	response = resp.OK
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
@@ -231,17 +237,17 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
 
-	return readOAPIVolume(d, response.Volumes[0])
+	return readOAPIVolume(d, &response.Volumes[0])
 }
 
 func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		request := &fcu.DeleteVolumeInput{
-			VolumeId: aws.String(d.Id()),
+		request := &oapi.DeleteVolumeRequest{
+			VolumeId: d.Id(),
 		}
-		_, err := conn.VM.DeleteVolume(request)
+		_, err := conn.POST_DeleteVolume(*request)
 		if err == nil {
 			return nil
 		}
@@ -255,10 +261,12 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
 }
 
-func volumeOAPIStateRefreshFunc(conn *fcu.Client, volumeID string) resource.StateRefreshFunc {
+func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, err := conn.VM.DescribeVolumes(&fcu.DescribeVolumesInput{
-			VolumeIds: []*string{aws.String(volumeID)},
+		resp, err := conn.POST_ReadVolumes(oapi.ReadVolumesRequest{
+			Filters: oapi.ReadVolumesFilters{
+				VolumeIds: []string{volumeID},
+			},
 		})
 
 		if err != nil {
@@ -271,57 +279,55 @@ func volumeOAPIStateRefreshFunc(conn *fcu.Client, volumeID string) resource.Stat
 			return nil, "", err
 		}
 
-		v := resp.Volumes[0]
-		return v, *v.State, nil
+		v := resp.OK.Volumes[0]
+		return v, v.State, nil
 	}
 }
 
-func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
-	d.SetId(*volume.VolumeId)
+func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
+	d.SetId(volume.VolumeId)
 
-	d.Set("sub_region_name", *volume.AvailabilityZone)
-	if volume.Size != nil {
-		d.Set("size", *volume.Size)
+	d.Set("sub_region_name", volume.SubRegionName)
+	//if volume.Size != "" {
+	d.Set("size", volume.Size)
+	//}
+	if volume.SnapshotId != "" {
+		d.Set("snapshot_id", volume.SnapshotId)
 	}
-	if volume.SnapshotId != nil {
-		d.Set("snapshot_id", *volume.SnapshotId)
-	}
-	if volume.VolumeType != nil {
-		d.Set("type", *volume.VolumeType)
+	if volume.Type != "" {
+		d.Set("type", volume.Type)
 	}
 
-	if volume.VolumeType != nil && *volume.VolumeType == "io1" {
-		if volume.Iops != nil {
-			d.Set("iops", *volume.Iops)
-		}
+	if volume.Type != "" && volume.Type == "io1" {
+		//if volume.Iops != "" {
+		d.Set("iops", volume.Iops)
+		//}
 	}
-	if volume.State != nil {
-		d.Set("state", *volume.State)
+	if volume.State != "" {
+		d.Set("state", volume.State)
 	}
-	if volume.VolumeId != nil {
-		d.Set("volume_id", *volume.VolumeId)
+	if volume.VolumeId != "" {
+		d.Set("volume_id", volume.VolumeId)
 	}
-	if volume.VolumeType != nil {
-		d.Set("type", *volume.VolumeType)
-	}
-	if volume.Attachments != nil {
-		res := make([]map[string]interface{}, len(volume.Attachments))
-		for k, g := range volume.Attachments {
+
+	if volume.LinkedVolumes != nil {
+		res := make([]map[string]interface{}, len(volume.LinkedVolumes))
+		for k, g := range volume.LinkedVolumes {
 			r := make(map[string]interface{})
-			if g.DeleteOnTermination != nil {
-				r["delete_on_vm_termination"] = *g.DeleteOnTermination
+			//if g.DeleteOnVmDeletion != "" {
+			r["delete_on_vm_termination"] = g.DeleteOnVmDeletion
+			//}
+			if g.DeviceName != "" {
+				r["device"] = g.DeviceName
 			}
-			if g.Device != nil {
-				r["device"] = *g.Device
+			if g.VmId != "" {
+				r["vm_id"] = g.VmId
 			}
-			if g.InstanceId != nil {
-				r["vm_id"] = *g.InstanceId
+			if g.State != "" {
+				r["state"] = g.State
 			}
-			if g.State != nil {
-				r["state"] = *g.State
-			}
-			if g.VolumeId != nil {
-				r["volume_id"] = *g.VolumeId
+			if g.VolumeId != "" {
+				r["volume_id"] = g.VolumeId
 			}
 
 			res[k] = r
@@ -344,20 +350,20 @@ func readOAPIVolume(d *schema.ResourceData, volume *fcu.Volume) error {
 			return err
 		}
 	}
-	if volume.Tags != nil {
-		if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set("tags", []map[string]string{
-			map[string]string{
-				"key":   "",
-				"value": "",
-			},
-		}); err != nil {
-			return err
-		}
-	}
+	// if volume.Tags != nil {
+	// 	if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	if err := d.Set("tags", []map[string]string{
+	// 		map[string]string{
+	// 			"key":   "",
+	// 			"value": "",
+	// 		},
+	// 	}); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	return nil
 }

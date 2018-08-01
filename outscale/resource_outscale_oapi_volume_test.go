@@ -8,25 +8,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 
-	var v fcu.Volume
+	var v oapi.Volumes
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test",
@@ -45,16 +44,16 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 
-	var v fcu.Volume
+	var v oapi.Volumes
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test",
@@ -78,7 +77,7 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVolumeExists(n string, v *fcu.Volume) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -89,16 +88,17 @@ func testAccCheckOAPIVolumeExists(n string, v *fcu.Volume) resource.TestCheckFun
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		request := &fcu.DescribeVolumesInput{
-			VolumeIds: []*string{aws.String(rs.Primary.ID)},
+		request := &oapi.ReadVolumesRequest{
+			Filters: oapi.ReadVolumesFilters{VolumeIds: []string{rs.Primary.ID}},
 		}
 
-		var response *fcu.DescribeVolumesOutput
+		var response *oapi.ReadVolumesResponse
+		var resp *oapi.POST_ReadVolumesResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			response, err = conn.VM.DescribeVolumes(request)
+			resp, err = conn.POST_ReadVolumes(*request)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -108,9 +108,11 @@ func testAccCheckOAPIVolumeExists(n string, v *fcu.Volume) resource.TestCheckFun
 			return resource.NonRetryableError(err)
 		})
 
+		response = resp.OK
+
 		if err == nil {
 			if response.Volumes != nil && len(response.Volumes) > 0 {
-				*v = *response.Volumes[0]
+				*v = response.Volumes[0]
 				return nil
 			}
 		}

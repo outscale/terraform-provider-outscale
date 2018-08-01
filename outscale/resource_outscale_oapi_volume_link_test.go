@@ -39,8 +39,8 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
 					testAccCheckInstanceExists(
 						"outscale_vm.web", &i),
-					testAccCheckOAPIVolumeExists(
-						"outscale_volume.example", &v),
+					//testAccCheckOAPIVolumeExists(
+					//	"outscale_volume.example", &v), TODO: OAPI
 					testAccCheckOAPIVolumeAttachmentExists(
 						"outscale_volume_link.ebs_att", &i, &v),
 				),
