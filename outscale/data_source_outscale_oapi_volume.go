@@ -219,20 +219,20 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 		}
 	}
 
-	// if volume.Tags != nil {
-	// 	if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	if err := d.Set("tags", []map[string]string{
-	// 		map[string]string{
-	// 			"key":   "",
-	// 			"value": "",
-	// 		},
-	// 	}); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if volume.Tags != nil {
+		if err := d.Set("tags", tagsOAPIToMap(volume.Tags)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("tags", []map[string]string{
+			map[string]string{
+				"key":   "",
+				"value": "",
+			},
+		}); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

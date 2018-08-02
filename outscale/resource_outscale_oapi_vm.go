@@ -100,12 +100,12 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(*instance.InstanceId)
 
-	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
-			return err
-		}
-		d.SetPartial("tag")
-	}
+	// if d.IsNewResource() {
+	// 	if err := setOAPITags(conn, d); err != nil {
+	// 		return err
+	// 	}
+	// 	d.SetPartial("tag")
+	// }
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},

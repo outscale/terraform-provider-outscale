@@ -10,6 +10,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -363,13 +364,47 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 	return tagsFromMap(create), remove
 }
 
-// tagsFromMap returns the tag for the given map of data.
+// diffOAPITags takes our tag locally and the ones remotely and returns
+// the set of tag that must be created, and the set of tag that must
+// be destroyed.
+func diffOAPITags(oldTags, newTags []oapi.Tags) ([]oapi.Tags, []oapi.Tags) {
+	// First, we're creating everything we have
+	create := make(map[string]interface{})
+	for _, t := range newTags {
+		create[t.Key] = t.Value
+	}
+
+	// Build the list of what to remove
+	var remove []oapi.Tags
+	for _, t := range oldTags {
+		old, ok := create[t.Key]
+		if !ok || old != t.Value {
+			remove = append(remove, t)
+		}
+	}
+
+	return tagsOAPIFromMap(create), remove
+}
+
 func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {
 		t := &fcu.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v.(string)),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags {
+	result := make([]oapi.Tags, 0, len(m))
+	for k, v := range m {
+		t := oapi.Tags{
+			Key:   k,
+			Value: v.(string),
 		}
 		result = append(result, t)
 	}
@@ -432,6 +467,23 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 			tag := make(map[string]string)
 			tag["key"] = *t.Key
 			tag["value"] = *t.Value
+			result[k] = tag
+		}
+	} else {
+		result = make([]map[string]string, 0)
+	}
+
+	return result
+}
+
+// tagsOAPI	ToMap turns the list of tag into a map.
+func tagsOAPIToMap(ts []oapi.Tags) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	if len(ts) > 0 {
+		for k, t := range ts {
+			tag := make(map[string]string)
+			tag["key"] = t.Key
+			tag["value"] = t.Value
 			result[k] = tag
 		}
 	} else {
@@ -572,4 +624,54 @@ func tagsSchemaComputed() *schema.Schema {
 		Computed: true,
 		Elem:     &schema.Schema{Type: schema.TypeMap},
 	}
+}
+
+func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
+
+	if d.HasChange("tag") {
+		oraw, nraw := d.GetChange("tag")
+		o := oraw.(map[string]interface{})
+		n := nraw.(map[string]interface{})
+		create, remove := diffOAPITags(tagsOAPIFromMap(o), tagsOAPIFromMap(n))
+
+		// Set tag
+		if len(remove) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, err := conn.POST_DeleteTags(oapi.DeleteTagsRequest{
+					ResourceIds: []string{d.Id()},
+					Tags:        remove,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if len(create) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, err := conn.POST_CreateTags(oapi.CreateTagsRequest{
+					ResourceIds: []string{d.Id()},
+					Tags:        create,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

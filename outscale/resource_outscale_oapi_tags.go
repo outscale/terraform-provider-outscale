@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -237,56 +236,57 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 	}
 }
 
-func setOAPITags(conn *fcu.Client, d *schema.ResourceData) error {
+//TODO: OAPI
+// func setOAPITags(conn *fcu.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tag") {
-		oraw, nraw := d.GetChange("tag")
-		o := oraw.(map[string]interface{})
-		n := nraw.(map[string]interface{})
-		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
+// 	if d.HasChange("tag") {
+// 		oraw, nraw := d.GetChange("tag")
+// 		o := oraw.(map[string]interface{})
+// 		n := nraw.(map[string]interface{})
+// 		create, remove := diffTags(tagsFromMap(o), tagsFromMap(n))
 
-		// Set tag
-		if len(remove) > 0 {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
-				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
-					Resources: []*string{aws.String(d.Id())},
-					Tags:      remove,
-				})
-				if err != nil {
-					ec2err, ok := err.(awserr.Error)
-					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-		if len(create) > 0 {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				log.Printf("[DEBUG] Creating tag: %v for %s", create, d.Id())
-				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
-					Resources: []*string{aws.String(d.Id())},
-					Tags:      create,
-				})
-				if err != nil {
-					ec2err, ok := err.(awserr.Error)
-					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
+// 		// Set tag
+// 		if len(remove) > 0 {
+// 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+// 				log.Printf("[DEBUG] Removing tag: %#v from %s", remove, d.Id())
+// 				_, err := conn.VM.DeleteTags(&fcu.DeleteTagsInput{
+// 					Resources: []*string{aws.String(d.Id())},
+// 					Tags:      remove,
+// 				})
+// 				if err != nil {
+// 					ec2err, ok := err.(awserr.Error)
+// 					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
+// 						return resource.RetryableError(err) // retry
+// 					}
+// 					return resource.NonRetryableError(err)
+// 				}
+// 				return nil
+// 			})
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
+// 		if len(create) > 0 {
+// 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+// 				log.Printf("[DEBUG] Creating tag: %v for %s", create, d.Id())
+// 				_, err := conn.VM.CreateTags(&fcu.CreateTagsInput{
+// 					Resources: []*string{aws.String(d.Id())},
+// 					Tags:      create,
+// 				})
+// 				if err != nil {
+// 					ec2err, ok := err.(awserr.Error)
+// 					if ok && strings.Contains(ec2err.Code(), ".NotFound") {
+// 						return resource.RetryableError(err) // retry
+// 					}
+// 					return resource.NonRetryableError(err)
+// 				}
+// 				return nil
+// 			})
+// 			if err != nil {
+// 				return err
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

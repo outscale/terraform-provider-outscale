@@ -296,11 +296,11 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
-		return err
-	}
+	// if err := setOAPITags(conn, d); err != nil {
+	// 	return err
+	// }
 
-	d.SetPartial("tag")
+	// d.SetPartial("tag")
 
 	if d.Get("description").(string) != "" {
 		_, err := conn.VM.ModifyImageAttribute(&fcu.ModifyImageAttributeInput{

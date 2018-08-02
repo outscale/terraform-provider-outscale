@@ -198,12 +198,12 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(result.VolumeId)
 
 	//Missing in swagger spec
-	// if d.IsNewResource() {
-	// 	if err := setTags(conn, d); err != nil {
-	// 		return err
-	// 	}
-	// 	d.SetPartial("tags")
-	// }
+	if d.IsNewResource() {
+		if err := setOAPITags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tags")
+	}
 
 	return resourceOAPIVolumeRead(d, meta)
 }
@@ -347,20 +347,20 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 			return err
 		}
 	}
-	// if volume.Tags != nil {
-	// 	if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	if err := d.Set("tags", []map[string]string{
-	// 		map[string]string{
-	// 			"key":   "",
-	// 			"value": "",
-	// 		},
-	// 	}); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if volume.Tags != nil {
+		if err := d.Set("tags", tagsOAPIToMap(volume.Tags)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("tags", []map[string]string{
+			map[string]string{
+				"key":   "",
+				"value": "",
+			},
+		}); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
