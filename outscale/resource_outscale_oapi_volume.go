@@ -45,7 +45,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-			"type": {
+			"volume_type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -105,6 +105,10 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -123,19 +127,19 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var t string
-	if value, ok := d.GetOk("type"); ok {
+	if value, ok := d.GetOk("volume_type"); ok {
 		t = value.(string)
 		request.Type = t
 	}
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
-		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
+		log.Printf("[WARN] IOPs is only valid for storate volume_type io1 for EBS Volumes")
 	} else if t == "io1" {
 		request.Iops = int64(iops)
 	}
 
-	// Missing on Swagger Spec
+	//Missing on Swagger Spec
 	// tagsSpec := make([]*oapi.Tags, 0)
 
 	// if v, ok := d.GetOk("tag"); ok {
@@ -236,7 +240,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
-
+	d.Set("request_id", response.ResponseContext.RequestId)
 	return readOAPIVolume(d, &response.Volumes[0])
 }
 
@@ -288,27 +292,20 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 	d.SetId(volume.VolumeId)
 
 	d.Set("sub_region_name", volume.SubRegionName)
-	//if volume.Size != "" {
 	d.Set("size", volume.Size)
-	//}
-	if volume.SnapshotId != "" {
-		d.Set("snapshot_id", volume.SnapshotId)
-	}
-	if volume.Type != "" {
-		d.Set("type", volume.Type)
-	}
+	d.Set("snapshot_id", volume.SnapshotId)
+	d.Set("volume_type", volume.Type)
 
 	if volume.Type != "" && volume.Type == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}
+	} else {
+		d.Set("iops", "")
 	}
-	if volume.State != "" {
-		d.Set("state", volume.State)
-	}
-	if volume.VolumeId != "" {
-		d.Set("volume_id", volume.VolumeId)
-	}
+
+	d.Set("state", volume.State)
+	d.Set("volume_id", volume.VolumeId)
 
 	if volume.LinkedVolumes != nil {
 		res := make([]map[string]interface{}, len(volume.LinkedVolumes))

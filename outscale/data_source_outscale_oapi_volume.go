@@ -94,12 +94,15 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
 
 func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
-
 	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -152,7 +155,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	// Query returned single result.
 	volume = &filteredVolumes[0]
-
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.VolumeId)
 	return volumeOAPIDescriptionAttributes(d, volume)
 
@@ -160,29 +163,19 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volumes) error {
 	d.SetId(volume.VolumeId)
-	d.Set("volume_id", volume.VolumeId)
 
+	d.Set("volume_id", volume.VolumeId)
 	d.Set("sub_region_name", volume.SubRegionName)
-	//if volume.Size != "" {
 	d.Set("size", volume.Size)
-	//}
-	if volume.SnapshotId != "" {
-		d.Set("snapshot_id", volume.SnapshotId)
-	}
-	if volume.Type != "" {
-		d.Set("type", volume.Type)
-	}
+	d.Set("snapshot_id", volume.SnapshotId)
+	d.Set("type", volume.Type)
+	d.Set("state", volume.State)
+	d.Set("volume_id", volume.VolumeId)
 
 	if volume.Type != "" && volume.Type == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}
-	}
-	if volume.State != "" {
-		d.Set("state", volume.State)
-	}
-	if volume.VolumeId != "" {
-		d.Set("volume_id", volume.VolumeId)
 	}
 
 	if volume.LinkedVolumes != nil {
@@ -225,6 +218,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 			return err
 		}
 	}
+
 	// if volume.Tags != nil {
 	// 	if err := d.Set("tags", tagsToMap(volume.Tags)); err != nil {
 	// 		return err
