@@ -45,7 +45,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-			"volume_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -127,14 +127,14 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var t string
-	if value, ok := d.GetOk("volume_type"); ok {
+	if value, ok := d.GetOk("type"); ok {
 		t = value.(string)
 		request.Type = t
 	}
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
-		log.Printf("[WARN] IOPs is only valid for storate volume_type io1 for EBS Volumes")
+		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
 		request.Iops = int64(iops)
 	}
@@ -294,9 +294,9 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 	d.Set("sub_region_name", volume.SubRegionName)
 	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("volume_type", volume.Type)
+	d.Set("type", volume.Type)
 
-	if volume.Type != "" && volume.Type == "io1" {
+	if volume.Type == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}
