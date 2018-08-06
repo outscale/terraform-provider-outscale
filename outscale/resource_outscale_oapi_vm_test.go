@@ -10,7 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -20,16 +20,16 @@ import (
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 
-	var server fcu.Instance
+	var server oapi.Vms
 
 	// rInt := acctest.RandInt()
 
@@ -44,7 +44,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
@@ -56,17 +56,17 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 
-	var before fcu.Instance
-	var after fcu.Instance
+	var before oapi.Vms
+	var after oapi.Vms
 
 	// rInt := acctest.RandInt()
 
@@ -81,13 +81,13 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(&before),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-8a6a0120"),
+						"outscale_vm.basic", "image_id", "ami-880caa66"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
 			},
 			{
-				Config: testAccInstanceConfigUpdateOAPIVMKey(),
+				Config: testAccVmsConfigUpdateOAPIVMKey(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(
@@ -98,12 +98,12 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVMExists(n string, i *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOAPIVMExists(n string, i *oapi.Vms) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -121,12 +121,16 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers 
 
 			client := provider.Meta().(*OutscaleClient)
 
-			var resp *fcu.DescribeInstancesOutput
+			var resp *oapi.ReadVmsResponse
+			var r *oapi.POST_ReadVmsResponses
 			var err error
 			for {
-				resp, err = client.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-					InstanceIds: []*string{aws.String(rs.Primary.ID)},
+				r, err = client.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+					Filters: &oapi.ReadVmsFilters{
+						VmIds: []*string{aws.String(rs.Primary.ID)},
+					},
 				})
+				resp = r.OK
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -135,31 +139,31 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers 
 
 			}
 
-			if len(resp.Reservations) > 0 {
-				*i = *resp.Reservations[0].Instances[0]
+			if len(resp.Vms) > 0 {
+				*i = *resp.Vms[0]
 				return nil
 			}
 		}
 
-		return fmt.Errorf("Instance not found")
+		return fmt.Errorf("Vms not found")
 	}
 }
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T,
-	before, after *fcu.Instance) resource.TestCheckFunc {
+	before, after *oapi.Vms) resource.TestCheckFunc {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 	return func(s *terraform.State) error {
-		if *before.InstanceId != *after.InstanceId {
-			t.Fatalf("Outscale VM IDs have changed. Before %s. After %s", *before.InstanceId, *after.InstanceId)
+		if *before.VmId != *after.VmId {
+			t.Fatalf("Outscale VM IDs have changed. Before %s. After %s", *before.VmId, *after.VmId)
 		}
 		return nil
 	}
@@ -191,13 +195,17 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 			continue
 		}
 
-		var resp *fcu.DescribeInstancesOutput
+		var resp *oapi.ReadVmsResponse
+		var r *oapi.POST_ReadVmsResponses
 		var err error
 		for {
 			// Try to find the resource
-			resp, err = conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-				InstanceIds: []*string{&rs.Primary.ID},
+			r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+				Filters: &oapi.ReadVmsFilters{
+					VmIds: []*string{aws.String(rs.Primary.ID)},
+				},
 			})
+			resp = r.OK
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
 					time.Sleep(10 * time.Second)
@@ -210,17 +218,15 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		}
 
 		if err == nil {
-			for _, r := range resp.Reservations {
-				for _, i := range r.Instances {
-					if i.State != nil && *i.State.Name != "terminated" {
-						return fmt.Errorf("Found unterminated instance: %s", *i.InstanceId)
-					}
+			for _, i := range resp.Vms {
+				if i.State != nil && *i.State != "terminated" {
+					return fmt.Errorf("Found unterminated instance: %s", *i.VmId)
 				}
 			}
 		}
 
 		// Verify the error is what we want
-		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidInstanceID.NotFound" {
+		if ae, ok := err.(awserr.Error); ok && ae.Code() == "InvalidVmsID.NotFound" {
 			continue
 		}
 		return err
@@ -229,12 +235,12 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIVMExists(n string, i *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.Vms) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *fcu.Instance, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -251,13 +257,17 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *fcu.Instance, pr
 			}
 
 			conn := provider.Meta().(*OutscaleClient)
-			var resp *fcu.DescribeInstancesOutput
+			var resp *oapi.ReadVmsResponse
+			var r *oapi.POST_ReadVmsResponses
 			var err error
 
 			for {
-				resp, err = conn.FCU.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-					InstanceIds: []*string{&rs.Primary.ID},
+				r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+					Filters: &oapi.ReadVmsFilters{
+						VmIds: []*string{aws.String(rs.Primary.ID)},
+					},
 				})
+				resp = r.OK
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -265,31 +275,31 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *fcu.Instance, pr
 				}
 			}
 
-			if fcuErr, ok := err.(awserr.Error); ok && fcuErr.Code() == "InvalidInstanceID.NotFound" {
+			if oapiErr, ok := err.(awserr.Error); ok && oapiErr.Code() == "InvalidVmsID.NotFound" {
 				continue
 			}
 			if err != nil {
 				return err
 			}
 
-			if resp.Reservations == nil {
-				return fmt.Errorf("Instance not found")
+			if resp.Vms == nil {
+				return fmt.Errorf("Vms not found")
 			}
 
-			if len(resp.Reservations) > 0 {
-				*i = *resp.Reservations[0].Instances[0]
+			if len(resp.Vms) > 0 {
+				*i = *resp.Vms[0]
 				return nil
 			}
 		}
 
-		return fmt.Errorf("Instance not found")
+		return fmt.Errorf("Vms not found")
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(server *fcu.Instance) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if *server.ImageId != "ami-8a6a0120" {
+		if *server.ImageId != "ami-880caa66" {
 			return fmt.Errorf("Bad image_id: %s", *server.ImageId)
 		}
 
@@ -300,16 +310,18 @@ func testAccCheckOutscaleOAPIVMAttributes(server *fcu.Instance) resource.TestChe
 func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
+	image_id = "ami-880caa66"
 	type = "t2.micro"
 }`
 }
 
-func testAccInstanceConfigUpdateOAPIVMKey() string {
+func testAccVmsConfigUpdateOAPIVMKey() string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	keypair_name = "TestKey"
+resource "outscale_vm" "outscale_vm" {
+  image_id = "ami-880caa66"
+  type = "c4.large"
+  keypair_name = "integ_sut_keypair"
+  #firewall_rules_set_ids = ["sg-c73d3b6b"]
+  #firewall_rules_set_id = "sg-c73d3b6b" # tempo tests
 }`)
 }

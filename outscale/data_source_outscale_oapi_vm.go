@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -125,7 +127,7 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 
 	d.Set("private_dns_name", instance.PrivateDnsName)
 	d.Set("private_ip", instance.PrivateIpAddress)
-	d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.NetworkInterfaces))
+	//TODO:OAPI d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.NetworkInterfaces))
 
 	d.Set("placement", map[string]interface{}{
 		"affinity":        instance.Placement.Affinity,
@@ -160,90 +162,27 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	return nil
 }
 
-func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*fcu.InstanceBlockDeviceMapping) []map[string]interface{} {
-	s := []map[string]interface{}{}
-	for _, mapping := range blockDeviceMappings {
-		r := map[string]interface{}{
-			"device_name": mapping.DeviceName,
-			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": mapping.Ebs.DeleteOnTermination,
-				"state":                 mapping.Ebs.Status,
-				"volume_id":             mapping.Ebs.VolumeId,
-			},
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*oapi.BlockDeviceMappings) []map[string]interface{} {
+	var blockDeviceMapping []map[string]interface{}
+
+	if len(blockDeviceMappings) > 0 {
+		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
+		for _, mapping := range blockDeviceMappings {
+			r := map[string]interface{}{}
+			r["device_name"] = *mapping.DeviceName
+
+			bsu := map[string]interface{}{}
+			bsu["delete_on_vm_deletion"] = *mapping.Bsu.DeleteOnVmDeletion
+			bsu["state"] = *mapping.Bsu.State
+			bsu["volume_id"] = *mapping.Bsu.VolumeId
+			r["bsu"] = bsu
+
+			blockDeviceMapping = append(blockDeviceMapping, r)
 		}
-		s = append(s, r)
+	} else {
+		blockDeviceMapping = make([]map[string]interface{}, 0)
 	}
-	return s
-}
-
-func getOAPIVMNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[string]interface{} {
-	res := []map[string]interface{}{}
-
-	if interfaces != nil {
-		for _, i := range interfaces {
-			assoc := map[string]interface{}{}
-
-			assoc["public_ip_link"] = map[string]interface{}{
-				"public_ip_account_id": i.Association.IpOwnerId,
-				"public_dns_name":      i.Association.PublicDnsName,
-				"public_ip":            i.Association.PublicIp,
-			}
-
-			// TODO: add to struct for OAPI
-			assoc["nic_link"] = map[string]interface{}{
-				"nic_link_id":              i.Attachment.AttachmentId,
-				"delete_on_vm_termination": i.Attachment.DeleteOnTermination,
-				"nic_sort_number":          i.Attachment.DeviceIndex,
-				"state":                    i.Attachment.Status,
-			}
-
-			assoc["description"] = *i.Description
-
-			// TODO: add to struct for OAPI
-			// firewall := []map[string]string{}
-			// for _, f := range i.FirewallRulesSets {
-			// 	rule := map[string]string{
-			// 		"firewall_rules_set_id": "",
-			// 		"firewall_rules_name":   "",
-			// 	}
-			// 	firewall = append(firewall, rule)
-			// }
-			// assoc["firewall_rules_sets"] = firewall
-
-			assoc["mac_address"] = i.MacAddress
-			assoc["nic_id"] = i.Attachment.AttachmentId
-
-			assoc["account_id"] = i.OwnerId
-
-			assoc["private_dns_name"] = i.PrivateDnsName
-			assoc["private_ip"] = i.PrivateIpAddress
-
-			ips := []map[string]interface{}{}
-
-			for _, p := range i.PrivateIpAddresses {
-				ip := map[string]interface{}{
-					"public_ip_link": map[string]interface{}{
-						"public_ip_account_id": p.Association.IpOwnerId,
-						"public_dns_name":      p.Association.PublicDnsName,
-						"public_ip":            p.Association.PublicIp,
-					},
-					"primary_ip":       p.Primary,
-					"private_dns_name": p.PrivateDnsName,
-					"private_ip":       p.PrivateIpAddress,
-				}
-				ips = append(ips, ip)
-			}
-			assoc["private_ips"] = ips
-			assoc["nat_check"] = i.SourceDestCheck
-			assoc["state"] = i.Status
-			assoc["subnet_id"] = i.SubnetId
-			assoc["lin_id"] = i.VpcId
-
-			res = append(res, assoc)
-		}
-	}
-
-	return res
+	return blockDeviceMapping
 }
 
 func getOAPIVMGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {

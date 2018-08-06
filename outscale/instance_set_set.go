@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
@@ -300,6 +301,20 @@ func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
 	return res
 }
 
+func getFirewallRulesSet(groupSet []*oapi.FirewallRulesSets) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, g := range groupSet {
+
+		r := map[string]interface{}{
+			"firewall_rules_set_id":   *g.FirewallRulesSetId,
+			"firewall_rules_set_name": *g.FirewallRulesSetName,
+		}
+		res = append(res, r)
+	}
+
+	return res
+}
+
 func getIAMInstanceProfile(profile *fcu.IamInstanceProfile) map[string]interface{} {
 	iam := map[string]interface{}{}
 
@@ -364,6 +379,83 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 			inter["source_dest_check"] = *i.SourceDestCheck
 			inter["status"] = *i.Status
 			inter["vpc_id"] = *i.VpcId
+
+			res = append(res, inter)
+		}
+	}
+
+	return res
+}
+
+func getOAPIVMNetworkInterfaceSet(interfaces []*oapi.Nics) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if interfaces != nil {
+		for _, i := range interfaces {
+			inter := make(map[string]interface{})
+			assoc := make(map[string]interface{})
+			attach := make(map[string]interface{})
+
+			if i.PublicIpToNicLink != nil {
+				assoc["public_ip_account_id"] = i.PublicIpToNicLink.PublicIpAccountId
+				assoc["public_dns_name"] = i.PublicIpToNicLink.PublicDnsName
+				assoc["public_ip"] = i.PublicIpToNicLink.PublicIp
+			}
+
+			if i.NicLink != nil {
+				attach["nic_link_id"] = i.NicLink.NicLinkId
+				attach["delete_on_vm_termination"] = i.NicLink.DeleteOnVmDeletion
+				attach["nic_sort_number"] = i.NicLink.DeviceNumber //TO Check
+				attach["state"] = i.NicLink.State
+			}
+
+			firewall := make([]map[string]interface{}, 0)
+
+			if i.FirewallRulesSets != nil {
+				for _, f := range i.FirewallRulesSets {
+					r := map[string]interface{}{
+						"firewall_rules_set_id": f.FirewallRulesSetId,
+						"firewall_rules_name":   f.FirewallRulesSetName,
+					}
+					firewall = append(firewall, r)
+				}
+			}
+
+			ips := []map[string]interface{}{}
+
+			for _, p := range i.PrivateIps {
+
+				ip := map[string]interface{}{
+					//Missing on Swagger spec
+					// "public_ip_link": map[string]interface{}{
+					// 	"public_ip_account_id": p.Association.IpOwnerId,
+					// 	"public_dns_name":      p.Association.PublicDnsName,
+					// 	"public_ip":            p.Association.PublicIp,
+					// },
+					"primary_ip": p.IsPrimary,
+					"private_ip": p.PrivateIp,
+					//Missing on swagger spec
+					//"private_dns_name": p.PrivateDnsName,
+				}
+				ips = append(ips, ip)
+			}
+
+			inter["public_ip_link"] = assoc
+			inter["nic_link"] = attach
+
+			inter["description"] = i.Description
+			inter["firewall_rules_sets"] = firewall
+			inter["mac_address"] = i.MacAddress
+			inter["nic_id"] = i.NicLink.NicLinkId
+			inter["account_id"] = i.NicLink
+			inter["private_dns_name"] = i.PrivateDnsName
+
+			// TODO:OAPI assoc["private_ip"] = i.PrivateIpAddress
+			inter["private_ips"] = ips
+			inter["nat_check"] = i.IsSourceDestChecked
+			inter["state"] = i.State
+			inter["subnet_id"] = i.SubnetId
+			inter["lin_id"] = i.NetId //is lin ID?
 
 			res = append(res, inter)
 		}

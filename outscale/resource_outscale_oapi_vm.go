@@ -3,6 +3,7 @@ package outscale
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
@@ -31,7 +32,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 }
 
 func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	instanceOpts, err := buildOutscaleOAPIVMOpts(d, meta)
 	if err != nil {
@@ -39,78 +40,82 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Build the creation struct
-	runOpts := &fcu.RunInstancesInput{
+	runOpts := &oapi.CreateVmsRequest{
 		BlockDeviceMappings: instanceOpts.BlockDeviceMappings,
 		// DisableApiTermination: instanceOpts.DisableAPITermination,
-		EbsOptimized: instanceOpts.EBSOptimized,
+		BsuOptimized: instanceOpts.EBSOptimized,
 		// Monitoring:            instanceOpts.Monitoring,
 		// IamInstanceProfile:    instanceOpts.IAMInstanceProfile,
-		ImageId: instanceOpts.ImageID,
-		InstanceInitiatedShutdownBehavior: instanceOpts.InstanceInitiatedShutdownBehavior,
-		InstanceType:                      instanceOpts.InstanceType,
+		ImageId:                     instanceOpts.ImageID,
+		VmInitiatedShutdownBehavior: instanceOpts.InstanceInitiatedShutdownBehavior,
+		Type: instanceOpts.InstanceType,
 		// Ipv6AddressCount:                  instanceOpts.Ipv6AddressCount,
 		// Ipv6Addresses:                     instanceOpts.Ipv6Addresses,
-		KeyName:           instanceOpts.KeyName,
-		MaxCount:          aws.Int64(int64(1)),
-		MinCount:          aws.Int64(int64(1)),
-		NetworkInterfaces: instanceOpts.NetworkInterfaces,
-		Placement:         instanceOpts.Placement,
+		KeypairName: instanceOpts.KeyName,
+		MaxVmsCount: aws.Int64(int64(1)),
+		MinVmsCount: aws.Int64(int64(1)),
+		Nics:        instanceOpts.NetworkInterfaces,
+		Placement:   instanceOpts.Placement,
 		// PrivateIpAddress:                  instanceOpts.PrivateIPAddress,
-		SecurityGroupIds: instanceOpts.SecurityGroupIDs,
-		SecurityGroups:   instanceOpts.SecurityGroups,
-		SubnetId:         instanceOpts.SubnetID,
-		UserData:         instanceOpts.UserData,
+		FirewallRulesSetIds: instanceOpts.SecurityGroupIDs,
+		FirewallRulesSets:   instanceOpts.SecurityGroups,
+		SubnetId:            instanceOpts.SubnetID,
+		UserData:            instanceOpts.UserData,
 	}
 
-	tagsSpec := make([]*fcu.TagSpecification, 0)
+	//Missing on Swagger Spec
+	// tagsSpec := make([]*oapi.TagSpecification, 0)
 
-	if v, ok := d.GetOk("tags"); ok {
-		tags := tagsFromMap(v.(map[string]interface{}))
+	// if v, ok := d.GetOk("tags"); ok {
+	// 	tags := tagsFromMap(v.(map[string]interface{}))
 
-		spec := &fcu.TagSpecification{
-			ResourceType: aws.String("instance"),
-			Tags:         tags,
-		}
+	// 	spec := &oapi.TagSpecification{
+	// 		ResourceType: aws.String("instance"),
+	// 		Tags:         tags,
+	// 	}
 
-		tagsSpec = append(tagsSpec, spec)
-	}
+	// 	tagsSpec = append(tagsSpec, spec)
+	// }
 
-	if len(tagsSpec) > 0 {
-		runOpts.TagSpecifications = tagsSpec
-	}
+	// if len(tagsSpec) > 0 {
+	// 	runOpts.TagSpecifications = tagsSpec
+	// }
 
 	// Create the instance
-	var runResp *fcu.Reservation
+	var runResp *oapi.CreateVmsResponse
+	var resp *oapi.POST_CreateVmsResponses
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
-		runResp, err = conn.VM.RunInstance(runOpts)
-
+		resp, err = conn.POST_CreateVms(*runOpts)
 		return resource.RetryableError(err)
 	})
 
 	if err != nil {
 		return fmt.Errorf("Error launching source instance: %s", err)
 	}
-	if runResp == nil || len(runResp.Instances) == 0 {
+
+	runResp = resp.OK
+
+	if runResp == nil || len(runResp.Vms) == 0 {
 		return errors.New("Error launching source instance: no instances returned in response")
 	}
 
-	instance := runResp.Instances[0]
-	fmt.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
+	vm := runResp.Vms[0]
+	fmt.Printf("[INFO] Instance ID: %s", *vm.VmId)
 
-	d.SetId(*instance.InstanceId)
+	d.SetId(*vm.VmId)
 
-	// if d.IsNewResource() {
-	// 	if err := setOAPITags(conn, d); err != nil {
-	// 		return err
-	// 	}
-	// 	d.SetPartial("tag")
-	// }
+	if d.IsNewResource() {
+		if err := setOAPITags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag")
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"running"},
-		Refresh:    InstanceStateOApiRefreshFunc(conn, *instance.InstanceId, "terminated"),
+		Refresh:    InstanceStateOApiRefreshFunc(conn, *vm.VmId, "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -123,15 +128,15 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Initialize the connection info
-	if instance.IpAddress != nil {
+	if vm.PublicIp != nil {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": *instance.IpAddress,
+			"host": *vm.PublicIp,
 		})
-	} else if instance.PrivateIpAddress != nil {
+	} else if vm.PrivateIp != nil {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": *instance.PrivateIpAddress,
+			"host": *vm.PrivateIp,
 		})
 	}
 
@@ -139,20 +144,25 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	input := &fcu.DescribeInstancesInput{
-		InstanceIds: []*string{aws.String(d.Id())},
+	input := &oapi.ReadVmsRequest{
+		Filters: &oapi.ReadVmsFilters{
+			VmIds: []*string{aws.String(d.Id())},
+		},
 	}
 
-	var resp *fcu.DescribeInstancesOutput
+	var resp *oapi.ReadVmsResponse
+	var rs *oapi.POST_ReadVmsResponses
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstances(input)
+		rs, err = conn.POST_ReadVms(*input)
 
 		return resource.RetryableError(err)
 	})
+
+	resp = rs.OK
 
 	if err != nil {
 		return fmt.Errorf("Error deleting the instance %s", err)
@@ -171,40 +181,48 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// If nothing was found, then return no state
-	if len(resp.Reservations) == 0 {
+	if len(resp.Vms) == 0 {
 		d.SetId("")
 		return nil
 	}
 
-	instance := resp.Reservations[0].Instances[0]
+	instance := resp.Vms[0]
 
 	d.Set("block_device_mapping", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
 	d.Set("token", instance.ClientToken)
+	d.Set("bsu_optimized", instance.BsuOptimized)
+	d.Set("image_id", instance.ImageId)
+	d.Set("type", instance.Type)
+	d.Set("vm_id", instance.VmId)
+	d.Set("keypair_name", instance.KeypairName)
+	d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
+	d.Set("private_ip", instance.PrivateIp)
+	//ramdisk
+	d.Set("subnet_id", instance.SubnetId)
+	//tagSet
+	//d.Set("account_id", "")
+	d.Set("reservation_id", instance.ReservationId)
+
+	if err := d.Set("firewall_rules_sets", getFirewallRulesSet(instance.FirewallRulesSets)); err != nil {
+		return err
+	}
+
+	placement := make(map[string]interface{})
+	if instance.Placement != nil {
+		placement["affinity"] = instance.Placement.Affinity
+		placement["sub_region_name"] = instance.Placement.SubRegionName
+		placement["dedicated_host_id"] = instance.Placement.DedicatedHostId
+		placement["tenancy"] = instance.Placement.Tenancy
+
+		// "firewall_rules_set_name": instance.Placement.FirewallRulesSetName,
+	}
+
+	d.Set("placement", placement)
 
 	// d.Set("delete_protection", instance.DnsName)
-
-	d.Set("z", instance.EbsOptimized)
-	d.Set("image_id", instance.ImageId)
-	d.Set("vm_id", instance.InstanceId)
-
 	// d.Set("shutdown_automatic_behavior", instance.SpotInstanceRequestId)
-
-	d.Set("type", instance.InstanceType)
-	d.Set("keypair_name", instance.KeyName)
-
 	// d.Set("max_vms_count", instance)
 	// d.Set("min_vms_count", instance.KernelId)
-
-	d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.NetworkInterfaces))
-	d.Set("placement", map[string]interface{}{
-		"affinity":        instance.Placement.Affinity,
-		"sub_region_name": instance.Placement.GroupName,
-		// TODO: Add to struct for OAPI
-		// "firewall_rules_set_name": instance.Placement.FirewallRulesSetName,
-		"dedicated_host_id": instance.Placement.HostId,
-		"tenancy":           instance.Placement.Tenancy,
-	})
-	d.Set("private_ip", instance.PrivateIpAddress)
 	// d.Set("private_ips", ips)
 	// d.Set("firewall_rules_set", ips)
 	// d.Set("firewall_rules_set_id", ips)
@@ -215,36 +233,139 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 	fmt.Printf("[DEBUG] updating the instance %s", d.Id())
 
-	if d.HasChange("key_name") {
-		input := &fcu.ModifyInstanceKeyPairInput{
-			InstanceId: aws.String(d.Id()),
-			KeyName:    aws.String(d.Get("keypair_name").(string)),
+	d.Partial(true)
+
+	if d.HasChange("keypair_name") {
+		input := &oapi.UpdateKeypairRequest{
+			//VmId:        aws.String(d.Id()), Missing on Swagger Spec
+			KeypairName: aws.String(d.Get("keypair_name").(string)),
 		}
 
-		err := conn.VM.ModifyInstanceKeyPair(input)
+		_, err := conn.POST_UpdateKeypair(*input)
 		if err != nil {
 			return err
 		}
 	}
+
+	//Missing Tag_set
+
+	if d.HasChange("type") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmAttributeRequest{
+			VmId: aws.String(d.Id()),
+			Type: aws.String(d.Get("type").(string)),
+		}
+		if err := updateVMAttr(conn, opts, "type"); err != nil {
+			return err
+		}
+	}
+
+	// if d.HasChange("user_data") && !d.IsNewResource() {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		UserData: &fcu.BlobAttributeValue{
+	// 			Value: d.Get("user_data").([]byte),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "user_data"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("ebs_optimized") && !d.IsNewResource() {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		EbsOptimized: &fcu.AttributeBooleanValue{
+	// 			Value: aws.Bool(d.Get("ebs_optimized").(bool)),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "ebs_optimized"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("delete_on_termination") && !d.IsNewResource() {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		DeleteOnTermination: &fcu.AttributeBooleanValue{
+	// 			Value: d.Get("delete_on_termination").(*bool),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "delete_on_termination"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("disable_api_termination") {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		DisableApiTermination: &fcu.AttributeBooleanValue{
+	// 			Value: aws.Bool(d.Get("disable_api_termination").(bool)),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("instance_initiated_shutdown_behavior") {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
+	// 			Value: aws.String(d.Get("instance_initiated_shutdown_behavior").(string)),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "instance_initiated_shutdown_behavior"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("group_set") {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		Groups:     d.Get("group_set").([]*string),
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "group_set"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("source_dest_check") {
+	// 	opts := &fcu.ModifyInstanceAttributeInput{
+	// 		InstanceId: aws.String(d.Id()),
+	// 		SourceDestCheck: &fcu.AttributeBooleanValue{
+	// 			Value: aws.Bool(d.Get("source_dest_check").(bool)),
+	// 		},
+	// 	}
+	// 	if err := modifyInstanceAttr(conn, opts, "source_dest_check"); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	// if d.HasChange("block_device_mapping") {
+	// 	if err := setBlockDevice(d.Get("block_device_mapping"), conn, d.Id()); err != nil {
+	// 		return err
+	// 	}
+	// }
+
 	return resourceVMRead(d, meta)
 }
 
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
 
 	fmt.Printf("[INFO] Terminating instance: %s", id)
-	req := &fcu.TerminateInstancesInput{
-		InstanceIds: []*string{aws.String(id)},
+	req := &oapi.DeleteVmsRequest{
+		VmIds: []*string{aws.String(id)},
 	}
 
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.TerminateInstances(req)
+		_, err = conn.POST_DeleteVms(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -265,7 +386,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"terminated"},
-		Refresh:    InstanceStateRefreshFunc(conn, id, ""),
+		Refresh:    InstanceStateOApiRefreshFunc(conn, id, ""),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -337,6 +458,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 		},
 		"deletion_protection": {
 			Type:     schema.TypeBool,
+			Computed: true,
 			Optional: true,
 		},
 		"bsu_optimized": {
@@ -345,14 +467,16 @@ func getOApiVMSchema() map[string]*schema.Schema {
 		},
 		"image_id": {
 			Type:     schema.TypeString,
+			ForceNew: true,
 			Required: true,
 		},
 		"shutdown_automatic_behavior": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 		},
 		"type": {
 			Type:     schema.TypeString,
+			ForceNew: true,
 			Required: true,
 		},
 		"keypair_name": {
@@ -368,7 +492,8 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"nics": {
-			Type:     schema.TypeSet,
+			Type: schema.TypeSet,
+			//To change in for oapi attributes ConflictsWith: []string{"subnet_id", "security_group_id", "security_group"},
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -398,28 +523,28 @@ func getOApiVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"primary_ip": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"private_ip": {
 									Type:     schema.TypeString,
 									Optional: true,
 								},
-								"secondary_private_ip_count": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"firewall_rules_set_id": {
-									Type:     schema.TypeSet,
-									Optional: true,
-									Elem:     &schema.Schema{Type: schema.TypeString},
-								},
-								"subnet_id": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
 							},
 						},
+					},
+					"secondary_private_ip_count": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"firewall_rules_set_id": {
+						Type:     schema.TypeSet,
+						Optional: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 			},
@@ -921,7 +1046,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 }
 
 type outscaleOApiInstanceOpts struct {
-	BlockDeviceMappings               []*fcu.BlockDeviceMapping
+	BlockDeviceMappings               []*oapi.BlockDeviceMappings
 	DisableAPITermination             *bool
 	EBSOptimized                      *bool
 	ImageID                           *string
@@ -929,22 +1054,22 @@ type outscaleOApiInstanceOpts struct {
 	InstanceType                      *string
 	Ipv6AddressCount                  *int64
 	KeyName                           *string
-	NetworkInterfaces                 []*fcu.InstanceNetworkInterfaceSpecification
-	Placement                         *fcu.Placement
+	NetworkInterfaces                 []*oapi.Nics
+	Placement                         *oapi.Placement
 	PrivateIPAddress                  *string
 	SecurityGroupIDs                  []*string
 	SecurityGroups                    []*string
 	SubnetID                          *string
 	UserData                          *string
-	Monitoring                        *fcu.Monitoring
-	// SpotPlacement                     *fcu.SpotPlacement
-	// Ipv6Addresses                     []*fcu.InstanceIpv6Address
-	// IAMInstanceProfile                *fcu.IamInstanceProfileSpecification
+	//OAPI Monitoring                        *oapi.Monitoring
+	// SpotPlacement                     *oapi.SpotPlacement
+	// Ipv6Addresses                     []*oapi.InstanceIpv6Address
+	// IAMInstanceProfile                *oapi.IamInstanceProfileSpecification
 }
 
 func buildOutscaleOAPIVMOpts(
 	d *schema.ResourceData, meta interface{}) (*outscaleOApiInstanceOpts, error) {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	opts := &outscaleOApiInstanceOpts{
 		DisableAPITermination: aws.Bool(d.Get("deletion_protection").(bool)),
@@ -966,23 +1091,39 @@ func buildOutscaleOAPIVMOpts(
 		opts.SubnetID = &s
 	}
 
-	if t, hasTenancy := d.GetOk("tenancy"); hasTenancy {
-		opts.Placement.Tenancy = aws.String(t.(string))
-	}
-
+	tenancy, tenancyOK := d.GetOk("tenancy")
+	az, azOk := d.GetOk("availability_zone")
 	gn, gnOk := d.GetOk("placement")
 
-	if gnOk {
-		opts.Placement = &fcu.Placement{
-			GroupName: aws.String(gn.(string)),
+	if gnOk && tenancyOK && azOk {
+		opts.Placement = &oapi.Placement{
+			PlacementName: aws.String(gn.(string)),
+			SubRegionName: aws.String(az.(string)),
+			Tenancy:       aws.String(tenancy.(string)),
 		}
 	}
 
-	var groups []*string
+	groups := make([]*string, 0)
+	if v := d.Get("security_group"); v != nil {
+		groups = expandStringList(v.(*schema.Set).List())
+		if len(groups) > 0 && hasSubnet {
+			log.Print("[WARN] Deprecated. Attempting to use 'security_group' within a VPC instance. Use 'security_group_id' instead.")
+		}
+	}
+
+	firewallRulesSet := make([]*oapi.FirewallRulesSets, 0)
+	if v := d.Get("firewall_rules_set"); v != nil {
+		for _, name := range v.(*schema.Set).List() {
+			item := &oapi.FirewallRulesSets{
+				FirewallRulesSetName: aws.String(name.(string)),
+			}
+			firewallRulesSet = append(firewallRulesSet, item)
+		}
+	}
 
 	networkInterfaces, interfacesOk := d.GetOk("nics")
 	if interfacesOk {
-		opts.NetworkInterfaces = buildNetworkOApiInterfaceOpts(d, groups, networkInterfaces)
+		opts.NetworkInterfaces = buildNetworkOApiInterfaceOpts(d, firewallRulesSet, networkInterfaces)
 	}
 
 	if v, ok := d.GetOk("private_ip"); ok {
@@ -1004,27 +1145,21 @@ func buildOutscaleOAPIVMOpts(
 	return opts, nil
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []*string, nInterfaces interface{}) []*fcu.InstanceNetworkInterfaceSpecification {
-	networkInterfaces := []*fcu.InstanceNetworkInterfaceSpecification{}
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, firewallRuleSet []*oapi.FirewallRulesSets, nInterfaces interface{}) []*oapi.Nics {
+	networkInterfaces := []*oapi.Nics{}
 	// Get necessary items
 	subnet, hasSubnet := d.GetOk("subnet_id")
 
 	if hasSubnet {
-		// If we have a non-default VPC / Subnet specified, we can flag
-		// AssociatePublicIpAddress to get a Public IP assigned. By default these are not provided.
-		// You cannot specify both SubnetId and the NetworkInterface.0.* parameters though, otherwise
-		// you get: Network interfaces and an instance-level subnet ID may not be specified on the same request
-		// You also need to attach Security Groups to the NetworkInterface instead of the instance,
-		// to avoid: Network interfaces and an instance-level security groups may not be specified on
-		// the same request
-		ni := &fcu.InstanceNetworkInterfaceSpecification{
-			DeviceIndex: aws.Int64(int64(0)),
-			SubnetId:    aws.String(subnet.(string)),
-			Groups:      groups,
+		ni := &oapi.Nics{
+			SubnetId:          aws.String(subnet.(string)),
+			FirewallRulesSets: firewallRuleSet,
 		}
 
 		if v, ok := d.GetOk("private_ip"); ok {
-			ni.PrivateIpAddress = aws.String(v.(string))
+			ni.PrivateIps = []*oapi.PrivateIps{&oapi.PrivateIps{
+				PrivateIp: aws.String(v.(string)),
+			}}
 		}
 
 		networkInterfaces = append(networkInterfaces, ni)
@@ -1033,10 +1168,10 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []*string, nIn
 		vL := nInterfaces.(*schema.Set).List()
 		for _, v := range vL {
 			ini := v.(map[string]interface{})
-			ni := &fcu.InstanceNetworkInterfaceSpecification{
-				DeviceIndex:         aws.Int64(int64(ini["nic_sort_number"].(int))),
-				NetworkInterfaceId:  aws.String(ini["nic_id"].(string)),
-				DeleteOnTermination: aws.Bool(ini["delete_on_vm_deletion"].(bool)),
+			ni := &oapi.Nics{
+				//DeviceIndex:         aws.Int64(int64(ini["nic_sort_number"].(int))),
+				NicId: aws.String(ini["nic_id"].(string)),
+				//DeleteOnTermination: aws.Bool(ini["delete_on_vm_deletion"].(bool)),
 			}
 			networkInterfaces = append(networkInterfaces, ni)
 		}
@@ -1046,34 +1181,36 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []*string, nIn
 }
 
 func readBlockDeviceOApiMappingsFromConfig(
-	d *schema.ResourceData, conn *fcu.Client) ([]*fcu.BlockDeviceMapping, error) {
-	blockDevices := make([]*fcu.BlockDeviceMapping, 0)
+	d *schema.ResourceData, conn *oapi.Client) ([]*oapi.BlockDeviceMappings, error) {
+	blockDevices := make([]*oapi.BlockDeviceMappings, 0)
 
 	if v, ok := d.GetOk("bsu"); ok {
 		vL := v.(*schema.Set).List()
 		for _, v := range vL {
 			bd := v.(map[string]interface{})
-			ebs := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(bd["delete_on_vm_deletion"].(bool)),
-			}
-			if v, ok := bd["snapshot_id"].(string); ok && v != "" {
-				ebs.SnapshotId = aws.String(v)
-			}
-			if v, ok := bd["volume_size"].(int); ok && v != 0 {
-				ebs.VolumeSize = aws.Int64(int64(v))
-			}
-			if v, ok := bd["type"].(string); ok && v != "" {
-				ebs.VolumeType = aws.String(v)
-			}
-			if v, ok := bd["iops"].(int); ok && v > 0 {
-				ebs.Iops = aws.Int64(int64(v))
+			ebs := &oapi.Bsu{
+				DeleteOnVmDeletion: aws.Bool(bd["delete_on_vm_deletion"].(bool)),
 			}
 
-			blockDevices = append(blockDevices, &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(bd["device_name"].(string)),
-				NoDevice:    aws.String(bd["no_device"].(string)),
-				VirtualName: aws.String(bd["virtual_device_name"].(string)),
-				Ebs:         ebs,
+			//Missing on Swagger Spec
+			// if v, ok := bd["snapshot_id"].(string); ok && v != "" {
+			// 	ebs.SnapshotId = aws.String(v)
+			// }
+			// if v, ok := bd["volume_size"].(int); ok && v != 0 {
+			// 	ebs.VolumeSize = aws.Int64(int64(v))
+			// }
+			// if v, ok := bd["type"].(string); ok && v != "" {
+			// 	ebs.VolumeType = aws.String(v)
+			// }
+			// if v, ok := bd["iops"].(int); ok && v > 0 {
+			// 	ebs.Iops = aws.Int64(int64(v))
+			// }
+
+			blockDevices = append(blockDevices, &oapi.BlockDeviceMappings{
+				DeviceName: aws.String(bd["device_name"].(string)),
+				//NoDevice:    aws.String(bd["no_device"].(string)), //Missing on Swagger spec
+				//VirtualName: aws.String(bd["virtual_device_name"].(string)),//Missing on Swagger spec
+				Bsu: ebs,
 			})
 		}
 	}
@@ -1082,17 +1219,19 @@ func readBlockDeviceOApiMappingsFromConfig(
 }
 
 // InstanceStateOApiRefreshFunc ...
-func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
+func InstanceStateOApiRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp *fcu.DescribeInstancesOutput
+		var resp *oapi.ReadVmsResponse
+		var rs *oapi.POST_ReadVmsResponses
 		var err error
 
 		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-				InstanceIds: []*string{aws.String(instanceID)},
+			rs, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
+				Filters: &oapi.ReadVmsFilters{VmIds: []*string{aws.String(instanceID)}},
 			})
 			return resource.RetryableError(err)
 		})
+		resp = rs.OK
 
 		if err != nil {
 			fmt.Printf("Error on InstanceStateRefresh: %s", err)
@@ -1100,16 +1239,16 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 			return nil, "", err
 		}
 
-		if resp == nil || len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
+		if resp == nil || len(resp.Vms) == 0 {
 			return nil, "", nil
 		}
 
-		i := resp.Reservations[0].Instances[0]
-		state := *i.State.Name
+		i := resp.Vms[0]
+		state := *i.State
 
 		if state == failState {
 			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
-				*i.StateReason)
+				*i.State)
 
 		}
 
@@ -1117,39 +1256,127 @@ func InstanceStateOApiRefreshFunc(conn *fcu.Client, instanceID, failState string
 	}
 }
 
-// InstanceOApiPa ...
-func InstanceOApiPa(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		var resp *fcu.DescribeInstancesOutput
-		var err error
+// // InstanceOApiPa ...
+// func InstanceOApiPa(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
+// 	return func() (interface{}, string, error) {
+// 		var resp *oapi.DescribeInstancesOutput
+// 		var err error
 
-		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeInstances(&fcu.DescribeInstancesInput{
-				InstanceIds: []*string{aws.String(instanceID)},
-			})
+// 		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+// 			resp, err = conn.VM.DescribeInstances(&oapi.DescribeInstancesInput{
+// 				InstanceIds: []*string{aws.String(instanceID)},
+// 			})
 
-			return resource.RetryableError(err)
-		})
+// 			return resource.RetryableError(err)
+// 		})
 
-		if err != nil {
-			fmt.Printf("Error on InstanceStateRefresh: %s", err)
+// 		if err != nil {
+// 			fmt.Printf("Error on InstanceStateRefresh: %s", err)
 
-			return nil, "", err
-		}
+// 			return nil, "", err
+// 		}
 
-		if resp == nil || len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
-			return nil, "", nil
-		}
+// 		if resp == nil || len(resp.Reservations) == 0 || len(resp.Reservations[0].Instances) == 0 {
+// 			return nil, "", nil
+// 		}
 
-		i := resp.Reservations[0].Instances[0]
-		state := *i.State.Name
+// 		i := resp.Reservations[0].Instances[0]
+// 		state := *i.State.Name
 
-		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
-				*i.StateReason)
+// 		if state == failState {
+// 			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+// 				*i.StateReason)
 
-		}
+// 		}
 
-		return i, state, nil
+// 		return i, state, nil
+// 	}
+// }
+
+func updateVMAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmAttributeRequest, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		stateConf, err = stopVM(instanceAttrOpts, conn, attr)
 	}
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := conn.POST_UpdateVmAttribute(*instanceAttrOpts); err != nil {
+		return err
+	}
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		err = startVM(instanceAttrOpts, stateConf, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func stopVM(instanceAttrOpts *oapi.UpdateVmAttributeRequest, conn *oapi.Client, attr string) (*resource.StateChangeConf, error) {
+	_, err := conn.POST_StopVms(oapi.StopVmsRequest{
+		VmIds: []*string{instanceAttrOpts.VmId},
+	})
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:     []string{"stopped"},
+		Refresh:    InstanceStateOApiRefreshFunc(conn, *instanceAttrOpts.VmId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"Error waiting for instance (%s) to stop: %s", *instanceAttrOpts.VmId, err)
+	}
+
+	return stateConf, nil
+}
+
+func startVM(instanceAttrOpts *oapi.UpdateVmAttributeRequest, stateConf *resource.StateChangeConf, conn *oapi.Client, attr string) error {
+	if _, err := conn.POST_StartVms(oapi.StartVmsRequest{
+		VmIds: []*string{instanceAttrOpts.VmId},
+	}); err != nil {
+		return err
+	}
+
+	stateConf = &resource.StateChangeConf{
+		Pending:    []string{"pending", "stopped"},
+		Target:     []string{"running"},
+		Refresh:    InstanceStateOApiRefreshFunc(conn, *instanceAttrOpts.VmId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", *instanceAttrOpts.VmId, err)
+	}
+
+	return nil
 }

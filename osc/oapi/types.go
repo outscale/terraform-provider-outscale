@@ -98,15 +98,15 @@ type BackendVmsHealth struct {
 
 // implements the service definition of BlockDeviceMappings
 type BlockDeviceMappings struct {
-	Bsu        Bsu    `json:"Bsu,omitempty"`
-	DeviceName string `json:"DeviceName,omitempty"`
+	Bsu        *Bsu    `json:"Bsu,omitempty"`
+	DeviceName *string `json:"DeviceName,omitempty"`
 }
 
 // implements the service definition of Bsu
 type Bsu struct {
-	DeleteOnVmDeletion bool   `json:"DeleteOnVmDeletion,omitempty"`
-	State              string `json:"State,omitempty"`
-	VolumeId           string `json:"VolumeId,omitempty"`
+	DeleteOnVmDeletion *bool   `json:"DeleteOnVmDeletion,omitempty"`
+	State              *string `json:"State,omitempty"`
+	VolumeId           *string `json:"VolumeId,omitempty"`
 }
 
 // implements the service definition of CancelExportTaskRequest
@@ -549,11 +549,11 @@ type CreateNetResponse struct {
 
 // implements the service definition of CreateNicRequest
 type CreateNicRequest struct {
-	Description         string       `json:"Description,omitempty"`
-	DryRun              bool         `json:"DryRun,omitempty"`
-	FirewallRulesSetIds []string     `json:"FirewallRulesSetIds,omitempty"`
-	PrivateIps          []PrivateIps `json:"PrivateIps,omitempty"`
-	SubnetId            string       `json:"SubnetId,omitempty"`
+	Description         *string       `json:"Description,omitempty"`
+	DryRun              *bool         `json:"DryRun,omitempty"`
+	FirewallRulesSetIds []*string     `json:"FirewallRulesSetIds,omitempty"`
+	PrivateIps          []*PrivateIps `json:"PrivateIps,omitempty"`
+	SubnetId            *string       `json:"SubnetId,omitempty"`
 }
 
 // implements the service definition of CreateNicResponse
@@ -704,33 +704,33 @@ type CreateUserResponse struct {
 
 // implements the service definition of CreateVmsRequest
 type CreateVmsRequest struct {
-	BlockDeviceMappings         []BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
-	BsuOptimized                bool                  `json:"BsuOptimized,omitempty"`
-	ClientToken                 string                `json:"ClientToken,omitempty"`
-	DeletionProtection          bool                  `json:"DeletionProtection,omitempty"`
-	DryRun                      bool                  `json:"DryRun,omitempty"`
-	FirewallRulesSetIds         []string              `json:"FirewallRulesSetIds,omitempty"`
-	FirewallRulesSets           []string              `json:"FirewallRulesSets,omitempty"`
-	ImageId                     string                `json:"ImageId,omitempty"`
-	KeypairName                 string                `json:"KeypairName,omitempty"`
-	MaxVmsCount                 int64                 `json:"MaxVmsCount,omitempty"`
-	MinVmsCount                 int64                 `json:"MinVmsCount,omitempty"`
-	Nics                        []Nics                `json:"Nics,omitempty"`
-	Placement                   Placement             `json:"Placement,omitempty"`
-	PrivateIps                  []string              `json:"PrivateIps,omitempty"`
-	SubnetId                    string                `json:"SubnetId,omitempty"`
-	Type                        string                `json:"Type,omitempty"`
-	UserData                    string                `json:"UserData,omitempty"`
-	VmInitiatedShutdownBehavior string                `json:"VmInitiatedShutdownBehavior,omitempty"`
+	BlockDeviceMappings         []*BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
+	BsuOptimized                *bool                  `json:"BsuOptimized,omitempty"`
+	ClientToken                 *string                `json:"ClientToken,omitempty"`
+	DeletionProtection          *bool                  `json:"DeletionProtection,omitempty"`
+	DryRun                      *bool                  `json:"DryRun,omitempty"`
+	FirewallRulesSetIds         []*string              `json:"FirewallRulesSetIds,omitempty"`
+	FirewallRulesSets           []*string              `json:"FirewallRulesSets,omitempty"`
+	ImageId                     *string                `json:"ImageId,omitempty"`
+	KeypairName                 *string                `json:"KeypairName,omitempty"`
+	MaxVmsCount                 *int64                 `json:"MaxVmsCount,omitempty"`
+	MinVmsCount                 *int64                 `json:"MinVmsCount,omitempty"`
+	Nics                        []*Nics                `json:"Nics,omitempty"`
+	Placement                   *Placement             `json:"Placement,omitempty"`
+	PrivateIps                  []*string              `json:"PrivateIps,omitempty"`
+	SubnetId                    *string                `json:"SubnetId,omitempty"`
+	Type                        *string                `json:"Type,omitempty"`
+	UserData                    *string                `json:"UserData,omitempty"`
+	VmInitiatedShutdownBehavior *string                `json:"VmInitiatedShutdownBehavior,omitempty"`
 }
 
 // implements the service definition of CreateVmsResponse
 type CreateVmsResponse struct {
-	AccountId         string              `json:"AccountId,omitempty"`
-	FirewallRulesSets []FirewallRulesSets `json:"FirewallRulesSets,omitempty"`
-	ReservationId     string              `json:"ReservationId,omitempty"`
-	ResponseContext   ResponseContext     `json:"ResponseContext,omitempty"`
-	Vms               []Vms               `json:"Vms,omitempty"`
+	AccountId         *string              `json:"AccountId,omitempty"`
+	FirewallRulesSets []*FirewallRulesSets `json:"FirewallRulesSets,omitempty"`
+	ReservationId     *string              `json:"ReservationId,omitempty"`
+	ResponseContext   *ResponseContext     `json:"ResponseContext,omitempty"`
+	Vms               []*Vms               `json:"Vms,omitempty"`
 }
 
 // implements the service definition of CreateVolumeRequest
@@ -1114,14 +1114,14 @@ type DeleteUserResponse struct {
 
 // implements the service definition of DeleteVmsRequest
 type DeleteVmsRequest struct {
-	DryRun bool     `json:"DryRun,omitempty"`
-	VmIds  []string `json:"VmIds,omitempty"`
+	DryRun *bool     `json:"DryRun,omitempty"`
+	VmIds  []*string `json:"VmIds,omitempty"`
 }
 
 // implements the service definition of DeleteVmsResponse
 type DeleteVmsResponse struct {
-	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
-	Vms             []Vms           `json:"Vms,omitempty"`
+	ResponseContext *ResponseContext `json:"ResponseContext,omitempty"`
+	Vms             []*Vms           `json:"Vms,omitempty"`
 }
 
 // implements the service definition of DeleteVolumeRequest
@@ -1294,8 +1294,8 @@ type FirewallRulesSetLogging struct {
 
 // implements the service definition of FirewallRulesSets
 type FirewallRulesSets struct {
-	FirewallRulesSetId   string `json:"FirewallRulesSetId,omitempty"`
-	FirewallRulesSetName string `json:"FirewallRulesSetName,omitempty"`
+	FirewallRulesSetId   *string `json:"FirewallRulesSetId,omitempty"`
+	FirewallRulesSetName *string `json:"FirewallRulesSetName,omitempty"`
 }
 
 // implements the service definition of FirewallRulesSetsMembers
@@ -1857,19 +1857,19 @@ type NicLink struct {
 
 // implements the service definition of Nics
 type Nics struct {
-	AccountId           string              `json:"AccountId,omitempty"`
-	Description         string              `json:"Description,omitempty"`
-	FirewallRulesSets   []FirewallRulesSets `json:"FirewallRulesSets,omitempty"`
-	IsSourceDestChecked bool                `json:"IsSourceDestChecked,omitempty"`
-	MacAddress          string              `json:"MacAddress,omitempty"`
-	NetId               string              `json:"NetId,omitempty"`
-	NicId               string              `json:"NicId,omitempty"`
-	NicLink             NicLink             `json:"NicLink,omitempty"`
-	PrivateDnsName      string              `json:"PrivateDnsName,omitempty"`
-	PrivateIps          []PrivateIps        `json:"PrivateIps,omitempty"`
-	PublicIpToNicLink   PublicIpToNicLink   `json:"PublicIpToNicLink,omitempty"`
-	State               string              `json:"State,omitempty"`
-	SubnetId            string              `json:"SubnetId,omitempty"`
+	AccountId           *string              `json:"AccountId,omitempty"`
+	Description         *string              `json:"Description,omitempty"`
+	FirewallRulesSets   []*FirewallRulesSets `json:"FirewallRulesSets,omitempty"`
+	IsSourceDestChecked *bool                `json:"IsSourceDestChecked,omitempty"`
+	MacAddress          *string              `json:"MacAddress,omitempty"`
+	NetId               *string              `json:"NetId,omitempty"`
+	NicId               *string              `json:"NicId,omitempty"`
+	NicLink             *NicLink             `json:"NicLink,omitempty"`
+	PrivateDnsName      *string              `json:"PrivateDnsName,omitempty"`
+	PrivateIps          []*PrivateIps        `json:"PrivateIps,omitempty"`
+	PublicIpToNicLink   *PublicIpToNicLink   `json:"PublicIpToNicLink,omitempty"`
+	State               *string              `json:"State,omitempty"`
+	SubnetId            *string              `json:"SubnetId,omitempty"`
 }
 
 // implements the service definition of OsuApiKey
@@ -1917,11 +1917,11 @@ type PermissionsToCreateVolumes struct {
 
 // implements the service definition of Placement
 type Placement struct {
-	Affinity        string `json:"Affinity,omitempty"`
-	DedicatedHostId string `json:"DedicatedHostId,omitempty"`
-	PlacementName   string `json:"PlacementName,omitempty"`
-	SubRegionName   string `json:"SubRegionName,omitempty"`
-	Tenancy         string `json:"Tenancy,omitempty"`
+	Affinity        *string `json:"Affinity,omitempty"`
+	DedicatedHostId *string `json:"DedicatedHostId,omitempty"`
+	PlacementName   *string `json:"PlacementName,omitempty"`
+	SubRegionName   *string `json:"SubRegionName,omitempty"`
+	Tenancy         *string `json:"Tenancy,omitempty"`
 }
 
 // implements the service definition of Policies
@@ -1960,8 +1960,8 @@ type PricingDetails struct {
 
 // implements the service definition of PrivateIps
 type PrivateIps struct {
-	IsPrimary bool   `json:"IsPrimary,omitempty"`
-	PrivateIp string `json:"PrivateIp,omitempty"`
+	IsPrimary *bool   `json:"IsPrimary,omitempty"`
+	PrivateIp *string `json:"PrivateIp,omitempty"`
 }
 
 // implements the service definition of ProductCodes
@@ -1979,11 +1979,11 @@ type ProductTypes struct {
 
 // implements the service definition of PublicIpToNicLink
 type PublicIpToNicLink struct {
-	LinkId            string `json:"LinkId,omitempty"`
-	PublicDnsName     string `json:"PublicDnsName,omitempty"`
-	PublicIp          string `json:"PublicIp,omitempty"`
-	PublicIpAccountId string `json:"PublicIpAccountId,omitempty"`
-	ReservationId     string `json:"ReservationId,omitempty"`
+	LinkId            *string `json:"LinkId,omitempty"`
+	PublicDnsName     *string `json:"PublicDnsName,omitempty"`
+	PublicIp          *string `json:"PublicIp,omitempty"`
+	PublicIpAccountId *string `json:"PublicIpAccountId,omitempty"`
+	ReservationId     *string `json:"ReservationId,omitempty"`
 }
 
 // implements the service definition of PublicIps
@@ -2884,81 +2884,81 @@ type ReadVmTypesResponse struct {
 
 // implements the service definition of ReadVmsFilters
 type ReadVmsFilters struct {
-	AccountIds                               []string `json:"AccountIds,omitempty"`
-	ActivatedChecks                          []bool   `json:"ActivatedChecks,omitempty"`
-	Architectures                            []string `json:"Architectures,omitempty"`
-	BlockDeviceMappingDeleteOnVmTerminations []bool   `json:"BlockDeviceMappingDeleteOnVmTerminations,omitempty"`
-	BlockDeviceMappingDeviceNames            []string `json:"BlockDeviceMappingDeviceNames,omitempty"`
-	BlockDeviceMappingLinkDates              []string `json:"BlockDeviceMappingLinkDates,omitempty"`
-	BlockDeviceMappingStates                 []string `json:"BlockDeviceMappingStates,omitempty"`
-	BlockDeviceMappingVolumeIds              []string `json:"BlockDeviceMappingVolumeIds,omitempty"`
-	Comments                                 []string `json:"Comments,omitempty"`
-	CreationDates                            []string `json:"CreationDates,omitempty"`
-	DnsNames                                 []string `json:"DnsNames,omitempty"`
-	FirewallRulesSetIds                      []string `json:"FirewallRulesSetIds,omitempty"`
-	FirewallRulesSetNames                    []string `json:"FirewallRulesSetNames,omitempty"`
-	Hypervisors                              []string `json:"Hypervisors,omitempty"`
-	ImageIds                                 []string `json:"ImageIds,omitempty"`
-	KernelIds                                []string `json:"KernelIds,omitempty"`
-	KeypairNames                             []string `json:"KeypairNames,omitempty"`
-	LaunchSortNumbers                        []int64  `json:"LaunchSortNumbers,omitempty"`
-	MonitoringStates                         []string `json:"MonitoringStates,omitempty"`
-	NetIds                                   []string `json:"NetIds,omitempty"`
-	NicAccountIds                            []string `json:"NicAccountIds,omitempty"`
-	NicActivatedChecks                       []bool   `json:"NicActivatedChecks,omitempty"`
-	NicDescriptions                          []string `json:"NicDescriptions,omitempty"`
-	NicFirewallRulesSetIds                   []string `json:"NicFirewallRulesSetIds,omitempty"`
-	NicFirewallRulesSetNames                 []string `json:"NicFirewallRulesSetNames,omitempty"`
-	NicIds                                   []string `json:"NicIds,omitempty"`
-	NicIpsLinkPrivateIpAccountIds            []string `json:"NicIpsLinkPrivateIpAccountIds,omitempty"`
-	NicIpsLinkPublicIps                      []string `json:"NicIpsLinkPublicIps,omitempty"`
-	NicIpsPrimaryIps                         []string `json:"NicIpsPrimaryIps,omitempty"`
-	NicIpsPrivateIps                         []string `json:"NicIpsPrivateIps,omitempty"`
-	NicLinkDates                             []string `json:"NicLinkDates,omitempty"`
-	NicLinkDeleteOnVmDeletions               []bool   `json:"NicLinkDeleteOnVmDeletions,omitempty"`
-	NicLinkIds                               []string `json:"NicLinkIds,omitempty"`
-	NicLinkPublicIpAccountIds                []string `json:"NicLinkPublicIpAccountIds,omitempty"`
-	NicLinkPublicIps                         []string `json:"NicLinkPublicIps,omitempty"`
-	NicLinkReservationIds                    []string `json:"NicLinkReservationIds,omitempty"`
-	NicLinkSortNumbers                       []int64  `json:"NicLinkSortNumbers,omitempty"`
-	NicLinkStates                            []string `json:"NicLinkStates,omitempty"`
-	NicLinkVmAccountIds                      []string `json:"NicLinkVmAccountIds,omitempty"`
-	NicLinkVmIds                             []string `json:"NicLinkVmIds,omitempty"`
-	NicMacAddresses                          []string `json:"NicMacAddresses,omitempty"`
-	NicNetIds                                []string `json:"NicNetIds,omitempty"`
-	NicPrivateDnsNames                       []string `json:"NicPrivateDnsNames,omitempty"`
-	NicRequesterIds                          []string `json:"NicRequesterIds,omitempty"`
-	NicRequesterManaged                      []string `json:"NicRequesterManaged,omitempty"`
-	NicStates                                []string `json:"NicStates,omitempty"`
-	NicSubRegionNames                        []string `json:"NicSubRegionNames,omitempty"`
-	NicSubnetIds                             []string `json:"NicSubnetIds,omitempty"`
-	PlacementGroups                          []string `json:"PlacementGroups,omitempty"`
-	PrivateDnsNames                          []string `json:"PrivateDnsNames,omitempty"`
-	PrivateIps                               []string `json:"PrivateIps,omitempty"`
-	ProductCodes                             []string `json:"ProductCodes,omitempty"`
-	PublicIps                                []string `json:"PublicIps,omitempty"`
-	RamDiskIds                               []string `json:"RamDiskIds,omitempty"`
-	RequesterIds                             []string `json:"RequesterIds,omitempty"`
-	ReservationIds                           []string `json:"ReservationIds,omitempty"`
-	RootDeviceNames                          []string `json:"RootDeviceNames,omitempty"`
-	RootDeviceTypes                          []string `json:"RootDeviceTypes,omitempty"`
-	SpotVmRequestIds                         []string `json:"SpotVmRequestIds,omitempty"`
-	SpotVms                                  []string `json:"SpotVms,omitempty"`
-	StateComments                            []string `json:"StateComments,omitempty"`
-	SubRegionNames                           []string `json:"SubRegionNames,omitempty"`
-	SubnetIds                                []string `json:"SubnetIds,omitempty"`
-	Systems                                  []string `json:"Systems,omitempty"`
-	TagKeys                                  []string `json:"TagKeys,omitempty"`
-	TagValues                                []string `json:"TagValues,omitempty"`
-	Tags                                     []string `json:"Tags,omitempty"`
-	Tenancies                                []string `json:"Tenancies,omitempty"`
-	Tokens                                   []string `json:"Tokens,omitempty"`
-	VirtualizationTypes                      []string `json:"VirtualizationTypes,omitempty"`
-	VmIds                                    []string `json:"VmIds,omitempty"`
-	VmStates                                 []string `json:"VmStates,omitempty"`
-	VmTypes                                  []string `json:"VmTypes,omitempty"`
-	VmsFirewallRulesSetId                    []string `json:"VmsFirewallRulesSetId,omitempty"`
-	VmsFirewallRulesSetName                  []string `json:"VmsFirewallRulesSetName,omitempty"`
+	AccountIds                               []*string `json:"AccountIds,omitempty"`
+	ActivatedChecks                          []*bool   `json:"ActivatedChecks,omitempty"`
+	Architectures                            []*string `json:"Architectures,omitempty"`
+	BlockDeviceMappingDeleteOnVmTerminations []*bool   `json:"BlockDeviceMappingDeleteOnVmTerminations,omitempty"`
+	BlockDeviceMappingDeviceNames            []*string `json:"BlockDeviceMappingDeviceNames,omitempty"`
+	BlockDeviceMappingLinkDates              []*string `json:"BlockDeviceMappingLinkDates,omitempty"`
+	BlockDeviceMappingStates                 []*string `json:"BlockDeviceMappingStates,omitempty"`
+	BlockDeviceMappingVolumeIds              []*string `json:"BlockDeviceMappingVolumeIds,omitempty"`
+	Comments                                 []*string `json:"Comments,omitempty"`
+	CreationDates                            []*string `json:"CreationDates,omitempty"`
+	DnsNames                                 []*string `json:"DnsNames,omitempty"`
+	FirewallRulesSetIds                      []*string `json:"FirewallRulesSetIds,omitempty"`
+	FirewallRulesSetNames                    []*string `json:"FirewallRulesSetNames,omitempty"`
+	Hypervisors                              []*string `json:"Hypervisors,omitempty"`
+	ImageIds                                 []*string `json:"ImageIds,omitempty"`
+	KernelIds                                []*string `json:"KernelIds,omitempty"`
+	KeypairNames                             []*string `json:"KeypairNames,omitempty"`
+	LaunchSortNumbers                        []*int64  `json:"LaunchSortNumbers,omitempty"`
+	MonitoringStates                         []*string `json:"MonitoringStates,omitempty"`
+	NetIds                                   []*string `json:"NetIds,omitempty"`
+	NicAccountIds                            []*string `json:"NicAccountIds,omitempty"`
+	NicActivatedChecks                       []*bool   `json:"NicActivatedChecks,omitempty"`
+	NicDescriptions                          []*string `json:"NicDescriptions,omitempty"`
+	NicFirewallRulesSetIds                   []*string `json:"NicFirewallRulesSetIds,omitempty"`
+	NicFirewallRulesSetNames                 []*string `json:"NicFirewallRulesSetNames,omitempty"`
+	NicIds                                   []*string `json:"NicIds,omitempty"`
+	NicIpsLinkPrivateIpAccountIds            []*string `json:"NicIpsLinkPrivateIpAccountIds,omitempty"`
+	NicIpsLinkPublicIps                      []*string `json:"NicIpsLinkPublicIps,omitempty"`
+	NicIpsPrimaryIps                         []*string `json:"NicIpsPrimaryIps,omitempty"`
+	NicIpsPrivateIps                         []*string `json:"NicIpsPrivateIps,omitempty"`
+	NicLinkDates                             []*string `json:"NicLinkDates,omitempty"`
+	NicLinkDeleteOnVmDeletions               []*bool   `json:"NicLinkDeleteOnVmDeletions,omitempty"`
+	NicLinkIds                               []*string `json:"NicLinkIds,omitempty"`
+	NicLinkPublicIpAccountIds                []*string `json:"NicLinkPublicIpAccountIds,omitempty"`
+	NicLinkPublicIps                         []*string `json:"NicLinkPublicIps,omitempty"`
+	NicLinkReservationIds                    []*string `json:"NicLinkReservationIds,omitempty"`
+	NicLinkSortNumbers                       []*int64  `json:"NicLinkSortNumbers,omitempty"`
+	NicLinkStates                            []*string `json:"NicLinkStates,omitempty"`
+	NicLinkVmAccountIds                      []*string `json:"NicLinkVmAccountIds,omitempty"`
+	NicLinkVmIds                             []*string `json:"NicLinkVmIds,omitempty"`
+	NicMacAddresses                          []*string `json:"NicMacAddresses,omitempty"`
+	NicNetIds                                []*string `json:"NicNetIds,omitempty"`
+	NicPrivateDnsNames                       []*string `json:"NicPrivateDnsNames,omitempty"`
+	NicRequesterIds                          []*string `json:"NicRequesterIds,omitempty"`
+	NicRequesterManaged                      []*string `json:"NicRequesterManaged,omitempty"`
+	NicStates                                []*string `json:"NicStates,omitempty"`
+	NicSubRegionNames                        []*string `json:"NicSubRegionNames,omitempty"`
+	NicSubnetIds                             []*string `json:"NicSubnetIds,omitempty"`
+	PlacementGroups                          []*string `json:"PlacementGroups,omitempty"`
+	PrivateDnsNames                          []*string `json:"PrivateDnsNames,omitempty"`
+	PrivateIps                               []*string `json:"PrivateIps,omitempty"`
+	ProductCodes                             []*string `json:"ProductCodes,omitempty"`
+	PublicIps                                []*string `json:"PublicIps,omitempty"`
+	RamDiskIds                               []*string `json:"RamDiskIds,omitempty"`
+	RequesterIds                             []*string `json:"RequesterIds,omitempty"`
+	ReservationIds                           []*string `json:"ReservationIds,omitempty"`
+	RootDeviceNames                          []*string `json:"RootDeviceNames,omitempty"`
+	RootDeviceTypes                          []*string `json:"RootDeviceTypes,omitempty"`
+	SpotVmRequestIds                         []*string `json:"SpotVmRequestIds,omitempty"`
+	SpotVms                                  []*string `json:"SpotVms,omitempty"`
+	StateComments                            []*string `json:"StateComments,omitempty"`
+	SubRegionNames                           []*string `json:"SubRegionNames,omitempty"`
+	SubnetIds                                []*string `json:"SubnetIds,omitempty"`
+	Systems                                  []*string `json:"Systems,omitempty"`
+	TagKeys                                  []*string `json:"TagKeys,omitempty"`
+	TagValues                                []*string `json:"TagValues,omitempty"`
+	Tags                                     []*string `json:"Tags,omitempty"`
+	Tenancies                                []*string `json:"Tenancies,omitempty"`
+	Tokens                                   []*string `json:"Tokens,omitempty"`
+	VirtualizationTypes                      []*string `json:"VirtualizationTypes,omitempty"`
+	VmIds                                    []*string `json:"VmIds,omitempty"`
+	VmStates                                 []*string `json:"VmStates,omitempty"`
+	VmTypes                                  []*string `json:"VmTypes,omitempty"`
+	VmsFirewallRulesSetId                    []*string `json:"VmsFirewallRulesSetId,omitempty"`
+	VmsFirewallRulesSetName                  []*string `json:"VmsFirewallRulesSetName,omitempty"`
 }
 
 // implements the service definition of ReadVmsHealthRequest
@@ -2975,17 +2975,18 @@ type ReadVmsHealthResponse struct {
 
 // implements the service definition of ReadVmsRequest
 type ReadVmsRequest struct {
-	DryRun           bool             `json:"DryRun,omitempty"`
-	Filters          []ReadVmsFilters `json:"Filters,omitempty"`
-	MaxResults       int64            `json:"MaxResults,omitempty"`
-	NextResultsToken string           `json:"NextResultsToken,omitempty"`
+	DryRun *bool `json:"DryRun,omitempty"`
+	//Filters          []*ReadVmsFilters `json:"Filters,omitempty"`
+	Filters          *ReadVmsFilters `json:"Filters,omitempty"`
+	MaxResults       *int64          `json:"MaxResults,omitempty"`
+	NextResultsToken *string         `json:"NextResultsToken,omitempty"`
 }
 
 // implements the service definition of ReadVmsResponse
 type ReadVmsResponse struct {
-	NextResultsToken string          `json:"NextResultsToken,omitempty"`
-	ResponseContext  ResponseContext `json:"ResponseContext,omitempty"`
-	Vms              []Vms           `json:"Vms,omitempty"`
+	NextResultsToken *string          `json:"NextResultsToken,omitempty"`
+	ResponseContext  *ResponseContext `json:"ResponseContext,omitempty"`
+	Vms              []*Vms           `json:"Vms,omitempty"`
 }
 
 // implements the service definition of ReadVmsStateFilters
@@ -3329,8 +3330,8 @@ type Snapshots struct {
 
 // implements the service definition of SourceFirewallRulesSet
 type SourceFirewallRulesSet struct {
-	FirewallRulesSetAccountId string `json:"FirewallRulesSetAccountId,omitempty"`
-	FirewallRulesSetName      string `json:"FirewallRulesSetName,omitempty"`
+	FirewallRulesSetAccountId *string `json:"FirewallRulesSetAccountId,omitempty"`
+	FirewallRulesSetName      *string `json:"FirewallRulesSetName,omitempty"`
 }
 
 // implements the service definition of SourceNet
@@ -3342,14 +3343,14 @@ type SourceNet struct {
 
 // implements the service definition of StartVmsRequest
 type StartVmsRequest struct {
-	DryRun bool     `json:"DryRun,omitempty"`
-	VmIds  []string `json:"VmIds,omitempty"`
+	DryRun bool      `json:"DryRun,omitempty"`
+	VmIds  []*string `json:"VmIds,omitempty"`
 }
 
 // implements the service definition of StartVmsResponse
 type StartVmsResponse struct {
-	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
-	Vms             []Vms           `json:"Vms,omitempty"`
+	ResponseContext *ResponseContext `json:"ResponseContext,omitempty"`
+	Vms             []*Vms           `json:"Vms,omitempty"`
 }
 
 // implements the service definition of State
@@ -3366,15 +3367,15 @@ type StateComment struct {
 
 // implements the service definition of StopVmsRequest
 type StopVmsRequest struct {
-	DryRun    bool     `json:"DryRun,omitempty"`
-	ForceStop bool     `json:"ForceStop,omitempty"`
-	VmIds     []string `json:"VmIds,omitempty"`
+	DryRun    *bool     `json:"DryRun,omitempty"`
+	ForceStop *bool     `json:"ForceStop,omitempty"`
+	VmIds     []*string `json:"VmIds,omitempty"`
 }
 
 // implements the service definition of StopVmsResponse
 type StopVmsResponse struct {
-	ResponseContext ResponseContext `json:"ResponseContext,omitempty"`
-	Vms             []Vms           `json:"Vms,omitempty"`
+	ResponseContext *ResponseContext `json:"ResponseContext,omitempty"`
+	Vms             []*Vms           `json:"Vms,omitempty"`
 }
 
 // implements the service definition of SubRegions
@@ -3607,15 +3608,15 @@ type UpdateImageAttributeResponse struct {
 
 // implements the service definition of UpdateKeypairRequest
 type UpdateKeypairRequest struct {
-	KeypairName string `json:"KeypairName,omitempty"`
-	PublicKey   string `json:"PublicKey,omitempty"`
+	KeypairName *string `json:"KeypairName,omitempty"`
+	PublicKey   *string `json:"PublicKey,omitempty"`
 }
 
 // implements the service definition of UpdateKeypairResponse
 type UpdateKeypairResponse struct {
-	KeypairFingerprint string          `json:"KeypairFingerprint,omitempty"`
-	KeypairName        string          `json:"KeypairName,omitempty"`
-	ResponseContext    ResponseContext `json:"ResponseContext,omitempty"`
+	KeypairFingerprint *string          `json:"KeypairFingerprint,omitempty"`
+	KeypairName        *string          `json:"KeypairName,omitempty"`
+	ResponseContext    *ResponseContext `json:"ResponseContext,omitempty"`
 }
 
 // implements the service definition of UpdateListenerRuleRequest
@@ -3773,17 +3774,17 @@ type UpdateUserResponse struct {
 
 // implements the service definition of UpdateVmAttributeRequest
 type UpdateVmAttributeRequest struct {
-	BlockDeviceMappings         []BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
-	BsuOptimized                bool                  `json:"BsuOptimized,omitempty"`
-	DeletionProtection          bool                  `json:"DeletionProtection,omitempty"`
-	DryRun                      bool                  `json:"DryRun,omitempty"`
-	FirewallRulesSetIds         []string              `json:"FirewallRulesSetIds,omitempty"`
-	IsSourceDestChecked         bool                  `json:"IsSourceDestChecked,omitempty"`
-	KeypairName                 string                `json:"KeypairName,omitempty"`
-	Type                        string                `json:"Type,omitempty"`
-	UserData                    string                `json:"UserData,omitempty"`
-	VmId                        string                `json:"VmId,omitempty"`
-	VmInitiatedShutdownBehavior string                `json:"VmInitiatedShutdownBehavior,omitempty"`
+	BlockDeviceMappings         []*BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
+	BsuOptimized                *bool                  `json:"BsuOptimized,omitempty"`
+	DeletionProtection          *bool                  `json:"DeletionProtection,omitempty"`
+	DryRun                      *bool                  `json:"DryRun,omitempty"`
+	FirewallRulesSetIds         []*string              `json:"FirewallRulesSetIds,omitempty"`
+	IsSourceDestChecked         *bool                  `json:"IsSourceDestChecked,omitempty"`
+	KeypairName                 *string                `json:"KeypairName,omitempty"`
+	Type                        *string                `json:"Type,omitempty"`
+	UserData                    *string                `json:"UserData,omitempty"`
+	VmId                        *string                `json:"VmId,omitempty"`
+	VmInitiatedShutdownBehavior *string                `json:"VmInitiatedShutdownBehavior,omitempty"`
 }
 
 // implements the service definition of UpdateVmAttributeResponse
@@ -3815,34 +3816,34 @@ type VmStates struct {
 
 // implements the service definition of Vms
 type Vms struct {
-	Architecture        string                `json:"Architecture,omitempty"`
-	BlockDeviceMappings []BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
-	BsuOptimized        bool                  `json:"BsuOptimized,omitempty"`
-	ClientToken         string                `json:"ClientToken,omitempty"`
-	Comment             string                `json:"Comment,omitempty"`
-	FirewallRulesSets   []FirewallRulesSets   `json:"FirewallRulesSets,omitempty"`
-	ImageId             string                `json:"ImageId,omitempty"`
-	IsSourceDestChecked bool                  `json:"IsSourceDestChecked,omitempty"`
-	KeypairName         string                `json:"KeypairName,omitempty"`
-	LaunchNumber        int64                 `json:"LaunchNumber,omitempty"`
-	NetId               string                `json:"NetId,omitempty"`
-	Nics                []Nics                `json:"Nics,omitempty"`
-	OsFamily            string                `json:"OsFamily,omitempty"`
-	Placement           Placement             `json:"Placement,omitempty"`
-	PrivateDnsName      string                `json:"PrivateDnsName,omitempty"`
-	PrivateIp           string                `json:"PrivateIp,omitempty"`
-	ProductCodes        []ProductCodes        `json:"ProductCodes,omitempty"`
-	PublicDnsName       string                `json:"PublicDnsName,omitempty"`
-	PublicIp            string                `json:"PublicIp,omitempty"`
-	ReservationId       string                `json:"ReservationId,omitempty"`
-	RootDeviceName      string                `json:"RootDeviceName,omitempty"`
-	RootDeviceType      string                `json:"RootDeviceType,omitempty"`
-	State               string                `json:"State,omitempty"`
-	SubnetId            string                `json:"SubnetId,omitempty"`
-	Tags                []Tags                `json:"Tags,omitempty"`
-	Transition          Transition            `json:"Transition,omitempty"`
-	Type                string                `json:"Type,omitempty"`
-	VmId                string                `json:"VmId,omitempty"`
+	Architecture        *string                `json:"Architecture,omitempty"`
+	BlockDeviceMappings []*BlockDeviceMappings `json:"BlockDeviceMappings,omitempty"`
+	BsuOptimized        *bool                  `json:"BsuOptimized,omitempty"`
+	ClientToken         *string                `json:"ClientToken,omitempty"`
+	Comment             *string                `json:"Comment,omitempty"`
+	FirewallRulesSets   []*FirewallRulesSets   `json:"FirewallRulesSets,omitempty"`
+	ImageId             *string                `json:"ImageId,omitempty"`
+	IsSourceDestChecked *bool                  `json:"IsSourceDestChecked,omitempty"`
+	KeypairName         *string                `json:"KeypairName,omitempty"`
+	LaunchNumber        *int64                 `json:"LaunchNumber,omitempty"`
+	NetId               *string                `json:"NetId,omitempty"`
+	Nics                []*Nics                `json:"Nics,omitempty"`
+	OsFamily            *string                `json:"OsFamily,omitempty"`
+	Placement           *Placement             `json:"Placement,omitempty"`
+	PrivateDnsName      *string                `json:"PrivateDnsName,omitempty"`
+	PrivateIp           *string                `json:"PrivateIp,omitempty"`
+	ProductCodes        []*ProductCodes        `json:"ProductCodes,omitempty"`
+	PublicDnsName       *string                `json:"PublicDnsName,omitempty"`
+	PublicIp            *string                `json:"PublicIp,omitempty"`
+	ReservationId       *string                `json:"ReservationId,omitempty"`
+	RootDeviceName      *string                `json:"RootDeviceName,omitempty"`
+	RootDeviceType      *string                `json:"RootDeviceType,omitempty"`
+	State               *string                `json:"State,omitempty"`
+	SubnetId            *string                `json:"SubnetId,omitempty"`
+	Tags                []*Tags                `json:"Tags,omitempty"`
+	Transition          *Transition            `json:"Transition,omitempty"`
+	Type                *string                `json:"Type,omitempty"`
+	VmId                *string                `json:"VmId,omitempty"`
 }
 
 // implements the service definition of Volumes
