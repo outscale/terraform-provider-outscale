@@ -10,7 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func datasourceOutscaleOAPIVolumes() *schema.Resource {
@@ -55,7 +55,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"delete_on_vm_termination": {
+									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
@@ -106,30 +106,40 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
 
 func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
+	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
-	params := &fcu.DescribeVolumesInput{}
+	volIDs := expandStringList(volumeIds.([]interface{}))
+
+	params := &oapi.ReadVolumesRequest{
+		Filters: oapi.ReadVolumesFilters{},
+	}
+
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
-	if VolumeIdsOk {
-		params.VolumeIds = []*string{aws.String(VolumeIds.(string))}
+	if volumeIdsOk {
+		params.Filters.VolumeIds = aws.StringValueSlice(volIDs)
 	}
 
-	var resp *fcu.DescribeVolumesOutput
+	var resp *oapi.ReadVolumesResponse
+	var rs *oapi.POST_ReadVolumesResponses
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVolumes(params)
+		rs, err = conn.POST_ReadVolumes(*params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -142,6 +152,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
+	resp = rs.OK
 
 	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
 
@@ -154,59 +165,59 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*fcu.Volume) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volumes) error {
 
 	i := make([]interface{}, len(volumes))
 
 	for k, v := range volumes {
 		im := make(map[string]interface{})
 
-		if v.Attachments != nil {
-			a := make([]map[string]interface{}, len(v.Attachments))
-			for k, v := range v.Attachments {
+		if v.LinkedVolumes != nil {
+			a := make([]map[string]interface{}, len(v.LinkedVolumes))
+			for k, v := range v.LinkedVolumes {
 				at := make(map[string]interface{})
-				if v.DeleteOnTermination != nil {
-					at["delete_on_vm_termination"] = *v.DeleteOnTermination
+				//if v.DeleteOnVmDeletion != nil {
+				at["delete_on_vm_termination"] = v.DeleteOnVmDeletion
+				//}
+				if v.DeviceName != "" {
+					at["device_name"] = v.DeviceName
 				}
-				if v.Device != nil {
-					at["device_name"] = *v.Device
+				if v.VmId != "" {
+					at["vm_id"] = v.VmId
 				}
-				if v.InstanceId != nil {
-					at["vm_id"] = *v.InstanceId
+				if v.State != "" {
+					at["state"] = v.State
 				}
-				if v.State != nil {
-					at["state"] = *v.State
-				}
-				if v.VolumeId != nil {
-					at["volume_id"] = *v.VolumeId
+				if v.VolumeId != "" {
+					at["volume_id"] = v.VolumeId
 				}
 				a[k] = at
 			}
 			im["linked_volumes"] = a
 		}
-		if v.AvailabilityZone != nil {
-			im["sub_region_name"] = *v.AvailabilityZone
+		if v.SubRegionName != "" {
+			im["sub_region_name"] = v.SubRegionName
 		}
-		if v.Iops != nil {
-			im["iops"] = *v.Iops
-		}
-		if v.Size != nil {
-			im["size"] = *v.Size
-		}
-		if v.SnapshotId != nil {
-			im["snapshot_id"] = *v.SnapshotId
+		//if v.Iops != nil {
+		im["iops"] = v.Iops
+		//}
+		//if v.Size != nil {
+		im["size"] = v.Size
+		//}
+		if v.SnapshotId != "" {
+			im["snapshot_id"] = v.SnapshotId
 		}
 		if v.Tags != nil {
-			im["tags"] = dataSourceTags(v.Tags)
+			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.VolumeType != nil {
-			im["type"] = *v.VolumeType
+		if v.Type != "" {
+			im["type"] = v.Type
 		}
-		if v.State != nil {
-			im["state"] = *v.State
+		if v.State != "" {
+			im["state"] = v.State
 		}
-		if v.VolumeId != nil {
-			im["volume_id"] = *v.VolumeId
+		if v.VolumeId != "" {
+			im["volume_id"] = v.VolumeId
 		}
 		i[k] = im
 	}

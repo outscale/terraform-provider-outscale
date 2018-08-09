@@ -52,7 +52,7 @@ data "outscale_volumes" "ebs_volume" {
     }
     filter {
 	name = "volume-type"
-	values = ["${outscale_volume.external1.volume_type}"]
+	values = ["${outscale_volume.external1.type}"]
     }
 }
 `
