@@ -35,7 +35,7 @@ func TestAccOutscaleLinOAPIAccess_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleLinOAPIAccessConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLinOAPIAccessExists("outscale_lin_api_access.link", &conf),
+					testAccCheckOutscaleLinOAPIAccessExists("outscale_net_api_access.link", &conf),
 				),
 			},
 		},
@@ -61,7 +61,7 @@ func testAccCheckOutscaleLinOAPIAccessDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin_api_access" {
+		if rs.Type != "outscale_net_api_access" {
 			continue
 		}
 
@@ -97,7 +97,7 @@ func testAccCheckOutscaleLinOAPIAccessDestroy(s *terraform.State) error {
 }
 
 const testAccOutscaleLinOAPIAccessConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_ranges = "10.1.0.0/16"
 }
 
@@ -105,7 +105,7 @@ resource "outscale_route_table" "foo" {
 	lin_id = "${outscale_lin.foo.id}"
 }
 
-resource "outscale_lin_api_access" "link" {
+resource "outscale_net_api_access" "link" {
 	lin_id = "${outscale_lin.foo.id}"
 	route_table_id = [
 		"${outscale_route_table.foo.id}"

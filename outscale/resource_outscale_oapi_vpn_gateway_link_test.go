@@ -181,7 +181,7 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 }
 
 const testAccNoOAPIVpnGatewayAttachmentConfig = `
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
 	cidr_block = "10.0.0.0/16"
 }
 
@@ -189,7 +189,7 @@ resource "outscale_vpn_gateway" "test" { }
 `
 
 const testAccOAPIVpnGatewayAttachmentConfig = `
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
 	ip_range = "10.0.0.0/16"
 }
 

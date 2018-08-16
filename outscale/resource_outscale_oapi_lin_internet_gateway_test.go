@@ -36,7 +36,7 @@ func TestAccOutscaleOAPILinInternetGateway_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinInternetGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinInternetGatewayExists("outscale_lin_internet_gateway.gateway", &conf),
+					testAccCheckOutscaleOAPILinInternetGatewayExists("outscale_net_internet_gateway.gateway", &conf),
 				),
 			},
 		},
@@ -87,7 +87,7 @@ func testAccCheckOutscaleOAPILinInternetGatewayDestroyed(s *terraform.State) err
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin_internet_gateway" {
+		if rs.Type != "outscale_net_internet_gateway" {
 			continue
 		}
 
@@ -134,5 +134,5 @@ func testAccCheckOutscaleOAPILinInternetGatewayDestroyed(s *terraform.State) err
 }
 
 const testAccOutscaleOAPILinInternetGatewayConfig = `
-resource "outscale_lin_internet_gateway" "gateway" {}
+resource "outscale_net_internet_gateway" "gateway" {}
 `

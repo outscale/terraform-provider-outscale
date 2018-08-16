@@ -28,8 +28,8 @@ func TestAccOutscaleOAPIDSLinAPIAccesses_basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleOAPIVpcEndpointsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVpcEndpointsDataSourceID("data.outscale_lin_api_accesses.test"),
-					resource.TestCheckResourceAttr("data.outscale_lin_api_accesses.test", "vpc_endpoint_set.0.service_name", "com.outscale.eu-west-2.osu"),
+					testAccCheckOutscaleOAPIVpcEndpointsDataSourceID("data.outscale_net_api_accesses.test"),
+					resource.TestCheckResourceAttr("data.outscale_net_api_accesses.test", "vpc_endpoint_set.0.service_name", "com.outscale.eu-west-2.osu"),
 				),
 			},
 		},
@@ -52,7 +52,7 @@ func testAccCheckOutscaleOAPIVpcEndpointsDataSourceID(n string) resource.TestChe
 }
 
 const testAccCheckOutscaleOAPIVpcEndpointsDataSourceConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_ranges = "10.1.0.0/16"
 }
 
@@ -60,7 +60,7 @@ resource "outscale_route_table" "foo" {
 	lin_id = "${outscale_lin.foo.id}"
 }
 
-resource "outscale_lin_api_access" "link" {
+resource "outscale_net_api_access" "link" {
 	lin_id = "${outscale_lin.foo.id}"
 	route_table_id = [
 		"${outscale_route_table.foo.id}"
@@ -68,10 +68,10 @@ resource "outscale_lin_api_access" "link" {
 	prefix_list_name = "com.outscale.eu-west-2.osu"
 }
 
-data "outscale_lin_api_accesses" "test" {
+data "outscale_net_api_accesses" "test" {
 	filter {
 		name = "service-name"
-		values = ["${outscale_lin_api_access.link.service_name}"]
+		values = ["${outscale_net_api_access.link.service_name}"]
 	} 
 }
 `

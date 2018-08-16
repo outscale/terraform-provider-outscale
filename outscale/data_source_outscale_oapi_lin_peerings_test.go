@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_lin_peerings.test_by_id", "lin_peering.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_net_peerings.test_by_id", "lin_peering.#", "1"),
 				),
 				// ExpectNonEmptyPlan: true,
 			},
@@ -36,7 +36,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 }
 
 const testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
   ip_range = "10.1.0.0/16"
 
   tag {
@@ -44,7 +44,7 @@ resource "outscale_lin" "foo" {
   }
 }
 
-resource "outscale_lin" "bar" {
+resource "outscale_net" "bar" {
   ip_range = "10.2.0.0/16"
 
   tag {
@@ -52,16 +52,16 @@ resource "outscale_lin" "bar" {
   }
 }
 
-resource "outscale_lin_peering" "test" {
+resource "outscale_net_peering" "test" {
 	lin_id = "${outscale_lin.foo.id}"
-	peer_lin_id = "${outscale_lin.bar.id}"
+	peer_net_id = "${outscale_lin.bar.id}"
 
     tag {
       Name = "terraform-testacc-vpc-peering-connection-data-source-foo-to-bar"
     }
 }
 
-data "outscale_lin_peerings" "test_by_id" {
-	lin_peering_id = "[${outscale_lin_peering.test.id}]"
+data "outscale_net_peerings" "test_by_id" {
+	lin_peering_id = "[${outscale_net_peering.test.id}]"
 }
 `

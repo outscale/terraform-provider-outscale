@@ -75,7 +75,7 @@ func testAccDataSourceOutscaleOAPIVpcCheck(name, cidr, tag string) resource.Test
 func testAccDataSourceOutscaleOAPIVpcConfig(cidr, tag string) string {
 	return fmt.Sprintf(`
 
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
   ip_range = "%s"
 
   tag {
@@ -83,7 +83,7 @@ resource "outscale_lin" "test" {
   }
 }
 
-data "outscale_lin" "by_id" {
+data "outscale_net" "by_id" {
   lin_id = "${outscale_lin.test.id}"
 }`, cidr, tag)
 }

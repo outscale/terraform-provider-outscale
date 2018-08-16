@@ -130,7 +130,7 @@ func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheck
 
 func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_lin" "outscale_lin" {
+resource "outscale_net" "outscale_net" {
     count = 1
 
     ip_range = "10.0.0.0/16"

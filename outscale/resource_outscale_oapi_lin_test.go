@@ -89,7 +89,7 @@ func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin" {
+		if rs.Type != "outscale_net" {
 			continue
 		}
 
@@ -136,7 +136,7 @@ func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
 }
 
 const testAccOutscaleOAPILinConfig = `
-resource "outscale_lin" "vpc" {
+resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
 }
 `

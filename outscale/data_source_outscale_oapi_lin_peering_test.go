@@ -29,7 +29,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPILinPeeringConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("data.outscale_lin_peering.test_by_id"),
+					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("data.outscale_net_peering.test_by_id"),
 				),
 				// ExpectNonEmptyPlan: true,
 			},
@@ -44,9 +44,9 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		pcxRs, ok := s.RootModule().Resources["outscale_lin_peering.test"]
+		pcxRs, ok := s.RootModule().Resources["outscale_net_peering.test"]
 		if !ok {
-			return fmt.Errorf("can't find outscale_lin_peering.test in state")
+			return fmt.Errorf("can't find outscale_net_peering.test in state")
 		}
 
 		attr := rs.Primary.Attributes
@@ -64,7 +64,7 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 }
 
 const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
   ip_range = "10.1.0.0/16"
 
   tag {
@@ -72,7 +72,7 @@ resource "outscale_lin" "foo" {
   }
 }
 
-resource "outscale_lin" "bar" {
+resource "outscale_net" "bar" {
   ip_range = "10.2.0.0/16"
 
   tag {
@@ -80,16 +80,16 @@ resource "outscale_lin" "bar" {
   }
 }
 
-resource "outscale_lin_peering" "test" {
+resource "outscale_net_peering" "test" {
 	lin_id = "${outscale_lin.foo.id}"
-	peer_lin_id = "${outscale_lin.bar.id}"
+	peer_net_id = "${outscale_lin.bar.id}"
 
     tag {
       Name = "terraform-testacc-vpc-peering-connection-data-source-foo-to-bar"
     }
 }
 
-data "outscale_lin_peering" "test_by_id" {
-	lin_peering_id = "${outscale_lin_peering.test.id}"
+data "outscale_net_peering" "test_by_id" {
+	lin_peering_id = "${outscale_net_peering.test.id}"
 }
 `

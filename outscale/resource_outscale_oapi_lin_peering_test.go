@@ -31,7 +31,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_lin_peering.foo",
+		IDRefreshName: "outscale_net_peering.foo",
 
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
@@ -40,7 +40,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(
-						"outscale_lin_peering.foo",
+						"outscale_net_peering.foo",
 						&connection),
 				),
 			},
@@ -84,7 +84,7 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(
-						"outscale_lin_peering.foo",
+						"outscale_net_peering.foo",
 						&connection),
 					testDestroy,
 				),
@@ -98,7 +98,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin_peering" {
+		if rs.Type != "outscale_net_peering" {
 			continue
 		}
 
@@ -242,18 +242,18 @@ func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, option
 }
 
 const testAccOAPIVpcPeeringConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	cidr_block = "10.0.0.0/16"
 	tag {
 		Name = "TestAccOutscaleOAPILinPeeringConnection_basic"
 	}
 }
 
-resource "outscale_lin" "bar" {
+resource "outscale_net" "bar" {
 	cidr_block = "10.1.0.0/16"
 }
 
-resource "outscale_lin_peering" "foo" {
+resource "outscale_net_peering" "foo" {
 	vpc_id = "${outscale_lin.foo.id}"
 	peer_vpc_id = "${outscale_lin.bar.id}"
 }

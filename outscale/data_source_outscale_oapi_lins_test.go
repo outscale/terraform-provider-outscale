@@ -44,7 +44,7 @@ func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 func testAccDataSourceOutscaleOAPIVpcsConfig(cidr, tag string) string {
 	return fmt.Sprintf(`
 
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
   ip_range = "%s"
 
   tag {

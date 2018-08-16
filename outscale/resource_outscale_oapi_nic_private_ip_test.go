@@ -52,7 +52,7 @@ resource "outscale_vm" "outscale_instance" {
     subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
-resource "outscale_lin" "outscale_lin" {
+resource "outscale_net" "outscale_net" {
     ip_range          = "10.0.0.0/16"
 }
 

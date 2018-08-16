@@ -148,7 +148,7 @@ func testAccCheckOAPIRouteTableAssociationExists(n string, v *fcu.RouteTable) re
 }
 
 const testAccOAPIRouteTableAssociationConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
@@ -168,7 +168,7 @@ resource "outscale_route_table_link" "foo" {
 `
 
 const testAccOAPIRouteTableAssociationConfigChange = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 

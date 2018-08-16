@@ -134,7 +134,7 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 }
 
 const testAccOutscaleOAPISubnetConfig = `
-resource "outscale_lin" "vpc" {
+resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
 }
 resource "outscale_subnet" "subnet" {

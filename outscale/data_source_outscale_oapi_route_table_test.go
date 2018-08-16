@@ -149,7 +149,7 @@ func testAccDataSourceOutscaleOAPIRouteTableCheckMain(name string) resource.Test
 }
 
 const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
   ip_range = "172.16.0.0/16"
 
   tag {
@@ -193,7 +193,7 @@ data "outscale_route_table" "by_id" {
 
 const testAccDataSourceOutscaleOAPIRouteTableMainRoute = `
 
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
   ip_range = "172.16.0.0/16"
 
   tag {

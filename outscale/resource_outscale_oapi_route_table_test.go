@@ -353,11 +353,11 @@ func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.Test
 // }
 
 const testAccOAPIRouteTableConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_lin_internet_gateway" "foo" {
+resource "outscale_net_internet_gateway" "foo" {
 	#lin_id = "${outscale_lin.foo.id}"
 }
 
@@ -367,11 +367,11 @@ resource "outscale_route_table" "foo" {
 `
 
 const testAccOAPIRouteTableConfigChange = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_lin_internet_gateway" "foo" {
+resource "outscale_net_internet_gateway" "foo" {
 	#lin_id = "${outscale_lin.foo.id}"
 }
 
@@ -381,7 +381,7 @@ resource "outscale_route_table" "foo" {
 `
 
 const testAccOAPIRouteTableConfigInstance = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
@@ -403,7 +403,7 @@ resource "outscale_route_table" "foo" {
 `
 
 const testAccOAPIRouteTableConfigTags = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
@@ -419,19 +419,19 @@ resource "outscale_route_table" "foo" {
 // TODO: missing resource vpc peering to make this test
 // VPC Peering connections are prefixed with pcx
 // const testAccRouteTableVpcPeeringConfig = `
-// resource "outscale_lin" "foo" {
+// resource "outscale_net" "foo" {
 // 	ip_range = "10.1.0.0/16"
 // }
 
-// resource "outscale_lin_internet_gateway" "foo" {
+// resource "outscale_net_internet_gateway" "foo" {
 // 	lin_id = "${outscale_lin.foo.id}"
 // }
 
-// resource "outscale_lin" "bar" {
+// resource "outscale_net" "bar" {
 // 	ip_range = "10.3.0.0/16"
 // }
 
-// resource "outscale_lin_internet_gateway" "bar" {
+// resource "outscale_net_internet_gateway" "bar" {
 // 	lin_id = "${outscale_lin.bar.id}"
 // }
 
@@ -455,7 +455,7 @@ resource "outscale_route_table" "foo" {
 
 // TODO: missing vpn_gateway to make this test
 // const testAccRouteTableVgwRoutePropagationConfig = `
-// resource "outscale_lin" "foo" {
+// resource "outscale_net" "foo" {
 // 	ip_range = "10.1.0.0/16"
 // }
 
