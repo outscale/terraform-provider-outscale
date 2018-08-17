@@ -137,11 +137,11 @@ resource "outscale_net" "test" {
 }
 
 resource "outscale_route_table" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  lin_id = "${outscale_net.test.id}"
 }
 
 resource "outscale_subnet" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  lin_id = "${outscale_net.test.id}"
   ip_range = "10.10.10.0/24"
 }
 
@@ -165,11 +165,11 @@ resource "outscale_vm" "nat" {
 // }
 
 // resource "outscale_net_internet_gateway" "foo" {
-//   lin_id = "${outscale_lin.foo.id}"
+//   lin_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route_table" "foo" {
-//   lin_id = "${outscale_lin.foo.id}"
+//   lin_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route" "bar" {
@@ -182,7 +182,7 @@ resource "outscale_vm" "nat" {
 // }
 
 // resource "aws_vpc_endpoint" "baz" {
-//   lin_id          = "${outscale_lin.foo.id}"
+//   lin_id          = "${outscale_net.foo.id}"
 //   service_name    = "com.amazonaws.us-west-2.s3"
 //   route_table_ids = ["${outscale_route_table.foo.id}"]
 // }

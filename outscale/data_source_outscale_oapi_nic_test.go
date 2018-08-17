@@ -153,7 +153,7 @@ resource "outscale_subnet" "outscale_subnet" {
 
     availability_zone   = "eu-west-2a"
     cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
+    vpc_id              = "${outscale_net.outscale_net.vpc_id}"
 }
 
 resource "outscale_nic" "outscale_nic" {

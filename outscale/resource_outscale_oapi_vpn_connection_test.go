@@ -42,7 +42,7 @@ func TestAccOutscaleOAPIVpnConnection_basic(t *testing.T) {
 				Config: testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleOAPIVpnConnection(
-						"outscale_lin.vpc",
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",
@@ -78,7 +78,7 @@ func TestAccOutscaleOAPIVpnConnection_withoutStaticRoutes(t *testing.T) {
 				Config: testAccOutscaleOAPIVpnConnectionConfigUpdate(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleOAPIVpnConnection(
-						"outscale_lin.vpc",
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",
@@ -114,7 +114,7 @@ func TestAccOutscaleOAPIVpnConnection_disappears(t *testing.T) {
 				Config: testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
 					testAccOutscaleOAPIVpnConnection(
-						"outscale_lin.vpc",
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",

@@ -19,11 +19,11 @@ func dataSourceOutscaleOAPIVpcEndpoint() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_api_access_id": {
+			"net_api_access_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -66,11 +66,11 @@ func dataSourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interfac
 
 	req := &fcu.DescribeVpcEndpointsInput{}
 
-	id, ok1 := d.GetOk("lin_api_access_id")
+	id, ok1 := d.GetOk("net_api_access_id")
 	v, ok2 := d.GetOk("filter")
 
 	if ok1 == false && ok2 == false {
-		return fmt.Errorf("One of filters, or lin_api_access_id must be assigned")
+		return fmt.Errorf("One of filters, or net_api_access_id must be assigned")
 	}
 
 	if ok1 {

@@ -145,7 +145,7 @@ resource "outscale_net" "vpc" {
 }
 
 resource "outscale_net_internet_gateway_link" "link" {
-	lin_id = "${outscale_lin.vpc.id}"
-	lin_internet_gateway_id = "${outscale_net_internet_gateway.gateway.id}"
+	net_id = "${outscale_net.vpc.id}"
+	net_internet_gateway_id = "${outscale_net_internet_gateway.gateway.id}"
 }
 `

@@ -25,7 +25,7 @@ func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -46,10 +46,10 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 
 	req := &fcu.DescribeVpcAttributeInput{}
 
-	if id := d.Get("lin_id"); id != "" {
+	if id := d.Get("net_id"); id != "" {
 		req.VpcId = aws.String(id.(string))
 	} else {
-		return fmt.Errorf("Please provide a lin_id to be able to make the request")
+		return fmt.Errorf("Please provide a net_id to be able to make the request")
 	}
 
 	if id := d.Get("attribute"); id != "" {
@@ -87,7 +87,7 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 	}
 
 	d.SetId(*resp.VpcId)
-	d.Set("lin_id", resp.VpcId)
+	d.Set("net_id", resp.VpcId)
 	if resp.EnableDnsHostnames != nil {
 		d.Set("dns_hostnames_enabled", *resp.EnableDnsHostnames.Value)
 	}

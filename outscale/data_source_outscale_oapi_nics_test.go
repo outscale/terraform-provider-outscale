@@ -42,7 +42,7 @@ resource "outscale_net" "outscale_net" {
 resource "outscale_subnet" "outscale_subnet" {
     availability_zone   = "eu-west-2a"
     ip_range          = "10.0.0.0/16"
-    lin_id              = "${outscale_lin.outscale_lin.lin_id}"
+    net_id              = "${outscale_net.outscale_net.net_id}"
 }
 
 resource "outscale_nic" "outscale_nic" {

@@ -36,9 +36,9 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleLinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLinExists("outscale_lin.vpc", &conf),
+					testAccCheckOutscaleLinExists("outscale_net.vpc", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_lin.vpc", "ip_range", "10.0.0.0/16"),
+						"outscale_net.vpc", "ip_range", "10.0.0.0/16"),
 				),
 			},
 		},

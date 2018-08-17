@@ -27,7 +27,7 @@ func resourceOutscaleOAPIVpcEndpoint() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -49,7 +49,7 @@ func resourceOutscaleOAPIVpcEndpoint() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
-			"lin_api_access_id": {
+			"net_api_access_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -78,7 +78,7 @@ func resourceOutscaleOAPIVpcEndpointCreate(d *schema.ResourceData, meta interfac
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.CreateVpcEndpointInput{
-		VpcId:       aws.String(d.Get("lin_id").(string)),
+		VpcId:       aws.String(d.Get("net_id").(string)),
 		ServiceName: aws.String(d.Get("prefix_list_name").(string)),
 	}
 
@@ -310,11 +310,11 @@ func vpcEndpointWaitUntilAvailableOAPI(d *schema.ResourceData, conn *fcu.Client)
 
 func vpcEndpointAttributesOAPI(d *schema.ResourceData, vpce *fcu.VpcEndpoint, conn *fcu.Client) error {
 	d.Set("state", vpce.State)
-	d.Set("lin_id", vpce.VpcId)
+	d.Set("net_id", vpce.VpcId)
 
 	serviceName := aws.StringValue(vpce.ServiceName)
 	d.Set("prefix_list_name", serviceName)
-	d.Set("lin_api_access_id", aws.StringValue(vpce.VpcEndpointId))
+	d.Set("net_api_access_id", aws.StringValue(vpce.VpcEndpointId))
 
 	policy, err := structure.NormalizeJsonString(aws.StringValue(vpce.PolicyDocument))
 	if err != nil {

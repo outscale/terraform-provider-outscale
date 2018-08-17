@@ -22,7 +22,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"lin_peering_id": {
+			"net_peering_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -45,8 +45,8 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 					},
 				},
 			},
-			"accepter_lin": vpcPeeringConnectionOptionsSchema(),
-			"source_lin":   vpcPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcPeeringConnectionOptionsSchema(),
+			"source_net":   vpcPeeringConnectionOptionsSchema(),
 			"tag":          tagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -59,7 +59,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	id := d.Get("lin_peering_id").(string)
+	id := d.Get("net_peering_id").(string)
 	d.SetId(id)
 
 	req := &fcu.AcceptVpcPeeringConnectionInput{

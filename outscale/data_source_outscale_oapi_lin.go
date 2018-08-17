@@ -27,7 +27,7 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -57,7 +57,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 
 	req := &fcu.DescribeVpcsInput{}
 
-	if id := d.Get("lin_id"); id != "" {
+	if id := d.Get("net_id"); id != "" {
 		req.VpcIds = []*string{aws.String(id.(string))}
 	}
 
@@ -93,7 +93,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	vpc := resp.Vpcs[0]
 
 	d.SetId(*vpc.VpcId)
-	d.Set("lin_id", vpc.VpcId)
+	d.Set("net_id", vpc.VpcId)
 	d.Set("ip_range", vpc.CidrBlock)
 	d.Set("dhcp_options_set_id", vpc.DhcpOptionsId)
 	d.Set("tenancy", vpc.InstanceTenancy)

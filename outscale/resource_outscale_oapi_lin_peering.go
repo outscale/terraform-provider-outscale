@@ -24,23 +24,23 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"source_lin_account_id": {
+			"source_net_account_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 				Computed: true,
 			},
-			"accepter_lin_id": {
+			"accepter_net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"lin_peering_id": {
+			"net_peering_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -62,8 +62,8 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 					},
 				},
 			},
-			"accepter_lin": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_lin":   vpcOAPIPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
 			"tag":          tagsSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -78,11 +78,11 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 
 	// Create the vpc peering connection
 	createOpts := &fcu.CreateVpcPeeringConnectionInput{
-		PeerVpcId: aws.String(d.Get("accepter_lin_id").(string)),
-		VpcId:     aws.String(d.Get("lin_id").(string)),
+		PeerVpcId: aws.String(d.Get("accepter_net_id").(string)),
+		VpcId:     aws.String(d.Get("net_id").(string)),
 	}
 
-	if v, ok := d.GetOk("source_lin_account_id"); ok {
+	if v, ok := d.GetOk("source_net_account_id"); ok {
 		createOpts.PeerOwnerId = aws.String(v.(string))
 	}
 
@@ -202,28 +202,28 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	if pc.AccepterVpcInfo != nil {
 		accepter["ip_range"] = aws.StringValue(pc.AccepterVpcInfo.CidrBlock)
 		accepter["account_id"] = aws.StringValue(pc.AccepterVpcInfo.OwnerId)
-		accepter["lin_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
+		accepter["net_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
 	}
 	if pc.RequesterVpcInfo != nil {
 		requester["ip_range"] = aws.StringValue(pc.AccepterVpcInfo.CidrBlock)
 		requester["account_id"] = aws.StringValue(pc.AccepterVpcInfo.OwnerId)
-		requester["lin_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
+		requester["net_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
 	}
 	if pc.Status != nil {
 		stat["code"] = aws.StringValue(pc.Status.Code)
 		stat["message"] = aws.StringValue(pc.Status.Message)
 	}
 
-	if err := d.Set("accepter_lin", accepter); err != nil {
+	if err := d.Set("accepter_net", accepter); err != nil {
 		return err
 	}
-	if err := d.Set("source_lin", requester); err != nil {
+	if err := d.Set("source_net", requester); err != nil {
 		return err
 	}
 	if err := d.Set("status", stat); err != nil {
 		return err
 	}
-	if err := d.Set("lin_peering_id", pc.VpcPeeringConnectionId); err != nil {
+	if err := d.Set("net_peering_id", pc.VpcPeeringConnectionId); err != nil {
 		return err
 	}
 	if err := d.Set("tag", tagsToMap(pc.Tags)); err != nil {
@@ -319,7 +319,7 @@ func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
-				"lin_id": {
+				"net_id": {
 					Type:     schema.TypeString,
 					Computed: true,
 				},

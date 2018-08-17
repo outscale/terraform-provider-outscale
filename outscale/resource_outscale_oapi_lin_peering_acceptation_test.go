@@ -69,8 +69,8 @@ resource "outscale_net" "bar" {
 }
 
 resource "outscale_net_peering" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-	peer_vpc_id = "${outscale_lin.bar.id}"
+	vpc_id = "${outscale_net.foo.id}"
+	peer_vpc_id = "${outscale_net.bar.id}"
 }
 
 // Accepter's side of the connection.

@@ -46,14 +46,14 @@ resource "outscale_net" "test" {
 
 resource "outscale_subnet" "test" {
   ip_range = "172.16.0.0/24"
-  lin_id     = "${outscale_lin.test.id}"
+  net_id     = "${outscale_net.test.id}"
   tag {
     Name = "terraform-testacc-data-source"
   }
 }
 
 resource "outscale_route_table" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  net_id = "${outscale_net.test.id}"
   tag {
     Name = "terraform-testacc-routetable-data-source"
   }

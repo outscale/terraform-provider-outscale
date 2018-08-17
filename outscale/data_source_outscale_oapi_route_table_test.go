@@ -76,9 +76,9 @@ func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestChec
 		if !ok {
 			return fmt.Errorf("can't find outscale_route_table.test in state")
 		}
-		vpcRs, ok := s.RootModule().Resources["outscale_lin.test"]
+		vpcRs, ok := s.RootModule().Resources["outscale_net.test"]
 		if !ok {
-			return fmt.Errorf("can't find outscale_lin.test in state")
+			return fmt.Errorf("can't find outscale_net.test in state")
 		}
 		subnetRs, ok := s.RootModule().Resources["outscale_subnet.test"]
 		if !ok {
@@ -159,14 +159,14 @@ resource "outscale_net" "test" {
 
 resource "outscale_subnet" "test" {
   ip_range = "172.16.0.0/24"
-  lin_id     = "${outscale_lin.test.id}"
+  net_id     = "${outscale_net.test.id}"
   tag {
     Name = "terraform-testacc-data-source"
   }
 }
 
 resource "outscale_route_table" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  net_id = "${outscale_net.test.id}"
   tag {
     Name = "terraform-testacc-routetable-data-source"
   }
@@ -208,7 +208,7 @@ data "outscale_route_table" "by_filter" {
   }
   filter {
     name = "vpc-id"
-    values = ["${outscale_lin.test.id}"]
+    values = ["${outscale_net.test.id}"]
   }
 }
 `

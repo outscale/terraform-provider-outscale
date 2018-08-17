@@ -27,7 +27,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_net_peerings.test_by_id", "lin_peering.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_net_peerings.test_by_id", "net_peering.#", "1"),
 				),
 				// ExpectNonEmptyPlan: true,
 			},
@@ -53,8 +53,8 @@ resource "outscale_net" "bar" {
 }
 
 resource "outscale_net_peering" "test" {
-	lin_id = "${outscale_lin.foo.id}"
-	peer_net_id = "${outscale_lin.bar.id}"
+	net_id = "${outscale_net.foo.id}"
+	peer_net_id = "${outscale_net.bar.id}"
 
     tag {
       Name = "terraform-testacc-vpc-peering-connection-data-source-foo-to-bar"
@@ -62,6 +62,6 @@ resource "outscale_net_peering" "test" {
 }
 
 data "outscale_net_peerings" "test_by_id" {
-	lin_peering_id = "[${outscale_net_peering.test.id}]"
+	net_peering_id = "[${outscale_net_peering.test.id}]"
 }
 `

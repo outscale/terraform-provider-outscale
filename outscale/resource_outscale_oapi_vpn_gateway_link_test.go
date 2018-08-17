@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinExists(
-						"outscale_lin.test",
+						"outscale_net.test",
 						&vpc),
 					testAccCheckVpnGatewayExists(
 						"outscale_vpn_gateway.test",
@@ -88,7 +88,7 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinExists(
-						"outscale_lin.test",
+						"outscale_net.test",
 						&vpc),
 					testAccCheckVpnGatewayExists(
 						"outscale_vpn_gateway.test",
@@ -198,7 +198,7 @@ resource "outscale_vpn_gateway" "test" {
 }
 
 resource "outscale_vpn_gateway_link" "test" {
-	lin_id = "${outscale_lin.test.id}"
+	net_id = "${outscale_net.test.id}"
 	vpn_gateway_id = "${outscale_vpn_gateway.test.id}"
 }
 `

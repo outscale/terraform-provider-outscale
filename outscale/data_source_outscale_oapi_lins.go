@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -37,7 +37,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 							Computed: true,
 						},
 
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -69,10 +69,10 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	req := &fcu.DescribeVpcsInput{}
 
 	filters, filtersOk := d.GetOk("filter")
-	v, vpcOk := d.GetOk("lin_id")
+	v, vpcOk := d.GetOk("net_id")
 
 	if filtersOk == false && vpcOk == false {
-		return fmt.Errorf("filters, or owner must be assigned, or lin_id(s) must be provided")
+		return fmt.Errorf("filters, or owner must be assigned, or net_id(s) must be provided")
 	}
 
 	if filtersOk {
@@ -117,7 +117,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	for i, v := range resp.Vpcs {
 		vpc := make(map[string]interface{})
 
-		vpc["lin_id"] = *v.VpcId
+		vpc["net_id"] = *v.VpcId
 		vpc["ip_range"] = *v.CidrBlock
 		vpc["dhcp_options_set_id"] = *v.DhcpOptionsId
 		vpc["tenancy"] = *v.InstanceTenancy

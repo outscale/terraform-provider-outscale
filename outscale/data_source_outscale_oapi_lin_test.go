@@ -35,7 +35,7 @@ func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPIVpcConfig(cidr, tag),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIVpcCheck("data.outscale_lin.by_id", cidr, tag),
+					testAccDataSourceOutscaleOAPIVpcCheck("data.outscale_net.by_id", cidr, tag),
 				),
 			},
 		},
@@ -49,9 +49,9 @@ func testAccDataSourceOutscaleOAPIVpcCheck(name, cidr, tag string) resource.Test
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		vpcRs, ok := s.RootModule().Resources["outscale_lin.test"]
+		vpcRs, ok := s.RootModule().Resources["outscale_net.test"]
 		if !ok {
-			return fmt.Errorf("can't find outscale_lin.test in state")
+			return fmt.Errorf("can't find outscale_net.test in state")
 		}
 
 		attr := rs.Primary.Attributes
@@ -84,6 +84,6 @@ resource "outscale_net" "test" {
 }
 
 data "outscale_net" "by_id" {
-  lin_id = "${outscale_lin.test.id}"
+  net_id = "${outscale_net.test.id}"
 }`, cidr, tag)
 }

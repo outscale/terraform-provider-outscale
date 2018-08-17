@@ -57,11 +57,11 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_net_api_access" "link" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 	route_table_id = [
 		"${outscale_route_table.foo.id}"
 	]

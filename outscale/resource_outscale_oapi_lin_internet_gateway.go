@@ -71,9 +71,9 @@ func resourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta int
 	log.Printf("[DEBUG] Setting LIN Internet Gateway id (%s)", err)
 
 	d.Set("request_id", resp.RequestId)
-	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
+	d.Set("net_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 
-	err = d.Set("lin_to_lin_internet_gateway_link", flattenOAPIInternetAttachements(resp.InternetGateways[0].Attachments))
+	err = d.Set("net_to_net_internet_gateway_link", flattenOAPIInternetAttachements(resp.InternetGateways[0].Attachments))
 	if err != nil {
 		return err
 	}
@@ -114,7 +114,7 @@ func resourceOutscaleOAPILinInternetGatewayDelete(d *schema.ResourceData, meta i
 func getOAPILinInternetGatewaySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
-		"lin_to_lin_internet_gateway_link": {
+		"net_to_net_internet_gateway_link": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -123,14 +123,14 @@ func getOAPILinInternetGatewaySchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"lin_id": {
+					"net_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-		"lin_internet_gateway_id": {
+		"net_internet_gateway_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -147,7 +147,7 @@ func flattenOAPIInternetAttachements(attachements []*fcu.InternetGatewayAttachme
 
 	for i, a := range attachements {
 		res[i]["state"] = a.State
-		res[i]["lin_id"] = a.VpcId
+		res[i]["net_id"] = a.VpcId
 	}
 
 	return res

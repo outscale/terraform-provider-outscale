@@ -60,12 +60,12 @@ resource "outscale_net" "vpc" {
 
 resource "outscale_net_attributes" "outscale_net_attributes" {
 	dns_support_enabled = true
-	lin_id = "${outscale_lin.vpc.id}"
+	net_id = "${outscale_net.vpc.id}"
 	attribute = "enableDnsSupport"
 }
 
 data "outscale_net_attributes" "test" {
-	lin_id = "${outscale_lin.vpc.id}"
+	net_id = "${outscale_net.vpc.id}"
 	attribute = "enableDnsSupport"
 }
 `

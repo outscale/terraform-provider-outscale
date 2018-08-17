@@ -38,7 +38,7 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 const testAccOutscaleOAPILinAttrConfig = `
 resource "outscale_net_attributes" "outscale_net_attributes" {
 	dns_support_enabled = true
-	lin_id = "vpc-5b79bc69"
+	net_id = "vpc-5b79bc69"
 	attribute            = "enableDnsSupport"
 }
 `

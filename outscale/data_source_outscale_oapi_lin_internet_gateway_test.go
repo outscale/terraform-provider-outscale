@@ -27,7 +27,7 @@ func TestAccOutscaleOAPILinInternetGatewayDatasource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinInternetGatewayDatasourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_net_internet_gateway", "test.lin_to_net_internet_gateway_link.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_net_internet_gateway", "test.net_to_net_internet_gateway_link.#", "1"),
 				),
 			},
 		},
