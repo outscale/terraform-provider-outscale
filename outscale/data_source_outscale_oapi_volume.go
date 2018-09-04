@@ -259,7 +259,7 @@ func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.ReadVolumes
 		// 	filters.Tags = filterValues
 		case "tag-value":
 			filters.TagValues = filterValues
-		case "volume-id":
+		case "volume-ids":
 			filters.VolumeIds = filterValues
 		case "volume-size":
 			filters.VolumeSizes = utils.StringSliceToInt64Slice(filterValues)
