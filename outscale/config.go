@@ -70,7 +70,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
 		Region:    c.Region,
-		Service:   "oapi-gtw",
+		Service:   "api",
 		URL:       u,
 	}
 
