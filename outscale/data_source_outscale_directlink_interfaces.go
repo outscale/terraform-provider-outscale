@@ -135,7 +135,7 @@ func dataSourceOutscaleDirectLinkInterfacesRead(d *schema.ResourceData, meta int
 			"virtual_interface_name":  aws.StringValue(vif.VirtualInterfaceName),
 			"virtual_interface_state": aws.StringValue(vif.VirtualInterfaceState),
 			"virtual_interface_type":  aws.StringValue(vif.VirtualInterfaceType),
-			"vlan": aws.Int64Value(vif.Vlan),
+			"vlan":                    aws.Int64Value(vif.Vlan),
 		}
 	}
 

@@ -49,7 +49,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		DryRun:                instanceOpts.DryRun,
 		// Monitoring:            instanceOpts.Monitoring,
 		// IamInstanceProfile:    instanceOpts.IAMInstanceProfile,
-		ImageId: instanceOpts.ImageID,
+		ImageId:                           instanceOpts.ImageID,
 		InstanceInitiatedShutdownBehavior: instanceOpts.InstanceInitiatedShutdownBehavior,
 		InstanceType:                      instanceOpts.InstanceType,
 		// Ipv6AddressCount:                  instanceOpts.Ipv6AddressCount,

@@ -86,7 +86,7 @@ func resourceOutscaleOAPServerCertificateCreate(d *schema.ResourceData, meta int
 		CertificateBody:       aws.String(d.Get("server_certificate_body").(string)),
 		PrivateKey:            aws.String(d.Get("private_key").(string)),
 		ServerCertificateName: aws.String(sslCertName),
-		Path: aws.String("/"),
+		Path:                  aws.String("/"),
 	}
 	if v, ok := d.GetOk("server_certificate_chain"); ok {
 		createOpts.CertificateChain = aws.String(v.(string))

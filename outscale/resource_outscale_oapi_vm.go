@@ -48,7 +48,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		// IamInstanceProfile:    instanceOpts.IAMInstanceProfile,
 		ImageId:                     instanceOpts.ImageID,
 		VmInitiatedShutdownBehavior: instanceOpts.InstanceInitiatedShutdownBehavior,
-		Type: instanceOpts.InstanceType,
+		Type:                        instanceOpts.InstanceType,
 		// Ipv6AddressCount:                  instanceOpts.Ipv6AddressCount,
 		// Ipv6Addresses:                     instanceOpts.Ipv6Addresses,
 		KeypairName: instanceOpts.KeyName,

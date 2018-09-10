@@ -86,7 +86,7 @@ func resourceOutscaleEIMServerCertificateCreate(d *schema.ResourceData, meta int
 		CertificateBody:       aws.String(d.Get("certificate_body").(string)),
 		PrivateKey:            aws.String(d.Get("private_key").(string)),
 		ServerCertificateName: aws.String(sslCertName),
-		Path: aws.String("/"),
+		Path:                  aws.String("/"),
 	}
 	if v, ok := d.GetOk("certificate_chain"); ok {
 		createOpts.CertificateChain = aws.String(v.(string))

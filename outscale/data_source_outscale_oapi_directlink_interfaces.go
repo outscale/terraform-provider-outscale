@@ -145,9 +145,9 @@ func dataSourceOutscaleOAPIDirectLinkInterfacesRead(d *schema.ResourceData, meta
 			"vpn_gateway_id":             aws.StringValue(vif.VirtualGatewayID),
 			"virtual_interface_id":       aws.StringValue(vif.VirtualInterfaceID),
 			"direct_link_Interface_name": aws.StringValue(vif.VirtualInterfaceName),
-			"state": aws.StringValue(vif.VirtualInterfaceState),
-			"type":  aws.StringValue(vif.VirtualInterfaceType),
-			"vlan":  aws.Int64Value(vif.Vlan),
+			"state":                      aws.StringValue(vif.VirtualInterfaceState),
+			"type":                       aws.StringValue(vif.VirtualInterfaceType),
+			"vlan":                       aws.Int64Value(vif.Vlan),
 		}
 	}
 
