@@ -65,13 +65,14 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 
 const testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters = `
 resource "outscale_volume" "external1" {
-    sub_region_name = "eu-west-2a"
+	sub_region_name = "dv-west-1a"
     type = "gp2"
     size = 10
     tag {
         Name = "External Volume 1"
     }
 }
+
 data "outscale_volumes" "ebs_volume" {
     filter {
 	name = "size"
