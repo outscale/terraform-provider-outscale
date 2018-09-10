@@ -15,6 +15,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 type Client struct {
@@ -72,10 +73,12 @@ func NewClient(config *Config, c *http.Client) *Client {
 	return client
 }
 
+// Sign ...
 func (c *Client) Sign(req *http.Request, body []byte) error {
 	reader := strings.NewReader(string(body))
 	timestamp := time.Now()
 	_, err := c.signer.Sign(req, reader, "oapi", c.config.Region, timestamp)
+	utils.DebugRequest(req)
 	return err
 
 }
