@@ -164,6 +164,8 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
+	d.Set("request_id", resp.ResponseContext.RequestId)
+
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
