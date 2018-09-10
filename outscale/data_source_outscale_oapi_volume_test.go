@@ -62,7 +62,7 @@ resource "outscale_volume" "example" {
 }
 data "outscale_volume" "ebs_volume" {
     filter {
-		name = "volume-id"
+		name = "volume-ids"
 		values = ["${outscale_volume.example.id}"]
     }
 }

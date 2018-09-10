@@ -19,6 +19,10 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
+			"volume_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"volumes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -115,13 +119,10 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 }
 
 func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
-
 	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-
-	volIDs := expandStringList(volumeIds.([]interface{}))
 
 	params := &oapi.ReadVolumesRequest{
 		Filters: oapi.ReadVolumesFilters{},
@@ -130,7 +131,9 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
+
 	if volumeIdsOk {
+		volIDs := expandStringList(volumeIds.([]interface{}))
 		params.Filters.VolumeIds = aws.StringValueSlice(volIDs)
 	}
 
