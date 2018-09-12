@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -228,6 +229,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	response = resp.OK
+
+	utils.PrintToJSON(response, "##RESPONSE")
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
