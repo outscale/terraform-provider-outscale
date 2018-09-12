@@ -172,6 +172,8 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
+	utils.PrintToJSON(resp, "##RESPONSE")
+
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VM volume: %s", err)
 	}
@@ -230,6 +232,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	response = resp.OK
 
+	utils.PrintToJSON(response, "##RESPONSE READ")
+
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
 			d.SetId("")
@@ -257,7 +261,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 		}
 		fmt.Println(err)
-		utils.PrintToJSON(response.OK, "##RESPONSE")
+		utils.PrintToJSON(response.OK, "##RESPONSE-DELETE")
 
 		return resource.NonRetryableError(err)
 	})
