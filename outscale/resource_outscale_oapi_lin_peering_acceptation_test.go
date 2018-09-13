@@ -30,7 +30,7 @@ func TestAccOutscaleOAPILinPeeringConnectionAccepter_sameAccount(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists("outscale_lin_peering_acceptation.peer"),
+					testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),
 				),
 			},
 		},
@@ -57,25 +57,25 @@ func testAccOutscaleOAPILinPeeringConnectionAccepterDestroy(s *terraform.State) 
 }
 
 const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	cidr_block = "10.0.0.0/16"
 	tag {
 		Name = "TestAccOutscaleOAPILinPeeringConnection_basic"
 	}
 }
 
-resource "outscale_lin" "bar" {
+resource "outscale_net" "bar" {
 	cidr_block = "10.1.0.0/16"
 }
 
-resource "outscale_lin_peering" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-	peer_vpc_id = "${outscale_lin.bar.id}"
+resource "outscale_net_peering" "foo" {
+	vpc_id = "${outscale_net.foo.id}"
+	peer_vpc_id = "${outscale_net.bar.id}"
 }
 
 // Accepter's side of the connection.
-resource "outscale_lin_peering_acceptation" "peer" {
-    vpc_peering_connection_id = "${outscale_lin_peering.foo.id}"
+resource "outscale_net_peering_acceptation" "peer" {
+    vpc_peering_connection_id = "${outscale_net_peering.foo.id}"
 
     tag {
        Side = "Accepter"

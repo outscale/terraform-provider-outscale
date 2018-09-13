@@ -18,17 +18,17 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_peering_id": {
+			"net_peering_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"lin_peering": {
+			"net_peering": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"lin_peering_id": {
+						"net_peering_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
@@ -51,8 +51,8 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 								},
 							},
 						},
-						"accepter_lin": vpcOAPIPeeringConnectionOptionsSchema(),
-						"source_lin":   vpcOAPIPeeringConnectionOptionsSchema(),
+						"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+						"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
 						"tag":          tagsSchemaComputed(),
 					},
 				},
@@ -70,7 +70,7 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 
 	log.Printf("[DEBUG] Reading VPC Peering Connections.")
 
-	id, ok := d.GetOk("lin_peering_id")
+	id, ok := d.GetOk("net_peering_id")
 	v, vok := d.GetOk("filter")
 
 	if ok == false && vok == false {
@@ -125,29 +125,29 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 		if v.AccepterVpcInfo != nil {
 			accepter["ip_range"] = aws.StringValue(v.AccepterVpcInfo.CidrBlock)
 			accepter["account_id"] = aws.StringValue(v.AccepterVpcInfo.OwnerId)
-			accepter["lin_id"] = aws.StringValue(v.AccepterVpcInfo.VpcId)
+			accepter["net_id"] = aws.StringValue(v.AccepterVpcInfo.VpcId)
 		}
 		if v.RequesterVpcInfo != nil {
 			requester["ip_range"] = aws.StringValue(v.AccepterVpcInfo.CidrBlock)
 			requester["account_id"] = aws.StringValue(v.AccepterVpcInfo.OwnerId)
-			requester["lin_id"] = aws.StringValue(v.AccepterVpcInfo.VpcId)
+			requester["net_id"] = aws.StringValue(v.AccepterVpcInfo.VpcId)
 		}
 		if v.Status != nil {
 			stat["code"] = aws.StringValue(v.Status.Code)
 			stat["message"] = aws.StringValue(v.Status.Message)
 		}
 
-		lp["accepter_lin"] = accepter
-		lp["source_lin"] = requester
+		lp["accepter_net"] = accepter
+		lp["source_net"] = requester
 		lp["status"] = stat
-		lp["lin_peering_id"] = *v.VpcPeeringConnectionId
+		lp["net_peering_id"] = *v.VpcPeeringConnectionId
 		lp["tag"] = tagsToMap(v.Tags)
 
 		lps[k] = lp
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("lin_peering", lps)
+	d.Set("net_peering", lps)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

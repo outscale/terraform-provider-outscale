@@ -36,9 +36,9 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleLinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleLinExists("outscale_lin.vpc", &conf),
+					testAccCheckOutscaleLinExists("outscale_net.vpc", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_lin.vpc", "ip_range", "10.0.0.0/16"),
+						"outscale_net.vpc", "ip_range", "10.0.0.0/16"),
 				),
 			},
 		},
@@ -89,7 +89,7 @@ func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin" {
+		if rs.Type != "outscale_net" {
 			continue
 		}
 
@@ -136,7 +136,7 @@ func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
 }
 
 const testAccOutscaleOAPILinConfig = `
-resource "outscale_lin" "vpc" {
+resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
 }
 `

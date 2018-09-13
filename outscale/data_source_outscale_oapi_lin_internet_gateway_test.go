@@ -27,7 +27,7 @@ func TestAccOutscaleOAPILinInternetGatewayDatasource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinInternetGatewayDatasourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_lin_internet_gateway", "test.lin_to_lin_internet_gateway_link.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_net_internet_gateway", "test.net_to_net_internet_gateway_link.#", "1"),
 				),
 			},
 		},
@@ -35,12 +35,12 @@ func TestAccOutscaleOAPILinInternetGatewayDatasource_basic(t *testing.T) {
 }
 
 const testAccOutscaleOAPILinInternetGatewayDatasourceConfig = `
-resource "outscale_lin_internet_gateway" "gateway" {}
+resource "outscale_net_internet_gateway" "gateway" {}
 
-data "outscale_lin_internet_gateway" "test" {
+data "outscale_net_internet_gateway" "test" {
 	filter {
 		name = "internet-gateway-id"
-		values = ["${outscale_lin_internet_gateway.gateway.id}"]
+		values = ["${outscale_net_internet_gateway.gateway.id}"]
 	}
 }
 `

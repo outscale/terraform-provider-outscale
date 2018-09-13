@@ -130,7 +130,7 @@ func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheck
 
 func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_lin" "outscale_lin" {
+resource "outscale_net" "outscale_net" {
     count = 1
 
     ip_range = "10.0.0.0/16"
@@ -141,14 +141,14 @@ resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
 }
 
 resource "outscale_vpn_gateway_link" "test" {
-	lin_id = "${outscale_lin.outscale_lin.id}"
+	lin_id = "${outscale_net.outscale_net.id}"
 	vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
 }
 
 resource "outscale_route_table" "outscale_route_table" {
     count = 1
 
-    lin_id = "${outscale_lin.outscale_lin.lin_id}"
+    lin_id = "${outscale_net.outscale_net.net_id}"
 }
 
 resource "outscale_vpn_gateway_route_propagation" "foo" {

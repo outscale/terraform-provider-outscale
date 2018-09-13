@@ -17,7 +17,7 @@ func datasourceOutscaleOAPILinInternetGateway() *schema.Resource {
 		Read: datasourceOutscaleLinInternetGatewayRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_to_lin_internet_gateway_link": {
+			"net_to_net_internet_gateway_link": {
 				Type:     schema.TypeSet,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -26,14 +26,14 @@ func datasourceOutscaleOAPILinInternetGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"lin_internet_gateway_id": {
+			"net_internet_gateway_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -46,7 +46,7 @@ func datasourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta i
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
-	internetID, insternetIDOk := d.GetOk("lin_internet_gateway_id")
+	internetID, insternetIDOk := d.GetOk("net_internet_gateway_id")
 
 	if filtersOk == false && insternetIDOk == false {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
@@ -81,10 +81,10 @@ func datasourceOutscaleOAPILinInternetGatewayRead(d *schema.ResourceData, meta i
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateway id (%s)", err)
 
 	d.Set("request_id", resp.RequestId)
-	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
+	d.Set("net_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 	d.Set("tag_set", tagsToMap(resp.InternetGateways[0].Tags))
 
-	err = d.Set("lin_to_lin_internet_gateway_link", flattenOAPIInternetGwAttachements(resp.InternetGateways[0].Attachments))
+	err = d.Set("net_to_net_internet_gateway_link", flattenOAPIInternetGwAttachements(resp.InternetGateways[0].Attachments))
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func flattenOAPIInternetGwAttachements(attachements []*fcu.InternetGatewayAttach
 
 	for i, a := range attachements {
 		res[i]["state"] = a.State
-		res[i]["lin_id"] = a.VpcId
+		res[i]["net_id"] = a.VpcId
 	}
 
 	return res

@@ -20,19 +20,19 @@ func dataSourceOutscaleOAPIVpcEndpoints() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_api_access_id": {
+			"net_api_access_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"lin_api_access": {
+			"net_api_access": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPIVpcEndpoints() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"lin_api_access_id": {
+						"net_api_access_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -148,8 +148,8 @@ func dataSourceOutscaleOAPIVpcEndpointsRead(d *schema.ResourceData, meta interfa
 		}
 
 		vpce["prefix_list_id"] = aws.StringValue(plID)
-		vpce["lin_api_access_id"] = aws.StringValue(v.VpcEndpointId)
-		vpce["lin_id"] = aws.StringValue(v.VpcEndpointId)
+		vpce["net_api_access_id"] = aws.StringValue(v.VpcEndpointId)
+		vpce["net_id"] = aws.StringValue(v.VpcEndpointId)
 		vpce["prefix_list_name"] = aws.StringValue(v.ServiceName)
 		vpce["route_table_id"] = flattenStringList(v.RouteTableIds)
 		vpce["policy"] = policy
@@ -161,5 +161,5 @@ func dataSourceOutscaleOAPIVpcEndpointsRead(d *schema.ResourceData, meta interfa
 
 	d.Set("request_id", resp.RequestId)
 
-	return d.Set("lin_api_access", vpcEndpoints)
+	return d.Set("net_api_access", vpcEndpoints)
 }

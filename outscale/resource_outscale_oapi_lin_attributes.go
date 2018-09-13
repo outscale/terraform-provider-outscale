@@ -33,7 +33,7 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Computed: true,
 				Optional: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -50,7 +50,7 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 
 	req := &fcu.ModifyVpcAttributeInput{}
 
-	req.VpcId = aws.String(d.Get("lin_id").(string))
+	req.VpcId = aws.String(d.Get("net_id").(string))
 
 	if c, ok := d.GetOk("dns_hostnames_enabled"); ok {
 		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
@@ -86,8 +86,8 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 
 	req := &fcu.ModifyVpcAttributeInput{}
 
-	if d.HasChange("lin_id") && !d.IsNewResource() {
-		req.VpcId = aws.String(d.Get("lin_id").(string))
+	if d.HasChange("net_id") && !d.IsNewResource() {
+		req.VpcId = aws.String(d.Get("net_id").(string))
 	}
 	if d.HasChange("dns_hostnames_enabled") && !d.IsNewResource() {
 		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("dns_hostnames_enabled").(bool))}
@@ -121,7 +121,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 
 	req := &fcu.DescribeVpcAttributeInput{
 		Attribute: aws.String(d.Get("attribute").(string)),
-		VpcId:     aws.String(d.Get("lin_id").(string)),
+		VpcId:     aws.String(d.Get("net_id").(string)),
 	}
 
 	var resp *fcu.DescribeVpcAttributeOutput
@@ -146,7 +146,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("Lin not found")
 	}
 
-	d.Set("lin_id", resp.VpcId)
+	d.Set("net_id", resp.VpcId)
 	if resp.EnableDnsHostnames != nil {
 		d.Set("dns_hostnames_enabled", *resp.EnableDnsHostnames.Value)
 	}

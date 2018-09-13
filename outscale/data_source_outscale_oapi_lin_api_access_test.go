@@ -28,7 +28,7 @@ func TestAccOutscaleOAPIDSLinAPIAccess_basic(t *testing.T) {
 				Config: testAccOutscaleOAPIDSLinAPIAccessConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_lin_api_access.test", "service_name", "com.outscale.eu-west-2.osu"),
+						"data.outscale_net_api_access.test", "service_name", "com.outscale.eu-west-2.osu"),
 				),
 			},
 		},
@@ -36,23 +36,23 @@ func TestAccOutscaleOAPIDSLinAPIAccess_basic(t *testing.T) {
 }
 
 const testAccOutscaleOAPIDSLinAPIAccessConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net "foo" {
 	ip_ranges = "10.1.0.0/16"
 }
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
-resource "outscale_lin_api_access" "link" {
-	lin_id = "${outscale_lin.foo.id}"
+resource "outscale_net_api_access" "link" {
+	net_id = "${outscale_net.foo.id}"
 	route_table_id = [
 		"${outscale_route_table.foo.id}"
 	]
 	service_name = "com.outscale.eu-west-2.osu"
 }
 
-data "outscale_lin_api_access" "test" {
-	lin_api_access_id = "${outscale_lin_api_access.link.id}"
+data "outscale_net_api_access" "test" {
+	net_api_access_id = "${outscale_net_api_access.link.id}"
 }
 `

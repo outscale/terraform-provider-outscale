@@ -106,7 +106,7 @@ func testAccCheckOutscaleOAPIENIAttributes(conf *fcu.NetworkInterface) resource.
 }
 
 const testAccOutscaleOAPIENIConfig = `
-resource "outscale_lin" "outscale_lin" {
+resource "outscale_net" "outscale_net" {
     count = 1
 
     cidr_block = "10.0.0.0/16"

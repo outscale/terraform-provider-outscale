@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIDSLinAttr_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIDSLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIVpcAttrCheck("data.outscale_lin_attributes.test"),
+					testAccDataSourceOutscaleOAPIVpcAttrCheck("data.outscale_net_attributes.test"),
 				),
 			},
 		},
@@ -54,18 +54,18 @@ func testAccDataSourceOutscaleOAPIVpcAttrCheck(name string) resource.TestCheckFu
 }
 
 const testAccOutscaleOAPIDSLinAttrConfig = `
-resource "outscale_lin" "vpc" {
+resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
 }
 
-resource "outscale_lin_attributes" "outscale_lin_attributes" {
+resource "outscale_net_attributes" "outscale_net_attributes" {
 	dns_support_enabled = true
-	lin_id = "${outscale_lin.vpc.id}"
+	net_id = "${outscale_net.vpc.id}"
 	attribute = "enableDnsSupport"
 }
 
-data "outscale_lin_attributes" "test" {
-	lin_id = "${outscale_lin.vpc.id}"
+data "outscale_net_attributes" "test" {
+	net_id = "${outscale_net.vpc.id}"
 	attribute = "enableDnsSupport"
 }
 `

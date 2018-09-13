@@ -132,16 +132,16 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 }
 
 var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
-resource "outscale_lin" "test" {
+resource "outscale_net" "test" {
   ip_range = "10.10.0.0/16"
 }
 
 resource "outscale_route_table" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  lin_id = "${outscale_net.test.id}"
 }
 
 resource "outscale_subnet" "test" {
-  lin_id = "${outscale_lin.test.id}"
+  lin_id = "${outscale_net.test.id}"
   ip_range = "10.10.10.0/24"
 }
 
@@ -160,29 +160,29 @@ resource "outscale_vm" "nat" {
 
 // TODO: missing resource vpc_endpoint to make this test
 // var testAccOutscaleRouteWithVPCEndpoint = fmt.Sprint(`
-// resource "outscale_lin" "foo" {
+// resource "outscale_net" "foo" {
 //   ip_range = "10.1.0.0/16"
 // }
 
-// resource "outscale_lin_internet_gateway" "foo" {
-//   lin_id = "${outscale_lin.foo.id}"
+// resource "outscale_net_internet_gateway" "foo" {
+//   lin_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route_table" "foo" {
-//   lin_id = "${outscale_lin.foo.id}"
+//   lin_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route" "bar" {
 //   route_table_id         = "${outscale_route_table.foo.id}"
 //   destination_cidr_block = "10.3.0.0/16"
-//   gateway_id             = "${outscale_lin_internet_gateway.foo.id}"
+//   gateway_id             = "${outscale_net_internet_gateway.foo.id}"
 
 //   # Forcing endpoint to create before route - without this the crash is a race.
 //   depends_on = ["aws_vpc_endpoint.baz"]
 // }
 
 // resource "aws_vpc_endpoint" "baz" {
-//   lin_id          = "${outscale_lin.foo.id}"
+//   lin_id          = "${outscale_net.foo.id}"
 //   service_name    = "com.amazonaws.us-west-2.s3"
 //   route_table_ids = ["${outscale_route_table.foo.id}"]
 // }

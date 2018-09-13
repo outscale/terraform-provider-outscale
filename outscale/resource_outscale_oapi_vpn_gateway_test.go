@@ -254,13 +254,13 @@ func testAccCheckOAPIVpnGatewayExists(n string, ig *fcu.VpnGateway) resource.Tes
 }
 
 const testAccOAPINoVpnGatewayConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 `
 
 const testAccOAPIVpnGatewayConfig = `
-resource "outscale_lin" "foo" {
+resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
@@ -269,7 +269,7 @@ resource "outscale_vpn_gateway" "foo" {
 `
 
 const testAccOAPIVpnGatewayConfigChangeVPC = `
-resource "outscale_lin" "bar" {
+resource "outscale_net" "bar" {
 	ip_range = "10.2.0.0/16"
 }
 

@@ -107,7 +107,7 @@ func resourceOutscaleOAPILinRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("ip_range", resp.Vpcs[0].CidrBlock)
 	d.Set("tenancy", resp.Vpcs[0].InstanceTenancy)
 	d.Set("dhcp_options_set_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("lin_id", resp.RequestId)
+	d.Set("net_id", resp.RequestId)
 
 	return d.Set("tag_set", dataSourceTags(resp.Vpcs[0].Tags))
 }
@@ -166,7 +166,7 @@ func getOAPILinSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"tag": tagsSchemaComputed(),
-		"lin_id": {
+		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},

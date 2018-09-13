@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"lin_peering_id": {
+			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -41,8 +41,8 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 					},
 				},
 			},
-			"accepter_lin": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_lin":   vpcOAPIPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
 			"tag":          tagsSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -57,7 +57,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 
 	log.Printf("[DEBUG] Reading VPC Peering Connections.")
 
-	id, ok := d.GetOk("lin_peering_id")
+	id, ok := d.GetOk("net_peering_id")
 	v, vok := d.GetOk("filter")
 
 	if ok == false && vok == false {
@@ -128,16 +128,16 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		stat["message"] = aws.StringValue(pc.Status.Message)
 	}
 
-	if err := d.Set("accepter_lin", accepter); err != nil {
+	if err := d.Set("accepter_net", accepter); err != nil {
 		return err
 	}
-	if err := d.Set("source_lin", requester); err != nil {
+	if err := d.Set("source_net", requester); err != nil {
 		return err
 	}
 	if err := d.Set("status", stat); err != nil {
 		return err
 	}
-	if err := d.Set("lin_peering_id", pc.VpcPeeringConnectionId); err != nil {
+	if err := d.Set("net_peering_id", pc.VpcPeeringConnectionId); err != nil {
 		return err
 	}
 	if err := d.Set("tag_set", tagsToMap(pc.Tags)); err != nil {

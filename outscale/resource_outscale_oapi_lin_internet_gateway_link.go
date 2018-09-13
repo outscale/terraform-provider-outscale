@@ -28,8 +28,8 @@ func resourceOutscaleOAPILinInternetGatewayLink() *schema.Resource {
 func resourceOutscaleOAPILinInternetGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vpcID := d.Get("lin_id").(string)
-	igID := d.Get("lin_internet_gateway_id").(string)
+	vpcID := d.Get("net_id").(string)
+	igID := d.Get("net_internet_gateway_id").(string)
 
 	req := &fcu.AttachInternetGatewayInput{
 		VpcId:             aws.String(vpcID),
@@ -99,14 +99,14 @@ func resourceOutscaleOAPILinInternetGatewayLinkRead(d *schema.ResourceData, meta
 
 	if len(resp.InternetGateways) > 0 {
 		attchs := flattenInternetAttachements(resp.InternetGateways[0].Attachments)
-		d.Set("lin_to_lin_internet_gateway_link", attchs)
+		d.Set("net_to_net_internet_gateway_link", attchs)
 	}
 
 	if err := d.Set("tag", dataSourceTags(resp.InternetGateways[0].Tags)); err != nil {
 		return err
 	}
 
-	d.Set("lin_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
+	d.Set("net_internet_gateway_id", resp.InternetGateways[0].InternetGatewayId)
 	d.Set("request_id", resp.RequestId)
 
 	return nil
@@ -115,8 +115,8 @@ func resourceOutscaleOAPILinInternetGatewayLinkRead(d *schema.ResourceData, meta
 func resourceOutscaleOAPILinInternetGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vpcID := d.Get("lin_id").(string)
-	igID := d.Get("lin_internet_gateway_id").(string)
+	vpcID := d.Get("net_id").(string)
+	igID := d.Get("net_internet_gateway_id").(string)
 
 	req := &fcu.DetachInternetGatewayInput{
 		VpcId:             aws.String(vpcID),
@@ -147,19 +147,19 @@ func resourceOutscaleOAPILinInternetGatewayLinkDelete(d *schema.ResourceData, me
 func getOAPILinInternetGatewayLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Arguments
-		"lin_id": {
+		"net_id": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"lin_internet_gateway_id": {
+		"net_internet_gateway_id": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
 
 		// Attributes
-		"lin_to_lin_internet_gateway_link": {
+		"net_to_net_internet_gateway_link": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -168,7 +168,7 @@ func getOAPILinInternetGatewayLinkSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"lin_id": {
+					"net_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},

@@ -28,8 +28,8 @@ func TestAccOutscaleOAPIVpcEndpointServicesDataSource_Instance(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleOAPIVpcEndpointServicesDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIVpcEndpointServicesDataSourceID("data.outscale_lin_api_access_services.test"),
-					resource.TestCheckResourceAttrSet("data.outscale_lin_api_access_services.test", "request_id"),
+					testAccCheckOutscaleOAPIVpcEndpointServicesDataSourceID("data.outscale_net_api_access_services.test"),
+					resource.TestCheckResourceAttrSet("data.outscale_net_api_access_services.test", "request_id"),
 				),
 			},
 		},
@@ -56,5 +56,5 @@ func testAccCheckOutscaleOAPIVpcEndpointServicesDataSourceID(n string) resource.
 }
 
 const testAccCheckOutscaleOAPIVpcEndpointServicesDataSourceConfig = `
-data "outscale_lin_api_access_services" "test" {}
+data "outscale_net_api_access_services" "test" {}
 `

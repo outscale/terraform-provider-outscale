@@ -36,7 +36,7 @@ func TestAccOutscaleOAPILinInternetGatewayLink_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinInternetGatewayLinkConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinInternetGatewayLinkExists("outscale_lin_internet_gateway_link.link", &conf),
+					testAccCheckOutscaleOAPILinInternetGatewayLinkExists("outscale_net_internet_gateway_link.link", &conf),
 				),
 			},
 		},
@@ -89,7 +89,7 @@ func testAccCheckOutscaleOAPILinInternetGatewayLinkDettached(s *terraform.State)
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_lin_internet_gateway_link" {
+		if rs.Type != "outscale_net_internet_gateway_link" {
 			continue
 		}
 
@@ -138,14 +138,14 @@ func testAccCheckOutscaleOAPILinInternetGatewayLinkDettached(s *terraform.State)
 }
 
 const testAccOutscaleOAPILinInternetGatewayLinkConfig = `
-resource "outscale_lin_internet_gateway" "gateway" {}
+resource "outscale_net_internet_gateway" "gateway" {}
 
-resource "outscale_lin" "vpc" {
+resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
 }
 
-resource "outscale_lin_internet_gateway_link" "link" {
-	lin_id = "${outscale_lin.vpc.id}"
-	lin_internet_gateway_id = "${outscale_lin_internet_gateway.gateway.id}"
+resource "outscale_net_internet_gateway_link" "link" {
+	net_id = "${outscale_net.vpc.id}"
+	net_internet_gateway_id = "${outscale_net_internet_gateway.gateway.id}"
 }
 `
