@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -66,7 +67,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := oapi.ReadPublicIpsRequest{
-		Filters: oapi.ReadPublicIpsFilters{},
+		Filters: &oapi.ReadPublicIpsFilters{},
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -76,10 +77,10 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	}
 
 	if id := d.Get("reservation_id"); id != "" {
-		req.Filters.ReservationIds = []string{id.(string)}
+		req.Filters.ReservationIds = []*string{aws.String(id.(string))}
 	}
 	if id := d.Get("public_ip"); id != "" {
-		req.Filters.PublicIps = []string{id.(string)}
+		req.Filters.PublicIps = []*string{aws.String(id.(string))}
 	}
 
 	var describeAddresses *oapi.ReadPublicIpsResponse
@@ -118,27 +119,27 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.LinkId != "" {
+	if address.LinkId != nil {
 		d.Set("link_id", address.LinkId)
 	} else {
 		d.Set("link_id", "")
 	}
-	if address.VmId != "" {
+	if address.VmId != nil {
 		d.Set("vm_id", address.VmId)
 	} else {
 		d.Set("vm_id", "")
 	}
-	if address.NicId != "" {
+	if address.NicId != nil {
 		d.Set("nic_id", address.NicId)
 	} else {
 		d.Set("nic_id", "")
 	}
-	if address.NicAccountId != "" {
+	if address.NicAccountId != nil {
 		d.Set("nic_account_id", address.NicAccountId)
 	} else {
 		d.Set("nic_account_id", "")
 	}
-	if address.PrivateIp != "" {
+	if address.PrivateIp != nil {
 		d.Set("private_ip", address.PrivateIp)
 	} else {
 		d.Set("private_ip", "")
@@ -149,22 +150,22 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	d.Set("public_ip", address.PublicIp)
 	d.Set("placement", address.Placement)
 
-	if address.Placement == "vpc" {
-		d.SetId(address.ReservationId)
+	if *address.Placement == "vpc" {
+		d.SetId(aws.StringValue(address.ReservationId))
 	} else {
-		d.SetId(address.PublicIp)
+		d.SetId(aws.StringValue(address.PublicIp))
 	}
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.ReadPublicIpsFilters {
-	var filters oapi.ReadPublicIpsFilters
+func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oapi.ReadPublicIpsFilters {
+	var filters *oapi.ReadPublicIpsFilters
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
-		var filterValues []string
+		var filterValues []*string
 		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
+			filterValues = append(filterValues, aws.String(e.(string)))
 		}
 
 		switch name := m["name"].(string); name {

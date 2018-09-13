@@ -367,17 +367,17 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 // diffOAPITags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOAPITags(oldTags, newTags []oapi.Tags) ([]oapi.Tags, []oapi.Tags) {
+func diffOAPITags(oldTags, newTags []*oapi.Tags) ([]*oapi.Tags, []*oapi.Tags) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
 	for _, t := range newTags {
-		create[t.Key] = t.Value
+		create[*t.Key] = t.Value
 	}
 
 	// Build the list of what to remove
-	var remove []oapi.Tags
+	var remove []*oapi.Tags
 	for _, t := range oldTags {
-		old, ok := create[t.Key]
+		old, ok := create[*t.Key]
 		if !ok || old != t.Value {
 			remove = append(remove, t)
 		}
@@ -399,12 +399,12 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags {
-	result := make([]oapi.Tags, 0, len(m))
+func tagsOAPIFromMap(m map[string]interface{}) []*oapi.Tags {
+	result := make([]*oapi.Tags, 0, len(m))
 	for k, v := range m {
-		t := oapi.Tags{
-			Key:   k,
-			Value: v.(string),
+		t := &oapi.Tags{
+			Key:   aws.String(k),
+			Value: aws.String(v.(string)),
 		}
 		result = append(result, t)
 	}
@@ -477,13 +477,13 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 }
 
 // tagsOAPI	ToMap turns the list of tag into a map.
-func tagsOAPIToMap(ts []oapi.Tags) []map[string]string {
+func tagsOAPIToMap(ts []*oapi.Tags) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
 			tag := make(map[string]string)
-			tag["key"] = t.Key
-			tag["value"] = t.Value
+			tag["key"] = aws.StringValue(t.Key)
+			tag["value"] = aws.StringValue(t.Value)
 			result[k] = tag
 		}
 	} else {
@@ -638,7 +638,7 @@ func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				_, err := conn.POST_DeleteTags(oapi.DeleteTagsRequest{
-					ResourceIds: []string{d.Id()},
+					ResourceIds: []*string{aws.String(d.Id())},
 					Tags:        remove,
 				})
 				if err != nil {
@@ -656,7 +656,7 @@ func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
 				_, err := conn.POST_CreateTags(oapi.CreateTagsRequest{
-					ResourceIds: []string{d.Id()},
+					ResourceIds: []*string{aws.String(d.Id())},
 					Tags:        create,
 				})
 				if err != nil {

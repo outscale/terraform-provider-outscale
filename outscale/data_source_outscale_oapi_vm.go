@@ -162,7 +162,7 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	return nil
 }
 
-func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*oapi.BlockDeviceMappings) []map[string]interface{} {
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*oapi.ReadVmsBlockDeviceMappings) []map[string]interface{} {
 	var blockDeviceMapping []map[string]interface{}
 
 	if len(blockDeviceMappings) > 0 {

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -125,7 +124,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
 	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.ReadVolumesFilters{},
+		Filters: &oapi.ReadVolumesFilters{},
 	}
 
 	if filtersOk {
@@ -134,7 +133,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 
 	if volumeIdsOk {
 		volIDs := expandStringList(volumeIds.([]interface{}))
-		params.Filters.VolumeIds = aws.StringValueSlice(volIDs)
+		params.Filters.VolumeIds = volIDs
 	}
 
 	var resp *oapi.ReadVolumesResponse
@@ -168,7 +167,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volumes) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*oapi.Volumes) error {
 
 	i := make([]interface{}, len(volumes))
 
@@ -182,23 +181,23 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 				//if v.DeleteOnVmDeletion != nil {
 				at["delete_on_vm_termination"] = v.DeleteOnVmDeletion
 				//}
-				if v.DeviceName != "" {
+				if v.DeviceName != nil {
 					at["device_name"] = v.DeviceName
 				}
-				if v.VmId != "" {
+				if v.VmId != nil {
 					at["vm_id"] = v.VmId
 				}
-				if v.State != "" {
+				if v.State != nil {
 					at["state"] = v.State
 				}
-				if v.VolumeId != "" {
+				if v.VolumeId != nil {
 					at["volume_id"] = v.VolumeId
 				}
 				a[k] = at
 			}
 			im["linked_volumes"] = a
 		}
-		if v.SubRegionName != "" {
+		if v.SubRegionName != nil {
 			im["sub_region_name"] = v.SubRegionName
 		}
 		//if v.Iops != nil {
@@ -207,19 +206,19 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 		//if v.Size != nil {
 		im["size"] = v.Size
 		//}
-		if v.SnapshotId != "" {
+		if v.SnapshotId != nil {
 			im["snapshot_id"] = v.SnapshotId
 		}
 		if v.Tags != nil {
 			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.Type != "" {
+		if v.Type != nil {
 			im["type"] = v.Type
 		}
-		if v.State != "" {
+		if v.State != nil {
 			im["state"] = v.State
 		}
-		if v.VolumeId != "" {
+		if v.VolumeId != nil {
 			im["volume_id"] = v.VolumeId
 		}
 		i[k] = im

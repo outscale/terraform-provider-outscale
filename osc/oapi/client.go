@@ -6661,53 +6661,6 @@ func (client *Client) POST_ReadSites(
 }
 
 //
-func (client *Client) POST_ReadSnapshotAttribute(
-	readsnapshotattributerequest ReadSnapshotAttributeRequest,
-) (
-	response *POST_ReadSnapshotAttributeResponses,
-	err error,
-) {
-	path := client.service + "/ReadSnapshotAttribute"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(readsnapshotattributerequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_ReadSnapshotAttributeResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &ReadSnapshotAttributeResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
 func (client *Client) POST_ReadSnapshotExportTasks(
 	readsnapshotexporttasksrequest ReadSnapshotExportTasksRequest,
 ) (
@@ -8964,15 +8917,15 @@ func (client *Client) POST_UpdateServerCertificate(
 }
 
 //
-func (client *Client) POST_UpdateSnapshotAttribute(
-	updatesnapshotattributerequest UpdateSnapshotAttributeRequest,
+func (client *Client) POST_UpdateSnapshot(
+	updatesnapshotrequest UpdateSnapshotRequest,
 ) (
-	response *POST_UpdateSnapshotAttributeResponses,
+	response *POST_UpdateSnapshotResponses,
 	err error,
 ) {
-	path := client.service + "/UpdateSnapshotAttribute"
+	path := client.service + "/UpdateSnapshot"
 	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(updatesnapshotattributerequest)
+	json.NewEncoder(body).Encode(updatesnapshotrequest)
 	req, err := http.NewRequest("POST", path, body)
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Content-Type", "application/json")
@@ -8991,14 +8944,14 @@ func (client *Client) POST_UpdateSnapshotAttribute(
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}
-	response = &POST_UpdateSnapshotAttributeResponses{}
+	response = &POST_UpdateSnapshotResponses{}
 	switch {
 	case resp.StatusCode == 200:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		result := &UpdateSnapshotAttributeResponse{}
+		result := &UpdateSnapshotResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err

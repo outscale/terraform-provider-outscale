@@ -427,9 +427,6 @@ type Provider interface {
 	POST_ReadSites(parameters *POST_ReadSitesParameters, responses *POST_ReadSitesResponses) (err error)
 
 	//
-	POST_ReadSnapshotAttribute(parameters *POST_ReadSnapshotAttributeParameters, responses *POST_ReadSnapshotAttributeResponses) (err error)
-
-	//
 	POST_ReadSnapshotExportTasks(parameters *POST_ReadSnapshotExportTasksParameters, responses *POST_ReadSnapshotExportTasksResponses) (err error)
 
 	//
@@ -574,7 +571,7 @@ type Provider interface {
 	POST_UpdateServerCertificate(parameters *POST_UpdateServerCertificateParameters, responses *POST_UpdateServerCertificateResponses) (err error)
 
 	//
-	POST_UpdateSnapshotAttribute(parameters *POST_UpdateSnapshotAttributeParameters, responses *POST_UpdateSnapshotAttributeResponses) (err error)
+	POST_UpdateSnapshot(parameters *POST_UpdateSnapshotParameters, responses *POST_UpdateSnapshotResponses) (err error)
 
 	//
 	POST_UpdateUser(parameters *POST_UpdateUserParameters, responses *POST_UpdateUserResponses) (err error)

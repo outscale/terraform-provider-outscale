@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -119,7 +120,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 		request := &oapi.ReadVolumesRequest{
-			Filters: oapi.ReadVolumesFilters{VolumeIds: []string{rs.Primary.ID}},
+			Filters: &oapi.ReadVolumesFilters{VolumeIds: []*string{aws.String(rs.Primary.ID)}},
 		}
 
 		var response *oapi.ReadVolumesResponse
@@ -140,7 +141,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 
 		if err == nil {
 			if response.Volumes != nil && len(response.Volumes) > 0 {
-				*v = response.Volumes[0]
+				*v = *response.Volumes[0]
 				return nil
 			}
 		}

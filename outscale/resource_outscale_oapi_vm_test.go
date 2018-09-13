@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
@@ -29,7 +28,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var server oapi.Vms
+	var server oapi.ReadVmsVms
 
 	// rInt := acctest.RandInt()
 
@@ -65,8 +64,8 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	var before oapi.Vms
-	var after oapi.Vms
+	var before oapi.ReadVmsVms
+	var after oapi.ReadVmsVms
 
 	// rInt := acctest.RandInt()
 
@@ -98,12 +97,12 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVMExists(n string, i *oapi.Vms) resource.TestCheckFunc {
+func testAccCheckOAPIVMExists(n string, i *oapi.ReadVmsVms) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.ReadVmsVms, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -126,9 +125,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*
 			var err error
 			for {
 				r, err = client.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-					Filters: &oapi.ReadVmsFilters{
-						VmIds: []*string{aws.String(rs.Primary.ID)},
-					},
+					Filters: getVMsFiltersByVMID(rs.Primary.ID),
 				})
 				resp = r.OK
 				if err != nil {
@@ -150,7 +147,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*
 }
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T,
-	before, after *oapi.Vms) resource.TestCheckFunc {
+	before, after *oapi.ReadVmsVms) resource.TestCheckFunc {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	isOapi, err := strconv.ParseBool(o)
@@ -201,9 +198,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		for {
 			// Try to find the resource
 			r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-				Filters: &oapi.ReadVmsFilters{
-					VmIds: []*string{aws.String(rs.Primary.ID)},
-				},
+				Filters: getVMsFiltersByVMID(rs.Primary.ID),
 			})
 			resp = r.OK
 			if err != nil {
@@ -235,12 +230,12 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.Vms) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.ReadVmsVms) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.ReadVmsVms, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -263,9 +258,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms, provid
 
 			for {
 				r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-					Filters: &oapi.ReadVmsFilters{
-						VmIds: []*string{aws.String(rs.Primary.ID)},
-					},
+					Filters: getVMsFiltersByVMID(rs.Primary.ID),
 				})
 				resp = r.OK
 				if err != nil {
@@ -296,7 +289,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms, provid
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(server *oapi.ReadVmsVms) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		if *server.ImageId != "ami-880caa66" {

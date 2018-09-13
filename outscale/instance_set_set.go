@@ -301,7 +301,7 @@ func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
 	return res
 }
 
-func getFirewallRulesSet(groupSet []*oapi.FirewallRulesSets) []map[string]interface{} {
+func getFirewallRulesSet(groupSet []*oapi.ReadVmsFirewallRulesSets) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 
@@ -387,7 +387,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 	return res
 }
 
-func getOAPIVMNetworkInterfaceSet(interfaces []*oapi.Nics) []map[string]interface{} {
+func getOAPIVMNetworkInterfaceSet(interfaces []*oapi.ReadVmsNics) []map[string]interface{} {
 	res := []map[string]interface{}{}
 
 	if interfaces != nil {
@@ -405,8 +405,8 @@ func getOAPIVMNetworkInterfaceSet(interfaces []*oapi.Nics) []map[string]interfac
 			if i.NicLink != nil {
 				attach["nic_link_id"] = i.NicLink.NicLinkId
 				attach["delete_on_vm_termination"] = i.NicLink.DeleteOnVmDeletion
-				attach["nic_sort_number"] = i.NicLink.DeviceNumber //TO Check
-				attach["state"] = i.NicLink.State
+				//attach["nic_sort_number"] = i.NicLink.DeviceNumber //TO Check
+				//attach["state"] = i.NicLink.State
 			}
 
 			firewall := make([]map[string]interface{}, 0)
