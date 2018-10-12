@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -118,27 +117,26 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.CreateVolumeRequest{
-		SubRegionName: aws.String(d.Get("sub_region_name").(string)),
+		SubRegionName: d.Get("sub_region_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
-		request.Size = aws.Int64(int64(value.(int)))
+		request.Size = int64(value.(int))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
-		request.SnapshotId = aws.String(value.(string))
+		request.SnapshotId = value.(string)
 	}
 
 	var t string
 	if value, ok := d.GetOk("type"); ok {
-		request.Type = aws.String(value.(string))
+		request.Type = value.(string)
 	}
 
 	iops := d.Get("iops").(int)
 	if t != "io1" && iops > 0 {
 		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
-		request.Iops = aws.Int64(int64(iops))
+		request.Iops = int64(iops)
 	}
-
 	//Missing on Swagger Spec
 	// tagsSpec := make([]*oapi.Tags, 0)
 
@@ -182,7 +180,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, aws.StringValue(result.VolumeId)),
+		Refresh:    volumeOAPIStateRefreshFunc(conn, result.VolumeId),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -190,12 +188,10 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for Volume (%s) to become available: %s",
-			*result.VolumeId, err)
+		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.VolumeId, err)
 	}
 
-	d.SetId(aws.StringValue(result.VolumeId))
+	d.SetId(result.VolumeId)
 
 	//Missing in swagger spec
 	if d.IsNewResource() {
@@ -213,7 +209,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.ReadVolumesRequest{
-		Filters: &oapi.ReadVolumesFilters{VolumeIds: []*string{aws.String(d.Id())}},
+		Filters: oapi.Filters_15{VolumeIds: []string{d.Id()}},
 	}
 
 	var response *oapi.ReadVolumesResponse
@@ -241,7 +237,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
 	d.Set("request_id", response.ResponseContext.RequestId)
-	return readOAPIVolume(d, response.Volumes[0])
+	return readOAPIVolume(d, &response.Volumes[0])
 }
 
 func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
@@ -249,7 +245,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		request := &oapi.DeleteVolumeRequest{
-			VolumeId: aws.String(d.Id()),
+			VolumeId: d.Id(),
 		}
 		_, err := conn.POST_DeleteVolume(*request)
 		if err == nil {
@@ -268,8 +264,8 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, err := conn.POST_ReadVolumes(oapi.ReadVolumesRequest{
-			Filters: &oapi.ReadVolumesFilters{
-				VolumeIds: []*string{aws.String(volumeID)},
+			Filters: oapi.Filters_15{
+				VolumeIds: []string{volumeID},
 			},
 		})
 
@@ -284,22 +280,22 @@ func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.Sta
 		}
 
 		v := resp.OK.Volumes[0]
-		return v, aws.StringValue(v.State), nil
+		return v, v.State, nil
 	}
 }
 
 func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
-	d.SetId(aws.StringValue(volume.VolumeId))
+	d.SetId(volume.VolumeId)
 
 	d.Set("sub_region_name", volume.SubRegionName)
 	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
 	d.Set("type", volume.Type)
 
-	if *volume.Type == "io1" {
-		if volume.Iops != nil {
-			d.Set("iops", volume.Iops)
-		}
+	if volume.Type == "io1" {
+		//if volume.Iops != "" {
+		d.Set("iops", volume.Iops)
+		//}
 	} else {
 		d.Set("iops", "")
 	}
@@ -314,16 +310,16 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 			//if g.DeleteOnVmDeletion != "" {
 			r["delete_on_vm_termination"] = g.DeleteOnVmDeletion
 			//}
-			if g.DeviceName != nil {
+			if g.DeviceName != "" {
 				r["device"] = g.DeviceName
 			}
-			if g.VmId != nil {
+			if g.VmId != "" {
 				r["vm_id"] = g.VmId
 			}
-			if g.State != nil {
+			if g.State != "" {
 				r["state"] = g.State
 			}
-			if g.VolumeId != nil {
+			if g.VolumeId != "" {
 				r["volume_id"] = g.VolumeId
 			}
 

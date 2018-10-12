@@ -128,53 +128,6 @@ func (client *Client) POST_AcceptNetPeering(
 }
 
 //
-func (client *Client) POST_CancelExportTask(
-	cancelexporttaskrequest CancelExportTaskRequest,
-) (
-	response *POST_CancelExportTaskResponses,
-	err error,
-) {
-	path := client.service + "/CancelExportTask"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(cancelexporttaskrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CancelExportTaskResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CancelExportTaskResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
 func (client *Client) POST_CopyImage(
 	copyimagerequest CopyImageRequest,
 ) (
@@ -257,147 +210,6 @@ func (client *Client) POST_CopySnapshot(
 			return nil, err
 		}
 		result := &CopySnapshotResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_CreateFirewallRuleInbound(
-	createfirewallruleinboundrequest CreateFirewallRuleInboundRequest,
-) (
-	response *POST_CreateFirewallRuleInboundResponses,
-	err error,
-) {
-	path := client.service + "/CreateFirewallRuleInbound"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(createfirewallruleinboundrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CreateFirewallRuleInboundResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CreateFirewallRuleInboundResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_CreateFirewallRuleOutbound(
-	createfirewallruleoutboundrequest CreateFirewallRuleOutboundRequest,
-) (
-	response *POST_CreateFirewallRuleOutboundResponses,
-	err error,
-) {
-	path := client.service + "/CreateFirewallRuleOutbound"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(createfirewallruleoutboundrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CreateFirewallRuleOutboundResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CreateFirewallRuleOutboundResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_CreateFirewallRulesSet(
-	createfirewallrulessetrequest CreateFirewallRulesSetRequest,
-) (
-	response *POST_CreateFirewallRulesSetResponses,
-	err error,
-) {
-	path := client.service + "/CreateFirewallRulesSet"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(createfirewallrulessetrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CreateFirewallRulesSetResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CreateFirewallRulesSetResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -551,6 +363,100 @@ func (client *Client) POST_CreateKeypair(
 }
 
 //
+func (client *Client) POST_CreateLoadBalancer(
+	createloadbalancerrequest CreateLoadBalancerRequest,
+) (
+	response *POST_CreateLoadBalancerResponses,
+	err error,
+) {
+	path := client.service + "/CreateLoadBalancer"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(createloadbalancerrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_CreateLoadBalancerResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &CreateLoadBalancerResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_CreateLoadBalancerListeners(
+	createloadbalancerlistenersrequest CreateLoadBalancerListenersRequest,
+) (
+	response *POST_CreateLoadBalancerListenersResponses,
+	err error,
+) {
+	path := client.service + "/CreateLoadBalancerListeners"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(createloadbalancerlistenersrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_CreateLoadBalancerListenersResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &CreateLoadBalancerListenersResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
 func (client *Client) POST_CreateNatService(
 	createnatservicerequest CreateNatServiceRequest,
 ) (
@@ -633,53 +539,6 @@ func (client *Client) POST_CreateNet(
 			return nil, err
 		}
 		result := &CreateNetResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_CreateNetInternetGateway(
-	createnetinternetgatewayrequest CreateNetInternetGatewayRequest,
-) (
-	response *POST_CreateNetInternetGatewayResponses,
-	err error,
-) {
-	path := client.service + "/CreateNetInternetGateway"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(createnetinternetgatewayrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CreateNetInternetGatewayResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CreateNetInternetGatewayResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -1021,6 +880,53 @@ func (client *Client) POST_CreateSnapshotExportTask(
 }
 
 //
+func (client *Client) POST_CreateStickyCookiePolicy(
+	createstickycookiepolicyrequest CreateStickyCookiePolicyRequest,
+) (
+	response *POST_CreateStickyCookiePolicyResponses,
+	err error,
+) {
+	path := client.service + "/CreateStickyCookiePolicy"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(createstickycookiepolicyrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_CreateStickyCookiePolicyResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &CreateStickyCookiePolicyResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
 func (client *Client) POST_CreateSubnet(
 	createsubnetrequest CreateSubnetRequest,
 ) (
@@ -1209,194 +1115,6 @@ func (client *Client) POST_CreateVolume(
 }
 
 //
-func (client *Client) POST_CreateVpnGateway(
-	createvpngatewayrequest CreateVpnGatewayRequest,
-) (
-	response *POST_CreateVpnGatewayResponses,
-	err error,
-) {
-	path := client.service + "/CreateVpnGateway"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(createvpngatewayrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_CreateVpnGatewayResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &CreateVpnGatewayResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_DeleteFirewallRuleInbound(
-	deletefirewallruleinboundrequest DeleteFirewallRuleInboundRequest,
-) (
-	response *POST_DeleteFirewallRuleInboundResponses,
-	err error,
-) {
-	path := client.service + "/DeleteFirewallRuleInbound"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deletefirewallruleinboundrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_DeleteFirewallRuleInboundResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &DeleteFirewallRuleInboundResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_DeleteFirewallRuleOutbound(
-	deletefirewallruleoutboundrequest DeleteFirewallRuleOutboundRequest,
-) (
-	response *POST_DeleteFirewallRuleOutboundResponses,
-	err error,
-) {
-	path := client.service + "/DeleteFirewallRuleOutbound"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deletefirewallruleoutboundrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_DeleteFirewallRuleOutboundResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &DeleteFirewallRuleOutboundResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_DeleteFirewallRulesSet(
-	deletefirewallrulessetrequest DeleteFirewallRulesSetRequest,
-) (
-	response *POST_DeleteFirewallRulesSetResponses,
-	err error,
-) {
-	path := client.service + "/DeleteFirewallRulesSet"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deletefirewallrulessetrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_DeleteFirewallRulesSetResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &DeleteFirewallRulesSetResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
 func (client *Client) POST_DeleteKeypair(
 	deletekeypairrequest DeleteKeypairRequest,
 ) (
@@ -1432,6 +1150,147 @@ func (client *Client) POST_DeleteKeypair(
 			return nil, err
 		}
 		result := &DeleteKeypairResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_DeleteLoadBalancer(
+	deleteloadbalancerrequest DeleteLoadBalancerRequest,
+) (
+	response *POST_DeleteLoadBalancerResponses,
+	err error,
+) {
+	path := client.service + "/DeleteLoadBalancer"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(deleteloadbalancerrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_DeleteLoadBalancerResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &DeleteLoadBalancerResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_DeleteLoadBalancerListeners(
+	deleteloadbalancerlistenersrequest DeleteLoadBalancerListenersRequest,
+) (
+	response *POST_DeleteLoadBalancerListenersResponses,
+	err error,
+) {
+	path := client.service + "/DeleteLoadBalancerListeners"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(deleteloadbalancerlistenersrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_DeleteLoadBalancerListenersResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &DeleteLoadBalancerListenersResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_DeleteLoadBalancerPolicy(
+	deleteloadbalancerpolicyrequest DeleteLoadBalancerPolicyRequest,
+) (
+	response *POST_DeleteLoadBalancerPolicyResponses,
+	err error,
+) {
+	path := client.service + "/DeleteLoadBalancerPolicy"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(deleteloadbalancerpolicyrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_DeleteLoadBalancerPolicyResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &DeleteLoadBalancerPolicyResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -1526,53 +1385,6 @@ func (client *Client) POST_DeleteNet(
 			return nil, err
 		}
 		result := &DeleteNetResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_DeleteNetInternetGateway(
-	deletenetinternetgatewayrequest DeleteNetInternetGatewayRequest,
-) (
-	response *POST_DeleteNetInternetGatewayResponses,
-	err error,
-) {
-	path := client.service + "/DeleteNetInternetGateway"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deletenetinternetgatewayrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_DeleteNetInternetGatewayResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &DeleteNetInternetGatewayResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -2055,15 +1867,15 @@ func (client *Client) POST_DeleteVolume(
 }
 
 //
-func (client *Client) POST_DeleteVpnGateway(
-	deletevpngatewayrequest DeleteVpnGatewayRequest,
+func (client *Client) POST_DeregisterVmsInLoadBalancer(
+	deregistervmsinloadbalancerrequest DeregisterVmsInLoadBalancerRequest,
 ) (
-	response *POST_DeleteVpnGatewayResponses,
+	response *POST_DeregisterVmsInLoadBalancerResponses,
 	err error,
 ) {
-	path := client.service + "/DeleteVpnGateway"
+	path := client.service + "/DeregisterVmsInLoadBalancer"
 	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deletevpngatewayrequest)
+	json.NewEncoder(body).Encode(deregistervmsinloadbalancerrequest)
 	req, err := http.NewRequest("POST", path, body)
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Content-Type", "application/json")
@@ -2082,61 +1894,14 @@ func (client *Client) POST_DeleteVpnGateway(
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}
-	response = &POST_DeleteVpnGatewayResponses{}
+	response = &POST_DeregisterVmsInLoadBalancerResponses{}
 	switch {
 	case resp.StatusCode == 200:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		result := &DeleteVpnGatewayResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_DeregisterImage(
-	deregisterimagerequest DeregisterImageRequest,
-) (
-	response *POST_DeregisterImageResponses,
-	err error,
-) {
-	path := client.service + "/DeregisterImage"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(deregisterimagerequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_DeregisterImageResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &DeregisterImageResponse{}
+		result := &DeregisterVmsInLoadBalancerResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -2196,15 +1961,15 @@ func (client *Client) POST_ImportSnapshot(
 }
 
 //
-func (client *Client) POST_LinkNetInternetGateway(
-	linknetinternetgatewayrequest LinkNetInternetGatewayRequest,
+func (client *Client) POST_LinkLoadBalancerServerCertificate(
+	linkloadbalancerservercertificaterequest LinkLoadBalancerServerCertificateRequest,
 ) (
-	response *POST_LinkNetInternetGatewayResponses,
+	response *POST_LinkLoadBalancerServerCertificateResponses,
 	err error,
 ) {
-	path := client.service + "/LinkNetInternetGateway"
+	path := client.service + "/LinkLoadBalancerServerCertificate"
 	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(linknetinternetgatewayrequest)
+	json.NewEncoder(body).Encode(linkloadbalancerservercertificaterequest)
 	req, err := http.NewRequest("POST", path, body)
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Content-Type", "application/json")
@@ -2223,14 +1988,14 @@ func (client *Client) POST_LinkNetInternetGateway(
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}
-	response = &POST_LinkNetInternetGatewayResponses{}
+	response = &POST_LinkLoadBalancerServerCertificateResponses{}
 	switch {
 	case resp.StatusCode == 200:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		result := &LinkNetInternetGatewayResponse{}
+		result := &LinkLoadBalancerServerCertificateResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -2278,6 +2043,53 @@ func (client *Client) POST_LinkNic(
 			return nil, err
 		}
 		result := &LinkNicResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_LinkPrivateIps(
+	linkprivateipsrequest LinkPrivateIpsRequest,
+) (
+	response *POST_LinkPrivateIpsResponses,
+	err error,
+) {
+	path := client.service + "/LinkPrivateIps"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(linkprivateipsrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_LinkPrivateIpsResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &LinkPrivateIpsResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -2431,15 +2243,15 @@ func (client *Client) POST_LinkVolume(
 }
 
 //
-func (client *Client) POST_LinkVpnGateway(
-	linkvpngatewayrequest LinkVpnGatewayRequest,
+func (client *Client) POST_ReadApiLogs(
+	readapilogsrequest ReadApiLogsRequest,
 ) (
-	response *POST_LinkVpnGatewayResponses,
+	response *POST_ReadApiLogsResponses,
 	err error,
 ) {
-	path := client.service + "/LinkVpnGateway"
+	path := client.service + "/ReadApiLogs"
 	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(linkvpngatewayrequest)
+	json.NewEncoder(body).Encode(readapilogsrequest)
 	req, err := http.NewRequest("POST", path, body)
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Content-Type", "application/json")
@@ -2458,61 +2270,14 @@ func (client *Client) POST_LinkVpnGateway(
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}
-	response = &POST_LinkVpnGatewayResponses{}
+	response = &POST_ReadApiLogsResponses{}
 	switch {
 	case resp.StatusCode == 200:
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		result := &LinkVpnGatewayResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_ReadFirewallRulesSets(
-	readfirewallrulessetsrequest ReadFirewallRulesSetsRequest,
-) (
-	response *POST_ReadFirewallRulesSetsResponses,
-	err error,
-) {
-	path := client.service + "/ReadFirewallRulesSets"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(readfirewallrulessetsrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_ReadFirewallRulesSetsResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &ReadFirewallRulesSetsResponse{}
+		result := &ReadApiLogsResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -2666,6 +2431,100 @@ func (client *Client) POST_ReadKeypairs(
 }
 
 //
+func (client *Client) POST_ReadLoadBalancerAttributes(
+	readloadbalancerattributesrequest ReadLoadBalancerAttributesRequest,
+) (
+	response *POST_ReadLoadBalancerAttributesResponses,
+	err error,
+) {
+	path := client.service + "/ReadLoadBalancerAttributes"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(readloadbalancerattributesrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_ReadLoadBalancerAttributesResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &ReadLoadBalancerAttributesResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_ReadLoadBalancers(
+	readloadbalancersrequest ReadLoadBalancersRequest,
+) (
+	response *POST_ReadLoadBalancersResponses,
+	err error,
+) {
+	path := client.service + "/ReadLoadBalancers"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(readloadbalancersrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_ReadLoadBalancersResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &ReadLoadBalancersResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
 func (client *Client) POST_ReadNatServices(
 	readnatservicesrequest ReadNatServicesRequest,
 ) (
@@ -2701,53 +2560,6 @@ func (client *Client) POST_ReadNatServices(
 			return nil, err
 		}
 		result := &ReadNatServicesResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_ReadNetInternetGateways(
-	readnetinternetgatewaysrequest ReadNetInternetGatewaysRequest,
-) (
-	response *POST_ReadNetInternetGatewaysResponses,
-	err error,
-) {
-	path := client.service + "/ReadNetInternetGateways"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(readnetinternetgatewaysrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_ReadNetInternetGatewaysResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &ReadNetInternetGatewaysResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -3371,53 +3183,6 @@ func (client *Client) POST_ReadVolumes(
 }
 
 //
-func (client *Client) POST_ReadVpnGateways(
-	readvpngatewaysrequest ReadVpnGatewaysRequest,
-) (
-	response *POST_ReadVpnGatewaysResponses,
-	err error,
-) {
-	path := client.service + "/ReadVpnGateways"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(readvpngatewaysrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_ReadVpnGatewaysResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &ReadVpnGatewaysResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
 func (client *Client) POST_RebootVms(
 	rebootvmsrequest RebootVmsRequest,
 ) (
@@ -3500,6 +3265,53 @@ func (client *Client) POST_RegisterImage(
 			return nil, err
 		}
 		result := &RegisterImageResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_RegisterVmsInLoadBalancer(
+	registervmsinloadbalancerrequest RegisterVmsInLoadBalancerRequest,
+) (
+	response *POST_RegisterVmsInLoadBalancerResponses,
+	err error,
+) {
+	path := client.service + "/RegisterVmsInLoadBalancer"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(registervmsinloadbalancerrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_RegisterVmsInLoadBalancerResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &RegisterVmsInLoadBalancerResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -3641,53 +3453,6 @@ func (client *Client) POST_StopVms(
 			return nil, err
 		}
 		result := &StopVmsResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_UnlinkNetInternetGateway(
-	unlinknetinternetgatewayrequest UnlinkNetInternetGatewayRequest,
-) (
-	response *POST_UnlinkNetInternetGatewayResponses,
-	err error,
-) {
-	path := client.service + "/UnlinkNetInternetGateway"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(unlinknetinternetgatewayrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_UnlinkNetInternetGatewayResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &UnlinkNetInternetGatewayResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -3935,53 +3700,6 @@ func (client *Client) POST_UnlinkVolume(
 }
 
 //
-func (client *Client) POST_UnlinkVpnGateway(
-	unlinkvpngatewayrequest UnlinkVpnGatewayRequest,
-) (
-	response *POST_UnlinkVpnGatewayResponses,
-	err error,
-) {
-	path := client.service + "/UnlinkVpnGateway"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(unlinkvpngatewayrequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_UnlinkVpnGatewayResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &UnlinkVpnGatewayResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
 func (client *Client) POST_UpdateImage(
 	updateimagerequest UpdateImageRequest,
 ) (
@@ -4017,6 +3735,100 @@ func (client *Client) POST_UpdateImage(
 			return nil, err
 		}
 		result := &UpdateImageResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_UpdateLoadBalancerPolicies(
+	updateloadbalancerpoliciesrequest UpdateLoadBalancerPoliciesRequest,
+) (
+	response *POST_UpdateLoadBalancerPoliciesResponses,
+	err error,
+) {
+	path := client.service + "/UpdateLoadBalancerPolicies"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(updateloadbalancerpoliciesrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_UpdateLoadBalancerPoliciesResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &UpdateLoadBalancerPoliciesResponse{}
+		err = json.Unmarshal(body, result)
+		if err != nil {
+			return nil, err
+		}
+		response.OK = result
+	default:
+		break
+	}
+	return
+}
+
+//
+func (client *Client) POST_UpdateNic(
+	updatenicrequest UpdateNicRequest,
+) (
+	response *POST_UpdateNicResponses,
+	err error,
+) {
+	path := client.service + "/UpdateNic"
+	body := new(bytes.Buffer)
+	json.NewEncoder(body).Encode(updatenicrequest)
+	req, err := http.NewRequest("POST", path, body)
+	reqHeaders := make(http.Header)
+	reqHeaders.Set("Content-Type", "application/json")
+	req.Header = reqHeaders
+
+	client.Sign(req, body.Bytes())
+
+	if err != nil {
+		return
+	}
+	resp, err := client.client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
+	response = &POST_UpdateNicResponses{}
+	switch {
+	case resp.StatusCode == 200:
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		result := &UpdateNicResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err
@@ -4205,53 +4017,6 @@ func (client *Client) POST_UpdateSnapshot(
 			return nil, err
 		}
 		result := &UpdateSnapshotResponse{}
-		err = json.Unmarshal(body, result)
-		if err != nil {
-			return nil, err
-		}
-		response.OK = result
-	default:
-		break
-	}
-	return
-}
-
-//
-func (client *Client) POST_UpdateVmAttribute(
-	updatevmattributerequest UpdateVmAttributeRequest,
-) (
-	response *POST_UpdateVmAttributeResponses,
-	err error,
-) {
-	path := client.service + "/UpdateVmAttribute"
-	body := new(bytes.Buffer)
-	json.NewEncoder(body).Encode(updatevmattributerequest)
-	req, err := http.NewRequest("POST", path, body)
-	reqHeaders := make(http.Header)
-	reqHeaders.Set("Content-Type", "application/json")
-	req.Header = reqHeaders
-
-	client.Sign(req, body.Bytes())
-
-	if err != nil {
-		return
-	}
-	resp, err := client.client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
-	response = &POST_UpdateVmAttributeResponses{}
-	switch {
-	case resp.StatusCode == 200:
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		result := &UpdateVmAttributeResponse{}
 		err = json.Unmarshal(body, result)
 		if err != nil {
 			return nil, err

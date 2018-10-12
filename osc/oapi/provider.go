@@ -10,22 +10,10 @@ type Provider interface {
 	POST_AcceptNetPeering(parameters *POST_AcceptNetPeeringParameters, responses *POST_AcceptNetPeeringResponses) (err error)
 
 	//
-	POST_CancelExportTask(parameters *POST_CancelExportTaskParameters, responses *POST_CancelExportTaskResponses) (err error)
-
-	//
 	POST_CopyImage(parameters *POST_CopyImageParameters, responses *POST_CopyImageResponses) (err error)
 
 	//
 	POST_CopySnapshot(parameters *POST_CopySnapshotParameters, responses *POST_CopySnapshotResponses) (err error)
-
-	//
-	POST_CreateFirewallRuleInbound(parameters *POST_CreateFirewallRuleInboundParameters, responses *POST_CreateFirewallRuleInboundResponses) (err error)
-
-	//
-	POST_CreateFirewallRuleOutbound(parameters *POST_CreateFirewallRuleOutboundParameters, responses *POST_CreateFirewallRuleOutboundResponses) (err error)
-
-	//
-	POST_CreateFirewallRulesSet(parameters *POST_CreateFirewallRulesSetParameters, responses *POST_CreateFirewallRulesSetResponses) (err error)
 
 	//
 	POST_CreateImage(parameters *POST_CreateImageParameters, responses *POST_CreateImageResponses) (err error)
@@ -37,13 +25,16 @@ type Provider interface {
 	POST_CreateKeypair(parameters *POST_CreateKeypairParameters, responses *POST_CreateKeypairResponses) (err error)
 
 	//
+	POST_CreateLoadBalancer(parameters *POST_CreateLoadBalancerParameters, responses *POST_CreateLoadBalancerResponses) (err error)
+
+	//
+	POST_CreateLoadBalancerListeners(parameters *POST_CreateLoadBalancerListenersParameters, responses *POST_CreateLoadBalancerListenersResponses) (err error)
+
+	//
 	POST_CreateNatService(parameters *POST_CreateNatServiceParameters, responses *POST_CreateNatServiceResponses) (err error)
 
 	//
 	POST_CreateNet(parameters *POST_CreateNetParameters, responses *POST_CreateNetResponses) (err error)
-
-	//
-	POST_CreateNetInternetGateway(parameters *POST_CreateNetInternetGatewayParameters, responses *POST_CreateNetInternetGatewayResponses) (err error)
 
 	//
 	POST_CreateNetPeering(parameters *POST_CreateNetPeeringParameters, responses *POST_CreateNetPeeringResponses) (err error)
@@ -67,6 +58,9 @@ type Provider interface {
 	POST_CreateSnapshotExportTask(parameters *POST_CreateSnapshotExportTaskParameters, responses *POST_CreateSnapshotExportTaskResponses) (err error)
 
 	//
+	POST_CreateStickyCookiePolicy(parameters *POST_CreateStickyCookiePolicyParameters, responses *POST_CreateStickyCookiePolicyResponses) (err error)
+
+	//
 	POST_CreateSubnet(parameters *POST_CreateSubnetParameters, responses *POST_CreateSubnetResponses) (err error)
 
 	//
@@ -79,28 +73,22 @@ type Provider interface {
 	POST_CreateVolume(parameters *POST_CreateVolumeParameters, responses *POST_CreateVolumeResponses) (err error)
 
 	//
-	POST_CreateVpnGateway(parameters *POST_CreateVpnGatewayParameters, responses *POST_CreateVpnGatewayResponses) (err error)
-
-	//
-	POST_DeleteFirewallRuleInbound(parameters *POST_DeleteFirewallRuleInboundParameters, responses *POST_DeleteFirewallRuleInboundResponses) (err error)
-
-	//
-	POST_DeleteFirewallRuleOutbound(parameters *POST_DeleteFirewallRuleOutboundParameters, responses *POST_DeleteFirewallRuleOutboundResponses) (err error)
-
-	//
-	POST_DeleteFirewallRulesSet(parameters *POST_DeleteFirewallRulesSetParameters, responses *POST_DeleteFirewallRulesSetResponses) (err error)
-
-	//
 	POST_DeleteKeypair(parameters *POST_DeleteKeypairParameters, responses *POST_DeleteKeypairResponses) (err error)
+
+	//
+	POST_DeleteLoadBalancer(parameters *POST_DeleteLoadBalancerParameters, responses *POST_DeleteLoadBalancerResponses) (err error)
+
+	//
+	POST_DeleteLoadBalancerListeners(parameters *POST_DeleteLoadBalancerListenersParameters, responses *POST_DeleteLoadBalancerListenersResponses) (err error)
+
+	//
+	POST_DeleteLoadBalancerPolicy(parameters *POST_DeleteLoadBalancerPolicyParameters, responses *POST_DeleteLoadBalancerPolicyResponses) (err error)
 
 	//
 	POST_DeleteNatService(parameters *POST_DeleteNatServiceParameters, responses *POST_DeleteNatServiceResponses) (err error)
 
 	//
 	POST_DeleteNet(parameters *POST_DeleteNetParameters, responses *POST_DeleteNetResponses) (err error)
-
-	//
-	POST_DeleteNetInternetGateway(parameters *POST_DeleteNetInternetGatewayParameters, responses *POST_DeleteNetInternetGatewayResponses) (err error)
 
 	//
 	POST_DeleteNetPeering(parameters *POST_DeleteNetPeeringParameters, responses *POST_DeleteNetPeeringResponses) (err error)
@@ -133,19 +121,19 @@ type Provider interface {
 	POST_DeleteVolume(parameters *POST_DeleteVolumeParameters, responses *POST_DeleteVolumeResponses) (err error)
 
 	//
-	POST_DeleteVpnGateway(parameters *POST_DeleteVpnGatewayParameters, responses *POST_DeleteVpnGatewayResponses) (err error)
-
-	//
-	POST_DeregisterImage(parameters *POST_DeregisterImageParameters, responses *POST_DeregisterImageResponses) (err error)
+	POST_DeregisterVmsInLoadBalancer(parameters *POST_DeregisterVmsInLoadBalancerParameters, responses *POST_DeregisterVmsInLoadBalancerResponses) (err error)
 
 	//
 	POST_ImportSnapshot(parameters *POST_ImportSnapshotParameters, responses *POST_ImportSnapshotResponses) (err error)
 
 	//
-	POST_LinkNetInternetGateway(parameters *POST_LinkNetInternetGatewayParameters, responses *POST_LinkNetInternetGatewayResponses) (err error)
+	POST_LinkLoadBalancerServerCertificate(parameters *POST_LinkLoadBalancerServerCertificateParameters, responses *POST_LinkLoadBalancerServerCertificateResponses) (err error)
 
 	//
 	POST_LinkNic(parameters *POST_LinkNicParameters, responses *POST_LinkNicResponses) (err error)
+
+	//
+	POST_LinkPrivateIps(parameters *POST_LinkPrivateIpsParameters, responses *POST_LinkPrivateIpsResponses) (err error)
 
 	//
 	POST_LinkPublicIp(parameters *POST_LinkPublicIpParameters, responses *POST_LinkPublicIpResponses) (err error)
@@ -157,10 +145,7 @@ type Provider interface {
 	POST_LinkVolume(parameters *POST_LinkVolumeParameters, responses *POST_LinkVolumeResponses) (err error)
 
 	//
-	POST_LinkVpnGateway(parameters *POST_LinkVpnGatewayParameters, responses *POST_LinkVpnGatewayResponses) (err error)
-
-	//
-	POST_ReadFirewallRulesSets(parameters *POST_ReadFirewallRulesSetsParameters, responses *POST_ReadFirewallRulesSetsResponses) (err error)
+	POST_ReadApiLogs(parameters *POST_ReadApiLogsParameters, responses *POST_ReadApiLogsResponses) (err error)
 
 	//
 	POST_ReadImageExportTasks(parameters *POST_ReadImageExportTasksParameters, responses *POST_ReadImageExportTasksResponses) (err error)
@@ -172,10 +157,13 @@ type Provider interface {
 	POST_ReadKeypairs(parameters *POST_ReadKeypairsParameters, responses *POST_ReadKeypairsResponses) (err error)
 
 	//
-	POST_ReadNatServices(parameters *POST_ReadNatServicesParameters, responses *POST_ReadNatServicesResponses) (err error)
+	POST_ReadLoadBalancerAttributes(parameters *POST_ReadLoadBalancerAttributesParameters, responses *POST_ReadLoadBalancerAttributesResponses) (err error)
 
 	//
-	POST_ReadNetInternetGateways(parameters *POST_ReadNetInternetGatewaysParameters, responses *POST_ReadNetInternetGatewaysResponses) (err error)
+	POST_ReadLoadBalancers(parameters *POST_ReadLoadBalancersParameters, responses *POST_ReadLoadBalancersResponses) (err error)
+
+	//
+	POST_ReadNatServices(parameters *POST_ReadNatServicesParameters, responses *POST_ReadNatServicesResponses) (err error)
 
 	//
 	POST_ReadNetPeerings(parameters *POST_ReadNetPeeringsParameters, responses *POST_ReadNetPeeringsResponses) (err error)
@@ -217,13 +205,13 @@ type Provider interface {
 	POST_ReadVolumes(parameters *POST_ReadVolumesParameters, responses *POST_ReadVolumesResponses) (err error)
 
 	//
-	POST_ReadVpnGateways(parameters *POST_ReadVpnGatewaysParameters, responses *POST_ReadVpnGatewaysResponses) (err error)
-
-	//
 	POST_RebootVms(parameters *POST_RebootVmsParameters, responses *POST_RebootVmsResponses) (err error)
 
 	//
 	POST_RegisterImage(parameters *POST_RegisterImageParameters, responses *POST_RegisterImageResponses) (err error)
+
+	//
+	POST_RegisterVmsInLoadBalancer(parameters *POST_RegisterVmsInLoadBalancerParameters, responses *POST_RegisterVmsInLoadBalancerResponses) (err error)
 
 	//
 	POST_RejectNetPeering(parameters *POST_RejectNetPeeringParameters, responses *POST_RejectNetPeeringResponses) (err error)
@@ -233,9 +221,6 @@ type Provider interface {
 
 	//
 	POST_StopVms(parameters *POST_StopVmsParameters, responses *POST_StopVmsResponses) (err error)
-
-	//
-	POST_UnlinkNetInternetGateway(parameters *POST_UnlinkNetInternetGatewayParameters, responses *POST_UnlinkNetInternetGatewayResponses) (err error)
 
 	//
 	POST_UnlinkNic(parameters *POST_UnlinkNicParameters, responses *POST_UnlinkNicResponses) (err error)
@@ -253,10 +238,13 @@ type Provider interface {
 	POST_UnlinkVolume(parameters *POST_UnlinkVolumeParameters, responses *POST_UnlinkVolumeResponses) (err error)
 
 	//
-	POST_UnlinkVpnGateway(parameters *POST_UnlinkVpnGatewayParameters, responses *POST_UnlinkVpnGatewayResponses) (err error)
+	POST_UpdateImage(parameters *POST_UpdateImageParameters, responses *POST_UpdateImageResponses) (err error)
 
 	//
-	POST_UpdateImage(parameters *POST_UpdateImageParameters, responses *POST_UpdateImageResponses) (err error)
+	POST_UpdateLoadBalancerPolicies(parameters *POST_UpdateLoadBalancerPoliciesParameters, responses *POST_UpdateLoadBalancerPoliciesResponses) (err error)
+
+	//
+	POST_UpdateNic(parameters *POST_UpdateNicParameters, responses *POST_UpdateNicResponses) (err error)
 
 	//
 	POST_UpdateRoute(parameters *POST_UpdateRouteParameters, responses *POST_UpdateRouteResponses) (err error)
@@ -269,7 +257,4 @@ type Provider interface {
 
 	//
 	POST_UpdateSnapshot(parameters *POST_UpdateSnapshotParameters, responses *POST_UpdateSnapshotResponses) (err error)
-
-	//
-	POST_UpdateVmAttribute(parameters *POST_UpdateVmAttributeParameters, responses *POST_UpdateVmAttributeResponses) (err error)
 }

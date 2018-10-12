@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -109,14 +108,14 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	params := &oapi.ReadVolumesRequest{
-		Filters: &oapi.ReadVolumesFilters{},
+	params := oapi.ReadVolumesRequest{
+		Filters: oapi.Filters_15{},
 	}
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
 	if VolumeIdsOk {
-		params.Filters.VolumeIds = []*string{aws.String(volumeIds.(string))}
+		params.Filters.VolumeIds = []string{volumeIds.(string)}
 	}
 
 	var resp *oapi.ReadVolumesResponse
@@ -124,7 +123,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rs, err = conn.POST_ReadVolumes(*params)
+		rs, err = conn.POST_ReadVolumes(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -144,7 +143,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	filteredVolumes := resp.Volumes[:]
 
-	var volume *oapi.Volumes
+	var volume oapi.Volumes
 	if len(filteredVolumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -157,13 +156,13 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	// Query returned single result.
 	volume = filteredVolumes[0]
 	d.Set("request_id", resp.ResponseContext.RequestId)
-	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", aws.StringValue(volume.VolumeId))
-	return volumeOAPIDescriptionAttributes(d, volume)
+	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.VolumeId)
+	return volumeOAPIDescriptionAttributes(d, &volume)
 
 }
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volumes) error {
-	d.SetId(aws.StringValue(volume.VolumeId))
+	d.SetId(volume.VolumeId)
 
 	d.Set("volume_id", volume.VolumeId)
 	d.Set("sub_region_name", volume.SubRegionName)
@@ -173,10 +172,10 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	d.Set("state", volume.State)
 	d.Set("volume_id", volume.VolumeId)
 
-	if volume.Type != nil && *volume.Type == "io1" {
-		if volume.Iops != nil {
-			d.Set("iops", *volume.Iops)
-		}
+	if volume.Type != "" && volume.Type == "io1" {
+		// if volume.Iops != "" {
+		d.Set("iops", volume.Iops)
+		// }
 	}
 
 	if volume.LinkedVolumes != nil {
@@ -186,16 +185,16 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 			//if g.DeleteOnVmDeletion != "" {
 			r["delete_on_vm_termination"] = g.DeleteOnVmDeletion
 			//}
-			if g.DeviceName != nil {
+			if g.DeviceName != "" {
 				r["device"] = g.DeviceName
 			}
-			if g.VmId != nil {
+			if g.VmId != "" {
 				r["vm_id"] = g.VmId
 			}
-			if g.State != nil {
+			if g.State != "" {
 				r["state"] = g.State
 			}
-			if g.VolumeId != nil {
+			if g.VolumeId != "" {
 				r["volume_id"] = g.VolumeId
 			}
 
@@ -238,13 +237,13 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) *oapi.ReadVolumesFilters {
-	var filters *oapi.ReadVolumesFilters
+func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.Filters_15 {
+	var filters oapi.Filters_15
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
-		var filterValues []*string
+		var filterValues []string
 		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, aws.String(e.(string)))
+			filterValues = append(filterValues, e.(string))
 		}
 
 		switch name := m["name"].(string); name {
@@ -256,14 +255,14 @@ func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) *oapi.ReadVolume
 			filters.SubRegionNames = filterValues
 		case "tag-key":
 			filters.TagKeys = filterValues
-		// case "tags":
+		//TODO: case "tags":
 		// 	filters.Tags = filterValues
 		case "tag-value":
 			filters.TagValues = filterValues
 		case "volume-ids":
 			filters.VolumeIds = filterValues
 		case "volume-size":
-			filters.VolumeSizes = utils.StringSliceToPtrInt64Slice(filterValues)
+			filters.VolumeSizes = utils.StringSliceToInt64Slice(filterValues)
 		case "volume-type":
 			filters.VolumeTypes = filterValues
 		default:

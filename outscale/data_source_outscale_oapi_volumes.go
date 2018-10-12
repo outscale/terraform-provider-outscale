@@ -124,7 +124,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
 	params := &oapi.ReadVolumesRequest{
-		Filters: &oapi.ReadVolumesFilters{},
+		Filters: oapi.Filters_15{},
 	}
 
 	if filtersOk {
@@ -132,7 +132,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if volumeIdsOk {
-		volIDs := expandStringList(volumeIds.([]interface{}))
+		volIDs := expandStringValueList(volumeIds.([]interface{}))
 		params.Filters.VolumeIds = volIDs
 	}
 
@@ -167,7 +167,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*oapi.Volumes) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volumes) error {
 
 	i := make([]interface{}, len(volumes))
 
@@ -181,23 +181,23 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*oapi.Vo
 				//if v.DeleteOnVmDeletion != nil {
 				at["delete_on_vm_termination"] = v.DeleteOnVmDeletion
 				//}
-				if v.DeviceName != nil {
+				if v.DeviceName != "" {
 					at["device_name"] = v.DeviceName
 				}
-				if v.VmId != nil {
+				if v.VmId != "" {
 					at["vm_id"] = v.VmId
 				}
-				if v.State != nil {
+				if v.State != "" {
 					at["state"] = v.State
 				}
-				if v.VolumeId != nil {
+				if v.VolumeId != "" {
 					at["volume_id"] = v.VolumeId
 				}
 				a[k] = at
 			}
 			im["linked_volumes"] = a
 		}
-		if v.SubRegionName != nil {
+		if v.SubRegionName != "" {
 			im["sub_region_name"] = v.SubRegionName
 		}
 		//if v.Iops != nil {
@@ -206,19 +206,19 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []*oapi.Vo
 		//if v.Size != nil {
 		im["size"] = v.Size
 		//}
-		if v.SnapshotId != nil {
+		if v.SnapshotId != "" {
 			im["snapshot_id"] = v.SnapshotId
 		}
 		if v.Tags != nil {
 			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.Type != nil {
+		if v.Type != "" {
 			im["type"] = v.Type
 		}
-		if v.State != nil {
+		if v.State != "" {
 			im["state"] = v.State
 		}
-		if v.VolumeId != nil {
+		if v.VolumeId != "" {
 			im["volume_id"] = v.VolumeId
 		}
 		i[k] = im

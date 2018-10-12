@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -82,22 +81,22 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 
 	if v, ok := d.GetOk("reservation_id"); ok {
 		fmt.Println(v.(string))
-		request.ReservationId = aws.String(v.(string))
+		request.ReservationId = v.(string)
 	}
 	if v, ok := d.GetOk("allow_relink"); ok {
-		request.AllowRelink = aws.Bool(v.(bool))
+		request.AllowRelink = v.(bool)
 	}
 	if v, ok := d.GetOk("vm_id"); ok {
-		request.VmId = aws.String(v.(string))
+		request.VmId = v.(string)
 	}
 	if v, ok := d.GetOk("nic_id"); ok {
-		request.NicId = aws.String(v.(string))
+		request.NicId = v.(string)
 	}
 	if v, ok := d.GetOk("private_ip"); ok {
-		request.PrivateIp = aws.String(v.(string))
+		request.PrivateIp = v.(string)
 	}
 	if v, ok := d.GetOk("public_ip"); ok {
-		request.PublicIp = aws.String(v.(string))
+		request.PublicIp = v.(string)
 	}
 
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
@@ -124,18 +123,11 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	//Missing on swagger spec
-	// if resp != nil && resp.ReservationId != "" && len(*resp.ReservationId) > 0 {
-	// 	d.SetId(*resp.AssociationId)
-	// } else {
-	// 	d.SetId(*request.PublicIp)
-	// }
-
 	//Using validation with request.
-	if resp != nil && request.ReservationId != nil && len(*request.ReservationId) > 0 {
-		d.SetId(aws.StringValue(resp.LinkId))
+	if resp != nil && request.ReservationId != "" && len(request.ReservationId) > 0 {
+		d.SetId(resp.LinkPublicIpId)
 	} else {
-		d.SetId(aws.StringValue(request.PublicIp))
+		d.SetId(request.PublicIp)
 	}
 	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
@@ -148,14 +140,14 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 
 	if strings.Contains(id, "eipassoc") {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: &oapi.ReadPublicIpsFilters{
-				ReservationIds: []*string{aws.String(id)},
+			Filters: oapi.Filters_8{
+				ReservationIds: []string{id},
 			},
 		}
 	} else {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: &oapi.ReadPublicIpsFilters{
-				PublicIps: []*string{aws.String(id)},
+			Filters: oapi.Filters_8{
+				PublicIps: []string{id},
 			},
 		}
 	}
@@ -189,16 +181,16 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	}
 
 	d.Set("request_id", response.ResponseContext.RequestId)
-	return readOutscaleOAPIPublicIPLink(d, response.PublicIps[0])
+	return readOutscaleOAPIPublicIPLink(d, &response.PublicIps[0])
 }
 
 func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	assocID := d.Get("link_id")
+	linkID := d.Get("link_id")
 
 	opts := oapi.UnlinkPublicIpRequest{
-		LinkId: aws.String(assocID.(string)),
+		LinkPublicIpId: linkID.(string),
 	}
 
 	var err error
@@ -225,7 +217,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.ReadPublicIpsPublicIps) error {
+func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIps_1) error {
 	if err := d.Set("reservation_id", address.ReservationId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
@@ -252,7 +244,7 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.ReadPubl
 		return err
 	}
 
-	if err := d.Set("link_id", address.LinkId); err != nil {
+	if err := d.Set("link_id", address.LinkPublicIpId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err

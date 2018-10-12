@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -75,7 +74,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	domainOpt := resourceOutscaleOAPIPublicIPDomain(d)
 
 	allocOpts := oapi.CreatePublicIpRequest{
-		Placement: aws.String(domainOpt),
+		Placement: domainOpt,
 	}
 
 	fmt.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
@@ -90,9 +89,9 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 	if d.Get("placement").(string) == "vpc" {
-		d.SetId(aws.StringValue(allocResp.ReservationId))
+		d.SetId(allocResp.ReservationId)
 	} else {
-		d.SetId(aws.StringValue(allocResp.PublicIp))
+		d.SetId(allocResp.PublicIp)
 	}
 
 	fmt.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.Placement)
@@ -103,7 +102,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).OAPI
 
 	placement := resourceOutscaleOAPIPublicIPDomain(d)
-	id := aws.String(d.Id())
+	id := d.Id()
 
 	req := oapi.ReadPublicIpsRequest{}
 
@@ -111,9 +110,9 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	//filters := []oapi.Filters{}
 
 	if placement == "vpc" {
-		req.Filters.ReservationIds = []*string{id}
+		req.Filters.ReservationIds = []string{id}
 	} else {
-		req.Filters.PublicIps = []*string{id}
+		req.Filters.PublicIps = []string{id}
 	}
 
 	var describeAddresses *oapi.ReadPublicIpsResponse
@@ -130,7 +129,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(describeAddresses.PublicIps) != 1 ||
-		placement == "vpc" && describeAddresses.PublicIps[0].LinkId != id ||
+		placement == "vpc" && describeAddresses.PublicIps[0].LinkPublicIpId != id ||
 		describeAddresses.PublicIps[0].PublicIp != id {
 		if err != nil {
 			return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.PublicIps)
@@ -141,22 +140,22 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.LinkId != nil {
-		d.Set("link_id", address.LinkId)
+	if address.LinkPublicIpId != "" {
+		d.Set("link_id", address.LinkPublicIpId)
 	} else {
 		d.Set("link_id", "")
 	}
-	if address.PublicIp != nil {
+	if address.VmId != "" {
 		d.Set("vm_id", address.VmId)
 	} else {
 		d.Set("vm_id", "")
 	}
-	if address.NicId != nil {
+	if address.NicId != "" {
 		d.Set("nic_id", address.NicId)
 	} else {
 		d.Set("nic_id", "")
 	}
-	if address.NicAccountId != nil {
+	if address.NicAccountId != "" {
 		d.Set("nic_account_id", address.NicAccountId)
 	} else {
 		d.Set("nic_account_id", "")
@@ -167,11 +166,11 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("placement", address.Placement)
 	d.Set("reservation_id", address.ReservationId)
 
-	if *address.Placement == "vpc" && net.ParseIP(aws.StringValue(id)) != nil {
-		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), *address.ReservationId)
-		d.SetId(aws.StringValue(address.ReservationId))
+	if address.Placement == "vpc" && net.ParseIP(id) != nil {
+		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
+		d.SetId(address.ReservationId)
 	} else {
-		d.SetId(aws.StringValue(address.PublicIp))
+		d.SetId(address.PublicIp)
 	}
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
@@ -190,8 +189,8 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 		networkInterfaceID := vInterface.(string)
 
 		assocOpts := oapi.LinkPublicIpRequest{
-			VmId:     aws.String(instanceID),
-			PublicIp: aws.String(d.Id()),
+			VmId:     instanceID,
+			PublicIp: d.Id(),
 		}
 
 		if placement == "vpc" {
@@ -200,10 +199,10 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 				privateIPAddress = v
 			}
 			assocOpts = oapi.LinkPublicIpRequest{
-				NicId:         aws.String(networkInterfaceID),
-				VmId:          aws.String(instanceID),
-				ReservationId: aws.String(d.Id()),
-				PrivateIp:     aws.String(privateIPAddress),
+				NicId:         networkInterfaceID,
+				VmId:          instanceID,
+				ReservationId: d.Id(),
+				PrivateIp:     privateIPAddress,
 			}
 		}
 
@@ -251,11 +250,11 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{
-				LinkId: aws.String(d.Get("link_id").(string)),
+				LinkPublicIpId: d.Get("link_id").(string),
 			})
 		case "standard":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{
-				PublicIp: aws.String(d.Get("public_ip").(string)),
+				PublicIp: d.Get("public_ip").(string),
 			})
 		}
 
@@ -276,12 +275,12 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 				"[DEBUG] EIP release (destroy) address allocation: %v",
 				d.Id())
 			_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
-				ReservationId: aws.String(d.Id()),
+				ReservationId: d.Id(),
 			})
 		case "standard":
 			fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
 			_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
-				PublicIp: aws.String(d.Id()),
+				PublicIp: d.Id(),
 			})
 		}
 

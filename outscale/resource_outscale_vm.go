@@ -44,7 +44,7 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	// Build the creation struct
 	runOpts := &fcu.RunInstancesInput{
 		BlockDeviceMappings:   instanceOpts.BlockDeviceMappings,
-		DisableApiTermination: instanceOpts.DisableApiTermination,
+		DisableApiTermination: instanceOpts.DisableAPITermination,
 		EbsOptimized:          instanceOpts.EBSOptimized,
 		DryRun:                instanceOpts.DryRun,
 		// Monitoring:            instanceOpts.Monitoring,
@@ -1109,7 +1109,7 @@ func getVMSchema() map[string]*schema.Schema {
 
 type outscaleInstanceOpts struct {
 	BlockDeviceMappings               []*fcu.BlockDeviceMapping
-	DisableApiTermination             *bool
+	DisableAPITermination             *bool
 	EBSOptimized                      *bool
 	DryRun                            *bool
 	ImageID                           *string
@@ -1153,9 +1153,9 @@ func buildOutscaleVMOpts(
 	opts.UserData = &userData
 
 	if t, hasDisableAPITerminartion := d.GetOk("disable_api_termination"); hasDisableAPITerminartion {
-		opts.DisableApiTermination = aws.Bool(t.(bool))
+		opts.DisableAPITermination = aws.Bool(t.(bool))
 	} else {
-		opts.DisableApiTermination = aws.Bool(false)
+		opts.DisableAPITermination = aws.Bool(false)
 	}
 
 	if t, hasTenancy := d.GetOk("tenancy"); hasTenancy {
