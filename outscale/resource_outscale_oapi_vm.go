@@ -207,10 +207,9 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	//d.Set("account_id", "")
 	d.Set("reservation_id", instance.ReservationId)
 
-	//TODO: find firewal rules sets or security groups
-	// if err := d.Set("firewall_rules_sets", getFirewallRulesSet(instance.FirewallRulesSets)); err != nil {
-	// 	return err
-	// }
+	if err := d.Set("group_set", getOAPISecurityGroups(instance.SecurityGroups)); err != nil {
+		return err
+	}
 
 	placement := make(map[string]interface{})
 	if !reflect.DeepEqual(instance.Placement, oapi.Placement_1{}) {
@@ -229,8 +228,8 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	// d.Set("max_vms_count", instance)
 	// d.Set("min_vms_count", instance.KernelId)
 	// d.Set("private_ips", ips)
-	// d.Set("firewall_rules_set", ips)
-	// d.Set("firewall_rules_set_id", ips)
+	// d.Set("security_groups", ips)
+	// d.Set("security_group_ids", ips)
 	// d.Set("subnet_id", ips)
 	// d.Set("user_data", ips)
 
@@ -542,7 +541,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Optional: true,
 					},
-					"firewall_rules_set_id": {
+					"security_group_ids": {
 						Type:     schema.TypeSet,
 						Optional: true,
 						Elem:     &schema.Schema{Type: schema.TypeString},
@@ -591,12 +590,12 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"firewall_rules_set": {
+		"security_groups": {
 			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"firewall_rules_set_id": {
+		"security_group_ids": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -610,16 +609,16 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		//Attributes reference:
-		"firewall_rules_sets": {
+		"group_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"firewall_rules_set_id": {
+					"security_group_ids": {
 						Type:     schema.TypeInt,
 						Computed: true,
 					},
-					"firewall_rules_set_name": {
+					"security_group_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -683,12 +682,12 @@ func getOApiVMSchema() map[string]*schema.Schema {
 						Type:     schema.TypeBool,
 						Computed: true,
 					},
-					"firewall_rules_set": {
+					"security_groups": {
 						Type:     schema.TypeSet,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"firewall_rules_set_id": {
+								"security_group_ids": {
 									Type:     schema.TypeInt,
 									Computed: true,
 								},
@@ -831,11 +830,11 @@ func getOApiVMSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"firewall_rules_sets": {
+					"group_set": {
 						Type: schema.TypeSet,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"firewall_rules_set_id": {
+								"security_group_ids": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -1109,29 +1108,18 @@ func buildOutscaleOAPIVMOpts(
 		}
 	}
 
-	groups := make([]*string, 0)
+	groups := make([]string, 0)
 	if v := d.Get("security_group"); v != nil {
-		groups = expandStringList(v.(*schema.Set).List())
+		groups = expandStringValueList(v.(*schema.Set).List())
 		if len(groups) > 0 && hasSubnet {
 			log.Print("[WARN] Deprecated. Attempting to use 'security_group' within a VPC instance. Use 'security_group_id' instead.")
 		}
 	}
 
-	//Missing
-	// firewallRulesSet := make([]*oapi.CreateVmsFirewallRulesSets, 0)
-	// if v := d.Get("firewall_rules_set"); v != nil {
-	// 	for _, name := range v.(*schema.Set).List() {
-	// 		item := &oapi.CreateVmsFirewallRulesSets{
-	// 			FirewallRulesSetName: aws.String(name.(string)),
-	// 		}
-	// 		firewallRulesSet = append(firewallRulesSet, item)
-	// 	}
-	// }
-	//TODO: find how to get firewall or still using security groups
-	// networkInterfaces, interfacesOk := d.GetOk("nics")
-	// if interfacesOk {
-	// 	opts.NetworkInterfaces = buildNetworkOApiInterfaceOpts(d, firewallRulesSet, networkInterfaces)
-	// }
+	networkInterfaces, interfacesOk := d.GetOk("nics")
+	if interfacesOk {
+		opts.NetworkInterfaces = buildNetworkOApiInterfaceOpts(d, groups, networkInterfaces)
+	}
 
 	if v, ok := d.GetOk("private_ip"); ok {
 		opts.PrivateIPAddress = v.(string)
@@ -1154,7 +1142,6 @@ func buildOutscaleOAPIVMOpts(
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.Nics_0 {
 	networkInterfaces := []oapi.Nics_0{}
-	// Get necessary items
 	subnet, hasSubnet := d.GetOk("subnet_id")
 
 	if hasSubnet {

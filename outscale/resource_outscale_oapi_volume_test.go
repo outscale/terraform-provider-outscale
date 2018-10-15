@@ -120,7 +120,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 		request := &oapi.ReadVolumesRequest{
-			Filters: &oapi.ReadVolumesFilters{VolumeIds: []*string{aws.String(rs.Primary.ID)}},
+			Filters: oapi.Filters_15{VolumeIds: []string{rs.Primary.ID}},
 		}
 
 		var response *oapi.ReadVolumesResponse

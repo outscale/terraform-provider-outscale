@@ -302,6 +302,20 @@ func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
 	return res
 }
 
+func getOAPISecurityGroups(groupSet []oapi.SecurityGroups) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, g := range groupSet {
+
+		r := map[string]interface{}{
+			"group_id":   g.SecurityGroupId,
+			"group_name": g.SecurityGroupName,
+		}
+		res = append(res, r)
+	}
+
+	return res
+}
+
 // func getFirewallRulesSet(groupSet []*oapi.ReadVms_FirewallRulesSets) []map[string]interface{} {
 // 	res := []map[string]interface{}{}
 // 	for _, g := range groupSet {
