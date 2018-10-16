@@ -1250,7 +1250,7 @@ func buildOutscaleVMOpts(
 
 func buildNetworkInterfaceOpts(d *schema.ResourceData, groups []*string, nInterfaces interface{}) []*fcu.InstanceNetworkInterfaceSpecification {
 	networkInterfaces := []*fcu.InstanceNetworkInterfaceSpecification{}
-	subnet, hasSubnet := d.GetOk("subnet_id")	
+	subnet, hasSubnet := d.GetOk("subnet_id")
 
 	if hasSubnet {
 		ni := &fcu.InstanceNetworkInterfaceSpecification{

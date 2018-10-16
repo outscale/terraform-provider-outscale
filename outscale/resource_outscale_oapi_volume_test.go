@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -141,7 +140,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 
 		if err == nil {
 			if response.Volumes != nil && len(response.Volumes) > 0 {
-				*v = *response.Volumes[0]
+				*v = response.Volumes[0]
 				return nil
 			}
 		}
