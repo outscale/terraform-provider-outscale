@@ -88,9 +88,15 @@ func (c *Client) Sign(req *http.Request, body []byte) error {
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
-		log.Printf("[Debug] Error in Do Request %s", err)
+		log.Printf("[DEBUG] Error in Do Request %s", err)
 	}
-	utils.DebugResponse(resp)
+
+	if resp != nil {
+		utils.DebugResponse(resp)
+	} else {
+		log.Println("[DEBUG] No response to show.")
+	}
+
 	return resp, err
 }
 
