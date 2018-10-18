@@ -89,7 +89,14 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
 		resp, err = conn.POST_CreateVms(*runOpts)
-		return resource.RetryableError(err)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 
 	if err != nil {
