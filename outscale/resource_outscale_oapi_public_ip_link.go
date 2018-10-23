@@ -123,16 +123,9 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	//Missing on swagger spec
-	// if resp != nil && resp.ReservationId != "" && len(*resp.ReservationId) > 0 {
-	// 	d.SetId(*resp.AssociationId)
-	// } else {
-	// 	d.SetId(*request.PublicIp)
-	// }
-
 	//Using validation with request.
 	if resp != nil && request.ReservationId != "" && len(request.ReservationId) > 0 {
-		d.SetId(resp.LinkId)
+		d.SetId(resp.LinkPublicIpId)
 	} else {
 		d.SetId(request.PublicIp)
 	}
@@ -147,13 +140,13 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 
 	if strings.Contains(id, "eipassoc") {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: oapi.ReadPublicIpsFilters{
+			Filters: oapi.Filters_8{
 				ReservationIds: []string{id},
 			},
 		}
 	} else {
 		request = oapi.ReadPublicIpsRequest{
-			Filters: oapi.ReadPublicIpsFilters{
+			Filters: oapi.Filters_8{
 				PublicIps: []string{id},
 			},
 		}
@@ -188,16 +181,16 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	}
 
 	d.Set("request_id", response.ResponseContext.RequestId)
-	return readOutscaleOAPIPublicIPLink(d, response.PublicIps[0])
+	return readOutscaleOAPIPublicIPLink(d, &response.PublicIps[0])
 }
 
 func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	assocID := d.Get("link_id")
+	linkID := d.Get("link_id")
 
 	opts := oapi.UnlinkPublicIpRequest{
-		LinkId: assocID.(string),
+		LinkPublicIpId: linkID.(string),
 	}
 
 	var err error
@@ -224,7 +217,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address oapi.PublicIps) error {
+func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIps_1) error {
 	if err := d.Set("reservation_id", address.ReservationId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
@@ -251,7 +244,7 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address oapi.PublicIps
 		return err
 	}
 
-	if err := d.Set("link_id", address.LinkId); err != nil {
+	if err := d.Set("link_id", address.LinkPublicIpId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err

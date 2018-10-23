@@ -26,7 +26,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var conf oapi.PublicIps
+	var conf oapi.PublicIps_1
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -56,7 +56,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var conf oapi.PublicIps
+	var conf oapi.PublicIps_1
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -97,7 +97,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var one oapi.PublicIps
+	var one oapi.PublicIps_1
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -134,7 +134,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					ReservationIds: []string{rs.Primary.ID},
 				},
 			}
@@ -161,7 +161,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 			}
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					PublicIps: []string{rs.Primary.ID},
 				},
 			}
@@ -192,7 +192,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps_1) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
@@ -202,7 +202,7 @@ func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps) resource.T
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps_1) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -217,7 +217,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 
 		if strings.Contains(rs.Primary.ID, "link") {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					ReservationIds: []string{rs.Primary.ID},
 				},
 			}
@@ -235,7 +235,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps) resou
 
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					PublicIps: []string{rs.Primary.ID},
 				},
 			}

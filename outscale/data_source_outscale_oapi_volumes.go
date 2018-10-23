@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -125,7 +124,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
 	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.ReadVolumesFilters{},
+		Filters: oapi.Filters_15{},
 	}
 
 	if filtersOk {
@@ -133,8 +132,8 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if volumeIdsOk {
-		volIDs := expandStringList(volumeIds.([]interface{}))
-		params.Filters.VolumeIds = aws.StringValueSlice(volIDs)
+		volIDs := expandStringValueList(volumeIds.([]interface{}))
+		params.Filters.VolumeIds = volIDs
 	}
 
 	var resp *oapi.ReadVolumesResponse

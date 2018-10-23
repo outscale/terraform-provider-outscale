@@ -128,8 +128,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var t string
 	if value, ok := d.GetOk("type"); ok {
-		t = value.(string)
-		request.Type = t
+		request.Type = value.(string)
 	}
 
 	iops := d.Get("iops").(int)
@@ -138,7 +137,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	} else if t == "io1" {
 		request.Iops = int64(iops)
 	}
-
 	//Missing on Swagger Spec
 	// tagsSpec := make([]*oapi.Tags, 0)
 
@@ -190,9 +188,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for Volume (%s) to become available: %s",
-			result.VolumeId, err)
+		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.VolumeId, err)
 	}
 
 	d.SetId(result.VolumeId)
@@ -213,7 +209,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.ReadVolumesRequest{
-		Filters: oapi.ReadVolumesFilters{VolumeIds: []string{d.Id()}},
+		Filters: oapi.Filters_15{VolumeIds: []string{d.Id()}},
 	}
 
 	var response *oapi.ReadVolumesResponse
@@ -268,7 +264,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, err := conn.POST_ReadVolumes(oapi.ReadVolumesRequest{
-			Filters: oapi.ReadVolumesFilters{
+			Filters: oapi.Filters_15{
 				VolumeIds: []string{volumeID},
 			},
 		})

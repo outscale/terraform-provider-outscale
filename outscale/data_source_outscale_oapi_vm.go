@@ -6,12 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPIVM() *schema.Resource {
@@ -162,19 +161,19 @@ func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance,
 	return nil
 }
 
-func getOAPIVMBlockDeviceMapping(blockDeviceMappings []*oapi.BlockDeviceMappings) []map[string]interface{} {
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappings_2) []map[string]interface{} {
 	var blockDeviceMapping []map[string]interface{}
 
 	if len(blockDeviceMappings) > 0 {
 		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
 		for _, mapping := range blockDeviceMappings {
 			r := map[string]interface{}{}
-			r["device_name"] = *mapping.DeviceName
+			r["device_name"] = mapping.DeviceName
 
 			bsu := map[string]interface{}{}
-			bsu["delete_on_vm_deletion"] = *mapping.Bsu.DeleteOnVmDeletion
-			bsu["state"] = *mapping.Bsu.State
-			bsu["volume_id"] = *mapping.Bsu.VolumeId
+			bsu["delete_on_vm_deletion"] = mapping.Bsu.DeleteOnVmDeletion
+			bsu["state"] = mapping.Bsu.State
+			bsu["volume_id"] = mapping.Bsu.VolumeId
 			r["bsu"] = bsu
 
 			blockDeviceMapping = append(blockDeviceMapping, r)

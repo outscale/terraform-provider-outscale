@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 // PrintToJSON method helper to debug responses
@@ -36,7 +38,20 @@ func DebugResponse(req *http.Response) {
 	fmt.Println(string(requestDump))
 }
 
-// StringSliceToInt64Slice ...
+// StringSliceToPtrInt64Slice ...
+func StringSliceToPtrInt64Slice(src []*string) []*int64 {
+	dst := make([]*int64, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			if n, err := strconv.Atoi(aws.StringValue(src[i])); err != nil {
+				dst[i] = aws.Int64(int64(n))
+			}
+		}
+	}
+	return dst
+}
+
+// StringSliceToPtrInt64Slice ...
 func StringSliceToInt64Slice(src []string) []int64 {
 	dst := make([]int64, len(src))
 	for i := 0; i < len(src); i++ {

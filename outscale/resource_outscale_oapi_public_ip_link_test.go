@@ -25,7 +25,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var a oapi.PublicIps
+	var a oapi.PublicIps_1
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIps) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIps_1) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		fmt.Printf("%#v", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[name]
@@ -61,8 +61,8 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIps
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := oapi.ReadPublicIpsRequest{
-			Filters: oapi.ReadPublicIpsFilters{
-				LinkIds: []string{res.LinkId},
+			Filters: oapi.Filters_8{
+				LinkIds: []string{res.LinkPublicIpId},
 			},
 		}
 		describe, err := conn.OAPI.POST_ReadPublicIps(request)
@@ -99,7 +99,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		request := oapi.ReadPublicIpsRequest{
-			Filters: oapi.ReadPublicIpsFilters{
+			Filters: oapi.Filters_8{
 				LinkIds: []string{id},
 			},
 		}
@@ -118,7 +118,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps_1) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -133,7 +133,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) reso
 
 		if strings.Contains(rs.Primary.ID, "reservation") {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					ReservationIds: []string{rs.Primary.ID},
 				},
 			}
@@ -153,7 +153,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIps) reso
 
 		} else {
 			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.ReadPublicIpsFilters{
+				Filters: oapi.Filters_8{
 					PublicIps: []string{rs.Primary.ID},
 				},
 			}

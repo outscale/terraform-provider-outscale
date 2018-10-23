@@ -129,7 +129,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(describeAddresses.PublicIps) != 1 ||
-		placement == "vpc" && describeAddresses.PublicIps[0].LinkId != id ||
+		placement == "vpc" && describeAddresses.PublicIps[0].LinkPublicIpId != id ||
 		describeAddresses.PublicIps[0].PublicIp != id {
 		if err != nil {
 			return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.PublicIps)
@@ -140,12 +140,12 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.LinkId != "" {
-		d.Set("link_id", address.LinkId)
+	if address.LinkPublicIpId != "" {
+		d.Set("link_id", address.LinkPublicIpId)
 	} else {
 		d.Set("link_id", "")
 	}
-	if address.PublicIp != "" {
+	if address.VmId != "" {
 		d.Set("vm_id", address.VmId)
 	} else {
 		d.Set("vm_id", "")
@@ -250,7 +250,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{
-				LinkId: d.Get("link_id").(string),
+				LinkPublicIpId: d.Get("link_id").(string),
 			})
 		case "standard":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{

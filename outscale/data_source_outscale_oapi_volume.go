@@ -106,16 +106,16 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	VolumeIds, VolumeIdsOk := d.GetOk("volume_id")
+	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
-	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.ReadVolumesFilters{},
+	params := oapi.ReadVolumesRequest{
+		Filters: oapi.Filters_15{},
 	}
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
 	if VolumeIdsOk {
-		params.Filters.VolumeIds = []string{VolumeIds.(string)}
+		params.Filters.VolumeIds = []string{volumeIds.(string)}
 	}
 
 	var resp *oapi.ReadVolumesResponse
@@ -123,7 +123,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rs, err = conn.POST_ReadVolumes(*params)
+		rs, err = conn.POST_ReadVolumes(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -143,7 +143,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	filteredVolumes := resp.Volumes[:]
 
-	var volume *oapi.Volumes
+	var volume oapi.Volumes
 	if len(filteredVolumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -154,10 +154,10 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Query returned single result.
-	volume = &filteredVolumes[0]
+	volume = filteredVolumes[0]
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.VolumeId)
-	return volumeOAPIDescriptionAttributes(d, volume)
+	return volumeOAPIDescriptionAttributes(d, &volume)
 
 }
 
@@ -173,9 +173,9 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	d.Set("volume_id", volume.VolumeId)
 
 	if volume.Type != "" && volume.Type == "io1" {
-		//if volume.Iops != "" {
+		// if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
-		//}
+		// }
 	}
 
 	if volume.LinkedVolumes != nil {
@@ -237,8 +237,8 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.ReadVolumesFilters {
-	var filters oapi.ReadVolumesFilters
+func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.Filters_15 {
+	var filters oapi.Filters_15
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -255,7 +255,7 @@ func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.ReadVolumes
 			filters.SubRegionNames = filterValues
 		case "tag-key":
 			filters.TagKeys = filterValues
-		// case "tags":
+		//TODO: case "tags":
 		// 	filters.Tags = filterValues
 		case "tag-value":
 			filters.TagValues = filterValues

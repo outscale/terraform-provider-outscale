@@ -66,7 +66,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := oapi.ReadPublicIpsRequest{
-		Filters: oapi.ReadPublicIpsFilters{},
+		Filters: oapi.Filters_8{},
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -118,8 +118,8 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.LinkId != "" {
-		d.Set("link_id", address.LinkId)
+	if address.LinkPublicIpId != "" {
+		d.Set("link_id", address.LinkPublicIpId)
 	} else {
 		d.Set("link_id", "")
 	}
@@ -158,8 +158,8 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.ReadPublicIpsFilters {
-	var filters oapi.ReadPublicIpsFilters
+func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.Filters_8 {
+	var filters oapi.Filters_8
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string

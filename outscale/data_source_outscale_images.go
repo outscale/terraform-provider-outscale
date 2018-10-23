@@ -405,6 +405,17 @@ func expandStringList(configured []interface{}) []*string {
 	return vs
 }
 
+func expandStringValueList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, v.(string))
+		}
+	}
+	return vs
+}
+
 func dataSourceTagsHash(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})

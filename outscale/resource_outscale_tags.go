@@ -367,7 +367,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 // diffOAPITags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOAPITags(oldTags, newTags []oapi.Tags) ([]oapi.Tags, []oapi.Tags) {
+func diffOAPITags(oldTags, newTags []oapi.Tags_0) ([]oapi.Tags_0, []oapi.Tags_0) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
 	for _, t := range newTags {
@@ -375,7 +375,7 @@ func diffOAPITags(oldTags, newTags []oapi.Tags) ([]oapi.Tags, []oapi.Tags) {
 	}
 
 	// Build the list of what to remove
-	var remove []oapi.Tags
+	var remove []oapi.Tags_0
 	for _, t := range oldTags {
 		old, ok := create[t.Key]
 		if !ok || old != t.Value {
@@ -399,10 +399,10 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags {
-	result := make([]oapi.Tags, 0, len(m))
+func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
+	result := make([]oapi.Tags_0, 0, len(m))
 	for k, v := range m {
-		t := oapi.Tags{
+		t := oapi.Tags_0{
 			Key:   k,
 			Value: v.(string),
 		}
@@ -477,7 +477,7 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 }
 
 // tagsOAPI	ToMap turns the list of tag into a map.
-func tagsOAPIToMap(ts []oapi.Tags) []map[string]string {
+func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
