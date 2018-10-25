@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPINet() *schema.Resource {
@@ -26,25 +25,25 @@ func resourceOutscaleOAPINet() *schema.Resource {
 }
 
 func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.CreateVpcInput{}
+	req := &oapi.CreateNetRequest{}
 
-	req.CidrBlock = aws.String(d.Get("ip_range").(string))
+	req.IpRange = d.Get("ip_range").(string)
 
 	if c, ok := d.GetOk("tenancy"); ok {
-		cidr := c.(string)
-		if cidr == "default" || cidr == "dedicated" {
-			req.InstanceTenancy = aws.String(cidr)
+		tenancy := c.(string)
+		if tenancy == "default" || tenancy == "dedicated" {
+			req.Tenancy = tenancy
 		} else {
-			return fmt.Errorf("ip_range option not supported %s", cidr)
+			return fmt.Errorf("ip_range option not supported %s", tenancy)
 		}
 	}
 
-	var resp *fcu.CreateVpcOutput
+	var resp *oapi.POST_CreateNetResponses
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.CreateVpc(req)
+		resp, err = conn.POST_CreateNet(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -54,6 +53,12 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		}
 		return resource.RetryableError(err)
 	})
+
+	var net oapi.Net
+	if resp.OK != nil {
+		net = resp.OK.Net
+	}
+
 	if err != nil {
 		log.Printf("[DEBUG] Error creating lin (%s)", err)
 		return err
@@ -63,24 +68,29 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Cannot create the oAPI vpc, empty response")
 	}
 
-	d.SetId(*resp.Vpc.VpcId)
+	d.SetId(net.NetId)
 
 	return resourceOutscaleOAPINetRead(d, meta)
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
 
-	req := &fcu.DescribeVpcsInput{
-		VpcIds: []*string{aws.String(id)},
+	filters := oapi.Filters_6{
+		NetIds: []string{id},
 	}
 
-	var resp *fcu.DescribeVpcsOutput
+	req := oapi.ReadNetsRequest{
+		Filters: filters,
+	}
+
+	var rs *oapi.POST_ReadNetsResponses
+	var resp *oapi.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpcs(req)
+		rs, err = conn.POST_ReadNets(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -94,36 +104,38 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		log.Printf("[DEBUG] Error reading lin (%s)", err)
 	}
 
+	resp = rs.OK
+
 	if resp == nil {
 		d.SetId("")
 		return fmt.Errorf("oAPI Lin not found")
 	}
 
-	if len(resp.Vpcs) == 0 {
+	if len(resp.Nets) == 0 {
 		d.SetId("")
 		return fmt.Errorf("oAPI Lin not found")
 	}
 
-	d.Set("ip_range", resp.Vpcs[0].CidrBlock)
-	d.Set("tenancy", resp.Vpcs[0].InstanceTenancy)
-	d.Set("dhcp_options_set_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("net_id", resp.RequestId)
-	return d.Set("tag", dataSourceTags(resp.Vpcs[0].Tags))
+	d.Set("ip_range", resp.Nets[0].IpRange)
+	d.Set("tenancy", resp.Nets[0].Tenancy)
+	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
+	d.Set("net_id", resp.Nets[0].NetId)
+	return d.Set("tag", tagsOAPIToMap(resp.Nets[0].Tags))
 
 }
 
 func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
 
-	req := &fcu.DeleteVpcInput{
-		VpcId: &id,
+	req := oapi.DeleteNetRequest{
+		NetId: id,
 	}
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DeleteVpc(req)
+		_, err = conn.POST_DeleteNet(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
