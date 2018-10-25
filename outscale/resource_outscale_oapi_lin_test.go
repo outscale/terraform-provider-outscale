@@ -34,7 +34,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleLinDestroyed,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleLinConfig,
+				Config: testAccOutscaleOAPILinConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleLinExists("outscale_net.vpc", &conf),
 					resource.TestCheckResourceAttr(

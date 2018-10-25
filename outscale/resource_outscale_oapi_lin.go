@@ -12,20 +12,20 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleOAPILin() *schema.Resource {
+func resourceOutscaleOAPINet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPILinCreate,
-		Read:   resourceOutscaleOAPILinRead,
-		Delete: resourceOutscaleOAPILinDelete,
+		Create: resourceOutscaleOAPINetCreate,
+		Read:   resourceOutscaleOAPINetRead,
+		Delete: resourceOutscaleOAPINetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: getOAPILinSchema(),
+		Schema: getOAPINetSchema(),
 	}
 }
 
-func resourceOutscaleOAPILinCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.CreateVpcInput{}
@@ -65,10 +65,10 @@ func resourceOutscaleOAPILinCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(*resp.Vpc.VpcId)
 
-	return resourceOutscaleLinRead(d, meta)
+	return resourceOutscaleOAPINetRead(d, meta)
 }
 
-func resourceOutscaleOAPILinRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	id := d.Id()
@@ -108,11 +108,11 @@ func resourceOutscaleOAPILinRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("tenancy", resp.Vpcs[0].InstanceTenancy)
 	d.Set("dhcp_options_set_id", resp.Vpcs[0].DhcpOptionsId)
 	d.Set("net_id", resp.RequestId)
-
 	return d.Set("tag", dataSourceTags(resp.Vpcs[0].Tags))
+
 }
 
-func resourceOutscaleOAPILinDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	id := d.Id()
@@ -142,7 +142,7 @@ func resourceOutscaleOAPILinDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func getOAPILinSchema() map[string]*schema.Schema {
+func getOAPINetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"ip_range": {
 			Type:     schema.TypeString,
@@ -165,7 +165,7 @@ func getOAPILinSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": tagsSchemaComputed(),
+		"tag": dataSourceTagsSchema(),
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
