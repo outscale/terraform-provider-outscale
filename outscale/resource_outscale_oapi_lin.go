@@ -120,7 +120,9 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("tenancy", resp.Nets[0].Tenancy)
 	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
 	d.Set("net_id", resp.Nets[0].NetId)
-	return d.Set("tag", tagsOAPIToMap(resp.Nets[0].Tags))
+	d.Set("state", resp.Nets[0].State)
+	d.Set("request_id", resp.ResponseContext.RequestId)
+	return d.Set("tags", tagsOAPIToMap(resp.Nets[0].Tags))
 
 }
 
@@ -177,8 +179,12 @@ func getOAPINetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": dataSourceTagsSchema(),
+		"tags": dataSourceTagsSchema(),
 		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
