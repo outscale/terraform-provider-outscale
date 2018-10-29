@@ -5,10 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPIVpcs() *schema.Resource {
@@ -22,7 +21,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"lin": {
+			"net": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -64,36 +63,37 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeVpcsInput{}
+	req := oapi.ReadNetsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
-	v, vpcOk := d.GetOk("net_id")
+	netIds, netIdsOk := d.GetOk("net_id")
 
-	if filtersOk == false && vpcOk == false {
-		return fmt.Errorf("filters, or owner must be assigned, or net_id(s) must be provided")
+	if filtersOk == false && netIdsOk == false {
+		return fmt.Errorf("filters or net_id(s) must be provided")
 	}
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set))
 	}
-	if vpcOk {
-		ids := make([]*string, len(v.([]interface{})))
 
-		for k, v := range v.([]interface{}) {
-			ids[k] = aws.String(v.(string))
+	if netIdsOk {
+		ids := make([]string, len(netIds.([]interface{})))
+
+		for k, v := range netIds.([]interface{}) {
+			ids[k] = v.(string)
 		}
 
-		req.VpcIds = ids
+		req.Filters.NetIds = ids
 	}
 
 	var err error
-	var resp *fcu.DescribeVpcsOutput
+	var resp *oapi.POST_ReadNetsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		resp, err = conn.VM.DescribeVpcs(req)
+		resp, err = conn.POST_ReadNets(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -106,29 +106,31 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.Vpcs) == 0 {
+	if resp == nil || len(resp.OK.Nets) == 0 {
 		return fmt.Errorf("no matching VPC found")
 	}
 
 	d.SetId(resource.UniqueId())
 
-	lin := make([]map[string]interface{}, len(resp.Vpcs))
+	nets := make([]map[string]interface{}, len(resp.OK.Nets))
 
-	for i, v := range resp.Vpcs {
-		vpc := make(map[string]interface{})
+	for i, v := range resp.OK.Nets {
+		net := make(map[string]interface{})
 
-		vpc["net_id"] = *v.VpcId
-		vpc["ip_range"] = *v.CidrBlock
-		vpc["dhcp_options_set_id"] = *v.DhcpOptionsId
-		vpc["tenancy"] = *v.InstanceTenancy
-		vpc["state"] = *v.State
-		vpc["tag"] = tagsToMap(v.Tags)
+		net["net_id"] = v.NetId
+		net["ip_range"] = v.IpRange
+		net["dhcp_options_set_id"] = v.DhcpOptionsSetId
+		net["tenancy"] = v.Tenancy
+		net["state"] = v.State
+		if v.Tags != nil {
+			net["tag"] = tagsOAPIToMap(v.Tags)
+		}
 
-		lin[i] = vpc
+		nets[i] = net
 	}
 
-	d.Set("lin", lin)
-	d.Set("request_id", resp.RequestId)
+	d.Set("net", nets)
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
 	return nil
 }
