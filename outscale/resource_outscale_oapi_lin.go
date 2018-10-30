@@ -70,6 +70,14 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(net.NetId)
 
+	//SetTags
+	if d.IsNewResource() {
+		if err := setOAPITags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tags")
+	}
+
 	return resourceOutscaleOAPINetRead(d, meta)
 }
 
@@ -179,7 +187,8 @@ func getOAPINetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": dataSourceTagsSchema(),
+		"tag":  dataSourceTagsSchema(),
+		"tags": tagsSchema(),
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
