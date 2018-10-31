@@ -143,5 +143,9 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Nets) resource.TestCh
 const testAccOutscaleOAPILinConfig = `
 resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
+
+	tags {
+		Name = "outscale_net"
+	}	
 }
 `

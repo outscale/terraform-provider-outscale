@@ -628,8 +628,8 @@ func tagsSchemaComputed() *schema.Schema {
 
 func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tag") {
-		oraw, nraw := d.GetChange("tag")
+	if d.HasChange("tags") {
+		oraw, nraw := d.GetChange("tags")
 		o := oraw.(map[string]interface{})
 		n := nraw.(map[string]interface{})
 		create, remove := diffOAPITags(tagsOAPIFromMap(o), tagsOAPIFromMap(n))
