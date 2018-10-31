@@ -493,6 +493,16 @@ func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
 	return result
 }
 
+func tagsOAPIToMapString(ts []oapi.Tags_0) map[string]string {
+	tags := make(map[string]string)
+	if len(ts) > 0 {
+		for _, t := range ts {
+			tags[t.Key] = t.Value
+		}
+	}
+	return tags
+}
+
 func tagsToMapC(ts []*common.Tag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
@@ -614,6 +624,14 @@ func tagsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeMap,
 		Optional: true,
+		ForceNew: true,
+	}
+}
+func tagsOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+		Computed: true,
 		ForceNew: true,
 	}
 }
