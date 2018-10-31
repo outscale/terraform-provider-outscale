@@ -50,7 +50,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tag": tagsSchemaComputed(),
+						"tags": tagsOAPISchemaComputed(),
 					},
 				},
 			},
@@ -123,7 +123,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 		net["tenancy"] = v.Tenancy
 		net["state"] = v.State
 		if v.Tags != nil {
-			net["tag"] = tagsOAPIToMap(v.Tags)
+			net["tags"] = tagsOAPIToMapString(v.Tags)
 		}
 
 		nets[i] = net

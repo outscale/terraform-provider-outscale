@@ -47,7 +47,7 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag": tagsSchemaComputed(),
+			"tags": tagsOAPISchemaComputed(),
 		},
 	}
 }
@@ -100,7 +100,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	d.Set("state", net.State)
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
-	return d.Set("tag", tagsOAPIToMap(net.Tags))
+	return d.Set("tags", tagsOAPIToMapString(net.Tags))
 }
 
 func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.Filters_6 {

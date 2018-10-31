@@ -189,7 +189,6 @@ func getOAPINetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		//"tag":  dataSourceTagsSchema(),
 		"tags": tagsOAPISchema(),
 		"net_id": {
 			Type:     schema.TypeString,

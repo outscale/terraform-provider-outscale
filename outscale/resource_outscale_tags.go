@@ -635,6 +635,12 @@ func tagsOAPISchema() *schema.Schema {
 		ForceNew: true,
 	}
 }
+func tagsOAPISchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
+	}
+}
 
 func tagsSchemaComputed() *schema.Schema {
 	return &schema.Schema{
