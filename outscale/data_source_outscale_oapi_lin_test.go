@@ -36,6 +36,7 @@ func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
 				Config: testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIVpcCheck("data.outscale_net.by_id", ipRange, tag),
+					testAccCheckState("data.outscale_net.by_id"),
 				),
 			},
 		},
@@ -79,9 +80,9 @@ resource "outscale_net" "test" {
   ip_range = "%s"
   
   #not supported yet
-  #tag {
-  #  Name = "%s"
-  #}
+  tags {
+    Name = "%s"
+  }
 }
 
 data "outscale_net" "by_id" {
