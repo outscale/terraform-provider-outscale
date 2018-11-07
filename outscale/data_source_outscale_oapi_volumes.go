@@ -85,23 +85,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": {
-							Type: schema.TypeList,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-							Computed: true,
-						},
-						"tag": tagsSchema(),
+						"tags": tagsOAPISchemaComputed(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -212,7 +196,7 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 			im["snapshot_id"] = v.SnapshotId
 		}
 		if v.Tags != nil {
-			im["tags"] = tagsOAPIToMap(v.Tags)
+			im["tags"] = tagsOAPIToMapString(v.Tags)
 		}
 		if v.Type != "" {
 			im["type"] = v.Type
