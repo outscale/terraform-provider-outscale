@@ -412,6 +412,20 @@ func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
 	return result
 }
 
+func tagsOAPIFromSliceMap(m []interface{}) []oapi.Tags_0 {
+	result := make([]oapi.Tags_0, 0, len(m))
+	for _, v := range m {
+		tag := v.(map[string]interface{})
+		t := oapi.Tags_0{
+			Key:   tag["key"].(string),
+			Value: tag["value"].(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
 func diffTagsCommon(oldTags, newTags []*common.Tag) ([]*common.Tag, []*common.Tag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
@@ -635,6 +649,26 @@ func tagsOAPISchema() *schema.Schema {
 		ForceNew: true,
 	}
 }
+
+func tagsOAPIListSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
 func tagsOAPISchemaComputed() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeMap,
@@ -654,9 +688,9 @@ func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
 		oraw, nraw := d.GetChange("tags")
-		o := oraw.(map[string]interface{})
-		n := nraw.(map[string]interface{})
-		create, remove := diffOAPITags(tagsOAPIFromMap(o), tagsOAPIFromMap(n))
+		o := oraw.([]interface{})
+		n := nraw.([]interface{})
+		create, remove := diffOAPITags(tagsOAPIFromSliceMap(o), tagsOAPIFromSliceMap(n))
 
 		// Set tag
 		if len(remove) > 0 {
