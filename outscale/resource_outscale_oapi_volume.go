@@ -91,17 +91,20 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"key": {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
 						},
 						"value": {
 							Type:     schema.TypeString,
 							Computed: true,
+							Optional: true,
 						},
 					},
 				},
 				Computed: true,
+				Optional: true,
 			},
-			"tag": tagsSchema(),
+			//"tag": tagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -295,7 +298,9 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 	d.SetId(volume.VolumeId)
 
 	d.Set("sub_region_name", volume.SubRegionName)
-	d.Set("size", volume.Size)
+
+	//Commented until backend issues is resolved.
+	//d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
 	d.Set("type", volume.Type)
 
