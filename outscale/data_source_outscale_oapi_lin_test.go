@@ -80,7 +80,8 @@ resource "outscale_net" "test" {
   
   #not supported yet
   tags {
-    Name = "%s"
+	key = "Name"
+	value = "%s"
   }
 }
 

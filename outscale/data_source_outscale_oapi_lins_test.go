@@ -47,10 +47,10 @@ func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
 resource "outscale_net" "test" {
   ip_range = "%s"
 	
-	#Not supported yet
-  #tag {
-  #  Name = "%s"
-  #}
+  tags {
+	key = "Name"
+	value = "%s"
+  }
 }
 
 data "outscale_nets" "by_id" {
