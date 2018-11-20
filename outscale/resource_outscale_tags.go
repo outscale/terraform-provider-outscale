@@ -650,6 +650,28 @@ func tagsOAPISchema() *schema.Schema {
 	}
 }
 
+func tagsListOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type: schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Optional: true,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+					Optional: true,
+				},
+			},
+		},
+		Computed: true,
+		Optional: true,
+	}
+}
+
 func tagsOAPIListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
