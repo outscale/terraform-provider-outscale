@@ -25,7 +25,8 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var conf oapi.Nets
+	var conf1 oapi.Nets
+	var conf2 oapi.Nets
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -35,9 +36,12 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPILinExists("outscale_net.vpc", &conf),
+					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.0", &conf1),
+					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.1", &conf2),
 					resource.TestCheckResourceAttr(
-						"outscale_net.vpc", "ip_range", "10.0.0.0/16"),
+						"outscale_net.vpc.0", "ip_range", "10.0.0.0/16"),
+					resource.TestCheckResourceAttr(
+						"outscale_net.vpc.1", "ip_range", "10.0.0.0/16"),
 				),
 			},
 		},
@@ -143,6 +147,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Nets) resource.TestCh
 const testAccOutscaleOAPILinConfig = `
 resource "outscale_net" "vpc" {
 	ip_range = "10.0.0.0/16"
+	count = 2
 
 	tags {
 		key = "Name" 

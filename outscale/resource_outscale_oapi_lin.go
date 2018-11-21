@@ -55,9 +55,6 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	})
 
 	var net oapi.Net
-	if resp.OK != nil {
-		net = resp.OK.Net
-	}
 
 	if err != nil {
 		log.Printf("[DEBUG] Error creating lin (%s)", err)
@@ -66,6 +63,10 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	if resp == nil {
 		return fmt.Errorf("Cannot create the oAPI vpc, empty response")
+	}
+
+	if resp.OK != nil {
+		net = resp.OK.Net
 	}
 
 	d.SetId(net.NetId)
