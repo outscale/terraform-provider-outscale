@@ -15,6 +15,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 type Client struct {
@@ -805,7 +806,12 @@ func (client *Client) POST_CreateSnapshot(
 	if err != nil {
 		return
 	}
+
+	utils.DebugRequest(req)
 	resp, err := client.client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -1651,7 +1657,11 @@ func (client *Client) POST_DeleteSnapshot(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -2873,7 +2883,11 @@ func (client *Client) POST_ReadSnapshots(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -4001,7 +4015,11 @@ func (client *Client) POST_UpdateSnapshot(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}

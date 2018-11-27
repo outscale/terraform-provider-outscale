@@ -5,10 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPISnapshots() *schema.Resource {
@@ -84,7 +83,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -95,24 +94,24 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := &fcu.DescribeSnapshotsInput{}
+	params := oapi.ReadSnapshotsRequest{}
 	if restorableUsersOk {
-		params.RestorableByUserIds = expandStringList(restorableUsers.([]interface{}))
+		params.Filters.PermissionToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
 	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
 	}
 	if ownersOk {
-		params.OwnerIds = expandStringList(owners.([]interface{}))
+		params.Filters.AccountIds = oapiExpandStringList(owners.([]interface{}))
 	}
 	if snapshotIdsOk {
-		params.SnapshotIds = expandStringList(snapshotIds.([]interface{}))
+		params.Filters.SnapshotIds = oapiExpandStringList(snapshotIds.([]interface{}))
 	}
 
-	var resp *fcu.DescribeSnapshotsOutput
+	var resp *oapi.POST_ReadSnapshotsResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSnapshots(params)
+		resp, err = conn.POST_ReadSnapshots(params)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -127,24 +126,24 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if len(resp.Snapshots) < 1 {
+	if len(resp.OK.Snapshots) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	snapshots := make([]map[string]interface{}, len(resp.Snapshots))
-	for k, v := range resp.Snapshots {
+	snapshots := make([]map[string]interface{}, len(resp.OK.Snapshots))
+	for k, v := range resp.OK.Snapshots {
 		snapshot := make(map[string]interface{})
 
-		snapshot["description"] = aws.StringValue(v.Description)
-		snapshot["account_alias"] = aws.StringValue(v.OwnerAlias)
-		snapshot["account_id"] = aws.StringValue(v.OwnerId)
-		snapshot["completion"] = aws.StringValue(v.Progress)
-		snapshot["snapshot_id"] = aws.StringValue(v.SnapshotId)
-		snapshot["state"] = aws.StringValue(v.State)
-		snapshot["comment"] = aws.StringValue(v.StateMessage)
-		snapshot["volume_id"] = aws.StringValue(v.VolumeId)
-		snapshot["volume_size"] = aws.Int64Value(v.VolumeSize)
-		snapshot["tag"] = tagsToMap(v.Tags)
+		snapshot["description"] = v.Description
+		//snapshot["account_alias"] = aws.StringValue(v.OwnerAlias)
+		snapshot["account_id"] = v.AccountId
+		snapshot["completion"] = v.Progress
+		snapshot["snapshot_id"] = v.SnapshotId
+		snapshot["state"] = v.State
+		//snapshot["comment"] = v.StateMessage
+		snapshot["volume_id"] = v.VolumeId
+		snapshot["volume_size"] = v.VolumeSize
+		snapshot["tag"] = tagsOAPIToMap(v.Tags)
 
 		snapshots[k] = snapshot
 	}
