@@ -2,13 +2,14 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func dataSourceOutscaleOAPISnapshot() *schema.Resource {
@@ -68,7 +69,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -79,24 +80,24 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := &fcu.DescribeSnapshotsInput{}
+	params := oapi.ReadSnapshotsRequest{}
 	if restorableUsersOk {
-		params.RestorableByUserIds = expandStringList(restorableUsers.([]interface{}))
+		params.Filters.PermissionToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
 	}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
 	}
 	if ownersOk {
-		params.OwnerIds = expandStringList(owners.([]interface{}))
+		params.Filters.AccountIds = oapiExpandStringList(owners.([]interface{}))
 	}
 	if snapshotIdsOk {
-		params.SnapshotIds = []*string{aws.String(snapshotIds.(string))}
+		params.Filters.SnapshotIds = oapiExpandStringList(snapshotIds.([]interface{}))
 	}
 
-	var resp *fcu.DescribeSnapshotsOutput
+	var resp *oapi.POST_ReadSnapshotsResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSnapshots(params)
+		resp, err = conn.POST_ReadSnapshots(params)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -111,31 +112,111 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	var snapshot *fcu.Snapshot
-	if len(resp.Snapshots) < 1 {
+	var snapshot oapi.Snapshots
+	if len(resp.OK.Snapshots) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-	if len(resp.Snapshots) > 1 {
+	if len(resp.OK.Snapshots) > 1 {
 		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
-	snapshot = resp.Snapshots[0]
+	snapshot = resp.OK.Snapshots[0]
 
 	//Single Snapshot found so set to state
-	return snapshotOAPIDescriptionAttributes(d, snapshot)
+	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *fcu.Snapshot) error {
-	d.SetId(*snapshot.SnapshotId)
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Snapshots) error {
+	d.SetId(snapshot.SnapshotId)
 	d.Set("description", snapshot.Description)
-	d.Set("account_alias", snapshot.OwnerAlias)
-	d.Set("account_id", snapshot.OwnerId)
+	//d.Set("account_alias", snapshot.OwnerAlias)
+	d.Set("account_id", snapshot.AccountId)
 	d.Set("completion", snapshot.Progress)
 	d.Set("snapshot_id", snapshot.SnapshotId)
 	d.Set("state", snapshot.State)
-	d.Set("comment", snapshot.StateMessage)
+	//d.Set("comment", snapshot.StateMessage)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
 
-	return d.Set("tag", tagsToMap(snapshot.Tags))
+	return setSnapshotArgTags("tag", d, &snapshot.Tags)
+}
+
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.Filters_10) *oapi.Filters_10 {
+
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var values []string
+
+		for _, e := range m["values"].([]interface{}) {
+			values = append(values, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "description":
+			filter.Descriptions = values
+
+		case "owner-alias":
+			filter.AccountAliases = values
+
+		case "owner-id":
+			filter.AccountIds = values
+
+		case "progress":
+			filter.Progresses = values
+
+		case "snapshot-id":
+			filter.SnapshotIds = values
+
+		case "status":
+			filter.States = values
+
+		case "volume-id":
+			filter.VolumeIds = values
+
+		case "volume-size":
+			filter.VolumeSizes = values
+
+		case "tag":
+			filter.Tags = values
+
+		case "tag-key":
+			filter.TagKeys = values
+
+		case "tag-value":
+			filter.TagValues = values
+
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filter
+}
+
+func oapiExpandStringList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, v.(string))
+		}
+	}
+	return vs
+}
+
+func setSnapshotArgTags(attrName string, d *schema.ResourceData, tags *[]oapi.Tags_0) error {
+	if *tags != nil {
+		if err := d.Set(attrName, tagsOAPIToMap(*tags)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set(attrName, []map[string]string{
+			map[string]string{
+				"key":   "",
+				"value": "",
+			},
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }

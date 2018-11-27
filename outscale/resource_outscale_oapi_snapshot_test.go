@@ -8,24 +8,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	oapiFlag, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		oapiFlag = false
 	}
 
-	if !oapi {
+	if !oapiFlag {
 		t.Skip()
 	}
-	var v fcu.Snapshot
+	var v oapi.Snapshots
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -43,15 +43,15 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	oapiFlag, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		oapiFlag = false
 	}
 
-	if !oapi {
+	if !oapiFlag {
 		t.Skip()
 	}
-	var v fcu.Snapshot
+	var v oapi.Snapshots
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -67,7 +67,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPISnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFunc {
+func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshots) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -78,17 +78,17 @@ func testAccCheckOAPISnapshotExists(n string, v *fcu.Snapshot) resource.TestChec
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		request := &fcu.DescribeSnapshotsInput{
-			SnapshotIds: []*string{aws.String(rs.Primary.ID)},
+		request := oapi.ReadSnapshotsRequest{
+			Filters: oapi.Filters_10{SnapshotIds: []string{rs.Primary.ID}},
 		}
 
-		var resp *fcu.DescribeSnapshotsOutput
+		var resp *oapi.POST_ReadSnapshotsResponses
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSnapshots(request)
+			resp, err = conn.POST_ReadSnapshots(request)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -98,8 +98,8 @@ func testAccCheckOAPISnapshotExists(n string, v *fcu.Snapshot) resource.TestChec
 			return nil
 		})
 		if err == nil {
-			if resp.Snapshots != nil && len(resp.Snapshots) > 0 {
-				*v = *resp.Snapshots[0]
+			if resp.OK.Snapshots != nil && len(resp.OK.Snapshots) > 0 {
+				*v = resp.OK.Snapshots[0]
 				return nil
 			}
 		}
@@ -109,7 +109,7 @@ func testAccCheckOAPISnapshotExists(n string, v *fcu.Snapshot) resource.TestChec
 
 const testAccOutscaleOAPISnapshotConfig = `
 resource "outscale_volume" "test" {
-	availability_zone = "eu-west-2a"
+	sub_region_name = "us-west-1"
 	size = 1
 }
 
@@ -120,7 +120,7 @@ resource "outscale_snapshot" "test" {
 
 const testAccOutscaleOAPISnapshotConfigWithDescription = `
 resource "outscale_volume" "description_test" {
-	availability_zone = "us-west-2a"
+	availability_zone = "us-west-1"
 	size = 1
 }
 
