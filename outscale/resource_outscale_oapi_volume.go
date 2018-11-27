@@ -102,7 +102,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.CreateVolumeRequest{
-		SubRegionName: d.Get("sub_region_name").(string),
+		SubregionName: d.Get("sub_region_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = int64(value.(int))
@@ -113,7 +113,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var t string
 	if value, ok := d.GetOk("type"); ok {
-		request.Type = value.(string)
+		request.VolumeType = value.(string)
 	}
 
 	iops := d.Get("iops").(int)
@@ -167,7 +167,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, result.VolumeId),
+		Refresh:    volumeOAPIStateRefreshFunc(conn, result.Volume.VolumeId),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -175,10 +175,10 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.VolumeId, err)
+		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.Volume.VolumeId, err)
 	}
 
-	d.SetId(result.VolumeId)
+	d.SetId(result.Volume.VolumeId)
 
 	//Missing in swagger spec
 	if d.IsNewResource() {
@@ -196,7 +196,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.ReadVolumesRequest{
-		Filters: oapi.Filters_15{VolumeIds: []string{d.Id()}},
+		Filters: oapi.FiltersVolume{VolumeIds: []string{d.Id()}},
 	}
 
 	var response *oapi.ReadVolumesResponse
@@ -255,7 +255,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, err := conn.POST_ReadVolumes(oapi.ReadVolumesRequest{
-			Filters: oapi.Filters_15{
+			Filters: oapi.FiltersVolume{
 				VolumeIds: []string{volumeID},
 			},
 		})
@@ -275,17 +275,17 @@ func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.Sta
 	}
 }
 
-func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
+func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.SetId(volume.VolumeId)
 
-	d.Set("sub_region_name", volume.SubRegionName)
+	d.Set("sub_region_name", volume.SubregionName)
 
 	//Commented until backend issues is resolved.
 	//d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("type", volume.Type)
+	d.Set("type", volume.VolumeType)
 
-	if volume.Type == "io1" {
+	if volume.VolumeType == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}

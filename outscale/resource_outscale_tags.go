@@ -367,7 +367,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 // diffOAPITags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOAPITags(oldTags, newTags []oapi.Tags_0) ([]oapi.Tags_0, []oapi.Tags_0) {
+func diffOAPITags(oldTags, newTags []oapi.ResourceTag) ([]oapi.ResourceTag, []oapi.ResourceTag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
 	for _, t := range newTags {
@@ -375,7 +375,7 @@ func diffOAPITags(oldTags, newTags []oapi.Tags_0) ([]oapi.Tags_0, []oapi.Tags_0)
 	}
 
 	// Build the list of what to remove
-	var remove []oapi.Tags_0
+	var remove []oapi.ResourceTag
 	for _, t := range oldTags {
 		old, ok := create[t.Key]
 		if !ok || old != t.Value {
@@ -399,10 +399,10 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
-	result := make([]oapi.Tags_0, 0, len(m))
+func tagsOAPIFromMap(m map[string]interface{}) []oapi.ResourceTag {
+	result := make([]oapi.ResourceTag, 0, len(m))
 	for k, v := range m {
-		t := oapi.Tags_0{
+		t := oapi.ResourceTag{
 			Key:   k,
 			Value: v.(string),
 		}
@@ -412,11 +412,11 @@ func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
 	return result
 }
 
-func tagsOAPIFromSliceMap(m []interface{}) []oapi.Tags_0 {
-	result := make([]oapi.Tags_0, 0, len(m))
+func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
+	result := make([]oapi.ResourceTag, 0, len(m))
 	for _, v := range m {
 		tag := v.(map[string]interface{})
-		t := oapi.Tags_0{
+		t := oapi.ResourceTag{
 			Key:   tag["key"].(string),
 			Value: tag["value"].(string),
 		}
@@ -491,7 +491,7 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 }
 
 // tagsOAPI	ToMap turns the list of tag into a map.
-func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
+func tagsOAPIToMap(ts []oapi.ResourceTag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
@@ -507,7 +507,7 @@ func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
 	return result
 }
 
-func tagsOAPIToMapString(ts []oapi.Tags_0) map[string]string {
+func tagsOAPIToMapString(ts []oapi.ResourceTag) map[string]string {
 	tags := make(map[string]string)
 	if len(ts) > 0 {
 		for _, t := range ts {
