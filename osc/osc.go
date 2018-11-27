@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 const (
@@ -121,7 +122,7 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 	if err != nil {
 		return nil, err
 	}
-
+	utils.DebugRequest(req)
 	return req, nil
 }
 
@@ -131,7 +132,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
-	//utils.DebugResponse(resp)
+	utils.DebugResponse(resp)
 	if err != nil {
 		return err
 	}

@@ -43,7 +43,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-880caa66"),
+						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
@@ -80,7 +80,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(&before),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-880caa66"),
+						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
@@ -292,7 +292,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, prov
 func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms_2) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if server.ImageId != "ami-880caa66" {
+		if server.ImageId != "ami-cc3278d3" {
 			return fmt.Errorf("Bad image_id: %s", server.ImageId)
 		}
 
@@ -303,7 +303,7 @@ func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms_2) resource.TestCheck
 func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
-	image_id = "ami-880caa66"
+	image_id = "ami-cc3278d3"
 	type = "t2.micro"
 }`
 }
@@ -311,10 +311,10 @@ resource "outscale_vm" "basic" {
 func testAccVmsConfigUpdateOAPIVMKey() string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_vm" {
-  image_id = "ami-880caa66"
+  image_id = "ami-cc3278d3"
   type = "c4.large"
   keypair_name = "integ_sut_keypair"
-  #firewall_rules_set_ids = ["sg-c73d3b6b"]
+  security_group_ids = ["sg-c73d3b6b"]
   #firewall_rules_set_id = "sg-c73d3b6b" # tempo tests
 }`)
 }

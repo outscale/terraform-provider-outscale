@@ -89,7 +89,14 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
 		resp, err = conn.POST_CreateVms(*runOpts)
-		return resource.RetryableError(err)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	})
 
 	if err != nil {
@@ -166,11 +173,11 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		return resource.RetryableError(err)
 	})
 
-	resp = rs.OK
-
 	if err != nil {
-		return fmt.Errorf("Error deleting the instance %s", err)
+		return fmt.Errorf("Error reading the VM %s", err)
 	}
+
+	resp = rs.OK
 
 	if err != nil {
 		// If the instance was not found, return nil so that we can show
@@ -596,7 +603,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"security_group_ids": {
-			Type:     schema.TypeString,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -1090,10 +1097,6 @@ func buildOutscaleOAPIVMOpts(
 	opts.UserData = userData
 
 	subnetID, hasSubnet := d.GetOk("subnet_id")
-	if hasSubnet {
-		s := subnetID.(string)
-		opts.SubnetID = s
-	}
 
 	tenancy, tenancyOK := d.GetOk("tenancy")
 	az, azOk := d.GetOk("availability_zone")
@@ -1117,8 +1120,30 @@ func buildOutscaleOAPIVMOpts(
 	}
 
 	networkInterfaces, interfacesOk := d.GetOk("nics")
-	if interfacesOk {
+	if hasSubnet || interfacesOk {
 		opts.NetworkInterfaces = buildNetworkOApiInterfaceOpts(d, groups, networkInterfaces)
+	} else {
+		if hasSubnet {
+			s := subnetID.(string)
+			opts.SubnetID = s
+		}
+
+		if opts.SubnetID != "" {
+			opts.SecurityGroupIDs = groups
+		} else {
+			opts.SecurityGroups = groups
+		}
+
+		var groupIDs []string
+		if v := d.Get("security_group_ids"); v != nil {
+
+			sgs := v.(*schema.Set).List()
+			for _, v := range sgs {
+				str := v.(string)
+				groupIDs = append(groupIDs, str)
+			}
+		}
+		opts.SecurityGroupIDs = groupIDs
 	}
 
 	if v, ok := d.GetOk("private_ip"); ok {
@@ -1226,13 +1251,14 @@ func InstanceStateOApiRefreshFunc(conn *oapi.Client, instanceID, failState strin
 			})
 			return resource.RetryableError(err)
 		})
-		resp = rs.OK
 
 		if err != nil {
 			fmt.Printf("Error on InstanceStateRefresh: %s", err)
 
 			return nil, "", err
 		}
+
+		resp = rs.OK
 
 		if resp == nil || len(resp.Vms) == 0 {
 			return nil, "", nil

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -84,23 +85,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
-			"tag": tagsSchema(),
+			"tags": tagsListOAPISchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -171,6 +156,8 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
+	utils.PrintToJSON(resp, "##RESPONSE")
+
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VM volume: %s", err)
 	}
@@ -229,6 +216,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	response = resp.OK
 
+	utils.PrintToJSON(response, "##RESPONSE READ")
+
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
 			d.SetId("")
@@ -247,7 +236,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		request := &oapi.DeleteVolumeRequest{
 			VolumeId: d.Id(),
 		}
-		_, err := conn.POST_DeleteVolume(*request)
+		response, err := conn.POST_DeleteVolume(*request)
 		if err == nil {
 			return nil
 		}
@@ -255,6 +244,8 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
 			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 		}
+		fmt.Println(err)
+		utils.PrintToJSON(response.OK, "##RESPONSE-DELETE")
 
 		return resource.NonRetryableError(err)
 	})
@@ -288,7 +279,9 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
 	d.SetId(volume.VolumeId)
 
 	d.Set("sub_region_name", volume.SubRegionName)
-	d.Set("size", volume.Size)
+
+	//Commented until backend issues is resolved.
+	//d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
 	d.Set("type", volume.Type)
 

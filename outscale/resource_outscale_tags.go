@@ -412,6 +412,20 @@ func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
 	return result
 }
 
+func tagsOAPIFromSliceMap(m []interface{}) []oapi.Tags_0 {
+	result := make([]oapi.Tags_0, 0, len(m))
+	for _, v := range m {
+		tag := v.(map[string]interface{})
+		t := oapi.Tags_0{
+			Key:   tag["key"].(string),
+			Value: tag["value"].(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
 func diffTagsCommon(oldTags, newTags []*common.Tag) ([]*common.Tag, []*common.Tag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
@@ -491,6 +505,16 @@ func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
 	}
 
 	return result
+}
+
+func tagsOAPIToMapString(ts []oapi.Tags_0) map[string]string {
+	tags := make(map[string]string)
+	if len(ts) > 0 {
+		for _, t := range ts {
+			tags[t.Key] = t.Value
+		}
+	}
+	return tags
 }
 
 func tagsToMapC(ts []*common.Tag) []map[string]string {
@@ -617,6 +641,62 @@ func tagsSchema() *schema.Schema {
 		ForceNew: true,
 	}
 }
+func tagsOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+	}
+}
+
+func tagsListOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type: schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Optional: true,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+					Optional: true,
+				},
+			},
+		},
+		Computed: true,
+		Optional: true,
+	}
+}
+
+func tagsOAPIListSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
+func tagsOAPISchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
+	}
+}
 
 func tagsSchemaComputed() *schema.Schema {
 	return &schema.Schema{
@@ -628,11 +708,11 @@ func tagsSchemaComputed() *schema.Schema {
 
 func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tag") {
-		oraw, nraw := d.GetChange("tag")
-		o := oraw.(map[string]interface{})
-		n := nraw.(map[string]interface{})
-		create, remove := diffOAPITags(tagsOAPIFromMap(o), tagsOAPIFromMap(n))
+	if d.HasChange("tags") {
+		oraw, nraw := d.GetChange("tags")
+		o := oraw.([]interface{})
+		n := nraw.([]interface{})
+		create, remove := diffOAPITags(tagsOAPIFromSliceMap(o), tagsOAPIFromSliceMap(n))
 
 		// Set tag
 		if len(remove) > 0 {

@@ -85,23 +85,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": {
-							Type: schema.TypeList,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-							Computed: true,
-						},
-						"tag": tagsSchema(),
+						"tags": tagsOAPIListSchemaComputed(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -163,6 +147,8 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	if len(filteredVolumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
+
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
