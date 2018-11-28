@@ -103,8 +103,8 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	return d.Set("tags", tagsOAPIToMap(net.Tags))
 }
 
-func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.Filters_6 {
-	var filters oapi.Filters_6
+func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.FiltersNet {
+	var filters oapi.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -118,7 +118,8 @@ func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.Filters_6 {
 		case "dhcp-options-set-id":
 			filters.DhcpOptionsSetIds = filterValues
 		case "is-default":
-			filters.IsDefault = filterValues
+			//bool
+			//filters.IsDefault = filterValues
 		case "state":
 			filters.States = filterValues
 		case "tag-key":

@@ -302,7 +302,7 @@ func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
 	return res
 }
 
-func getOAPISecurityGroups(groupSet []oapi.SecurityGroups) []map[string]interface{} {
+func getOAPISecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 
@@ -402,7 +402,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 	return res
 }
 
-func getOAPIVMNetworkInterfaceSet(interfaces []oapi.Nics_1) []map[string]interface{} {
+func getOAPIVMNetworkInterfaceSet(interfaces []oapi.NicLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 
 	if interfaces != nil {
@@ -411,13 +411,13 @@ func getOAPIVMNetworkInterfaceSet(interfaces []oapi.Nics_1) []map[string]interfa
 			assoc := make(map[string]interface{})
 			attach := make(map[string]interface{})
 
-			if !reflect.DeepEqual(i.LinkPublicIp, oapi.LinkPublicIp_1{}) {
+			if !reflect.DeepEqual(i.LinkPublicIp, oapi.LinkPublicIp{}) {
 				assoc["public_ip_account_id"] = i.LinkPublicIp.PublicIpAccountId
 				assoc["public_dns_name"] = i.LinkPublicIp.PublicDnsName
 				assoc["public_ip"] = i.LinkPublicIp.PublicIp
 			}
 
-			if !reflect.DeepEqual(i.LinkNic, oapi.LinkNic_1{}) {
+			if !reflect.DeepEqual(i.LinkNic, oapi.LinkNic{}) {
 				attach["nic_link_id"] = i.LinkNic.LinkNicId
 				attach["delete_on_vm_termination"] = i.LinkNic.DeleteOnVmDeletion
 				attach["nic_sort_number"] = i.LinkNic.DeviceNumber //TO Check

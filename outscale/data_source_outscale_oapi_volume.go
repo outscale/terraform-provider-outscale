@@ -93,7 +93,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, VolumeIdsOk := d.GetOk("volume_id")
 
 	params := oapi.ReadVolumesRequest{
-		Filters: oapi.Filters_15{},
+		Filters: oapi.FiltersVolume{},
 	}
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
@@ -127,7 +127,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	filteredVolumes := resp.Volumes[:]
 
-	var volume oapi.Volumes
+	var volume oapi.Volume
 	if len(filteredVolumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -145,18 +145,18 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 }
 
-func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volumes) error {
+func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.SetId(volume.VolumeId)
 
 	d.Set("volume_id", volume.VolumeId)
-	d.Set("sub_region_name", volume.SubRegionName)
+	d.Set("sub_region_name", volume.SubregionName)
 	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("type", volume.Type)
+	d.Set("type", volume.VolumeType)
 	d.Set("state", volume.State)
 	d.Set("volume_id", volume.VolumeId)
 
-	if volume.Type != "" && volume.Type == "io1" {
+	if volume.VolumeType != "" && volume.VolumeType == "io1" {
 		// if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		// }
@@ -221,8 +221,8 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.Filters_15 {
-	var filters oapi.Filters_15
+func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.FiltersVolume {
+	var filters oapi.FiltersVolume
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -236,7 +236,7 @@ func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.Filters_15 
 		case "snapshot-id":
 			filters.SnapshotIds = filterValues
 		case "sub-region-name":
-			filters.SubRegionNames = filterValues
+			filters.SubregionNames = filterValues
 		case "tag-key":
 			filters.TagKeys = filterValues
 		//TODO: case "tags":

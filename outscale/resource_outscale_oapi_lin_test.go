@@ -25,8 +25,8 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var conf1 oapi.Nets
-	var conf2 oapi.Nets
+	var conf1 oapi.Net
+	var conf2 oapi.Net
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -48,7 +48,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Nets) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -64,7 +64,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Nets) resource.TestCh
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
 			resp, err = conn.OAPI.POST_ReadNets(oapi.ReadNetsRequest{
-				Filters: oapi.Filters_6{NetIds: []string{rs.Primary.ID}},
+				Filters: oapi.FiltersNet{NetIds: []string{rs.Primary.ID}},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

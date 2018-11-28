@@ -43,7 +43,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	runOpts := &oapi.CreateVmsRequest{
 		BlockDeviceMappings:         instanceOpts.BlockDeviceMappings,
 		BsuOptimized:                instanceOpts.EBSOptimized,
-		Type:                        instanceOpts.InstanceType,
+		VmType:                      instanceOpts.InstanceType,
 		Nics:                        instanceOpts.NetworkInterfaces,
 		ImageId:                     instanceOpts.ImageID,
 		SubnetId:                    instanceOpts.SubnetID,
@@ -154,11 +154,10 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	filters := []oapi.Filters_13{
-		oapi.Filters_13{
-			VmIds: []string{d.Id()},
-		},
+	filters := oapi.FiltersVm{
+		VmIds: []string{d.Id()},
 	}
+
 	input := &oapi.ReadVmsRequest{
 		Filters: filters,
 	}
@@ -199,11 +198,11 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	instance := resp.Vms[0]
 
-	d.Set("block_device_mapping", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
+	//d.Set("block_device_mapping", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
 	d.Set("token", instance.ClientToken)
 	d.Set("bsu_optimized", instance.BsuOptimized)
 	d.Set("image_id", instance.ImageId)
-	d.Set("type", instance.Type)
+	d.Set("type", instance.VmType)
 	d.Set("vm_id", instance.VmId)
 	d.Set("keypair_name", instance.KeypairName)
 	d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
@@ -219,12 +218,12 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	placement := make(map[string]interface{})
-	if !reflect.DeepEqual(instance.Placement, oapi.Placement_1{}) {
-		placement["affinity"] = instance.Placement.Affinity
-		placement["sub_region_name"] = instance.Placement.SubRegionName
-		placement["dedicated_host_id"] = instance.Placement.DedicatedHostId
+	if !reflect.DeepEqual(instance.Placement, oapi.Placement{}) {
 		placement["tenancy"] = instance.Placement.Tenancy
-
+		placement["sub_region_name"] = instance.Placement.SubregionName
+		//Missing on swagger spec
+		//placement["affinity"] = instance.Placement.Affinity
+		//placement["dedicated_host_id"] = instance.Placement.DedicatedHostId
 		// "firewall_rules_set_name": instance.Placement.FirewallRulesSetName,
 	}
 
@@ -1057,7 +1056,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 }
 
 type outscaleOApiInstanceOpts struct {
-	BlockDeviceMappings               []oapi.BlockDeviceMappings_1
+	BlockDeviceMappings               []oapi.BlockDeviceMappingVmCreation
 	DisableAPITermination             bool
 	EBSOptimized                      bool
 	ImageID                           string
@@ -1065,8 +1064,8 @@ type outscaleOApiInstanceOpts struct {
 	InstanceType                      string
 	Ipv6AddressCount                  int64
 	KeyName                           string
-	NetworkInterfaces                 []oapi.Nics_0
-	Placement                         oapi.Placement_0
+	NetworkInterfaces                 []oapi.NicForVmCreation
+	Placement                         oapi.Placement
 	PrivateIPAddress                  string
 	SecurityGroupIDs                  []string
 	SecurityGroups                    []string
@@ -1104,9 +1103,9 @@ func buildOutscaleOAPIVMOpts(
 
 	//if gnOk && tenancyOK && azOk {
 	if tenancyOK && azOk {
-		opts.Placement = oapi.Placement_0{
+		opts.Placement = oapi.Placement{
 			//PlacementName: gn.(string),
-			SubRegionName: az.(string),
+			SubregionName: az.(string),
 			Tenancy:       tenancy.(string),
 		}
 	}
@@ -1165,19 +1164,19 @@ func buildOutscaleOAPIVMOpts(
 	return opts, nil
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.Nics_0 {
-	networkInterfaces := []oapi.Nics_0{}
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
+	networkInterfaces := []oapi.NicForVmCreation{}
 	subnet, hasSubnet := d.GetOk("subnet_id")
 
 	if hasSubnet {
-		ni := oapi.Nics_0{
+		ni := oapi.NicForVmCreation{
 			DeviceNumber:     int64(0),
 			SubnetId:         subnet.(string),
 			SecurityGroupIds: groups,
 		}
 
 		if v, ok := d.GetOk("private_ip"); ok {
-			ni.PrivateIps = []oapi.PrivateIps_0{oapi.PrivateIps_0{
+			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
 				PrivateIp: v.(string),
 			}}
 		}
@@ -1188,7 +1187,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInt
 		vL := nInterfaces.(*schema.Set).List()
 		for _, v := range vL {
 			ini := v.(map[string]interface{})
-			ni := oapi.Nics_0{
+			ni := oapi.NicForVmCreation{
 				NicId:              ini["nic_id"].(string),
 				DeviceNumber:       int64(ini["nic_sort_number"].(int)),
 				DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
@@ -1201,36 +1200,35 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInt
 }
 
 func readBlockDeviceOApiMappingsFromConfig(
-	d *schema.ResourceData, conn *oapi.Client) ([]oapi.BlockDeviceMappings_1, error) {
-	blockDevices := make([]oapi.BlockDeviceMappings_1, 0)
+	d *schema.ResourceData, conn *oapi.Client) ([]oapi.BlockDeviceMappingVmCreation, error) {
+	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, 0)
 
 	if v, ok := d.GetOk("bsu"); ok {
 		vL := v.(*schema.Set).List()
 		for _, v := range vL {
 			bd := v.(map[string]interface{})
-			//Missing on Swagger Spec
-			// ebs := &oapi.Bsu{
-			// 	DeleteOnVmDeletion: aws.Bool(bd["delete_on_vm_deletion"].(bool)),
-			// }
+			ebs := oapi.BsuToCreate{
+				DeleteOnVmDeletion: bd["delete_on_vm_deletion"].(bool),
+			}
 
-			// if v, ok := bd["snapshot_id"].(string); ok && v != "" {
-			// 	ebs.SnapshotId = aws.String(v)
-			// }
-			// if v, ok := bd["volume_size"].(int); ok && v != 0 {
-			// 	ebs.VolumeSize = aws.Int64(int64(v))
-			// }
-			// if v, ok := bd["type"].(string); ok && v != "" {
-			// 	ebs.VolumeType = aws.String(v)
-			// }
-			// if v, ok := bd["iops"].(int); ok && v > 0 {
-			// 	ebs.Iops = aws.Int64(int64(v))
-			// }
+			if v, ok := bd["snapshot_id"].(string); ok && v != "" {
+				ebs.SnapshotId = v
+			}
+			if v, ok := bd["volume_size"].(int); ok && v != 0 {
+				ebs.VolumeSize = int64(v)
+			}
+			if v, ok := bd["type"].(string); ok && v != "" {
+				ebs.VolumeType = v
+			}
+			if v, ok := bd["iops"].(int); ok && v > 0 {
+				ebs.Iops = int64(v)
+			}
 
-			blockDevices = append(blockDevices, oapi.BlockDeviceMappings_1{
-				DeviceName: bd["device_name"].(string),
-				// NoDevice:    bd["no_device"].(string),           //Missing on Swagger spec
-				// VirtualName: bd["virtual_device_name"].(string), //Missing on Swagger spec
-				// Bsu:         ebs,
+			blockDevices = append(blockDevices, oapi.BlockDeviceMappingVmCreation{
+				Bsu:               ebs,
+				DeviceName:        bd["device_name"].(string),
+				NoDevice:          bd["no_device"].(string),
+				VirtualDeviceName: bd["virtual_device_name"].(string),
 			})
 		}
 	}
@@ -1247,7 +1245,7 @@ func InstanceStateOApiRefreshFunc(conn *oapi.Client, instanceID, failState strin
 
 		err = resource.Retry(30*time.Second, func() *resource.RetryError {
 			rs, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
-				Filters: getVMsFiltersByVMID(instanceID),
+				Filters: getVMsFilterByVMID(instanceID),
 			})
 			return resource.RetryableError(err)
 		})
@@ -1402,10 +1400,8 @@ func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oapi.Client
 	return nil
 }
 
-func getVMsFiltersByVMID(vmID string) []oapi.Filters_13 {
-	return []oapi.Filters_13{
-		oapi.Filters_13{
-			VmIds: []string{vmID},
-		},
+func getVMsFilterByVMID(vmID string) oapi.FiltersVm {
+	return oapi.FiltersVm{
+		VmIds: []string{vmID},
 	}
 }

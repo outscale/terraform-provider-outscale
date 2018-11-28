@@ -108,7 +108,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
 	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.Filters_15{},
+		Filters: oapi.FiltersVolume{},
 	}
 
 	if filtersOk {
@@ -153,7 +153,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volumes) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volume) error {
 
 	i := make([]interface{}, len(volumes))
 
@@ -183,8 +183,8 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 			}
 			im["linked_volumes"] = a
 		}
-		if v.SubRegionName != "" {
-			im["sub_region_name"] = v.SubRegionName
+		if v.SubregionName != "" {
+			im["sub_region_name"] = v.SubregionName
 		}
 		//if v.Iops != nil {
 		im["iops"] = v.Iops
@@ -198,8 +198,8 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 		if v.Tags != nil {
 			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.Type != "" {
-			im["type"] = v.Type
+		if v.VolumeType != "" {
+			im["type"] = v.VolumeType
 		}
 		if v.State != "" {
 			im["state"] = v.State

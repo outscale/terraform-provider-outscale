@@ -89,7 +89,7 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 
 	id := d.Id()
 
-	filters := oapi.Filters_6{
+	filters := oapi.FiltersNet{
 		NetIds: []string{id},
 	}
 

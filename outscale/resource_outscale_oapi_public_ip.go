@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"net"
 	"strings"
 	"time"
 
@@ -71,10 +70,11 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	domainOpt := resourceOutscaleOAPIPublicIPDomain(d)
+	//domainOpt := resourceOutscaleOAPIPublicIPDomain(d)
 
 	allocOpts := oapi.CreatePublicIpRequest{
-		Placement: domainOpt,
+		//Missing on Swagger Spec
+		//Placement: domainOpt,
 	}
 
 	fmt.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
@@ -83,18 +83,24 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error creating EIP: %s", err)
 	}
 
-	allocResp := resp.OK
-
-	d.Set("placement", allocResp.Placement)
-
-	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
-	if d.Get("placement").(string) == "vpc" {
-		d.SetId(allocResp.ReservationId)
-	} else {
-		d.SetId(allocResp.PublicIp)
+	if resp.OK == nil {
+		return fmt.Errorf("Error creating EIP: %s", err)
 	}
 
-	fmt.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.Placement)
+	allocResp := resp.OK
+
+	//d.Set("placement", allocResp.Placement)
+
+	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
+	// if d.Get("placement").(string) == "vpc" {
+	// 	d.SetId(allocResp.ReservationId)
+	// } else {
+	// 	d.SetId(allocResp.PublicIp)
+	// }
+
+	d.SetId(allocResp.PublicIp.PublicIp)
+
+	fmt.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.PublicIp)
 	return resourceOutscaleOAPIPublicIPUpdate(d, meta)
 }
 
@@ -109,11 +115,12 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	//Not Used
 	//filters := []oapi.Filters{}
 
-	if placement == "vpc" {
-		req.Filters.ReservationIds = []string{id}
-	} else {
-		req.Filters.PublicIps = []string{id}
-	}
+	// if placement == "vpc" {
+	// 	req.Filters.ReservationId = []string{id}
+	// } else {
+	// 	req.Filters.PublicIps = []string{id}
+	// }
+	req.Filters.PublicIps = []string{id}
 
 	var describeAddresses *oapi.ReadPublicIpsResponse
 	resp, err := conn.POST_ReadPublicIps(req)
@@ -163,15 +170,17 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("private_ip", address.PrivateIp)
 	d.Set("public_ip", address.PublicIp)
 
-	d.Set("placement", address.Placement)
-	d.Set("reservation_id", address.ReservationId)
+	//d.Set("placement", address.Placement)
+	//d.Set("reservation_id", address.ReservationId)
 
-	if address.Placement == "vpc" && net.ParseIP(id) != nil {
-		fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
-		d.SetId(address.ReservationId)
-	} else {
-		d.SetId(address.PublicIp)
-	}
+	// if address.Placement == "vpc" && net.ParseIP(id) != nil {
+	// 	fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
+	// 	d.SetId(address.ReservationId)
+	// } else {
+	// 	d.SetId(address.PublicIp)
+	// }
+
+	d.SetId(address.PublicIp)
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
@@ -199,10 +208,10 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 				privateIPAddress = v
 			}
 			assocOpts = oapi.LinkPublicIpRequest{
-				NicId:         networkInterfaceID,
-				VmId:          instanceID,
-				ReservationId: d.Id(),
-				PrivateIp:     privateIPAddress,
+				NicId: networkInterfaceID,
+				VmId:  instanceID,
+				//ReservationId: d.Id(),
+				PrivateIp: privateIPAddress,
 			}
 		}
 
@@ -266,23 +275,28 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	placement := resourceOutscaleOAPIPublicIPDomain(d)
+	//placement := resourceOutscaleOAPIPublicIPDomain(d)
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
 		var err error
-		switch placement {
-		case "vpc":
-			fmt.Printf(
-				"[DEBUG] EIP release (destroy) address allocation: %v",
-				d.Id())
-			_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
-				ReservationId: d.Id(),
-			})
-		case "standard":
-			fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
-			_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
-				PublicIp: d.Id(),
-			})
-		}
+		// switch placement {
+		// case "vpc":
+		// 	fmt.Printf(
+		// 		"[DEBUG] EIP release (destroy) address allocation: %v",
+		// 		d.Id())
+		// 	_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
+		// 		ReservationId: d.Id(),
+		// 	})
+		// case "standard":
+		// 	fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
+		// 	_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
+		// 		PublicIp: d.Id(),
+		// 	})
+		// }
+
+		fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
+		_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
+			PublicIp: d.Id(),
+		})
 
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			return nil
