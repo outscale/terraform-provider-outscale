@@ -22,7 +22,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"filter": dataSourceFiltersSchema(),
-		"reservation_id": {
+		"public_ip_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
@@ -30,14 +30,9 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
-		"link_id": {
+		"link_public_ip_id": {
 			Type:     schema.TypeString,
 			Computed: true,
-		},
-		"placement": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Optional: true,
 		},
 		"vm_id": {
 			Type:     schema.TypeString,
@@ -75,9 +70,9 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	// if id := d.Get("reservation_id"); id != "" {
-	// 	req.Filters.ReservationId = []string{id.(string)}
-	// }
+	if id := d.Get("public_ip_id"); id != "" {
+		req.Filters.PublicIpIds = []string{id.(string)}
+	}
 	if id := d.Get("public_ip"); id != "" {
 		req.Filters.PublicIps = []string{id.(string)}
 	}
@@ -119,9 +114,9 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
 	if address.LinkPublicIpId != "" {
-		d.Set("link_id", address.LinkPublicIpId)
+		d.Set("link_public_ip_id", address.LinkPublicIpId)
 	} else {
-		d.Set("link_id", "")
+		d.Set("link_public_ip_id", "")
 	}
 	if address.VmId != "" {
 		d.Set("vm_id", address.VmId)
@@ -145,9 +140,9 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.Set("request_id", describeAddresses.ResponseContext.RequestId)
-	//d.Set("reservation_id", address.ReservationId)
+	d.Set("public_ip_id", address.PublicIpId)
+
 	d.Set("public_ip", address.PublicIp)
-	//d.Set("placement", address.Placement)
 	//missing
 	// if address.Placement == "vpc" {
 	// 	d.SetId(address.ReservationId)
