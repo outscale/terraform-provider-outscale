@@ -85,23 +85,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": {
-							Type: schema.TypeList,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-							Computed: true,
-						},
-						"tag": tagsSchema(),
+						"tags": tagsOAPIListSchemaComputed(),
 						"volume_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -124,7 +108,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
 
 	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.Filters_15{},
+		Filters: oapi.FiltersVolume{},
 	}
 
 	if filtersOk {
@@ -164,10 +148,12 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
+	d.Set("request_id", resp.ResponseContext.RequestId)
+
 	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
 }
 
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volumes) error {
+func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volume) error {
 
 	i := make([]interface{}, len(volumes))
 
@@ -197,8 +183,8 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 			}
 			im["linked_volumes"] = a
 		}
-		if v.SubRegionName != "" {
-			im["sub_region_name"] = v.SubRegionName
+		if v.SubregionName != "" {
+			im["sub_region_name"] = v.SubregionName
 		}
 		//if v.Iops != nil {
 		im["iops"] = v.Iops
@@ -212,8 +198,8 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 		if v.Tags != nil {
 			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.Type != "" {
-			im["type"] = v.Type
+		if v.VolumeType != "" {
+			im["type"] = v.VolumeType
 		}
 		if v.State != "" {
 			im["state"] = v.State

@@ -66,7 +66,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := oapi.ReadPublicIpsRequest{
-		Filters: oapi.Filters_8{},
+		Filters: oapi.FiltersPublicIp{},
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -75,9 +75,9 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	if id := d.Get("reservation_id"); id != "" {
-		req.Filters.ReservationIds = []string{id.(string)}
-	}
+	// if id := d.Get("reservation_id"); id != "" {
+	// 	req.Filters.ReservationId = []string{id.(string)}
+	// }
 	if id := d.Get("public_ip"); id != "" {
 		req.Filters.PublicIps = []string{id.(string)}
 	}
@@ -145,21 +145,23 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.Set("request_id", describeAddresses.ResponseContext.RequestId)
-	d.Set("reservation_id", address.ReservationId)
+	//d.Set("reservation_id", address.ReservationId)
 	d.Set("public_ip", address.PublicIp)
-	d.Set("placement", address.Placement)
+	//d.Set("placement", address.Placement)
+	//missing
+	// if address.Placement == "vpc" {
+	// 	d.SetId(address.ReservationId)
+	// } else {
+	// 	d.SetId(address.PublicIp)
+	// }
 
-	if address.Placement == "vpc" {
-		d.SetId(address.ReservationId)
-	} else {
-		d.SetId(address.PublicIp)
-	}
+	d.SetId(address.PublicIp)
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.Filters_8 {
-	var filters oapi.Filters_8
+func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPublicIp {
+	var filters oapi.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -168,10 +170,10 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.Filters_8
 		}
 
 		switch name := m["name"].(string); name {
-		case "reservation-ids":
-			filters.ReservationIds = filterValues
+		// case "reservation-ids":
+		// 	filters.ReservationIds = filterValues
 		case "link-ids":
-			filters.LinkIds = filterValues
+			filters.LinkPublicIpIds = filterValues
 		case "placements":
 			filters.Placements = filterValues
 		case "vm-ids":

@@ -2,13 +2,13 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPIVpc() *schema.Resource {
@@ -47,30 +47,30 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag": tagsSchemaComputed(),
+			"tags": tagsOAPIListSchemaComputed(),
 		},
 	}
 }
 
 func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeVpcsInput{}
-
-	if id := d.Get("net_id"); id != "" {
-		req.VpcIds = []*string{aws.String(id.(string))}
-	}
+	req := oapi.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filters"); ok {
-		req.Filters = buildOutscaleDataSourceFilters(v.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set))
+	}
+
+	if id := d.Get("net_id"); id != "" {
+		req.Filters.NetIds = []string{id.(string)}
 	}
 
 	var err error
-	var resp *fcu.DescribeVpcsOutput
+	var resp *oapi.POST_ReadNetsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		resp, err = conn.VM.DescribeVpcs(req)
+		resp, err = conn.POST_ReadNets(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -83,23 +83,52 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.Vpcs) == 0 {
-		return fmt.Errorf("no matching VPC found")
+	if resp == nil || len(resp.OK.Nets) == 0 {
+		return fmt.Errorf("No matching Net found")
 	}
-	if len(resp.Vpcs) > 1 {
-		return fmt.Errorf("multiple VPCs matched; use additional constraints to reduce matches to a single VPC")
+	if len(resp.OK.Nets) > 1 {
+		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
 	}
 
-	vpc := resp.Vpcs[0]
+	net := resp.OK.Nets[0]
 
-	d.SetId(*vpc.VpcId)
-	d.Set("net_id", vpc.VpcId)
-	d.Set("ip_range", vpc.CidrBlock)
-	d.Set("dhcp_options_set_id", vpc.DhcpOptionsId)
-	d.Set("tenancy", vpc.InstanceTenancy)
-	d.Set("state", vpc.State)
-	d.Set("tag", tagsToMap(vpc.Tags))
-	d.Set("request_id", resp.RequestId)
+	d.SetId(net.NetId)
+	d.Set("net_id", net.NetId)
+	d.Set("ip_range", net.IpRange)
+	d.Set("dhcp_options_set_id", net.DhcpOptionsSetId)
+	d.Set("tenancy", net.Tenancy)
+	d.Set("state", net.State)
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
-	return nil
+	return d.Set("tags", tagsOAPIToMap(net.Tags))
+}
+
+func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.FiltersNet {
+	var filters oapi.FiltersNet
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "ip-range":
+			filters.IpRanges = filterValues
+		case "dhcp-options-set-id":
+			filters.DhcpOptionsSetIds = filterValues
+		case "is-default":
+			//bool
+			//filters.IsDefault = filterValues
+		case "state":
+			filters.States = filterValues
+		case "tag-key":
+			filters.TagKeys = filterValues
+		case "tag-value":
+			filters.TagValues = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

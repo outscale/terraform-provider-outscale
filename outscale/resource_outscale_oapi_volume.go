@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -84,23 +85,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
-			"tag": tagsSchema(),
+			"tags": tagsListOAPISchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -117,7 +102,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.CreateVolumeRequest{
-		SubRegionName: d.Get("sub_region_name").(string),
+		SubregionName: d.Get("sub_region_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = int64(value.(int))
@@ -128,7 +113,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var t string
 	if value, ok := d.GetOk("type"); ok {
-		request.Type = value.(string)
+		request.VolumeType = value.(string)
 	}
 
 	iops := d.Get("iops").(int)
@@ -171,6 +156,8 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
+	utils.PrintToJSON(resp, "##RESPONSE")
+
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VM volume: %s", err)
 	}
@@ -180,7 +167,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"creating"},
 		Target:     []string{"available"},
-		Refresh:    volumeOAPIStateRefreshFunc(conn, result.VolumeId),
+		Refresh:    volumeOAPIStateRefreshFunc(conn, result.Volume.VolumeId),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -188,10 +175,10 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.VolumeId, err)
+		return fmt.Errorf("Error waiting for Volume (%s) to become available: %s", result.Volume.VolumeId, err)
 	}
 
-	d.SetId(result.VolumeId)
+	d.SetId(result.Volume.VolumeId)
 
 	//Missing in swagger spec
 	if d.IsNewResource() {
@@ -209,7 +196,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.ReadVolumesRequest{
-		Filters: oapi.Filters_15{VolumeIds: []string{d.Id()}},
+		Filters: oapi.FiltersVolume{VolumeIds: []string{d.Id()}},
 	}
 
 	var response *oapi.ReadVolumesResponse
@@ -229,6 +216,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	response = resp.OK
 
+	utils.PrintToJSON(response, "##RESPONSE READ")
+
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
 			d.SetId("")
@@ -247,7 +236,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		request := &oapi.DeleteVolumeRequest{
 			VolumeId: d.Id(),
 		}
-		_, err := conn.POST_DeleteVolume(*request)
+		response, err := conn.POST_DeleteVolume(*request)
 		if err == nil {
 			return nil
 		}
@@ -255,6 +244,8 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		if strings.Contains(fmt.Sprint(err), "VolumeInUse") {
 			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 		}
+		fmt.Println(err)
+		utils.PrintToJSON(response.OK, "##RESPONSE-DELETE")
 
 		return resource.NonRetryableError(err)
 	})
@@ -264,7 +255,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, err := conn.POST_ReadVolumes(oapi.ReadVolumesRequest{
-			Filters: oapi.Filters_15{
+			Filters: oapi.FiltersVolume{
 				VolumeIds: []string{volumeID},
 			},
 		})
@@ -284,15 +275,17 @@ func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.Sta
 	}
 }
 
-func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volumes) error {
+func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.SetId(volume.VolumeId)
 
-	d.Set("sub_region_name", volume.SubRegionName)
-	d.Set("size", volume.Size)
-	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("type", volume.Type)
+	d.Set("sub_region_name", volume.SubregionName)
 
-	if volume.Type == "io1" {
+	//Commented until backend issues is resolved.
+	//d.Set("size", volume.Size)
+	d.Set("snapshot_id", volume.SnapshotId)
+	d.Set("type", volume.VolumeType)
+
+	if volume.VolumeType == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}

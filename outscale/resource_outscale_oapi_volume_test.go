@@ -25,7 +25,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var v oapi.Volumes
+	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test",
@@ -53,7 +53,7 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 		t.Skip()
 	}
 
-	var v oapi.Volumes
+	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test",
@@ -89,7 +89,7 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 		t.Skip()
 	}
 
-	var v oapi.Volumes
+	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test-io",
@@ -105,7 +105,7 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -119,7 +119,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 		request := &oapi.ReadVolumesRequest{
-			Filters: oapi.Filters_15{VolumeIds: []string{rs.Primary.ID}},
+			Filters: oapi.FiltersVolume{VolumeIds: []string{rs.Primary.ID}},
 		}
 
 		var response *oapi.ReadVolumesResponse
@@ -150,22 +150,24 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volumes) resource.TestCheckF
 
 const testAccOutscaleOAPIVolumeConfig = `
 resource "outscale_volume" "test" {
-  sub_region_name = "dv-west-1a"
+  sub_region_name = "us-west-1a"
   type = "gp2"
   size = 1
-  tag {
-    Name = "tf-acc-test-ebs-volume-test"
+  tags {
+	key = "Name" 
+	value = "tf-acc-test-ebs-volume-test"
   }
 }
 `
 
 const testOutscaleOAPIVolumeConfigUpdateSize = `
 resource "outscale_volume" "test" {
-  sub_region_name = "dv-west-1a"
+  sub_region_name = "us-west-1a"
   type = "gp2"
   size = 10
-  tag {
-    Name = "tf-acc-test-ebs-volume-test"
+  tags {
+	key = "Name" 
+	value = "tf-acc-test-ebs-volume-test"
   }
 }
 `

@@ -367,7 +367,7 @@ func diffTags(oldTags, newTags []*fcu.Tag) ([]*fcu.Tag, []*fcu.Tag) {
 // diffOAPITags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOAPITags(oldTags, newTags []oapi.Tags_0) ([]oapi.Tags_0, []oapi.Tags_0) {
+func diffOAPITags(oldTags, newTags []oapi.ResourceTag) ([]oapi.ResourceTag, []oapi.ResourceTag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
 	for _, t := range newTags {
@@ -375,7 +375,7 @@ func diffOAPITags(oldTags, newTags []oapi.Tags_0) ([]oapi.Tags_0, []oapi.Tags_0)
 	}
 
 	// Build the list of what to remove
-	var remove []oapi.Tags_0
+	var remove []oapi.ResourceTag
 	for _, t := range oldTags {
 		old, ok := create[t.Key]
 		if !ok || old != t.Value {
@@ -399,12 +399,26 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	return result
 }
 
-func tagsOAPIFromMap(m map[string]interface{}) []oapi.Tags_0 {
-	result := make([]oapi.Tags_0, 0, len(m))
+func tagsOAPIFromMap(m map[string]interface{}) []oapi.ResourceTag {
+	result := make([]oapi.ResourceTag, 0, len(m))
 	for k, v := range m {
-		t := oapi.Tags_0{
+		t := oapi.ResourceTag{
 			Key:   k,
 			Value: v.(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
+	result := make([]oapi.ResourceTag, 0, len(m))
+	for _, v := range m {
+		tag := v.(map[string]interface{})
+		t := oapi.ResourceTag{
+			Key:   tag["key"].(string),
+			Value: tag["value"].(string),
 		}
 		result = append(result, t)
 	}
@@ -477,7 +491,7 @@ func tagsToMap(ts []*fcu.Tag) []map[string]string {
 }
 
 // tagsOAPI	ToMap turns the list of tag into a map.
-func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
+func tagsOAPIToMap(ts []oapi.ResourceTag) []map[string]string {
 	result := make([]map[string]string, len(ts))
 	if len(ts) > 0 {
 		for k, t := range ts {
@@ -491,6 +505,16 @@ func tagsOAPIToMap(ts []oapi.Tags_0) []map[string]string {
 	}
 
 	return result
+}
+
+func tagsOAPIToMapString(ts []oapi.ResourceTag) map[string]string {
+	tags := make(map[string]string)
+	if len(ts) > 0 {
+		for _, t := range ts {
+			tags[t.Key] = t.Value
+		}
+	}
+	return tags
 }
 
 func tagsToMapC(ts []*common.Tag) []map[string]string {
@@ -617,6 +641,62 @@ func tagsSchema() *schema.Schema {
 		ForceNew: true,
 	}
 }
+func tagsOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Optional: true,
+		Computed: true,
+		ForceNew: true,
+	}
+}
+
+func tagsListOAPISchema() *schema.Schema {
+	return &schema.Schema{
+		Type: schema.TypeList,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Optional: true,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+					Optional: true,
+				},
+			},
+		},
+		Computed: true,
+		Optional: true,
+	}
+}
+
+func tagsOAPIListSchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"value": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
+func tagsOAPISchemaComputed() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
+	}
+}
 
 func tagsSchemaComputed() *schema.Schema {
 	return &schema.Schema{
@@ -628,11 +708,11 @@ func tagsSchemaComputed() *schema.Schema {
 
 func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 
-	if d.HasChange("tag") {
-		oraw, nraw := d.GetChange("tag")
-		o := oraw.(map[string]interface{})
-		n := nraw.(map[string]interface{})
-		create, remove := diffOAPITags(tagsOAPIFromMap(o), tagsOAPIFromMap(n))
+	if d.HasChange("tags") {
+		oraw, nraw := d.GetChange("tags")
+		o := oraw.([]interface{})
+		n := nraw.([]interface{})
+		create, remove := diffOAPITags(tagsOAPIFromSliceMap(o), tagsOAPIFromSliceMap(n))
 
 		// Set tag
 		if len(remove) > 0 {

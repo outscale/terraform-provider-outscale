@@ -28,7 +28,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var server oapi.Vms_2
+	var server oapi.Vm
 
 	// rInt := acctest.RandInt()
 
@@ -43,7 +43,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-880caa66"),
+						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
@@ -64,8 +64,8 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		t.Skip()
 	}
 
-	var before oapi.Vms_2
-	var after oapi.Vms_2
+	var before oapi.Vm
+	var after oapi.Vm
 
 	// rInt := acctest.RandInt()
 
@@ -80,7 +80,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(&before),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-880caa66"),
+						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "type", "t2.micro"),
 				),
@@ -97,12 +97,12 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVMExists(n string, i *oapi.Vms_2) resource.TestCheckFunc {
+func testAccCheckOAPIVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -125,7 +125,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, providers *[
 			var err error
 			for {
 				r, err = client.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-					Filters: getVMsFiltersByVMID(rs.Primary.ID),
+					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				})
 				resp = r.OK
 				if err != nil {
@@ -147,7 +147,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, providers *[
 }
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T,
-	before, after *oapi.Vms_2) resource.TestCheckFunc {
+	before, after *oapi.Vm) resource.TestCheckFunc {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	isOapi, err := strconv.ParseBool(o)
@@ -198,7 +198,7 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		for {
 			// Try to find the resource
 			r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-				Filters: getVMsFiltersByVMID(rs.Primary.ID),
+				Filters: getVMsFilterByVMID(rs.Primary.ID),
 			})
 			resp = r.OK
 			if err != nil {
@@ -230,12 +230,12 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.Vms_2) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -258,7 +258,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, prov
 
 			for {
 				r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-					Filters: getVMsFiltersByVMID(rs.Primary.ID),
+					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				})
 				resp = r.OK
 				if err != nil {
@@ -289,10 +289,10 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vms_2, prov
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms_2) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if server.ImageId != "ami-880caa66" {
+		if server.ImageId != "ami-cc3278d3" {
 			return fmt.Errorf("Bad image_id: %s", server.ImageId)
 		}
 
@@ -303,7 +303,7 @@ func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vms_2) resource.TestCheck
 func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
-	image_id = "ami-880caa66"
+	image_id = "ami-cc3278d3"
 	type = "t2.micro"
 }`
 }
@@ -311,10 +311,10 @@ resource "outscale_vm" "basic" {
 func testAccVmsConfigUpdateOAPIVMKey() string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_vm" {
-  image_id = "ami-880caa66"
+  image_id = "ami-cc3278d3"
   type = "c4.large"
   keypair_name = "integ_sut_keypair"
-  #firewall_rules_set_ids = ["sg-c73d3b6b"]
+  security_group_ids = ["sg-c73d3b6b"]
   #firewall_rules_set_id = "sg-c73d3b6b" # tempo tests
 }`)
 }

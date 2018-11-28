@@ -26,7 +26,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		t.Skip()
 	}
 
-	var conf oapi.PublicIps_1
+	var conf oapi.PublicIp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -56,7 +56,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var conf oapi.PublicIps_1
+	var conf oapi.PublicIp
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -97,7 +97,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	if !isOAPI {
 		t.Skip()
 	}
-	var one oapi.PublicIps_1
+	var one oapi.PublicIp
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -131,68 +131,68 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 		if rs.Type != "outscale_public_ip" {
 			continue
 		}
+		//Missing on Swagger Spec
+		// if strings.Contains(rs.Primary.ID, "reservation") {
+		// 	req := oapi.ReadPublicIpsRequest{
+		// 		Filters: oapi.FiltersPublicIpcIp{
+		// 			ReservationIds: []string{rs.Primary.ID},
+		// 		},
+		// 	}
 
-		if strings.Contains(rs.Primary.ID, "reservation") {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.Filters_8{
-					ReservationIds: []string{rs.Primary.ID},
-				},
-			}
+		// 	var describe *oapi.ReadPublicIpsResponse
+		// 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		// 		var err error
+		// 		resp, err := conn.OAPI.POST_ReadPublicIps(req)
+		// 		describe = resp.OK
+		// 		return resource.RetryableError(err)
+		// 	})
 
-			var describe *oapi.ReadPublicIpsResponse
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				var err error
-				resp, err := conn.OAPI.POST_ReadPublicIps(req)
-				describe = resp.OK
-				return resource.RetryableError(err)
-			})
+		// 	if err != nil {
+		// 		// Verify the error is what we want
+		// 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+		// 			return nil
+		// 		}
 
-			if err != nil {
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-					return nil
-				}
+		// 		return err
+		// 	}
 
-				return err
-			}
-
-			if len(describe.PublicIps) > 0 {
-				return fmt.Errorf("still exists")
-			}
-		} else {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.Filters_8{
-					PublicIps: []string{rs.Primary.ID},
-				},
-			}
-
-			var describe *oapi.ReadPublicIpsResponse
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				var err error
-				resp, err := conn.OAPI.POST_ReadPublicIps(req)
-				describe = resp.OK
-				return resource.RetryableError(err)
-			})
-
-			if err != nil {
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if len(describe.PublicIps) > 0 {
-				return fmt.Errorf("still exists")
-			}
+		// 	if len(describe.PublicIps) > 0 {
+		// 		return fmt.Errorf("still exists")
+		// 	}
+		// } else {
+		req := oapi.ReadPublicIpsRequest{
+			Filters: oapi.FiltersPublicIp{
+				PublicIps: []string{rs.Primary.ID},
+			},
 		}
+
+		var describe *oapi.ReadPublicIpsResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			var err error
+			resp, err := conn.OAPI.POST_ReadPublicIps(req)
+			describe = resp.OK
+			return resource.RetryableError(err)
+		})
+
+		if err != nil {
+			// Verify the error is what we want
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if len(describe.PublicIps) > 0 {
+			return fmt.Errorf("still exists")
+		}
+		//}
 	}
 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps_1) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if conf.PublicIp == "" {
 			return fmt.Errorf("empty public_ip")
@@ -202,7 +202,7 @@ func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oapi.PublicIps_1) resource
 	}
 }
 
-func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps_1) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -215,73 +215,74 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIps_1) res
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		if strings.Contains(rs.Primary.ID, "link") {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.Filters_8{
-					ReservationIds: []string{rs.Primary.ID},
-				},
-			}
-			describe, err := conn.OAPI.POST_ReadPublicIps(req)
+		//Missing on Swagger Spec
+		// if strings.Contains(rs.Primary.ID, "link") {
+		// 	req := oapi.ReadPublicIpsRequest{
+		// 		Filters: oapi.FiltersPublicIp{
+		// 			ReservationIds: []string{rs.Primary.ID},
+		// 		},
+		// 	}
+		// 	describe, err := conn.OAPI.POST_ReadPublicIps(req)
 
-			if err != nil {
-				return err
-			}
+		// 	if err != nil {
+		// 		return err
+		// 	}
 
-			if len(describe.OK.PublicIps) != 1 ||
-				describe.OK.PublicIps[0].ReservationId != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
-			}
-			*res = describe.OK.PublicIps[0]
+		// 	if len(describe.OK.PublicIps) != 1 ||
+		// 		describe.OK.PublicIps[0].ReservationId != rs.Primary.ID {
+		// 		return fmt.Errorf("PublicIP not found")
+		// 	}
+		// 	*res = describe.OK.PublicIps[0]
 
-		} else {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.Filters_8{
-					PublicIps: []string{rs.Primary.ID},
-				},
-			}
-
-			var describe *oapi.ReadPublicIpsResponse
-			err := resource.Retry(120*time.Second, func() *resource.RetryError {
-				var err error
-				resp, err := conn.OAPI.POST_ReadPublicIps(req)
-
-				if err != nil {
-					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-						return resource.RetryableError(err)
-					}
-
-					return resource.NonRetryableError(err)
-				}
-
-				describe = resp.OK
-
-				return nil
-			})
-
-			if err != nil {
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if err != nil {
-
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if len(describe.PublicIps) != 1 ||
-				describe.PublicIps[0].PublicIp != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
-			}
-			*res = describe.PublicIps[0]
+		// } else {
+		req := oapi.ReadPublicIpsRequest{
+			Filters: oapi.FiltersPublicIp{
+				PublicIps: []string{rs.Primary.ID},
+			},
 		}
+
+		var describe *oapi.ReadPublicIpsResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			resp, err := conn.OAPI.POST_ReadPublicIps(req)
+
+			if err != nil {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+					return resource.RetryableError(err)
+				}
+
+				return resource.NonRetryableError(err)
+			}
+
+			describe = resp.OK
+
+			return nil
+		})
+
+		if err != nil {
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if err != nil {
+
+			// Verify the error is what we want
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if len(describe.PublicIps) != 1 ||
+			describe.PublicIps[0].PublicIp != rs.Primary.ID {
+			return fmt.Errorf("PublicIP not found")
+		}
+		*res = describe.PublicIps[0]
+		//}
 
 		return nil
 	}
