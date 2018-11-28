@@ -15,6 +15,11 @@ import (
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
+	region := os.Getenv("OUTSCALE_REGION")
+
+	if region == "" {
+		region = "dv-west-1"
+	}
 
 	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -32,7 +37,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig,
+				Config: testAccOutscaleOAPIVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
@@ -43,6 +48,11 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
+	region := os.Getenv("OUTSCALE_REGION")
+
+	if region == "" {
+		region = "dv-west-1"
+	}
 
 	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -60,14 +70,14 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIVolumeConfig,
+				Config: testAccOutscaleOAPIVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "1"),
 				),
 			},
 			{
-				Config: testOutscaleOAPIVolumeConfigUpdateSize,
+				Config: testOutscaleOAPIVolumeConfigUpdateSize(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 					resource.TestCheckResourceAttr("outscale_volume.test", "size", "10"),
@@ -148,9 +158,10 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFu
 	}
 }
 
-const testAccOutscaleOAPIVolumeConfig = `
+func testAccOutscaleOAPIVolumeConfig(region string) string {
+	return fmt.Sprintf(`
 resource "outscale_volume" "test" {
-  sub_region_name = "us-west-1a"
+  sub_region_name = "%sa"
   volume_type = "gp2"
   size = 1
   tags {
@@ -158,11 +169,13 @@ resource "outscale_volume" "test" {
 	value = "tf-acc-test-ebs-volume-test"
   }
 }
-`
+`, region)
+}
 
-const testOutscaleOAPIVolumeConfigUpdateSize = `
+func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
+	return fmt.Sprintf(`
 resource "outscale_volume" "test" {
-  sub_region_name = "us-west-1a"
+  sub_region_name = "%sa"
   volume_type = "gp2"
   size = 10
   tags {
@@ -170,7 +183,8 @@ resource "outscale_volume" "test" {
 	value = "tf-acc-test-ebs-volume-test"
   }
 }
-`
+`, region)
+}
 
 const testOutscaleOAPIVolumeConfigIO1Type = `
 resource "outscale_volume" "test-io" {
