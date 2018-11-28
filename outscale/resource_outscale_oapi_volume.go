@@ -153,16 +153,26 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		result = resp.OK
 		return nil
 	})
 
-	utils.PrintToJSON(resp, "##RESPONSE")
+	var errString string
 
-	if err != nil {
-		return fmt.Errorf("Error creating Outscale VM volume: %s", err)
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
 	}
 
+	result = resp.OK
 	log.Println("[DEBUG] Waiting for Volume to become available")
 
 	stateConf := &resource.StateChangeConf{

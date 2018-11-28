@@ -947,7 +947,7 @@ func (client *Client) POST_CreateLoadBalancer(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -992,7 +992,7 @@ func (client *Client) POST_CreateLoadBalancerListeners(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1037,7 +1037,7 @@ func (client *Client) POST_CreateLoadBalancerPolicy(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1082,7 +1082,7 @@ func (client *Client) POST_CreateNatService(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1160,7 +1160,7 @@ func (client *Client) POST_CreateNet(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1249,7 +1249,7 @@ func (client *Client) POST_CreateNetAccessPoint(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1294,7 +1294,7 @@ func (client *Client) POST_CreateNetPeering(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1372,7 +1372,7 @@ func (client *Client) POST_CreateNic(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1450,7 +1450,7 @@ func (client *Client) POST_CreatePolicy(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1495,7 +1495,7 @@ func (client *Client) POST_CreatePublicIp(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1573,7 +1573,7 @@ func (client *Client) POST_CreateRoute(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1651,7 +1651,7 @@ func (client *Client) POST_CreateRouteTable(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1729,7 +1729,7 @@ func (client *Client) POST_CreateSecurityGroup(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1807,7 +1807,7 @@ func (client *Client) POST_CreateSecurityGroupRule(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1885,7 +1885,7 @@ func (client *Client) POST_CreateServerCertificate(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -1930,7 +1930,7 @@ func (client *Client) POST_CreateSnapshot(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2008,7 +2008,7 @@ func (client *Client) POST_CreateSnapshotExportTask(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2053,7 +2053,7 @@ func (client *Client) POST_CreateSubnet(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2142,7 +2142,7 @@ func (client *Client) POST_CreateTags(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2220,7 +2220,7 @@ func (client *Client) POST_CreateUser(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2265,7 +2265,7 @@ func (client *Client) POST_CreateUserGroup(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2310,7 +2310,7 @@ func (client *Client) POST_CreateVirtualGateway(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2355,7 +2355,7 @@ func (client *Client) POST_CreateVms(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2433,14 +2433,14 @@ func (client *Client) POST_CreateVolume(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return nil, errors.New(resp.Status)
-	}
+	// if resp.StatusCode != 200 {
+	// 	return nil, errors.New(resp.Status)
+	// }
 	response = &POST_CreateVolumeResponses{}
 	switch {
 	case resp.StatusCode == 200:
@@ -2488,7 +2488,7 @@ func (client *Client) POST_CreateVolume(
 		}
 		response.Code500 = result
 	default:
-		break
+		return nil, errors.New(resp.Status)
 	}
 	return
 }
@@ -2511,7 +2511,7 @@ func (client *Client) POST_CreateVpnConnection(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2556,7 +2556,7 @@ func (client *Client) POST_CreateVpnConnectionRoute(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2601,7 +2601,7 @@ func (client *Client) POST_DeleteApiKey(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2646,7 +2646,7 @@ func (client *Client) POST_DeleteClientGateway(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2691,7 +2691,7 @@ func (client *Client) POST_DeleteDhcpOptions(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2736,7 +2736,7 @@ func (client *Client) POST_DeleteDirectLink(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2781,7 +2781,7 @@ func (client *Client) POST_DeleteDirectLinkInterface(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2826,7 +2826,7 @@ func (client *Client) POST_DeleteExportTask(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2871,7 +2871,7 @@ func (client *Client) POST_DeleteImage(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -2949,7 +2949,7 @@ func (client *Client) POST_DeleteInternetService(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3027,7 +3027,7 @@ func (client *Client) POST_DeleteKeypair(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3105,7 +3105,7 @@ func (client *Client) POST_DeleteListenerRule(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3150,7 +3150,7 @@ func (client *Client) POST_DeleteLoadBalancer(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3195,7 +3195,7 @@ func (client *Client) POST_DeleteLoadBalancerListeners(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3240,7 +3240,7 @@ func (client *Client) POST_DeleteLoadBalancerPolicy(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3285,7 +3285,7 @@ func (client *Client) POST_DeleteNatService(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3363,7 +3363,7 @@ func (client *Client) POST_DeleteNet(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3441,7 +3441,7 @@ func (client *Client) POST_DeleteNetAccessPoints(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3486,7 +3486,7 @@ func (client *Client) POST_DeleteNetPeering(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3575,7 +3575,7 @@ func (client *Client) POST_DeleteNic(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3653,7 +3653,7 @@ func (client *Client) POST_DeletePolicy(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3698,7 +3698,7 @@ func (client *Client) POST_DeletePublicIp(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3776,7 +3776,7 @@ func (client *Client) POST_DeleteRoute(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3854,7 +3854,7 @@ func (client *Client) POST_DeleteRouteTable(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -3932,7 +3932,7 @@ func (client *Client) POST_DeleteSecurityGroup(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4010,7 +4010,7 @@ func (client *Client) POST_DeleteSecurityGroupRule(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4088,7 +4088,7 @@ func (client *Client) POST_DeleteServerCertificate(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4133,7 +4133,7 @@ func (client *Client) POST_DeleteSnapshot(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4211,7 +4211,7 @@ func (client *Client) POST_DeleteSubnet(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4289,7 +4289,7 @@ func (client *Client) POST_DeleteTags(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4367,7 +4367,7 @@ func (client *Client) POST_DeleteUser(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4412,7 +4412,7 @@ func (client *Client) POST_DeleteUserGroup(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4457,7 +4457,7 @@ func (client *Client) POST_DeleteVirtualGateway(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4502,7 +4502,7 @@ func (client *Client) POST_DeleteVms(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4580,7 +4580,7 @@ func (client *Client) POST_DeleteVolume(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4658,7 +4658,7 @@ func (client *Client) POST_DeleteVpnConnection(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4703,7 +4703,7 @@ func (client *Client) POST_DeleteVpnConnectionRoute(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4748,7 +4748,7 @@ func (client *Client) POST_DeregisterUserInUserGroup(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4793,7 +4793,7 @@ func (client *Client) POST_DeregisterVmsInLoadBalancer(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4838,7 +4838,7 @@ func (client *Client) POST_LinkInternetService(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4916,7 +4916,7 @@ func (client *Client) POST_LinkNic(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -4994,7 +4994,7 @@ func (client *Client) POST_LinkPolicy(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5039,7 +5039,7 @@ func (client *Client) POST_LinkPrivateIps(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5117,7 +5117,7 @@ func (client *Client) POST_LinkPublicIp(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5195,7 +5195,7 @@ func (client *Client) POST_LinkRouteTable(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5273,7 +5273,7 @@ func (client *Client) POST_LinkVirtualGateway(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5318,7 +5318,7 @@ func (client *Client) POST_LinkVolume(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5396,7 +5396,7 @@ func (client *Client) POST_PurchaseReservedVmsOffer(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5441,7 +5441,7 @@ func (client *Client) POST_ReadAccount(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5486,7 +5486,7 @@ func (client *Client) POST_ReadAccountConsumption(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5531,7 +5531,7 @@ func (client *Client) POST_ReadAdminPassword(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5609,7 +5609,7 @@ func (client *Client) POST_ReadApiKeys(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5654,7 +5654,7 @@ func (client *Client) POST_ReadApiLogs(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5699,7 +5699,7 @@ func (client *Client) POST_ReadBillableDigest(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5744,7 +5744,7 @@ func (client *Client) POST_ReadCatalog(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5789,7 +5789,7 @@ func (client *Client) POST_ReadClientGateways(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5834,7 +5834,7 @@ func (client *Client) POST_ReadConsoleOutput(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5912,7 +5912,7 @@ func (client *Client) POST_ReadDhcpOptions(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -5957,7 +5957,7 @@ func (client *Client) POST_ReadDirectLinkInterfaces(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6002,7 +6002,7 @@ func (client *Client) POST_ReadDirectLinks(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6047,7 +6047,7 @@ func (client *Client) POST_ReadImageExportTasks(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6092,7 +6092,7 @@ func (client *Client) POST_ReadImages(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6170,7 +6170,7 @@ func (client *Client) POST_ReadInternetServices(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6248,7 +6248,7 @@ func (client *Client) POST_ReadKeypairs(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -6707,7 +6707,7 @@ func (client *Client) POST_ReadNets(
 	if err != nil {
 		return
 	}
-	resp, err := client.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
