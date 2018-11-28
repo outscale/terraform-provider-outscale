@@ -46,7 +46,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
-			"type": {
+			"volume_type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -112,8 +112,9 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var t string
-	if value, ok := d.GetOk("type"); ok {
-		request.VolumeType = value.(string)
+	if value, ok := d.GetOk("volume_type"); ok {
+		t = value.(string)
+		request.VolumeType = t
 	}
 
 	iops := d.Get("iops").(int)
@@ -281,9 +282,9 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.Set("sub_region_name", volume.SubregionName)
 
 	//Commented until backend issues is resolved.
-	//d.Set("size", volume.Size)
+	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("type", volume.VolumeType)
+	d.Set("volume_type", volume.VolumeType)
 
 	if volume.VolumeType == "io1" {
 		//if volume.Iops != "" {
