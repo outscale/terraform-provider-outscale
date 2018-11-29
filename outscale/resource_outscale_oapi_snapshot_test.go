@@ -25,7 +25,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 	if !oapiFlag {
 		t.Skip()
 	}
-	var v oapi.Snapshots
+	var v oapi.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -51,7 +51,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	if !oapiFlag {
 		t.Skip()
 	}
-	var v oapi.Snapshots
+	var v oapi.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -67,7 +67,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshots) resource.TestCheckFunc {
+func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -81,7 +81,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshots) resource.TestCh
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 		request := oapi.ReadSnapshotsRequest{
-			Filters: oapi.Filters_10{SnapshotIds: []string{rs.Primary.ID}},
+			Filters: oapi.FiltersSnapshot{SnapshotIds: []string{rs.Primary.ID}},
 		}
 
 		var resp *oapi.POST_ReadSnapshotsResponses
