@@ -96,7 +96,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 
 	params := oapi.ReadSnapshotsRequest{}
 	if restorableUsersOk {
-		params.Filters.PermissionToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
+		params.Filters.PermissionsToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
 	}
 	if filtersOk {
 		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)

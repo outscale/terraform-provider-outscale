@@ -120,7 +120,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := oapi.ReadSnapshotsRequest{
-		Filters: oapi.Filters_10{SnapshotIds: []string{d.Id()}},
+		Filters: oapi.FiltersSnapshot{SnapshotIds: []string{d.Id()}},
 	}
 	var res *oapi.POST_ReadSnapshotsResponses
 	var err error
@@ -224,7 +224,7 @@ func SnapshotOAPIStateRefreshFunc(client *oapi.Client, id string) resource.State
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = client.POST_ReadSnapshots(oapi.ReadSnapshotsRequest{
-				Filters: oapi.Filters_10{SnapshotIds: []string{id}},
+				Filters: oapi.FiltersSnapshot{SnapshotIds: []string{id}},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

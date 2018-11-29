@@ -88,29 +88,29 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 	}
 
 	if permsParam, ok := d.GetOk("permissions_to_create_volume"); ok {
-		perms := oapi.PermissionToCreateVolume_1{}
+		perms := oapi.PermissionsOnResourceCreation{}
 
 		if additions, additionsOk := permsParam.(map[string]interface{})["additions"]; additionsOk {
-			perms.Addition = oapi.Addition{}
+			perms.Additions = oapi.PermissionsOnResource{}
 			if accountIdsParam, accountIdsOk := additions.(map[string]interface{})["account_ids"]; accountIdsOk {
-				perms.Addition.AccountIds = expandAccountIds(accountIdsParam)
+				perms.Additions.AccountIds = expandAccountIds(accountIdsParam)
 			}
 			if globalPermsParam, globalPermsOk := additions.(map[string]interface{})["global_permission"]; globalPermsOk {
-				perms.Addition.GlobalPermission = globalPermsParam.(bool)
+				perms.Additions.GlobalPermission = globalPermsParam.(bool)
 			}
 		}
 
 		if removals, removalsOk := permsParam.(map[string]interface{})["removals"]; removalsOk {
-			perms.Removal = oapi.Removal{}
+			perms.Removals = oapi.PermissionsOnResource{}
 			if accountIdsParam, accountIdsOk := removals.(map[string]interface{})["account_ids"]; accountIdsOk {
-				perms.Removal.AccountIds = expandAccountIds(accountIdsParam)
+				perms.Removals.AccountIds = expandAccountIds(accountIdsParam)
 			}
 			if globalPermsParam, globalPermsOk := removals.(map[string]interface{})["global_permission"]; globalPermsOk {
-				perms.Removal.GlobalPermission = globalPermsParam.(bool)
+				perms.Removals.GlobalPermission = globalPermsParam.(bool)
 			}
 		}
 
-		req.PermissionToCreateVolume = perms
+		req.PermissionsToCreateVolume = perms
 	}
 
 	var err error
@@ -144,7 +144,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 		attrs, err = conn.POST_ReadSnapshots(oapi.ReadSnapshotsRequest{
-			Filters: oapi.Filters_10{
+			Filters: oapi.FiltersSnapshot{
 				SnapshotIds: []string{d.Id()},
 			},
 		})
@@ -165,8 +165,8 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	}
 
 	permsMap := make(map[string]interface{})
-	permsMap["account_ids"] = attrs.OK.Snapshots[0].PermissionToCreateVolume.AccountIds
-	permsMap["global_permission"] = attrs.OK.Snapshots[0].PermissionToCreateVolume.GlobalPermission
+	permsMap["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
+	permsMap["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 
 	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
 

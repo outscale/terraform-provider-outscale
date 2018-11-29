@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -82,7 +83,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 
 	params := oapi.ReadSnapshotsRequest{}
 	if restorableUsersOk {
-		params.Filters.PermissionToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
+		params.Filters.PermissionsToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
 	}
 	if filtersOk {
 		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
@@ -112,7 +113,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	var snapshot oapi.Snapshots
+	var snapshot oapi.Snapshot
 	if len(resp.OK.Snapshots) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -126,7 +127,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Snapshots) error {
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Snapshot) error {
 	d.SetId(snapshot.SnapshotId)
 	d.Set("description", snapshot.Description)
 	//d.Set("account_alias", snapshot.OwnerAlias)
@@ -141,7 +142,7 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Sn
 	return setSnapshotArgTags("tag", d, &snapshot.Tags)
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.Filters_10) *oapi.Filters_10 {
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.FiltersSnapshot) *oapi.FiltersSnapshot {
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -162,7 +163,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.F
 			filter.AccountIds = values
 
 		case "progress":
-			filter.Progresses = values
+			filter.Progresses = utils.StringSliceToInt64Slice(values)
 
 		case "snapshot-id":
 			filter.SnapshotIds = values
@@ -174,7 +175,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.F
 			filter.VolumeIds = values
 
 		case "volume-size":
-			filter.VolumeSizes = values
+			filter.VolumeSizes = utils.StringSliceToInt64Slice(values)
 
 		case "tag":
 			filter.Tags = values
@@ -203,7 +204,7 @@ func oapiExpandStringList(configured []interface{}) []string {
 	return vs
 }
 
-func setSnapshotArgTags(attrName string, d *schema.ResourceData, tags *[]oapi.Tags_0) error {
+func setSnapshotArgTags(attrName string, d *schema.ResourceData, tags *[]oapi.ResourceTag) error {
 	if *tags != nil {
 		if err := d.Set(attrName, tagsOAPIToMap(*tags)); err != nil {
 			return err

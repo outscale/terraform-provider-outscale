@@ -50,7 +50,7 @@ func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
 func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	req := oapi.CopySnapshotRequest{
+	req := oapi.CreateSnapshotRequest{
 		SourceRegionName: d.Get("source_region_name").(string),
 		SourceSnapshotId: d.Get("source_snapshot_id").(string),
 	}
@@ -59,10 +59,10 @@ func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interf
 		req.Description = v.(string)
 	}
 
-	var o *oapi.POST_CopySnapshotResponses
+	var o *oapi.POST_CreateSnapshotResponses
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		o, err = conn.POST_CopySnapshot(req)
+		o, err = conn.POST_CreateSnapshot(req)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
