@@ -3,13 +3,15 @@ package outscale
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIImages() *schema.Resource {
@@ -150,7 +152,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
@@ -160,25 +162,29 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
 	}
 
-	params := &fcu.DescribeImagesInput{}
-	if executableUsersOk {
-		params.ExecutableUsers = expandStringList(executableUsers.([]interface{}))
+	params := &oapi.ReadImagesRequest{
+		Filters: oapi.FiltersImage{},
 	}
+	if executableUsersOk {
+		params.Filters.PermissionsToLaunchAccountIds = expandStringValueList(executableUsers.([]interface{}))
+	}
+
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
-		o := expandStringList(aids.([]interface{}))
+		o := expandStringValueList(aids.([]interface{}))
 
 		if len(o) > 0 {
-			params.Owners = o
+			params.Filters.AccountIds = o
 		}
 	}
 
-	var res *fcu.DescribeImagesOutput
+	var result *oapi.ReadImagesResponse
+	var resp *oapi.POST_ReadImagesResponses
 	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.DescribeImages(params)
+	err = resource.Retry(20*time.Minute, func() *resource.RetryError {
+		resp, err = conn.POST_ReadImages(*params)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -188,62 +194,76 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 			return resource.NonRetryableError(err)
 		}
 
-		return resource.RetryableError(err)
+		return nil
 	})
 
-	if err != nil {
-		return err
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error retrieving Outscale Images: %s", errString)
 	}
 
-	if len(res.Images) < 1 {
+	result = resp.OK
+
+	if len(result.Images) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	return omisOAPIDescriptionAttributes(d, res.Images)
+	return omisOAPIDescriptionAttributes(d, result.Images)
 }
 
 // populate the numerous fields that the image description returns.
-func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) error {
+func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) error {
 
 	i := make([]interface{}, len(images))
 
 	for k, v := range images {
 		im := make(map[string]interface{})
 
-		im["architecture"] = *v.Architecture
-		if v.CreationDate != nil {
-			im["creation_date"] = *v.CreationDate
+		im["architecture"] = v.Architecture
+		if v.CreationDate != "" {
+			im["creation_date"] = v.CreationDate
 		}
-		if v.Description != nil {
-			im["description"] = *v.Description
+		if v.Description != "" {
+			im["description"] = v.Description
 		}
-		im["image_id"] = *v.ImageId
-		im["osu_location"] = *v.ImageLocation
-		if v.ImageOwnerAlias != nil {
-			im["account_alias"] = *v.ImageOwnerAlias
+		im["image_id"] = v.ImageId
+		im["osu_location"] = v.FileLocation
+		if v.AccountAlias != "" {
+			im["account_alias"] = v.AccountAlias
 		}
-		im["account_id"] = *v.OwnerId
-		im["type"] = *v.ImageType
-		im["state"] = *v.State
-		im["name"] = *v.Name
-		im["is_public"] = *v.Public
-		if v.RootDeviceName != nil {
-			im["root_device_name"] = *v.RootDeviceName
+		im["account_id"] = v.AccountId
+		im["type"] = v.ImageType
+		im["state"] = v.State
+		im["name"] = v.ImageName
+		//im["is_public"] = v.Public
+		if v.RootDeviceName != "" {
+			im["root_device_name"] = v.RootDeviceName
 		}
-		im["root_device_type"] = *v.RootDeviceType
+		im["root_device_type"] = v.RootDeviceType
 
 		if v.BlockDeviceMappings != nil {
 			im["block_device_mappings"] = omiOAPIBlockDeviceMappings(v.BlockDeviceMappings)
 		}
 		if v.ProductCodes != nil {
-			im["product_codes"] = omiOAPIProductCodes(v.ProductCodes)
+			im["product_codes"] = v.ProductCodes
 		}
-		if v.StateReason != nil {
-			im["state_comment"] = omiOAPIStateReason(v.StateReason)
-		}
-		if v.Tags != nil {
-			im["tag"] = dataSourceTags(v.Tags)
-		}
+		//if v.StateComment != nil {
+		im["state_comment"] = omiOAPIStateReason(&v.StateComment)
+		//}
+		// if v.Tags != nil {
+		// 	im["tag"] = dataSourceTags(v.Tags)
+		// }
 		i[k] = im
 	}
 
@@ -277,4 +297,28 @@ func omiOAPIBlockDeviceMappingHash(v interface{}) int {
 		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
 	}
 	return hashcode.String(buf.String())
+}
+
+func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) oapi.FiltersImage {
+	var filters oapi.FiltersImage
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "account-aliases":
+			filters.AccountAliases = filterValues
+		case "account_ids":
+			filters.AccountIds = filterValues
+		case "architectures":
+			filters.Architectures = filterValues
+		//Missing more params.
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

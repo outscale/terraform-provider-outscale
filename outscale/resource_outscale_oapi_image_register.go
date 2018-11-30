@@ -263,10 +263,11 @@ func resourceOAPIImageRegisterCreate(d *schema.ResourceData, meta interface{}) e
 	d.SetId(*registerResp.ImageId)
 	d.Set("image_id", *registerResp.ImageId)
 
-	_, err = resourceOutscaleOAPIImageWaitForAvailable(*registerResp.ImageId, conn, 1)
-	if err != nil {
-		return err
-	}
+	//TODO
+	// _, err = resourceOutscaleOAPIImageWaitForAvailable(*registerResp.ImageId, conn, 1)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return resourceOAPIImageRead(d, meta)
 }
