@@ -5,34 +5,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeKeyPairsInput{}
-
-	filters, filtersOk := d.GetOk("filter")
-	KeyName, KeyNameisOk := d.GetOk("keypair_name")
-
-	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	conn := meta.(*OutscaleClient).OAPI
+	req := &oapi.ReadKeypairsRequest{
+		Filters: oapi.FiltersKeypair{},
 	}
+
+	//filters, filtersOk := d.GetOk("filter")
+	KeyName, KeyNameisOk := d.GetOk("keypair_names")
+
+	// if filtersOk {
+	// 	req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	//}
 	if KeyNameisOk {
-		var names []*string
+		var names []string
 		for _, v := range KeyName.([]interface{}) {
-			names = append(names, aws.String(v.(string)))
+			names = append(names, v.(string))
 		}
-		req.KeyNames = names
+		req.Filters.KeypairNames = names
 	}
 
-	var resp *fcu.DescribeKeyPairsOutput
+	var response *oapi.ReadKeypairsResponse
+	var resp *oapi.POST_ReadKeypairsResponses
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.VM.DescribeKeyPairs(req)
+		resp, err = conn.POST_ReadKeypairs(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -40,30 +44,48 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
-	if err != nil {
-		return err
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+				d.SetId("")
+				return nil
+			}
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.KeyPairs) < 1 {
+	response = resp.OK
+
+	if len(response.Keypairs) < 1 {
 		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
 	}
 
 	d.SetId(resource.UniqueId())
-	keypairs := make([]map[string]interface{}, len(resp.KeyPairs))
-	for k, v := range resp.KeyPairs {
+	keypairs := make([]map[string]interface{}, len(response.Keypairs))
+	for k, v := range response.Keypairs {
 		keypair := make(map[string]interface{})
-		if v.KeyName != nil {
-			keypair["keypair_name"] = *v.KeyName
+		if v.KeypairName != "" {
+			keypair["keypair_name"] = v.KeypairName
 		}
-		if v.KeyFingerprint != nil {
-			keypair["key_fingerprint"] = *v.KeyFingerprint
+		if v.KeypairFingerprint != "" {
+			keypair["key_fingerprint"] = v.KeypairFingerprint
 		}
 		keypairs[k] = keypair
 	}
-	d.Set("keypair", keypairs)
+	d.Set("keypairs", keypairs)
 	return nil
 }
 
@@ -74,14 +96,14 @@ func datasourceOutscaleOAPIKeyPairs() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			// Attributes
-			"keypair_name": {
+			"keypair_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"keypair": {
+			"keypairs": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{

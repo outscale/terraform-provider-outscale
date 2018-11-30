@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIKeypairsDataSource_Instance(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIKeypairsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeypairsDataSourceID("data.outscale_keypairs.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_keypairs.nat_ami", "key_set.0.key_name", "TestKey"),
+					resource.TestCheckResourceAttr("data.outscale_keypairs.nat_ami", "keypairs.0.keypair_name", "TestKey"),
 				),
 			},
 		},
@@ -52,10 +52,11 @@ func testAccCheckOutscaleOAPIKeypairsDataSourceID(n string) resource.TestCheckFu
 }
 
 const testAccCheckOutscaleOAPIKeypairsDataSourceConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	keypair_name   = "TestKey"
+}
+
 data "outscale_keypairs" "nat_ami" {
-	filter {
-		name = "key-name"
-		values = ["TestKey"]
-	}
+	keypair_names = ["${outscale_keypair.a_key_pair.id}"]
 }
 `

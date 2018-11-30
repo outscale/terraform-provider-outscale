@@ -52,7 +52,11 @@ func testAccCheckOutscaleOAPIKeypairDataSourceID(n string) resource.TestCheckFun
 }
 
 const testAccCheckOutscaleOAPIKeypairDataSourceConfig = `
+resource "outscale_keypair" "a_key_pair" {
+	keypair_name   = "TestKey"
+}
+
 data "outscale_keypair" "nat_ami" {
-	keypair_name = "TestKey"
+	keypair_name = "${outscale_keypair.a_key_pair.id}"
 }
 `
