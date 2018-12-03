@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
@@ -28,43 +28,19 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"permission": &schema.Schema{
-				Type:     schema.TypeMap,
+			"permission_create": &schema.Schema{
+				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"create": &schema.Schema{
-							Type:     schema.TypeList,
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"global_permission": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"account_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
-						"delete": &schema.Schema{
-							Type:     schema.TypeList,
+						"account_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"global_permission": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"account_id": &schema.Schema{
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -106,58 +82,56 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	imageID := d.Get("image_id").(string)
 	return hasOAPILaunchPermission(conn, imageID)
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	imageID, iok := d.GetOk("image_id")
-	permission, lok := d.GetOk("permission")
 
 	if iok {
 		return fmt.Errorf("please provide the required attribute imageID")
 	}
 
-	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(imageID.(string)),
+	request := &oapi.UpdateImageRequest{
+		ImageId: imageID.(string),
 	}
 
-	if lok {
-		request.Attribute = aws.String("launchPermission")
-		launchPermission := &fcu.LaunchPermissionModifications{}
+	//request.Attribute = aws.String("launchPermission")
+	launchPermission := oapi.PermissionsOnResourceCreation{}
 
-		l := permission.([]interface{})
+	if v, ok := d.GetOk("permission_create"); ok {
+		add := v.([]interface{})
 
-		lp := l[0].(map[string]interface{})
-
-		if a, ok := lp["create"]; ok {
-			ad := a.([]interface{})
-			if len(ad) > 0 {
-				add := make([]*fcu.LaunchPermission, len(ad))
-				for k, v := range ad {
-					att := v.(map[string]interface{})
-					at := &fcu.LaunchPermission{}
-					if g, ok := att["global_permission"]; ok {
-						at.Group = aws.String(g.(string))
-					}
-					if g, ok := att["account_id"]; ok {
-						at.UserId = aws.String(g.(string))
-					}
-					add[k] = at
+		if len(add) > 0 {
+			accountIds := make([]string, len(add))
+			var globalPermission bool
+			for k, v := range add {
+				att := v.(map[string]interface{})
+				if g, ok := att["global_permission"]; ok {
+					globalPermission = g.(bool)
 				}
-				launchPermission.Add = add
+				if g, ok := att["account_id"]; ok {
+					accountIds[k] = g.(string)
+				}
+			}
+
+			launchPermission.Additions = oapi.PermissionsOnResource{
+				AccountIds:       accountIds,
+				GlobalPermission: globalPermission,
 			}
 		}
-		request.LaunchPermission = launchPermission
+		request.PermissionsToLaunch = launchPermission
 	}
 
+	var resp *oapi.POST_UpdateImageResponses
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.VM.ModifyImageAttribute(request)
+		resp, err = conn.POST_UpdateImage(*request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -167,8 +141,20 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 		return nil
 	})
 
-	if err != nil {
-		return fmt.Errorf("error creating ami launch permission: %s", err)
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status Code: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("error creating omi launch permission: %s", errString)
 	}
 
 	d.SetId(imageID.(string))
@@ -178,14 +164,15 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	var attrs *fcu.DescribeImageAttributeOutput
+	var attrs *oapi.POST_ReadImagesResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		attrs, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(d.Id()),
-			Attribute: aws.String("launchPermission"),
+		attrs, err = conn.POST_ReadImages(oapi.ReadImagesRequest{
+			Filters: oapi.FiltersImage{
+				ImageIds: []string{d.Id()},
+			},
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -196,28 +183,42 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 		return nil
 	})
 
-	if err != nil {
-		// When an AMI disappears out from under a launch permission resource, we will
-		// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
-		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", d.Id())
-			return nil
+	var errString string
+
+	if err != nil || attrs.OK == nil {
+		if err != nil {
+			// When an AMI disappears out from under a launch permission resource, we will
+			// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
+			if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
+				log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", d.Id())
+				return nil
+			}
+			errString = err.Error()
+		} else if attrs.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(attrs.Code401))
+		} else if attrs.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(attrs.Code400))
+		} else if attrs.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(attrs.Code500))
 		}
-		return err
+
+		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
 	}
 
-	d.Set("request_id", attrs.RequestId)
-	d.Set("description", map[string]string{"value": aws.StringValue(attrs.Description.Value)})
+	result := attrs.OK.Images[0]
 
-	lp := make([]map[string]interface{}, len(attrs.LaunchPermissions))
-	for k, v := range attrs.LaunchPermissions {
+	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
+	d.Set("description", map[string]string{"value": result.Description})
+	accountIds := result.PermissionsToLaunch.AccountIds
+	lp := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
 		l := make(map[string]interface{})
-		if v.Group != nil {
-			l["global_permission"] = *v.Group
-		}
-		if v.UserId != nil {
-			l["account_id"] = *v.UserId
-		}
+		//if result.PermissionsToLaunch.GlobalPermission != nil {
+		l["global_permission"] = result.PermissionsToLaunch.GlobalPermission
+		//}
+		//if v.UserId != nil {
+		l["account_id"] = v
+		//}
 		lp[k] = l
 	}
 
@@ -227,50 +228,50 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	imageID, iok := d.GetOk("image_id")
-	permission, lok := d.GetOk("permission")
+	permission, lok := d.GetOk("permission_create")
 
 	if iok {
 		return fmt.Errorf("please provide the required attribute imageID")
 	}
 
-	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(imageID.(string)),
+	request := &oapi.UpdateImageRequest{
+		ImageId: imageID.(string),
 	}
 
 	if lok {
-		request.Attribute = aws.String("launchPermission")
-		launchPermission := &fcu.LaunchPermissionModifications{}
+		//request.Attribute = aws.String("launchPermission")
+		launchPermission := oapi.PermissionsOnResourceCreation{}
 
-		lps := permission.([]interface{})
-		lp := lps[0].(map[string]interface{})
+		delete := permission.([]interface{})
 
-		if a, ok := lp["delete"]; ok {
-			ad := a.([]interface{})
-			if len(ad) > 0 {
-				remove := make([]*fcu.LaunchPermission, len(ad))
-				for k, v := range ad {
-					att := v.(map[string]interface{})
-					at := &fcu.LaunchPermission{}
-					if g, ok := att["global_permission"]; ok {
-						at.Group = aws.String(g.(string))
-					}
-					if g, ok := att["account_id"]; ok {
-						at.UserId = aws.String(g.(string))
-					}
-					remove[k] = at
+		if len(delete) > 0 {
+			accountIds := make([]string, len(delete))
+			var globalPermission bool
+			for k, v := range delete {
+				att := v.(map[string]interface{})
+				if g, ok := att["global_permission"]; ok {
+					globalPermission = g.(bool)
 				}
-				launchPermission.Remove = remove
+				if g, ok := att["account_id"]; ok {
+					accountIds[k] = g.(string)
+				}
+			}
+			launchPermission.Removals = oapi.PermissionsOnResource{
+				AccountIds:       accountIds,
+				GlobalPermission: globalPermission,
 			}
 		}
-		request.LaunchPermission = launchPermission
+
+		request.PermissionsToLaunch = launchPermission
 	}
 
+	var resp *oapi.POST_UpdateImageResponses
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.VM.ModifyImageAttribute(request)
+		resp, err = conn.POST_UpdateImage(*request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -279,12 +280,21 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		}
 		return nil
 	})
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			d.SetId("")
-			return nil
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status Code: 500, %s", utils.ToJSONString(resp.Code500))
 		}
-		return fmt.Errorf("error removing ami launch permission: %s", err)
+
+		return fmt.Errorf("error removing omi launch permission: %s", errString)
 	}
 
 	d.SetId("")
@@ -292,12 +302,14 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 	return nil
 }
 
-func hasOAPILaunchPermission(conn *fcu.Client, imageID string) (bool, error) {
+func hasOAPILaunchPermission(conn *oapi.Client, imageID string) (bool, error) {
+	var attrs *oapi.POST_ReadImagesResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(imageID),
-			Attribute: aws.String("launchPermission"),
+		attrs, err = conn.POST_ReadImages(oapi.ReadImagesRequest{
+			Filters: oapi.FiltersImage{
+				ImageIds: []string{imageID},
+			},
 		})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -308,18 +320,31 @@ func hasOAPILaunchPermission(conn *fcu.Client, imageID string) (bool, error) {
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", imageID)
-			return false, nil
-		}
-		return false, err
-	}
+	var errString string
 
-	// for _, lp := range attrs.LaunchPermissions {
-	// 	if *lp.UserId == account_id {
-	// 		return true, nil
-	// 	}
-	// }
-	return true, nil
+	if err != nil || attrs.OK == nil {
+		if err != nil {
+			// When an AMI disappears out from under a launch permission resource, we will
+			// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
+			if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
+				log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", imageID)
+				return false, nil
+			}
+			errString = err.Error()
+		} else if attrs.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(attrs.Code401))
+		} else if attrs.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(attrs.Code400))
+		} else if attrs.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(attrs.Code500))
+		}
+
+		return false, fmt.Errorf("Error creating Outscale VM volume: %s", errString)
+	}
+	result := attrs.OK.Images[0]
+
+	if len(result.PermissionsToLaunch.AccountIds) > 0 {
+		return true, nil
+	}
+	return false, nil
 }
