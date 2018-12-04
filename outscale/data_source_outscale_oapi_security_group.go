@@ -12,13 +12,13 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleOAPIFirewallRuleSet() *schema.Resource {
+func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFirewallRuleSetRead,
+		Read: dataSourceOutscaleOAPISecurityGroupRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"firewall_rules_set_name": {
+			"security_group_name": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -26,7 +26,7 @@ func dataSourceOutscaleOAPIFirewallRuleSet() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"firewall_rules_set_id": {
+			"security_group_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -141,14 +141,14 @@ func dataSourceOutscaleOAPIFirewallRuleSet() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFirewallRuleSetRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.DescribeSecurityGroupsInput{}
 
 	filters, filtersOk := d.GetOk("filter")
-	gn, gnOk := d.GetOk("firewall_rules_set_name")
-	gid, gidOk := d.GetOk("firewall_rules_set_id")
+	gn, gnOk := d.GetOk("security_group_name")
+	gid, gidOk := d.GetOk("security_group_id")
 
 	if filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
@@ -201,9 +201,9 @@ func dataSourceOutscaleOAPIFirewallRuleSetRead(d *schema.ResourceData, meta inte
 	sg := resp.SecurityGroups[0]
 
 	d.SetId(*sg.GroupId)
-	d.Set("firewall_rules_set_id", sg.GroupId)
+	d.Set("security_group_id", sg.GroupId)
 	d.Set("description", sg.Description)
-	d.Set("firewall_rules_set_name", sg.GroupName)
+	d.Set("security_group_name", sg.GroupName)
 	d.Set("lin_id", sg.VpcId)
 	d.Set("account_id", sg.OwnerId)
 	d.Set("tag", tagsToMap(sg.Tags))
@@ -237,9 +237,9 @@ func flattenOAPIIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 		grp := make([]map[string]interface{}, len(v.UserIdGroupPairs))
 		for i, v := range v.UserIdGroupPairs {
 			grp[i] = map[string]interface{}{
-				"account_id":              v.UserId,
-				"firewall_rules_set_name": v.GroupName,
-				"firewall_rules_set_id":   v.GroupId,
+				"account_id":          v.UserId,
+				"security_group_name": v.GroupName,
+				"security_group_id":   v.GroupId,
 			}
 		}
 		ip["groups"] = grp

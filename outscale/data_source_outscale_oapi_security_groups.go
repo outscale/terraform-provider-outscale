@@ -10,38 +10,39 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
-func dataSourceOutscaleOAPIFirewallRulesSets() *schema.Resource {
+func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleOAPIFirewallRulesSetsRead,
+		Read: dataSourceOutscaleOAPISecurityGroupsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"firewall_rules_set_name": {
+			"security_group_name": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"firewall_rules_set_id": {
+			"security_group_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"firewall_rules_sets": {
+			"security_groups": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"firewall_rules_set_name": {
+						"security_group_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"firewall_rules_set_id": {
+						"security_group_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -158,14 +159,14 @@ func dataSourceOutscaleOAPIFirewallRulesSets() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIFirewallRulesSetsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.DescribeSecurityGroupsInput{}
 
 	filters, filtersOk := d.GetOk("filter")
-	gn, gnOk := d.GetOk("firewall_rules_set_name")
-	gid, gidOk := d.GetOk("firewall_rules_set_id")
+	gn, gnOk := d.GetOk("security_group_name")
+	gid, gidOk := d.GetOk("security_group_id")
 
 	if filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
@@ -220,8 +221,8 @@ func dataSourceOutscaleOAPIFirewallRulesSetsRead(d *schema.ResourceData, meta in
 	for k, v := range resp.SecurityGroups {
 		s := make(map[string]interface{})
 
-		s["firewall_rules_set_id"] = *v.GroupId
-		s["firewall_rules_set_name"] = *v.GroupName
+		s["security_group_id"] = *v.GroupId
+		s["security_group_name"] = *v.GroupName
 		s["description"] = *v.Description
 		if v.VpcId != nil {
 			s["lin_id"] = *v.VpcId
@@ -234,11 +235,61 @@ func dataSourceOutscaleOAPIFirewallRulesSetsRead(d *schema.ResourceData, meta in
 		sg[k] = s
 	}
 
-	fmt.Printf("[DEBUG] firewall_rules_sets %s", sg)
+	fmt.Printf("[DEBUG] security_groups %s", sg)
 
 	d.SetId(resource.UniqueId())
 
-	err = d.Set("firewall_rules_sets", sg)
+	err = d.Set("security_groups", sg)
 
 	return err
+}
+
+func flattenOAPISecurityGroupRule(p []oapi.SecurityGroupRule) []map[string]interface{} {
+	ips := make([]map[string]interface{}, len(p))
+
+	for k, v := range p {
+		ip := make(map[string]interface{})
+		if v.FromPortRange != 0 {
+			ip["from_port"] = v.FromPortRange
+		}
+		if v.IpProtocol != "" {
+			ip["ip_protocol"] = v.IpProtocol
+		}
+		if v.ToPortRange != 0 {
+			ip["to_port"] = v.ToPortRange
+		}
+
+		if v.IpRanges != nil && len(v.IpRanges) > 0 {
+			ip["ip_ranges"] = v.IpRanges
+		}
+
+		if v.PrefixListIds != nil && len(v.PrefixListIds) > 0 {
+			ip["prefix_list_ids"] = v.PrefixListIds
+		}
+
+		if v.SecurityGroupsMembers != nil && len(v.SecurityGroupsMembers) > 0 {
+			grp := make([]map[string]interface{}, len(v.SecurityGroupsMembers))
+			for i, v := range v.SecurityGroupsMembers {
+				g := make(map[string]interface{})
+
+				if v.AccountId != "" {
+					g["user_id"] = v.AccountId
+				}
+				if v.SecurityGroupName != "" {
+					g["group_name"] = v.SecurityGroupName
+				}
+				if v.SecurityGroupId != "" {
+					g["group_id"] = v.SecurityGroupId
+				}
+
+				grp[i] = g
+			}
+			ip["groups"] = grp
+		}
+
+		ips[k] = ip
+		// s.Add(ip)
+	}
+
+	return ips
 }
