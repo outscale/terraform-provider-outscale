@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPIVMAttributes() *schema.Resource {
@@ -299,169 +300,152 @@ func resourceOutscaleOAPIVMAttributes() *schema.Resource {
 }
 
 func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Get("vm_id").(string)
-	var attr *string
+	var attr string
 
 	if v, ok := d.GetOk("attribute"); ok {
-		attr = aws.String(v.(string))
+		attr = v.(string)
 	}
 
 	if v, ok := d.GetOk("deletion_protection"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			DisableApiTermination: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(v.(bool)),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:               id,
+			KeypairName:        attr,
+			DeletionProtection: v.(bool),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("firewall_rules_set_id"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Groups:     v.([]*string),
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: v.([]string),
 		}
-		if err := modifyInstanceAttr(conn, opts, "firewall_rules_set_id"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "firewall_rules_set_id"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("shutdown_automatic_behavior"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
-				Value: aws.String(v.(string)),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:                        id,
+			KeypairName:                 attr,
+			VmInitiatedShutdownBehavior: v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "shutdown_automatic_behavior"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "shutdown_automatic_behavior"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("activated_check"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			SourceDestCheck: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(v.(bool)),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
+			KeypairName:         attr,
+			IsSourceDestChecked: v.(bool),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "activated_check"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "activated_check"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("type"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			InstanceType: &fcu.AttributeValue{
-				Value: aws.String(v.(string)),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:        id,
+			KeypairName: attr,
+			VmType:      v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "type"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "type"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("user_data"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			UserData: &fcu.BlobAttributeValue{
-				Value: v.([]byte),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:        id,
+			KeypairName: attr,
+			UserData:    v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "user_data"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "user_data"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("bsu_optimized"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			EbsOptimized: &fcu.AttributeBooleanValue{
-				Value: v.(*bool),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:         id,
+			KeypairName:  attr,
+			BsuOptimized: v.(bool),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("delete_on_vm_deletion"); ok {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Attribute:  attr,
-			DeleteOnTermination: &fcu.AttributeBooleanValue{
-				Value: v.(*bool),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:               id,
+			KeypairName:        attr,
+			DeletionProtection: v.(bool),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := modifyInstanceAttr(conn, opts, "delete_on_vm_deletion"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "delete_on_vm_deletion"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("block_device_mapping"); ok {
 		maps := v.(*schema.Set).List()
-		mappings := []*fcu.BlockDeviceMapping{}
+		mappings := []oapi.BlockDeviceMappingVmUpdate{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_device_name"].(string)),
+			mapping := oapi.BlockDeviceMappingVmUpdate{
+				DeviceName:        f["device_name"].(string),
+				NoDevice:          f["no_device"].(string),
+				VirtualDeviceName: f["virtual_device_name"].(string),
 			}
 
 			e := f["bsu"].(map[string]interface{})
 
-			bsu := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_vm_deletion"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["type"].(string))),
+			bsu := oapi.BsuToUpdateVm{
+				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				VolumeId:           e["snapshot_id"].(string),
 			}
 
-			mapping.Ebs = bsu
+			mapping.Bsu = bsu
 
 			mappings = append(mappings, mapping)
 		}
 
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(id),
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
 			BlockDeviceMappings: mappings,
 		}
-		if err := modifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
 			return err
 		}
 	}
@@ -813,5 +797,126 @@ func readDescribeOAPIVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func oapiStopInstance(instanceAttrOpts *oapi.UpdateVmRequest, conn *oapi.Client, attr string) (*resource.StateChangeConf, error) {
+	_, err := conn.POST_StopVms(oapi.StopVmsRequest{
+		VmIds: []string{instanceAttrOpts.VmId},
+	})
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:     []string{"stopped"},
+		Refresh:    oapiInstanceStateRefreshFunc(conn, instanceAttrOpts.VmId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"Error waiting for instance (%s) to stop: %s", instanceAttrOpts.VmId, err)
+	}
+
+	return stateConf, nil
+}
+
+func oapiStartInstance(instanceAttrOpts *oapi.UpdateVmRequest, stateConf *resource.StateChangeConf, conn *oapi.Client, attr string) error {
+	if _, err := conn.POST_StartVms(oapi.StartVmsRequest{
+		VmIds: []string{instanceAttrOpts.VmId},
+	}); err != nil {
+		return err
+	}
+
+	stateConf = &resource.StateChangeConf{
+		Pending:    []string{"pending", "stopped"},
+		Target:     []string{"running"},
+		Refresh:    oapiInstanceStateRefreshFunc(conn, instanceAttrOpts.VmId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", instanceAttrOpts.VmId, err)
+	}
+
+	return nil
+}
+
+func oapiInstanceStateRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var resp *oapi.POST_ReadVmsResponses
+		var err error
+
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
+				Filters: oapi.FiltersVm{VmIds: []string{instanceID}},
+			})
+			return resource.RetryableError(err)
+		})
+
+		if err != nil {
+			return nil, "", err
+		}
+
+		if resp == nil || len(resp.OK.Vms) == 0 {
+			return nil, "", nil
+		}
+
+		i := resp.OK.Vms[0]
+		state := i.State
+
+		if state == failState {
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				i.StateReason)
+
+		}
+
+		return i, state, nil
+	}
+}
+
+func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRequest, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		stateConf, err = oapiStopInstance(instanceAttrOpts, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := conn.POST_UpdateVm(*instanceAttrOpts); err != nil {
+		return err
+	}
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		err = oapiStartInstance(instanceAttrOpts, stateConf, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
