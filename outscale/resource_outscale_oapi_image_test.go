@@ -184,6 +184,7 @@ resource "outscale_vm" "basic" {
 resource "outscale_image" "foo" {
 	name = "tf-testing-%d"
 	vm_id = "${outscale_vm.basic.id}"
+	no_reboot = "true"
 }
 	`, rInt)
 }
