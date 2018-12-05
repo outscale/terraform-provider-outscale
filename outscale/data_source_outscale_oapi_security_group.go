@@ -2,14 +2,15 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
-
-	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -35,7 +36,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -121,53 +122,37 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag": {
-				Type: schema.TypeMap,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
+			"tag": tagsOAPISchemaComputed(),
 		},
 	}
 }
 
 func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	req := &fcu.DescribeSecurityGroupsInput{}
+	conn := meta.(*OutscaleClient).OAPI
+	req := &oapi.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_name")
 	gid, gidOk := d.GetOk("security_group_id")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
 	}
 	if gnOk {
-		var g []*string
+		var g []string
 		for _, v := range gn.([]interface{}) {
-			g = append(g, aws.String(v.(string)))
+			g = append(g, v.(string))
 		}
-		req.GroupNames = g
+		req.Filters.SecurityGroupNames = g
 	}
 	if gidOk {
-		req.GroupIds = []*string{aws.String(gid.(string))}
+		req.Filters.SecurityGroupIds = []string{gid.(string)}
 	}
 
-	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
+	var resp *oapi.POST_ReadSecurityGroupsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSecurityGroups(req)
+		resp, err = conn.POST_ReadSecurityGroups(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -179,36 +164,51 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(err.Error(), "InvalidSecurityGroupID.NotFound") || strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-			resp = nil
-			err = nil
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+				resp = nil
+				err = nil
+			} else {
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
+			}
+
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		if err != nil {
-			return fmt.Errorf("\nError on SGStateRefresh: %s", err)
-		}
+		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 	}
 
-	if resp == nil || len(resp.SecurityGroups) == 0 {
+	result := resp.OK
+
+	if resp == nil || len(result.SecurityGroups) == 0 {
 		return fmt.Errorf("Unable to find Security Group")
 	}
 
-	if len(resp.SecurityGroups) > 1 {
+	if len(result.SecurityGroups) > 1 {
 		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
 	}
 
-	sg := resp.SecurityGroups[0]
+	sg := result.SecurityGroups[0]
 
-	d.SetId(*sg.GroupId)
-	d.Set("security_group_id", sg.GroupId)
+	d.SetId(sg.SecurityGroupId)
+	d.Set("security_group_id", sg.SecurityGroupId)
 	d.Set("description", sg.Description)
-	d.Set("security_group_name", sg.GroupName)
-	d.Set("lin_id", sg.VpcId)
-	d.Set("account_id", sg.OwnerId)
-	d.Set("tag", tagsToMap(sg.Tags))
-	d.Set("inbound_rule", flattenOAPIIPPermissions(sg.IpPermissions))
-	d.Set("outbound_rule", flattenOAPIIPPermissions(sg.IpPermissionsEgress))
+	d.Set("security_group_name", sg.SecurityGroupName)
+	d.Set("net_id", sg.NetId)
+	d.Set("account_id", sg.AccountId)
+	d.Set("tag", tagsOAPIToMap(sg.Tags))
+	d.Set("inbound_rule", flattenOAPISecurityGroupRule(sg.InboundRules))
+	d.Set("outbound_rule", flattenOAPISecurityGroupRule(sg.OutboundRules))
 
 	return nil
 }
@@ -248,4 +248,67 @@ func flattenOAPIIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 	}
 
 	return ips
+}
+
+func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oapi.FiltersSecurityGroup {
+	var filters oapi.FiltersSecurityGroup
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		// case "reservation-ids":
+		// 	filters.ReservationIds = filterValues
+		case "account-ids":
+			filters.AccountIds = filterValues
+		case "descriptions":
+			filters.Descriptions = filterValues
+		case "inbound-rule-account-ids":
+			filters.InboundRuleAccountIds = filterValues
+		//case "inbound-rule-from-port-ranges-ids":
+		//	filters.InboundRuleFromPortRanges = filterValues
+		case "inbound-rule-ip-ranges":
+			filters.InboundRuleIpRanges = filterValues
+		case "inbound-rule-protocols":
+			filters.InboundRuleProtocols = filterValues
+		case "inbound-rule-security-group-ids":
+			filters.InboundRuleSecurityGroupIds = filterValues
+		case "inbound-rule-security-group-names":
+			filters.InboundRuleSecurityGroupNames = filterValues
+		// case "InboundRuleToPortRanges":
+		// 	filters.InboundRuleToPortRanges = filterValues
+		case "NetIds":
+			filters.NetIds = filterValues
+		case "OutboundRuleAccountIds":
+			filters.OutboundRuleAccountIds = filterValues
+		// case "OutboundRuleFromPortRanges":
+		// 	filters.OutboundRuleFromPortRanges = filterValues
+		case "OutboundRuleIpRanges":
+			filters.OutboundRuleIpRanges = filterValues
+		case "OutboundRuleProtocols":
+			filters.OutboundRuleProtocols = filterValues
+		case "OutboundRuleSecurityGroupIds":
+			filters.OutboundRuleSecurityGroupIds = filterValues
+		case "OutboundRuleSecurityGroupNames":
+			filters.OutboundRuleSecurityGroupNames = filterValues
+		// case "OutboundRuleToPortRanges":
+		// 	filters.OutboundRuleToPortRanges = filterValues
+		case "SecurityGroupIds":
+			filters.SecurityGroupIds = filterValues
+		case "SecurityGroupNames":
+			filters.SecurityGroupNames = filterValues
+		case "TagKeys":
+			filters.TagKeys = filterValues
+		case "TagValues":
+			filters.TagValues = filterValues
+		case "Tags":
+			filters.Tags = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

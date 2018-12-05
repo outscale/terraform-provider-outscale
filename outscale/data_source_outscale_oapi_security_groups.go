@@ -5,12 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
@@ -50,7 +48,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -160,36 +158,36 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeSecurityGroupsInput{}
+	req := &oapi.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	gn, gnOk := d.GetOk("security_group_name")
 	gid, gidOk := d.GetOk("security_group_id")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
 	}
 	if gnOk {
-		var g []*string
+		var g []string
 		for _, v := range gn.([]interface{}) {
-			g = append(g, aws.String(v.(string)))
+			g = append(g, v.(string))
 		}
-		req.GroupNames = g
+		req.Filters.SecurityGroupNames = g
 	}
 	if gidOk {
-		var g []*string
+		var g []string
 		for _, v := range gid.([]interface{}) {
-			g = append(g, aws.String(v.(string)))
+			g = append(g, v.(string))
 		}
-		req.GroupIds = g
+		req.Filters.SecurityGroupNames = g
 	}
 
-	var resp *fcu.DescribeSecurityGroupsOutput
 	var err error
+	var resp *oapi.POST_ReadSecurityGroupsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSecurityGroups(req)
+		resp, err = conn.POST_ReadSecurityGroups(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -201,36 +199,51 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(err.Error(), "InvalidSecurityGroupID.NotFound") || strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-			resp = nil
-			err = nil
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+				resp = nil
+				err = nil
+			} else {
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
+			}
+
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		if err != nil {
-			return fmt.Errorf("\nError on SGStateRefresh: %s", err)
-		}
+		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 	}
 
-	if resp == nil || len(resp.SecurityGroups) == 0 {
+	result := resp.OK
+
+	if result == nil || len(result.SecurityGroups) == 0 {
 		return fmt.Errorf("Unable to find Security Group")
 	}
 
-	sg := make([]map[string]interface{}, len(resp.SecurityGroups))
+	sg := make([]map[string]interface{}, len(result.SecurityGroups))
 
-	for k, v := range resp.SecurityGroups {
+	for k, v := range result.SecurityGroups {
 		s := make(map[string]interface{})
 
-		s["security_group_id"] = *v.GroupId
-		s["security_group_name"] = *v.GroupName
-		s["description"] = *v.Description
-		if v.VpcId != nil {
-			s["lin_id"] = *v.VpcId
+		s["security_group_id"] = v.SecurityGroupId
+		s["security_group_name"] = v.SecurityGroupName
+		s["description"] = v.Description
+		if v.NetId != "" {
+			s["net_id"] = v.NetId
 		}
-		s["account_id"] = *v.OwnerId
-		s["tags"] = tagsToMap(v.Tags)
-		s["inbound_rule"] = flattenOAPIIPPermissions(v.IpPermissions)
-		s["outbound_rule"] = flattenOAPIIPPermissions(v.IpPermissionsEgress)
+		s["account_id"] = v.AccountId
+		s["tags"] = tagsOAPIToMap(v.Tags)
+		s["inbound_rule"] = flattenOAPISecurityGroupRule(v.InboundRules)
+		s["outbound_rule"] = flattenOAPISecurityGroupRule(v.OutboundRules)
 
 		sg[k] = s
 	}
