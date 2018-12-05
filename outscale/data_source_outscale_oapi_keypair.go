@@ -76,7 +76,7 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 
 func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleKeyPairRead,
+		Read: datasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
 			// Attributes
