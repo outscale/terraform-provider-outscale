@@ -403,7 +403,10 @@ func resourceOutscaleOAPIImageWaitForAvailable(id string, client *oapi.Client, i
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", id, err)
 	}
-	return info.(*oapi.Image), nil
+
+	img := info.(oapi.Image)
+
+	return &img, nil
 }
 
 // ImageOAPIStateRefreshFunc ...
