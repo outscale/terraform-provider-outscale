@@ -2,10 +2,12 @@ package outscale
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -32,9 +34,9 @@ func resourceOutscaleOAPITags() *schema.Resource {
 }
 
 func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.CreateTagsInput{}
+	request := oapi.CreateTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
 
@@ -45,21 +47,21 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromMap(tag.(map[string]interface{}))
+		request.Tags = tagsOAPIFromMap(tag.(map[string]interface{}))
 	}
 	if resourceIdsOk {
-		var rids []*string
+		var rids []string
 		sgs := resourceIds.(*schema.Set).List()
 		for _, v := range sgs {
 			str := v.(string)
-			rids = append(rids, aws.String(str))
+			rids = append(rids, str)
 		}
 
-		request.Resources = rids
+		request.ResourceIds = rids
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.VM.CreateTags(request)
+		_, err := conn.POST_CreateTags(request)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), ".NotFound") {
 				return resource.RetryableError(err)
@@ -78,53 +80,45 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	// Build up search parameters
-	params := &fcu.DescribeTagsInput{}
-	filters := []*fcu.Filter{}
+	params := oapi.ReadTagsRequest{
+		Filters: oapi.FiltersTag{},
+	}
 
 	tag, tagsOk := d.GetOk("tag")
 	if tagsOk {
-		tgs := tagsFromMap(tag.(map[string]interface{}))
-		ts := make([]*string, 0, len(tgs))
+		tgs := tagsOAPIFromMap(tag.(map[string]interface{}))
+		keys := make([]string, 0, len(tgs))
+		values := make([]string, 0, len(tgs))
 		for _, t := range tgs {
-			ts = append(ts, t.Key)
+			keys = append(keys, t.Key)
+			values = append(values, t.Value)
 		}
 
-		f := &fcu.Filter{
-			Name:   aws.String("key"),
-			Values: ts,
-		}
-
-		filters = append(filters, f)
+		params.Filters.Keys = keys
+		params.Filters.Values = values
 
 	}
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 	if resourceIdsOk {
-		var rids []*string
+		var rids []string
 		sgs := resourceIds.(*schema.Set).List()
 		for _, v := range sgs {
 			str := v.(string)
-			rids = append(rids, aws.String(str))
+			rids = append(rids, str)
 		}
 
-		f := &fcu.Filter{
-			Name:   aws.String("resource-id"),
-			Values: rids,
-		}
-
-		filters = append(filters, f)
+		params.Filters.ResourceIds = rids
 	}
 
-	params.Filters = filters
-
-	var resp *fcu.DescribeTagsOutput
+	var resp *oapi.POST_ReadTagsResponses
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeTags(params)
+		resp, err = conn.POST_ReadTags(params)
 		return resource.RetryableError(err)
 	})
 
@@ -132,7 +126,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	tg := tagsDescToList(resp.Tags)
+	tg := oapiTagsDescToList(resp.OK.Tags)
 	err = d.Set("tags", tg)
 
 	return err
@@ -290,3 +284,30 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 
 // 	return nil
 // }
+
+func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	for k, t := range ts {
+		if !oapiTagDescIgnored(&t) {
+			r := map[string]string{}
+			r["load_balancer_name"] = t.Key
+			r["value"] = t.Value
+			r["resource_id"] = t.ResourceId
+			r["resource_type"] = t.ResourceType
+
+			result[k] = r
+		}
+	}
+
+	return result
+}
+
+func oapiTagDescIgnored(t *oapi.Tag) bool {
+	filter := []string{"^outscale:"}
+	for _, v := range filter {
+		if r, _ := regexp.MatchString(v, t.Key); r == true {
+			return true
+		}
+	}
+	return false
+}
