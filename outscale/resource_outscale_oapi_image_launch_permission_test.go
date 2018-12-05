@@ -159,7 +159,7 @@ resource "outscale_image" "outscale_image" {
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
-    permission_create {
+    permission_additions {
         account_id = "520679080430"
 	}
 }

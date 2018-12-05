@@ -28,7 +28,7 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"permission_create": &schema.Schema{
+			"permission_additions": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
