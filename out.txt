@@ -1,0 +1,48 @@
+==> Checking that code complies with gofmt requirements...
+TF_ACC=1 go test $(go list ./... |grep -v 'vendor') -v -run=TestAccOutscaleOAPIKeypairDataSource_Instance -timeout 120m
+?   	github.com/terraform-providers/terraform-provider-outscale	[no test files]
+
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc	(cached) [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/common	[no test files]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/dl	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/eim	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/fcu	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/handler	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/icu	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/lbu	(cached) [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/oapi	[no test files]
+=== RUN   TestAccOutscaleOAPIKeypairDataSource_Instance
+####################
+###### REQUEST #######
+POST /oapi/latest/CreateKeypair HTTP/1.1
+Host: api.in-west-2.outscale.com
+Authorization: AWS4-HMAC-SHA256 Credential=7E4U4AQ0CGLTWB78Q38V/20181205/in-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=3f5bfb6a390c3b32da897701337ad4227c4a6d19a9514a77bd1bbefeb926073a
+Content-Type: application/json
+X-Amz-Date: 20181205T221849Z
+
+{"KeypairName":"TestKey"}
+
+--- FAIL: TestAccOutscaleOAPIKeypairDataSource_Instance (75.63s)
+    testing.go:513: Step 0 error: Error applying: 1 error occurred:
+        
+        * outscale_keypair.a_key_pair: 1 error occurred:
+        
+        * outscale_keypair.a_key_pair: Error creating OAPIKeyPair: Post https://api.in-west-2.outscale.com/oapi/latest/CreateKeypair: dial tcp 172.19.142.4:443: connect: operation timed out
+FAIL
+FAIL	github.com/terraform-providers/terraform-provider-outscale/outscale	75.651s
+?   	github.com/terraform-providers/terraform-provider-outscale/test	[no test files]
+?   	github.com/terraform-providers/terraform-provider-outscale/utils	[no test files]

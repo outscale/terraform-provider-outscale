@@ -26,7 +26,7 @@ func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleKeypairDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIKeypairDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeypairDataSourceID("data.outscale_keypair.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_keypair.nat_ami", "keypair_name", "TestKey"),
