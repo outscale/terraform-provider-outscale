@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPIInboundRule() *schema.Resource {
@@ -65,13 +64,13 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 }
 
 func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("firewall_rules_set_id").(string)
 
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, _, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := oapiFindResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -88,19 +87,19 @@ func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interfac
 	}
 
 	ruleType := "ingress"
-	isVPC := sg.VpcId != nil && *sg.VpcId != ""
+	isVPC := sg.NetId != ""
 
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Ingress", perms)
 
-	req := &fcu.AuthorizeSecurityGroupIngressInput{
-		GroupId:       sg.GroupId,
-		IpPermissions: perms,
+	req := oapi.CreateSecurityGroupRuleRequest{
+		SecurityGroupId: sg.SecurityGroupId,
+		Rules:           perms,
 	}
 
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.VM.AuthorizeSecurityGroupIngress(req)
+		_, err = conn.POST_CreateSecurityGroupRule(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -128,21 +127,21 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 			ruleType, autherr)
 	}
 
-	id := ipPermissionIDHash(sgID, ruleType, perms)
+	id := ipOAPIPermissionIDHash(sgID, ruleType, perms)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, _, err := findResourceSecurityGroup(conn, sgID)
+		sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
 			return resource.NonRetryableError(err)
 		}
 
-		var rules []*fcu.IpPermission
-		rules = sg.IpPermissions
+		var rules []oapi.SecurityGroupRule
+		rules = sg.InboundRules
 
-		rule := findRuleMatch(perms, rules, isVPC)
+		rule := findOAPIRuleMatch(perms, rules, isVPC)
 
 		if rule == nil {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -163,9 +162,9 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 }
 
 func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("firewall_rules_set_id").(string)
-	sg, reqID, err := findResourceSecurityGroup(conn, sgID)
+	sg, reqID, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -175,12 +174,12 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
-	isVPC := sg.VpcId != nil && *sg.VpcId != ""
+	isVPC := sg.NetId != ""
 
-	var rule *fcu.IpPermission
-	var rules []*fcu.IpPermission
+	var rule *oapi.SecurityGroupRule
+	var rules []oapi.SecurityGroupRule
 	ruleType := "ingress"
-	rules = sg.IpPermissions
+	rules = sg.InboundRules
 
 	p, err := expandOAPIIPPermIngress(d, sg)
 	if err != nil {
@@ -189,12 +188,12 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 
 	if len(rules) == 0 {
 		log.Printf("[WARN] No %s rules were found for Security Group (%s) looking for Security Group Rule (%s)",
-			ruleType, *sg.GroupName, d.Id())
+			ruleType, sg.SecurityGroupName, d.Id())
 		d.SetId("")
 		return nil
 	}
 
-	rule = findRuleMatch(p, rules, isVPC)
+	rule = findOAPIRuleMatch(p, rules, isVPC)
 
 	if rule == nil {
 		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -203,20 +202,20 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 		return nil
 	}
 
-	if ips, err := setFromIPPerm(d, sg, p); err != nil {
+	if ips, err := setOAPIFromIPPerm(d, sg, p); err != nil {
 		return d.Set("inbound_rule", ips)
 	}
-	return d.Set("request_id", aws.StringValue(reqID))
+	return d.Set("request_id", reqID)
 }
 
 func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("firewall_rules_set_id").(string)
 
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
 
-	sg, _, err := findResourceSecurityGroup(conn, sgID)
+	sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
@@ -227,13 +226,13 @@ func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interfac
 	}
 	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
 		sgID, "ingress", perms)
-	req := &fcu.RevokeSecurityGroupIngressInput{
-		GroupId:       sg.GroupId,
-		IpPermissions: perms,
+	req := oapi.DeleteSecurityGroupRuleRequest{
+		SecurityGroupId: sg.SecurityGroupId,
+		Rules:           perms,
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.RevokeSecurityGroupIngress(req)
+		_, err = conn.POST_DeleteSecurityGroupRule(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -258,9 +257,47 @@ func resourceOutscaleOAPIInboundRuleDelete(d *schema.ResourceData, meta interfac
 
 // #################################
 
-func expandOAPIIPPermIngress(d *schema.ResourceData, sg *fcu.SecurityGroup) ([]*fcu.IpPermission, error) {
+func expandOAPIIPPermIngress(d *schema.ResourceData, sg *oapi.SecurityGroup) ([]oapi.SecurityGroupRule, error) {
 	ippems := d.Get("inbound_rule").([]interface{})
-	perms := make([]*fcu.IpPermission, len(ippems))
+	perms := make([]oapi.SecurityGroupRule, len(ippems))
 
 	return expandOAPIIPPerm(d, sg, perms, ippems)
+}
+
+func oapiFindResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.SecurityGroup, *string, error) {
+	req := oapi.ReadSecurityGroupsRequest{
+		Filters: oapi.FiltersSecurityGroup{
+			InboundRuleSecurityGroupIds: []string{id},
+		},
+	}
+
+	var err error
+	var resp *oapi.POST_ReadSecurityGroupsResponses
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = conn.POST_ReadSecurityGroups(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err, ok := err.(awserr.Error); ok && err.Code() == "InvalidGroup.NotFound" {
+		return nil, nil, oapiSecurityGroupNotFound{id, nil}
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	if resp == nil {
+		return nil, nil, securityGroupNotFound{id, nil}
+	}
+	if len(resp.OK.SecurityGroups) != 1 {
+		return nil, nil, oapiSecurityGroupNotFound{id, resp.OK.SecurityGroups}
+	}
+
+	return &resp.OK.SecurityGroups[0], &resp.OK.ResponseContext.RequestId, nil
 }

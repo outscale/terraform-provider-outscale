@@ -8,21 +8,21 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	oapiFlag, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		oapiFlag = false
 	}
 
-	if !oapi {
+	if !oapiFlag {
 		t.Skip()
 	}
-	var group fcu.SecurityGroup
+	var group oapi.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -43,14 +43,14 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 
 func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_firewall_rules_set" "web" {
-		firewall_rules_set_name = "terraform_test_%d"
-		description = "Used in the terraform acceptance tests"
-		lin_id = "vpc-e9d09d63"
-		tag = {
-						Name = "tf-acc-test"
-		}
-	}
+	#resource "outscale_firewall_rules_set" "web" {
+	#	firewall_rules_set_name = "terraform_test_%d"
+	#	description = "Used in the terraform acceptance tests"
+	#	lin_id = "vpc-e9d09d63"
+	#	tag = {
+	#					Name = "tf-acc-test"
+	#	}
+	#}
 	resource "outscale_outbound_rule" "egress_1" {
 			inbound_rule = {
 				ip_protocol = "tcp"
@@ -58,6 +58,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 				to_port_range = 8000
 				ip_ranges = ["10.0.0.0/8"]
 		}
-		firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
+		#firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
+		firewall_rules_set_id = "123"
 	}`, rInt)
 }
