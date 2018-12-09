@@ -180,14 +180,3 @@ func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oa
 
 	return d.Set("vm_state_set", states)
 }
-
-func oapiExpandStringList(configured []interface{}) []string {
-	vs := make([]string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, v.(string))
-		}
-	}
-	return vs
-}

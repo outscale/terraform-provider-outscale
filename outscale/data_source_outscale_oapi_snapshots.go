@@ -38,7 +38,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"completion": {
+						"progress": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -51,10 +51,6 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 							Computed: true,
 						},
 						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"comment": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -74,7 +70,25 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"tag": tagsSchemaComputed(),
+						"permissions_to_create_volume": &schema.Schema{
+							Type:     schema.TypeSet,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_ids": &schema.Schema{
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
+									},
+									"global_permission": &schema.Schema{
+										Type:     schema.TypeBool,
+										Optional: true,
+									},
+								},
+							},
+						},
+						"tags": tagsSchemaComputed(),
 					},
 				},
 			},
@@ -135,15 +149,20 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		snapshot := make(map[string]interface{})
 
 		snapshot["description"] = v.Description
-		//snapshot["account_alias"] = aws.StringValue(v.OwnerAlias)
+		snapshot["account_alias"] = v.AccountAlias
 		snapshot["account_id"] = v.AccountId
-		snapshot["completion"] = v.Progress
+		snapshot["progress"] = v.Progress
 		snapshot["snapshot_id"] = v.SnapshotId
 		snapshot["state"] = v.State
-		//snapshot["comment"] = v.StateMessage
 		snapshot["volume_id"] = v.VolumeId
 		snapshot["volume_size"] = v.VolumeSize
-		snapshot["tag"] = tagsOAPIToMap(v.Tags)
+		snapshot["tags"] = tagsOAPIToMap(v.Tags)
+
+		permsMap := make(map[string]interface{})
+		permsMap["account_ids"] = v.PermissionsToCreateVolume.AccountIds
+		permsMap["global_permission"] = v.PermissionsToCreateVolume.GlobalPermission
+
+		snapshot["permissions_to_create_volume"] = permsMap
 
 		snapshots[k] = snapshot
 	}
