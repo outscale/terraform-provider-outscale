@@ -45,7 +45,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "type", "t2.micro"),
+						"outscale_vm.basic", "vm_type", "t2.micro"),
 				),
 			},
 		},
@@ -82,7 +82,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "type", "t2.micro"),
+						"outscale_vm.basic", "vm_type", "t2.micro"),
 				),
 			},
 			{
@@ -304,7 +304,7 @@ func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
 	image_id = "ami-cc3278d3"
-	type = "t2.micro"
+	vm_type = "t2.micro"
 }`
 }
 
@@ -312,9 +312,8 @@ func testAccVmsConfigUpdateOAPIVMKey() string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_vm" {
   image_id = "ami-cc3278d3"
-  type = "c4.large"
+  vm_type = "c4.large"
   keypair_name = "integ_sut_keypair"
   security_group_ids = ["sg-c73d3b6b"]
-  #firewall_rules_set_id = "sg-c73d3b6b" # tempo tests
 }`)
 }

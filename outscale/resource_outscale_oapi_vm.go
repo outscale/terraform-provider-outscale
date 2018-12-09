@@ -139,13 +139,13 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	// Initialize the connection info
 	if vm.PublicIp != "" {
 		d.SetConnInfo(map[string]string{
-			"type": "ssh",
-			"host": vm.PublicIp,
+			"vm_type": "ssh",
+			"host":    vm.PublicIp,
 		})
 	} else if vm.PrivateIp != "" {
 		d.SetConnInfo(map[string]string{
-			"type": "ssh",
-			"host": vm.PrivateIp,
+			"vm_type": "ssh",
+			"host":    vm.PrivateIp,
 		})
 	}
 
@@ -202,7 +202,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("token", instance.ClientToken)
 	d.Set("bsu_optimized", instance.BsuOptimized)
 	d.Set("image_id", instance.ImageId)
-	d.Set("type", instance.VmType)
+	d.Set("vm_type", instance.VmType)
 	d.Set("vm_id", instance.VmId)
 	d.Set("keypair_name", instance.KeypairName)
 	d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
@@ -262,12 +262,12 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	//Missing Tag_set
 
-	// if d.HasChange("type") && !d.IsNewResource() {
+	// if d.HasChange("vm_type") && !d.IsNewResource() {
 	// 	opts := &oapi.UpdateVmAttributeRequest{
 	// 		VmId: aws.String(d.Id()),
-	// 		Type: aws.String(d.Get("type").(string)),
+	// 		Type: aws.String(d.Get("vm_type").(string)),
 	// 	}
-	// 	if err := updateVMAttr(conn, opts, "type"); err != nil {
+	// 	if err := updateVMAttr(conn, opts, "vm_type"); err != nil {
 	// 		return err
 	// 	}
 	// }
@@ -444,7 +444,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 									Type:     schema.TypeFloat,
 									Optional: true,
 								},
-								"type": {
+								"vm_type": {
 									Type:     schema.TypeString,
 									Optional: true,
 								},
@@ -484,7 +484,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
-		"type": {
+		"vm_type": {
 			Type:     schema.TypeString,
 			ForceNew: true,
 			Required: true,
@@ -752,7 +752,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 						},
 						Computed: true,
 					},
-					"type": {
+					"vm_type": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -960,7 +960,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"type": {
+								"vm_type": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -1085,7 +1085,7 @@ func buildOutscaleOAPIVMOpts(
 		DisableAPITermination: d.Get("deletion_protection").(bool),
 		EBSOptimized:          d.Get("bsu_optimized").(bool),
 		ImageID:               d.Get("image_id").(string),
-		InstanceType:          d.Get("type").(string),
+		InstanceType:          d.Get("vm_type").(string),
 	}
 
 	if v := d.Get("shutdown_automatic_behavior").(string); v != "" {
@@ -1217,7 +1217,7 @@ func readBlockDeviceOApiMappingsFromConfig(
 			if v, ok := bd["volume_size"].(int); ok && v != 0 {
 				ebs.VolumeSize = int64(v)
 			}
-			if v, ok := bd["type"].(string); ok && v != "" {
+			if v, ok := bd["vm_type"].(string); ok && v != "" {
 				ebs.VolumeType = v
 			}
 			if v, ok := bd["iops"].(int); ok && v > 0 {
