@@ -34,7 +34,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"completion": {
+			"progress": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -54,7 +54,29 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag": tagsSchema(),
+			"permissions_to_create_volume": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"tags": tagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -147,13 +169,22 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set("description", snapshot.Description)
 	d.Set("account_id", snapshot.AccountId)
-	d.Set("completion", snapshot.Progress)
-	//d.Set("account_alias", snapshot.AccountAlias)
+	d.Set("progress", snapshot.Progress)
+	d.Set("snapshot_id", snapshot.SnapshotId)
+	d.Set("account_alias", snapshot.AccountAlias)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("state", snapshot.State)
-	//d.Set("status_message", snapshot.StatusMessage)
+	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
-	//d.Set("tag", oapiTagsToMap(snapshot.Tags))
+	d.Set("volume_size", snapshot.VolumeSize)
+	d.Set("tags", tagsOAPIToMap(snapshot.Tags))
+	d.Set("request_id", res.OK.ResponseContext.RequestId)
+
+	permsMap := make(map[string]interface{})
+	permsMap["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
+	permsMap["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+
+	d.Set("permissions_to_create_volume", permsMap)
 
 	return nil
 }

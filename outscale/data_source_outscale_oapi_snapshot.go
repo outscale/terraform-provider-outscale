@@ -20,13 +20,27 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			//selection criteria
 			"filter": dataSourceFiltersSchema(),
-			"permission_to_create_volume": {
-				Type:     schema.TypeList,
+			"permissions_to_create_volume": &schema.Schema{
+				Type:     schema.TypeSet,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+					},
+				},
 			},
+
 			//Computed values returned
-			"completion": {
+			"progress": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -40,10 +54,6 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"comment": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -64,7 +74,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tag": dataSourceTagsSchema(),
+			"tags": dataSourceTagsSchema(),
 		},
 	}
 }
@@ -89,10 +99,10 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
 	}
 	if ownersOk {
-		params.Filters.AccountIds = oapiExpandStringList(owners.([]interface{}))
+		params.Filters.AccountIds = []string{owners.(string)}
 	}
 	if snapshotIdsOk {
-		params.Filters.SnapshotIds = oapiExpandStringList(snapshotIds.([]interface{}))
+		params.Filters.SnapshotIds = []string{snapshotIds.(string)}
 	}
 
 	var resp *oapi.POST_ReadSnapshotsResponses
@@ -130,16 +140,21 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Snapshot) error {
 	d.SetId(snapshot.SnapshotId)
 	d.Set("description", snapshot.Description)
-	//d.Set("account_alias", snapshot.OwnerAlias)
+	d.Set("account_alias", snapshot.AccountAlias)
 	d.Set("account_id", snapshot.AccountId)
-	d.Set("completion", snapshot.Progress)
+	d.Set("progress", snapshot.Progress)
 	d.Set("snapshot_id", snapshot.SnapshotId)
 	d.Set("state", snapshot.State)
-	//d.Set("comment", snapshot.StateMessage)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
 
-	return setSnapshotArgTags("tag", d, &snapshot.Tags)
+	permsMap := make(map[string]interface{})
+	permsMap["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
+	permsMap["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+
+	d.Set("permissions_to_create_volume", permsMap)
+
+	return d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 }
 
 func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.FiltersSnapshot) *oapi.FiltersSnapshot {
@@ -156,25 +171,25 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.F
 		case "description":
 			filter.Descriptions = values
 
-		case "owner-alias":
+		case "owner_alias":
 			filter.AccountAliases = values
 
-		case "owner-id":
+		case "owner_id":
 			filter.AccountIds = values
 
 		case "progress":
 			filter.Progresses = utils.StringSliceToInt64Slice(values)
 
-		case "snapshot-id":
+		case "snapshot_id":
 			filter.SnapshotIds = values
 
 		case "status":
 			filter.States = values
 
-		case "volume-id":
+		case "volume_id":
 			filter.VolumeIds = values
 
-		case "volume-size":
+		case "volume_size":
 			filter.VolumeSizes = utils.StringSliceToInt64Slice(values)
 
 		case "tag":
@@ -202,22 +217,4 @@ func oapiExpandStringList(configured []interface{}) []string {
 		}
 	}
 	return vs
-}
-
-func setSnapshotArgTags(attrName string, d *schema.ResourceData, tags *[]oapi.ResourceTag) error {
-	if *tags != nil {
-		if err := d.Set(attrName, tagsOAPIToMap(*tags)); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set(attrName, []map[string]string{
-			map[string]string{
-				"key":   "",
-				"value": "",
-			},
-		}); err != nil {
-			return err
-		}
-	}
-	return nil
 }
