@@ -172,19 +172,19 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPu
 		switch name := m["name"].(string); name {
 		// case "reservation-ids":
 		// 	filters.ReservationIds = filterValues
-		case "link-ids":
+		case "link_id":
 			filters.LinkPublicIpIds = filterValues
-		case "placements":
+		case "placement":
 			filters.Placements = filterValues
-		case "vm-ids":
+		case "vm_id":
 			filters.VmIds = filterValues
-		case "nic-ids":
+		case "nic_id":
 			filters.NicIds = filterValues
-		case "nic-account-ids":
+		case "nic_account_id":
 			filters.NicAccountIds = filterValues
-		case "private-ips":
+		case "private_ip":
 			filters.PrivateIps = filterValues
-		case "public-ips":
+		case "public_ip":
 			filters.PublicIps = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

@@ -317,7 +317,7 @@ func init() {
 			"outscale_directlink_interface":                dataSourceOutscaleOAPIDirectLinkInterface,
 			"outscale_directlink_interfaces":               dataSourceOutscaleOAPIDirectLinkInterfaces,
 			"outscale_public_ip":                           dataSourceOutscaleOAPIPublicIP,
-			"outscale_public_ips":                          dataSourceOutscalePublicIPS, //TODO: OAPI
+			"outscale_public_ips":                          dataSourceOutscaleOAPIPublicIPS,
 			"outscale_nat_service":                         dataSourceOutscaleOAPINatService,
 			"outscale_nat_services":                        dataSourceOutscaleOAPINatServices,
 			"outscale_api_key":                             dataSourceOutscaleOAPIIamAccessKey,

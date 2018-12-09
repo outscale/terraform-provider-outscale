@@ -4,10 +4,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPITags() *schema.Resource {
@@ -44,22 +43,21 @@ func dataSourceOutscaleOAPITags() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	// Build up search parameters
-	params := &fcu.DescribeTagsInput{}
-
+	params := oapi.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeTagsOutput
+	var resp *oapi.POST_ReadTagsResponses
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeTags(params)
+		resp, err = conn.POST_ReadTags(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -73,7 +71,7 @@ func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	d.Set("tags", tagsDescToList(resp.Tags))
+	d.Set("tags", oapiTagsDescToList(resp.OK.Tags))
 	d.SetId(resource.UniqueId())
 
 	return err

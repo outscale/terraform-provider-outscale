@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -37,22 +37,22 @@ func dataSourceOutscaleOAPITag() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	// Build up search parameters
-	params := &fcu.DescribeTagsInput{}
+	params := oapi.ReadTagsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeTagsOutput
+	var resp *oapi.POST_ReadTagsResponses
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeTags(params)
+		resp, err = conn.POST_ReadTags(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -66,16 +66,16 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	if len(resp.Tags) < 1 {
+	if len(resp.OK.Tags) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	if len(resp.Tags) > 1 {
+	if len(resp.OK.Tags) > 1 {
 		return fmt.Errorf("your query returned more than one result, Please try a more " +
 			"specific search criteria")
 	}
 
-	tag := resp.Tags[0]
+	tag := resp.OK.Tags[0]
 
 	d.Set("key", tag.Key)
 	d.Set("value", tag.Value)
@@ -85,4 +85,24 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resource.UniqueId())
 
 	return err
+}
+
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oapi.FiltersTag {
+	var filterKeys []string
+	var filterValues []string
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		filterKeys = append(filterKeys, m["name"].(string))
+	}
+
+	filters := oapi.FiltersTag{
+		Keys:   filterKeys,
+		Values: filterValues,
+	}
+	return filters
 }

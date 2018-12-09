@@ -42,10 +42,7 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 const testAccOAPITagDataSourceConfig = `
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
-	instance_type = "m1.small"
-	tag = {
-		foo = "bar"
-	}
+	type = "m1.small"
 }
 
 data "outscale_tag" "web" {
