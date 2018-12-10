@@ -45,6 +45,11 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		KeypairName: keyName,
 	}
 
+	//Accept public key as argument
+	if v, ok := d.GetOk("public_key"); ok {
+		req.PublicKey = v.(string)
+	}
+
 	var result *oapi.CreateKeypairResponse
 	var resp *oapi.POST_CreateKeypairResponses
 	var err error
@@ -187,6 +192,11 @@ func getOAPIKeyPairSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"keypair_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"public_key": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
