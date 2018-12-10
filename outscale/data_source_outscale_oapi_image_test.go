@@ -47,6 +47,31 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
@@ -61,6 +86,15 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 		return nil
 	}
 }
+
+const testAccCheckOutscaleOAPIImageDataSourceBasicConfig = `
+data "outscale_image" "omi" {
+	filter {
+      name = "image_ids"
+      values = ["ami-5c450b62"]
+	}
+}
+`
 
 const testAccCheckOutscaleOAPIImageDataSourceConfig = `
 #Commented until security group will be merged.
