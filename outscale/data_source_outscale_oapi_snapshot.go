@@ -21,7 +21,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 			//selection criteria
 			"filter": dataSourceFiltersSchema(),
 			"permissions_to_create_volume": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -147,11 +147,20 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Sn
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
 
-	permsMap := make(map[string]interface{})
-	permsMap["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
-	permsMap["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+	accountIds := snapshot.PermissionsToCreateVolume.AccountIds
+	lp := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
+		l := make(map[string]interface{})
 
-	d.Set("permissions_to_create_volume", permsMap)
+		l["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+		l["account_id"] = v
+
+		lp[k] = l
+	}
+
+	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+		return err
+	}
 
 	return d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 }
