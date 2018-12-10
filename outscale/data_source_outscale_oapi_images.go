@@ -321,6 +321,12 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) oapi.FiltersImage
 			filters.ImageNames = filterValues
 		case "image_types":
 			filters.ImageTypes = filterValues
+		case "virtualization_types":
+			filters.VirtualizationTypes = filterValues
+		case "root_device_types":
+			filters.RootDeviceTypes = filterValues
+		case "block_device_mapping_volume_type":
+			filters.BlockDeviceMappingVolumeType = filterValues
 		//Some params are missing.
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

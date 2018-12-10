@@ -1,0 +1,48 @@
+==> Checking that code complies with gofmt requirements...
+TF_ACC=1 go test $(go list ./... |grep -v 'vendor') -v -run=TestAccOutscaleOAPIImagesDataSource_Instance -timeout 120m
+?   	github.com/terraform-providers/terraform-provider-outscale	[no test files]
+
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc	(cached) [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/common	[no test files]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/dl	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/eim	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/fcu	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/handler	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/icu	(cached) [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/lbu	(cached) [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/oapi	[no test files]
+=== RUN   TestAccOutscaleOAPIImagesDataSource_Instance
+####################
+###### REQUEST #######
+POST /oapi/latest/ReadImages HTTP/1.1
+Host: api.in-west-2.outscale.com
+Authorization: AWS4-HMAC-SHA256 Credential=7E4U4AQ0CGLTWB78Q38V/20181210/in-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=f0ad2d02c04b4801ab6db95589f3849a1701a3c6488f9b4f8e0c60a64468ff2d
+Content-Type: application/json
+X-Amz-Date: 20181210T222042Z
+
+{"Filters":{"Architectures":["x86_64"],"BlockDeviceMappingVolumeType":["standard"],"RootDeviceTypes":["ebs"],"VirtualizationTypes":["hvm"]}}
+
+--- FAIL: TestAccOutscaleOAPIImagesDataSource_Instance (75.99s)
+    testing.go:513: Step 0 error: Error refreshing: 1 error occurred:
+        
+        * data.outscale_images.nat_ami: 1 error occurred:
+        
+        * data.outscale_images.nat_ami: data.outscale_images.nat_ami: Error retrieving Outscale Images: Post https://api.in-west-2.outscale.com/oapi/latest/ReadImages: dial tcp 172.19.142.4:443: connect: operation timed out
+FAIL
+FAIL	github.com/terraform-providers/terraform-provider-outscale/outscale	76.019s
+?   	github.com/terraform-providers/terraform-provider-outscale/test	[no test files]
+?   	github.com/terraform-providers/terraform-provider-outscale/utils	[no test files]

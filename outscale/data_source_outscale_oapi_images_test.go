@@ -63,19 +63,19 @@ func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc
 const testAccCheckOutscaleOAPIImagesDataSourceConfig = `
 data "outscale_images" "nat_ami" {
 	filter {
-		name = "architecture"
+		name = "architectures"
 		values = ["x86_64"]
 	}
 	filter {
-		name = "virtualization-type"
+		name = "virtualization_types"
 		values = ["hvm"]
 	}
 	filter {
-		name = "root-device-type"
+		name = "root_device_types"
 		values = ["ebs"]
 	}
 	filter {
-		name = "block-device-mapping.volume-type"
+		name = "block_device_mapping_volume_type"
 		values = ["standard"]
 	}
 }
