@@ -69,12 +69,8 @@ func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFu
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfig = `
 resource "outscale_volume" "example" {
-    availability_zone = "eu-west-2a"
-    type = "gp2"
-    size = 40
-    tag {
-        Name = "External Volume"
-    }
+    sub_region_name = "in-west-2a"
+	size = 1
 }
 
 resource "outscale_snapshot" "snapshot" {
@@ -88,12 +84,8 @@ data "outscale_snapshot" "snapshot" {
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters = `
 resource "outscale_volume" "external1" {
-    availability_zone = "eu-west-2a"
-    type = "gp2"
+	sub_region_name = "in-west-2a"
     size = 10
-    tag {
-        Name = "External Volume 1"
-    }
 }
 
 resource "outscale_snapshot" "snapshot" {
