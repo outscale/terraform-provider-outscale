@@ -59,6 +59,10 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 			},
 			"tags": tagsSchemaComputed(),
 			"tag":  tagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -200,7 +204,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return nil
 	}
 
-	group := sgRaw.(*oapi.SecurityGroup)
+	group := sgRaw.(oapi.SecurityGroup)
 
 	req := &oapi.ReadSecurityGroupsRequest{}
 	req.Filters = oapi.FiltersSecurityGroup{SecurityGroupIds: []string{group.SecurityGroupId}}
@@ -262,6 +266,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	d.Set("net_id", sg.NetId)
 	d.Set("account_id", sg.AccountId)
 	d.Set("tags", tagsOAPIToMap(sg.Tags))
+	d.Set("request_id", result.ResponseContext.RequestId)
 
 	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.InboundRules)); err != nil {
 		return err

@@ -41,6 +41,7 @@ func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
 					testAccCheckOutscaleOAPISecurityGroupRuleExists("outscale_security_group.web", &group),
 					resource.TestCheckResourceAttr(
 						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
+					testAccCheckState("outscale_security_group.web"),
 				),
 			},
 		},
