@@ -74,6 +74,10 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
 	}
 
+	if response.ResponseContext.RequestId != "" {
+		d.Set("request_id", response.ResponseContext.RequestId)
+	}
+
 	keypair := response.Keypairs[0]
 	d.Set("keypair_name", keypair.KeypairName)
 	d.Set("keypair_fingerprint", keypair.KeypairFingerprint)
@@ -94,6 +98,10 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 				Computed: true,
 			},
 			"keypair_fingerprint": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

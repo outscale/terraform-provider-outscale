@@ -77,6 +77,11 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	}
 
 	d.SetId(resource.UniqueId())
+
+	if response.ResponseContext.RequestId != "" {
+		d.Set("request_id", response.ResponseContext.RequestId)
+	}
+
 	keypairs := make([]map[string]interface{}, len(response.Keypairs))
 	for k, v := range response.Keypairs {
 		keypair := make(map[string]interface{})
@@ -124,7 +129,6 @@ func datasourceOutscaleOAPIKeyPairs() *schema.Resource {
 			},
 			"request_id": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 		},

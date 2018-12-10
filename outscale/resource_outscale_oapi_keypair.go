@@ -81,6 +81,11 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(result.Keypair.KeypairName)
 	d.Set("keypair_fingerprint", result.Keypair.KeypairFingerprint)
 
+	//Set private key in creation
+	if result.Keypair.PrivateKey != "" {
+		d.Set("private_key", result.Keypair.PrivateKey)
+	}
+
 	return resourceOAPIKeyPairRead(d, meta)
 }
 
@@ -126,6 +131,10 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	response = resp.OK
+
+	if err := d.Set("request_id", response.ResponseContext.RequestId); err != nil {
+		return err
+	}
 
 	for _, keyPair := range response.Keypairs {
 		if keyPair.KeypairName == d.Id() {
@@ -180,6 +189,10 @@ func getOAPIKeyPairSchema() map[string]*schema.Schema {
 		"keypair_name": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}
