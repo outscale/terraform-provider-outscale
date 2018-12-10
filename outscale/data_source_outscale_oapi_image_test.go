@@ -63,20 +63,21 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 }
 
 const testAccCheckOutscaleOAPIImageDataSourceConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
+#Commented until security group will be merged.
+#resource "outscale_keypair" "a_key_pair" {
+#	keypair_name   = "terraform-key-%d"
+#}
 
-resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
-  group_description = "Used in the terraform acceptance tests"
-}
+#resource "outscale_security_group" "web" {
+#  group_name = "terraform_acceptance_test_example_1"
+#  group_description = "Used in the terraform acceptance tests"
+#}
 
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	type = "t2.micro"
-	security_group = ["${outscale_firewall_rules_set.web.id}"]
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	#security_group_ids = ["${outscale_security_group.web.id}"]
+	#keypair_name = "${outscale_keypair.a_key_pair.keypair_name}"
 }
 
 resource "outscale_image" "foo" {
