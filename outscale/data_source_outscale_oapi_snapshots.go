@@ -72,18 +72,17 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 						},
 						"permissions_to_create_volume": &schema.Schema{
 							Type:     schema.TypeSet,
-							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
 										Type:     schema.TypeList,
-										Optional: true,
+										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,
-										Optional: true,
+										Computed: true,
 									},
 								},
 							},
