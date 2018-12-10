@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -168,13 +169,13 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 
 	d.Set("description", snapshot.Description)
 	d.Set("account_id", snapshot.AccountId)
-	d.Set("progress", snapshot.Progress)
+	d.Set("progress", strconv.FormatInt(snapshot.Progress, 10))
 	d.Set("snapshot_id", snapshot.SnapshotId)
 	d.Set("account_alias", snapshot.AccountAlias)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("state", snapshot.State)
 	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("volume_size", snapshot.VolumeSize)
+	d.Set("volume_size", strconv.FormatInt(snapshot.VolumeSize, 10))
 	d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 	d.Set("request_id", res.OK.ResponseContext.RequestId)
 
