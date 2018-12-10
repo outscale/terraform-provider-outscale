@@ -168,9 +168,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 			lp[k] = l
 		}
 
-		if err := d.Set("permissions_to_create_volume", lp); err != nil {
-			return err
-		}
+		snapshot["permissions_to_create_volume"] = lp
 
 		snapshots[k] = snapshot
 	}
