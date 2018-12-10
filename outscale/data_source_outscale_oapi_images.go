@@ -309,13 +309,19 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) oapi.FiltersImage
 		}
 
 		switch name := m["name"].(string); name {
-		case "account-aliases":
+		case "account_aliases":
 			filters.AccountAliases = filterValues
 		case "account_ids":
 			filters.AccountIds = filterValues
 		case "architectures":
 			filters.Architectures = filterValues
-		//Missing more params.
+		case "image_ids":
+			filters.ImageIds = filterValues
+		case "image_names":
+			filters.ImageNames = filterValues
+		case "image_types":
+			filters.ImageTypes = filterValues
+		//Some params are missing.
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
