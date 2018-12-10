@@ -219,7 +219,6 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		Filters: oapi.FiltersImage{ImageIds: []string{id}},
 	}
 
-	var result *oapi.ReadImagesResponse
 	var resp *oapi.POST_ReadImagesResponses
 	var err error
 	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
@@ -256,6 +255,8 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 
 		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
 	}
+
+	result := resp.OK
 
 	if len(result.Images) != 1 {
 		d.SetId("")
