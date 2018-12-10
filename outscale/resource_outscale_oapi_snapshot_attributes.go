@@ -30,9 +30,8 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
-										Type:     schema.TypeList,
+										Type:     schema.TypeString,
 										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,
@@ -47,9 +46,8 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
-										Type:     schema.TypeList,
+										Type:     schema.TypeString,
 										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,
@@ -164,13 +162,23 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}
 
-	permsMap := make(map[string]interface{})
-	permsMap["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
-	permsMap["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
+	permissions := make([]map[string]interface{}, 1)
+	accountIds := attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
+	additions := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
+		l := make(map[string]interface{})
+
+		l["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
+		l["account_id"] = v
+
+		additions[k] = l
+	}
+	permissions[0] = make(map[string]interface{})
+	permissions[0]["additions"] = additions
 
 	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
 
-	return d.Set("permissions_to_create_volume", permsMap)
+	return d.Set("permissions_to_create_volume", permissions)
 }
 
 func resourcedOutscaleOAPISnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
