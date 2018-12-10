@@ -30,7 +30,7 @@ func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "40"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1073741824"),
 				),
 			},
 		},
