@@ -40,7 +40,7 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 func testAccOutscaleOAPISnapshotAttributesConfig(includeCreateVolumePermission bool, aid string) string {
 	base := `
 resource "outscale_volume" "description_test" {
-	sub_region_name = "dv-west-1a"
+	sub_region_name = "in-west-2a"
 	size = 1
 }
 
