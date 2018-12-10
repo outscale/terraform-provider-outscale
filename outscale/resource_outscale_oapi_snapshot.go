@@ -175,7 +175,6 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("state", snapshot.State)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
-	d.Set("volume_size", snapshot.VolumeSize)
 	d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 	d.Set("request_id", res.OK.ResponseContext.RequestId)
 
@@ -183,7 +182,9 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	permsMap["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
 	permsMap["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
 
-	d.Set("permissions_to_create_volume", permsMap)
+	if err := d.Set("permissions_to_create_volume", permsMap); err != nil {
+		return err
+	}
 
 	return nil
 }
