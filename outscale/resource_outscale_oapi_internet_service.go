@@ -111,7 +111,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	return d.Set("tag", tagsOAPIToMap(result.Tags))
+	return d.Set("tags", tagsOAPIToMap(result.Tags))
 }
 
 func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -178,6 +178,6 @@ func getOAPIInternetServiceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": dataSourceTagsSchema(),
+		"tags": dataSourceTagsSchema(),
 	}
 }
