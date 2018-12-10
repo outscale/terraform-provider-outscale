@@ -34,7 +34,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 			},
 			//Computed values returned
 			"snapshot_set": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
