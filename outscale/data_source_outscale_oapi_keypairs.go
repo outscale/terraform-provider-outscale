@@ -21,15 +21,18 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	//filters, filtersOk := d.GetOk("filter")
 	KeyName, KeyNameisOk := d.GetOk("keypair_names")
 
-	// if filtersOk {
-	// 	req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	//}
 	if KeyNameisOk {
 		var names []string
 		for _, v := range KeyName.([]interface{}) {
 			names = append(names, v.(string))
 		}
 		req.Filters.KeypairNames = names
+	}
+
+	filters, filtersOk := d.GetOk("filter")
+
+	if filtersOk {
+		req.Filters = buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var response *oapi.ReadKeypairsResponse

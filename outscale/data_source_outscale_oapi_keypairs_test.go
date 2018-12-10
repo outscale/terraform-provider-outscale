@@ -57,6 +57,11 @@ resource "outscale_keypair" "a_key_pair" {
 }
 
 data "outscale_keypairs" "nat_ami" {
-	keypair_names = ["${outscale_keypair.a_key_pair.id}"]
+	#keypair_names = ["${outscale_keypair.a_key_pair.id}"]
+	
+	filter {
+		name = "keypair_names"
+		values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+	}
 }
 `

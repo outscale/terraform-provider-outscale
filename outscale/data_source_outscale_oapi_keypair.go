@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -20,6 +21,12 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 	KeyName, KeyNameisOk := d.GetOk("keypair_name")
 	if KeyNameisOk {
 		req.Filters.KeypairNames = []string{KeyName.(string)}
+	}
+
+	filters, filtersOk := d.GetOk("filter")
+
+	if filtersOk {
+		req.Filters = buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var response *oapi.ReadKeypairsResponse
@@ -79,6 +86,7 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 		Read: datasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
+			"filter": dataSourceFiltersSchema(),
 			// Attributes
 			"keypair_name": {
 				Type:     schema.TypeString,
@@ -91,4 +99,25 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 			},
 		},
 	}
+}
+
+func buildOutscaleOAPIKeyPairsDataSourceFilters(set *schema.Set) oapi.FiltersKeypair {
+	var filters oapi.FiltersKeypair
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "keypair_fingerprints":
+			filters.KeypairFingerprints = filterValues
+		case "keypair_names":
+			filters.KeypairNames = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }
