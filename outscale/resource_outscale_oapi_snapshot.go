@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,7 +44,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 			},
 			"snapshot_id": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"volume_size": {
@@ -180,7 +181,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 
 	permsMap := make(map[string]interface{})
 	permsMap["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
-	permsMap["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+	permsMap["global_permission"] = strconv.FormatBool(snapshot.PermissionsToCreateVolume.GlobalPermission)
 
 	if err := d.Set("permissions_to_create_volume", permsMap); err != nil {
 		return err
