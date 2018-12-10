@@ -34,7 +34,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 			},
 			//Computed values returned
 			"snapshot_set": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -157,11 +157,20 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		snapshot["volume_size"] = v.VolumeSize
 		snapshot["tags"] = tagsOAPIToMap(v.Tags)
 
-		permsMap := make(map[string]interface{})
-		permsMap["account_ids"] = v.PermissionsToCreateVolume.AccountIds
-		permsMap["global_permission"] = v.PermissionsToCreateVolume.GlobalPermission
+		accountIds := v.PermissionsToCreateVolume.AccountIds
+		lp := make([]map[string]interface{}, len(accountIds))
+		for k, accId := range accountIds {
+			l := make(map[string]interface{})
 
-		snapshot["permissions_to_create_volume"] = permsMap
+			l["global_permission"] = v.PermissionsToCreateVolume.GlobalPermission
+			l["account_id"] = accId
+
+			lp[k] = l
+		}
+
+		if err := d.Set("permissions_to_create_volume", lp); err != nil {
+			return err
+		}
 
 		snapshots[k] = snapshot
 	}
