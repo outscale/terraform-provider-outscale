@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -40,7 +39,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"progress": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"snapshot_id": {
@@ -151,11 +150,11 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		snapshot["description"] = v.Description
 		snapshot["account_alias"] = v.AccountAlias
 		snapshot["account_id"] = v.AccountId
-		snapshot["progress"] = strconv.FormatInt(v.Progress, 10)
+		snapshot["progress"] = v.Progress
 		snapshot["snapshot_id"] = v.SnapshotId
 		snapshot["state"] = v.State
 		snapshot["volume_id"] = v.VolumeId
-		snapshot["volume_size"] = strconv.FormatInt(v.VolumeSize, 10)
+		snapshot["volume_size"] = v.VolumeSize
 		snapshot["tags"] = tagsOAPIToMap(v.Tags)
 
 		accountIds := v.PermissionsToCreateVolume.AccountIds
