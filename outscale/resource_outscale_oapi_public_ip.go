@@ -26,18 +26,13 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"reservation_id": {
+			"public_ip_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"link_id": {
+			"link_public_ip_id": {
 				Type:     schema.TypeString,
 				Computed: true,
-			},
-			"placement": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
 			},
 			"vm_id": {
 				Type:     schema.TypeString,
@@ -88,8 +83,6 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	allocResp := resp.OK
-
-	//d.Set("placement", allocResp.Placement)
 
 	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 	// if d.Get("placement").(string) == "vpc" {
@@ -148,9 +141,9 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
 
 	if address.LinkPublicIpId != "" {
-		d.Set("link_id", address.LinkPublicIpId)
+		d.Set("link_public_ip_id", address.LinkPublicIpId)
 	} else {
-		d.Set("link_id", "")
+		d.Set("link_public_ip_id", "")
 	}
 	if address.VmId != "" {
 		d.Set("vm_id", address.VmId)
@@ -170,8 +163,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("private_ip", address.PrivateIp)
 	d.Set("public_ip", address.PublicIp)
 
-	//d.Set("placement", address.Placement)
-	//d.Set("reservation_id", address.ReservationId)
+	d.Set("public_ip_id", address.PublicIpId)
 
 	// if address.Placement == "vpc" && net.ParseIP(id) != nil {
 	// 	fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
@@ -251,15 +243,15 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 	}
 
 	vInstance, okInstance := d.GetOk("vm_id")
-	vAssociationID, okAssociationID := d.GetOk("link_id")
+	linkPublicIpID, okAssociationID := d.GetOk("link_public_ip_id")
 
-	if (okInstance && vInstance.(string) != "") || (okAssociationID && vAssociationID.(string) != "") {
+	if (okInstance && vInstance.(string) != "") || (okAssociationID && linkPublicIpID.(string) != "") {
 		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{
-				LinkPublicIpId: d.Get("link_id").(string),
+				LinkPublicIpId: d.Get("link_public_ip_id").(string),
 			})
 		case "standard":
 			_, err = conn.POST_UnlinkPublicIp(oapi.UnlinkPublicIpRequest{

@@ -5,11 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIKeyPair() *schema.Resource {
@@ -32,77 +31,80 @@ func resourceOutscaleOAPIKeyPair() *schema.Resource {
 }
 
 func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	var keyName string
-	if v, ok := d.GetOk("keyperName"); ok {
+	if v, ok := d.GetOk("keypair_name"); ok {
 		keyName = v.(string)
 	} else {
 		keyName = resource.UniqueId()
-		d.Set("keyperName", keyName)
+		d.Set("keypair_name", keyName)
 	}
-	if publicKey, ok := d.GetOk("PrivateKey"); ok {
-		req := &fcu.ImportKeyPairInput{
-			KeyName:           aws.String(keyName),
-			PublicKeyMaterial: []byte(publicKey.(string)),
-		}
 
-		var resp *fcu.ImportKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.ImportKeyPair(req)
+	req := &oapi.CreateKeypairRequest{
+		KeypairName: keyName,
+	}
 
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(err)
-		})
+	//Accept public key as argument
+	if v, ok := d.GetOk("public_key"); ok {
+		req.PublicKey = v.(string)
+	}
+
+	var result *oapi.CreateKeypairResponse
+	var resp *oapi.POST_CreateKeypairResponses
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, err = conn.POST_CreateKeypair(*req)
 
 		if err != nil {
-			return fmt.Errorf("Error import OAPIKeyPair: %s", err)
-		}
-		d.SetId(*resp.KeyName)
-
-	} else {
-		req := &fcu.CreateKeyPairInput{
-			KeyName: aws.String(keyName),
-		}
-
-		var resp *fcu.CreateKeyPairOutput
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
-			resp, err = conn.VM.CreateKeyPair(req)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
 			}
-			return resource.RetryableError(err)
-		})
-		if err != nil {
-			return fmt.Errorf("Error creating OAPIKeyPair: %s", err)
+			return resource.NonRetryableError(err)
 		}
-		d.SetId(*resp.KeyName)
-		d.Set("PrivateKey", *resp.KeyMaterial)
+		return nil
+	})
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Error creating OAPIKeyPair: %s", errString)
 	}
-	return nil
+
+	result = resp.OK
+
+	d.SetId(result.Keypair.KeypairName)
+	d.Set("keypair_fingerprint", result.Keypair.KeypairFingerprint)
+
+	//Set private key in creation
+	if result.Keypair.PrivateKey != "" {
+		d.Set("private_key", result.Keypair.PrivateKey)
+	}
+
+	return resourceOAPIKeyPairRead(d, meta)
 }
 
 func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeKeyPairsInput{
-		KeyNames: []*string{aws.String(d.Id())},
+	conn := meta.(*OutscaleClient).OAPI
+	req := &oapi.ReadKeypairsRequest{
+		Filters: oapi.FiltersKeypair{KeypairNames: []string{d.Id()}},
 	}
 
-	var resp *fcu.DescribeKeyPairsOutput
+	var response *oapi.ReadKeypairsResponse
+	var resp *oapi.POST_ReadKeypairsResponses
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.VM.DescribeKeyPairs(req)
+		resp, err = conn.POST_ReadKeypairs(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -110,48 +112,63 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
-	if err != nil {
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+				d.SetId("")
+				return nil
+			}
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
+	}
+
+	response = resp.OK
+
+	if err := d.Set("request_id", response.ResponseContext.RequestId); err != nil {
 		return err
 	}
 
-	if err != nil {
-		awsErr, ok := err.(awserr.Error)
-		if ok && awsErr.Code() == "InvalidOAPIKeyPair.NotFound" {
-			d.SetId("")
-			return nil
-		}
-		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", err)
-	}
-
-	for _, keyPair := range resp.KeyPairs {
-		if *keyPair.KeyName == d.Id() {
-			d.Set("keyperName", keyPair.KeyName)
-			d.Set("fingerprint", keyPair.KeyFingerprint)
+	for _, keyPair := range response.Keypairs {
+		if keyPair.KeypairName == d.Id() {
+			d.Set("keypair_name", keyPair.KeypairName)
+			d.Set("keypair_fingerprint", keyPair.KeypairFingerprint)
 			return nil
 		}
 	}
 
-	return fmt.Errorf("Unable to find key pair within: %#v", resp.KeyPairs)
+	return fmt.Errorf("Unable to find key pair within: %#v", response.Keypairs)
 }
 
 func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		request := &oapi.DeleteKeypairRequest{
+			KeypairName: d.Id(),
+		}
+
 		var err error
-		_, err = conn.VM.DeleteKeyPairs(&fcu.DeleteKeyPairInput{
-			KeyName: aws.String(d.Id()),
-		})
+		_, err = conn.POST_DeleteKeypair(*request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -164,7 +181,7 @@ func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 func getOAPIKeyPairSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
-		"key_fingerprint": {
+		"keypair_fingerprint": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
@@ -177,6 +194,15 @@ func getOAPIKeyPairSchema() map[string]*schema.Schema {
 		"keypair_name": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
+		},
+		"public_key": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}

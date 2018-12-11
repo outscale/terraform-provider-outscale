@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -18,15 +17,15 @@ import (
 )
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
-	var conf fcu.KeyPairInfo
+	var conf oapi.Keypair
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
 
@@ -48,15 +47,15 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
-	var conf fcu.KeyPairInfo
+	var conf oapi.Keypair
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if oapi == false {
+	if isOAPI == false {
 		t.Skip()
 	}
 
@@ -71,7 +70,7 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_keypair.a_key_pair", "key_name", "tf-acc-key-pair",
+						"outscale_keypair.a_key_pair", "keypair_name", "tf-acc-key-pair",
 					),
 				),
 			},
@@ -79,16 +78,16 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 	})
 }
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
-	var conf fcu.KeyPairInfo
+	var conf oapi.Keypair
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if oapi == false {
+	if isOAPI == false {
 		t.Skip()
 	}
 
@@ -103,11 +102,11 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 					func(s *terraform.State) error {
-						if conf.KeyName == nil {
+						if conf.KeypairName == "" {
 							return fmt.Errorf("bad: No SG name")
 						}
-						if !strings.HasPrefix(*conf.KeyName, "terraform-") {
-							return fmt.Errorf("No terraform- prefix: %s", *conf.KeyName)
+						if !strings.HasPrefix(conf.KeypairName, "terraform-") {
+							return fmt.Errorf("No terraform- prefix: %s", conf.KeypairName)
 						}
 						return nil
 					},
@@ -126,11 +125,12 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		}
 
 		// Try to find key pair
-		var resp *fcu.DescribeKeyPairsOutput
+		var response *oapi.POST_ReadKeypairsResponses
+		var resp *oapi.ReadKeypairsResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.FCU.VM.DescribeKeyPairs(&fcu.DescribeKeyPairsInput{
-				KeyNames: []*string{aws.String(rs.Primary.ID)},
+			response, err = conn.OAPI.POST_ReadKeypairs(oapi.ReadKeypairsRequest{
+				Filters: oapi.FiltersKeypair{KeypairNames: []string{rs.Primary.ID}},
 			})
 
 			if err != nil {
@@ -143,12 +143,14 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 			return resource.RetryableError(err)
 		})
 
-		if resp == nil {
+		if response == nil {
 			return nil
 		}
 
+		resp = response.OK
+
 		if err == nil {
-			if len(resp.KeyPairs) > 0 {
+			if len(resp.Keypairs) > 0 {
 				return fmt.Errorf("still exist")
 			}
 			return nil
@@ -167,16 +169,16 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *fcu.KeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *oapi.Keypair) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *conf.KeyFingerprint != expectedFingerprint {
-			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, *conf.KeyFingerprint)
+		if conf.KeypairFingerprint != expectedFingerprint {
+			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, conf.KeypairFingerprint)
 		}
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.KeyPairInfo) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oapi.Keypair) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -186,44 +188,45 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *fcu.KeyPairInfo) resou
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No OAPIKeyPair name is set")
 		}
-		var resp *fcu.DescribeKeyPairsOutput
+		var resp *oapi.POST_ReadKeypairsResponses
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.FCU.VM.DescribeKeyPairs(&fcu.DescribeKeyPairsInput{
-				KeyNames: []*string{aws.String(rs.Primary.ID)},
+			resp, err = conn.OAPI.POST_ReadKeypairs(oapi.ReadKeypairsRequest{
+				Filters: oapi.FiltersKeypair{KeypairNames: []string{rs.Primary.ID}},
 			})
+
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 		if err != nil {
 			return err
 		}
-		if len(resp.KeyPairs) != 1 ||
-			*resp.KeyPairs[0].KeyName != rs.Primary.ID {
+		if len(resp.OK.Keypairs) != 1 ||
+			resp.OK.Keypairs[0].KeypairName != rs.Primary.ID {
 			return fmt.Errorf("OAPIKeyPair not found")
 		}
 
-		*res = *resp.KeyPairs[0]
+		*res = resp.OK.Keypairs[0]
 
 		return nil
 	}
 }
 
 func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
-	var conf fcu.KeyPairInfo
+	var conf oapi.Keypair
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:        func() { testAccPreCheck(t) },
 		IDRefreshName:   "outscale_keypair.a_key_pair",
-		IDRefreshIgnore: []string{"key_name_prefix"},
+		IDRefreshIgnore: []string{"keypair_name_prefix"},
 		Providers:       testAccProviders,
 		CheckDestroy:    testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -261,8 +264,8 @@ func testAccOutscaleOAPIKeyPairConfig(r int) string {
 	return fmt.Sprintf(
 		`
 resource "outscale_keypair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair-%d"
-	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+	keypair_name   = "tf-acc-key-pair-%d"
+	keypair_fingerprint = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `, r)
 }
@@ -271,14 +274,14 @@ func testAccOutscaleOAPIKeyPairConfigRetrieveName(r int) string {
 	return fmt.Sprintf(
 		`
 resource "outscale_keypair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair-%d"
+	keypair_name   = "tf-acc-key-pair-%d"
 }
 `, r)
 }
 
 const testAccOutscaleOAPIKeyPairConfigGeneratedName = `
 resource "outscale_keypair" "a_key_pair" {
-	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+	keypair_fingerprint = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `
 
@@ -286,8 +289,8 @@ func testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(r int) string {
 	return fmt.Sprintf(
 		`
 resource "outscale_keypair" "a_key_pair" {
-	key_name_prefix   = "baz-%d"
-	key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+	keypair_name_prefix   = "baz-%d"
+	keypair_fingerprint = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 }
 `, r)
 }
