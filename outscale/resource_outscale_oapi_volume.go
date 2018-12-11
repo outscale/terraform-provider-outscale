@@ -292,7 +292,7 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.Set("subregion_name", volume.SubregionName)
 
 	//Commented until backend issues is resolved.
-	d.Set("size", volume.Size)
+	//d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
 	d.Set("volume_type", volume.VolumeType)
 
