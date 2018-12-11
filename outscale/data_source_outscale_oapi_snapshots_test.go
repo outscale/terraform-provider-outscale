@@ -36,7 +36,7 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 
 const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
 resource "outscale_volume" "example" {
-    sub_region_name = "in-west-2a"
+    subregion_name = "in-west-2a"
 	size = 1
 }
 

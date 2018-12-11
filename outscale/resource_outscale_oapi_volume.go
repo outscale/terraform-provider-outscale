@@ -23,7 +23,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			"sub_region_name": {
+			"subregion_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -102,7 +102,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	request := &oapi.CreateVolumeRequest{
-		SubregionName: d.Get("sub_region_name").(string),
+		SubregionName: d.Get("subregion_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
 		request.Size = int64(value.(int))
@@ -289,7 +289,7 @@ func volumeOAPIStateRefreshFunc(conn *oapi.Client, volumeID string) resource.Sta
 func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	d.SetId(volume.VolumeId)
 
-	d.Set("sub_region_name", volume.SubregionName)
+	d.Set("subregion_name", volume.SubregionName)
 
 	//Commented until backend issues is resolved.
 	d.Set("size", volume.Size)

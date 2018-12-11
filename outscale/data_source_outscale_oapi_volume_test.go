@@ -53,8 +53,8 @@ func testAccCheckOutscaleOAPIVolumeDataSourceID(n string) resource.TestCheckFunc
 
 const testAccCheckOutscaleOAPIVolumeDataSourceConfig = `
 resource "outscale_volume" "example" {
-    sub_region_name = "us-west-1a"
-    volume_type = "gp2"
+    subregion_name = "us-west-1a"
+    type = "gp2"
     size = 40
     tags {
 		key = "Name" 

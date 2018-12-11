@@ -29,7 +29,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						//Schema: map[string]*schema.Schema{
 						// Arguments
-						"sub_region_name": {
+						"subregion_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -184,7 +184,7 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 			im["linked_volumes"] = a
 		}
 		if v.SubregionName != "" {
-			im["sub_region_name"] = v.SubregionName
+			im["subregion_name"] = v.SubregionName
 		}
 		//if v.Iops != nil {
 		im["iops"] = v.Iops
