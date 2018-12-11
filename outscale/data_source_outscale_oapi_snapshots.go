@@ -163,7 +163,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 			l := make(map[string]interface{})
 
 			l["global_permission"] = v.PermissionsToCreateVolume.GlobalPermission
-			l["account_id"] = accId
+			l["account_ids"] = accId
 
 			lp[k] = l
 		}

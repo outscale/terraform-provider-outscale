@@ -153,7 +153,7 @@ func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Sn
 		l := make(map[string]interface{})
 
 		l["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
-		l["account_id"] = v
+		l["account_ids"] = v
 
 		lp[k] = l
 	}
