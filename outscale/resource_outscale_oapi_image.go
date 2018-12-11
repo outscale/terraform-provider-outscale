@@ -36,7 +36,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"name": {
+			"image_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -61,7 +61,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"osu_location": {
+			"file_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -77,7 +77,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"type": {
+			"image_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -139,7 +139,27 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
+			"permissions_to_launch": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"tag": dataSourceTagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -148,7 +168,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := &oapi.CreateImageRequest{
-		ImageName: d.Get("name").(string),
+		ImageName: d.Get("image_name").(string),
 		VmId:      d.Get("vm_id").(string),
 	}
 
@@ -207,7 +227,10 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return resourceOAPIImageUpdate(d, meta)
+	d.Set("description", result.Image.Description)
+	d.Set("creation_date", result.Image.CreationDate)
+
+	return resourceOAPIImageRead(d, meta)
 
 }
 
@@ -297,13 +320,13 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	//d.Set("hypervisor", image.Hypervisor)
 	d.Set("image_id", image.ImageId)
-	d.Set("osu_location", image.FileLocation)
+	d.Set("file_location", image.FileLocation)
 	if image.AccountAlias != "nil" {
 		d.Set("account_alias", image.AccountAlias)
 	}
 	d.Set("account_id", image.AccountId)
-	d.Set("type", image.ImageType)
-	d.Set("name", image.ImageName)
+	d.Set("image_type", image.ImageType)
+	d.Set("image_name", image.ImageName)
 	// d.Set("is_public", image.Public)
 	if image.RootDeviceName != "" {
 		d.Set("root_device_name", image.RootDeviceName)
@@ -320,6 +343,22 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
 		return err
 	}
+
+	accountIds := image.PermissionsToLaunch.AccountIds
+	lp := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
+		l := make(map[string]interface{})
+		//if image.PermissionsToLaunch.GlobalPermission != nil {
+		l["global_permission"] = image.PermissionsToLaunch.GlobalPermission
+		//}
+		//if v.UserId != nil {
+		l["account_id"] = v
+		//}
+		lp[k] = l
+	}
+
+	d.Set("permissions_to_launch", lp)
+	d.Set("request_id", result.ResponseContext.RequestId)
 
 	//return d.Set("tag", dataSourceTags(image.Tags))
 	return nil
@@ -505,9 +544,9 @@ func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]i
 		}
 		if !reflect.DeepEqual(v.Bsu, oapi.Bsu{}) {
 			bsu := map[string]interface{}{
-				"delete_on_vm_termination": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
-				"volume_size":              fmt.Sprintf("%d", v.Bsu.VolumeSize),
-				"volume_type":              v.Bsu.VolumeType,
+				"delete_on_vm_deletion": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
+				"volume_size":           fmt.Sprintf("%d", v.Bsu.VolumeSize),
+				"volume_type":           v.Bsu.VolumeType,
 			}
 
 			//	if v.Bsu.Iops != nil {
