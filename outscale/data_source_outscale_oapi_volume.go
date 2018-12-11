@@ -20,7 +20,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			"filter": dataSourceFiltersSchema(),
-			"sub_region_name": {
+			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -149,7 +149,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 	d.SetId(volume.VolumeId)
 
 	d.Set("volume_id", volume.VolumeId)
-	d.Set("sub_region_name", volume.SubregionName)
+	d.Set("subregion_name", volume.SubregionName)
 	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
 	d.Set("type", volume.VolumeType)

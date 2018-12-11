@@ -69,7 +69,7 @@ func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFu
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfig = `
 resource "outscale_volume" "example" {
-    sub_region_name = "in-west-2a"
+    subregion_name = "in-west-2a"
 	size = 1
 }
 
@@ -84,7 +84,7 @@ data "outscale_snapshot" "snapshot" {
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters = `
 resource "outscale_volume" "external1" {
-	sub_region_name = "in-west-2a"
+	subregion_name = "in-west-2a"
     size = 10
 }
 

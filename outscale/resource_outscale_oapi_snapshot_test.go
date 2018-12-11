@@ -109,7 +109,7 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestChe
 
 const testAccOutscaleOAPISnapshotConfig = `
 resource "outscale_volume" "test" {
-	sub_region_name = "in-west-2a"
+	subregion_name = "in-west-2a"
 	size = 1
 }
 
@@ -120,7 +120,7 @@ resource "outscale_snapshot" "test" {
 
 const testAccOutscaleOAPISnapshotConfigWithDescription = `
 resource "outscale_volume" "description_test" {
-	availability_zone = "in-west-2a"
+	subregion_name = "in-west-2a"
 	size = 1
 }
 
