@@ -41,7 +41,7 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"osu_location": {
+			"file_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -57,11 +57,11 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"type": {
+			"image_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"name": {
+			"image_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -82,7 +82,7 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				Computed: true,
 			},
 			// Complex computed values
-			"block_device_mapping": {
+			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -126,6 +126,22 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 			"state_comment": {
 				Type:     schema.TypeMap,
 				Computed: true,
+			},
+			"permissions_to_launch": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 			"tag": dataSourceTagsSchema(),
 		},
@@ -219,15 +235,15 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	d.Set("description", image.Description)
 	//d.Set("hypervisor", image.Hypervisor)
 	d.Set("image_id", image.ImageId)
-	d.Set("osu_location", image.FileLocation)
+	d.Set("file_location", image.FileLocation)
 	if image.AccountAlias != "" {
 		d.Set("account_alias", image.AccountAlias)
 	} else {
 		d.Set("account_alias", "")
 	}
 	d.Set("account_id", image.AccountId)
-	d.Set("type", image.ImageType)
-	d.Set("name", image.ImageName)
+	d.Set("image_type", image.ImageType)
+	d.Set("image_name", image.ImageName)
 	//d.Set("is_public", image.Public)
 	if image.RootDeviceName != "" {
 		d.Set("root_device_name", image.RootDeviceName)
@@ -238,7 +254,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	d.Set("state", image.State)
 	//d.Set("virtualization_type", image.VirtualizationType)
 	// Complex types get their own functions
-	if err := d.Set("block_device_mapping", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
+	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
 	if err := d.Set("product_codes", omiOAPIProductCodes(image.ProductCodes)); err != nil {
@@ -247,6 +263,21 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
 		return err
 	}
+
+	accountIds := image.PermissionsToLaunch.AccountIds
+	lp := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
+		l := make(map[string]interface{})
+		//if image.PermissionsToLaunch.GlobalPermission != nil {
+		l["global_permission"] = image.PermissionsToLaunch.GlobalPermission
+		//}
+		//if v.UserId != nil {
+		l["account_id"] = v
+		//}
+		lp[k] = l
+	}
+
+	d.Set("permissions_to_launch", lp)
 
 	//return d.Set("tag", tagsToMap(image.Tags))
 	return nil

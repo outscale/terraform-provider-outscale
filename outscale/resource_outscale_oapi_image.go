@@ -507,7 +507,7 @@ func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]i
 			bsu := map[string]interface{}{
 				"delete_on_vm_termination": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
 				"volume_size":              fmt.Sprintf("%d", v.Bsu.VolumeSize),
-				"type":                     v.Bsu.VolumeType,
+				"volume_type":              v.Bsu.VolumeType,
 			}
 
 			//	if v.Bsu.Iops != nil {
@@ -550,10 +550,10 @@ func omiOAPIStateReason(m *oapi.StateComment) map[string]interface{} {
 	s := make(map[string]interface{})
 	if m != nil {
 		s["state_code"] = m.StateCode
-		s["message"] = m.StateMessage
+		s["state_message"] = m.StateMessage
 	} else {
 		s["state_code"] = "UNSET"
-		s["message"] = "UNSET"
+		s["state_message"] = "UNSET"
 	}
 	return s
 }
