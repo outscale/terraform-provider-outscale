@@ -29,9 +29,9 @@ func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckState("outscale_public_ip.test"),
-					testAccCheckState("data.outscale_public_ip.by_reservation_id"),
+					testAccCheckState("data.outscale_public_ip.by_public_ip_id"),
 					testAccCheckState("data.outscale_public_ip.by_public_ip"),
-					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_reservation_id"),
+					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),
 			},
@@ -56,11 +56,11 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 
 		attr := rs.Primary.Attributes
 
-		if attr["reservation_id"] != eipRs.Primary.Attributes["reservation_id"] {
+		if attr["public_ip_id"] != eipRs.Primary.Attributes["public_ip_id"] {
 			return fmt.Errorf(
-				"reservation_id is %s; want %s",
-				attr["reservation_id"],
-				eipRs.Primary.Attributes["reservation_id"],
+				"public_ip_id is %s; want %s",
+				attr["public_ip_id"],
+				eipRs.Primary.Attributes["public_ip_id"],
 			)
 		}
 
@@ -79,10 +79,10 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 resource "outscale_public_ip" "test" {}
 
+data "outscale_public_ip" "by_public_ip_id" {
+  public_ip_id = "${outscale_public_ip.test.public_ip_id}"
+}
 data "outscale_public_ip" "by_public_ip" {
-	filter {
-		name  = "public_ip"
-		values = [${outscale_public_ip.test.public_ip}]
- 	}  
+  public_ip = "${outscale_public_ip.test.public_ip}"
 }
 `

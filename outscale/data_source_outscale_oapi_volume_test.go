@@ -30,7 +30,7 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
-					//resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "40"), Commented until backend issue is solve.
+					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "40"),
 				),
 			},
 		},
@@ -53,8 +53,8 @@ func testAccCheckOutscaleOAPIVolumeDataSourceID(n string) resource.TestCheckFunc
 
 const testAccCheckOutscaleOAPIVolumeDataSourceConfig = `
 resource "outscale_volume" "example" {
-    subregion_name = "us-west-1a"
-    type = "gp2"
+    sub_region_name = "us-west-1a"
+    volume_type = "gp2"
     size = 40
     tags {
 		key = "Name" 

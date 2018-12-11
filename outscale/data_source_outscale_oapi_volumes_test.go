@@ -29,8 +29,8 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
 					testAccCheckState("data.outscale_volumes.ebs_volume"),
-					//resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "10"), Commented until backend issue is solved
-					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.type", "gp2"),
+					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "10"),
+					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "gp2"),
 				),
 			},
 		},
@@ -67,8 +67,8 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 
 const testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters = `
 resource "outscale_volume" "external1" {
-	subregion_name = "us-west-1a"
-    type = "gp2"
+	sub_region_name = "us-west-1a"
+    volume_type = "gp2"
     size = 10
 	tags {
 		key = "Name" 
@@ -90,12 +90,12 @@ data "outscale_volumes" "ebs_volume" {
 
 const testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter = `
 resource "outscale_volume" "outscale_volume" {
-	subregion_name = "us-west-1a"
+	sub_region_name = "us-west-1a"
 	size = 40
 }
 
 resource "outscale_volume" "outscale_volume2" {
-	subregion_name = "us-west-1a"
+	sub_region_name = "us-west-1a"
 	size = 40
 }
 
