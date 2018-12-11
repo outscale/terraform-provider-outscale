@@ -56,6 +56,19 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 								},
 							},
 						},
+					},
+				},
+			},
+			"snapshot_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"permissions_to_create_volume_set": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
 						"account_ids": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
@@ -66,11 +79,6 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 						},
 					},
 				},
-			},
-			"snapshot_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
 			},
 		},
 	}
@@ -210,7 +218,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 		lp[k] = l
 	}
 
-	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+	if err := d.Set("permissions_to_create_volume_set", lp); err != nil {
 		return err
 	}
 
