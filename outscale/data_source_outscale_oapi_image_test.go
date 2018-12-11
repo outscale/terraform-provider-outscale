@@ -91,7 +91,7 @@ const testAccCheckOutscaleOAPIImageDataSourceBasicConfig = `
 data "outscale_image" "omi" {
 	filter {
       name = "image_ids"
-      values = ["ami-b4bd8de2"]
+      values = ["ami-b0829808"]
 	}
 }
 `
