@@ -94,29 +94,58 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 	}
 
 	if permsParam, ok := d.GetOk("permissions_to_create_volume"); ok {
-		perms := oapi.PermissionsOnResourceCreation{}
+		permissions := permsParam.([]interface{})
 
-		if additions, additionsOk := permsParam.(map[string]interface{})["additions"]; additionsOk {
-			perms.Additions = oapi.PermissionsOnResource{}
-			if accountIdsParam, accountIdsOk := additions.(map[string]interface{})["account_ids"]; accountIdsOk {
-				perms.Additions.AccountIds = expandAccountIds(accountIdsParam)
+		if len(permissions) > 0 {
+
+			perms := oapi.PermissionsOnResourceCreation{}
+
+			for _, item := range permissions {
+				itemMap := item.(map[string]interface{})
+				adds := itemMap["additions"].([]interface{})
+
+				if len(adds) > 0 {
+
+					perms.Additions = oapi.PermissionsOnResource{
+						AccountIds: []string{},
+					}
+
+					for _, add := range adds {
+						addMap := add.(map[string]interface{})
+						if addMap["account_ids"] != nil {
+							accountId := addMap["account_ids"].(string)
+							perms.Additions.AccountIds = append(perms.Additions.AccountIds, accountId)
+						}
+						if addMap["global_permission"] != nil {
+							globalPermission := addMap["global_permission"].(bool)
+							perms.Additions.GlobalPermission = globalPermission
+						}
+					}
+				}
+
+				removals := itemMap["removals"].([]interface{})
+
+				if len(removals) > 0 {
+
+					perms.Removals = oapi.PermissionsOnResource{
+						AccountIds: []string{},
+					}
+
+					for _, removal := range adds {
+						removeMap := removal.(map[string]interface{})
+						if removeMap["account_ids"] != nil {
+							accountId := removeMap["account_ids"].(string)
+							perms.Removals.AccountIds = append(perms.Removals.AccountIds, accountId)
+						}
+						if removeMap["global_permission"] != nil {
+							globalPermission := removeMap["global_permission"].(bool)
+							perms.Removals.GlobalPermission = globalPermission
+						}
+					}
+				}
 			}
-			if globalPermsParam, globalPermsOk := additions.(map[string]interface{})["global_permission"]; globalPermsOk {
-				perms.Additions.GlobalPermission = globalPermsParam.(bool)
-			}
+			req.PermissionsToCreateVolume = perms
 		}
-
-		if removals, removalsOk := permsParam.(map[string]interface{})["removals"]; removalsOk {
-			perms.Removals = oapi.PermissionsOnResource{}
-			if accountIdsParam, accountIdsOk := removals.(map[string]interface{})["account_ids"]; accountIdsOk {
-				perms.Removals.AccountIds = expandAccountIds(accountIdsParam)
-			}
-			if globalPermsParam, globalPermsOk := removals.(map[string]interface{})["global_permission"]; globalPermsOk {
-				perms.Removals.GlobalPermission = globalPermsParam.(bool)
-			}
-		}
-
-		req.PermissionsToCreateVolume = perms
 	}
 
 	var err error
