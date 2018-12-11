@@ -56,6 +56,14 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 								},
 							},
 						},
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -162,23 +170,24 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}
 
-	permissions := make([]map[string]interface{}, 1)
 	accountIds := attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
-	additions := make([]map[string]interface{}, len(accountIds))
+	lp := make([]map[string]interface{}, len(accountIds))
 	for k, v := range accountIds {
 		l := make(map[string]interface{})
 
 		l["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 		l["account_id"] = v
 
-		additions[k] = l
+		lp[k] = l
 	}
-	permissions[0] = make(map[string]interface{})
-	permissions[0]["additions"] = additions
+
+	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+		return err
+	}
 
 	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
 
-	return d.Set("permissions_to_create_volume", permissions)
+	return nil
 }
 
 func resourcedOutscaleOAPISnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
