@@ -60,9 +60,8 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account_ids": &schema.Schema{
-							Type:     schema.TypeList,
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"global_permission": &schema.Schema{
 							Type:     schema.TypeBool,
@@ -178,10 +177,16 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 	d.Set("request_id", res.OK.ResponseContext.RequestId)
 
-	lp := make([]map[string]interface{}, 1)
-	lp[0] = make(map[string]interface{})
-	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
-	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
+	accountIds := snapshot.PermissionsToCreateVolume.AccountIds
+	lp := make([]map[string]interface{}, len(accountIds))
+	for k, v := range accountIds {
+		l := make(map[string]interface{})
+
+		l["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
+		l["account_ids"] = v
+
+		lp[k] = l
+	}
 
 	if err := d.Set("permissions_to_create_volume", lp); err != nil {
 		return err
