@@ -39,14 +39,15 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 				Config: testAccOAPIImageConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
+					testAccCheckState("outscale_image.foo"),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "name", fmt.Sprintf("tf-testing-%d", rInt)),
+						"outscale_image.foo", "image_name", fmt.Sprintf("tf-testing-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "block_device_mappings.0.device_virtual_name", "/dev/sda1"),
+						"outscale_image.foo", "block_device_mappings.0.device_name", "/dev/sda1"),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "block_device_mappings.0.ebs.delete_on_vm_termination", "true"),
+						"outscale_image.foo", "block_device_mappings.0.bsu.delete_on_vm_deletion", "true"),
 					resource.TestCheckResourceAttr(
-						"outscale_image.foo", "state_reason.code", "UNSET"),
+						"outscale_image.foo", "state_comment.state_code", ""),
 				),
 			},
 		},
@@ -174,16 +175,17 @@ func testAccCheckOAPIImageExists(n string, ami *oapi.Image) resource.TestCheckFu
 
 func testAccOAPIImageConfigBasic(rInt int) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	keypair_name = "terraform-basic"
-	security_group_ids = ["sg-6ed31f3e"]
-}
+#resource "outscale_vm" "basic" {
+#	image_id = "ami-b4bd8de2"
+#	vm_type = "t2.micro"
+#	keypair_name = "terraform-basic"
+#	#security_group_ids = ["sg-6ed31f3e"]
+#}
 
 resource "outscale_image" "foo" {
-	name = "tf-testing-%d"
-	vm_id = "${outscale_vm.basic.id}"
+	image_name = "tf-testing-%d"
+	#vm_id = "${outscale_vm.basic.id}"
+	vm_id = "i-b69de1d9"
 	no_reboot = "true"
 }
 	`, rInt)
