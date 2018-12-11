@@ -76,9 +76,8 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
-										Type:     schema.TypeList,
+										Type:     schema.TypeString,
 										Computed: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,

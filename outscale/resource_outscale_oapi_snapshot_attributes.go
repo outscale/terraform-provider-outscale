@@ -205,7 +205,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 		l := make(map[string]interface{})
 
 		l["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
-		l["account_id"] = v
+		l["account_ids"] = v
 
 		lp[k] = l
 	}
