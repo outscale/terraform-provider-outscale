@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
@@ -38,7 +37,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"internet_service_ids": {
+						"internet_service_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -120,17 +119,6 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 
 	result := resp.OK.InternetServices
 	return internetServicesOAPIDescriptionAttributes(d, result)
-}
-
-func flattenOAPIInternetGwsAttachements(attachements []*fcu.InternetGatewayAttachment) []map[string]interface{} {
-	res := make([]map[string]interface{}, len(attachements))
-
-	for i, a := range attachements {
-		res[i]["state"] = a.State
-		res[i]["net_id"] = a.VpcId
-	}
-
-	return res
 }
 
 func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oapi.InternetService) error {
