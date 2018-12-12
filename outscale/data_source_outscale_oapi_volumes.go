@@ -111,15 +111,14 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		Filters: oapi.FiltersVolume{},
 	}
 
-	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
-	}
-
 	if volumeIdsOk {
 		volIDs := expandStringValueList(volumeIds.([]interface{}))
 		params.Filters.VolumeIds = volIDs
 	}
 
+	if filtersOk {
+		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
+	}
 	var resp *oapi.ReadVolumesResponse
 	var rs *oapi.POST_ReadVolumesResponses
 	var err error

@@ -95,11 +95,12 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	params := oapi.ReadVolumesRequest{
 		Filters: oapi.FiltersVolume{},
 	}
-	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
-	}
 	if VolumeIdsOk {
 		params.Filters.VolumeIds = []string{volumeIds.(string)}
+	}
+
+	if filtersOk {
+		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
 
 	var resp *oapi.ReadVolumesResponse
@@ -158,12 +159,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 
 	d.Set("state", volume.State)
 	d.Set("volume_id", volume.VolumeId)
-
-	if volume.VolumeType != "" && volume.VolumeType == "io1" {
-		// if volume.Iops != "" {
-		d.Set("iops", volume.Iops)
-		// }
-	}
+	d.Set("iops", volume.Iops)
 
 	if volume.LinkedVolumes != nil {
 		res := make([]map[string]interface{}, len(volume.LinkedVolumes))
@@ -234,23 +230,23 @@ func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.FiltersVolu
 		}
 
 		switch name := m["name"].(string); name {
-		case "creation-date":
+		case "creation_dates":
 			filters.CreationDates = filterValues
-		case "snapshot-id":
+		case "snapshot_ids":
 			filters.SnapshotIds = filterValues
-		case "sub-region-name":
+		case "subregion_names":
 			filters.SubregionNames = filterValues
-		case "tag-key":
+		case "tag_keys":
 			filters.TagKeys = filterValues
 		//TODO: case "tags":
 		// 	filters.Tags = filterValues
-		case "tag-value":
+		case "tag_values":
 			filters.TagValues = filterValues
-		case "volume-ids":
+		case "volume_ids":
 			filters.VolumeIds = filterValues
-		case "volume-size":
+		case "volume_sizes":
 			filters.VolumeSizes = utils.StringSliceToInt64Slice(filterValues)
-		case "volume-type":
+		case "volume_types":
 			filters.VolumeTypes = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
