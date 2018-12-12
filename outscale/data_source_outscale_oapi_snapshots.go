@@ -33,7 +33,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			//Computed values returned
-			"snapshot_set": {
+			"snapshots": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -169,5 +169,5 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 
 	d.SetId(resource.UniqueId())
 	//Single Snapshot found so set to state
-	return d.Set("snapshot_set", snapshots)
+	return d.Set("snapshots", snapshots)
 }
