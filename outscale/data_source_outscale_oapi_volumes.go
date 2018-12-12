@@ -48,7 +48,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 
 							Computed: true,
 						},
-						"type": {
+						"volume_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -186,21 +186,20 @@ func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Vol
 		if v.SubregionName != "" {
 			im["subregion_name"] = v.SubregionName
 		}
-		//if v.Iops != nil {
+
 		im["iops"] = v.Iops
-		//}
-		//if v.Size != nil {
 		im["size"] = v.Size
-		//}
+
 		if v.SnapshotId != "" {
 			im["snapshot_id"] = v.SnapshotId
 		}
 		if v.Tags != nil {
 			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
-		if v.VolumeType != "" {
-			im["type"] = v.VolumeType
-		}
+		//commented until issue is fixed
+		//if v.VolumeType != "" {
+		im["volume_type"] = v.VolumeType
+		//}
 		if v.State != "" {
 			im["state"] = v.State
 		}
