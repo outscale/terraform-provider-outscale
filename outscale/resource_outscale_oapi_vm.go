@@ -621,7 +621,7 @@ func getOApiVMSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"security_group_ids": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"security_group_name": {
