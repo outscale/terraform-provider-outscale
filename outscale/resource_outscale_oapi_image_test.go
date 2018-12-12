@@ -187,6 +187,7 @@ resource "outscale_image" "foo" {
 	#vm_id = "${outscale_vm.basic.id}"
 	vm_id = "i-b69de1d9"
 	no_reboot = "true"
+	description = "terraform testing"
 }
 	`, rInt)
 }

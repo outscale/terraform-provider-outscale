@@ -246,6 +246,7 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 		im["type"] = v.ImageType
 		im["state"] = v.State
 		im["name"] = v.ImageName
+		//Missing on swager spec
 		//im["is_public"] = v.Public
 		if v.RootDeviceName != "" {
 			im["root_device_name"] = v.RootDeviceName

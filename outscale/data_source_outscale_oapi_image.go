@@ -233,6 +233,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	d.Set("architecture", image.Architecture)
 	d.Set("creation_date", image.CreationDate)
 	d.Set("description", image.Description)
+	//Missing on swager spec
 	//d.Set("hypervisor", image.Hypervisor)
 	d.Set("image_id", image.ImageId)
 	d.Set("file_location", image.FileLocation)
@@ -244,6 +245,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	d.Set("account_id", image.AccountId)
 	d.Set("image_type", image.ImageType)
 	d.Set("image_name", image.ImageName)
+	//Missing on swager spec
 	//d.Set("is_public", image.Public)
 	if image.RootDeviceName != "" {
 		d.Set("root_device_name", image.RootDeviceName)
@@ -252,6 +254,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	}
 	d.Set("root_device_type", image.RootDeviceType)
 	d.Set("state", image.State)
+	//Missing on swager spec
 	//d.Set("virtualization_type", image.VirtualizationType)
 	// Complex types get their own functions
 	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {

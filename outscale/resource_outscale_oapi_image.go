@@ -145,12 +145,13 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": &schema.Schema{
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"account_id": &schema.Schema{
-							Type:     schema.TypeString,
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -318,6 +319,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if image.Description != "" {
 		d.Set("description", image.Description)
 	}
+	//Missing on swager spec
 	//d.Set("hypervisor", image.Hypervisor)
 	d.Set("image_id", image.ImageId)
 	d.Set("file_location", image.FileLocation)
@@ -327,6 +329,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("account_id", image.AccountId)
 	d.Set("image_type", image.ImageType)
 	d.Set("image_name", image.ImageName)
+	//Missing on swager spec
 	// d.Set("is_public", image.Public)
 	if image.RootDeviceName != "" {
 		d.Set("root_device_name", image.RootDeviceName)
@@ -344,24 +347,25 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	accountIds := image.PermissionsToLaunch.AccountIds
-	lp := make([]map[string]interface{}, len(accountIds))
-	for k, v := range accountIds {
-		l := make(map[string]interface{})
-		//if image.PermissionsToLaunch.GlobalPermission != nil {
-		l["global_permission"] = image.PermissionsToLaunch.GlobalPermission
-		//}
-		//if v.UserId != nil {
-		l["account_id"] = v
-		//}
-		lp[k] = l
+	if err := d.Set("permissions_to_launch", setResourcePermissions(image.PermissionsToLaunch)); err != nil {
+		return err
 	}
 
-	d.Set("permissions_to_launch", lp)
 	d.Set("request_id", result.ResponseContext.RequestId)
 
 	//return d.Set("tag", dataSourceTags(image.Tags))
 	return nil
+}
+
+func setResourcePermissions(por oapi.PermissionsOnResource) []map[string]interface{} {
+	lp := make([]map[string]interface{}, 1)
+	l := make(map[string]interface{})
+	l["global_permission"] = por.GlobalPermission
+	l["account_ids"] = por.AccountIds
+
+	lp[0] = l
+
+	return lp
 }
 
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
