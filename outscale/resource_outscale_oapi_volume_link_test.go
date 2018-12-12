@@ -9,23 +9,23 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	oapiFlag, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		oapiFlag = false
 	}
 
-	if !oapi {
+	if !oapiFlag {
 		t.Skip()
 	}
 
-	var i fcu.Instance
-	var v fcu.Volume
+	var i oapi.Vm
+	var v oapi.Volume
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -33,16 +33,14 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVolumeAttachmentConfig,
+				Config: testAccOAPIVolumeAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"outscale_volume_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckInstanceExists(
+						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
+					testAccCheckOAPIVMExists(
 						"outscale_vm.web", &i),
-					//testAccCheckOAPIVolumeExists(
-					//	"outscale_volume.example", &v), TODO: OAPI
 					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volume_link.ebs_att", &i, &v),
+						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
 		},
@@ -59,7 +57,7 @@ func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Volume) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeAttachmentExists(n string, i *oapi.Vm, v *oapi.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -71,8 +69,8 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Vo
 		}
 
 		for _, b := range i.BlockDeviceMappings {
-			if rs.Primary.Attributes["device_name"] == *b.DeviceName {
-				if b.Ebs.VolumeId != nil && rs.Primary.Attributes["volume_id"] == *b.Ebs.VolumeId {
+			if rs.Primary.Attributes["device_name"] == b.DeviceName {
+				if rs.Primary.Attributes["volume_id"] == b.Bsu.VolumeId {
 					// pass
 					return nil
 				}
@@ -85,17 +83,16 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *fcu.Instance, v *fcu.Vo
 
 const testAccOAPIVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
-	image_id = "ami-8a6a0120"
-	type = "t1.micro"
-	tag {
-		Name = "HelloWorld"
-	}
+	image_id               = "ami-7f57f68f"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-419f2c0c"]
 }
 resource "outscale_volume" "example" {
-  sub_region_name = "eu-west-2a"
+  subregion_name = "in-west-2a"
 	size = 1
 }
-resource "outscale_volume_link" "ebs_att" {
+resource "outscale_volumes_link" "ebs_att" {
   device_name = "/dev/sdh"
 	volume_id = "${outscale_volume.example.id}"
 	vm_id = "${outscale_vm.web.id}"
