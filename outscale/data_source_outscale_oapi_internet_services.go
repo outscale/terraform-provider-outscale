@@ -149,7 +149,7 @@ func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetS
 			im["internet_service_id"] = v.InternetServiceId
 		}
 		if v.Tags != nil {
-			im["tag_set"] = tagsOAPIToMap(v.Tags)
+			im["tags"] = tagsOAPIToMap(v.Tags)
 		}
 		i[k] = im
 	}
