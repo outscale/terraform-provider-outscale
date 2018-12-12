@@ -53,7 +53,7 @@ resource "outscale_snapshot_attributes" "self-test" {
 	snapshot_id = "${outscale_snapshot.test.id}"
   permissions_to_create_volume = {
     additions = {
-      account_ids = "%s"
+      account_ids = ["%s"]
     }
   } 
 }

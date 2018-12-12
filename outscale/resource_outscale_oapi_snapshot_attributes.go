@@ -30,8 +30,9 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
-										Type:     schema.TypeString,
+										Type:     schema.TypeList,
 										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,
@@ -46,8 +47,9 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"account_ids": &schema.Schema{
-										Type:     schema.TypeString,
+										Type:     schema.TypeList,
 										Optional: true,
+										Elem:     &schema.Schema{Type: schema.TypeString},
 									},
 									"global_permission": &schema.Schema{
 										Type:     schema.TypeBool,
@@ -70,8 +72,9 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account_ids": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"global_permission": &schema.Schema{
 							Type:     schema.TypeBool,
@@ -118,17 +121,21 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 						AccountIds: []string{},
 					}
 
-					for _, add := range adds {
-						addMap := add.(map[string]interface{})
-						if addMap["account_ids"] != nil {
-							accountId := addMap["account_ids"].(string)
-							perms.Additions.AccountIds = append(perms.Additions.AccountIds, accountId)
+					add := adds[0]
+					addMap := add.(map[string]interface{})
+					if addMap["account_ids"] != nil {
+						paramIds := addMap["account_ids"].([]interface{})
+						accountIds := make([]string, len(paramIds))
+						for i, v := range paramIds {
+							accountIds[i] = v.(string)
 						}
-						if addMap["global_permission"] != nil {
-							globalPermission := addMap["global_permission"].(bool)
-							perms.Additions.GlobalPermission = globalPermission
-						}
+						perms.Additions.AccountIds = accountIds
 					}
+					if addMap["global_permission"] != nil {
+						globalPermission := addMap["global_permission"].(bool)
+						perms.Additions.GlobalPermission = globalPermission
+					}
+
 				}
 
 				removals := itemMap["removals"].([]interface{})
@@ -139,16 +146,19 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 						AccountIds: []string{},
 					}
 
-					for _, removal := range adds {
-						removeMap := removal.(map[string]interface{})
-						if removeMap["account_ids"] != nil {
-							accountId := removeMap["account_ids"].(string)
-							perms.Removals.AccountIds = append(perms.Removals.AccountIds, accountId)
+					removal := removals[0]
+					removeMap := removal.(map[string]interface{})
+					if removeMap["account_ids"] != nil {
+						paramIds := removeMap["account_ids"].([]interface{})
+						accountIds := make([]string, len(paramIds))
+						for i, v := range paramIds {
+							accountIds[i] = v.(string)
 						}
-						if removeMap["global_permission"] != nil {
-							globalPermission := removeMap["global_permission"].(bool)
-							perms.Removals.GlobalPermission = globalPermission
-						}
+						perms.Removals.AccountIds = accountIds
+					}
+					if removeMap["global_permission"] != nil {
+						globalPermission := removeMap["global_permission"].(bool)
+						perms.Removals.GlobalPermission = globalPermission
 					}
 				}
 			}
@@ -207,15 +217,13 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}
 
-	accountIds := attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
-	lp := make([]map[string]interface{}, len(accountIds))
-	for k, v := range accountIds {
-		l := make(map[string]interface{})
+	lp := make([]map[string]interface{}, 1)
+	lp[0] = make(map[string]interface{})
+	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
+	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
 
-		l["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
-		l["account_ids"] = v
-
-		lp[k] = l
+	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+		return err
 	}
 
 	if err := d.Set("permissions_to_create_volume_set", lp); err != nil {
