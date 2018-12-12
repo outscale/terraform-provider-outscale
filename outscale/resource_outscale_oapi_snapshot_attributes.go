@@ -18,45 +18,38 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"permissions_to_create_volume": &schema.Schema{
+			"permissions_to_create_volume_additions": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"additions": &schema.Schema{
+						"account_ids": &schema.Schema{
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"account_ids": &schema.Schema{
-										Type:     schema.TypeList,
-										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-									},
-									"global_permission": &schema.Schema{
-										Type:     schema.TypeBool,
-										Optional: true,
-									},
-								},
-							},
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"removals": &schema.Schema{
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"permissions_to_create_volume_removals": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": &schema.Schema{
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"account_ids": &schema.Schema{
-										Type:     schema.TypeList,
-										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-									},
-									"global_permission": &schema.Schema{
-										Type:     schema.TypeBool,
-										Optional: true,
-									},
-								},
-							},
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
 						},
 					},
 				},
@@ -66,7 +59,7 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"permissions_to_create_volume_set": &schema.Schema{
+			"permissions_to_create_volume": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -104,67 +97,55 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 		SnapshotId: snapshotID,
 	}
 
-	if permsParam, ok := d.GetOk("permissions_to_create_volume"); ok {
-		permissions := permsParam.([]interface{})
+	perms := oapi.PermissionsOnResourceCreation{}
 
-		if len(permissions) > 0 {
+	if addPermsParam, ok := d.GetOk("permissions_to_create_volume_additions"); ok {
+		AddPerms := addPermsParam.([]interface{})
 
-			perms := oapi.PermissionsOnResourceCreation{}
+		if len(AddPerms) > 0 {
 
-			for _, item := range permissions {
-				itemMap := item.(map[string]interface{})
-				adds := itemMap["additions"].([]interface{})
+			perms.Additions = oapi.PermissionsOnResource{}
 
-				if len(adds) > 0 {
-
-					perms.Additions = oapi.PermissionsOnResource{
-						AccountIds: []string{},
-					}
-
-					add := adds[0]
-					addMap := add.(map[string]interface{})
-					if addMap["account_ids"] != nil {
-						paramIds := addMap["account_ids"].([]interface{})
-						accountIds := make([]string, len(paramIds))
-						for i, v := range paramIds {
-							accountIds[i] = v.(string)
-						}
-						perms.Additions.AccountIds = accountIds
-					}
-					if addMap["global_permission"] != nil {
-						globalPermission := addMap["global_permission"].(bool)
-						perms.Additions.GlobalPermission = globalPermission
-					}
-
+			addMap := AddPerms[0].(map[string]interface{})
+			if addMap["account_ids"] != nil {
+				paramIds := addMap["account_ids"].([]interface{})
+				accountIds := make([]string, len(paramIds))
+				for i, v := range paramIds {
+					accountIds[i] = v.(string)
 				}
-
-				removals := itemMap["removals"].([]interface{})
-
-				if len(removals) > 0 {
-
-					perms.Removals = oapi.PermissionsOnResource{
-						AccountIds: []string{},
-					}
-
-					removal := removals[0]
-					removeMap := removal.(map[string]interface{})
-					if removeMap["account_ids"] != nil {
-						paramIds := removeMap["account_ids"].([]interface{})
-						accountIds := make([]string, len(paramIds))
-						for i, v := range paramIds {
-							accountIds[i] = v.(string)
-						}
-						perms.Removals.AccountIds = accountIds
-					}
-					if removeMap["global_permission"] != nil {
-						globalPermission := removeMap["global_permission"].(bool)
-						perms.Removals.GlobalPermission = globalPermission
-					}
-				}
+				perms.Additions.AccountIds = accountIds
 			}
-			req.PermissionsToCreateVolume = perms
+			if addMap["global_permission"] != nil {
+				globalPermission := addMap["global_permission"].(bool)
+				perms.Additions.GlobalPermission = globalPermission
+			}
 		}
 	}
+
+	if removalPermsParam, ok := d.GetOk("permissions_to_create_volume_removals"); ok {
+		removalPerms := removalPermsParam.([]interface{})
+
+		if len(removalPerms) > 0 {
+
+			perms.Removals = oapi.PermissionsOnResource{}
+
+			removalMap := removalPerms[0].(map[string]interface{})
+			if removalMap["account_ids"] != nil {
+				paramIds := removalMap["account_ids"].([]interface{})
+				accountIds := make([]string, len(paramIds))
+				for i, v := range paramIds {
+					accountIds[i] = v.(string)
+				}
+				perms.Removals.AccountIds = accountIds
+			}
+			if removalMap["global_permission"] != nil {
+				globalPermission := removalMap["global_permission"].(bool)
+				perms.Additions.GlobalPermission = globalPermission
+			}
+		}
+	}
+
+	req.PermissionsToCreateVolume = perms
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
@@ -222,7 +203,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
 
-	if err := d.Set("permissions_to_create_volume_set", lp); err != nil {
+	if err := d.Set("permissions_to_create_volume", lp); err != nil {
 		return err
 	}
 
