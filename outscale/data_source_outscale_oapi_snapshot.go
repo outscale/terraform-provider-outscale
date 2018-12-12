@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,38 +171,44 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.F
 		}
 
 		switch name := m["name"].(string); name {
-		case "description":
-			filter.Descriptions = values
-
-		case "owner_alias":
+		case "account_aliases":
 			filter.AccountAliases = values
 
-		case "owner_id":
+		case "account_ids":
 			filter.AccountIds = values
 
-		case "progress":
+		case "descriptions":
+			filter.Descriptions = values
+
+		case "permissions_to_create_volume_account_ids":
+			filter.PermissionsToCreateVolumeAccountIds = values
+
+		case "permissions_to_create_volume_global_permission":
+			filter.PermissionsToCreateVolumeGlobalPermission, _ = strconv.ParseBool(values[0])
+
+		case "progresses":
 			filter.Progresses = utils.StringSliceToInt64Slice(values)
 
-		case "snapshot_id":
+		case "snapshot_ids":
 			filter.SnapshotIds = values
 
-		case "status":
+		case "states":
 			filter.States = values
 
-		case "volume_id":
-			filter.VolumeIds = values
-
-		case "volume_size":
-			filter.VolumeSizes = utils.StringSliceToInt64Slice(values)
-
-		case "tag":
-			filter.Tags = values
-
-		case "tag-key":
+		case "tag_keys":
 			filter.TagKeys = values
 
-		case "tag-value":
+		case "tag_values":
 			filter.TagValues = values
+
+		case "tags":
+			filter.Tags = values
+
+		case "volume_ids":
+			filter.VolumeIds = values
+
+		case "volume_sizes":
+			filter.VolumeSizes = utils.StringSliceToInt64Slice(values)
 
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

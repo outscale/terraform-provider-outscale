@@ -95,7 +95,7 @@ resource "outscale_snapshot" "snapshot" {
 data "outscale_snapshot" "snapshot" {
     snapshot_id = "${outscale_snapshot.snapshot.id}"
     filter {
-	name = "volume-size"
+	name = "volume_sizes"
 	values = ["10"]
     }
 }
