@@ -88,7 +88,7 @@ func init() {
 			"outscale_nat_service":                   resourceOutscaleOAPINatService,
 			"outscale_subnet":                        resourceOutscaleOAPISubNet,
 			"outscale_client_endpoint":               resourceOutscaleCustomerGateway,
-			"outscale_route":                         resourceOutscaleRoute,
+			"outscale_route":                         resourceOutscaleOAPIRoute,
 			"outscale_route_table":                   resourceOutscaleRouteTable,
 			"outscale_route_table_link":              resourceOutscaleRouteTableAssociation,
 			"outscale_snapshot":                      resourceOutscaleOAPISnapshot,
