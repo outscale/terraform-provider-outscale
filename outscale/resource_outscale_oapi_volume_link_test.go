@@ -83,10 +83,10 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oapi.Vm, v *oapi.Volume
 
 const testAccOAPIVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
-	image_id               = "ami-7f57f68f"
+	image_id               = "ami-5c450b62"
 	vm_type                = "c4.large"
 	keypair_name           = "testkp"
-	security_group_ids     = ["sg-419f2c0c"]
+	security_group_ids     = ["sg-9752b7a6"]
 }
 resource "outscale_volume" "example" {
   subregion_name = "in-west-2a"
