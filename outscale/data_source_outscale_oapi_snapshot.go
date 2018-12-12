@@ -41,7 +41,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 
 			//Computed values returned
 			"progress": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"snapshot_id": {
