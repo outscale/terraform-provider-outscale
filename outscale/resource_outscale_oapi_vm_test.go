@@ -43,9 +43,9 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(&server),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
+						"outscale_vm.basic", "image_id", "ami-5c450b62"),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", "t2.micro"),
+						"outscale_vm.basic", "vm_type", "c4.large"),
 				),
 			},
 		},
@@ -292,7 +292,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if server.ImageId != "ami-cc3278d3" {
+		if server.ImageId != "ami-5c450b62" {
 			return fmt.Errorf("Bad image_id: %s", server.ImageId)
 		}
 
@@ -303,8 +303,10 @@ func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vm) resource.TestCheckFun
 func testAccCheckOutscaleOAPIVMConfigBasic() string {
 	return `
 resource "outscale_vm" "basic" {
-	image_id = "ami-cc3278d3"
-	vm_type = "t2.micro"
+	image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
 }`
 }
 
