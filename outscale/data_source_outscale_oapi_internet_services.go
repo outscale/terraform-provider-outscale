@@ -42,7 +42,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": dataSourceTagsSchema(),
+						"tags": tagsOAPIListSchemaComputed(),
 					},
 				},
 			},
