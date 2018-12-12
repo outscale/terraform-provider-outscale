@@ -222,10 +222,6 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
 
-	if err := d.Set("permissions_to_create_volume", lp); err != nil {
-		return err
-	}
-
 	if err := d.Set("permissions_to_create_volume_set", lp); err != nil {
 		return err
 	}
