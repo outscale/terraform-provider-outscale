@@ -89,4 +89,9 @@ const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 			values = ["${outscale_public_ip.test.public_ip}"]
 		}  
 	}
+  filter {
+	  name = "public_ips"
+	  values = ["${outscale_public_ip.test.public_ip}"]
+  }
+}
 `
