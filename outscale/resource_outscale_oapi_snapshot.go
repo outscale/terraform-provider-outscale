@@ -35,7 +35,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 			},
 			"progress": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"account_alias": {

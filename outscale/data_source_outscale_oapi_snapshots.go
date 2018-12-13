@@ -91,6 +91,10 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -168,6 +172,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(resource.UniqueId())
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	//Single Snapshot found so set to state
 	return d.Set("snapshots", snapshots)
 }
