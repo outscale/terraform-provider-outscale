@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
@@ -46,6 +45,10 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 		return resource.RetryableError(err)
 	})
 
+	if err != nil {
+		return fmt.Errorf("Error reading the VM %s", err)
+	}
+
 	if resp.OK.Vms == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
@@ -80,611 +83,114 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", instance.VmId)
 
-	return oapiVMDescriptionAttributes(d, &instance, client)
+	return resourceDataAttrSetter(d, &instance)
+}
+
+type AttributeSetter func(key string, value interface{}) error
+
+func resourceDataAttrSetter(d *schema.ResourceData, instance *oapi.Vm) error {
+	setterFunc := func(key string, value interface{}) error {
+		return d.Set(key, value)
+	}
+	d.SetId(instance.VmId)
+	return oapiVMDescriptionAttributes(setterFunc, instance)
 }
 
 // Populate instance attribute fields with the returned instance
-func oapiVMDescriptionAttributes(d *schema.ResourceData, instance *oapi.Vm, conn *oapi.Client) error {
-	d.SetId(instance.VmId)
-	// Set the easy attributes
+func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
-	d.Set("launch_sort_number", instance.LaunchNumber)
-	d.Set("architecture", instance.Architecture)
-	// d.Set("block_device_mapping", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
-	d.Set("token", instance.ClientToken)
-	d.Set("public_dns_name", instance.PublicDnsName)
-	d.Set("bsu_optimised", instance.BsuOptimized)
-
-	// TODO: add to struct for OAPI
-	// d.Set("firewall_rules_set", instance.FirewallRulesSets)
-
-	d.Set("hypervisor", instance.Hypervisor)
-
-	// what field to map?
-	//d.Set("vm_profile", map[string]string{
-	//	"resource_id":   "",
-	//	"vm_profile_id": iamInstanceProfileArnToName(instance.IamInstanceProfile),
-	//})
-	d.Set("image_id", instance.ImageId)
-	d.Set("vm_id", instance.VmId)
-	// what field to map?
-	//d.Set("spot_vm", instance.SpotInstanceRequestId)
-	d.Set("state", map[string]interface{}{
-		"state_code": instance.State,
-		"state_name": instance.State,
+	set("architecture", instance.Architecture)
+	set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
+	set("bsu_optimised", instance.BsuOptimized)
+	set("client_token", instance.ClientToken)
+	set("deletion_protection", instance.DeletionProtection)
+	set("hypervisor", instance.Hypervisor)
+	set("image_id", instance.ImageId)
+	set("is_source_dest_checked", instance.IsSourceDestChecked)
+	set("keypair_name", instance.KeypairName)
+	set("launch_number", instance.LaunchNumber)
+	set("net_id", instance.NetId)
+	set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
+	set("os_family", instance.OsFamily)
+	set("placement", map[string]interface{}{
+		"subregion_name": instance.Placement.SubregionName,
+		"tenancy":        instance.Placement.Tenancy,
 	})
-	d.Set("type", instance.VmType)
-	d.Set("public_ip", instance.PublicIp)
-	// what field to map?
-	//d.Set("kernel_id", instance.KernelId)
-	d.Set("keypair_name", instance.KeypairName)
-
-	// what field to map?
-	//if instance.Monitoring != nil && instance.Monitoring.State != nil {
-	//	monitoringState := *instance.Monitoring.State
-	//	d.Set("monitoring", map[string]interface{}{
-	//		"state": monitoringState == "enabled" || monitoringState == "pending",
-	//	})
-	//}
-
-	d.Set("private_dns_name", instance.PrivateDnsName)
-	d.Set("private_ip", instance.PrivateIp)
-	//TODO:OAPI d.Set("nics", getOAPIVMNetworkInterfaceSet(instance.NetworkInterfaces))
-
-	d.Set("placement", map[string]interface{}{
-		// How to map this field?
-		//"affinity":        instance.Placement.Affinity,
-		"sub_region_name": instance.Placement.SubregionName,
-		// TODO: Add to struct for OAPI
-		// "firewall_rules_set_name": instance.Placement.FirewallRulesSetName,
-		// How to map these fields?
-		//"dedicated_host_id": instance.Placement.HostId,
-		//"tenancy":           instance.Placement.Tenancy,
-	})
-
-	// TODO: Add to struct for OAPI
-	// d.Set("system", instance.System)
-
-	d.Set("product_codes", getOAPIVMProductCodes(instance.ProductCodes))
-	// How to map this field?
-	//d.Set("ramdisk_id", map[string]interface{}{
-	//	"comment": instance.RamdiskId,
-	//})
-	d.Set("root_device_name", instance.RootDeviceName)
-	d.Set("root_device_type", instance.RootDeviceType)
-	d.Set("nat_check", instance.IsSourceDestChecked)
-	// How to map these fields?
-	//d.Set("spot_vm_request_id", instance.SpotInstanceRequestId)
-	//d.Set("sriov_net_support", instance.SriovNetSupport)
-	d.Set("comment", map[string]interface{}{
-		// "state_code": instance.StateReason.Code,
-		// "message": instance.StateReason.Message,
-	})
-	d.Set("subnet_id", instance.SubnetId)
-	d.Set("tag_set", getOapiTagSet(instance.Tags))
-	// How to map this field?
-	//d.Set("virtualization_type", instance.VirtualizationType)
-	d.Set("lin_id", instance.NetId)
+	set("private_dns_name", instance.PrivateDnsName)
+	set("private_ip", instance.PrivateIp)
+	set("product_codes", instance.ProductCodes)
+	set("public_dns_name", instance.PublicDnsName)
+	set("public_ip", instance.PublicIp)
+	set("reservation_id", instance.ReservationId)
+	set("root_device_name", instance.RootDeviceName)
+	set("root_device_type", instance.RootDeviceType)
+	set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups))
+	set("state", instance.State)
+	set("state_reason", instance.StateReason)
+	set("subnet_id", instance.SubnetId)
+	set("tags", getOapiTagSet(instance.Tags))
+	set("user_data", instance.UserData)
+	set("vm_id", instance.VmId)
+	set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
+	set("vm_type", instance.VmType)
 
 	return nil
 }
 
-//Missing on Swagger spec
-// func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingVmCreation) []map[string]interface{} {
-// 	var blockDeviceMapping []map[string]interface{}
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCreated) []map[string]interface{} {
+	var blockDeviceMapping []map[string]interface{}
 
-// 	if len(blockDeviceMappings) > 0 {
-// 		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
-// 		for _, mapping := range blockDeviceMappings {
-// 			r := map[string]interface{}{}
-// 			r["device_name"] = mapping.DeviceName
+	if len(blockDeviceMappings) > 0 {
+		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
+		for _, mapping := range blockDeviceMappings {
+			r := map[string]interface{}{}
+			r["device_name"] = mapping.DeviceName
 
-// 			bsu := map[string]interface{}{}
-// 			bsu["delete_on_vm_deletion"] = mapping.Bsu.DeleteOnVmDeletion
-// 			bsu["state"] = mapping.Bsu.State
-// 			bsu["volume_id"] = mapping.Bsu.VolumeId
-// 			r["bsu"] = bsu
+			bsu := map[string]interface{}{}
+			bsu["delete_on_vm_deletion"] = mapping.Bsu.DeleteOnVmDeletion
+			bsu["state"] = mapping.Bsu.State
+			bsu["volume_id"] = mapping.Bsu.VolumeId
+			r["bsu"] = bsu
 
-// 			blockDeviceMapping = append(blockDeviceMapping, r)
-// 		}
-// 	} else {
-// 		blockDeviceMapping = make([]map[string]interface{}, 0)
-// 	}
-// 	return blockDeviceMapping
-// }
+			blockDeviceMapping = append(blockDeviceMapping, r)
+		}
+	} else {
+		blockDeviceMapping = make([]map[string]interface{}, 0)
+	}
+	return blockDeviceMapping
+}
 
-func getOAPIVMGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
+func getOAPIVMSecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 
 		r := map[string]interface{}{
-			"group_id":   g.GroupId,
-			"group_name": g.GroupName,
+			"security_group_id":   g.SecurityGroupId,
+			"security_group_name": g.SecurityGroupName,
 		}
 		res = append(res, r)
 	}
 
-	return res
-}
-
-func getOAPIVMTagSet(tagSet []*fcu.Tag) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, t := range tagSet {
-
-		r := map[string]interface{}{
-			"key":   t.Key,
-			"value": t.Value,
-		}
-		res = append(res, r)
-	}
-
-	return res
-}
-
-func getOAPIVMProductCodes(productCode []string) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	for _, p := range productCode {
-
-		r := map[string]interface{}{
-			"product_code": p,
-		}
-		res = append(res, r)
-	}
-
-	return res
-}
-
-func getOAPIVMPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	if privateIPs != nil {
-		for _, p := range privateIPs {
-			var inter map[string]interface{}
-
-			assoc := map[string]interface{}{}
-			assoc["ip_owner_id"] = p.Association.IpOwnerId
-			assoc["public_dns_name"] = p.Association.PublicDnsName
-			assoc["public_ip"] = p.Association.PublicIp
-
-			inter["association"] = assoc
-			inter["private_dns_name"] = p.Primary
-			inter["private_ip_address"] = p.PrivateIpAddress
-
-			res = append(res, inter)
-		}
-	}
 	return res
 }
 
 func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		//Attributes
+	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
-		"vm_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"launch_sort_number": {
-			Type:     schema.TypeInt,
-			Computed: true,
-		},
-		"architecture": {
-			Type:     schema.TypeInt,
-			Computed: true,
-		},
-		"block_device_mapping": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"bsu": {
-						Type:     schema.TypeMap,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"delete_on_vm_deletion": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"state": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"volume_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		"token": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"public_dns_name": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"bsu_optimised": {
-			Type:     schema.TypeBool,
-			Computed: true,
-		},
-		"firewall_rules_set": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"firewall_rules_set_id": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"firewall_rules_set_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-
-		"hypervisor": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"vm_profile": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"resource_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"vm_profile_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"image_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"spot_vm": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"state": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"state_code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"state_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"public_ip": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"kernel_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"keypair_name": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"monitoring": {
-			Type: schema.TypeMap,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"state": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-			Computed: true,
-		},
-		"nics": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"public_ip_link": {
-						Type:     schema.TypeMap,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"public_ip_account_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"public_dns_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"public_ip": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"nic_link": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"nic_link_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"delete_on_vm_deletion": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"nic_sort_number": {
-									Type:     schema.TypeInt,
-									Computed: true,
-								},
-								"state": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"description": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"firewall_rules_set": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"firewall_rules_set_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"firewall_rules_set_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"mac_address": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"nic_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"account_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_dns_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_ip": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_ips": {
-						Type:     schema.TypeMap,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"public_ip_link": {
-									Type:     schema.TypeMap,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"public_ip_account_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"public_dns_name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"public_ip": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"primary_ip": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"private_dns_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"private_ip": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"nat_check": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"state": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"subnet_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"lin_id": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"placement": {
-			Type:     schema.TypeMap,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"affinity": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"sub_region_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"firewall_rules_set_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"dedicated_host_id": {
-						Type:     schema.TypeInt,
-						Optional: true,
-					},
-					"tenancy": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-				},
-			},
-		},
-		"system": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"private_dns_name": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"private_ip": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"product_codes": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"product_code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"product_type": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"ramdisk_id": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"comment": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"root_device_name": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"root_device_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"nat_check": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"spot_vm_request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"sriov_net_support": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"comment": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"state_code": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"message": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"subnet_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"tag_set": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"virtualization_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"lin_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
 	}
+
+	attrsSchema := getOApiVMAttributesSchema()
+
+	for k, v := range attrsSchema {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
 }
 
 func buildOutscaleOAPIDataSourceVmFilters(set *schema.Set) oapi.FiltersVm {
@@ -697,151 +203,151 @@ func buildOutscaleOAPIDataSourceVmFilters(set *schema.Set) oapi.FiltersVm {
 		}
 
 		switch name := m["name"].(string); name {
-		case "account-id":
+		case "account_ids":
 			filters.AccountIds = filterValues
-		case "activated-check":
+		case "activated_check":
 			filters.ActivatedCheck, _ = strconv.ParseBool(filterValues[0])
-		case "architecture":
+		case "architectures":
 			filters.Architectures = filterValues
-		case "block-device-mapping-delete-on-vm-deletion":
+		case "block_device_mapping_delete_on_vm_deletion":
 			filters.BlockDeviceMappingDeleteOnVmDeletion, _ = strconv.ParseBool(filterValues[0])
-		case "block-device-mapping-device-name":
+		case "block_device_mapping_device_names":
 			filters.BlockDeviceMappingDeviceNames = filterValues
-		case "block-device-mapping-link-date":
+		case "block_device_mapping_link_dates":
 			filters.BlockDeviceMappingLinkDates = filterValues
-		case "block-device-mapping-state":
+		case "block_device_mapping_states":
 			filters.BlockDeviceMappingStates = filterValues
-		case "block-device-mapping-volume-id":
+		case "block_device_mapping_volume_ids":
 			filters.BlockDeviceMappingVolumeIds = filterValues
-		case "comment":
+		case "comments":
 			filters.Comments = filterValues
-		case "creation-date":
+		case "creation_dates":
 			filters.CreationDates = filterValues
-		case "dns-name":
+		case "dns_names":
 			filters.DnsNames = filterValues
-		case "hypervisor":
+		case "hypervisors":
 			filters.Hypervisors = filterValues
-		case "image-id":
+		case "image_ids":
 			filters.ImageIds = filterValues
-		case "kernel-id":
+		case "kernel_ids":
 			filters.KernelIds = filterValues
-		case "keypair-name":
+		case "keypair_names":
 			filters.KeypairNames = filterValues
-		case "launch-sort-number":
+		case "launch_sort_numbers":
 			filters.LaunchSortNumbers, _ = sliceAtoi(filterValues)
-		case "link-nic-delete-on-vm-deletion":
+		case "link_nic_delete_on_vm_deletion":
 			filters.LinkNicDeleteOnVmDeletion, _ = strconv.ParseBool(filterValues[0])
-		case "link-nic-link-date":
+		case "link_nic_link_dates":
 			filters.LinkNicLinkDates = filterValues
-		case "link-nic-link-nic-id":
+		case "link_nic_link_nic_ids":
 			filters.LinkNicLinkNicIds = filterValues
-		case "link-nic-link-public-ip-id":
+		case "link_nic_link_public_ip_ids":
 			filters.LinkNicLinkPublicIpIds = filterValues
-		case "link-nic-nic-id":
+		case "link_nic_nic_ids":
 			filters.LinkNicNicIds = filterValues
-		case "link-nic-nic-sort-number":
+		case "link_nic_nic_sort_numbers":
 			filters.LinkNicNicSortNumbers, _ = sliceAtoi(filterValues)
-		case "link-nic-public-ip-account-id":
+		case "link_nic_public_ip_account_ids":
 			filters.LinkNicPublicIpAccountIds = filterValues
-		case "link-nic-public-ip-id":
+		case "link_nic_public_ip_ids":
 			filters.LinkNicPublicIpIds = filterValues
-		case "link-nic-public-ip":
+		case "link_nic_public_ips":
 			filters.LinkNicPublicIps = filterValues
-		case "link-nic-state":
+		case "link_nic_states":
 			filters.LinkNicStates = filterValues
-		case "link-nic-vm-account-id":
+		case "link_nic_vm_account_ids":
 			filters.LinkNicVmAccountIds = filterValues
-		case "link-nic-vm-id":
+		case "link_nic_vm_ids":
 			filters.LinkNicVmIds = filterValues
-		case "monitoring-state":
+		case "monitoring_states":
 			filters.MonitoringStates = filterValues
-		case "net-id":
+		case "net_ids":
 			filters.NetIds = filterValues
-		case "nic-account-id":
+		case "nic_account_ids":
 			filters.NicAccountIds = filterValues
-		case "nic-activated-check":
+		case "nic_activated_check":
 			filters.NicActivatedCheck, _ = strconv.ParseBool(filterValues[0])
-		case "nic-description":
+		case "nic_descriptions":
 			filters.NicDescriptions = filterValues
-		case "nic-mac-address":
+		case "nic_mac_addresses":
 			filters.NicMacAddresses = filterValues
-		case "nic-net-id":
+		case "nic_net_ids":
 			filters.NicNetIds = filterValues
-		case "nic-nic-id":
+		case "nic_nic_ids":
 			filters.NicNicIds = filterValues
-		case "nic-private-dns-name":
+		case "nic_private_dns_names":
 			filters.NicPrivateDnsNames = filterValues
-		case "nic-security-group-id":
+		case "nic_security_group_ids":
 			filters.NicSecurityGroupIds = filterValues
-		case "nic-security-group-name":
+		case "nic_security_group_names":
 			filters.NicSecurityGroupNames = filterValues
-		case "nic-state":
+		case "nic_states":
 			filters.NicStates = filterValues
-		case "nic-subnet-id":
+		case "nic_subnet_ids":
 			filters.NicSubnetIds = filterValues
-		case "nic-subregion-name":
+		case "nic_subregion_names":
 			filters.NicSubregionNames = filterValues
-		case "placement-group":
+		case "placement_groups":
 			filters.PlacementGroups = filterValues
-		case "private-dns-name":
+		case "private_dns_names":
 			filters.PrivateDnsNames = filterValues
-		case "private-ip-link-private-ip-account-id":
+		case "private_ip_link_private_ip_account_ids":
 			filters.PrivateIpLinkPrivateIpAccountIds = filterValues
-		case "private-ip-link-public-ip":
+		case "private_ip_link_public_ips":
 			filters.PrivateIpLinkPublicIps = filterValues
-		case "private-ip-primary-ip":
+		case "private_ip_primary_ips":
 			filters.PrivateIpPrimaryIps = filterValues
-		case "private-ip-private-ip":
+		case "private_ip_private_ips":
 			filters.PrivateIpPrivateIps = filterValues
-		case "private-ip":
+		case "private_ips":
 			filters.PrivateIps = filterValues
-		case "product-code":
+		case "product_codes":
 			filters.ProductCodes = filterValues
-		case "public-ip":
+		case "public_ips":
 			filters.PublicIps = filterValues
-		case "ram-disk-id":
+		case "ram_disk_ids":
 			filters.RamDiskIds = filterValues
-		case "root-device-name":
+		case "root_device_names":
 			filters.RootDeviceNames = filterValues
-		case "root-device-type":
+		case "root_device_types":
 			filters.RootDeviceTypes = filterValues
-		case "security-group-id":
+		case "security_group_ids":
 			filters.SecurityGroupIds = filterValues
-		case "security-group-name":
+		case "security_group_names":
 			filters.SecurityGroupNames = filterValues
-		case "spot-vm-request-id":
+		case "spot_vm_request_ids":
 			filters.SpotVmRequestIds = filterValues
-		case "spot-vm":
+		case "spot_vms":
 			filters.SpotVms = filterValues
-		case "state-comment":
+		case "state_comments":
 			filters.StateComments = filterValues
-		case "subnet-id":
+		case "subnet_ids":
 			filters.SubnetIds = filterValues
-		case "subregion-name":
+		case "subregion_names":
 			filters.SubregionNames = filterValues
-		case "system":
+		case "systems":
 			filters.Systems = filterValues
-		case "tag-key":
+		case "tag_keys":
 			filters.TagKeys = filterValues
-		case "tag-value":
+		case "tag_values":
 			filters.TagValues = filterValues
-		case "tag":
+		case "tags":
 			filters.Tags = filterValues
-		case "tenancy":
+		case "tenancies":
 			filters.Tenancies = filterValues
-		case "token":
+		case "tokens":
 			filters.Tokens = filterValues
-		case "virtualization-type":
+		case "virtualization_types":
 			filters.VirtualizationTypes = filterValues
-		case "vm-id":
+		case "vm_ids":
 			filters.VmIds = filterValues
-		case "vm-state":
+		case "vm_states":
 			filters.VmStates = filterValues
-		case "vm-type":
+		case "vm_types":
 			filters.VmTypes = filterValues
-		case "vms-security-group-id":
+		case "vms_security_group_ids":
 			filters.VmsSecurityGroupIds = filterValues
-		case "vms-security-group-name":
+		case "vms_security_group_names":
 			filters.VmsSecurityGroupNames = filterValues
 
 		default:
@@ -878,4 +384,348 @@ func getOapiTagSet(tags []oapi.ResourceTag) []map[string]interface{} {
 	}
 
 	return res
+}
+
+func getOApiVMAttributesSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		// Attributes
+		"architecture": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"block_device_mappings": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"device_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_date": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeInt,
+									Computed: true,
+								},
+								"volume_id": {
+									Type:     schema.TypeFloat,
+									Computed: true,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"bsu_optimized": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"client_token": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"deletion_protection": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"hypervisor": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"image_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"is_source_dest_checked": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"keypair_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"launch_number": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"nics": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"description": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"is_source_dest_checked": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+					"link_nic": {
+						Type:     schema.TypeMap,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"device_number": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"link_nic_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"link_public_ip": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"public_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip_account_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"mac_address": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_dns_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_public_ip": {
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"public_dns_name": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip_account_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+										},
+									},
+								},
+								"private_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"private_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"security_groups": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"security_group_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"security_group_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"state": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"os_family": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"placement": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"sub_region_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"tenancy": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"private_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"private_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"product_codes": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"public_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"public_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"reservation_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"root_device_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"root_device_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"security_groups": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"security_group_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"security_group_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state_reason": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"subnet_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+			Computed: true,
+		},
+		"user_data": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"vm_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"vm_initiated_shutdown_behavior": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"vm_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
 }
