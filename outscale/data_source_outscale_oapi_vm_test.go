@@ -46,7 +46,7 @@ resource "outscale_vm" "basic" {
 	security_group_ids     = ["sg-9752b7a6"]
 }
 
-data "outscale_vms" "basic_web" {
+data "outscale_vm" "basic_web" {
 	filter {
     name = "vm_ids"
     values = ["${outscale_vm.basic.id}"]
