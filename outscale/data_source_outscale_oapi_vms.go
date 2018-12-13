@@ -114,8 +114,8 @@ func dataSourceOAPIVMS(i []oapi.Vm) *schema.Set {
 		oapiVMDescriptionAttributes(setterFunc, &v)
 
 		fmt.Println("schema set -> ", s)
-		fmt.Println("instance -> ", s)
-		fmt.Printf("m -> %+v\n", v)
+		fmt.Println("instance -> ", instance)
+		fmt.Printf("mv -> %+v\n", v)
 
 		s.Add(instance)
 	}
