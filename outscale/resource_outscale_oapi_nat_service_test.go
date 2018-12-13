@@ -8,25 +8,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
 
-	var natGateway fcu.NatGateway
+	var natGateway oapi.NatService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -45,7 +45,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 }
 
 func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nat_service" {
@@ -54,12 +54,12 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 
 		// Try to find the resource
 
-		var resp *fcu.DescribeNatGatewaysOutput
+		var resp *oapi.POST_ReadNatServicesResponses
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.VM.DescribeNatGateways(&fcu.DescribeNatGatewaysInput{
-				NatGatewayIds: []*string{aws.String(rs.Primary.ID)},
+			resp, err = conn.POST_ReadNatServices(oapi.ReadNatServicesRequest{
+				Filters: oapi.FiltersNatService{NatServiceIds: []string{rs.Primary.ID}},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -70,24 +70,38 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 			return nil
 		})
 
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				if strings.Contains(err.Error(), "NatGatewayNotFound:") {
+					return nil
+				}
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+			}
+
+			return fmt.Errorf("[DEBUG] Error reading Nat Service (%s)", errString)
+		}
+
+		response := resp.OK
+
 		if err == nil {
 			status := map[string]bool{
 				"deleted":  true,
 				"deleting": true,
 				"failed":   true,
 			}
-			if _, ok := status[strings.ToLower(*resp.NatGateways[0].State)]; len(resp.NatGateways) > 0 && !ok {
+			if _, ok := status[strings.ToLower(response.NatServices[0].State)]; len(response.NatServices) > 0 && !ok {
 				return fmt.Errorf("still exists")
 			}
 
 			return nil
-		}
-		if err != nil {
-			if strings.Contains(err.Error(), "NatGatewayNotFound:") {
-				return nil
-			}
-
-			return err
 		}
 
 	}
@@ -95,7 +109,7 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPINatGatewayExists(n string, ng *fcu.NatGateway) resource.TestCheckFunc {
+func testAccCheckOAPINatGatewayExists(n string, ng *oapi.NatService) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -106,14 +120,14 @@ func testAccCheckOAPINatGatewayExists(n string, ng *fcu.NatGateway) resource.Tes
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		var resp *fcu.DescribeNatGatewaysOutput
+		var resp *oapi.POST_ReadNatServicesResponses
+
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-
-			resp, err = conn.VM.DescribeNatGateways(&fcu.DescribeNatGatewaysInput{
-				NatGatewayIds: []*string{aws.String(rs.Primary.ID)},
+			resp, err = conn.POST_ReadNatServices(oapi.ReadNatServicesRequest{
+				Filters: oapi.FiltersNatService{NatServiceIds: []string{rs.Primary.ID}},
 			})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -124,14 +138,29 @@ func testAccCheckOAPINatGatewayExists(n string, ng *fcu.NatGateway) resource.Tes
 			return nil
 		})
 
-		if err != nil {
-			return err
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+			}
+
+			return fmt.Errorf("[DEBUG] Error reading Nat Service (%s)", errString)
 		}
-		if len(resp.NatGateways) == 0 {
+
+		response := resp.OK
+
+		if len(response.NatServices) == 0 {
 			return fmt.Errorf("NatGateway not found")
 		}
 
-		*ng = *resp.NatGateways[0]
+		*ng = response.NatServices[0]
 
 		return nil
 	}
@@ -139,7 +168,7 @@ func testAccCheckOAPINatGatewayExists(n string, ng *fcu.NatGateway) resource.Tes
 
 const testAccOAPINatGatewayConfig = `
 resource "outscale_nat_service" "gateway" {
-    reservation_id = "eipalloc-32e506e8"
+    public_ip_id = "eipalloc-32e506e8"
     subnet_id = "subnet-861fbecc"
 }
 `
