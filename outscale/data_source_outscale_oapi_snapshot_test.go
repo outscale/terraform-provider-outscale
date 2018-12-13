@@ -30,7 +30,7 @@ func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "40"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1073741824"),
 				),
 			},
 		},
@@ -69,12 +69,8 @@ func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFu
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfig = `
 resource "outscale_volume" "example" {
-    availability_zone = "eu-west-2a"
-    type = "gp2"
-    size = 40
-    tag {
-        Name = "External Volume"
-    }
+    subregion_name = "in-west-2a"
+	size = 1
 }
 
 resource "outscale_snapshot" "snapshot" {
@@ -88,12 +84,8 @@ data "outscale_snapshot" "snapshot" {
 
 const testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters = `
 resource "outscale_volume" "external1" {
-    availability_zone = "eu-west-2a"
-    type = "gp2"
+	subregion_name = "in-west-2a"
     size = 10
-    tag {
-        Name = "External Volume 1"
-    }
 }
 
 resource "outscale_snapshot" "snapshot" {
@@ -103,7 +95,7 @@ resource "outscale_snapshot" "snapshot" {
 data "outscale_snapshot" "snapshot" {
     snapshot_id = "${outscale_snapshot.snapshot.id}"
     filter {
-	name = "volume-size"
+	name = "volume_sizes"
 	values = ["10"]
     }
 }

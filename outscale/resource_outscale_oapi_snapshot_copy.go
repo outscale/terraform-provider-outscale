@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
@@ -20,12 +20,6 @@ func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"destination_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -54,24 +48,21 @@ func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
 }
 
 func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.CopySnapshotInput{
-		SourceRegion:     aws.String(d.Get("source_region_name").(string)),
-		SourceSnapshotId: aws.String(d.Get("source_snapshot_id").(string)),
+	req := oapi.CreateSnapshotRequest{
+		SourceRegionName: d.Get("source_region_name").(string),
+		SourceSnapshotId: d.Get("source_snapshot_id").(string),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		req.Description = aws.String(v.(string))
-	}
-	if v, ok := d.GetOk("destination_region_name"); ok {
-		req.DestinationRegion = aws.String(v.(string))
+		req.Description = v.(string)
 	}
 
-	var o *fcu.CopySnapshotOutput
+	var o *oapi.POST_CreateSnapshotResponses
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		o, err = conn.VM.CopySnapshot(req)
+		o, err = conn.POST_CreateSnapshot(req)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -89,8 +80,8 @@ func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interf
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("snapshot_id", aws.StringValue(o.SnapshotId))
-	d.Set("request_id", aws.StringValue(o.RequestId))
+	d.Set("snapshot_id", o.OK.Snapshot.SnapshotId)
+	d.Set("request_id", o.OK.ResponseContext.RequestId)
 
 	return nil
 }

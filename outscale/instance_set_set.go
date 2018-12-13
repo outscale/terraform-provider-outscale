@@ -307,7 +307,7 @@ func getOAPISecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]inte
 	for _, g := range groupSet {
 
 		r := map[string]interface{}{
-			"security_group_id":   g.SecurityGroupId,
+			"security_group_ids":  g.SecurityGroupId,
 			"security_group_name": g.SecurityGroupName,
 		}
 		res = append(res, r)

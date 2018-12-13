@@ -6,10 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPIVMSState() *schema.Resource {
@@ -20,7 +19,7 @@ func dataSourceOutscaleOAPIVMSState() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceIds, instanceIdsOk := d.GetOk("vm_id")
@@ -29,21 +28,19 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		return errors.New("vm_id or filter must be set")
 	}
 
-	params := &fcu.DescribeInstanceStatusInput{}
+	params := oapi.ReadVmsStateRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVmStateFilters(filters.(*schema.Set))
 	}
 	if instanceIdsOk {
-		params.InstanceIds = expandStringList(instanceIds.([]interface{}))
+		params.Filters.VmIds = oapiExpandStringList(instanceIds.([]interface{}))
 	}
 
-	params.IncludeAllInstances = aws.Bool(false)
-
-	var resp *fcu.DescribeInstanceStatusOutput
+	var resp *oapi.POST_ReadVmsStateResponses
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstanceStatus(params)
+		resp, err = conn.POST_ReadVmsState(params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -57,83 +54,13 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	filteredStates := resp.InstanceStatuses
+	filteredStates := resp.OK.VmStates[:]
 
 	if len(filteredStates) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
 	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
-}
-
-func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []*fcu.InstanceStatus) error {
-
-	d.SetId(resource.UniqueId())
-
-	states := make([]map[string]interface{}, len(status))
-
-	for k, v := range status {
-		state := make(map[string]interface{})
-
-		state["sub_region_name"] = *v.AvailabilityZone
-
-		events := eventsSetOAPIVMSState(v.Events)
-		state["maintenance_event"] = events
-
-		st := flattenedStateOAPIVMSState(v.InstanceState)
-		state["state"] = st
-
-		st1 := detailsSetOAPIVMSState(v.InstanceStatus.Details)
-		state["comment_item"] = st1
-		state["comment_state"] = aws.StringValue(v.InstanceStatus.Status)
-
-		states[k] = state
-	}
-
-	return d.Set("vm_state_set", states)
-}
-
-func statusSetOAPIVMSState(status *fcu.InstanceStatusSummary) map[string]interface{} {
-	s := make(map[string]interface{})
-	s["state"] = aws.StringValue(status.Status)
-	s["item"] = detailsSetOAPIVMSState(status.Details)
-
-	return s
-}
-
-func detailsSetOAPIVMSState(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(details))
-
-	for k, v := range details {
-		status := map[string]interface{}{
-			"name":  aws.StringValue(v.Name),
-			"state": aws.StringValue(v.Status),
-		}
-		s[k] = status
-	}
-
-	return s
-}
-
-func flattenedStateOAPIVMSState(state *fcu.InstanceState) map[string]interface{} {
-	return map[string]interface{}{
-		"code": fmt.Sprintf("%d", aws.Int64Value(state.Code)),
-		"name": aws.StringValue(state.Name),
-	}
-}
-
-func eventsSetOAPIVMSState(events []*fcu.InstanceStatusEvent) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(events))
-	for k, v := range events {
-		status := map[string]interface{}{
-			"state_code":  aws.StringValue(v.Code),
-			"description": aws.StringValue(v.Description),
-			"not_before":  v.NotBefore.Format(time.RFC3339),
-			"not_after":   v.NotAfter.Format(time.RFC3339),
-		}
-		s[k] = status
-	}
-	return s
 }
 
 func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
@@ -227,4 +154,29 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 	}
+}
+
+func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oapi.VmStates) error {
+
+	d.SetId(resource.UniqueId())
+
+	states := make([]map[string]interface{}, len(status))
+
+	for k, v := range status {
+		state := make(map[string]interface{})
+
+		state["sub_region_name"] = v.SubregionName
+
+		events := oapiEventsSet(v.MaintenanceEvents)
+		state["maintenance_event"] = events
+
+		state["state"] = v.VmState
+
+		state["comment_item"] = v.VmState
+		state["comment_state"] = v.VmState
+
+		states[k] = state
+	}
+
+	return d.Set("vm_state_set", states)
 }

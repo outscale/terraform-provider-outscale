@@ -40,13 +40,15 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 // Lookup based on InstanceID
 const testAccOAPIVMSDataSourceConfig = `
 resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
-	type = "t2.micro"
+	image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
 }
 
-data "outscale_vm" "basic_web" {
+data "outscale_vms" "basic_web" {
 	filter {
-    name = "instance-id"
+    name = "vm_ids"
     values = ["${outscale_vm.basic.id}"]
   }
 }`

@@ -7,12 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPIVolumeLink() *schema.Resource {
@@ -67,33 +66,23 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 }
 
 func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 	name := d.Get("device_name").(string)
 	iID := d.Get("vm_id").(string)
 	vID := d.Get("volume_id").(string)
 
 	// Find out if the volume is already attached to the instance, in which case
 	// we have nothing to do
-	request := &fcu.DescribeVolumesInput{
-		VolumeIds: []*string{aws.String(vID)},
-		Filters: []*fcu.Filter{
-			&fcu.Filter{
-				Name:   aws.String("attachment.instance-id"),
-				Values: []*string{aws.String(iID)},
-			},
-			&fcu.Filter{
-				Name:   aws.String("attachment.device_name"),
-				Values: []*string{aws.String(name)},
-			},
+	request := oapi.ReadVolumesRequest{
+		Filters: oapi.FiltersVolume{
+			VolumeIds: []string{vID},
 		},
 	}
-
 	var err error
-	var vols *fcu.DescribeVolumesOutput
-
+	var vols *oapi.POST_ReadVolumesResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		vols, err = conn.VM.DescribeVolumes(request)
+		vols, err = conn.POST_ReadVolumes(request)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -104,14 +93,14 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		return resource.NonRetryableError(err)
 	})
 
-	if (err != nil) || (len(vols.Volumes) == 0) {
+	if (err != nil) || isElegibleToLink(vols.OK.Volumes, iID) {
 		// This handles the situation where the instance is created by
 		// a spot request and whilst the request has been fulfilled the
 		// instance is not running yet
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, iID, ""),
+			Refresh:    VMStateRefreshFunc(conn, iID, ""),
 			Timeout:    10 * time.Minute,
 			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
@@ -125,10 +114,10 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 
 		// not attached
-		opts := &fcu.AttachVolumeInput{
-			Device:     aws.String(name),
-			InstanceId: aws.String(iID),
-			VolumeId:   aws.String(vID),
+		opts := oapi.LinkVolumeRequest{
+			DeviceName: name,
+			VmId:       iID,
+			VolumeId:   vID,
 		}
 
 		log.Printf("[DEBUG] Attaching Volume (%s) to Instance (%s)", vID, iID)
@@ -137,7 +126,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			_, err = conn.VM.AttachVolume(opts)
+			_, err = conn.POST_LinkVolume(opts)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -176,25 +165,40 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	return resourceOAPIVolumeLinkRead(d, meta)
 }
 
-func volumeOAPIAttachmentStateRefreshFunc(conn *fcu.Client, volumeID, instanceID string) resource.StateRefreshFunc {
+func isElegibleToLink(volumes []oapi.Volume, instanceID string) bool {
+	elegible := true
+
+	if len(volumes) > 0 {
+		for _, link := range volumes[0].LinkedVolumes {
+			if instanceID == link.VmId {
+				elegible = false
+				break
+			}
+		}
+	}
+
+	return elegible
+}
+
+func isElegibleToUnLink(volumes []oapi.Volume, instanceID string) bool {
+	return !isElegibleToLink(volumes, instanceID)
+}
+
+func volumeOAPIAttachmentStateRefreshFunc(conn *oapi.Client, volumeID, instanceID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		request := &fcu.DescribeVolumesInput{
-			VolumeIds: []*string{aws.String(volumeID)},
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
-					Name:   aws.String("attachment.instance-id"),
-					Values: []*string{aws.String(instanceID)},
-				},
+		request := oapi.ReadVolumesRequest{
+			Filters: oapi.FiltersVolume{
+				VolumeIds: []string{volumeID},
 			},
 		}
 
 		var err error
-		var resp *fcu.DescribeVolumesOutput
+		var resp *oapi.POST_ReadVolumesResponses
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.VM.DescribeVolumes(request)
+			resp, err = conn.POST_ReadVolumes(request)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -211,11 +215,11 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *fcu.Client, volumeID, instanceID
 			return nil, "failed", err
 		}
 
-		if len(resp.Volumes) > 0 {
-			v := resp.Volumes[0]
-			for _, a := range v.Attachments {
-				if a.InstanceId != nil && *a.InstanceId == instanceID {
-					return a, *a.State, nil
+		if len(resp.OK.Volumes) > 0 {
+			v := resp.OK.Volumes[0]
+			for _, a := range v.LinkedVolumes {
+				if a.VmId == instanceID {
+					return a, a.State, nil
 				}
 			}
 		}
@@ -225,24 +229,22 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *fcu.Client, volumeID, instanceID
 }
 
 func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.DescribeVolumesInput{
-		VolumeIds: []*string{aws.String(d.Get("volume_id").(string))},
-		Filters: []*fcu.Filter{
-			&fcu.Filter{
-				Name:   aws.String("attachment.instance-id"),
-				Values: []*string{aws.String(d.Get("vm_id").(string))},
-			},
+	request := oapi.ReadVolumesRequest{
+		Filters: oapi.FiltersVolume{
+			VolumeIds: []string{d.Get("volume_id").(string)},
 		},
+		//Name:   aws.String("attachment.instance-id"),
+
 	}
 
 	var err error
-	var vols *fcu.DescribeVolumesOutput
+	var vols *oapi.POST_ReadVolumesResponses
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		vols, err = conn.VM.DescribeVolumes(request)
+		vols, err = conn.POST_ReadVolumes(request)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -260,7 +262,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
 
-	if len(vols.Volumes) == 0 || *vols.Volumes[0].State == "available" {
+	if len(vols.OK.Volumes) == 0 || vols.OK.Volumes[0].State == "available" || isElegibleToLink(vols.OK.Volumes, d.Get("vm_id").(string)) {
 		log.Printf("[DEBUG] Volume Attachment (%s) not found, removing from state", d.Id())
 		d.SetId("")
 	}
@@ -270,7 +272,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	if _, ok := d.GetOk("skip_destroy"); ok {
 		log.Printf("[INFO] Found skip_destroy to be true, removing attachment %q from state", d.Id())
@@ -281,23 +283,23 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	vID := d.Get("volume_id").(string)
 	iID := d.Get("vm_id").(string)
 
-	opts := &fcu.DetachVolumeInput{
-		Device:     aws.String(d.Get("device_name").(string)),
-		InstanceId: aws.String(iID),
-		VolumeId:   aws.String(vID),
+	opts := oapi.UnlinkVolumeRequest{
+		DeviceName: d.Get("device_name").(string),
+		//VmId:       iID,
+		VolumeId: vID,
 		//Force:      aws.Bool(d.Get("force_detach").(bool)),
 	}
 
 	force, forceOk := d.GetOk("force_detach")
 	if forceOk {
-		opts.Force = aws.Bool(force.(bool))
+		opts.ForceUnlink = force.(bool)
 
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		_, err = conn.VM.DetachVolume(opts)
+		_, err = conn.POST_UnlinkVolume(opts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -339,4 +341,37 @@ func volumeOAPIAttachmentID(name, volumeID, instanceID string) string {
 	buf.WriteString(fmt.Sprintf("%s-", volumeID))
 
 	return fmt.Sprintf("vai-%d", hashcode.String(buf.String()))
+}
+
+func VMStateRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var resp *oapi.POST_ReadVmsResponses
+		var err error
+
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
+				Filters: oapi.FiltersVm{VmIds: []string{instanceID}},
+			})
+			return resource.RetryableError(err)
+		})
+
+		if err != nil {
+			return nil, "", err
+		}
+
+		if resp == nil || len(resp.OK.Vms) == 0 {
+			return nil, "", nil
+		}
+
+		i := resp.OK.Vms[0]
+		state := i.State
+
+		if state == failState {
+			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
+				i.State)
+
+		}
+
+		return i, state, nil
+	}
 }
