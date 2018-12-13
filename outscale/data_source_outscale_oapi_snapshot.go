@@ -75,6 +75,10 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 			},
 			"tags": dataSourceTagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -134,6 +138,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	snapshot = resp.OK.Snapshots[0]
 
 	//Single Snapshot found so set to state
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
