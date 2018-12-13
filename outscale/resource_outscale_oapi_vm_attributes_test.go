@@ -21,9 +21,9 @@ func TestAccOutscaleOAPIVMAttr_Basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		//CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleOAPIVMATTRConfigBasic(),
@@ -41,14 +41,15 @@ func testAccCheckOutscaleOAPIVMATTRConfigBasic() string {
 resource "outscale_vm" "outscale_vm" {
   count = 1
 
-  image_id                = "ami-880caa66"
-  type           = "c4.large"
+  image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
   deletion_protection = false
 }
 
 resource "outscale_vm_attributes" "outscale_vm_attributes" {
-  vm_id             = "${outscale_vm.outscale_vm.0.id}"
-  attribute               = "disableApiTermination"
+  vm_id             = "${outscale_vm.outscale_vm.id}"
   deletion_protection = true
 }`
 }

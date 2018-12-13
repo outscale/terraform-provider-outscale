@@ -16,7 +16,7 @@ import (
 func resourceOutscaleOAPIVMAttributes() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVMAttributesCreate,
-		Read:   resourceOAPIVMAttributesRead,
+		Read:   dataSourceOutscaleOAPIVMRead,
 		Update: resourceOAPIVMAttributesUpdate,
 		Delete: resourceOAPIVMAttributesDelete,
 		Importer: &schema.ResourceImporter{
@@ -29,290 +29,35 @@ func resourceOutscaleOAPIVMAttributes() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			// ModifyInstanceAttribute schema
-
-			"attribute": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"block_device_mapping": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"device_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"bsu": {
-							Type:     schema.TypeMap,
-							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"delete_on_vm_deletion": {
-										Type:     schema.TypeBool,
-										Optional: true,
-									},
-									"iops": {
-										Type:     schema.TypeInt,
-										Optional: true,
-									},
-									"snapshot_id": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-									"volume_size": {
-										Type:     schema.TypeInt,
-										Optional: true,
-									},
-									"type": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
-						},
-						"no_device": {
-							Type:     schema.TypeBool,
-							Optional: true,
-						},
-						"virtual_device_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"deletion_protection": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"bsu_optimized": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"firewall_rules_set_id": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"vm_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"shutdown_automatic_behavior": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"activated_check": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
-			"user_data": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"value": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-
-			// DescribeInstanceAttribute schema
-			// same as above, but with attr and instance id required
-			"group_set": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"firewall_rules_set_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"group_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"sriov_net_support": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"root_device_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"ram_disk_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"kernel": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"product_codes": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"product_code": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-
-			// DescribeInstanceStatus schema
-			// Computed
-			"instance_status_set": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"availability_zone": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"events_set": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"description": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"not_after": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"not_before": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"vm_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"instance_state": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"code": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"instance_status": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"details": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"status": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"name": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"status": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"system_status": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"details": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"status": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-												"name": {
-													Type:     schema.TypeString,
-													Computed: true,
-												},
-											},
-										},
-									},
-									"status": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+		Schema: getDataSourceOAPIVMAttrsSchemas(),
 	}
+}
+
+func getDataSourceOAPIVMAttrsSchemas() map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{}
+
+	attrsSchema := getOApiVMAttributesSchema()
+
+	for k, v := range attrsSchema {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
 }
 
 func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Get("vm_id").(string)
-	var attr string
-
-	if v, ok := d.GetOk("attribute"); ok {
-		attr = v.(string)
-	}
 
 	if v, ok := d.GetOk("deletion_protection"); ok {
 		opts := &oapi.UpdateVmRequest{
 			VmId:               id,
-			KeypairName:        attr,
 			DeletionProtection: v.(bool),
 		}
 
@@ -323,63 +68,72 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	if v, ok := d.GetOk("firewall_rules_set_id"); ok {
+	if v, ok := d.GetOk("keypair_name"); ok {
 		opts := &oapi.UpdateVmRequest{
-			VmId:             id,
-			SecurityGroupIds: v.([]string),
+			VmId:        id,
+			KeypairName: v.(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "firewall_rules_set_id"); err != nil {
+
+		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
+
+		if err := oapiModifyInstanceAttr(conn, opts, "keypair_name"); err != nil {
 			return err
 		}
 	}
 
-	if v, ok := d.GetOk("shutdown_automatic_behavior"); ok {
+	if v, ok := d.GetOk("security_group_ids"); ok {
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: v.([]string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "security_group_ids"); err != nil {
+			return err
+		}
+	}
+
+	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok {
 		opts := &oapi.UpdateVmRequest{
 			VmId:                        id,
-			KeypairName:                 attr,
 			VmInitiatedShutdownBehavior: v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := oapiModifyInstanceAttr(conn, opts, "shutdown_automatic_behavior"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "vm_initiated_shutdown_behavior"); err != nil {
 			return err
 		}
 	}
 
-	if v, ok := d.GetOk("activated_check"); ok {
+	if v, ok := d.GetOk("is_source_dest_checked"); ok {
 		opts := &oapi.UpdateVmRequest{
 			VmId:                id,
-			KeypairName:         attr,
 			IsSourceDestChecked: v.(bool),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := oapiModifyInstanceAttr(conn, opts, "activated_check"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "is_source_dest_checked"); err != nil {
 			return err
 		}
 	}
 
-	if v, ok := d.GetOk("type"); ok {
+	if v, ok := d.GetOk("vm_type"); ok {
 		opts := &oapi.UpdateVmRequest{
-			VmId:        id,
-			KeypairName: attr,
-			VmType:      v.(string),
+			VmId:   id,
+			VmType: v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
 
-		if err := oapiModifyInstanceAttr(conn, opts, "type"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "vm_type"); err != nil {
 			return err
 		}
 	}
 
 	if v, ok := d.GetOk("user_data"); ok {
 		opts := &oapi.UpdateVmRequest{
-			VmId:        id,
-			KeypairName: attr,
-			UserData:    v.(string),
+			VmId:     id,
+			UserData: v.(string),
 		}
 
 		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
@@ -392,7 +146,6 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 	if v, ok := d.GetOk("bsu_optimized"); ok {
 		opts := &oapi.UpdateVmRequest{
 			VmId:         id,
-			KeypairName:  attr,
 			BsuOptimized: v.(bool),
 		}
 
@@ -403,21 +156,7 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	if v, ok := d.GetOk("delete_on_vm_deletion"); ok {
-		opts := &oapi.UpdateVmRequest{
-			VmId:               id,
-			KeypairName:        attr,
-			DeletionProtection: v.(bool),
-		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "delete_on_vm_deletion"); err != nil {
-			return err
-		}
-	}
-
-	if v, ok := d.GetOk("block_device_mapping"); ok {
+	if v, ok := d.GetOk("block_device_mappings"); ok {
 		maps := v.(*schema.Set).List()
 		mappings := []oapi.BlockDeviceMappingVmUpdate{}
 
@@ -433,7 +172,7 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 
 			bsu := oapi.BsuToUpdateVm{
 				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
-				VolumeId:           e["snapshot_id"].(string),
+				VolumeId:           e["volume_id"].(string),
 			}
 
 			mapping.Bsu = bsu
@@ -445,233 +184,148 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:                id,
 			BlockDeviceMappings: mappings,
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "block_device_mappings"); err != nil {
 			return err
 		}
 	}
 
 	d.SetId(resource.UniqueId())
 
-	return resourceOAPIVMAttributesRead(d, meta)
-}
-
-func resourceOAPIVMAttributesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	if err := readDescribeOAPIVMAttr(d, conn); err != nil {
-		return err
-	}
-
-	return readDescribeOAPIVMStatus(d, conn)
+	return dataSourceOutscaleOAPIVMRead(d, meta)
 }
 
 func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	d.Partial(true)
 
 	id := d.Get("vm_id").(string)
-	// attr := aws.String(d.Get("attribute").(string))
 
 	log.Printf("[DEBUG] updating the instance %s", id)
 
-	if d.HasChange("type") && !d.IsNewResource() {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			InstanceType: &fcu.AttributeValue{
-				Value: aws.String(d.Get("type").(string)),
-			},
+	if d.HasChange("deletion_protection") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:               id,
+			DeletionProtection: d.Get("deletion_protection").(bool),
 		}
-		if err := modifyInstanceAttr(conn, opts, "type"); err != nil {
+
+		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("keypair_name") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:        id,
+			KeypairName: d.Get("keypair_name").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "keypair_name"); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("security_group_ids") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: d.Get("security_group_ids").([]string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "security_group_ids"); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:                        id,
+			VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "vm_initiated_shutdown_behavior"); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
+			IsSourceDestChecked: d.Get("is_source_dest_checked").(bool),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "is_source_dest_checked"); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("vm_type") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:   id,
+			VmType: d.Get("vm_type").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts, "type"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("user_data") && !d.IsNewResource() {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			UserData: &fcu.BlobAttributeValue{
-				Value: d.Get("user_data").([]byte),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:     id,
+			UserData: d.Get("user_data").(string),
 		}
-		if err := modifyInstanceAttr(conn, opts, "user_data"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "user_data"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			EbsOptimized: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(d.Get("bsu_optimized").(bool)),
-			},
+		opts := &oapi.UpdateVmRequest{
+			VmId:         id,
+			BsuOptimized: d.Get("bsu_optimized").(bool),
 		}
-		if err := modifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
 			return err
 		}
 	}
 
-	if d.HasChange("delete_on_vm_deletion") && !d.IsNewResource() {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			DeleteOnTermination: &fcu.AttributeBooleanValue{
-				Value: d.Get("delete_on_vm_deletion").(*bool),
-			},
-		}
-		if err := modifyInstanceAttr(conn, opts, "delete_on_vm_deletion"); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("deletion_protection") {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			DisableApiTermination: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(d.Get("deletion_protection").(bool)),
-			},
-		}
-		if err := modifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("shutdown_automatic_behavior") {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
-				Value: aws.String(d.Get("shutdown_automatic_behavior").(string)),
-			},
-		}
-		if err := modifyInstanceAttr(conn, opts, "shutdown_automatic_behavior"); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("group_set") {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			Groups:     d.Get("group_set").([]*string),
-		}
-		if err := modifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("activated_check") {
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId: aws.String(id),
-			SourceDestCheck: &fcu.AttributeBooleanValue{
-				Value: aws.Bool(d.Get("activated_check").(bool)),
-			},
-		}
-		if err := modifyInstanceAttr(conn, opts, "activated_check"); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("block_device_mapping") {
-		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.BlockDeviceMapping{}
+	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
+		maps := d.Get("block_device_mappings").(*schema.Set).List()
+		mappings := []oapi.BlockDeviceMappingVmUpdate{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
-			mapping := &fcu.BlockDeviceMapping{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_device_name"].(string)),
+			mapping := oapi.BlockDeviceMappingVmUpdate{
+				DeviceName:        f["device_name"].(string),
+				NoDevice:          f["no_device"].(string),
+				VirtualDeviceName: f["virtual_device_name"].(string),
 			}
 
 			e := f["bsu"].(map[string]interface{})
 
-			bsu := &fcu.EbsBlockDevice{
-				DeleteOnTermination: aws.Bool(e["delete_on_vm_deletion"].(bool)),
-				Iops:                aws.Int64(int64(e["iops"].(int))),
-				SnapshotId:          aws.String(e["snapshot_id"].(string)),
-				VolumeSize:          aws.Int64(int64(e["volume_size"].(int))),
-				VolumeType:          aws.String((e["type"].(string))),
+			bsu := oapi.BsuToUpdateVm{
+				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				VolumeId:           e["volume_id"].(string),
 			}
 
-			mapping.Ebs = bsu
+			mapping.Bsu = bsu
 
 			mappings = append(mappings, mapping)
 		}
 
-		opts := &fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(id),
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
 			BlockDeviceMappings: mappings,
 		}
-		if err := modifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+
+		if err := oapiModifyInstanceAttr(conn, opts, "block_device_mappings"); err != nil {
 			return err
 		}
 	}
 
 	d.Partial(false)
 
-	return resourceOAPIVMAttributesRead(d, meta)
+	return dataSourceOutscaleOAPIVMRead(d, meta)
 }
 
 func resourceOAPIVMAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
-
-	return nil
-}
-
-func readDescribeOAPIVMAttr(d *schema.ResourceData, conn *fcu.Client) error {
-	input := &fcu.DescribeInstanceAttributeInput{
-		Attribute:  aws.String(d.Get("attribute").(string)),
-		InstanceId: aws.String(d.Get("vm_id").(string)),
-	}
-
-	var resp *fcu.DescribeInstanceAttributeOutput
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstanceAttribute(input)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-		}
-
-		return resource.NonRetryableError(err)
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error reading the DescribeInstanceAttribute %s", err)
-	}
-
-	d.Set("vm_id", resp.InstanceId)
-
-	d.Set("block_device_mapping", getBlockDeviceMapping(resp.BlockDeviceMappings))
-
-	d.Set("deletion_protection", resp.DisableApiTermination)
-
-	d.Set("bsu_optimized", resp.EbsOptimized)
-
-	err = d.Set("group_set", getGroupSet(resp.Groups))
-	if err != nil {
-		fmt.Println(getGroupSet(resp.Groups))
-	}
-
-	d.Set("shutdown_automatic_behavior", resp.InstanceInitiatedShutdownBehavior)
-
-	d.Set("type", resp.InstanceType)
-
-	d.Set("kernel", resp.KernelId)
-
-	d.Set("product_codes", getProductCodes(resp.ProductCodes))
-
-	d.Set("ramdisk", resp.RamdiskId)
-
-	d.Set("root_device_name", resp.RootDeviceName)
-
-	d.Set("activated_check", resp.SourceDestCheck)
-
-	d.Set("sriov_net_support", resp.SriovNetSupport)
-
-	d.Set("user_data", resp.UserData)
 
 	return nil
 }
@@ -879,19 +533,27 @@ func oapiInstanceStateRefreshFunc(conn *oapi.Client, instanceID, failState strin
 	}
 }
 
-func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRequest, attr string) error {
-
-	var err error
-	var stateConf *resource.StateChangeConf
-
+func needsVmRestart(attr string) bool {
+	restart := false
 	switch attr {
-	case "instance_type":
+	case "vm_type":
 		fallthrough
 	case "user_data":
 		fallthrough
 	case "ebs_optimized":
 		fallthrough
-	case "delete_on_termination":
+	case "deletion_protection":
+		restart = true
+	}
+	return restart
+}
+
+func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRequest, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	if needsVmRestart(attr) {
 		stateConf, err = oapiStopInstance(instanceAttrOpts, conn, attr)
 	}
 
@@ -903,14 +565,7 @@ func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRe
 		return err
 	}
 
-	switch attr {
-	case "instance_type":
-		fallthrough
-	case "user_data":
-		fallthrough
-	case "ebs_optimized":
-		fallthrough
-	case "delete_on_termination":
+	if needsVmRestart(attr) {
 		err = oapiStartInstance(instanceAttrOpts, stateConf, conn, attr)
 	}
 
