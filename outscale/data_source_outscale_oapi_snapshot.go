@@ -74,7 +74,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": tagsOAPIListSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

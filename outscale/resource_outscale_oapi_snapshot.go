@@ -71,7 +71,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 					},
 				},
 			},
-			"tags": tagsSchema(),
+			"tags": tagsOAPIListSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
