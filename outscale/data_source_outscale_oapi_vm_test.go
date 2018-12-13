@@ -28,9 +28,9 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 				Config: testAccOAPIVMDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
+						"data.outscale_vm.basic_web", "image_id", "ami-5c450b62"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "type", "t2.micro"),
+						"data.outscale_vm.basic_web", "type", "c4.large"),
 				),
 			},
 		},
