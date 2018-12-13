@@ -43,13 +43,11 @@ resource "outscale_vm" "outscale_vm" {
 
   image_id               = "ami-5c450b62"
 	vm_type                = "c4.large"
-	keypair_name           = "testkp"
 	security_group_ids     = ["sg-9752b7a6"]
-  deletion_protection = false
 }
 
 resource "outscale_vm_attributes" "outscale_vm_attributes" {
   vm_id             = "${outscale_vm.outscale_vm.id}"
-  deletion_protection = true
+  keypair_name           = "testkp"
 }`
 }

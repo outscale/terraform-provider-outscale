@@ -3,13 +3,10 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
@@ -259,7 +256,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:   id,
 			VmType: d.Get("vm_type").(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "type"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts, "vm_type"); err != nil {
 			return err
 		}
 	}
@@ -327,130 +324,6 @@ func resourceOAPIVMAttributesDelete(d *schema.ResourceData, meta interface{}) er
 
 	d.SetId("")
 
-	return nil
-}
-
-func readDescribeOAPIVMStatus(d *schema.ResourceData, conn *fcu.Client) error {
-	input := &fcu.DescribeInstanceStatusInput{
-		InstanceIds: []*string{aws.String(d.Get("vm_id").(string))},
-	}
-
-	var resp *fcu.DescribeInstanceStatusOutput
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstanceStatus(input)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-		}
-
-		return resource.NonRetryableError(err)
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error reading the DescribeInstanceStatus %s", err)
-	}
-
-	if len(resp.InstanceStatuses) > 0 {
-		instances := make([]map[string]interface{}, len(resp.InstanceStatuses))
-
-		for k, v := range resp.InstanceStatuses {
-			instance := make(map[string]interface{})
-
-			if v.AvailabilityZone != nil {
-				instance["availability_zone"] = *v.AvailabilityZone
-			}
-			if v.Events != nil {
-				events := make([]map[string]interface{}, len(v.Events))
-				for i, e := range v.Events {
-					event := make(map[string]interface{})
-					if e.Code != nil {
-						event["code"] = *e.Code
-					}
-					if e.Description != nil {
-						event["description"] = *e.Description
-					}
-					if e.NotAfter != nil {
-						event["not_after"] = *e.NotAfter
-					}
-					if e.NotBefore != nil {
-						event["not_before"] = *e.NotBefore
-					}
-					events[i] = event
-				}
-				instance["events"] = events
-			}
-			if v.InstanceId != nil {
-				instance["vm_id"] = *v.InstanceId
-			}
-			if v.InstanceState != nil {
-				state := make(map[string]interface{})
-
-				if v.InstanceState.Code != nil {
-					state["code"] = fmt.Sprint(*v.InstanceState.Code)
-				}
-				if v.InstanceState.Name != nil {
-					state["name"] = *v.InstanceState.Name
-				}
-				instance["instance_state"] = state
-			}
-			if v.InstanceStatus != nil {
-				state := make(map[string]interface{})
-
-				if v.InstanceStatus.Details != nil {
-					details := make([]map[string]interface{}, len(v.InstanceStatus.Details))
-					for j, d := range v.InstanceStatus.Details {
-						detail := make(map[string]interface{})
-						if d.Name != nil {
-							detail["name"] = *d.Name
-						}
-						if d.Status != nil {
-							detail["status"] = *d.Status
-						}
-						details[j] = detail
-					}
-					state["details"] = details
-				}
-				if v.InstanceStatus.Status != nil {
-					state["status"] = *v.InstanceStatus.Status
-				}
-				instance["instance_status"] = state
-			}
-			if v.SystemStatus != nil {
-				state := make(map[string]interface{})
-
-				if v.SystemStatus.Details != nil {
-					details := make([]map[string]interface{}, len(v.SystemStatus.Details))
-					for j, d := range v.SystemStatus.Details {
-						detail := make(map[string]interface{})
-						if d.Name != nil {
-							detail["name"] = *d.Name
-						}
-						if d.Status != nil {
-							detail["status"] = *d.Status
-						}
-						details[j] = detail
-					}
-					state["details"] = details
-				}
-				if v.SystemStatus.Status != nil {
-					state["status"] = *v.SystemStatus.Status
-				}
-				instance["system_status"] = state
-			}
-
-			instances[k] = instance
-		}
-
-		fmt.Printf("\n\n[DEBUG] instance_status_set %s", instances)
-
-		if err := d.Set("instance_status_set", instances); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
