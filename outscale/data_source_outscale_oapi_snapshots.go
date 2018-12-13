@@ -87,7 +87,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 								},
 							},
 						},
-						"tags": tagsSchemaComputed(),
+						"tags": tagsOAPIListSchemaComputed(),
 					},
 				},
 			},
