@@ -27,8 +27,8 @@ func TestAccOutscaleOAPIINternetServiceDatasource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIINternetServiceDatasourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("data.outscale_internet_service.test"),
-					resource.TestCheckResourceAttr("data.outscale_internet_service", "test.net_to_internet_service_link.#", "1"),
+					testAccCheckState("data.outscale_internet_service.outscale_internet_serviced"),
+					resource.TestCheckResourceAttrSet("data.outscale_internet_service.outscale_internet_serviced", "internet_service_id"),
 				),
 			},
 		},
@@ -36,12 +36,12 @@ func TestAccOutscaleOAPIINternetServiceDatasource_basic(t *testing.T) {
 }
 
 const testAccOutscaleOAPIINternetServiceDatasourceConfig = `
-resource "outscale_internet_service" "gateway" {}
+resource "outscale_internet_service" "outscale_internet_service" {}
 
-data "outscale_internet_service" "test" {
+data "outscale_internet_service" "outscale_internet_serviced" {
 	filter {
-		name = "internet-gateway-id"
-		values = ["${outscale_internet_service.gateway.id}"]
+		name = "internet_service_ids"
+		values = ["${outscale_internet_service.outscale_internet_service.internet_service_id}"]
 	}
 }
 `
