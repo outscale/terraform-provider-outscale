@@ -65,8 +65,8 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string, rInt int) resource.Te
 		if attr["ip_range"] != fmt.Sprintf("172.%d.123.0/24", rInt) {
 			return fmt.Errorf("bad ip_range %s", attr["ip_range"])
 		}
-		if attr["sub_region_name"] != "eu-west-2a" {
-			return fmt.Errorf("bad sub_region_name %s", attr["sub_region_name"])
+		if attr["subregion_name"] != "eu-west-2a" {
+			return fmt.Errorf("bad subregion_name %s", attr["subregion_name"])
 		}
 
 		return nil
@@ -75,19 +75,19 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string, rInt int) resource.Te
 
 func testAccDataSourceOutscaleOAPISubnetConfig(rInt int) string {
 	return fmt.Sprintf(`
-		
 		resource "outscale_subnet" "test" {
-		  lin_id            = "vpc-e9d09d63"
+		  net_id            = "vpc-e9d09d63"
 		  ip_range        = "172.%d.123.0/24"
-		  sub_region_name = "eu-west-2a"
+		  subegion_name = "eu-west-2a"
 		}
+		
 		data "outscale_subnet" "by_id" {
 		  subnet_id = "${outscale_subnet.test.id}"
 		}
 	
 		data "outscale_subnet" "by_filter" {
 		  filter {
-		    name = "subnet-id"
+		    name = "subnet_ids"
 		    values = ["${outscale_subnet.test.id}"]
 		  }
 		}
