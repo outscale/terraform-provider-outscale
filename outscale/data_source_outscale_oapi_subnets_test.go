@@ -31,7 +31,7 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPISubnetsConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_subnets", "subnet_set.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_subnets", "subnets.#", "1"),
 				),
 			},
 		},
@@ -42,14 +42,14 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 	return fmt.Sprintf(`
 		
 		resource "outscale_subnet" "test" {
-		  vpc_id            = "vpc-e9d09d63"
-		  cidr_block        = "172.%d.123.0/24"
-		  availability_zone = "eu-west-2a"
+		  net_id            = "vpc-e9d09d63"
+		  ip_range        = "172.%d.123.0/24"
+		  subregion_name = "eu-west-2a"
 		}
 	
 		data "outscale_subnets" "by_filter" {
 		  filter {
-		    name = "subnet-id"
+		    name = "subnet_ids"
 		    values = ["${outscale_subnet.test.id}"]
 		  }
 		}
