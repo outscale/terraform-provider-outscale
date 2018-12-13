@@ -47,6 +47,32 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
+					testAccCheckState("data.outscale_image.omi"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
@@ -62,21 +88,31 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 	}
 }
 
-const testAccCheckOutscaleOAPIImageDataSourceConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+const testAccCheckOutscaleOAPIImageDataSourceBasicConfig = `
+data "outscale_image" "omi" {
+	filter {
+      name = "image_ids"
+      values = ["ami-b0829808"]
+	}
 }
+`
 
-resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
-  group_description = "Used in the terraform acceptance tests"
-}
+const testAccCheckOutscaleOAPIImageDataSourceConfig = `
+#Commented until security group will be merged.
+#resource "outscale_keypair" "a_key_pair" {
+#	keypair_name   = "terraform-key-%d"
+#}
+
+#resource "outscale_security_group" "web" {
+#  group_name = "terraform_acceptance_test_example_1"
+#  group_description = "Used in the terraform acceptance tests"
+#}
 
 resource "outscale_vm" "basic" {
 	image_id = "ami-8a6a0120"
 	type = "t2.micro"
-	security_group = ["${outscale_firewall_rules_set.web.id}"]
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	#security_group_ids = ["${outscale_security_group.web.id}"]
+	#keypair_name = "${outscale_keypair.a_key_pair.keypair_name}"
 }
 
 resource "outscale_image" "foo" {

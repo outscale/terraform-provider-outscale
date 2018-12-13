@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	r "github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
@@ -92,8 +92,8 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 
 func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		if has, err := hasLaunchPermission(conn, *imageID); err != nil {
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if !has {
 			return fmt.Errorf("launch permission does not exist for '%s' on '%s'", accountID, *imageID)
@@ -104,8 +104,8 @@ func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *s
 
 func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		if has, err := hasLaunchPermission(conn, *imageID); err != nil {
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if has {
 			return fmt.Errorf("launch permission still exists for '%s' on '%s'", accountID, *imageID)
@@ -119,14 +119,14 @@ func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID
 // so we can test that Terraform will react properly
 func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		req := &fcu.DeregisterImageInput{
-			ImageId: aws.String(*imageID),
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		req := &oapi.DeleteImageRequest{
+			ImageId: aws.StringValue(imageID),
 		}
 
 		err := r.Retry(5*time.Minute, func() *r.RetryError {
 			var err error
-			_, err = conn.VM.DeregisterImage(req)
+			_, err = conn.POST_DeleteImage(*req)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return r.RetryableError(err)
@@ -147,26 +147,21 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_instance" {
     count = 1
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
+    image_id           = "ami-880caa66"
+    type               = "t2.micro"
 }
 
 resource "outscale_image" "outscale_image" {
     name        = "terraform test-123-%d"
-    instance_id = "${outscale_vm.outscale_instance.id}"
-		no_reboot   = "true"
+    vm_id = "${outscale_vm.outscale_instance.id}"
+	no_reboot   = "true"
 }
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
-    permission {
-        add {
-            user_id = "520679080430"
-				}
-				remove {
-            user_id = "520679080430"
-        }
-		}
+    permission_additions {
+        account_id = "520679080430"
+	}
 }
 `, r)
 }

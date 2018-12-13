@@ -200,11 +200,11 @@ func resourceOAPIImageCopyCreate(d *schema.ResourceData, meta interface{}) error
 	d.Set("image_id", id)
 	d.SetPartial("image_id")
 	d.Partial(false)
-
-	_, err = resourceOutscaleOAPIImageWaitForAvailable(id, client, 1)
-	if err != nil {
-		return err
-	}
+	//TODO
+	//_, err = resourceOutscaleOAPIImageWaitForAvailable(id, client, 1)
+	// if err != nil {
+	// 	return err
+	// }
 
 	return resourceImageUpdate(d, meta)
 }
