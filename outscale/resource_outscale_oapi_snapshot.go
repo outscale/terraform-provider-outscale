@@ -175,7 +175,9 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("state", snapshot.State)
 	d.Set("volume_id", snapshot.VolumeId)
 	d.Set("volume_size", snapshot.VolumeSize)
-	d.Set("tags", tagsOAPIToMap(snapshot.Tags))
+	if err := d.Set("tags", tagsOAPIToMap(snapshot.Tags)); err != nil {
+		return err
+	}
 	d.Set("request_id", res.OK.ResponseContext.RequestId)
 
 	lp := make([]map[string]interface{}, 1)
