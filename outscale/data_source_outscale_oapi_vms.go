@@ -101,9 +101,9 @@ func vmsOAPIDescriptionAttributes(d *schema.ResourceData, instances []oapi.Vm, c
 	return nil
 }
 
-func dataSourceOAPIVMS(i []oapi.Vm) *schema.Set {
-	s := &schema.Set{}
-	for _, v := range i {
+func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(i))
+	for index, v := range i {
 		instance := make(map[string]interface{})
 
 		setterFunc := func(key string, value interface{}) error {
@@ -117,7 +117,7 @@ func dataSourceOAPIVMS(i []oapi.Vm) *schema.Set {
 		fmt.Println("instance -> ", instance)
 		fmt.Printf("mv -> %+v\n", v)
 
-		s.Add(instance)
+		s[index] = instance
 	}
 	return s
 }
