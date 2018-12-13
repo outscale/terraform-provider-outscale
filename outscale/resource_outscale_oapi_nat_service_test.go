@@ -37,7 +37,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOAPINatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPINatGatewayExists("outscale_nat_service.gateway", &natGateway),
+					testAccCheckOAPINatGatewayExists("outscale_nat_service.nat_service", &natGateway),
 				),
 			},
 		},
@@ -167,8 +167,20 @@ func testAccCheckOAPINatGatewayExists(n string, ng *oapi.NatService) resource.Te
 }
 
 const testAccOAPINatGatewayConfig = `
-resource "outscale_nat_service" "gateway" {
-    public_ip_id = "eipalloc-32e506e8"
-    subnet_id = "subnet-861fbecc"
+resource "outscale_net" "outscale_net" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "outscale_subnet" {
+    net_id = "${outscale_net.outscale_net.net_id}"
+    ip_range = "10.0.0.0/18"
+}
+
+resource "outscale_public_ip" "outscale_public_ip" {
+}
+
+resource "outscale_nat_service" "nat_service" {
+   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+   public_ip_id = "${outscale_public_ip.outscale_public_ip.public_ip_id}"
 }
 `
