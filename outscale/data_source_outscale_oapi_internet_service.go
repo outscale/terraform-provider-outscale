@@ -107,6 +107,8 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	d.Set("state", result.State)
 	d.Set("net_id", result.NetId)
 
+	d.SetId(result.InternetServiceId)
+
 	return d.Set("tags", tagsOAPIToMap(result.Tags))
 }
 
