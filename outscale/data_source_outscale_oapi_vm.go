@@ -37,6 +37,8 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 		params.Filters.VmIds = []string{instanceID.(string)}
 	}
 
+	fmt.Printf("ReadVmsRequest -> %+v\n", params)
+
 	var resp *oapi.POST_ReadVmsResponses
 	var err error
 
@@ -396,19 +398,33 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"block_device_mappings": {
 			Type:     schema.TypeSet,
 			Optional: true,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"device_name": {
 						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+					},
+					"no_device": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+					},
+					"virtual_device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
 						Computed: true,
 					},
 					"bsu": {
 						Type:     schema.TypeMap,
 						Optional: true,
+						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_vm_deletion": {
 									Type:     schema.TypeBool,
+									Optional: true,
 									Computed: true,
 								},
 								"link_date": {
@@ -421,6 +437,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								},
 								"volume_id": {
 									Type:     schema.TypeFloat,
+									Optional: true,
 									Computed: true,
 								},
 							},
@@ -431,6 +448,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"bsu_optimized": {
 			Type:     schema.TypeBool,
+			Optional: true,
 			Computed: true,
 		},
 		"client_token": {
@@ -439,6 +457,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"deletion_protection": {
 			Type:     schema.TypeBool,
+			Optional: true,
 			Computed: true,
 		},
 		"hypervisor": {
@@ -451,16 +470,24 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"is_source_dest_checked": {
 			Type:     schema.TypeBool,
+			Optional: true,
 			Computed: true,
 		},
 		"keypair_name": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
+		},
+		"security_group_ids": &schema.Schema{
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"launch_number": {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
+
 		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -708,6 +735,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"user_data": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"vm_id": {
@@ -717,6 +745,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"vm_initiated_shutdown_behavior": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"vm_type": {
