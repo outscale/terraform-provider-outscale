@@ -37,6 +37,9 @@ func TestAccOutscaleOAPINatServicesDataSource_Instance(t *testing.T) {
 
 const testAccCheckOutscaleOAPINatServicesDataSourceConfig = `
 data "outscale_nat_services" "nat" {
-	nat_service_id = ["nat-08f41400"]
+	filter {
+		name = "nat_service_ids" 
+		values = ["nat-08f41400"]
+	}
 }
 `
