@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPISubNet() *schema.Resource {
@@ -30,21 +30,19 @@ func resourceOutscaleOAPISubNet() *schema.Resource {
 
 //Create SubNet
 func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.CreateSubnetInput{
-		CidrBlock: aws.String(d.Get("ip_range").(string)),
-		VpcId:     aws.String(d.Get("lin_id").(string)),
+	conn := meta.(*OutscaleClient).OAPI
+	req := &oapi.CreateSubnetRequest{
+		IpRange: d.Get("ip_range").(string),
+		NetId:   d.Get("net_id").(string),
 	}
-	if a, aok := d.GetOk("sub_region_name"); aok {
-		req.AvailabilityZone = aws.String(a.(string))
+	if a, aok := d.GetOk("subregion_name"); aok {
+		req.SubregionName = a.(string)
 	}
-	if a, aok := d.GetOk("dry_run"); aok {
-		req.DryRun = aws.Bool(a.(bool))
-	}
-	var res *fcu.CreateSubnetOutput
+
+	var resp *oapi.POST_CreateSubnetResponses
 	var err error
 	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.CreateSubNet(req)
+		resp, err = conn.POST_CreateSubnet(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -54,10 +52,28 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 			return resource.NonRetryableError(err)
 		}
 
-		return resource.RetryableError(err)
+		return nil
 	})
 
-	d.SetId(*res.Subnet.SubnetId)
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("[DEBUG] Error creating Subnet (%s)", errString)
+	}
+
+	result := resp.OK
+
+	d.SetId(result.Subnet.SubnetId)
 
 	return resourceOutscaleOAPISubNetRead(d, meta)
 }
@@ -65,20 +81,22 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 //Read SubNet
 
 func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
 
 	log.Printf("[DEBUG] Reading Subnet(%s)", id)
 
-	req := &fcu.DescribeSubnetsInput{
-		SubnetIds: []*string{aws.String(id)},
+	req := &oapi.ReadSubnetsRequest{
+		Filters: oapi.FiltersSubnet{
+			SubnetIds: []string{id},
+		},
 	}
 
-	var resp *fcu.DescribeSubnetsOutput
+	var resp *oapi.POST_ReadSubnetsResponses
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSubNet(req)
+		resp, err = conn.POST_ReadSubnets(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -88,33 +106,48 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		}
 		return resource.RetryableError(err)
 	})
-	if err != nil {
-		log.Printf("[DEBUG] Error reading Subnet (%s)", err)
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
+
+	response := resp.OK
 
 	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
-	d.Set("subnet_id", resp.Subnets[0].SubnetId)
-	d.Set("sub_region_name", resp.Subnets[0].AvailabilityZone)
-	d.Set("ip_range", resp.Subnets[0].CidrBlock)
-	d.Set("lin_id", resp.Subnets[0].VpcId)
+	d.Set("subnet_id", response.Subnets[0].SubnetId)
+	d.Set("subregion_name", response.Subnets[0].SubregionName)
+	d.Set("ip_range", response.Subnets[0].IpRange)
+	d.Set("net_id", response.Subnets[0].NetId)
 
-	return d.Set("tag", tagsToMap(resp.Subnets[0].Tags))
+	return d.Set("tags", tagsOAPIToMap(response.Subnets[0].Tags))
 }
 
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
 	log.Printf("[DEBUG] Deleting Subnet (%s)", id)
 
-	req := &fcu.DeleteSubnetInput{
-		SubnetId: &id,
+	req := &oapi.DeleteSubnetRequest{
+		SubnetId: id,
 	}
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DeleteSubNet(req)
+		_, err = conn.POST_DeleteSubnet(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -132,18 +165,18 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *fcu.Subnet) error {
-	if err := d.Set("sub_region_name", subnet.AvailabilityZone); err != nil {
+func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oapi.Subnet) error {
+	if err := d.Set("subregion_name", subnet.SubregionName); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet1 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("available_ips_count", subnet.AvailableIpAddressCount); err != nil {
+	if err := d.Set("available_ips_count", subnet.AvailableIpsCount); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet2 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("ip_range", subnet.CidrBlock); err != nil {
+	if err := d.Set("ip_range", subnet.IpRange); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet3 (%s)", err)
 
 		return err
@@ -159,7 +192,7 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *fcu.Subnet) error {
 		return err
 	}
 
-	if err := d.Set("lin_id", subnet.VpcId); err != nil {
+	if err := d.Set("net_id", subnet.NetId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
 
 		return err
@@ -171,7 +204,7 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *fcu.Subnet) error {
 func getOAPISubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//This is attribute part for schema SubNet
-		"lin_id": &schema.Schema{
+		"net_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
@@ -181,7 +214,7 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Required: true,
 			ForceNew: true,
 		},
-		"sub_region_name": &schema.Schema{
+		"subregion_name": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
@@ -205,6 +238,6 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": dataSourceTagsSchema(),
+		"tags": dataSourceTagsSchema(),
 	}
 }
