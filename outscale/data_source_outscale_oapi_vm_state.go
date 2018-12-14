@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
@@ -80,81 +79,71 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 
 	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.VmId)
 
-	return statusDescriptionOAPIVMStateAttributes(d, state)
+	return vmStateDataAttrSetter(d, &state)
 }
 
-func statusDescriptionOAPIVMStateAttributes(d *schema.ResourceData, status oapi.VmStates) error {
-
+func vmStateDataAttrSetter(d *schema.ResourceData, status *oapi.VmStates) error {
+	setterFunc := func(key string, value interface{}) error {
+		return d.Set(key, value)
+	}
 	d.SetId(status.VmId)
+	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
+}
 
-	d.Set("sub_region_name", status.SubregionName)
+func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oapi.VmStates) error {
 
-	events := oapiEventsSet(status.MaintenanceEvents)
-	err := d.Set("maintenance_event", events)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("state", status.VmState)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("comment_item", status.VmState)
-	if err != nil {
-		return err
-	}
-
-	d.Set("comment_state", status.VmState)
+	set("subregion_name", status.SubregionName)
+	set("maintenance_events", oapiEventsSet(status.MaintenanceEvents))
+	set("vm_state", status.VmState)
+	set("vm_id", status.VmId)
+	set("request_id", status.VmState)
 
 	return nil
 }
 
-func statusSetOAPIVMState(status *fcu.InstanceStatusSummary) map[string]interface{} {
-
-	st := map[string]interface{}{
-		"state": *status.Status,
-		"item":  detailsSetOAPIVMState(status.Details),
-	}
-
-	return st
-}
-
-func detailsSetOAPIVMState(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(details))
-
-	for k, v := range details {
-
-		status := map[string]interface{}{
-			"name":  *v.Name,
-			"state": *v.Status,
+func statusSetOAPIVMState(status []oapi.MaintenanceEvent) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(status))
+	for k, v := range status {
+		s[k] = map[string]interface{}{
+			"code":        v.Code,
+			"description": v.Description,
+			"not_after":   v.NotAfter,
+			"not_before":  v.NotBefore,
 		}
-		s[k] = status
 	}
 
 	return s
 }
 
-func flattenedStateOAPIVMState(state *fcu.InstanceState) map[string]interface{} {
-	return map[string]interface{}{
-		"code": fmt.Sprintf("%d", *state.Code),
-		"name": *state.Name,
+func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{
+		"filter": dataSourceFiltersSchema(),
 	}
+
+	for k, v := range getVMStateAttrsSchema() {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
 }
 
-func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
+func getVMStateAttrsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"filter": dataSourceFiltersSchema(),
-		"sub_region_name": {
+		"subregion_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"maintenance_event": {
+		"maintenance_events": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"state_code": {
+					"code": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -177,43 +166,7 @@ func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
-		"state": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"state_code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"comment_item": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"state": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"comment_state": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"request_id": {
+		"vm_state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -230,15 +183,19 @@ func buildOutscaleOAPIDataSourceVmStateFilters(set *schema.Set) oapi.FiltersVmsS
 		}
 
 		switch name := m["name"].(string); name {
-		case "maintenance­-event-code":
+		case "maintenance_event_codes":
 			filters.MaintenanceEventCodes = filterValues
-		case "maintenance­-event-description":
+		case "maintenance_event_descriptions":
 			filters.MaintenanceEventDescriptions = filterValues
-		case "maintenance­-event-not­after":
+		case "maintenance_events_not_after":
 			filters.MaintenanceEventsNotAfter = filterValues
-		case "maintenance­-event-not­before":
+		case "maintenance_events_not_before":
 			filters.MaintenanceEventsNotBefore = filterValues
-		case "vm­-state­-code":
+		case "subregion_names":
+			filters.SubregionNames = filterValues
+		case "vm_ids":
+			filters.VmIds = filterValues
+		case "vm_states":
 			filters.VmStates = filterValues
 
 		default:

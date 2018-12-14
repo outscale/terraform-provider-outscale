@@ -84,7 +84,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	instance = filteredInstances[0]
 
 	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", instance.VmId)
-
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	return resourceDataAttrSetter(d, &instance)
 }
 
@@ -103,7 +103,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
 	set("architecture", instance.Architecture)
 	set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
-	set("bsu_optimised", instance.BsuOptimized)
+	set("bsu_optimized", instance.BsuOptimized)
 	set("client_token", instance.ClientToken)
 	set("deletion_protection", instance.DeletionProtection)
 	set("hypervisor", instance.Hypervisor)
@@ -392,7 +392,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"architecture": {
-			Type:     schema.TypeInt,
+			Type:     schema.TypeString,
 			Computed: true,
 		},
 		"block_device_mappings": {

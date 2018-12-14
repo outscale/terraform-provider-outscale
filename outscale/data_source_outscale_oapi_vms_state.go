@@ -18,6 +18,25 @@ func dataSourceOutscaleOAPIVMSState() *schema.Resource {
 	}
 }
 
+func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{
+		"filter": dataSourceFiltersSchema(),
+		"vm_states": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: getVMStateAttrsSchema(),
+			},
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+
+	return wholeSchema
+}
+
 func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
@@ -63,99 +82,6 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
 }
 
-func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Arguments
-		"filter": dataSourceFiltersSchema(),
-		"vm_id": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"vm_state_set": { //events_set
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"sub_region_name": { //availability_zone
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"maintenance_event": { //events_set
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"state_code": { //code
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"description": { //
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"not_after": { // not_before
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"not_before": { // not_after
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-
-					"vm_id": { //instance_id
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"state": { //instance_state
-						Type:     schema.TypeMap,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"state_code": { // code
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"comment_item": { //details
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"state": { //status
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"comment_state": { //state
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-	}
-}
-
 func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oapi.VmStates) error {
 
 	d.SetId(resource.UniqueId())
@@ -165,18 +91,15 @@ func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oa
 	for k, v := range status {
 		state := make(map[string]interface{})
 
-		state["sub_region_name"] = v.SubregionName
+		setterFunc := func(key string, value interface{}) error {
+			state[key] = value
+			return nil
+		}
 
-		events := oapiEventsSet(v.MaintenanceEvents)
-		state["maintenance_event"] = events
-
-		state["state"] = v.VmState
-
-		state["comment_item"] = v.VmState
-		state["comment_state"] = v.VmState
+		statusDescriptionOAPIVMStateAttributes(setterFunc, &v)
 
 		states[k] = state
 	}
 
-	return d.Set("vm_state_set", states)
+	return d.Set("vm_states", states)
 }
