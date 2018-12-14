@@ -294,14 +294,17 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 	//Commented until backend issues is resolved.
 	//d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.SnapshotId)
-	d.Set("volume_type", volume.VolumeType)
 
-	if volume.VolumeType == "io1" {
+	if volume.VolumeType != "" {
+		d.Set("volume_type", volume.VolumeType)
+	} else if vType, ok := d.GetOk("volume_type"); ok {
+		volume.VolumeType = vType.(string)
+	}
+
+	if volume.VolumeType != "" && volume.VolumeType == "io1" {
 		//if volume.Iops != "" {
 		d.Set("iops", volume.Iops)
 		//}
-	} else {
-		d.Set("iops", "")
 	}
 
 	d.Set("state", volume.State)
