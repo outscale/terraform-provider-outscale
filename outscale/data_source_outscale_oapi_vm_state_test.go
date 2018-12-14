@@ -18,7 +18,7 @@ func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
@@ -64,14 +64,11 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 }
 
 const testAccDataSourceOutscaleOAPIVmStateConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
-
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
 }
 
 data "outscale_vm_state" "state" {
