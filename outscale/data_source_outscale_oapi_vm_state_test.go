@@ -51,11 +51,11 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 
 		state := rs.Primary.Attributes
 
-		if state["instance_id"] != vm.Primary.Attributes["instance_id"] {
+		if state["vm_id"] != vm.Primary.Attributes["vm_id"] {
 			return fmt.Errorf(
-				"instance_id is %s; want %s",
-				state["instance_id"],
-				vm.Primary.Attributes["instance_id"],
+				"vm_id is %s; want %s",
+				state["vm_id"],
+				vm.Primary.Attributes["vm_id"],
 			)
 		}
 
