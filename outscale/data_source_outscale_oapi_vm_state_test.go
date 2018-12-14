@@ -14,7 +14,7 @@ func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
-	if err == nil {
+	if err != nil {
 		oapi = false
 	}
 
