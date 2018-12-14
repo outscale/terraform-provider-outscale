@@ -41,7 +41,7 @@ resource "outscale_vm" "basic" {
 	security_group_ids     = ["sg-9752b7a6"]
 }
 
-data "outscale_vm_state" "state" {
-  vm_id = ["${outscale_vm.basic.id}"]
+data "outscale_vms_state" "state" {
+  vm_ids = ["${outscale_vm.basic.id}"]
 }
 `

@@ -72,6 +72,6 @@ resource "outscale_vm" "basic" {
 }
 
 data "outscale_vm_state" "state" {
-  vm_id = ["${outscale_vm.basic.id}"]
+  vm_id = "${outscale_vm.basic.id}"
 }
 `
