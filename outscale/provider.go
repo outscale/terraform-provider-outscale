@@ -68,7 +68,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_keypair":                       GetResource(fcu, "outscale_keypair")(),
 			"outscale_image":                         GetResource(fcu, "outscale_image")(),
 			"outscale_lin_internet_gateway_link":     GetResource(fcu, "outscale_lin_internet_gateway_link")(),
-			"outscale_net_internet_gateway_link":     GetResource(oapi, "outscale_internet_service_link")(),
+			"outscale_internet_service_link":         GetResource(oapi, "outscale_internet_service_link")(),
 			"outscale_lin_internet_gateway":          GetResource(fcu, "outscale_lin_internet_gateway")(),
 			"outscale_internet_service":              GetResource(oapi, "outscale_internet_service")(),
 			"outscale_lin":                           GetResource(fcu, "outscale_lin")(),

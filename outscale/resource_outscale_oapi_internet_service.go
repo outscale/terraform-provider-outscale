@@ -78,7 +78,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	var errString string
