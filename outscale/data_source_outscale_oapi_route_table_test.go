@@ -152,23 +152,25 @@ const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 resource "outscale_net" "test" {
   ip_range = "172.16.0.0/16"
 
-  tag {
-    Name = "terraform-testacc-data-source"
+  tags {
+	key = "Name"
+	value = "terraform-testacc-data-source"
   }
 }
 
 resource "outscale_subnet" "test" {
   ip_range = "172.16.0.0/24"
-  net_id     = "${outscale_net.test.id}"
-  tag {
-    Name = "terraform-testacc-data-source"
-  }
+  lin_id     = "${outscale_net.test.id}"
+  #tag {
+  #  Name = "terraform-testacc-data-source"
+  #}
 }
 
 resource "outscale_route_table" "test" {
   net_id = "${outscale_net.test.id}"
-  tag {
-    Name = "terraform-testacc-routetable-data-source"
+  tags {
+	key = "Name"
+	value = "terraform-testacc-routetable-data-source"
   }
 }
 
@@ -196,8 +198,9 @@ const testAccDataSourceOutscaleOAPIRouteTableMainRoute = `
 resource "outscale_net" "test" {
   ip_range = "172.16.0.0/16"
 
-  tag {
-    Name = "terraform-testacc-data-source"
+  tags {
+    key = "Name"
+	value = "terraform-testacc-data-source"
   }
 }
 

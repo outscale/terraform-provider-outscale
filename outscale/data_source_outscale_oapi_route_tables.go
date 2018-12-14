@@ -191,9 +191,9 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 		routeTable["tag"] = tagsToMap(v.Tags)
 
-		routeTable["route"] = setOAPIRouteSet(v.Routes)
+		// routeTable["routes"] = setOAPIRoutes(v.Routes)
 
-		routeTable["link"] = setOAPIAssociactionSet(v.Associations)
+		// routeTable["link_route_tables"] = setOAPIAssociactionSet(v.Associations) // FIXME
 
 		routeTables[k] = routeTable
 	}

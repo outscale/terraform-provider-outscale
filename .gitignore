@@ -7,3 +7,4 @@ test/
 terraform-provider-outscale
 
 .DS_Store
+*~
