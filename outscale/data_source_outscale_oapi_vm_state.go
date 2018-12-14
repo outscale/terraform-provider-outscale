@@ -19,96 +19,6 @@ func dataSourceOutscaleOAPIVMState() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-
-	filters, filtersOk := d.GetOk("filter")
-	instanceId, instanceIdOk := d.GetOk("vm_id")
-
-	if !instanceIdOk && !filtersOk {
-		return errors.New("vm_id or filter must be set")
-	}
-
-	params := oapi.ReadVmsStateRequest{}
-	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVmStateFilters(filters.(*schema.Set))
-	}
-	if instanceIdOk {
-		params.Filters.VmIds = []string{instanceId.(string)}
-	}
-
-	params.AllVms = false
-
-	var resp *oapi.POST_ReadVmsStateResponses
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadVmsState(params)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.NonRetryableError(err)
-	})
-
-	if err != nil {
-		return err
-	}
-
-	filteredStates := resp.OK.VmStates[:]
-
-	var state oapi.VmStates
-	if len(filteredStates) < 1 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-
-	if len(filteredStates) > 1 {
-		return fmt.Errorf("Your query returned more than one result. Please try a more " +
-			"specific search criteria.")
-	}
-
-	state = filteredStates[0]
-
-	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.VmId)
-
-	return vmStateDataAttrSetter(d, &state)
-}
-
-func vmStateDataAttrSetter(d *schema.ResourceData, status *oapi.VmStates) error {
-	setterFunc := func(key string, value interface{}) error {
-		return d.Set(key, value)
-	}
-	d.SetId(status.VmId)
-	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
-}
-
-func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oapi.VmStates) error {
-
-	set("subregion_name", status.SubregionName)
-	set("maintenance_events", oapiEventsSet(status.MaintenanceEvents))
-	set("vm_state", status.VmState)
-	set("vm_id", status.VmId)
-	set("request_id", status.VmState)
-
-	return nil
-}
-
-func statusSetOAPIVMState(status []oapi.MaintenanceEvent) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(status))
-	for k, v := range status {
-		s[k] = map[string]interface{}{
-			"code":        v.Code,
-			"description": v.Description,
-			"not_after":   v.NotAfter,
-			"not_before":  v.NotBefore,
-		}
-	}
-
-	return s
-}
-
 func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
@@ -167,6 +77,95 @@ func getVMStateAttrsSchema() map[string]*schema.Schema {
 	}
 }
 
+func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	filters, filtersOk := d.GetOk("filter")
+	instanceId, instanceIdOk := d.GetOk("vm_id")
+
+	if !instanceIdOk && !filtersOk {
+		return errors.New("vm_id or filter must be set")
+	}
+
+	params := oapi.ReadVmsStateRequest{}
+	if filtersOk {
+		params.Filters = buildOutscaleOAPIDataSourceVmStateFilters(filters.(*schema.Set))
+	}
+	if instanceIdOk {
+		params.Filters.VmIds = []string{instanceId.(string)}
+	}
+
+	params.AllVms = false
+
+	var resp *oapi.POST_ReadVmsStateResponses
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = conn.POST_ReadVmsState(params)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	filteredStates := resp.OK.VmStates[:]
+
+	var state oapi.VmStates
+	if len(filteredStates) < 1 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	if len(filteredStates) > 1 {
+		return fmt.Errorf("Your query returned more than one result. Please try a more " +
+			"specific search criteria.")
+	}
+
+	state = filteredStates[0]
+
+	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.VmId)
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	return vmStateDataAttrSetter(d, &state)
+}
+
+func vmStateDataAttrSetter(d *schema.ResourceData, status *oapi.VmStates) error {
+	setterFunc := func(key string, value interface{}) error {
+		return d.Set(key, value)
+	}
+	d.SetId(status.VmId)
+	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
+}
+
+func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oapi.VmStates) error {
+
+	set("subregion_name", status.SubregionName)
+	set("maintenance_events", statusSetOAPIVMState(status.MaintenanceEvents))
+	set("vm_state", status.VmState)
+	set("vm_id", status.VmId)
+
+	return nil
+}
+
+func statusSetOAPIVMState(status []oapi.MaintenanceEvent) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(status))
+	for k, v := range status {
+		s[k] = map[string]interface{}{
+			"code":        v.Code,
+			"description": v.Description,
+			"not_after":   v.NotAfter,
+			"not_before":  v.NotBefore,
+		}
+	}
+
+	return s
+}
+
 func buildOutscaleOAPIDataSourceVmStateFilters(set *schema.Set) oapi.FiltersVmsState {
 	var filters oapi.FiltersVmsState
 	for _, v := range set.List() {
@@ -197,19 +196,4 @@ func buildOutscaleOAPIDataSourceVmStateFilters(set *schema.Set) oapi.FiltersVmsS
 		}
 	}
 	return filters
-}
-
-func oapiEventsSet(events []oapi.MaintenanceEvent) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(events))
-
-	for k, v := range events {
-		status := map[string]interface{}{
-			"code":        v.Code,
-			"description": v.Description,
-			"not_before":  v.NotBefore,
-			"not_after":   v.NotAfter,
-		}
-		s[k] = status
-	}
-	return s
 }
