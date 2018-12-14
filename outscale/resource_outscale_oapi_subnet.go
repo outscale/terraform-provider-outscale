@@ -127,12 +127,8 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 
 	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
-	d.Set("subnet_id", response.Subnets[0].SubnetId)
-	d.Set("subregion_name", response.Subnets[0].SubregionName)
-	d.Set("ip_range", response.Subnets[0].IpRange)
-	d.Set("net_id", response.Subnets[0].NetId)
-
-	return d.Set("tags", tagsOAPIToMap(response.Subnets[0].Tags))
+	d.Set("request_id", response.ResponseContext.RequestId)
+	return readOutscaleOAPISubNet(d, &response.Subnets[0])
 }
 
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
@@ -166,6 +162,7 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 }
 
 func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oapi.Subnet) error {
+
 	if err := d.Set("subregion_name", subnet.SubregionName); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet1 (%s)", err)
 
@@ -198,7 +195,7 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oapi.Subnet) error {
 		return err
 	}
 
-	return nil
+	return d.Set("tags", tagsOAPIToMap(subnet.Tags))
 }
 
 func getOAPISubNetSchema() map[string]*schema.Schema {
@@ -222,7 +219,7 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 		},
 		//This is arguments part for schema SubNet
 		"available_ips_count": &schema.Schema{
-			Type:     schema.TypeString,
+			Type:     schema.TypeInt,
 			Computed: true,
 		},
 
