@@ -52,7 +52,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"inbound_rule": {
+						"inbound_rules": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -91,7 +91,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 								},
 							},
 						},
-						"outbound_rule": {
+						"outbound_rules": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -244,8 +244,8 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		}
 		s["account_id"] = v.AccountId
 		s["tags"] = tagsOAPIToMap(v.Tags)
-		s["inbound_rule"] = flattenOAPISecurityGroupRule(v.InboundRules)
-		s["outbound_rule"] = flattenOAPISecurityGroupRule(v.OutboundRules)
+		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.InboundRules)
+		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.OutboundRules)
 
 		sg[k] = s
 	}
