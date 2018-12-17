@@ -9,25 +9,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOapi = false
 	}
 
-	if !oapi {
+	if !isOapi {
 		t.Skip()
 	}
 
-	var v, v2 fcu.RouteTable
+	var v, v2 oapi.RouteTable
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -54,20 +53,21 @@ func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
 }
 
 func testAccCheckOAPIRouteTableAssociationDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route_table_link" {
 			continue
 		}
-
-		var resp *fcu.DescribeRouteTablesOutput
+		params := &oapi.ReadRouteTablesRequest{
+			Filters: oapi.FiltersRouteTable{
+				RouteTableIds: []string{rs.Primary.Attributes["route_table_id"]},
+			},
+		}
+		var resp *oapi.POST_ReadRouteTablesResponses
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-				RouteTableIds: []*string{aws.String(rs.Primary.Attributes["route_table_id"])},
-			})
-
+			resp, err = conn.POST_ReadRouteTables(*params)
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
@@ -87,18 +87,18 @@ func testAccCheckOAPIRouteTableAssociationDestroy(s *terraform.State) error {
 			return err
 		}
 
-		rt := resp.RouteTables[0]
-		if len(rt.Associations) > 0 {
-			return fmt.Errorf(
-				"route table %s has associations", *rt.RouteTableId)
+		rt := resp.OK.RouteTables[0]
 
+		if len(rt.LinkRouteTables) > 0 {
+			return fmt.Errorf(
+				"route table %s has Link RouteTable associations", rt.RouteTableId)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckOAPIRouteTableAssociationExists(n string, v *fcu.RouteTable) resource.TestCheckFunc {
+func testAccCheckOAPIRouteTableAssociationExists(n string, v *oapi.RouteTable) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -109,38 +109,38 @@ func testAccCheckOAPIRouteTableAssociationExists(n string, v *fcu.RouteTable) re
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		var resp *fcu.DescribeRouteTablesOutput
+		params := &oapi.ReadRouteTablesRequest{
+			Filters: oapi.FiltersRouteTable{
+				RouteTableIds: []string{rs.Primary.Attributes["route_table_id"]},
+			},
+		}
+		var resp *oapi.POST_ReadRouteTablesResponses
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-				RouteTableIds: []*string{aws.String(rs.Primary.Attributes["route_table_id"])},
-			})
-
+			resp, err = conn.POST_ReadRouteTables(*params)
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
 					return resource.RetryableError(err)
 				}
-
 				return resource.NonRetryableError(err)
 			}
-
 			return nil
 		})
 
 		if err != nil {
 			return err
 		}
-		if len(resp.RouteTables) == 0 {
+		if len(resp.OK.RouteTables) == 0 {
 			return fmt.Errorf("RouteTable not found")
 		}
 
-		*v = *resp.RouteTables[0]
+		*v = resp.OK.RouteTables[0]
 
-		if len(v.Associations) == 0 {
-			return fmt.Errorf("no associations")
+		if len(v.LinkRouteTables) == 0 {
+			return fmt.Errorf("no link route table associations")
 		}
 
 		return nil
@@ -153,12 +153,12 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_subnet" "foo" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 	ip_range = "10.1.1.0/24"
 }
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_route_table_link" "foo" {
@@ -173,12 +173,12 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_subnet" "foo" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 	ip_range = "10.1.1.0/24"
 }
 
 resource "outscale_route_table" "bar" {
-	lin_id = "${outscale_lin.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_route_table_link" "foo" {

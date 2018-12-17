@@ -376,7 +376,7 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_internet_service" "foo" {
-	#lin_id = "${outscale_net.foo.id}"
+	#net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_route_table" "foo" {
@@ -391,7 +391,7 @@ resource "outscale_net" "foo" {
 
 resource "outscale_subnet" "foo" {
 	ip_range = "10.1.1.0/24"
-	lin_id = "${outscale_net.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_vm" "foo" {
@@ -428,7 +428,7 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "outscale_internet_service" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_net" "bar" {
@@ -436,11 +436,11 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "outscale_internet_service" "bar" {
-// 	lin_id = "${outscale_net.bar.id}"
+// 	net_id = "${outscale_net.bar.id}"
 // }
 
 // resource "aws_vpc_peering_connection" "foo" {
-// 		lin_id = "${outscale_net.foo.id}"
+// 		net_id = "${outscale_net.foo.id}"
 // 		peer_vpc_id = "${outscale_net.bar.id}"
 // 		tags {
 // 			foo = "bar"
@@ -448,7 +448,7 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "outscale_route_table" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 
 // 	route {
 // 		ip_range = "10.2.0.0/16"
@@ -464,11 +464,11 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "aws_vpn_gateway" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route_table" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 
 // 	propagating_vgws = ["${aws_vpn_gateway.foo.id}"]
 // }
