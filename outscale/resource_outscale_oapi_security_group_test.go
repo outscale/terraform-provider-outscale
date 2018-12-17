@@ -194,12 +194,17 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oapi.Secur
 
 func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
+	resource "outscale_net" "net" {
+		ip_range = "10.0.0.0/16"
+	}
+
+
 	resource "outscale_security_group" "web" {
 		security_group_name = "terraform_test_%d"
 		description = "Used in the terraform acceptance tests"
 		tag = {
 			Name = "tf-acc-test"
 		}
-		net_id = "vpc-e9d09d63"
+		net_id = "${outscale_net.net.id}"
 	}`, rInt)
 }
