@@ -161,7 +161,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFu
 func testAccOutscaleOAPIVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 resource "outscale_volume" "test" {
-  subregion_name = "us-west-1a"
+  subregion_name = "%sa"
   type = "gp2"
   size = 1
   tags {
@@ -175,13 +175,8 @@ resource "outscale_volume" "test" {
 func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
 	return fmt.Sprintf(`
 resource "outscale_volume" "test" {
-<<<<<<< HEAD
-  sub_region_name = "%sa"
   volume_type = "gp2"
-=======
-  subregion_name = "us-west-1a"
-  type = "gp2"
->>>>>>>  testing
+  subregion_name = "%sa"
   size = 10
   tags {
 	key = "Name" 

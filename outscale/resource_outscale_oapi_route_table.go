@@ -112,7 +112,7 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	for _, vgw := range rt.RoutePropagatingVirtualGateways {
 		propagatingVGWs = append(propagatingVGWs, vgw.VirtualGatewayId)
 	}
-	d.Set("route_propagating_vpn_gateway", propagatingVGWs)
+	d.Set("route_propagating_virtual_gateways", propagatingVGWs)
 
 	d.Set("routes", setOAPIRoutes(rt.Routes))
 
@@ -388,7 +388,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"links": {
+		"link_route_tables": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{

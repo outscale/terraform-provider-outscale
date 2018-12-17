@@ -47,7 +47,7 @@ resource "outscale_net" "test" {
 
 resource "outscale_subnet" "test" {
   ip_range = "172.16.0.0/24"
-  lin_id     = "${outscale_net.test.id}"
+  net_id     = "${outscale_net.test.id}"
   # tags {
   #   key = "Name"
   #   value = "terraform-testacc-data-source"
