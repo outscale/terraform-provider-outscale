@@ -17,14 +17,14 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"security_group_name": {
+			"security_group_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"security_group_id": {
+			"security_group_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
@@ -163,12 +163,9 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 	req := &oapi.ReadSecurityGroupsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
-	gn, gnOk := d.GetOk("security_group_name")
-	gid, gidOk := d.GetOk("security_group_id")
+	gn, gnOk := d.GetOk("security_group_names")
+	gid, gidOk := d.GetOk("security_group_ids")
 
-	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
-	}
 	if gnOk {
 		var g []string
 		for _, v := range gn.([]interface{}) {
@@ -176,12 +173,17 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		}
 		req.Filters.SecurityGroupNames = g
 	}
+
 	if gidOk {
 		var g []string
 		for _, v := range gid.([]interface{}) {
 			g = append(g, v.(string))
 		}
 		req.Filters.SecurityGroupNames = g
+	}
+
+	if filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
 	}
 
 	var err error

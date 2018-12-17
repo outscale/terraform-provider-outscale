@@ -51,6 +51,10 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 			},
 
 			// comouted
+			"security_group_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"inbound_rules":  getOAPIIPPerms(),
 			"outbound_rules": getOAPIIPPerms(),
 			"account_id": {
@@ -260,7 +264,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	sg := result.SecurityGroups[0]
 
 	d.SetId(sg.SecurityGroupId)
-	d.Set("group_id", sg.SecurityGroupId)
+	d.Set("security_group_id", sg.SecurityGroupId)
 	d.Set("description", sg.Description)
 	d.Set("security_group_name", sg.SecurityGroupName)
 	d.Set("net_id", sg.NetId)

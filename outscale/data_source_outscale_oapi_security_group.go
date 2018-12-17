@@ -20,12 +20,9 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"security_group_name": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"security_group_id": {
 				Type:     schema.TypeString,
@@ -135,18 +132,16 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	gn, gnOk := d.GetOk("security_group_name")
 	gid, gidOk := d.GetOk("security_group_id")
 
-	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
-	}
 	if gnOk {
-		var g []string
-		for _, v := range gn.([]interface{}) {
-			g = append(g, v.(string))
-		}
-		req.Filters.SecurityGroupNames = g
+		req.Filters.SecurityGroupNames = []string{gn.(string)}
 	}
+
 	if gidOk {
 		req.Filters.SecurityGroupIds = []string{gid.(string)}
+	}
+
+	if filtersOk {
+		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
 	}
 
 	var err error
@@ -260,51 +255,49 @@ func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oapi.Filte
 		}
 
 		switch name := m["name"].(string); name {
-		// case "reservation-ids":
-		// 	filters.ReservationIds = filterValues
-		case "account-ids":
+		case "account_ids":
 			filters.AccountIds = filterValues
 		case "descriptions":
 			filters.Descriptions = filterValues
-		case "inbound-rule-account-ids":
+		case "inbound_rule_account_ids":
 			filters.InboundRuleAccountIds = filterValues
 		//case "inbound-rule-from-port-ranges-ids":
 		//	filters.InboundRuleFromPortRanges = filterValues
-		case "inbound-rule-ip-ranges":
+		case "inbound_rule_ip_ranges":
 			filters.InboundRuleIpRanges = filterValues
-		case "inbound-rule-protocols":
+		case "inbound_rule_protocols":
 			filters.InboundRuleProtocols = filterValues
-		case "inbound-rule-security-group-ids":
+		case "inbound_rule_security_group_ids":
 			filters.InboundRuleSecurityGroupIds = filterValues
-		case "inbound-rule-security-group-names":
+		case "inbound_rule_security_group_names":
 			filters.InboundRuleSecurityGroupNames = filterValues
 		// case "InboundRuleToPortRanges":
 		// 	filters.InboundRuleToPortRanges = filterValues
-		case "NetIds":
+		case "net_ids":
 			filters.NetIds = filterValues
-		case "OutboundRuleAccountIds":
+		case "outbound_rule_account_ids":
 			filters.OutboundRuleAccountIds = filterValues
 		// case "OutboundRuleFromPortRanges":
 		// 	filters.OutboundRuleFromPortRanges = filterValues
-		case "OutboundRuleIpRanges":
+		case "outbound_rule_ip_ranges":
 			filters.OutboundRuleIpRanges = filterValues
-		case "OutboundRuleProtocols":
+		case "outbound_rule_protocols":
 			filters.OutboundRuleProtocols = filterValues
-		case "OutboundRuleSecurityGroupIds":
+		case "outbound_rule_security_group_ids":
 			filters.OutboundRuleSecurityGroupIds = filterValues
-		case "OutboundRuleSecurityGroupNames":
+		case "outbound_rule_recurity_group_names":
 			filters.OutboundRuleSecurityGroupNames = filterValues
 		// case "OutboundRuleToPortRanges":
 		// 	filters.OutboundRuleToPortRanges = filterValues
-		case "SecurityGroupIds":
+		case "security_group_ids":
 			filters.SecurityGroupIds = filterValues
-		case "SecurityGroupNames":
+		case "security_group_names":
 			filters.SecurityGroupNames = filterValues
-		case "TagKeys":
+		case "tag_keys":
 			filters.TagKeys = filterValues
-		case "TagValues":
+		case "tag_values":
 			filters.TagValues = filterValues
-		case "Tags":
+		case "tags":
 			filters.Tags = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
