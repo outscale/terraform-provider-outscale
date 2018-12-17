@@ -2,13 +2,14 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISubnet() *schema.Resource {
@@ -17,7 +18,7 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"sub_region_name": {
+			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -40,7 +41,7 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 
 			"tag": dataSourceTagsSchema(),
 
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -58,56 +59,100 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeSubnetsInput{}
+	req := &oapi.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_id"); id != "" {
-		req.SubnetIds = []*string{aws.String(id.(string))}
+		req.Filters = oapi.FiltersSubnet{SubnetIds: []string{id.(string)}}
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeSubnetsOutput
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		var err error
-		resp, err = conn.VM.DescribeSubNet(req)
+	var resp *oapi.POST_ReadSubnetsResponses
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, err = conn.POST_ReadSubnets(*req)
+
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
-	if err != nil {
-		return err
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	if resp == nil || len(resp.Subnets) == 0 {
+	response := resp.OK
+
+	if resp == nil || len(response.Subnets) == 0 {
 		return fmt.Errorf("no matching subnet found")
 	}
 
-	if len(resp.Subnets) > 1 {
+	if len(response.Subnets) > 1 {
 		return fmt.Errorf("multiple subnets matched; use additional constraints to reduce matches to a single subnet")
 	}
 
-	subnet := resp.Subnets[0]
+	subnet := response.Subnets[0]
 
-	d.SetId(*subnet.SubnetId)
+	d.SetId(subnet.SubnetId)
 	d.Set("subnet_id", subnet.SubnetId)
-	d.Set("lin_id", subnet.VpcId)
-	d.Set("sub_region_name", subnet.AvailabilityZone)
-	d.Set("ip_range", subnet.CidrBlock)
+	d.Set("net_id", subnet.NetId)
+	d.Set("subregion_name", subnet.SubregionName)
+	d.Set("ip_range", subnet.IpRange)
 	d.Set("state", subnet.State)
-	d.Set("tag", tagsToMap(subnet.Tags))
-	d.Set("available_ips_count", subnet.AvailableIpAddressCount)
-	d.Set("request_id", resp.RequestId)
+	d.Set("tag", tagsOAPIToMap(subnet.Tags))
+	d.Set("available_ips_count", subnet.AvailableIpsCount)
+	d.Set("request_id", response.ResponseContext.RequestId)
 
 	return nil
+}
+
+func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) oapi.FiltersSubnet {
+	var filters oapi.FiltersSubnet
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		// case "available_ips_counts":
+		// 	filters.AvailableIpsCounts = filterValues
+		case "ip_ranges":
+			filters.IpRanges = filterValues
+		case "net_ids":
+			filters.NetIds = filterValues
+		case "states":
+			filters.States = filterValues
+		case "subnet_ids":
+			filters.SubnetIds = filterValues
+		case "subregion_names":
+			filters.SubregionNames = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }
