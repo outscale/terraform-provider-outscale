@@ -27,7 +27,6 @@ func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
 	}
 
 	var v, v2 oapi.RouteTable
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -138,6 +137,8 @@ func testAccCheckOAPIRouteTableAssociationExists(n string, v *oapi.RouteTable) r
 		}
 
 		*v = resp.OK.RouteTables[0]
+		log.Printf("[DEBUG] BASIC, %v", v)
+		log.Printf("[DEBUG] BASIC?, %#v", v)
 
 		if len(v.LinkRouteTables) == 0 {
 			return fmt.Errorf("no link route table associations")
@@ -150,6 +151,11 @@ func testAccCheckOAPIRouteTableAssociationExists(n string, v *oapi.RouteTable) r
 const testAccOAPIRouteTableAssociationConfig = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
+
+	tags {
+		key = "Name"
+		value = "outscale_net"
+	}
 }
 
 resource "outscale_subnet" "foo" {
@@ -170,6 +176,11 @@ resource "outscale_route_table_link" "foo" {
 const testAccOAPIRouteTableAssociationConfigChange = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
+
+	tags {
+		key = "Name"
+		value = "outscale_net"
+	}
 }
 
 resource "outscale_subnet" "foo" {

@@ -361,9 +361,7 @@ resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_internet_service" "foo" {
-	#net_id = "${outscale_net.foo.id}"
-}
+resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
 	net_id = "${outscale_net.foo.id}"
@@ -375,9 +373,7 @@ resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_internet_service" "foo" {
-	#net_id = "${outscale_net.foo.id}"
-}
+resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
 	net_id = "${outscale_net.foo.id}"

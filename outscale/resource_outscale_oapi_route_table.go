@@ -203,15 +203,21 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
+func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, routeTableId string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
 		var resp *oapi.POST_ReadRouteTablesResponses
 		var err error
+		routeTableRequest := &oapi.ReadRouteTablesRequest{}
+		routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableId}}
+		if len(linkIds) > 0 {
+			routeTableRequest.Filters = oapi.FiltersRouteTable{
+				RouteTableIds:     []string{routeTableId},
+				LinkRouteTableIds: []string{linkIds[0]},
+			}
+		}
+
 		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadRouteTables(oapi.ReadRouteTablesRequest{
-				Filters: oapi.FiltersRouteTable{RouteTableIds: []string{id}},
-			})
+			resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					return resource.RetryableError(err)
@@ -335,7 +341,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 
-		"tags": tagsOAPISchema(),
+		"tags": tagsListOAPISchema(),
 
 		"route_propagating_vpn_gateway": {
 			Type:     schema.TypeList,

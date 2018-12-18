@@ -17,7 +17,7 @@ func resourceOutscaleOAPIRouteTableAssociation() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPIRouteTableAssociationCreate,
 		Read:   resourceOutscaleOAPIRouteTableAssociationRead,
-		Update: resourceOutscaleOAPIRouteTableAssociationUpdate,
+		// Update: resourceOutscaleOAPIRouteTableAssociationUpdate,
 		Delete: resourceOutscaleOAPIRouteTableAssociationDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -33,6 +33,7 @@ func resourceOutscaleOAPIRouteTableAssociation() *schema.Resource {
 			"route_table_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"link_id": &schema.Schema{
@@ -81,8 +82,9 @@ func resourceOutscaleOAPIRouteTableAssociationCreate(d *schema.ResourceData, met
 func resourceOutscaleOAPIRouteTableAssociationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
+	log.Printf("[DEBUG] > Params: %v and %v", d.Get("route_table_id"), d.Get("link_id"))
 	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(
-		conn, d.Get("route_table_id").(string))()
+		conn, d.Get("route_table_id").(string), d.Get("link_id").(string))()
 	if err != nil {
 		return err
 	}
@@ -90,6 +92,7 @@ func resourceOutscaleOAPIRouteTableAssociationRead(d *schema.ResourceData, meta 
 		return nil
 	}
 	rt := rtRaw.(oapi.RouteTable)
+	log.Printf("[DEBUG] > LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_id"))
 
 	found := false
 	for _, a := range rt.LinkRouteTables {

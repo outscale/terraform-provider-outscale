@@ -235,6 +235,6 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": dataSourceTagsSchema(),
+		"tags": tagsListOAPISchema(),
 	}
 }
