@@ -392,7 +392,7 @@ resource "outscale_subnet" "foo" {
 
 resource "outscale_vm" "foo" {
 	# us-west-2
-	image_id = "ami-4fccb37f"
+	image_id = "ami-b4bd8de2"
 	vm_type = "m1.small"
 	subnet_id = "${outscale_subnet.foo.id}"
 }
