@@ -29,7 +29,7 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"firewall_rules_set_id": {
+			"security_group_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -39,12 +39,12 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_name": {
+			"security_group_name_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_account_id": {
+			"security_group_account_id_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -54,7 +54,7 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"inbound_rule": getIPOAPIPermissionsSchema(),
+			"rules": getIPOAPIPermissionsSchema(false),
 			"reques_id": {
 				Type:     schema.TypeString,
 				Computed: true,

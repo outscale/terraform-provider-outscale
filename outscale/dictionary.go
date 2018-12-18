@@ -76,6 +76,7 @@ func init() {
 			"outscale_vm_attributes":                 resourceOutscaleOAPIVMAttributes,
 			"outscale_inbound_rule":                  resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule":                 resourceOutscaleOAPIOutboundRule,
+			"outscale_security_group_rule":           resourceOutscaleOAPIOutboundRule,
 			"outscale_tag":                           resourceOutscaleOAPITags,
 			"outscale_lin_attributes":                resourceOutscaleOAPILinAttributes,
 			"outscale_lin":                           resourceOutscaleOAPINet,

@@ -76,6 +76,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_firewall_rules_set":            GetResource(fcu, "outscale_firewall_rules_set")(),
 			"outscale_outbound_rule":                 GetResource(fcu, "outscale_outbound_rule")(),
 			"outscale_inbound_rule":                  GetResource(fcu, "outscale_inbound_rule")(),
+			"outscale_security_group_rule":           GetResource(oapi, "outscale_security_group_rule")(),
 			"outscale_tag":                           GetResource(fcu, "outscale_tag")(),
 			"outscale_public_ip":                     GetResource(fcu, "outscale_public_ip")(),
 			"outscale_public_ip_link":                GetResource(fcu, "outscale_public_ip_link")(),
