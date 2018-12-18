@@ -96,7 +96,7 @@ func getOAPIIPPerms() *schema.Schema {
 						Type: schema.TypeString,
 					},
 				},
-				"groups": {
+				"security_groups_members": {
 					Type:     schema.TypeList,
 					Optional: true,
 					Elem:     &schema.Schema{Type: schema.TypeMap},

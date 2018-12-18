@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"groups": {
+									"security_groups_members": {
 										Type:     schema.TypeSet,
 										Optional: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -100,7 +100,7 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"groups": {
+									"security_groups_members": {
 										Type:     schema.TypeSet,
 										Optional: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -277,18 +277,18 @@ func flattenOAPISecurityGroupRule(p []oapi.SecurityGroupRule) []map[string]inter
 				g := make(map[string]interface{})
 
 				if v.AccountId != "" {
-					g["user_id"] = v.AccountId
+					g["account_id"] = v.AccountId
 				}
 				if v.SecurityGroupName != "" {
-					g["group_name"] = v.SecurityGroupName
+					g["security_group_name"] = v.SecurityGroupName
 				}
 				if v.SecurityGroupId != "" {
-					g["group_id"] = v.SecurityGroupId
+					g["security_group_id"] = v.SecurityGroupId
 				}
 
 				grp[i] = g
 			}
-			ip["groups"] = grp
+			ip["security_group_members"] = grp
 		}
 
 		ips[k] = ip

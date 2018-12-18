@@ -46,7 +46,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"groups": {
+						"security_groups_members": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -85,7 +85,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"groups": {
+						"security_groups_members": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -241,7 +241,7 @@ func flattenOAPIIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
 				"security_group_id":   v.GroupId,
 			}
 		}
-		ip["groups"] = grp
+		ip["security_groups_members"] = grp
 
 		ips[k] = ip
 	}
