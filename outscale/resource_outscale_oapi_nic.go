@@ -47,7 +47,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"firewall_rules_set_id": &schema.Schema{
+		"security_group_id": &schema.Schema{
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -62,7 +62,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"reservation_id": {
+					"public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -85,7 +85,6 @@ func getOAPINicSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
 		"nic_link": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -118,21 +117,20 @@ func getOAPINicSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
-		"sub_region_name": {
+		"subregion_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"firewall_rules_set": {
+		"security_groups": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"firewall_rules_set_id": {
+					"security_group_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"firewall_rules_set_name": {
+					"security_group_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -167,7 +165,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"reservation_id": {
+								"public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -221,7 +219,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag": tagsSchemaComputed(),
+		"tags": tagsListOAPISchema(),
 		"lin_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -242,7 +240,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	// 	request.Description = aws.String(v.(string))
 	// }
 
-	if v, ok := d.GetOk("firewall_rules_set_id"); ok {
+	if v, ok := d.GetOk("security_group_id"); ok {
 		m := v.([]interface{})
 		a := make([]string, len(m))
 		for k, v := range m {
@@ -290,10 +288,10 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		if err := setOAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag")
+		d.SetPartial("tags")
 	}
 
-	d.Set("tag", make([]map[string]interface{}, 0))
+	d.Set("tags", make([]map[string]interface{}, 0))
 	d.Set("private_ip", make([]map[string]interface{}, 0))
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
@@ -351,7 +349,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 	b := make(map[string]interface{})
 	link := eni.LinkPublicIp
-	b["reservation_id"] = link.PublicIpId
+	b["public_ip_id"] = link.PublicIpId
 	b["link_id"] = link.LinkPublicIpId
 	b["public_ip_account_id"] = link.PublicIpAccountId
 	b["public_dns_name"] = link.PublicDnsName
@@ -376,16 +374,16 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("sub_region_name", eni.SubregionName)
+	d.Set("subregion_name", eni.SubregionName)
 
 	x := make([]map[string]interface{}, len(eni.SecurityGroups))
 	for k, v := range eni.SecurityGroups {
 		b := make(map[string]interface{})
-		b["firewall_rules_set_id"] = v.SecurityGroupId
-		b["firewall_rules_set_name"] = v.SecurityGroupName
+		b["security_group_id"] = v.SecurityGroupId
+		b["security_group_name"] = v.SecurityGroupName
 		x[k] = b
 	}
-	if err := d.Set("firewall_rules_set", x); err != nil {
+	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
@@ -393,7 +391,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("nic_id", eni.NetId)
 	d.Set("account_id", eni.AccountId)
 	d.Set("private_dns_name", eni.PrivateDnsName)
-	d.Set("private_ip", eni.NetId)
+	//d.Set("private_ip", eni.)
 
 	y := make([]map[string]interface{}, len(eni.PrivateIps))
 	if eni.PrivateIps != nil {
@@ -402,7 +400,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 			d := make(map[string]interface{})
 			assoc := v.LinkPublicIp
-			d["reservation_id"] = assoc.PublicIpId
+			d["public_ip_id"] = assoc.PublicIpId
 			d["link_id"] = assoc.LinkPublicIpId
 			d["public_ip_account_id"] = assoc.PublicIpAccountId
 			d["public_dns_name"] = assoc.PublicDnsName
@@ -416,7 +414,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip", y); err != nil {
+	if err := d.Set("private_ips", y); err != nil {
 		return err
 	}
 
@@ -770,7 +768,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	d.SetPartial("tag")
+	d.SetPartial("tags")
 
 	d.Partial(false)
 

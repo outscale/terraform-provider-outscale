@@ -17,13 +17,18 @@ import (
 func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
+	}
+
+	subregion := os.Getenv("OUTSCALE_REGION")
+	if subregion == "" {
+		subregion = "in-west-2"
 	}
 
 	var conf fcu.NetworkInterface
@@ -35,10 +40,10 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIENIConfig,
+				Config: testAccOutscaleOAPIENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIAttributes(&conf),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
 				),
 			},
 		},
@@ -90,34 +95,31 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *fcu.NetworkInterface) reso
 	}
 }
 
-func testAccCheckOutscaleOAPIENIAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIENIAttributes(conf *fcu.NetworkInterface, suregion string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
 		if conf.Attachment != nil {
 			return fmt.Errorf("expected attachment to be nil")
 		}
 
-		if *conf.AvailabilityZone != "eu-west-2a" {
-			return fmt.Errorf("expected availability_zone to be eu-west-2a, but was %s", *conf.AvailabilityZone)
+		if *conf.AvailabilityZone != fmt.Sprintf("%sa", suregion) {
+			return fmt.Errorf("expected subregion_name to be %sa, but was %s", suregion, *conf.AvailabilityZone)
 		}
 
 		return nil
 	}
 }
 
-const testAccOutscaleOAPIENIConfig = `
+func testAccOutscaleOAPIENIConfig(subregion string) string {
+	return fmt.Sprintf(`
 resource "outscale_net" "outscale_net" {
-    count = 1
-
-    cidr_block = "10.0.0.0/16"
+    ip_range = "10.0.0.0/16"
 }
 
 resource "outscale_subnet" "outscale_subnet" {
-    count = 1
-
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    lin_id              = "${outscale_lin.outscale_lin.lin_id}"
+    subregion_name   = "%sa"
+    ip_range          = "10.0.0.0/16"
+    net_id              = "${outscale_net.outscale_net.net_id}"
 }
 
 resource "outscale_nic" "outscale_nic" {
@@ -126,4 +128,5 @@ resource "outscale_nic" "outscale_nic" {
     subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
-`
+`, subregion)
+}
