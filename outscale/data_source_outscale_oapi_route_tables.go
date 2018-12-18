@@ -112,7 +112,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 								},
 							},
 						},
-						"route_propagating_vpn_gateway": {
+						"route_propagating_vpn_gateways": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -196,12 +196,7 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-
-		propagatingVGWs := make([]string, 0, len(v.RoutePropagatingVirtualGateways))
-		for _, vgw := range v.RoutePropagatingVirtualGateways {
-			propagatingVGWs = append(propagatingVGWs, vgw.VirtualGatewayId)
-		}
-		routeTable["route_propagating_vpn_gateway"] = propagatingVGWs
+		routeTable["route_propagating_vpn_gateways"] = setOAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
 		routeTable["route_table_id"] = v.RouteTableId
 		routeTable["net_id"] = v.NetId
 		routeTable["tags"] = tagsOAPIToMap(v.Tags)

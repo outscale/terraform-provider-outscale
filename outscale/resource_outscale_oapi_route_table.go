@@ -94,9 +94,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-
-	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id())()
+	rtRaw, requestId, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -106,18 +104,12 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	}
 
 	rt := rtRaw.(oapi.RouteTable)
+	d.Set("request_id", requestId)
+	d.Set("route_table_id", rt.RouteTableId)
 	d.Set("net_id", rt.NetId)
-
-	propagatingVGWs := make([]string, 0, len(rt.RoutePropagatingVirtualGateways))
-	for _, vgw := range rt.RoutePropagatingVirtualGateways {
-		propagatingVGWs = append(propagatingVGWs, vgw.VirtualGatewayId)
-	}
-	d.Set("route_propagating_virtual_gateways", propagatingVGWs)
-
+	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
 	d.Set("routes", setOAPIRoutes(rt.Routes))
-
 	d.Set("link_route_tables", setOAPIAssociactionSet(rt.LinkRouteTables))
-
 	d.Set("tags", tagsOAPIToMap(rt.Tags))
 
 	return nil
@@ -126,7 +118,7 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id())()
+	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -184,9 +176,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error deleting route table: %s", err)
 	}
 
-	log.Printf(
-		"[DEBUG] Waiting for route table (%s) to become destroyed",
-		d.Id())
+	log.Printf("[DEBUG] Waiting for route table (%s) to become destroyed", d.Id())
 
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
@@ -195,56 +185,62 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf(
-			"Error waiting for route table (%s) to become destroyed: %s",
-			d.Id(), err)
+		return fmt.Errorf("Error waiting for route table (%s) to become destroyed: %s", d.Id(), err)
 	}
 
 	return nil
 }
 
+func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...string) (interface{}, string, error) {
+	var resp *oapi.POST_ReadRouteTablesResponses
+	var err error
+	routeTableRequest := &oapi.ReadRouteTablesRequest{}
+	routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableId}}
+	if len(linkIds) > 0 {
+		routeTableRequest.Filters = oapi.FiltersRouteTable{
+			RouteTableIds:     []string{routeTableId},
+			LinkRouteTableIds: []string{linkIds[0]},
+		}
+	}
+
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			resp = nil
+		} else {
+			log.Printf("Error on RouteTableStateRefresh: %s", err)
+			return nil, resp.OK.ResponseContext.RequestId, err
+		}
+	}
+
+	if resp == nil {
+		return resp, resp.OK.ResponseContext.RequestId, nil
+	}
+
+	result := resp.OK
+	if len(result.RouteTables) <= 0 {
+		return nil, resp.OK.ResponseContext.RequestId, err
+	}
+	return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
+}
+
 func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, routeTableId string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp *oapi.POST_ReadRouteTablesResponses
-		var err error
-		routeTableRequest := &oapi.ReadRouteTablesRequest{}
-		routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableId}}
-		if len(linkIds) > 0 {
-			routeTableRequest.Filters = oapi.FiltersRouteTable{
-				RouteTableIds:     []string{routeTableId},
-				LinkRouteTableIds: []string{linkIds[0]},
-			}
+		rtRaw, _, err := readOAPIRouteTable(conn, routeTableId, linkIds...)
+		if rtRaw == nil {
+			return nil, "", err
 		}
-
-		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-				resp = nil
-			} else {
-				log.Printf("Error on RouteTableStateRefresh: %s", err)
-				return nil, "", err
-			}
-		}
-
-		if resp == nil {
-			return nil, "", nil
-		}
-
-		result := resp.OK
-		if len(result.RouteTables) <= 0 {
-			return nil, "", nil
-		}
-		return result.RouteTables[0], "ready", nil
+		return rtRaw.(oapi.RouteTable), "ready", err
 	}
 }
 
@@ -270,7 +266,7 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 				m["destination_ip_range"] = r.DestinationIpRange
 			}
 			if r.DestinationPrefixListId != "" {
-				m["destinaton_prefix_list_id"] = r.DestinationPrefixListId
+				m["destination_prefix_list_id"] = r.DestinationPrefixListId
 			}
 			if r.GatewayId != "" {
 				m["gateway_id"] = r.GatewayId
@@ -279,7 +275,7 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 				m["nat_service_id"] = r.NatServiceId
 			}
 			if r.NetPeeringId != "" {
-				m["nat_peering_id"] = r.NetPeeringId
+				m["net_peering_id"] = r.NetPeeringId
 			}
 			if r.VmId != "" {
 				m["vm_id"] = r.VmId
@@ -343,13 +339,18 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 
 		"tags": tagsListOAPISchema(),
 
-		"route_propagating_vpn_gateway": {
+		"route_propagating_virtual_gateways": {
 			Type:     schema.TypeList,
-			ForceNew: true,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"virtual_gateway_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
 		},
-
 		"routes": {
 			Type:     schema.TypeList,
 			Computed: true,
@@ -363,7 +364,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"vpn_gateway_id": {
+					"gateway_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -387,7 +388,11 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"lin_peering_id": {
+					"nat_service_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_peering_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -419,4 +424,17 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 			},
 		},
 	}
+}
+
+func setOAPIPropagatingVirtualGateways(vg []oapi.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+	if len(vg) > 0 {
+		for k, vgw := range vg {
+			m := make(map[string]interface{})
+			if vgw.VirtualGatewayId != "" {
+				m["virtual_gateway_id"] = vgw.VirtualGatewayId
+			}
+			propagatingVGWs[k] = m
+		}
+	}
+	return
 }
