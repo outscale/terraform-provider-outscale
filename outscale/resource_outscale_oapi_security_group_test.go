@@ -202,8 +202,9 @@ func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 	resource "outscale_security_group" "web" {
 		security_group_name = "terraform_test_%d"
 		description = "Used in the terraform acceptance tests"
-		tag = {
-			Name = "tf-acc-test"
+		tags = {
+			key= "Name" 
+			value = "tf-acc-test"
 		}
 		net_id = "${outscale_net.net.id}"
 	}`, rInt)

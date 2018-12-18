@@ -119,7 +119,11 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPISchemaComputed(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsOAPIListSchemaComputed(),
 		},
 	}
 }
@@ -142,6 +146,7 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 
 	if filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
+		fmt.Printf("%+v\n", req)
 	}
 
 	var err error
@@ -203,9 +208,8 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	d.Set("account_id", sg.AccountId)
 	d.Set("tags", tagsOAPIToMap(sg.Tags))
 	d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.InboundRules))
-	d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.OutboundRules))
-
-	return nil
+	d.Set("request_id", result.ResponseContext.RequestId)
+	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.OutboundRules))
 }
 
 func flattenOAPIIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {

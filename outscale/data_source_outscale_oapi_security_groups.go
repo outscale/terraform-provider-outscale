@@ -134,22 +134,11 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": {
-							Type: schema.TypeMap,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+						"request_id": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"tags": tagsOAPIListSchemaComputed(),
 					},
 				},
 			},
@@ -246,14 +235,14 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		s["tags"] = tagsOAPIToMap(v.Tags)
 		s["inbound_rules"] = flattenOAPISecurityGroupRule(v.InboundRules)
 		s["outbound_rules"] = flattenOAPISecurityGroupRule(v.OutboundRules)
-
+		s["tags"] = tagsOAPIToMap(v.Tags)
 		sg[k] = s
 	}
 
 	fmt.Printf("[DEBUG] security_groups %s", sg)
 
 	d.SetId(resource.UniqueId())
-
+	d.Set("request_id", result.ResponseContext.RequestId)
 	err = d.Set("security_groups", sg)
 
 	return err

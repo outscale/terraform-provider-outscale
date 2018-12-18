@@ -61,7 +61,7 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsSchemaComputed(),
+			"tags": tagsListOAPISchema(),
 			"tag":  tagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
@@ -266,7 +266,9 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	d.SetId(sg.SecurityGroupId)
 	d.Set("security_group_id", sg.SecurityGroupId)
 	d.Set("description", sg.Description)
-	d.Set("security_group_name", sg.SecurityGroupName)
+	if sg.SecurityGroupName != "" {
+		d.Set("security_group_name", sg.SecurityGroupName)
+	}
 	d.Set("net_id", sg.NetId)
 	d.Set("account_id", sg.AccountId)
 	d.Set("tags", tagsOAPIToMap(sg.Tags))
