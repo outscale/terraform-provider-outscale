@@ -66,7 +66,8 @@ func init() {
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,
-			"outscale_firewall_rules_set":            resourceOutscaleOAPIFirewallRulesSet,
+			"outscale_firewall_rules_set":            resourceOutscaleOAPISecurityGroup,
+			"outscale_security_group":                resourceOutscaleOAPISecurityGroup,
 			"outscale_image":                         resourceOutscaleOAPIImage,
 			"outscale_keypair":                       resourceOutscaleOAPIKeyPair,
 			"outscale_public_ip":                     resourceOutscaleOAPIPublicIP,
@@ -237,9 +238,11 @@ func init() {
 		"oapi": ResourceMap{
 			"outscale_vm":                                  dataSourceOutscaleOAPIVM,
 			"outscale_vms":                                 datasourceOutscaleOApiVMS,
-			"outscale_firewall_rules_sets":                 dataSourceOutscaleOAPIFirewallRulesSets,
+			"outscale_firewall_rules_sets":                 dataSourceOutscaleOAPISecurityGroups,
+			"outscale_security_groups":                     dataSourceOutscaleOAPISecurityGroups,
 			"outscale_images":                              dataSourceOutscaleOAPIImages,
-			"outscale_firewall_rules_set":                  dataSourceOutscaleOAPIFirewallRuleSet,
+			"outscale_firewall_rules_set":                  dataSourceOutscaleOAPISecurityGroup,
+			"outscale_security_group":                      dataSourceOutscaleOAPISecurityGroup,
 			"outscale_tag":                                 dataSourceOutscaleOAPITag,
 			"outscale_tags":                                dataSourceOutscaleOAPITags,
 			"outscale_volume":                              datasourceOutscaleOAPIVolume,

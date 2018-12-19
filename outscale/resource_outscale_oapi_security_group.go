@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func resourceOutscaleOAPIFirewallRulesSet() *schema.Resource {
+func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPISecurityGroupCreate,
 		Read:   resourceOutscaleOAPISecurityGroupRead,
@@ -36,13 +37,13 @@ func resourceOutscaleOAPIFirewallRulesSet() *schema.Resource {
 					return
 				},
 			},
-			"firewall_rules_set_name": {
+			"security_group_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -50,14 +51,22 @@ func resourceOutscaleOAPIFirewallRulesSet() *schema.Resource {
 			},
 
 			// comouted
-			"inbound_rules":  getOAPIIPPerms(),
-			"outbound_rules": getOAPIIPPerms(),
-			"firewall_rules_set_id": {
+			"security_group_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsSchemaComputed(),
+			"inbound_rules":  getOAPIIPPerms(),
+			"outbound_rules": getOAPIIPPerms(),
+			"account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsListOAPISchema(),
 			"tag":  tagsSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -87,7 +96,7 @@ func getOAPIIPPerms() *schema.Schema {
 						Type: schema.TypeString,
 					},
 				},
-				"groups": {
+				"security_groups_members": {
 					Type:     schema.TypeList,
 					Optional: true,
 					Elem:     &schema.Schema{Type: schema.TypeMap},
@@ -98,35 +107,36 @@ func getOAPIIPPerms() *schema.Schema {
 }
 
 func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	securityGroupOpts := &fcu.CreateSecurityGroupInput{}
+	securityGroupOpts := &oapi.CreateSecurityGroupRequest{}
 
-	if v, ok := d.GetOk("vpc_id"); ok {
-		securityGroupOpts.VpcId = aws.String(v.(string))
+	if v, ok := d.GetOk("net_id"); ok {
+		securityGroupOpts.NetId = v.(string)
 	}
 
 	if v := d.Get("description"); v != nil {
-		securityGroupOpts.Description = aws.String(v.(string))
+		securityGroupOpts.Description = v.(string)
 	} else {
 		return fmt.Errorf("please provide a group description, its a required argument")
 	}
 
 	var groupName string
-	if v, ok := d.GetOk("firewall_rules_set_name"); ok {
+	if v, ok := d.GetOk("security_group_name"); ok {
 		groupName = v.(string)
 	} else {
 		groupName = resource.UniqueId()
 	}
-	securityGroupOpts.GroupName = aws.String(groupName)
+	securityGroupOpts.SecurityGroupName = groupName
 
 	fmt.Printf(
 		"[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
-	var createResp *fcu.CreateSecurityGroupOutput
+	var createResp *oapi.CreateSecurityGroupResponse
+	var resp *oapi.POST_CreateSecurityGroupResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		createResp, err = conn.VM.CreateSecurityGroup(securityGroupOpts)
+		resp, err = conn.POST_CreateSecurityGroup(*securityGroupOpts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -138,11 +148,25 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 		return nil
 	})
 
-	if err != nil {
-		return fmt.Errorf("Error creating Security Group: %s", err)
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error creating Security Group: %s", errString)
 	}
 
-	d.SetId(*createResp.GroupId)
+	createResp = resp.OK
+
+	d.SetId(createResp.SecurityGroup.SecurityGroupId)
 
 	fmt.Printf("\n\n[INFO] Security Group ID: %s", d.Id())
 
@@ -163,7 +187,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	}
 
 	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
+		if err := setOAPITags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -173,7 +197,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 }
 
 func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	sgRaw, _, err := SGOAPIStateRefreshFunc(conn, d.Id())()
 	if err != nil {
@@ -184,14 +208,14 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return nil
 	}
 
-	group := sgRaw.(*fcu.SecurityGroup)
+	group := sgRaw.(oapi.SecurityGroup)
 
-	req := &fcu.DescribeSecurityGroupsInput{}
-	req.GroupIds = []*string{group.GroupId}
+	req := &oapi.ReadSecurityGroupsRequest{}
+	req.Filters = oapi.FiltersSecurityGroup{SecurityGroupIds: []string{group.SecurityGroupId}}
 
-	var resp *fcu.DescribeSecurityGroupsOutput
+	var resp *oapi.POST_ReadSecurityGroupsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSecurityGroups(req)
+		resp, err = conn.POST_ReadSecurityGroups(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -203,59 +227,90 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(err.Error(), "InvalidSecurityGroupID.NotFound") || strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-			resp = nil
-			err = nil
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+				resp = nil
+				err = nil
+			} else {
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
+			}
+
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		if err != nil {
-			return fmt.Errorf("\nError on SGStateRefresh: %s", err)
-		}
+		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 	}
 
-	if resp == nil || len(resp.SecurityGroups) == 0 {
+	result := resp.OK
+
+	if result == nil || len(result.SecurityGroups) == 0 {
 		return fmt.Errorf("Unable to find Security Group")
 	}
 
-	if len(resp.SecurityGroups) > 1 {
+	if len(result.SecurityGroups) > 1 {
 		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
 	}
 
-	sg := resp.SecurityGroups[0]
+	sg := result.SecurityGroups[0]
 
-	d.SetId(*sg.GroupId)
-	d.Set("group_id", sg.GroupId)
+	d.SetId(sg.SecurityGroupId)
+	d.Set("security_group_id", sg.SecurityGroupId)
 	d.Set("description", sg.Description)
-	d.Set("firewall_rules_set_name", sg.GroupName)
-	d.Set("vpc_id", sg.VpcId)
-	d.Set("firewall_rules_set_id", sg.OwnerId)
-	d.Set("tags", tagsToMap(sg.Tags))
+	if sg.SecurityGroupName != "" {
+		d.Set("security_group_name", sg.SecurityGroupName)
+	}
+	d.Set("net_id", sg.NetId)
+	d.Set("account_id", sg.AccountId)
+	d.Set("tags", tagsOAPIToMap(sg.Tags))
+	d.Set("request_id", result.ResponseContext.RequestId)
 
-	if err := d.Set("inbound_rules", flattenIPPermissions(sg.IpPermissions)); err != nil {
+	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.InboundRules)); err != nil {
 		return err
 	}
 
-	return d.Set("outbound_rules", flattenIPPermissions(sg.IpPermissionsEgress))
+	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.OutboundRules))
 }
 
 func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	fmt.Printf("\n\n[DEBUG] Security Group destroy: %v", d.Id())
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.DeleteSecurityGroup(&fcu.DeleteSecurityGroupInput{
-			GroupId: aws.String(d.Id()),
+		resp, err := conn.POST_DeleteSecurityGroup(oapi.DeleteSecurityGroupRequest{
+			SecurityGroupId: d.Id(),
 		})
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
-				return resource.RetryableError(err)
-			} else if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-				return nil
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
+					return resource.RetryableError(err)
+				} else if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+					return nil
+				}
+				return resource.NonRetryableError(err)
+
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 			}
-			return resource.NonRetryableError(err)
+
+			return resource.NonRetryableError(fmt.Errorf("Error on SGStateRefresh: %s", errString))
 		}
 
 		return nil
@@ -301,16 +356,18 @@ func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*
 }
 
 // SGOAPIStateRefreshFunc ...
-func SGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func SGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		req := &fcu.DescribeSecurityGroupsInput{
-			GroupIds: []*string{aws.String(id)},
+		req := &oapi.ReadSecurityGroupsRequest{
+			Filters: oapi.FiltersSecurityGroup{
+				SecurityGroupIds: []string{id},
+			},
 		}
 
 		var err error
-		var resp *fcu.DescribeSecurityGroupsOutput
+		var resp *oapi.POST_ReadSecurityGroupsResponses
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSecurityGroups(req)
+			resp, err = conn.POST_ReadSecurityGroups(*req)
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -322,26 +379,35 @@ func SGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFu
 			return nil
 		})
 
-		if err != nil {
-			if ec2err, ok := err.(awserr.Error); ok {
-				if ec2err.Code() == "InvalidSecurityGroupID.NotFound" ||
-					ec2err.Code() == "InvalidGroup.NotFound" {
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+					strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
 					resp = nil
 					err = nil
+				} else {
+					//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+					errString = err.Error()
 				}
+
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 			}
 
-			if err != nil {
-				fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-				return nil, "", err
-			}
+			return nil, "", fmt.Errorf("Error on SGStateRefresh: %s", errString)
 		}
 
 		if resp == nil {
 			return nil, "", nil
 		}
 
-		group := resp.SecurityGroups[0]
+		group := resp.OK.SecurityGroups[0]
 		return group, "exists", nil
 	}
 }
