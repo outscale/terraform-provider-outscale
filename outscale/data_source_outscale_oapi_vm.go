@@ -466,6 +466,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"image_id": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"is_source_dest_checked": {
@@ -750,6 +751,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"vm_type": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"request_id": {
