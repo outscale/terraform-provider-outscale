@@ -13,12 +13,12 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
-func resourceOutscaleOAPIRouteTableAssociation() *schema.Resource {
+func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleOAPIRouteTableAssociationCreate,
-		Read:   resourceOutscaleOAPIRouteTableAssociationRead,
-		// Update: resourceOutscaleOAPIRouteTableAssociationUpdate,
-		Delete: resourceOutscaleOAPIRouteTableAssociationDelete,
+		Create: resourceOutscaleOAPILinkRouteTableCreate,
+		Read:   resourceOutscaleOAPILinkRouteTableRead,
+		// Update: resourceOutscaleOAPILinkRouteTableUpdate,
+		Delete: resourceOutscaleOAPILinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -44,12 +44,11 @@ func resourceOutscaleOAPIRouteTableAssociation() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPIRouteTableAssociationCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 	subnetId := d.Get("subnet_id").(string)
 	routeTableId := d.Get("route_table_id").(string)
-	log.Printf(
-		"[INFO] Creating route table association: %s => %s", subnetId, routeTableId)
+	log.Printf("[INFO] Creating link route table: %s => %s", subnetId, routeTableId)
 	linkRouteTableOpts := oapi.LinkRouteTableRequest{
 		RouteTableId: routeTableId,
 		SubnetId:     subnetId,
@@ -74,12 +73,12 @@ func resourceOutscaleOAPIRouteTableAssociationCreate(d *schema.ResourceData, met
 	// Set the ID and return
 	d.SetId(resp.OK.LinkRouteTableId)
 	d.Set("link_id", d.Id())
-	log.Printf("[INFO] Association ID: %s", d.Id())
+	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
 
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableAssociationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	log.Printf("[DEBUG] > Params: %v and %v", d.Get("route_table_id"), d.Get("link_id"))
@@ -110,7 +109,7 @@ func resourceOutscaleOAPIRouteTableAssociationRead(d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableAssociationUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinkRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	routeTableId := d.Get("route_table_id").(string)
@@ -138,21 +137,21 @@ func resourceOutscaleOAPIRouteTableAssociationUpdate(d *schema.ResourceData, met
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
-			return resourceOutscaleOAPIRouteTableAssociationCreate(d, meta)
+			return resourceOutscaleOAPILinkRouteTableCreate(d, meta)
 		}
 		return err
 	}
 
 	d.SetId(*resp.NewAssociationId)
-	log.Printf("[INFO] Association ID: %s", d.Id())
+	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
 
 	return nil
 }
 
-func resourceOutscaleOAPIRouteTableAssociationDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	log.Printf("[INFO] Deleting route table association: %s", d.Id())
+	log.Printf("[INFO] Deleting link route table: %s", d.Id())
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -172,7 +171,7 @@ func resourceOutscaleOAPIRouteTableAssociationDelete(d *schema.ResourceData, met
 		if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
 			return nil
 		}
-		return fmt.Errorf("Error deleting route table association: %s", err)
+		return fmt.Errorf("Error deleting link route table: %s", err)
 	}
 
 	return nil

@@ -90,7 +90,7 @@ func init() {
 			"outscale_client_endpoint":               resourceOutscaleCustomerGateway,
 			"outscale_route":                         resourceOutscaleOAPIRoute,
 			"outscale_route_table":                   resourceOutscaleOAPIRouteTable,
-			"outscale_route_table_link":              resourceOutscaleOAPIRouteTableAssociation,
+			"outscale_route_table_link":              resourceOutscaleOAPILinkRouteTable,
 			"outscale_snapshot":                      resourceOutscaleOAPISnapshot,
 			"outscale_api_key":                       resourceOutscaleOAPIIamAccessKey,
 			"outscale_keypair_importation":           resourceOutscaleOAPIKeyPairImportation,

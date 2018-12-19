@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
-func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
+func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	isOapi, err := strconv.ParseBool(o)
@@ -30,20 +30,20 @@ func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIRouteTableAssociationDestroy,
+		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOAPIRouteTableAssociationConfig,
+				Config: testAccOAPILinkRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableAssociationExists(
+					testAccCheckOAPILinkRouteTableExists(
 						"outscale_route_table_link.foo", &v),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccOAPIRouteTableAssociationConfigChange,
+				Config: testAccOAPILinkRouteTableConfigChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableAssociationExists(
+					testAccCheckOAPILinkRouteTableExists(
 						"outscale_route_table_link.foo", &v2),
 				),
 			},
@@ -51,7 +51,7 @@ func TestAccOutscaleOAPIRouteTableAssociation_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIRouteTableAssociationDestroy(s *terraform.State) error {
+func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 	for _, rs := range s.RootModule().Resources {
@@ -90,14 +90,14 @@ func testAccCheckOAPIRouteTableAssociationDestroy(s *terraform.State) error {
 
 		if len(rt.LinkRouteTables) > 0 {
 			return fmt.Errorf(
-				"route table %s has Link RouteTable associations", rt.RouteTableId)
+				"RouteTable: %s has LinkRouteTables", rt.RouteTableId)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckOAPIRouteTableAssociationExists(n string, v *oapi.RouteTable) resource.TestCheckFunc {
+func testAccCheckOAPILinkRouteTableExists(n string, v *oapi.RouteTable) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -137,18 +137,15 @@ func testAccCheckOAPIRouteTableAssociationExists(n string, v *oapi.RouteTable) r
 		}
 
 		*v = resp.OK.RouteTables[0]
-		log.Printf("[DEBUG] BASIC, %v", v)
-		log.Printf("[DEBUG] BASIC?, %#v", v)
-
 		if len(v.LinkRouteTables) == 0 {
-			return fmt.Errorf("no link route table associations")
+			return fmt.Errorf("RouteTable: %s has no LinkRouteTables", v.RouteTableId)
 		}
 
 		return nil
 	}
 }
 
-const testAccOAPIRouteTableAssociationConfig = `
+const testAccOAPILinkRouteTableConfig = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 
@@ -173,7 +170,7 @@ resource "outscale_route_table_link" "foo" {
 }
 `
 
-const testAccOAPIRouteTableAssociationConfigChange = `
+const testAccOAPILinkRouteTableConfigChange = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 

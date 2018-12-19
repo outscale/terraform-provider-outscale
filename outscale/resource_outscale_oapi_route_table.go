@@ -128,7 +128,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	rt := rtRaw.(oapi.RouteTable)
 
 	for _, a := range rt.LinkRouteTables {
-		log.Printf("[INFO] Disassociating association: %s", a.LinkRouteTableId)
+		log.Printf("[INFO] Disassociating LinkRouteTable: %s", a.LinkRouteTableId)
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -297,8 +297,8 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 }
 
 func setOAPILinkRouteTables(rt []oapi.LinkRouteTable) []map[string]interface{} {
-	association := make([]map[string]interface{}, len(rt))
-	log.Printf("[DEBUG] RouteTableLink: %#v", rt)
+	linkRouteTables := make([]map[string]interface{}, len(rt))
+	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
@@ -314,11 +314,11 @@ func setOAPILinkRouteTables(rt []oapi.LinkRouteTable) []map[string]interface{} {
 			if r.SubnetId != "" {
 				m["subnet_id"] = r.SubnetId
 			}
-			association[k] = m
+			linkRouteTables[k] = m
 		}
 	}
 
-	return association
+	return linkRouteTables
 }
 
 func getOAPIRouteTableSchema() map[string]*schema.Schema {
