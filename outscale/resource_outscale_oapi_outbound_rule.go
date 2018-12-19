@@ -148,11 +148,11 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 
 	flow := d.Get("flow").(string)
 	ipRange := d.Get("ip_range").(string)
-	fromPortRange := d.Get("from_port_range").(int64)
+	fromPortRange := d.Get("from_port_range").(int)
 	ipProtocol := d.Get("ip_protocol").(string)
 	nameToLink := d.Get("security_group_name_to_link").(string)
 	accountIdtoLink := d.Get("security_group_account_id_to_link").(string)
-	toPortRange := d.Get("to_port_range").(int64)
+	toPortRange := d.Get("to_port_range").(int)
 
 	expandedRules, err := expandOAPISecurityGroupRules(d, sg)
 	if err != nil {
@@ -170,11 +170,11 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		Rules:                        expandedRules,
 		Flow:                         flow,
 		IpRange:                      ipRange,
-		FromPortRange:                fromPortRange,
+		FromPortRange:                int64(fromPortRange),
 		IpProtocol:                   ipProtocol,
 		SecurityGroupNameToLink:      nameToLink,
 		SecurityGroupAccountIdToLink: accountIdtoLink,
-		ToPortRange:                  toPortRange,
+		ToPortRange:                  int64(toPortRange),
 	}
 
 	isVPC := sg.NetId != ""
