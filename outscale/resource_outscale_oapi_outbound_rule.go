@@ -185,8 +185,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		ToPortRange:                  int64(toPortRange),
 	}
 
-	isVPC := sg.NetId != ""
-
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
 
@@ -221,36 +219,6 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	id := ipOAPIPermissionIDHash(sgID, flow, expandedRules)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
-	retErr := resource.Retry(1*time.Minute, func() *resource.RetryError {
-		sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
-
-		if err != nil {
-			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
-			return resource.NonRetryableError(err)
-		}
-
-		var rules []oapi.SecurityGroupRule
-		if OAPI_INBOUND_RULE == flow {
-			rules = sg.InboundRules
-		} else {
-			rules = sg.OutboundRules
-		}
-		rule := findOAPIRuleMatch(expandedRules, rules, isVPC)
-
-		if rule == nil {
-			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-				flow, id, sgID)
-			return resource.RetryableError(fmt.Errorf("No match found"))
-		}
-
-		return nil
-	})
-
-	if retErr != nil {
-		return fmt.Errorf("Error finding matching %s Security Group Rule (%s) for Group %s",
-			flow, id, sgID)
-	}
-
 	d.SetId(id)
 	return nil
 }
@@ -268,52 +236,38 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
-	isVPC := sg.NetId != ""
-
-	var rule *oapi.SecurityGroupRule
-	var rules []oapi.SecurityGroupRule
-
-	flow := d.Get("flow").(string)
-
-	if OAPI_INBOUND_RULE == flow {
-		rules = sg.InboundRules
-	} else {
-		rules = sg.OutboundRules
-	}
-
-	p, err := expandOAPISecurityGroupRules(d, sg)
-	if err != nil {
-		return err
-	}
-
 	if len(sg.InboundRules) == 0 && len(sg.OutboundRules) == 0 {
-		log.Printf("[WARN] No %s rules were found for Security Group (%s) looking for Security Group Rule (%s)",
-			flow, sg.SecurityGroupName, d.Id())
+		log.Printf("[WARN] No rules were found for Security Group (%s) looking for Security Group Rule (%s)",
+			sg.SecurityGroupName, d.Id())
 		d.SetId("")
 		return nil
 	}
 
-	rule = findOAPIRuleMatch(p, rules, isVPC)
-
-	if rule == nil {
-		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-			flow, d.Id(), sgID)
-		d.SetId("")
-		return nil
-	}
-
-	if ips, err := setOAPIFromIPPerm(d, sg, p); err != nil {
+	if ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules); err != nil {
 		return d.Set("inbound_rules", ips)
 	}
+
+	if ips, err := setOAPIFromIPPerm(d, sg, sg.OutboundRules); err != nil {
+		return d.Set("outbound_rules", ips)
+	}
+
 	return nil
 }
 
 func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	sgID := d.Get("firewall_rules_set_id").(string)
+	sgID := d.Get("security_group_id").(string)
 
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
+
+	flow := d.Get("flow").(string)
+	ipRange := d.Get("ip_range").(string)
+	fromPortRange := d.Get("from_port_range").(int)
+	ipProtocol := d.Get("ip_protocol").(string)
+	nameToUnlink := d.Get("security_group_name_to_link").(string)
+	accountIdtoUnlink := d.Get("security_group_account_id_to_link").(string)
+	toPortRange := d.Get("to_port_range").(int)
 
 	sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if err != nil {
@@ -325,10 +279,18 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 		return err
 	}
 	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
-		sgID, "egress", perms)
+		sgID, flow, perms)
+
 	req := oapi.DeleteSecurityGroupRuleRequest{
-		SecurityGroupId: sg.SecurityGroupId,
-		Rules:           perms,
+		SecurityGroupId:                sg.SecurityGroupId,
+		Rules:                          perms,
+		Flow:                           flow,
+		IpRange:                        ipRange,
+		FromPortRange:                  int64(fromPortRange),
+		IpProtocol:                     ipProtocol,
+		SecurityGroupNameToUnlink:      nameToUnlink,
+		SecurityGroupAccountIdToUnlink: accountIdtoUnlink,
+		ToPortRange:                    int64(toPortRange),
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -418,14 +380,6 @@ func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oa
 		if raw, ok := d.GetOk("security_group_account_id_to_link"); ok {
 			groups[raw.(string)] = true
 		}
-
-		// if v, ok := d.GetOk("self"); ok && v.(bool) {
-		// 	if sg.NetId != "" {
-		// 		groups[sg.SecurityGroupId] = true
-		// 	} else {
-		// 		groups[sg.SecurityGroupName] = true
-		// 	}
-		// }
 
 		if len(groups) > 0 {
 			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(groups))
