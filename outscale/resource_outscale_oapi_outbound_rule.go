@@ -12,8 +12,12 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
+
+const OAPI_INBOUND_RULE = "Inbound"
+const OAPI_OUTBOUND_RULE = "Outbound"
 
 func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 	return &schema.Resource{
@@ -26,6 +30,10 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					OAPI_INBOUND_RULE,
+					OAPI_OUTBOUND_RULE,
+				}, false),
 			},
 			"ip_range": {
 				Type:     schema.TypeString,
@@ -222,7 +230,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 		}
 
 		var rules []oapi.SecurityGroupRule
-		if "inbound" == flow {
+		if OAPI_INBOUND_RULE == flow {
 			rules = sg.InboundRules
 		} else {
 			rules = sg.OutboundRules
@@ -267,7 +275,7 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 
 	flow := d.Get("flow").(string)
 
-	if "inbound" == flow {
+	if OAPI_INBOUND_RULE == flow {
 		rules = sg.InboundRules
 	} else {
 		rules = sg.OutboundRules
