@@ -26,7 +26,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPISchema(),
+			"tags": tagsListOAPISchema(),
 			"routes": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -42,7 +42,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Computed: true,
 						},
 
-						"vpn_gateway_id": {
+						"virtual_gateway_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -56,7 +56,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Computed: true,
 						},
 
-						"lin_peering_id": {
+						"net_peering_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -76,7 +76,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 					},
 				},
 			},
-			"route_table_links": {
+			"link_route_tables": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -85,17 +85,18 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"route_table_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"link_route_table_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"subnet_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"main": {
 							Type:     schema.TypeBool,
 							Computed: true,
@@ -103,12 +104,12 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 					},
 				},
 			},
-			"route_propagating_vpn_gateways": {
+			"route_propagating_virtual_gateways": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"vpn_gateway_id": {
+						"virtual_gateway_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -159,17 +160,17 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 
 	rt := resp.OK.RouteTables[0]
 
-	d.Set("route_propagating_vpn_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
+	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
 	d.SetId(rt.RouteTableId)
 	d.Set("route_table_id", rt.RouteTableId)
 	d.Set("net_id", rt.NetId)
-	d.Set("tag", tagsOAPIToMap(rt.Tags))
+	d.Set("tags", tagsOAPIToMap(rt.Tags))
 
 	if err := d.Set("routes", setOAPIRoutes(rt.Routes)); err != nil {
 		return err
 	}
 
-	return d.Set("route_table_links", setOAPILinkRouteTables(rt.LinkRouteTables))
+	return d.Set("link_route_tables", setOAPILinkRouteTables(rt.LinkRouteTables))
 }
 
 func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersRouteTable {

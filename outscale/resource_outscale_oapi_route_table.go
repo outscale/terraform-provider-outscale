@@ -412,6 +412,10 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"link_route_table_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					"route_table_id": {
 						Type:     schema.TypeString,
 						Computed: true,
