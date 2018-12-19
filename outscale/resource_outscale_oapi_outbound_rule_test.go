@@ -44,7 +44,7 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
 resource "outscale_security_group_rule" "outscale_security_group_rule" {
-	flow              = "inbound"
+	flow              = "Inbound"
 	from_port_range   = 22
 	to_port_range     = 22
 	ip_protocol       = "tcp"
