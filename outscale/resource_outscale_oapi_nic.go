@@ -8,12 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 // Creates a network interface in the specified subnet
@@ -57,7 +56,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		// Attributes
-		"public_ip_link": {
+		"link_public_ip": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -66,7 +65,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"link_id": {
+					"link_public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -85,21 +84,21 @@ func getOAPINicSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"nic_link": {
-			Type:     schema.TypeList,
+		"link_nic": {
+			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"nic_link_id": {
+					"link_nic_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"delete_on_vm_deletion": {
-						Type:     schema.TypeBool,
+						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"nic_sort_number": {
-						Type:     schema.TypeInt,
+					"device_number": {
+						Type:     schema.TypeString,
 						Computed: true,
 					},
 					"vm_id": {
@@ -160,7 +159,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"public_ip_link": {
+					"link_public_ip": {
 						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
@@ -169,7 +168,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"link_id": {
+								"link_public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -200,6 +199,10 @@ func getOAPINicSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"is_primary": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
 				},
 			},
 		},
@@ -211,7 +214,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"activated_check": {
+		"is_source_dest_checked": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
@@ -220,7 +223,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"tags": tagsListOAPISchema(),
-		"lin_id": {
+		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -235,10 +238,10 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	request := oapi.CreateNicRequest{
 		SubnetId: d.Get("subnet_id").(string),
 	}
-	// Description missing
-	// if v, ok := d.GetOk("description"); ok {
-	// 	request.Description = aws.String(v.(string))
-	// }
+
+	if v, ok := d.GetOk("description"); ok {
+		request.Description = v.(string)
+	}
 
 	if v, ok := d.GetOk("security_group_id"); ok {
 		m := v.([]interface{})
@@ -350,27 +353,31 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	b := make(map[string]interface{})
 	link := eni.LinkPublicIp
 	b["public_ip_id"] = link.PublicIpId
-	b["link_id"] = link.LinkPublicIpId
+	b["link_public_ip_id"] = link.LinkPublicIpId
 	b["public_ip_account_id"] = link.PublicIpAccountId
 	b["public_dns_name"] = link.PublicDnsName
 	b["public_ip"] = link.PublicIp
 
-	if err := d.Set("public_ip_link", b); err != nil {
+	if err := d.Set("link_public_ip", b); err != nil {
 		return err
 	}
 
-	aa := make([]map[string]interface{}, 1)
+	//aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
 	att := eni.LinkNic
-	bb["nic_link_id"] = att.LinkNicId
-	bb["delete_on_vm_deletion"] = att.DeleteOnVmDeletion
-	bb["nic_sort_number"] = att.DeviceNumber
+	bb["link_nic_id"] = att.LinkNicId
+	bb["delete_on_vm_deletion"] = strconv.FormatBool(att.DeleteOnVmDeletion)
+	bb["device_number"] = strconv.FormatInt(att.DeviceNumber, 10)
 	bb["vm_id"] = att.VmAccountId
 	bb["vm_account_id"] = att.VmAccountId
 	bb["state"] = att.State
 
-	aa[0] = bb
-	if err := d.Set("nic_link", aa); err != nil {
+	//aa[0] = bb
+	// if err := d.Set("link_nic", aa); err != nil {
+	// 	return err
+	// }
+
+	if err := d.Set("link_nic", bb); err != nil {
 		return err
 	}
 
@@ -401,15 +408,16 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 			d := make(map[string]interface{})
 			assoc := v.LinkPublicIp
 			d["public_ip_id"] = assoc.PublicIpId
-			d["link_id"] = assoc.LinkPublicIpId
+			d["link_public_ip_id"] = assoc.LinkPublicIpId
 			d["public_ip_account_id"] = assoc.PublicIpAccountId
 			d["public_dns_name"] = assoc.PublicDnsName
 			d["public_ip"] = assoc.PublicIp
 
-			b["public_ip_link"] = d
+			b["link_public_ip"] = d
 			b["pip"] = v.IsPrimary
 			b["private_dns_name"] = v.PrivateDnsName
 			b["private_ip"] = v.PrivateIp
+			b["is_primary"] = v.IsPrimary
 
 			y[k] = b
 		}
@@ -423,12 +431,11 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	// Missing
 	// d.Set("requester_managed", aws.BoolValue(eni.r))
 
-	// Missing
-	// d.Set("activated_check", eni.)
+	d.Set("is_source_dest_checked", eni.IsSourceDestChecked)
 	d.Set("state", eni.State)
 	// Tags
 	d.Set("tags", tagsOAPIToMap(eni.Tags))
-	d.Set("lin_id", eni.NetId)
+	d.Set("net_id", eni.NetId)
 
 	return nil
 }
@@ -440,7 +447,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleOAPINicDetach(d.Get("nic_link").([]interface{}), meta, d.Id())
+	err := resourceOutscaleOAPINicDetach(d.Get("link_nic").(interface{}), meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -468,12 +475,12 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniID string) error {
+func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID string) error {
 	// if there was an old nic_link, remove it
-	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		oa := oa[0].(map[string]interface{})
+	if oa != nil {
+		oa := oa.(map[string]interface{})
 		dr := oapi.UnlinkNicRequest{
-			LinkNicId: oa["nic_link_id"].(string),
+			LinkNicId: oa["link_nic_id"].(string),
 		}
 
 		conn := meta.(*OutscaleClient).OAPI
@@ -501,7 +508,7 @@ func resourceOutscaleOAPINicDetach(oa []interface{}, meta interface{}, eniID str
 		stateConf := &resource.StateChangeConf{
 			Pending: []string{"true"},
 			Target:  []string{"false"},
-			Refresh: networkInterfaceOAPIAttachmentRefreshFunc(conn, eniID),
+			Refresh: nicLinkRefreshFunc(conn, eniID),
 			Timeout: 10 * time.Minute,
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
@@ -519,8 +526,8 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	conn := meta.(*OutscaleClient).OAPI
 	d.Partial(true)
 
-	if d.HasChange("nic_link") {
-		oa, na := d.GetChange("nic_link")
+	if d.HasChange("link_nic") {
+		oa, na := d.GetChange("link_nic")
 
 		err := resourceOutscaleOAPINicDetach(oa.([]interface{}), meta, d.Id())
 		if err != nil {
@@ -530,7 +537,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		// if there is a new nic_link, attach it
 		if na != nil && len(na.([]interface{})) > 0 {
 			na := na.([]interface{})[0].(map[string]interface{})
-			di := na["nic_sort_number"].(int)
+			di := na["device_number"].(int)
 			ar := oapi.LinkNicRequest{
 				DeviceNumber: int64(di),
 				VmId:         na["instance"].(string),
@@ -555,7 +562,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 		}
 
-		d.SetPartial("nic_link")
+		d.SetPartial("link_nic")
 	}
 
 	if d.HasChange("private_ip") {
@@ -623,7 +630,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	// Missing Sourcedestcheck
 	// request := oapi.UpdateNicRequest{
 	// 	NicId:           d.Id(),
-	// 	SourceDestCheck: &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("activated_check").(bool))},
+	// 	SourceDestCheck: &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("is_source_dest_checked").(bool))},
 	// }
 
 	// _, err := conn.VM.ModifyNetworkInterfaceAttribute(request)
@@ -644,7 +651,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	// 	return fmt.Errorf("Failure updating ENI: %s", err)
 	// }
 
-	// d.SetPartial("activated_check")
+	// d.SetPartial("is_source_dest_checked")
 
 	if d.HasChange("private_ips_count") {
 		o, n := d.GetChange("private_ips_count")
@@ -775,18 +782,18 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	return resourceOutscaleOAPINicRead(d, meta)
 }
 
-func networkOAPIInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func nicLinkRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(id)},
+		dnir := &oapi.ReadNicsRequest{
+			Filters: oapi.FiltersNic{NicIds: []string{id}},
 		}
 
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
+		var describeResp *oapi.POST_ReadNicsResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
+			describeResp, err = conn.POST_ReadNics(*dnir)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -796,15 +803,28 @@ func networkOAPIInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) reso
 			return nil
 		})
 
-		if err != nil {
+		var errString string
+
+		if err != nil || describeResp.OK == nil {
+			if err != nil {
+				errString = err.Error()
+			} else if describeResp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
+			} else if describeResp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
+			} else if describeResp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
+			}
 			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
-			return nil, "", err
+			return nil, "", fmt.Errorf("Could not find network interface: %s", errString)
+
 		}
 
-		eni := describeResp.NetworkInterfaces[0]
-		hasAttachment := strconv.FormatBool(eni.Attachment != nil)
-		log.Printf("[DEBUG] ENI %s has nic_link state %s", id, hasAttachment)
-		return eni, hasAttachment, nil
+		eni := describeResp.OK.Nics[0]
+		//hasLink := strconv.FormatBool(&eni.LinkNic != nil || !reflect.DeepEqual(eni.LinkNic, oapi.LinkNic{}))
+		hasLink := strconv.FormatBool(eni.LinkNic.LinkNicId != "")
+		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasLink)
+		return eni, hasLink, nil
 	}
 }
 

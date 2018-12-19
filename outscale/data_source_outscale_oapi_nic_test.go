@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
@@ -135,6 +137,58 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 			}
 
 			return err
+		}
+	}
+
+	return nil
+}
+
+func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_nic" {
+			continue
+		}
+
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		dnir := &oapi.ReadNicsRequest{
+			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
+		}
+
+		var describeResp *oapi.POST_ReadNicsResponses
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+			describeResp, err = conn.POST_ReadNics(*dnir)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		var errString string
+
+		if err != nil || describeResp.OK == nil {
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+					return nil
+				}
+				errString = err.Error()
+			} else if describeResp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
+			} else if describeResp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
+			} else if describeResp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
+			}
+			return fmt.Errorf("Could not find network interface: %s", errString)
+
+		}
+
+		if len(describeResp.OK.Nics) > 0 {
+			return fmt.Errorf("Nic with id %s is not destroyed yet", rs.Primary.ID)
 		}
 	}
 
