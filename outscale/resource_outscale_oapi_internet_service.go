@@ -98,8 +98,15 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", errString)
 	}
 
-	result := resp.OK.InternetServices[0]
-
+	// Workaround to get the desired internet_service instance. TODO: Remove 104-109 once oapi
+	// filters work again.
+	var result oapi.InternetService
+	for _, element := range resp.OK.InternetServices {
+		if element.InternetServiceId == id {
+			result = element
+			break
+		}
+	}
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	d.Set("internet_service_id", result.InternetServiceId)
 

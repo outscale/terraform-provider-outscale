@@ -192,6 +192,7 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 }
 
 func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...string) (interface{}, string, error) {
+	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_id %v", routeTableId, linkIds)
 	var resp *oapi.POST_ReadRouteTablesResponses
 	var err error
 	routeTableRequest := &oapi.ReadRouteTablesRequest{}
@@ -228,6 +229,20 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...strin
 	}
 
 	result := resp.OK
+	var errString string
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		fmt.Errorf("Error getting route table: %s", errString)
+	}
 	if len(result.RouteTables) <= 0 {
 		return nil, resp.OK.ResponseContext.RequestId, err
 	}

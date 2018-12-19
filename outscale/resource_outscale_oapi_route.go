@@ -29,58 +29,52 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
 			"gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"destination_prefix_list_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vm_account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"creation_method": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -182,10 +176,11 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	var route *oapi.Route
+	var requestId string
 
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			route, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
+			route, requestId, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
 			return resource.RetryableError(err)
 		})
 		if err != nil {
@@ -194,7 +189,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(routeOAPIIDHash(d, route))
-	resourceOutscaleOAPIRouteSetResourceData(d, route)
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestId)
 	return nil
 }
 
@@ -202,9 +197,10 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 	conn := meta.(*OutscaleClient).OAPI
 	routeTableID := d.Get("route_table_id").(string)
 
-	destinationCidrBlock := d.Get("destination_ip_range").(string)
+	destinationIpRange := d.Get("destination_ip_range").(string)
+	var requestId string
 
-	route, err := findResourceOAPIRoute(conn, routeTableID, destinationCidrBlock)
+	route, requestId, err := findResourceOAPIRoute(conn, routeTableID, destinationIpRange)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
@@ -213,11 +209,11 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 		}
 		return err
 	}
-	resourceOutscaleOAPIRouteSetResourceData(d, route)
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestId)
 	return nil
 }
 
-func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route) {
+func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route, requestId string) {
 	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
 	d.Set("gateway_id", route.GatewayId)
 	d.Set("vm_id", route.VmId)
@@ -227,6 +223,7 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oap
 	d.Set("vm_account_id", route.VmAccountId)
 	d.Set("creation_method", route.CreationMethod)
 	d.Set("state", route.State)
+	d.Set("request_id", requestId)
 }
 
 func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -424,7 +421,7 @@ func routeOAPIIDHash(d *schema.ResourceData, r *oapi.Route) string {
 	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(r.DestinationIpRange))
 }
 
-func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.Route, error) {
+func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.Route, string, error) {
 	routeTableID := rtbid
 
 	findOpts := &oapi.ReadRouteTablesRequest{}
@@ -450,6 +447,7 @@ func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.
 	})
 
 	var errString string
+	requestId := resp.OK.ResponseContext.RequestId
 
 	if err != nil || resp.OK == nil {
 		if err != nil {
@@ -462,28 +460,27 @@ func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return nil, fmt.Errorf("Error finding route resource: %s", errString)
+		return nil, requestId, fmt.Errorf("Error finding route resource: %s", errString)
 	}
 
 	result := resp.OK
 
 	if len(result.RouteTables) < 1 || reflect.DeepEqual(result.RouteTables[0], oapi.RouteTable{}) {
-		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist",
-			routeTableID)
+		return nil, requestId, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
 	}
 
 	if cidr != "" {
 		for _, route := range (result.RouteTables[0]).Routes {
 			if route.DestinationIpRange != "" && route.DestinationIpRange == cidr {
-				return &route, nil
+				return &route, requestId, nil
 			}
 		}
 
-		return nil, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
+		return nil, requestId, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
 			"and destination CIDR block (%s).", rtbid, cidr)
 	}
 
-	return nil, fmt.Errorf("When trying to find a matching route for Route Table %q "+
+	return nil, requestId, fmt.Errorf("When trying to find a matching route for Route Table %q "+
 		"you need to specify a CIDR block", rtbid)
 
 }

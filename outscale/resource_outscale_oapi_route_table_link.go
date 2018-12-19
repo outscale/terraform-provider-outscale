@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
@@ -48,7 +49,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).OAPI
 	subnetId := d.Get("subnet_id").(string)
 	routeTableId := d.Get("route_table_id").(string)
-	log.Printf("[INFO] Creating link route table: %s => %s", subnetId, routeTableId)
+	log.Printf("[INFO] Creating route table link: %s => %s", subnetId, routeTableId)
 	linkRouteTableOpts := oapi.LinkRouteTableRequest{
 		RouteTableId: routeTableId,
 		SubnetId:     subnetId,
@@ -71,6 +72,21 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	}
 
 	// Set the ID and return
+	var errString string
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error creating route table link: %s", errString)
+	}
+
 	d.SetId(resp.OK.LinkRouteTableId)
 	d.Set("link_id", d.Id())
 	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
@@ -81,7 +97,6 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	log.Printf("[DEBUG] > Params: %v and %v", d.Get("route_table_id"), d.Get("link_id"))
 	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(
 		conn, d.Get("route_table_id").(string), d.Get("link_id").(string))()
 	if err != nil {
