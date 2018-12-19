@@ -167,16 +167,16 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oapi.SecurityGroup,
 
 		if p == nil {
 			p = &oapi.SecurityGroupRule{
-				FromPortRange: 80,
-				ToPortRange:   8000,
+				FromPortRange: 22,
+				ToPortRange:   22,
 				IpProtocol:    "tcp",
-				IpRanges:      []string{"10.0.0.0/8"},
+				IpRanges:      []string{"46.231.147.8/32"},
 			}
 		}
 
 		var matchingRule *oapi.SecurityGroupRule
 		var rules []oapi.SecurityGroupRule
-		if ruleType == "ingress" {
+		if ruleType == "Inbound" {
 			rules = group.InboundRules
 		} else {
 			rules = group.OutboundRules
