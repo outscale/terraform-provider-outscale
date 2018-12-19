@@ -54,7 +54,7 @@ resource "outscale_security_group_rule" "outscale_security_group_rule" {
 
 resource "outscale_security_group" "outscale_security_group" {
 	description         = "test group"
-	security_group_name = "sg1-test-group_test"
+	security_group_name = "sg1-test-group_test_%d"
 }
-`)
+`, rInt)
 }
