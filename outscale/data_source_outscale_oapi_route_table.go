@@ -22,6 +22,10 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -36,17 +40,18 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"destination_prefix_list_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"gateway_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"virtual_gateway_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"vm_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -55,7 +60,10 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
+						"nat_service_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"net_peering_id": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -165,6 +173,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	d.Set("route_table_id", rt.RouteTableId)
 	d.Set("net_id", rt.NetId)
 	d.Set("tags", tagsOAPIToMap(rt.Tags))
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
 	if err := d.Set("routes", setOAPIRoutes(rt.Routes)); err != nil {
 		return err
