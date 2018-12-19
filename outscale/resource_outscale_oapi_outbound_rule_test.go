@@ -33,8 +33,8 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRuleExists("outscale_security_group_rule.outscale_security_group_rule", &group),
-					testAccCheckOutscaleOAPIRuleAttributes("outscale_outbound_rule.egress_1", &group, nil, "egress"),
+					testAccCheckOutscaleOAPIRuleExists("outscale_security_group.outscale_security_group", &group),
+					testAccCheckOutscaleOAPIRuleAttributes("outscale_security_group_rule.outscale_security_group_rule", &group, nil, "Inbound"),
 				),
 			},
 		},
