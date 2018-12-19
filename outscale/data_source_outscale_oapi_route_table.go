@@ -37,7 +37,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Computed: true,
 						},
 
-						"destinaton_prefix_list_id": {
+						"destination_prefix_list_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -169,7 +169,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	return d.Set("route_table_links", setOAPIAssociactionSet(rt.LinkRouteTables))
+	return d.Set("route_table_links", setOAPILinkRouteTables(rt.LinkRouteTables))
 }
 
 func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersRouteTable {

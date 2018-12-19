@@ -65,7 +65,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Computed: true,
 			},
 
-			"destinaton_prefix_list_id": {
+			"destination_prefix_list_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -218,7 +218,7 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route) {
-	d.Set("destinaton_prefix_list_id", route.DestinationPrefixListId)
+	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
 	d.Set("gateway_id", route.GatewayId)
 	d.Set("vm_id", route.VmId)
 	d.Set("nat_service_id", route.NatServiceId)

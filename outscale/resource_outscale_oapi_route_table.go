@@ -109,7 +109,7 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	d.Set("net_id", rt.NetId)
 	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
 	d.Set("routes", setOAPIRoutes(rt.Routes))
-	d.Set("link_route_tables", setOAPIAssociactionSet(rt.LinkRouteTables))
+	d.Set("link_route_tables", setOAPILinkRouteTables(rt.LinkRouteTables))
 	d.Set("tags", tagsOAPIToMap(rt.Tags))
 
 	return nil
@@ -296,7 +296,7 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 	return route
 }
 
-func setOAPIAssociactionSet(rt []oapi.LinkRouteTable) []map[string]interface{} {
+func setOAPILinkRouteTables(rt []oapi.LinkRouteTable) []map[string]interface{} {
 	association := make([]map[string]interface{}, len(rt))
 	log.Printf("[DEBUG] RouteTableLink: %#v", rt)
 	if len(rt) > 0 {
@@ -360,7 +360,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"destinaton_prefix_list_id": {
+					"destination_prefix_list_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},

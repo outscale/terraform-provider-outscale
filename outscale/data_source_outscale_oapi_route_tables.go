@@ -46,7 +46,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Computed: true,
 									},
 
-									"destinaton_prefix_list_id": {
+									"destination_prefix_list_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -201,7 +201,7 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 		routeTable["net_id"] = v.NetId
 		routeTable["tags"] = tagsOAPIToMap(v.Tags)
 		routeTable["routes"] = setOAPIRoutes(v.Routes)
-		routeTable["link_route_tables"] = setOAPIAssociactionSet(v.LinkRouteTables)
+		routeTable["link_route_tables"] = setOAPILinkRouteTables(v.LinkRouteTables)
 		routeTables[k] = routeTable
 	}
 
