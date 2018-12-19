@@ -221,7 +221,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	id := ipOAPIPermissionIDHash(sgID, flow, expandedRules)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
-	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	retErr := resource.Retry(1*time.Minute, func() *resource.RetryError {
 		sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
@@ -563,8 +563,12 @@ func ipOAPIPermissionIDHash(sgID, ruleType string, ips []oapi.SecurityGroupRule)
 
 func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule, isVPC bool) *oapi.SecurityGroupRule {
 	var rule *oapi.SecurityGroupRule
+	fmt.Printf("Rules (from config) -> %+v\n", p)
+	fmt.Printf("Rules (from service) -> %+v\n", rules)
 	for _, i := range p {
 		for _, r := range rules {
+
+			fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
 			if i.ToPortRange != r.ToPortRange {
 				continue
 			}
