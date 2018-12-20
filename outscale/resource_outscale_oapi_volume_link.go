@@ -46,6 +46,12 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Computed: true,
 		},
+		"force_unlink": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			ForceNew: true,
+			Computed: true,
+		},
 		"volume_id": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -59,6 +65,10 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 			ForceNew: true,
 		},
 		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -251,7 +261,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -261,6 +271,8 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		}
 		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
+
+	d.Set("request_id", vols.OK.ResponseContext.RequestId)
 
 	if len(vols.OK.Volumes) == 0 || vols.OK.Volumes[0].State == "available" || isElegibleToLink(vols.OK.Volumes, d.Get("vm_id").(string)) {
 		log.Printf("[DEBUG] Volume Attachment (%s) not found, removing from state", d.Id())
@@ -284,13 +296,13 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	iID := d.Get("vm_id").(string)
 
 	opts := oapi.UnlinkVolumeRequest{
-		DeviceName: d.Get("device_name").(string),
 		//VmId:       iID,
-		VolumeId: vID,
-		//Force:      aws.Bool(d.Get("force_detach").(bool)),
+		//ForceUnlink: d.Get("force_unlink").(bool),
+		DeviceName: d.Get("device_name").(string),
+		VolumeId:   vID,
 	}
 
-	force, forceOk := d.GetOk("force_detach")
+	force, forceOk := d.GetOk("force_unlink")
 	if forceOk {
 		opts.ForceUnlink = force.(bool)
 
