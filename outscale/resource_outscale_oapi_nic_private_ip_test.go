@@ -8,22 +8,22 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
 
-	var conf fcu.NetworkInterface
+	var conf oapi.Nic
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -35,7 +35,7 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttrSet(
 						"outscale_nic_private_ip.outscale_nic_private_ip", "nic_id"),
 				),
@@ -47,8 +47,8 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 func testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(rInt int) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_instance" {                 
-    image_id                    = "ami-880caa66"
-    type               = "c4.large"
+	vm_type   = "c4.large"
+    image_id  = "ami-880caa66"
     subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 }
 
@@ -57,9 +57,9 @@ resource "outscale_net" "outscale_net" {
 }
 
 resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    ip_range          = "10.0.0.0/16"
-    lin_id              = "${outscale_lin.outscale_lin.id}"
+    subregion_name = "us-west-1a"
+    ip_range       = "10.0.0.0/16"
+    net_id         = "${outscale_net.outscale_net.id}"
 }
 
 resource "outscale_nic" "outscale_nic" {
@@ -67,7 +67,7 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-    	nic_id    = "${outscale_nic.outscale_nic.id}"
+    nic_id    = "${outscale_nic.outscale_nic.id}"
 }
 `)
 }
