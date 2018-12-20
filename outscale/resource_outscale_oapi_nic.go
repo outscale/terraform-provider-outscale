@@ -395,7 +395,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set("mac_address", eni.MacAddress)
-	d.Set("nic_id", eni.NetId)
+	d.Set("nic_id", eni.NicId)
 	d.Set("account_id", eni.AccountId)
 	d.Set("private_dns_name", eni.PrivateDnsName)
 	//d.Set("private_ip", eni.)
@@ -427,13 +427,8 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	d.Set("request_id", describeResp.OK.ResponseContext.RequestId)
-
-	// Missing
-	// d.Set("requester_managed", aws.BoolValue(eni.r))
-
 	d.Set("is_source_dest_checked", eni.IsSourceDestChecked)
 	d.Set("state", eni.State)
-	// Tags
 	d.Set("tags", tagsOAPIToMap(eni.Tags))
 	d.Set("net_id", eni.NetId)
 
