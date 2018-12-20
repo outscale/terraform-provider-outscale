@@ -6326,7 +6326,11 @@ func (client *Client) POST_ReadListenerRules(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -7346,7 +7350,11 @@ func (client *Client) POST_ReadReservedVms(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -8923,7 +8931,11 @@ func (client *Client) POST_UnlinkInternetService(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}
@@ -10366,7 +10378,11 @@ func (client *Client) POST_UpdateVm(
 	if err != nil {
 		return
 	}
+	utils.DebugRequest(req)
 	resp, err := client.Do(req)
+	if resp != nil {
+		utils.DebugResponse(resp)
+	}
 	if err != nil {
 		return
 	}

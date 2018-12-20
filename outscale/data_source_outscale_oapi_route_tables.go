@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
@@ -22,21 +22,37 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"route_table": {
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"route_tables": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"net_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"route_table_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"lin_id": {
-							Type:     schema.TypeString,
+						"tags": tagsListOAPISchema(),
+						"route_propagating_virtual_gateways": {
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"virtual_gateway_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
-						"tag": tagsSchemaComputed(),
-						"route": {
+						"routes": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -45,17 +61,14 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
-									"destinaton_prefix_list_id": {
+									"destination_prefix_list_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
-									"vpn_gateway_id": {
+									"gateway_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
 									"vm_id": {
 										Type:     schema.TypeString,
 										Computed: true,
@@ -64,8 +77,11 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
-									"lin_peering_id": {
+									"net_peering_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"nat_service_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -77,7 +93,6 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
 									"nic_id": {
 										Type:     schema.TypeString,
 										Computed: true,
@@ -85,7 +100,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 								},
 							},
 						},
-						"link": {
+						"link_route_tables": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -112,18 +127,6 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 								},
 							},
 						},
-						"route_propagating_vpn_gateway": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"vpn_gateway_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
 					},
 				},
 			},
@@ -132,32 +135,34 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeRouteTablesInput{}
+	conn := meta.(*OutscaleClient).OAPI
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
-
 	if !filterOk && !rtbOk {
 		return fmt.Errorf("One of route_table_id or filters must be assigned")
 	}
 
-	if rtbOk {
-		var ids []*string
-		for _, v := range rtbID.([]interface{}) {
-			ids = append(ids, aws.String(v.(string)))
-		}
+	params := &oapi.ReadRouteTablesRequest{
+		Filters: oapi.FiltersRouteTable{},
+	}
 
-		req.RouteTableIds = ids
+	if rtbOk {
+		i := rtbID.([]string)
+		in := make([]string, len(i))
+		for k, v := range i {
+			in[k] = v
+		}
+		params.Filters.RouteTableIds = in
 	}
 
 	if filterOk {
-		req.Filters = buildOutscaleDataSourceFilters(filter.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeRouteTablesOutput
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		var err error
-		resp, err = conn.VM.DescribeRouteTables(req)
+	var resp *oapi.POST_ReadRouteTablesResponses
+	var err error
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		resp, err = conn.POST_ReadRouteTables(*params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -167,38 +172,44 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 		return resource.NonRetryableError(err)
 	})
 
+	var errString string
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
+	}
+
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.RouteTables) == 0 {
+
+	rt := resp.OK.RouteTables
+	if resp == nil || len(rt) == 0 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	routeTables := make([]map[string]interface{}, len(resp.RouteTables))
+	routeTables := make([]map[string]interface{}, len(rt))
 
-	for k, v := range resp.RouteTables {
+	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-
-		propagatingVGWs := make([]string, 0, len(v.PropagatingVgws))
-		for _, vgw := range v.PropagatingVgws {
-			propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
-		}
-		routeTable["route_propagating_vpn_gateway"] = propagatingVGWs
-
-		routeTable["route_table_id"] = *v.RouteTableId
-
-		routeTable["lin_id"] = *v.VpcId
-
-		routeTable["tag"] = tagsToMap(v.Tags)
-
-		routeTable["route"] = setOAPIRouteSet(v.Routes)
-
-		routeTable["link"] = setOAPIAssociactionSet(v.Associations)
-
+		routeTable["route_propagating_vpn_gateways"] = setOAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
+		routeTable["route_table_id"] = v.RouteTableId
+		routeTable["net_id"] = v.NetId
+		routeTable["tags"] = tagsOAPIToMap(v.Tags)
+		routeTable["routes"] = setOAPIRoutes(v.Routes)
+		routeTable["link_route_tables"] = setOAPILinkRouteTables(v.LinkRouteTables)
 		routeTables[k] = routeTable
 	}
 
 	d.SetId(resource.UniqueId())
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
-	return d.Set("route_table", routeTables)
+	return d.Set("route_tables", routeTables)
 }
