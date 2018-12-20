@@ -74,10 +74,10 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp)
 		}
 
 		//Missing on Swagger Spec
-		// if len(describe.OK.PublicIps) != 1 ||
-		// 	describe.OK.PublicIps[0].ReservationId != res.ReservationId {
-		// 	return fmt.Errorf("Public IP Link not found")
-		// }
+		if len(describe.OK.PublicIps) != 1 ||
+			describe.OK.PublicIps[0].LinkPublicIpId != res.LinkPublicIpId {
+			return fmt.Errorf("Public IP Link not found")
+		}
 
 		if len(describe.OK.PublicIps) != 1 {
 			return fmt.Errorf("Public IP Link not found")
@@ -137,73 +137,73 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resou
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		// Missing on Swagger Spec
-		//  if strings.Contains(rs.Primary.ID, "reservation") {
-		// 	req := oapi.ReadPublicIpsRequest{
-		// 		Filters: oapi.FiltersPublicIp{
-		// 			ReservationIds: []string{rs.Primary.ID},
-		// 		},
-		// 	}
-		// 	resp, err := conn.OAPI.POST_ReadPublicIps(req)
-
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	describe := resp.OK
-
-		// 	if len(describe.PublicIps) != 1 ||
-		// 		describe.PublicIps[0].ReservationId != rs.Primary.ID {
-		// 		return fmt.Errorf("PublicIP not found")
-		// 	}
-		// 	*res = describe.PublicIps[0]
-
-		// } else {
-		req := oapi.ReadPublicIpsRequest{
-			Filters: oapi.FiltersPublicIp{
-				PublicIps: []string{rs.Primary.ID},
-			},
-		}
-
-		var describe *oapi.ReadPublicIpsResponse
-		err := resource.Retry(120*time.Second, func() *resource.RetryError {
-			var err error
+		if strings.Contains(rs.Primary.ID, "reservation") {
+			req := oapi.ReadPublicIpsRequest{
+				Filters: oapi.FiltersPublicIp{
+					LinkPublicIpIds: []string{rs.Primary.ID},
+				},
+			}
 			resp, err := conn.OAPI.POST_ReadPublicIps(req)
 
 			if err != nil {
+				return err
+			}
+
+			describe := resp.OK
+
+			if len(describe.PublicIps) != 1 ||
+				describe.PublicIps[0].LinkPublicIpId != rs.Primary.ID {
+				return fmt.Errorf("PublicIP not found")
+			}
+			*res = describe.PublicIps[0]
+
+		} else {
+			req := oapi.ReadPublicIpsRequest{
+				Filters: oapi.FiltersPublicIp{
+					PublicIps: []string{rs.Primary.ID},
+				},
+			}
+
+			var describe *oapi.ReadPublicIpsResponse
+			err := resource.Retry(120*time.Second, func() *resource.RetryError {
+				var err error
+				resp, err := conn.OAPI.POST_ReadPublicIps(req)
+
+				if err != nil {
+					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+						return resource.RetryableError(err)
+					}
+
+					return resource.NonRetryableError(err)
+				}
+				describe = resp.OK
+				return nil
+			})
+
+			if err != nil {
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return resource.RetryableError(err)
+					return nil
 				}
 
-				return resource.NonRetryableError(err)
-			}
-			describe = resp.OK
-			return nil
-		})
-
-		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-				return nil
+				return err
 			}
 
-			return err
-		}
+			if err != nil {
 
-		if err != nil {
+				// Verify the error is what we want
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
+					return nil
+				}
 
-			// Verify the error is what we want
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-				return nil
+				return err
 			}
 
-			return err
+			if len(describe.PublicIps) != 1 ||
+				describe.PublicIps[0].PublicIp != rs.Primary.ID {
+				return fmt.Errorf("PublicIP not found")
+			}
+			*res = describe.PublicIps[0]
 		}
-
-		if len(describe.PublicIps) != 1 ||
-			describe.PublicIps[0].PublicIp != rs.Primary.ID {
-			return fmt.Errorf("PublicIP not found")
-		}
-		*res = describe.PublicIps[0]
-		//}
 
 		return nil
 	}
@@ -222,6 +222,6 @@ resource "outscale_public_ip" "bar" {}
 resource "outscale_public_ip_link" "by_public_ip" {
 	public_ip = "${outscale_public_ip.bar.public_ip}"
 	#vm_id = "${outscale_vm.basic.id}"
-	vm_id = "i-ccdf0eeb"
+	vm_id = "i-538c7b0d"
 	#depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
 }`
