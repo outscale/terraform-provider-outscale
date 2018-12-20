@@ -4,30 +4,29 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
-	var connection fcu.VpcPeeringConnection
+	var connection oapi.NetPeering
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -51,24 +50,23 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
-	var connection fcu.VpcPeeringConnection
+	var connection oapi.NetPeering
 
 	// reach out and DELETE the VPC Peering connection outside of Terraform
 	testDestroy := func(*terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		log.Printf("[DEBUG] Test deleting the VPC Peering Connection.")
-		_, err := conn.VM.DeleteVpcPeeringConnection(
-			&fcu.DeleteVpcPeeringConnectionInput{
-				VpcPeeringConnectionId: connection.VpcPeeringConnectionId,
-			})
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		log.Printf("[DEBUG] Test deleting the Net Peering.")
+		_, err := conn.POST_DeleteNetPeering(oapi.DeleteNetPeeringRequest{
+			NetPeeringId: connection.NetPeeringId,
+		})
 		if err != nil {
 			return err
 		}
@@ -95,20 +93,19 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_net_peering" {
 			continue
 		}
 
-		var describe *fcu.DescribeVpcPeeringConnectionsOutput
+		var resp *oapi.POST_ReadNetPeeringsResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			describe, err = conn.VM.DescribeVpcPeeringConnections(
-				&fcu.DescribeVpcPeeringConnectionsInput{
-					VpcPeeringConnectionIds: []*string{aws.String(rs.Primary.ID)},
-				})
+			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
+				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{rs.Primary.ID}},
+			})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -119,14 +116,27 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			return nil
 		})
 
-		if err != nil {
-			return err
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+			}
+			return fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		var pc *fcu.VpcPeeringConnection
-		for _, c := range describe.VpcPeeringConnections {
-			if rs.Primary.ID == *c.VpcPeeringConnectionId {
-				pc = c
+		result := resp.OK
+
+		var pc *oapi.NetPeering
+		for _, c := range result.NetPeerings {
+			if rs.Primary.ID == c.NetPeeringId {
+				*pc = c
 			}
 		}
 
@@ -135,11 +145,11 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			return nil
 		}
 
-		if pc.Status != nil {
-			if *pc.Status.Code == "deleted" {
+		if pc.State.Name != "" {
+			if pc.State.Name == "deleted" {
 				return nil
 			}
-			return fmt.Errorf("Found the VPC Peering Connection in an unexpected state: %v", pc)
+			return fmt.Errorf("Found the Net Peering in an unexpected state: %v", pc)
 		}
 
 		// return error here; we've found the vpc_peering object we want, however
@@ -150,7 +160,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 	return nil
 }
 
-func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *fcu.VpcPeeringConnection) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oapi.NetPeering) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -158,18 +168,17 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *fc
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPC Peering Connection ID is set")
+			return fmt.Errorf("No Net Peering ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		var resp *fcu.DescribeVpcPeeringConnectionsOutput
+		var resp *oapi.POST_ReadNetPeeringsResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeVpcPeeringConnections(
-				&fcu.DescribeVpcPeeringConnectionsInput{
-					VpcPeeringConnectionIds: []*string{aws.String(rs.Primary.ID)},
-				})
+			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
+				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{rs.Primary.ID}},
+			})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -179,67 +188,83 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *fc
 			}
 			return nil
 		})
-		if err != nil {
-			return err
-		}
-		if len(resp.VpcPeeringConnections) == 0 {
-			return fmt.Errorf("VPC Peering Connection could not be found")
-		}
 
-		*connection = *resp.VpcPeeringConnections[0]
+		var errString string
 
-		return nil
-	}
-}
-
-func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, options *fcu.VpcPeeringConnectionOptionsDescription) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No VPC Peering Connection ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-
-		var resp *fcu.DescribeVpcPeeringConnectionsOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeVpcPeeringConnections(
-				&fcu.DescribeVpcPeeringConnectionsInput{
-					VpcPeeringConnectionIds: []*string{aws.String(rs.Primary.ID)},
-				})
-
+		if err != nil || resp.OK == nil {
 			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
 			}
-			return nil
-		})
-		if err != nil {
-			return err
+			return fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		pc := resp.VpcPeeringConnections[0]
+		result := resp.OK
 
-		o := pc.AccepterVpcInfo
-		if block == "requester_vpc_info" {
-			o = pc.RequesterVpcInfo
+		if len(result.NetPeerings) == 0 {
+			return fmt.Errorf("Net Peering could not be found")
 		}
 
-		if !reflect.DeepEqual(o.PeeringOptions, options) {
-			return fmt.Errorf("Expected the VPC Peering Connection Options to be %#v, got %#v",
-				options, o.PeeringOptions)
-		}
+		*connection = result.NetPeerings[0]
 
 		return nil
 	}
 }
+
+//FIXME: check where is used.
+// func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, options *oapi.NetPeeringOptionsDescription) resource.TestCheckFunc {
+// 	return func(s *terraform.State) error {
+// 		rs, ok := s.RootModule().Resources[n]
+// 		if !ok {
+// 			return fmt.Errorf("Not found: %s", n)
+// 		}
+
+// 		if rs.Primary.ID == "" {
+// 			return fmt.Errorf("No Net Peering ID is set")
+// 		}
+
+// 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+
+// 		var resp *oapi.ReadNetPeeringsOutput
+// 		var err error
+// 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+// 			resp, err = conn.VM.ReadNetPeerings(
+// 				&oapi.ReadNetPeeringsRequest{
+// 					NetPeeringIds: []*string{aws.String(rs.Primary.ID)},
+// 				})
+
+// 			if err != nil {
+// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+// 					return resource.RetryableError(err)
+// 				}
+// 				return resource.NonRetryableError(err)
+// 			}
+// 			return nil
+// 		})
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		pc := resp.NetPeerings[0]
+
+// 		o := pc.AccepterVpcInfo
+// 		if block == "requester_vpc_info" {
+// 			o = pc.RequesterVpcInfo
+// 		}
+
+// 		if !reflect.DeepEqual(o.PeeringOptions, options) {
+// 			return fmt.Errorf("Expected the Net Peering Options to be %#v, got %#v",
+// 				options, o.PeeringOptions)
+// 		}
+
+// 		return nil
+// 	}
+// }
 
 const testAccOAPIVpcPeeringConfig = `
 resource "outscale_net" "foo" {
