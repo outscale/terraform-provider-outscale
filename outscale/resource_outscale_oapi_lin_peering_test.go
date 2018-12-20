@@ -243,18 +243,19 @@ func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, option
 
 const testAccOAPIVpcPeeringConfig = `
 resource "outscale_net" "foo" {
-	cidr_block = "10.0.0.0/16"
-	tag {
-		Name = "TestAccOutscaleOAPILinPeeringConnection_basic"
+	ip_range = "10.0.0.0/16"
+	tags {
+		key = "Name"
+		value = "TestAccOutscaleOAPILinPeeringConnection_basic"
 	}
 }
 
 resource "outscale_net" "bar" {
-	cidr_block = "10.1.0.0/16"
+	ip_range = "10.1.0.0/16"
 }
 
 resource "outscale_net_peering" "foo" {
-	vpc_id = "${outscale_net.foo.id}"
-	peer_vpc_id = "${outscale_net.bar.id}"
+	source_net_id = "${outscale_net.foo.id}"
+	accepter_net_id = "${outscale_net.bar.id}"
 }
 `
