@@ -51,7 +51,7 @@ resource "outscale_security_group_rule" "outscale_security_group_rule" {
 		ip_protocol       = "tcp"
 		ip_ranges         = ["46.231.147.8/32"]
 		security_groups_members {
-			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"	
+			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
 		}
 	}
 }
