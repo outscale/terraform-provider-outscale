@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func resourceOutscaleOAPILinAttributes() *schema.Resource {
@@ -23,12 +23,7 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"dns_hostnames_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
-				Optional: true,
-			},
-			"dns_support_enabled": {
+			"dhcp_options_set_id": {
 				Type:     schema.TypeBool,
 				Computed: true,
 				Optional: true,
@@ -37,31 +32,25 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"attribute": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
 		},
 	}
 }
 
 func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.ModifyVpcAttributeInput{}
+	req := &oapi.UpdateNetRequest{}
 
-	req.VpcId = aws.String(d.Get("net_id").(string))
+	req.VpcId = d.Get("net_id").(string)
 
-	if c, ok := d.GetOk("dns_hostnames_enabled"); ok {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
-	}
-	if c, ok := d.GetOk("dns_support_enabled"); ok {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
+	if c, ok := d.GetOk("dhcp_options_set_id"); ok {
+		req.DhcpOptionsSetId = c.(string)
 	}
 
 	var err error
+	var resp *oapi.POST_UpdateNetResponses
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.ModifyVpcAttribute(req)
+		resp, err = conn.VM.ModifyVpcAttribute(req)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
@@ -82,18 +71,18 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.ModifyVpcAttributeInput{}
+	req := &oapi.UpdateNetRequest{}
 
 	if d.HasChange("net_id") && !d.IsNewResource() {
-		req.VpcId = aws.String(d.Get("net_id").(string))
+		req.VpcId = d.Get("net_id").(string)
 	}
-	if d.HasChange("dns_hostnames_enabled") && !d.IsNewResource() {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("dns_hostnames_enabled").(bool))}
+	if d.HasChange("dhcp_options_set_id") && !d.IsNewResource() {
+		req.EnableDnsHostnames = &oapi.AttributeBooleanValue{Value: d.Get("ds_hostnames_enabled").(bool))}
 	}
 	if d.HasChange("dns_support_enabled") && !d.IsNewResource() {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("dns_support_enabled").(bool))}
+		req.EnableDnsHostnames = &oapi.AttributeBooleanValue{Value: d.Get("ds_support_enabled").(bool))}
 	}
 
 	var err error
@@ -119,12 +108,12 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	req := &fcu.DescribeVpcAttributeInput{
-		Attribute: aws.String(d.Get("attribute").(string)),
-		VpcId:     aws.String(d.Get("net_id").(string)),
+	req := &oapi.DescribeVpcAttributeInput{
+		Attribute: d.Get("attribute").(string))
+		VpcId:     d.Get("net_id").(string))
 	}
 
-	var resp *fcu.DescribeVpcAttributeOutput
+	var resp *oapi.DescribeVpcAttributeOutput
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeVpcAttribute(req)
@@ -148,7 +137,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 
 	d.Set("net_id", resp.VpcId)
 	if resp.EnableDnsHostnames != nil {
-		d.Set("dns_hostnames_enabled", *resp.EnableDnsHostnames.Value)
+		d.Set("dhcp_options_set_id", *resp.EnableDnsHostnames.Value)
 	}
 	if resp.EnableDnsSupport != nil {
 		d.Set("dns_support_enabled", *resp.EnableDnsSupport.Value)
