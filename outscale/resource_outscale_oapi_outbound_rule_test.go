@@ -49,24 +49,23 @@ resource "outscale_security_group_rule" "outscale_security_group_rule" {
 	to_port_range     = 22
 	ip_protocol       = "tcp"
 	ip_range          = "46.231.147.8/32"
-	security_group_id = "2"	
+	security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
 	rules {
 		from_port_range   = 22
 		to_port_range     = 22
 		ip_protocol       = "tcp"
 		ip_ranges         = ["46.231.147.8/32"]
 		security_groups_members {
-			#security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"	
-			security_group_id = "1"	
+			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"	
 			account_id = "2"
 			security_group_name = "3"
 		}
 	}
 }
 
-#resource "outscale_security_group" "outscale_security_group" {
-#	description         = "test group"
-#	security_group_name = "sg1-test-group_test_%d"
-#}
+resource "outscale_security_group" "outscale_security_group" {
+	description         = "test group"
+	security_group_name = "sg1-test-group_test_%d"
+}
 `, rInt)
 }
