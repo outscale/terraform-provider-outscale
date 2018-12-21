@@ -46,8 +46,9 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"security_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type: schema.TypeString,
+				//Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"ip_protocol": {
@@ -78,65 +79,64 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 }
 
 func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
-	permSchema := map[string]*schema.Schema{
-		"from_port_range": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: !isForAttr,
-		},
-		"ip_protocol": {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: !isForAttr,
-		},
-		"ip_ranges": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: !isForAttr,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"prefix_list_ids": {
-			Type:     schema.TypeList,
-			Optional: true,
-			ForceNew: !isForAttr,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"to_port_range": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			ForceNew: !isForAttr,
-		},
-	}
-
-	if isForAttr {
-		permSchema["security_groups_members"] = &schema.Schema{
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"account_id": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"security_group_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"security_group_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		}
-	}
-
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
 		ForceNew: !isForAttr,
 		Elem: &schema.Resource{
-			Schema: permSchema,
+			Schema: map[string]*schema.Schema{
+				"from_port_range": {
+					Type:     schema.TypeInt,
+					Optional: true,
+					ForceNew: !isForAttr,
+				},
+				"ip_protocol": {
+					Type:     schema.TypeString,
+					Optional: true,
+					ForceNew: !isForAttr,
+				},
+				"ip_ranges": {
+					Type:     schema.TypeList,
+					Optional: true,
+					ForceNew: !isForAttr,
+					Elem:     &schema.Schema{Type: schema.TypeString},
+				},
+				"prefix_list_ids": {
+					Type:     schema.TypeList,
+					Optional: true,
+					ForceNew: !isForAttr,
+					Elem:     &schema.Schema{Type: schema.TypeString},
+				},
+				"to_port_range": {
+					Type:     schema.TypeInt,
+					Optional: true,
+					ForceNew: !isForAttr,
+				},
+				"security_groups_members": &schema.Schema{
+					Type:     schema.TypeList,
+					Optional: true,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"account_id": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+							"security_group_id": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+							"security_group_name": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -157,7 +157,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	flow := d.Get("flow").(string)
 	ipRange := d.Get("ip_range").(string)
 	fromPortRange := d.Get("from_port_range").(int)
-	ipProtocol := d.Get("ip_protocol").(string)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
 	nameToLink := d.Get("security_group_name_to_link").(string)
 	accountIdtoLink := d.Get("security_group_account_id_to_link").(string)
 	toPortRange := d.Get("to_port_range").(int)
@@ -264,7 +264,7 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	flow := d.Get("flow").(string)
 	ipRange := d.Get("ip_range").(string)
 	fromPortRange := d.Get("from_port_range").(int)
-	ipProtocol := d.Get("ip_protocol").(string)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
 	nameToUnlink := d.Get("security_group_name_to_link").(string)
 	accountIdtoUnlink := d.Get("security_group_account_id_to_link").(string)
 	toPortRange := d.Get("to_port_range").(int)
@@ -376,34 +376,17 @@ func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oa
 		protocol := protocolForValue(v["ip_protocol"].(string))
 		perm.IpProtocol = protocol
 
-		groups := make(map[string]bool)
-		if raw, ok := d.GetOk("security_group_account_id_to_link"); ok {
-			groups[raw.(string)] = true
-		}
+		members := v["security_groups_members"].([]interface{})
 
-		if len(groups) > 0 {
-			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(groups))
-			// build string list of group name/ids
-			var gl []string
-			for k := range groups {
-				gl = append(gl, k)
-			}
-
-			for i, name := range gl {
-				ownerID, id := "", name
-				if items := strings.Split(id, "/"); len(items) > 1 {
-					ownerID, id = items[0], items[1]
-				}
+		if len(members) > 0 {
+			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(members))
+			for i, v := range members {
+				member := v.(map[string]interface{})
 
 				perm.SecurityGroupsMembers[i] = oapi.SecurityGroupsMember{
-					SecurityGroupId: id,
-					AccountId:       ownerID,
-				}
-
-				if sg.NetId == "" {
-					perm.SecurityGroupsMembers[i].SecurityGroupId = ""
-					perm.SecurityGroupsMembers[i].SecurityGroupName = id
-					perm.SecurityGroupsMembers[i].AccountId = ""
+					AccountId:         member["account_id"].(string),
+					SecurityGroupId:   member["security_group_id"].(string),
+					SecurityGroupName: member["security_group_name"].(string),
 				}
 			}
 		}
