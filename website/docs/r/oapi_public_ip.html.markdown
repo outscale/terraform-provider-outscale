@@ -20,7 +20,7 @@ resource "outscale_public_ip" "bar" {}
 
 ## Argument Reference
 
-No arguments are supported:
+No arguments are supported.
 
 ## Attributes Reference
 
