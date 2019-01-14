@@ -613,7 +613,7 @@ func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRul
 			remaining = len(i.SecurityGroupsMembers)
 			for _, ip := range i.SecurityGroupsMembers {
 				for _, rip := range r.SecurityGroupsMembers {
-					if ip.SecurityGroupId == rip.SecurityGroupId && ip.SecurityGroupName == rip.SecurityGroupName {
+					if ip.SecurityGroupId == rip.SecurityGroupId {
 						remaining--
 					}
 				}
