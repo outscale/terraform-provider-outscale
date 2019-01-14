@@ -288,7 +288,7 @@ func flattenOAPISecurityGroupRule(p []oapi.SecurityGroupRule) []map[string]inter
 
 				grp[i] = g
 			}
-			ip["security_group_members"] = grp
+			ip["security_groups_members"] = grp
 		}
 
 		ips[k] = ip
