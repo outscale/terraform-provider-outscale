@@ -116,19 +116,19 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
+		log.Printf("[DEBUG] Error reading network (%s)", err)
 	}
 
 	resp = rs.OK
 
 	if resp == nil {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("oAPI network not found")
 	}
 
 	if len(resp.Nets) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("oAPI network not found")
 	}
 
 	d.Set("ip_range", resp.Nets[0].IpRange)

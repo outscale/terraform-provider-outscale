@@ -29,7 +29,7 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	log.Println("[DEBUG] Creating Internet Service")
+	log.Println("Creating Internet Service")
 	r, err := conn.POST_CreateInternetService(oapi.CreateInternetServiceRequest{})
 
 	var errString string
@@ -61,7 +61,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 
 	id := d.Id()
 
-	log.Printf("[DEBUG] Reading Internet Service id (%s)", id)
+	log.Printf("Reading Internet Service id (%s)", id)
 
 	req := &oapi.ReadInternetServicesRequest{
 		Filters: oapi.FiltersInternetService{InternetServiceIds: []string{id}},
@@ -98,15 +98,10 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", errString)
 	}
 
-	// Workaround to get the desired internet_service instance. TODO: Remove 104-109 once oapi
-	// filters work again.
-	var result oapi.InternetService
-	for _, element := range resp.OK.InternetServices {
-		if element.InternetServiceId == id {
-			result = element
-			break
-		}
-	}
+	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
+	// once filters work again. And use resp.OK.InternetServices[0]
+	err, result := getInternetService(resp.OK.InternetServices, id)
+
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	d.Set("internet_service_id", result.InternetServiceId)
 
@@ -121,11 +116,20 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	return d.Set("tags", tagsOAPIToMap(result.Tags))
 }
 
+func getInternetService(internetServices []oapi.InternetService, id string) (error, oapi.InternetService) {
+	for _, element := range internetServices {
+		if element.InternetServiceId == id {
+			return nil, element
+		}
+	}
+	return fmt.Errorf("InternetService %+s not found", id), oapi.InternetService{}
+}
+
 func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
-	log.Printf("[DEBUG] Deleting Internet Service id (%s)", id)
+	log.Printf("Deleting Internet Service id (%s)", id)
 
 	req := &oapi.DeleteInternetServiceRequest{
 		InternetServiceId: id,
