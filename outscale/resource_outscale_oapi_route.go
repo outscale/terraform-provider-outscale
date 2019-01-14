@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -13,6 +14,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
+
+var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
+	"nat_service_id, vm_id, nic_id or net_peering_id is allowed.")
+
+var allowedTargets = []string{
+	"gateway_id",
+	"nat_service_id",
+	"vm_id",
+	"nic_id",
+	"net_peering_id",
+}
 
 func resourceOutscaleOAPIRoute() *schema.Resource {
 	return &schema.Resource{
@@ -84,29 +96,14 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 
 func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	var numTargets int
-	var setTarget string
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_service_id",
-		"vm_id",
-		"nic_id",
-		"net_peering_id",
-	}
-
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
-		}
-	}
+	numTargets, target := getTarget(d)
 
 	if numTargets > 1 {
-		return errRoute
+		return errOAPIRoute
 	}
 
 	createOpts := &oapi.CreateRouteRequest{}
-	switch setTarget {
+	switch target {
 	case "gateway_id":
 		createOpts = &oapi.CreateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
@@ -138,7 +135,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 			NetPeeringId:       d.Get("net_peering_id").(string),
 		}
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
 	log.Printf("[DEBUG] Route create config: %+v", createOpts)
 
@@ -226,39 +223,34 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oap
 	d.Set("request_id", requestId)
 }
 
-func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	var numTargets int
-	var setTarget string
-
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_service_id",
-		"nic_id",
-		"vm_id",
-		"net_peering_id",
-	}
-	replaceOpts := &oapi.UpdateRouteRequest{}
-
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
+func getTarget(d *schema.ResourceData) (n int, target string) {
+	for _, allowedTarget := range allowedTargets {
+		if len(d.Get(allowedTarget).(string)) > 0 {
+			n++
+			target = allowedTarget
 		}
 	}
+	return
+}
 
-	switch setTarget {
+func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+	numTargets, target := getTarget(d)
+
+	replaceOpts := &oapi.UpdateRouteRequest{}
+
+	switch target {
 	case "vm_id":
 		if numTargets > 2 || (numTargets == 2 && len(d.Get("nic_id").(string)) == 0) {
-			return errRoute
+			return errOAPIRoute
 		}
 	default:
 		if numTargets > 1 {
-			return errRoute
+			return errOAPIRoute
 		}
 	}
 
-	switch setTarget {
+	switch target {
 	case "gateway_id":
 		replaceOpts = &oapi.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
@@ -290,7 +282,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 			NetPeeringId:       d.Get("net_peering_id").(string),
 		}
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
 	log.Printf("[DEBUG] Route replace config: %+v", replaceOpts)
 
@@ -447,7 +439,6 @@ func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.
 	})
 
 	var errString string
-	requestId := resp.OK.ResponseContext.RequestId
 
 	if err != nil || resp.OK == nil {
 		if err != nil {
@@ -460,10 +451,11 @@ func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return nil, requestId, fmt.Errorf("Error finding route resource: %s", errString)
+		return nil, "", fmt.Errorf("Error finding route resource: %s", errString)
 	}
 
 	result := resp.OK
+	requestId := resp.OK.ResponseContext.RequestId
 
 	if len(result.RouteTables) < 1 || reflect.DeepEqual(result.RouteTables[0], oapi.RouteTable{}) {
 		return nil, requestId, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
