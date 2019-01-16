@@ -184,6 +184,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 
 	isOneRule := ipProtocol != ""
 	var expandedRules []oapi.SecurityGroupRule
+	var singleExpandedRule []oapi.SecurityGroupRule
 
 	if !isOneRule {
 		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
@@ -192,6 +193,15 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		}
 		if err := validateOAPISecurityGroupRule(rules); err != nil {
 			return err
+		}
+	} else {
+		singleExpandedRule = []oapi.SecurityGroupRule{
+			{
+				IpRanges:      []string{ipRange},
+				FromPortRange: int64(fromPortRange),
+				IpProtocol:    ipProtocol,
+				ToPortRange:   int64(toPortRange),
+			},
 		}
 	}
 
@@ -206,6 +216,8 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		SecurityGroupAccountIdToLink: accountIdtoLink,
 		ToPortRange:                  int64(toPortRange),
 	}
+
+	fmt.Printf("Req -> %+v\n", req)
 
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
@@ -255,7 +267,15 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 		} else {
 			rules = sg.OutboundRules
 		}
-		rule := findOAPIRuleMatch(expandedRules, rules)
+
+		var configRules []oapi.SecurityGroupRule
+		if isOneRule {
+			configRules = singleExpandedRule
+		} else {
+			configRules = expandedRules
+		}
+
+		rule := findOAPIRuleMatch(configRules, rules)
 
 		if rule == nil {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
@@ -301,6 +321,65 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 
 	if ips, err := setOAPIFromIPPerm(d, sg, sg.OutboundRules); err != nil {
 		return d.Set("outbound_rules", ips)
+	}
+
+	flow := d.Get("flow").(string)
+	ipRange := d.Get("ip_range").(string)
+	fromPortRange := d.Get("from_port_range").(int)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
+	//nameToLink := d.Get("security_group_name_to_link").(string)
+	accountIdtoLink := d.Get("security_group_account_id_to_link").(string)
+	toPortRange := d.Get("to_port_range").(int)
+	rules := d.Get("rules").([]interface{})
+
+	if moreThanOnePresent(ipProtocol, accountIdtoLink, rules) {
+		return fmt.Errorf(
+			"These parameters cannot be provided together: ip_protocol, rules, security_group_account_id_to_link. Expected at most: 1")
+	}
+
+	isOneRule := ipProtocol != ""
+	var expandedRules []oapi.SecurityGroupRule
+	var singleExpandedRule []oapi.SecurityGroupRule
+
+	if !isOneRule {
+		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
+		if err != nil {
+			return err
+		}
+		if err := validateOAPISecurityGroupRule(rules); err != nil {
+			return err
+		}
+	} else {
+		singleExpandedRule = []oapi.SecurityGroupRule{
+			{
+				IpRanges:      []string{ipRange},
+				FromPortRange: int64(fromPortRange),
+				IpProtocol:    ipProtocol,
+				ToPortRange:   int64(toPortRange),
+			},
+		}
+	}
+
+	var configRules []oapi.SecurityGroupRule
+	if isOneRule {
+		configRules = singleExpandedRule
+	} else {
+		configRules = expandedRules
+	}
+
+	var existingRules []oapi.SecurityGroupRule
+	if OAPI_INBOUND_RULE == flow {
+		existingRules = sg.InboundRules
+	} else {
+		existingRules = sg.OutboundRules
+	}
+
+	rule := findOAPIRuleMatch(configRules, existingRules)
+
+	if rule == nil {
+		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
+			flow, d.Id(), sgID)
+		d.SetId("")
 	}
 
 	return nil
