@@ -51,16 +51,21 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Get("vm_id").(string)
+	log.Printf("UPDATING ATTRS FOR: %s", id)
+
+	var stateConf *resource.StateChangeConf
+	stateConf, err := oapiStopInstance(id, conn)
+	if err != nil {
+		return err
+	}
 
 	if v, ok := d.GetOk("deletion_protection"); ok {
 		opts := &oapi.UpdateVmRequest{
 			VmId:               id,
 			DeletionProtection: v.(bool),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+		log.Printf("UPDATE (deletion_protection) %+v => %+v == %+v", ok, d.Get("deletion_protection"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -70,10 +75,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:        id,
 			KeypairName: v.(string),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "keypair_name"); err != nil {
+		log.Printf("UPDATE (keypair_name) %+v => %+v == %+v", ok, d.Get("keypair_name"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -83,7 +86,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:             id,
 			SecurityGroupIds: v.([]string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "security_group_ids"); err != nil {
+		log.Printf("UPDATE (security_group_ids) %+v => %+v == %+v", ok, d.Get("security_group_ids"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -93,10 +97,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:                        id,
 			VmInitiatedShutdownBehavior: v.(string),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "vm_initiated_shutdown_behavior"); err != nil {
+		log.Printf("UPDATE (vm_initiated_shutdown_behavior) %+v => %+v == %+v", ok, d.Get("vm_initiated_shutdown_behavior"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -106,10 +108,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:                id,
 			IsSourceDestChecked: v.(bool),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "is_source_dest_checked"); err != nil {
+		log.Printf("UPDATE (is_source_dest_checked) %+v => %+v == %+v", ok, d.Get("is_source_dest_checked"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -119,10 +119,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:   id,
 			VmType: v.(string),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "vm_type"); err != nil {
+		log.Printf("UPDATE (vm_type) %+v => %+v == %+v", ok, d.Get("vm_type"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -132,10 +130,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:     id,
 			UserData: v.(string),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "user_data"); err != nil {
+		log.Printf("UPDATE (vm_type) %+v => %+v == %+v", ok, d.Get("vm_type"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -145,10 +141,8 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:         id,
 			BsuOptimized: v.(bool),
 		}
-
-		fmt.Printf("\n\n[DEBUG] CHANGES %+v, \n\n", opts)
-
-		if err := oapiModifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
+		log.Printf("UPDATE (bsu_optimized) %+v => %+v == %+v", ok, d.Get("bsu_optimized"), v)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -181,12 +175,17 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			VmId:                id,
 			BlockDeviceMappings: mappings,
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "block_device_mappings"); err != nil {
+		log.Printf("UPDATE (block_device_mappings) %+v => %+v == %+v", ok, d.Get("block_device_mappings"), mappings)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	d.SetId(resource.UniqueId())
+
+	if err := oapiStartInstance(id, stateConf, conn); err != nil {
+		return err
+	}
 
 	return dataSourceOutscaleOAPIVMRead(d, meta)
 }
@@ -198,7 +197,11 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 
 	id := d.Get("vm_id").(string)
 
-	log.Printf("[DEBUG] updating the instance %s", id)
+	var stateConf *resource.StateChangeConf
+	stateConf, err := oapiStopInstance(id, conn)
+	if err != nil {
+		return err
+	}
 
 	if d.HasChange("deletion_protection") && !d.IsNewResource() {
 		opts := &oapi.UpdateVmRequest{
@@ -206,7 +209,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			DeletionProtection: d.Get("deletion_protection").(bool),
 		}
 
-		if err := oapiModifyInstanceAttr(conn, opts, "deletion_protection"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -216,7 +219,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:        id,
 			KeypairName: d.Get("keypair_name").(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "keypair_name"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -226,7 +229,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:             id,
 			SecurityGroupIds: d.Get("security_group_ids").([]string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "security_group_ids"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -236,7 +239,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:                        id,
 			VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "vm_initiated_shutdown_behavior"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -246,7 +249,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:                id,
 			IsSourceDestChecked: d.Get("is_source_dest_checked").(bool),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "is_source_dest_checked"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -256,7 +259,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:   id,
 			VmType: d.Get("vm_type").(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "vm_type"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -266,7 +269,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:     id,
 			UserData: d.Get("user_data").(string),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "user_data"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -276,7 +279,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			VmId:         id,
 			BsuOptimized: d.Get("bsu_optimized").(bool),
 		}
-		if err := oapiModifyInstanceAttr(conn, opts, "bsu_optimized"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -310,12 +313,16 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			BlockDeviceMappings: mappings,
 		}
 
-		if err := oapiModifyInstanceAttr(conn, opts, "block_device_mappings"); err != nil {
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	d.Partial(false)
+
+	if err := oapiStartInstance(id, stateConf, conn); err != nil {
+		return err
+	}
 
 	return dataSourceOutscaleOAPIVMRead(d, meta)
 }
@@ -327,15 +334,16 @@ func resourceOAPIVMAttributesDelete(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func oapiStopInstance(instanceAttrOpts *oapi.UpdateVmRequest, conn *oapi.Client, attr string) (*resource.StateChangeConf, error) {
+func oapiStopInstance(vmId string, conn *oapi.Client) (*resource.StateChangeConf, error) {
+	log.Printf("STOPPING VM... %+v", vmId)
 	_, err := conn.POST_StopVms(oapi.StopVmsRequest{
-		VmIds: []string{instanceAttrOpts.VmId},
+		VmIds: []string{vmId},
 	})
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"stopped"},
-		Refresh:    oapiInstanceStateRefreshFunc(conn, instanceAttrOpts.VmId, ""),
+		Refresh:    oapiInstanceStateRefreshFunc(conn, vmId, ""),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -344,30 +352,29 @@ func oapiStopInstance(instanceAttrOpts *oapi.UpdateVmRequest, conn *oapi.Client,
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return nil, fmt.Errorf(
-			"Error waiting for instance (%s) to stop: %s", instanceAttrOpts.VmId, err)
+			"Error waiting for instance (%s) to stop: %s", vmId, err)
 	}
 
 	return stateConf, nil
 }
 
-func oapiStartInstance(instanceAttrOpts *oapi.UpdateVmRequest, stateConf *resource.StateChangeConf, conn *oapi.Client, attr string) error {
-	if _, err := conn.POST_StartVms(oapi.StartVmsRequest{
-		VmIds: []string{instanceAttrOpts.VmId},
-	}); err != nil {
+func oapiStartInstance(vmId string, stateConf *resource.StateChangeConf, conn *oapi.Client) error {
+	log.Printf("STARTING VM... %+v", vmId)
+	if _, err := conn.POST_StartVms(oapi.StartVmsRequest{VmIds: []string{vmId}}); err != nil {
 		return err
 	}
 
 	stateConf = &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
 		Target:     []string{"running"},
-		Refresh:    oapiInstanceStateRefreshFunc(conn, instanceAttrOpts.VmId, ""),
+		Refresh:    oapiInstanceStateRefreshFunc(conn, vmId, ""),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", instanceAttrOpts.VmId, err)
+		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", vmId, err)
 	}
 
 	return nil
@@ -406,45 +413,10 @@ func oapiInstanceStateRefreshFunc(conn *oapi.Client, instanceID, failState strin
 	}
 }
 
-func needsVmRestart(attr string) bool {
-	restart := false
-	switch attr {
-	case "vm_type":
-		fallthrough
-	case "user_data":
-		fallthrough
-	case "ebs_optimized":
-		fallthrough
-	case "deletion_protection":
-		restart = true
-	}
-	return restart
-}
-
-func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRequest, attr string) error {
-
-	var err error
-	var stateConf *resource.StateChangeConf
-
-	if needsVmRestart(attr) {
-		stateConf, err = oapiStopInstance(instanceAttrOpts, conn, attr)
-	}
-
-	if err != nil {
-		return err
-	}
-
+func oapiModifyInstanceAttr(conn *oapi.Client, instanceAttrOpts *oapi.UpdateVmRequest) error {
+	log.Printf("UPDATE VM Payload %+v", instanceAttrOpts)
 	if _, err := conn.POST_UpdateVm(*instanceAttrOpts); err != nil {
 		return err
 	}
-
-	if needsVmRestart(attr) {
-		err = oapiStartInstance(instanceAttrOpts, stateConf, conn, attr)
-	}
-
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
