@@ -41,7 +41,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(&server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-5c450b62"),
 					resource.TestCheckResourceAttr(
@@ -78,7 +78,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleOAPIVMAttributes(&before),
+					testAccCheckOutscaleOAPIVMAttributes(t, &before),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
 					resource.TestCheckResourceAttr(
@@ -289,13 +289,9 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
-		if server.ImageId != "ami-5c450b62" {
-			return fmt.Errorf("Bad image_id: %s", server.ImageId)
-		}
-
+		assertEqual(t, "ami-5c450b62", server.ImageId, "Bad image_id.")
 		return nil
 	}
 }
@@ -318,4 +314,10 @@ resource "outscale_vm" "outscale_vm" {
   keypair_name = "integ_sut_keypair"
   security_group_ids = ["sg-c73d3b6b"]
 }`)
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
+	if a != b {
+		t.Fatalf(message+"Expected: %s, actual: %s", a, b)
+	}
 }
