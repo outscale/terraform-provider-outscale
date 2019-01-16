@@ -36,9 +36,13 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 }
 
 const testAccOutscaleOAPILinAttrConfig = `
+
+resource "outscale_net" "vpc" {
+	ip_range = "10.0.0.0/16"
+}
+
 resource "outscale_net_attributes" "outscale_net_attributes" {
-	dns_support_enabled = true
-	net_id = "vpc-5b79bc69"
-	attribute            = "enableDnsSupport"
+	net_id = "${outscale_net.vpc.id}"
+	dhcp_options_set_id = "set-id"
 }
 `
