@@ -29,7 +29,7 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	log.Println("Creating Internet Service")
+	log.Println("[DEBUG] Creating Internet Service")
 	r, err := conn.POST_CreateInternetService(oapi.CreateInternetServiceRequest{})
 
 	var errString string
@@ -61,7 +61,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 
 	id := d.Id()
 
-	log.Printf("Reading Internet Service id (%s)", id)
+	log.Printf("[DEBUG] Reading Internet Service id (%s)", id)
 
 	req := &oapi.ReadInternetServicesRequest{
 		Filters: oapi.FiltersInternetService{InternetServiceIds: []string{id}},
@@ -129,7 +129,7 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Id()
-	log.Printf("Deleting Internet Service id (%s)", id)
+	log.Printf("[DEBUG] Deleting Internet Service id (%s)", id)
 
 	req := &oapi.DeleteInternetServiceRequest{
 		InternetServiceId: id,

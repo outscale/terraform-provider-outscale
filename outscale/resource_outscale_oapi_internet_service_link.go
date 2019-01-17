@@ -81,7 +81,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 
 	d.SetId(id)
 
-	log.Printf("Reading Internet Service id (%s)", id)
+	log.Printf("[DEBUG] Reading Internet Service id (%s)", id)
 
 	req := &oapi.ReadInternetServicesRequest{
 		Filters: oapi.FiltersInternetService{InternetServiceIds: []string{id}},
@@ -162,7 +162,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		return nil
 	})
 	if err != nil {
-		log.Printf("Error dettaching internet service id (%s)", err)
+		log.Printf("[DEBUG] Error dettaching internet service id (%s)", err)
 	}
 
 	d.SetId("")

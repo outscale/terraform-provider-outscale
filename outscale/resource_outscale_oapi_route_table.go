@@ -219,7 +219,7 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...strin
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			resp = nil
 		} else {
-			log.Printf("Error on RouteTableStateRefresh: %s", err)
+			log.Printf("[DEBUG] Error on RouteTableStateRefresh: %s", err)
 			return nil, resp.OK.ResponseContext.RequestId, err
 		}
 	}

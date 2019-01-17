@@ -393,8 +393,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	result := resp.OK
 
 	if len(result.RouteTables) < 1 || reflect.DeepEqual(result.RouteTables[0], oapi.RouteTable{}) {
-		log.Printf("[WARN] Route Table %q is gone, or route does not exist.",
-			routeTableID)
+		log.Printf("[WARN] Route Table %q is gone, or route does not exist.", routeTableID)
 		return false, nil
 	}
 

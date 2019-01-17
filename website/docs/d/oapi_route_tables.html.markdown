@@ -67,9 +67,7 @@ You can use the Filter.N parameter to filter the route tables on the following p
 * `routes.nat-service-ids` The ID(s) of the NAT service(s) specified in routes in the tables.
 * `routes.states` The state(s) of routes in the route table (active | blackhole). The blackhole state indicates that the target of the route is not available.
 * `routes.net-peering-ids` The ID(s) of the Net peering connection(s) specified in routes in the tables.
-* `tags` The key/value combination of the tag(s) associated with your resources, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
-* `tag-keys` The key(s) of the tag(s) associated with your resources.
-* `tag-value` The value(s) of the tag(s) associated with your resources.
+* `tags` The key/value combination of the tag(s) associated with your resources.
 * `net-ids` The ID(s) of the Net(s) for the route tables.
 
 ## Attributes Reference

@@ -106,7 +106,7 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 		return nil
 	}
 	rt := rtRaw.(oapi.RouteTable)
-	log.Printf("[DEBUG] > LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_id"))
+	log.Printf("[DEBUG] LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_id"))
 
 	found := false
 	for _, a := range rt.LinkRouteTables {
@@ -128,9 +128,7 @@ func resourceOutscaleOAPILinkRouteTableUpdate(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).FCU
 
 	routeTableId := d.Get("route_table_id").(string)
-	log.Printf(
-		"[INFO] Creating route table link: %s => %s",
-		d.Get("subnet_id").(string), routeTableId)
+	log.Printf("[INFO] Creating route table link: %s => %s", d.Get("subnet_id").(string), routeTableId)
 
 	req := &fcu.ReplaceRouteTableAssociationInput{
 		AssociationId: aws.String(d.Id()),
