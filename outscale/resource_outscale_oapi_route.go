@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -13,6 +14,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
+
+var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
+	"nat_service_id, vm_id, nic_id or net_peering_id is allowed.")
+
+var allowedTargets = []string{
+	"gateway_id",
+	"nat_service_id",
+	"vm_id",
+	"nic_id",
+	"net_peering_id",
+}
 
 func resourceOutscaleOAPIRoute() *schema.Resource {
 	return &schema.Resource{
@@ -29,58 +41,52 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
 			"gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"route_table_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"destination_prefix_list_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"vm_account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"creation_method": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -90,29 +96,14 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 
 func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	var numTargets int
-	var setTarget string
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_service_id",
-		"vm_id",
-		"nic_id",
-		"net_peering_id",
-	}
-
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
-		}
-	}
+	numTargets, target := getTarget(d)
 
 	if numTargets > 1 {
-		return errRoute
+		return errOAPIRoute
 	}
 
 	createOpts := &oapi.CreateRouteRequest{}
-	switch setTarget {
+	switch target {
 	case "gateway_id":
 		createOpts = &oapi.CreateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
@@ -144,7 +135,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 			NetPeeringId:       d.Get("net_peering_id").(string),
 		}
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
 	log.Printf("[DEBUG] Route create config: %+v", createOpts)
 
@@ -182,10 +173,11 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	var route *oapi.Route
+	var requestId string
 
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			route, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
+			route, requestId, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
 			return resource.RetryableError(err)
 		})
 		if err != nil {
@@ -194,7 +186,7 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(routeOAPIIDHash(d, route))
-	resourceOutscaleOAPIRouteSetResourceData(d, route)
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestId)
 	return nil
 }
 
@@ -202,9 +194,10 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 	conn := meta.(*OutscaleClient).OAPI
 	routeTableID := d.Get("route_table_id").(string)
 
-	destinationCidrBlock := d.Get("destination_ip_range").(string)
+	destinationIpRange := d.Get("destination_ip_range").(string)
+	var requestId string
 
-	route, err := findResourceOAPIRoute(conn, routeTableID, destinationCidrBlock)
+	route, requestId, err := findResourceOAPIRoute(conn, routeTableID, destinationIpRange)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
@@ -213,11 +206,11 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 		}
 		return err
 	}
-	resourceOutscaleOAPIRouteSetResourceData(d, route)
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestId)
 	return nil
 }
 
-func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route) {
+func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route, requestId string) {
 	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
 	d.Set("gateway_id", route.GatewayId)
 	d.Set("vm_id", route.VmId)
@@ -227,41 +220,37 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oap
 	d.Set("vm_account_id", route.VmAccountId)
 	d.Set("creation_method", route.CreationMethod)
 	d.Set("state", route.State)
+	d.Set("request_id", requestId)
+}
+
+func getTarget(d *schema.ResourceData) (n int, target string) {
+	for _, allowedTarget := range allowedTargets {
+		if len(d.Get(allowedTarget).(string)) > 0 {
+			n++
+			target = allowedTarget
+		}
+	}
+	return
 }
 
 func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	var numTargets int
-	var setTarget string
+	numTargets, target := getTarget(d)
 
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_service_id",
-		"nic_id",
-		"vm_id",
-		"net_peering_id",
-	}
 	replaceOpts := &oapi.UpdateRouteRequest{}
 
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
-		}
-	}
-
-	switch setTarget {
+	switch target {
 	case "vm_id":
 		if numTargets > 2 || (numTargets == 2 && len(d.Get("nic_id").(string)) == 0) {
-			return errRoute
+			return errOAPIRoute
 		}
 	default:
 		if numTargets > 1 {
-			return errRoute
+			return errOAPIRoute
 		}
 	}
 
-	switch setTarget {
+	switch target {
 	case "gateway_id":
 		replaceOpts = &oapi.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
@@ -293,7 +282,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 			NetPeeringId:       d.Get("net_peering_id").(string),
 		}
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
 	log.Printf("[DEBUG] Route replace config: %+v", replaceOpts)
 
@@ -404,8 +393,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	result := resp.OK
 
 	if len(result.RouteTables) < 1 || reflect.DeepEqual(result.RouteTables[0], oapi.RouteTable{}) {
-		log.Printf("[WARN] Route Table %q is gone, or route does not exist.",
-			routeTableID)
+		log.Printf("[WARN] Route Table %q is gone, or route does not exist.", routeTableID)
 		return false, nil
 	}
 
@@ -424,7 +412,7 @@ func routeOAPIIDHash(d *schema.ResourceData, r *oapi.Route) string {
 	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(r.DestinationIpRange))
 }
 
-func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.Route, error) {
+func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.Route, string, error) {
 	routeTableID := rtbid
 
 	findOpts := &oapi.ReadRouteTablesRequest{}
@@ -462,28 +450,28 @@ func findResourceOAPIRoute(conn *oapi.Client, rtbid string, cidr string) (*oapi.
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return nil, fmt.Errorf("Error finding route resource: %s", errString)
+		return nil, "", fmt.Errorf("Error finding route resource: %s", errString)
 	}
 
 	result := resp.OK
+	requestId := resp.OK.ResponseContext.RequestId
 
 	if len(result.RouteTables) < 1 || reflect.DeepEqual(result.RouteTables[0], oapi.RouteTable{}) {
-		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist",
-			routeTableID)
+		return nil, requestId, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
 	}
 
 	if cidr != "" {
 		for _, route := range (result.RouteTables[0]).Routes {
 			if route.DestinationIpRange != "" && route.DestinationIpRange == cidr {
-				return &route, nil
+				return &route, requestId, nil
 			}
 		}
 
-		return nil, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
+		return nil, requestId, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
 			"and destination CIDR block (%s).", rtbid, cidr)
 	}
 
-	return nil, fmt.Errorf("When trying to find a matching route for Route Table %q "+
+	return nil, requestId, fmt.Errorf("When trying to find a matching route for Route Table %q "+
 		"you need to specify a CIDR block", rtbid)
 
 }

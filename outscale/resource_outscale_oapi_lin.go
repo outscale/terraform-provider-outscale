@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPINet() *schema.Resource {
@@ -27,16 +28,16 @@ func resourceOutscaleOAPINet() *schema.Resource {
 func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	req := &oapi.CreateNetRequest{}
-
-	req.IpRange = d.Get("ip_range").(string)
+	req := &oapi.CreateNetRequest{
+		IpRange: d.Get("ip_range").(string),
+	}
 
 	if c, ok := d.GetOk("tenancy"); ok {
 		tenancy := c.(string)
 		if tenancy == "default" || tenancy == "dedicated" {
 			req.Tenancy = tenancy
 		} else {
-			return fmt.Errorf("ip_range option not supported %s", tenancy)
+			return fmt.Errorf("tenancy option not supported: %s", tenancy)
 		}
 	}
 
@@ -54,20 +55,23 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		return resource.RetryableError(err)
 	})
 
-	var net oapi.Net
+	var errString string
 
-	if err != nil {
-		log.Printf("[DEBUG] Error creating lin (%s)", err)
-		return err
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("Error creating Outscale Net: %s", errString)
 	}
 
-	if resp == nil {
-		return fmt.Errorf("Cannot create the oAPI vpc, empty response")
-	}
-
-	if resp.OK != nil {
-		net = resp.OK.Net
-	}
+	net := resp.OK.Net
 
 	d.SetId(net.NetId)
 
@@ -112,19 +116,19 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
+		log.Printf("[DEBUG] Error reading network (%s)", err)
 	}
 
 	resp = rs.OK
 
 	if resp == nil {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("oAPI network not found")
 	}
 
 	if len(resp.Nets) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("oAPI network not found")
 	}
 
 	d.Set("ip_range", resp.Nets[0].IpRange)

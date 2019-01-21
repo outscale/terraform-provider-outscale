@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -12,19 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
-
 	var route oapi.Route
-	//var routeTable oapi.RouteTable
 
 	testCheck := func(s *terraform.State) error {
 		return nil
@@ -37,6 +23,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
+			skipIfNoOAPI(t)
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
@@ -90,7 +77,7 @@ func testAccCheckOutscaleOAPIRouteExists(n string, res *oapi.Route) resource.Tes
 		}
 
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		r, err := findResourceOAPIRoute(
+		r, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
 			rs.Primary.Attributes["destination_ip_range"],
@@ -116,8 +103,8 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		route, err := findResourceRoute(
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		route, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
 			rs.Primary.Attributes["destination_ip_range"],
@@ -133,28 +120,24 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 
 var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
 resource "outscale_net" "test" {
-  ip_range = "10.10.0.0/16"
+  ip_range = "10.0.0.0/24"
 }
 
 resource "outscale_route_table" "test" {
-  net_id = "${outscale_net.test.id}"
+  net_id = "${outscale_net.test.net_id}"
 }
 
-resource "outscale_subnet" "test" {
-  net_id = "${outscale_net.test.id}"
-  ip_range = "10.10.10.0/24"
+resource "outscale_internet_service" "outscale_internet_service" {}
+
+resource "outscale_internet_service_link" "outscale_internet_service_link" {
+  internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
+  net_id = "${outscale_net.test.net_id}"
 }
 
 resource "outscale_route" "test" {
-  route_table_id = "${outscale_route_table.test.id}"
-  destination_ip_range = "0.0.0.0/0"
-  vm_id = "${outscale_vm.nat.id}"
-}
-
-resource "outscale_vm" "nat" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-  	subnet_id = "${outscale_subnet.test.id}"
+  gateway_id = "${outscale_internet_service.outscale_internet_service.id}"
+  destination_ip_range = "10.0.0.0/16"
+  route_table_id = "${outscale_route_table.test.route_table_id}"
 }
 `)
 

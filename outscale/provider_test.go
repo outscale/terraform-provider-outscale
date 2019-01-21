@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 	"time"
 
@@ -35,6 +37,19 @@ func TestProvider(t *testing.T) {
 
 func TestProvider_impl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
+}
+
+func skipIfNoOAPI(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOAPI, err := strconv.ParseBool(o)
+	if err != nil {
+		isOAPI = false
+	}
+
+	if !isOAPI {
+		t.Skip()
+	}
 }
 
 func testAccPreCheck(t *testing.T) {
