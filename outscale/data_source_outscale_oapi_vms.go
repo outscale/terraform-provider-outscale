@@ -92,6 +92,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
+	// d.SetId(resource.UniqueId()) NOPE
 	return vmsOAPIDescriptionAttributes(d, filteredInstances, client)
 }
 
