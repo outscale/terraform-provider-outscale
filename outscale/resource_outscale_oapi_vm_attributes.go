@@ -227,7 +227,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
 		opts := &oapi.UpdateVmRequest{
 			VmId:             id,
-			SecurityGroupIds: d.Get("security_group_ids").([]string),
+			SecurityGroupIds: expandStringValueList(d.Get("security_group_ids").([]interface{})),
 		}
 		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
 			return err
