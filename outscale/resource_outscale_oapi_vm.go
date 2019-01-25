@@ -217,7 +217,6 @@ func getOApiVMSchema() map[string]*schema.Schema {
 		Type:     schema.TypeString,
 		Computed: true,
 	}
-	log.Printf("_UPDATE SCHEMA %+v", wholeSchema)
 
 	return wholeSchema
 }

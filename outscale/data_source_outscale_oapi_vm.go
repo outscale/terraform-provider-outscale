@@ -102,7 +102,9 @@ func resourceDataAttrSetter(d *schema.ResourceData, instance *oapi.Vm) error {
 func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
 	set("architecture", instance.Architecture)
-	set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings))
+	if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
+	}
 	set("bsu_optimized", instance.BsuOptimized)
 	set("client_token", instance.ClientToken)
 	set("deletion_protection", instance.DeletionProtection)
@@ -126,7 +128,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("reservation_id", instance.ReservationId)
 	set("root_device_name", instance.RootDeviceName)
 	set("root_device_type", instance.RootDeviceType)
-	set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups))
+	if err := set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups)); err != nil {
+		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
+	}
 	set("state", instance.State)
 	set("state_reason", instance.StateReason)
 	set("subnet_id", instance.SubnetId)
@@ -134,30 +138,23 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("user_data", instance.UserData)
 	set("vm_id", instance.VmId)
 	set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
-	set("vm_type", instance.VmType)
 
-	return nil
+	return set("vm_type", instance.VmType)
 }
 
 func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCreated) []map[string]interface{} {
-	var blockDeviceMapping []map[string]interface{}
+	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
 
-	if len(blockDeviceMappings) > 0 {
-		blockDeviceMapping = make([]map[string]interface{}, len(blockDeviceMappings))
-		for _, mapping := range blockDeviceMappings {
-			r := map[string]interface{}{}
-			r["device_name"] = mapping.DeviceName
-
-			bsu := map[string]interface{}{}
-			bsu["delete_on_vm_deletion"] = mapping.Bsu.DeleteOnVmDeletion
-			bsu["state"] = mapping.Bsu.State
-			bsu["volume_id"] = mapping.Bsu.VolumeId
-			r["bsu"] = bsu
-
-			blockDeviceMapping = append(blockDeviceMapping, r)
+	for k, v := range blockDeviceMappings {
+		blockDeviceMapping[k] = map[string]interface{}{
+			"device_name": v.DeviceName,
+			"bsu": map[string]interface{}{
+				"delete_on_vm_deletion": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
+				"volume_id":             v.Bsu.VolumeId,
+				"state":                 v.Bsu.State,
+				"link_date":             v.Bsu.LinkDate,
+			},
 		}
-	} else {
-		blockDeviceMapping = make([]map[string]interface{}, 0)
 	}
 	return blockDeviceMapping
 }
@@ -165,7 +162,6 @@ func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCr
 func getOAPIVMSecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
-
 		r := map[string]interface{}{
 			"security_group_id":   g.SecurityGroupId,
 			"security_group_name": g.SecurityGroupName,
@@ -396,7 +392,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"block_device_mappings": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -691,7 +687,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"security_groups": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
