@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,17 +13,6 @@ import (
 )
 
 func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
 	var v oapi.RouteTable
 
 	testCheck := func(*terraform.State) error {
@@ -72,7 +59,10 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -97,17 +87,6 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
 	var v oapi.RouteTable
 
 	testCheck := func(*terraform.State) error {
@@ -131,7 +110,10 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -149,21 +131,13 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
 	var rt oapi.RouteTable
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
