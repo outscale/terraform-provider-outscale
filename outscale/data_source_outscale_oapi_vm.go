@@ -104,6 +104,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("architecture", instance.Architecture)
 	if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
+		return err
 	}
 	set("bsu_optimized", instance.BsuOptimized)
 	set("client_token", instance.ClientToken)
@@ -130,6 +131,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("root_device_type", instance.RootDeviceType)
 	if err := set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups)); err != nil {
 		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
+		return err
 	}
 	set("state", instance.State)
 	set("state_reason", instance.StateReason)
