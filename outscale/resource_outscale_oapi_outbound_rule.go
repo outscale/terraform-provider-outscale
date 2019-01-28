@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
@@ -72,8 +71,8 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				ForceNew: true,
 			},
 			"rules":          getIPOAPIPermissionsSchema(false),
-			"inbound_rules":  getIPOAPIPermissionsSchema(false),
-			"outbound_rules": getIPOAPIPermissionsSchema(false),
+			"inbound_rules":  getIPOAPIPermissionsSchema(true),
+			"outbound_rules": getIPOAPIPermissionsSchema(true),
 		},
 	}
 }
@@ -82,35 +81,41 @@ func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
+		Computed: isForAttr,
 		ForceNew: !isForAttr,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_port_range": {
 					Type:     schema.TypeInt,
 					Optional: true,
+					Computed: isForAttr,
 					ForceNew: !isForAttr,
 				},
 				"ip_protocol": {
 					Type:     schema.TypeString,
 					Optional: true,
+					Computed: isForAttr,
 					ForceNew: !isForAttr,
 				},
 				"ip_ranges": {
 					Type:     schema.TypeList,
 					Optional: true,
 					ForceNew: !isForAttr,
+					Computed: isForAttr,
 					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
 				"prefix_list_ids": {
 					Type:     schema.TypeList,
 					Optional: true,
 					ForceNew: !isForAttr,
+					Computed: isForAttr,
 					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
 				"to_port_range": {
 					Type:     schema.TypeInt,
 					Optional: true,
 					ForceNew: !isForAttr,
+					Computed: isForAttr,
 				},
 				"security_groups_members": &schema.Schema{
 					Type:     schema.TypeList,
@@ -254,7 +259,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
+		sg, _, err = findOAPIResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
@@ -292,6 +297,23 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	}
 
 	d.SetId(id)
+
+	ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules)
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("inbound_rules", ips)
+
+	ips, err = setOAPIFromIPPerm(d, sg, sg.OutboundRules)
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("outbound_rules", ips)
+
 	return nil
 }
 
@@ -313,14 +335,6 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 			sg.SecurityGroupName, d.Id())
 		d.SetId("")
 		return nil
-	}
-
-	if ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules); err != nil {
-		return d.Set("inbound_rules", ips)
-	}
-
-	if ips, err := setOAPIFromIPPerm(d, sg, sg.OutboundRules); err != nil {
-		return d.Set("outbound_rules", ips)
 	}
 
 	flow := d.Get("flow").(string)
@@ -381,6 +395,22 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 			flow, d.Id(), sgID)
 		d.SetId("")
 	}
+
+	ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules)
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("inbound_rules", ips)
+
+	ips, err = setOAPIFromIPPerm(d, sg, sg.OutboundRules)
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("outbound_rules", ips)
 
 	return nil
 }
