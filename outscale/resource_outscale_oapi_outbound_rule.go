@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
@@ -73,6 +74,10 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 			"rules":          getIPOAPIPermissionsSchema(false),
 			"inbound_rules":  getIPOAPIPermissionsSchema(true),
 			"outbound_rules": getIPOAPIPermissionsSchema(true),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -227,9 +232,10 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
 
+	var resp *oapi.POST_CreateSecurityGroupRuleResponses
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.POST_CreateSecurityGroupRule(req)
+		resp, err = conn.POST_CreateSecurityGroupRule(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -314,13 +320,15 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 	d.Set("outbound_rules", ips)
 
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+
 	return nil
 }
 
 func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("security_group_id").(string)
-	sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
+	sg, requestId, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -411,6 +419,8 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	}
 
 	d.Set("outbound_rules", ips)
+
+	d.Set("request_id", requestId)
 
 	return nil
 }
