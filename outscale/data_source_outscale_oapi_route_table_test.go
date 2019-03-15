@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,19 +9,11 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIRouteTable_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -39,19 +29,11 @@ func TestAccDataSourceOutscaleOAPIRouteTable_basic(t *testing.T) {
 }
 
 func TestAccDataSourceOutscaleOAPIRouteTable_main(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if isOapi {
-		t.Skip()
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

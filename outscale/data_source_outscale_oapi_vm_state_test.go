@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,18 +9,11 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err == nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -51,11 +42,11 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 
 		state := rs.Primary.Attributes
 
-		if state["instance_id"] != vm.Primary.Attributes["instance_id"] {
+		if state["vm_id"] != vm.Primary.Attributes["vm_id"] {
 			return fmt.Errorf(
-				"instance_id is %s; want %s",
-				state["instance_id"],
-				vm.Primary.Attributes["instance_id"],
+				"vm_id is %s; want %s",
+				state["vm_id"],
+				vm.Primary.Attributes["vm_id"],
 			)
 		}
 
@@ -64,17 +55,14 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 }
 
 const testAccDataSourceOutscaleOAPIVmStateConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
-
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
 }
 
 data "outscale_vm_state" "state" {
-  vm_id = ["${outscale_vm.basic.id}"]
+  vm_id = "${outscale_vm.basic.id}"
 }
 `

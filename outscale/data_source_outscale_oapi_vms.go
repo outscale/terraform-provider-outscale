@@ -92,13 +92,13 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
+	d.SetId(resource.UniqueId())
 	return vmsOAPIDescriptionAttributes(d, filteredInstances, client)
 }
 
 // Populate instance attribute fields with the returned instance
 func vmsOAPIDescriptionAttributes(d *schema.ResourceData, instances []oapi.Vm, conn *oapi.Client) error {
-	d.Set("vms", dataSourceOAPIVMS(instances))
-	return nil
+	return d.Set("vms", dataSourceOAPIVMS(instances))
 }
 
 func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
@@ -111,11 +111,9 @@ func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
 			return nil
 		}
 
-		oapiVMDescriptionAttributes(setterFunc, &v)
-
-		fmt.Println("schema set -> ", s)
-		fmt.Println("instance -> ", instance)
-		fmt.Printf("mv -> %+v\n", v)
+		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
+			fmt.Errorf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
+		}
 
 		s[index] = instance
 	}

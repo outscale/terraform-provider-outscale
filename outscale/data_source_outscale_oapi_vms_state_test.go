@@ -1,20 +1,18 @@
 package outscale
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccDataSourceOutscaleOAPIVMSState(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
-	if err == nil {
+	if err != nil {
 		oapi = false
 	}
 
@@ -35,45 +33,15 @@ func TestAccDataSourceOutscaleOAPIVMSState(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMSStateCheck(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		vm, ok := s.RootModule().Resources["outscale_vm.basic"]
-		if !ok {
-			return fmt.Errorf("can't find outscale_public_ip.test in state")
-		}
-
-		state := rs.Primary.Attributes
-
-		if state["instance_id"] != vm.Primary.Attributes["instance_id"] {
-			return fmt.Errorf(
-				"instance_id is %s; want %s",
-				state["instance_id"],
-				vm.Primary.Attributes["instance_id"],
-			)
-		}
-
-		return nil
-	}
-}
-
 const testAccDataSourceOutscaleOAPIVMSStateConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
-
 resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+	image_id               = "ami-5c450b62"
+	vm_type                = "c4.large"
+	keypair_name           = "testkp"
+	security_group_ids     = ["sg-9752b7a6"]
 }
 
-data "outscale_vm_state" "state" {
-  vm = ["${outscale_vm.basic.id}"]
+data "outscale_vms_state" "state" {
+  vm_ids = ["${outscale_vm.basic.id}"]
 }
 `

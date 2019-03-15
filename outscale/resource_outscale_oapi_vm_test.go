@@ -2,8 +2,7 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
+	"log"
 	"strings"
 	"testing"
 	"time"
@@ -17,33 +16,24 @@ import (
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
 	var server oapi.Vm
-
-	// rInt := acctest.RandInt()
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
-					testAccCheckOutscaleOAPIVMAttributes(&server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-5c450b62"),
+						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
 				),
@@ -53,48 +43,50 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
 	var before oapi.Vm
 	var after oapi.Vm
 
-	// rInt := acctest.RandInt()
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "t2.micro"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
-					testAccCheckOutscaleOAPIVMAttributes(&before),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "image_id", "ami-cc3278d3"),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", "t2.micro"),
+					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
+					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "t2.micro"),
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
-					testAccCheckOAPIVMNotRecreated(
-						t, &before, &after),
+					testAccCheckOAPIVMNotRecreated(t, &before, &after),
+					testAccCheckOAPIVMSecurityGroups(t, &before, &after),
 				),
 			},
 		},
 	})
+}
+
+func testAccCheckOAPIVMSecurityGroups(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
+		expectedSecurityGroup := after.SecurityGroups[0].SecurityGroupId
+		for i := range before.SecurityGroups {
+			assertNotEqual(t, before.SecurityGroups[i].SecurityGroupId, expectedSecurityGroup,
+				"Outscale VM SecurityGroupId Either not found or are the same.")
+		}
+		return nil
+	}
 }
 
 func testAccCheckOAPIVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
@@ -146,22 +138,9 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*s
 	}
 }
 
-func testAccCheckOAPIVMNotRecreated(t *testing.T,
-	before, after *oapi.Vm) resource.TestCheckFunc {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
+func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if before.VmId != after.VmId {
-			t.Fatalf("Outscale VM IDs have changed. Before %s. After %s", before.VmId, after.VmId)
-		}
+		assertEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
 	}
 }
@@ -289,33 +268,41 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(server *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oapi.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
-		if server.ImageId != "ami-5c450b62" {
-			return fmt.Errorf("Bad image_id: %s", server.ImageId)
-		}
-
+		assertEqual(t, omi, server.ImageId, "Bad image_id.")
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasic() string {
-	return `
+func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType string) string {
+	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
-	image_id               = "ami-5c450b62"
-	vm_type                = "c4.large"
-	keypair_name           = "testkp"
-	security_group_ids     = ["sg-9752b7a6"]
-}`
+	image_id			= "%s"
+	vm_type            	= "%s"
+	keypair_name		= "terraform-basic"
+	security_group_ids	= ["sg-9752b7a6"]
+}`, omi, vmType)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey() string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_vm" {
-  image_id = "ami-cc3278d3"
-  vm_type = "c4.large"
+resource "outscale_vm" "basic" {
+  image_id = "%s"
+  vm_type = "%s"
   keypair_name = "integ_sut_keypair"
-  security_group_ids = ["sg-c73d3b6b"]
-}`)
+  security_group_ids = ["sg-22fda224"]
+}`, omi, vmType)
+}
+
+func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {
+	if a == b {
+		t.Fatalf(message+"Expected: %s and %s to differ.", a, b)
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
+	if a != b {
+		t.Fatalf(message+"Expected: %s, actual: %s", a, b)
+	}
 }

@@ -1,34 +1,26 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig,
+				Config: testAccOAPIVMDataSourceConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "image_id", "ami-5c450b62"),
+						"data.outscale_vm.basic_web", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"data.outscale_vm.basic_web", "type", "c4.large"),
 				),
@@ -38,17 +30,19 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 }
 
 // Lookup based on InstanceID
-const testAccOAPIVMDataSourceConfig = `
-resource "outscale_vm" "basic" {
-	image_id               = "ami-5c450b62"
-	vm_type                = "c4.large"
-	keypair_name           = "testkp"
-	security_group_ids     = ["sg-9752b7a6"]
-}
+func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id               = "%s"
+			vm_type                = "%s"
+			keypair_name           = "terraform-basic"
+			security_group_ids     = ["sg-9752b7a6"]
+		}
 
-data "outscale_vm" "basic_web" {
-	filter {
-    name = "vm_ids"
-    values = ["${outscale_vm.basic.id}"]
-  }
-}`
+		data "outscale_vm" "basic_web" {
+			filter {
+			name = "vm_ids"
+			values = ["${outscale_vm.basic.id}"]
+		  }
+		}`, omi, vmType)
+}
