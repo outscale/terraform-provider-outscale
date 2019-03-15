@@ -4,14 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
@@ -35,7 +36,7 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"net_id": {
+			"source_net_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -49,7 +50,7 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"code": {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
@@ -64,7 +65,7 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 			},
 			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tag":          tagsSchemaComputed(),
+			"tags":         tagsSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -74,24 +75,20 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	// Create the vpc peering connection
-	createOpts := &fcu.CreateVpcPeeringConnectionInput{
-		PeerVpcId: aws.String(d.Get("accepter_net_id").(string)),
-		VpcId:     aws.String(d.Get("net_id").(string)),
-	}
-
-	if v, ok := d.GetOk("source_net_account_id"); ok {
-		createOpts.PeerOwnerId = aws.String(v.(string))
+	createOpts := &oapi.CreateNetPeeringRequest{
+		AccepterNetId: d.Get("accepter_net_id").(string),
+		SourceNetId:   d.Get("source_net_id").(string),
 	}
 
 	log.Printf("[DEBUG] VPC Peering Create options: %#v", createOpts)
 
-	var resp *fcu.CreateVpcPeeringConnectionOutput
+	var resp *oapi.POST_CreateNetPeeringResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.CreateVpcPeeringConnection(createOpts)
+		resp, err = conn.POST_CreateNetPeering(*createOpts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -101,24 +98,36 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 		}
 		return nil
 	})
-	if err != nil {
-		return errwrap.Wrapf("Error creating VPC Peering Connection: {{err}}", err)
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Error creating Net Peering. Details: %s", errString)
 	}
 
 	// Get the ID and store it
-	rt := resp.VpcPeeringConnection
-	d.SetId(*rt.VpcPeeringConnectionId)
+	rt := resp.OK
+	d.SetId(rt.NetPeering.NetPeeringId)
 
-	if err := setTags(conn, d); err != nil {
+	if err := setOAPITags(conn, d); err != nil {
 		return err
 	}
 
 	d.SetPartial("tags")
 
-	log.Printf("[INFO] VPC Peering Connection ID: %s", d.Id())
+	log.Printf("[INFO] Net Peering ID: %s", d.Id())
 
 	// Wait for the vpc peering connection to become available
-	log.Printf("[DEBUG] Waiting for VPC Peering Connection (%s) to become available.", d.Id())
+	log.Printf("[DEBUG] Waiting for Net Peering (%s) to become available.", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"initiating-request", "provisioning", "pending"},
 		Target:  []string{"pending-acceptance", "active"},
@@ -127,7 +136,7 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
 		return errwrap.Wrapf(fmt.Sprintf(
-			"Error waiting for VPC Peering Connection (%s) to become available: {{err}}",
+			"Error waiting for Net Peering (%s) to become available: {{err}}",
 			d.Id()), err)
 	}
 
@@ -135,12 +144,12 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	var resp *fcu.DescribeVpcPeeringConnectionsOutput
+	conn := meta.(*OutscaleClient).OAPI
+	var resp *oapi.POST_ReadNetPeeringsResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpcPeeringConnections(&fcu.DescribeVpcPeeringConnectionsInput{
-			VpcPeeringConnectionIds: []*string{aws.String(d.Id())},
+		resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
+			Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{d.Id()}},
 		})
 
 		if err != nil {
@@ -151,32 +160,44 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 		}
 		return nil
 	})
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
-			resp = nil
-		} else {
-			log.Printf("Error reading VPC Peering Connection details: %s", err)
-			return err
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
+				d.SetId("")
+				return nil
+			}
+
+			// Allow a failed Net Peering to fallthrough,
+			// to allow rest of the logic below to do its work.
+			//TODO: improve logic
+			//FIXME: check if it is Name or Message
+			if resp.OK != nil {
+				if err != nil && resp.OK.NetPeerings[0].State.Name != "failed" {
+					return err
+				}
+			}
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
 		}
+		return fmt.Errorf("Error reading Net Peering details: %s", errString)
 	}
 
-	pc := resp.VpcPeeringConnections[0]
+	result := resp.OK
 
-	// Allow a failed VPC Peering Connection to fallthrough,
-	// to allow rest of the logic below to do its work.
-	if err != nil && *pc.Status.Code != "failed" {
-		return err
-	}
-
-	if resp == nil {
-		d.SetId("")
-		return nil
-	}
+	pc := result.NetPeerings[0]
 
 	// The failed status is a status that we can assume just means the
 	// connection is gone. Destruction isn't allowed, and it eventually
 	// just "falls off" the console. See GH-2322
-	if pc.Status != nil {
+	if !reflect.DeepEqual(pc.State, oapi.NetPeeringState{}) {
 		status := map[string]bool{
 			"deleted":  true,
 			"deleting": true,
@@ -184,34 +205,34 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 			"failed":   true,
 			"rejected": true,
 		}
-		if _, ok := status[*pc.Status.Code]; ok {
-			log.Printf("[DEBUG] VPC Peering Connection (%s) in state (%s), removing.",
-				d.Id(), *pc.Status.Code)
+		if _, ok := status[pc.State.Name]; ok {
+			log.Printf("[DEBUG] Net Peering (%s) in state (%s), removing.",
+				d.Id(), pc.State.Name)
 			d.SetId("")
 			return nil
 		}
 	}
-	log.Printf("[DEBUG] VPC Peering Connection response: %#v", pc)
+	log.Printf("[DEBUG] Net Peering response: %#v", pc)
 
-	log.Printf("[DEBUG] VPC PeerConn Requester %s, Accepter %s", *pc.RequesterVpcInfo.OwnerId, *pc.AccepterVpcInfo.OwnerId)
+	log.Printf("[DEBUG] VPC PeerConn Source %s, Accepter %s", pc.SourceNet.AccountId, pc.AccepterNet.AccountId)
 
 	accepter := make(map[string]interface{})
 	requester := make(map[string]interface{})
 	stat := make(map[string]interface{})
 
-	if pc.AccepterVpcInfo != nil {
-		accepter["ip_range"] = aws.StringValue(pc.AccepterVpcInfo.CidrBlock)
-		accepter["account_id"] = aws.StringValue(pc.AccepterVpcInfo.OwnerId)
-		accepter["net_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
+	if !reflect.DeepEqual(pc.AccepterNet, oapi.AccepterNet{}) {
+		accepter["ip_range"] = pc.AccepterNet.IpRange
+		accepter["account_id"] = pc.AccepterNet.AccountId
+		accepter["net_id"] = pc.AccepterNet.NetId
 	}
-	if pc.RequesterVpcInfo != nil {
-		requester["ip_range"] = aws.StringValue(pc.AccepterVpcInfo.CidrBlock)
-		requester["account_id"] = aws.StringValue(pc.AccepterVpcInfo.OwnerId)
-		requester["net_id"] = aws.StringValue(pc.AccepterVpcInfo.VpcId)
+	if !reflect.DeepEqual(pc.SourceNet, oapi.SourceNet{}) {
+		requester["ip_range"] = pc.SourceNet.IpRange
+		requester["account_id"] = pc.SourceNet.AccountId
+		requester["net_id"] = pc.SourceNet.NetId
 	}
-	if pc.Status != nil {
-		stat["code"] = aws.StringValue(pc.Status.Code)
-		stat["message"] = aws.StringValue(pc.Status.Message)
+	if pc.State.Name != "" {
+		stat["name"] = pc.State.Name
+		stat["message"] = pc.State.Message
 	}
 
 	if err := d.Set("accepter_net", accepter); err != nil {
@@ -223,27 +244,27 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("status", stat); err != nil {
 		return err
 	}
-	if err := d.Set("net_peering_id", pc.VpcPeeringConnectionId); err != nil {
+	if err := d.Set("net_peering_id", pc.NetPeeringId); err != nil {
 		return err
 	}
-	if err := d.Set("tag", tagsToMap(pc.Tags)); err != nil {
-		return errwrap.Wrapf("Error setting VPC Peering Connection tags: {{err}}", err)
+	if err := d.Set("tags", tagsOAPIToMap(pc.Tags)); err != nil {
+		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
 
-	d.Set("request_id", resp.RequestId)
+	d.Set("request_id", result.ResponseContext.RequestId)
 
 	return nil
 }
 
 func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	var err error
+	var resp *oapi.POST_DeleteNetPeeringResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.DeleteVpcPeeringConnection(
-			&fcu.DeleteVpcPeeringConnectionInput{
-				VpcPeeringConnectionId: aws.String(d.Id()),
-			})
+		resp, err = conn.POST_DeleteNetPeering(oapi.DeleteNetPeeringRequest{
+			NetPeeringId: d.Id(),
+		})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -254,19 +275,34 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 		return nil
 	})
 
-	return err
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Error deleteting Net Peering. Details: %s", errString)
+	}
+
+	return nil
 }
 
 // resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
 // a VPCPeeringConnection.
-func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		var resp *fcu.DescribeVpcPeeringConnectionsOutput
+		var resp *oapi.POST_ReadNetPeeringsResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeVpcPeeringConnections(&fcu.DescribeVpcPeeringConnectionsInput{
-				VpcPeeringConnectionIds: []*string{aws.String(id)},
+			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
+				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{id}},
 			})
 
 			if err != nil {
@@ -277,31 +313,39 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *fcu.Client, 
 			}
 			return nil
 		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
-				resp = nil
-			} else {
-				log.Printf("Error reading VPC Peering Connection details: %s", err)
-				return nil, "error", err
+
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
+					// Sometimes AWS just has consistency issues and doesn't see
+					// our instance yet. Return an empty state.
+					return nil, "", nil
+				}
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
 			}
+			return nil, "error", fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		if resp == nil {
-			// Sometimes AWS just has consistency issues and doesn't see
-			// our instance yet. Return an empty state.
-			return nil, "", nil
-		}
+		result := resp.OK
 
-		pc := resp.VpcPeeringConnections[0]
+		pc := result.NetPeerings[0]
 
-		// A VPC Peering Connection can exist in a failed state due to
+		// A Net Peering can exist in a failed state due to
 		// incorrect VPC ID, account ID, or overlapping IP address range,
 		// thus we short circuit before the time out would occur.
-		if pc != nil && *pc.Status.Code == "failed" {
-			return nil, "failed", errors.New(*pc.Status.Message)
+		if pc.State.Name == "failed" {
+			return nil, "failed", errors.New(pc.State.Message)
 		}
 
-		return pc, *pc.Status.Code, nil
+		return pc, pc.State.Name, nil
 	}
 }
 
