@@ -365,12 +365,12 @@ func readBlockDeviceOApiMappingsFromConfig(
 				ebs.Iops = int64(v)
 			}
 
-			blockDevices = append(blockDevices, oapi.BlockDeviceMappingVmCreation{
-				Bsu:               ebs,
-				DeviceName:        bd["device_name"].(string),
-				NoDevice:          bd["no_device"].(string),
-				VirtualDeviceName: bd["virtual_device_name"].(string),
-			})
+			blockDevice := oapi.BlockDeviceMappingVmCreation{
+				Bsu:        ebs,
+				DeviceName: bd["device_name"].(string),
+			}
+
+			blockDevices = append(blockDevices, blockDevice)
 		}
 	}
 

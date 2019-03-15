@@ -404,16 +404,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Optional: true,
 						Computed: true,
 					},
-					"no_device": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
-					"virtual_device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
 					"bsu": {
 						Type:     schema.TypeMap,
 						Optional: true,
