@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
@@ -35,38 +35,43 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"private_ip": {
+			"private_ips": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
 }
 
 func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	input := &fcu.AssignPrivateIpAddressesInput{
-		NetworkInterfaceId: aws.String(d.Get("nic_id").(string)),
+	input := &oapi.LinkPrivateIpsRequest{
+		NicId: d.Get("nic_id").(string),
 	}
 
 	if v, ok := d.GetOk("allow_relink"); ok {
-		input.AllowReassignment = aws.Bool(v.(bool))
+		input.AllowRelink = v.(bool)
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SecondaryPrivateIpAddressCount = aws.Int64(int64(v.(int)))
+		input.SecondaryPrivateIpCount = int64(v.(int))
 	}
 
-	if v, ok := d.GetOk("private_ip"); ok {
-		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
+	if v, ok := d.GetOk("private_ips"); ok {
+		input.PrivateIps = expandStringValueList(v.([]interface{}))
 	}
 
 	var err error
+	var resp *oapi.POST_LinkPrivateIpsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.AssignPrivateIpAddresses(input)
+		resp, err = conn.POST_LinkPrivateIps(*input)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -76,30 +81,41 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 		return nil
 	})
 
-	if err != nil {
-		return fmt.Errorf("Failure to assign Private IPs: %s", err)
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Failure to assign Private IPs: %s", errString)
+
 	}
 
-	d.SetId(*input.NetworkInterfaceId)
+	d.SetId(input.NicId)
 
 	return resourceOutscaleOAPINetworkInterfacePrivateIPRead(d, meta)
 }
 
 func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	interfaceID := d.Get("nic_id").(string)
 
-	req := &fcu.DescribeNetworkInterfacesInput{
-		NetworkInterfaceIds: []*string{aws.String(interfaceID)},
+	req := &oapi.ReadNicsRequest{
+		Filters: oapi.FiltersNic{NicIds: []string{interfaceID}},
 	}
 
-	var resp *fcu.DescribeNetworkInterfacesOutput
+	var describeResp *oapi.POST_ReadNicsResponses
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		resp, err = conn.VM.DescribeNetworkInterfaces(req)
+		describeResp, err = conn.POST_ReadNics(*req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -109,57 +125,72 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-			// The ENI is gone now, so just remove the attachment from the state
-			d.SetId("")
-			return nil
+	var errString string
+
+	if err != nil || describeResp.OK == nil {
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+				// The ENI is gone now, so just remove the attachment from the state
+				d.SetId("")
+				return nil
+			}
+			errString = err.Error()
+		} else if describeResp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
+		} else if describeResp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
+		} else if describeResp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
 		}
+		return fmt.Errorf("Could not find network interface: %s", errString)
 
-		return fmt.Errorf("Error retrieving ENI: %s", err)
-	}
-	if len(resp.NetworkInterfaces) != 1 {
-		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, resp.NetworkInterfaces)
 	}
 
-	eni := resp.NetworkInterfaces[0]
+	result := describeResp.OK
 
-	if eni.NetworkInterfaceId == nil {
+	if len(result.Nics) != 1 {
+		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, result.Nics)
+	}
+
+	eni := result.Nics[0]
+
+	if eni.NicId == "" {
 		// Interface is no longer attached, remove from state
 		d.SetId("")
 		return nil
 	}
 
 	var ips []string
-	for _, v := range eni.PrivateIpAddresses {
-		ips = append(ips, *v.PrivateIpAddress)
+	for _, v := range eni.PrivateIps {
+		ips = append(ips, v.PrivateIp)
 	}
 
 	_, ok := d.GetOk("allow_relink")
 
 	d.Set("allow_relink", ok)
-	d.Set("private_ip", ips)
-	d.Set("secondary_private_ip_count", len(eni.PrivateIpAddresses))
-	d.Set("nic_id", eni.NetworkInterfaceId)
-	d.Set("request_id", resp.RequestId)
+	d.Set("private_ips", ips)
+	d.Set("secondary_private_ip_count", len(eni.PrivateIps))
+	d.Set("nic_id", eni.NicId)
+	d.Set("request_id", result.ResponseContext.RequestId)
 
 	return nil
 }
 
 func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	input := &fcu.UnassignPrivateIpAddressesInput{
-		NetworkInterfaceId: aws.String(d.Id()),
+	input := &oapi.UnlinkPrivateIpsRequest{
+		NicId: d.Id(),
 	}
 
-	if v, ok := d.GetOk("private_ip"); ok {
-		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
+	if v, ok := d.GetOk("private_ips"); ok {
+		input.PrivateIps = expandStringValueList(v.([]interface{}))
 	}
 
 	var err error
+	var resp *oapi.POST_UnlinkPrivateIpsResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.UnassignPrivateIpAddresses(input)
+		resp, err = conn.POST_UnlinkPrivateIps(*input)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -169,9 +200,23 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 		return nil
 	})
 
-	if err != nil {
-		return fmt.Errorf("Failure to unassign Private IPs: %s", err)
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Failure to unassign Private IPs: %s", errString)
+
 	}
+
+	d.SetId("")
 
 	return nil
 }
