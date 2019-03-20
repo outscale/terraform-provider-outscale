@@ -51,6 +51,16 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			"security_group_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"ip_protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -319,6 +329,8 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	}
 
 	d.Set("outbound_rules", ips)
+	d.Set("security_group_name", sg.SecurityGroupName)
+	d.Set("net_id", sg.NetId)
 
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
@@ -419,6 +431,9 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	}
 
 	d.Set("outbound_rules", ips)
+
+	d.Set("security_group_name", sg.SecurityGroupName)
+	d.Set("net_id", sg.NetId)
 
 	d.Set("request_id", requestId)
 
