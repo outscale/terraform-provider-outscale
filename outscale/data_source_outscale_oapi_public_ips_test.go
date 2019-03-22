@@ -27,12 +27,12 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPIPublicIPSConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.0.domain", "standard"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.1.domain", "standard"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.2.domain", "standard"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.0.public_ip"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.1.public_ip"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.2.public_ip"),
 				),
 			},
 		},

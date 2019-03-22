@@ -21,7 +21,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"filter": dataSourceFiltersSchema(),
-		"public_ip": {
+		"public_ips": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -140,7 +140,7 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 
 	d.Set("request_id", describeAddresses.OK.ResponseContext.RequestId)
 
-	err = d.Set("public_ip", address)
+	err = d.Set("public_ips", address)
 
 	return err
 }
