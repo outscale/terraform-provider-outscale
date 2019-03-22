@@ -3,6 +3,7 @@ package outscale
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -112,7 +113,7 @@ func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
 		}
 
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
-			fmt.Errorf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
+			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
 
 		s[index] = instance
