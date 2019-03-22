@@ -36,6 +36,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
+					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
@@ -281,7 +282,7 @@ resource "outscale_vm" "basic" {
 	image_id			= "%s"
 	vm_type            	= "%s"
 	keypair_name		= "terraform-basic"
-	security_group_ids	= ["sg-9752b7a6"]
+	security_group_ids	= ["sg-77bd190e"]
 }`, omi, vmType)
 }
 
@@ -291,7 +292,7 @@ resource "outscale_vm" "basic" {
   image_id = "%s"
   vm_type = "%s"
   keypair_name = "integ_sut_keypair"
-  security_group_ids = ["sg-22fda224"]
+  security_group_ids = ["sg-77bd190e"]
 }`, omi, vmType)
 }
 

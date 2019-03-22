@@ -241,7 +241,7 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...strin
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		fmt.Errorf("Error getting route table: %s", errString)
+		return nil, "", fmt.Errorf("Error getting route table: %s", errString)
 	}
 	if len(result.RouteTables) <= 0 {
 		return nil, resp.OK.ResponseContext.RequestId, err
