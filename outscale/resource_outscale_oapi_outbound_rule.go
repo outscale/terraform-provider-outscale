@@ -119,7 +119,7 @@ func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
 					Computed: isForAttr,
 					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
-				"prefix_list_ids": {
+				"service_ids": {
 					Type:     schema.TypeList,
 					Optional: true,
 					ForceNew: !isForAttr,
@@ -601,14 +601,14 @@ func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oa
 			}
 		}
 
-		if raw, ok := v["prefix_list_ids"]; ok {
+		if raw, ok := v["service_ids"]; ok {
 			list := raw.([]interface{})
 			if len(list) > 0 {
 				perm.PrefixListIds = make([]string, len(list))
 				for i, v := range list {
 					prefixListID, ok := v.(string)
 					if !ok {
-						return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+						return nil, fmt.Errorf("empty element found in service_ids - consider using the compact function")
 					}
 					perm.PrefixListIds[i] = prefixListID
 				}
@@ -773,7 +773,7 @@ func setOAPIFromIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, rules []o
 		ip["to_port_range"] = rule.ToPortRange
 		ip["ip_protocol"] = rule.IpProtocol
 		ip["ip_ranges"] = rule.IpRanges
-		ip["prefix_list_ids"] = rule.PrefixListIds
+		ip["service_ids"] = rule.PrefixListIds
 
 		if len(rule.SecurityGroupsMembers) > 0 {
 			s := rule.SecurityGroupsMembers[0]
