@@ -171,7 +171,7 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
-	var rule *oapi.SecurityGroupRule
+	var rule []oapi.SecurityGroupRule
 	var rules []oapi.SecurityGroupRule
 	ruleType := "ingress"
 	rules = sg.InboundRules
