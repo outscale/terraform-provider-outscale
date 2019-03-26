@@ -1055,14 +1055,14 @@ type DeleteSecurityGroupResponse struct {
 type DeleteSecurityGroupRuleRequest struct {
 	DryRun                         bool                `json:"DryRun,omitempty"`
 	Flow                           string              `json:"Flow,omitempty"`
-	FromPortRange                  int64               `json:"FromPortRange,omitempty"`
+	FromPortRange                  int64               `json:"FromPortRange"`
 	IpProtocol                     string              `json:"IpProtocol,omitempty"`
 	IpRange                        string              `json:"IpRange,omitempty"`
 	Rules                          []SecurityGroupRule `json:"Rules,omitempty"`
 	SecurityGroupAccountIdToUnlink string              `json:"SecurityGroupAccountIdToUnlink,omitempty"`
 	SecurityGroupId                string              `json:"SecurityGroupId,omitempty"`
 	SecurityGroupNameToUnlink      string              `json:"SecurityGroupNameToUnlink,omitempty"`
-	ToPortRange                    int64               `json:"ToPortRange,omitempty"`
+	ToPortRange                    int64               `json:"ToPortRange"`
 }
 
 // implements the service definition of DeleteSecurityGroupRuleResponse
