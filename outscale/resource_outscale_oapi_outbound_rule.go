@@ -237,7 +237,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		ToPortRange:                  int64(toPortRange),
 	}
 
-	fmt.Printf("Req -> %+v\n", req)
+	//fmt.Printf("Req -> %+v\n", req)
 
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
@@ -274,6 +274,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 	id := ipOAPIPermissionIDHash(flow, sgID, expandedRules)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
+	var configRules []oapi.SecurityGroupRule
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		sg, _, err = findOAPIResourceSecurityGroup(conn, sgID)
 
@@ -289,7 +290,6 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 			rules = sg.OutboundRules
 		}
 
-		var configRules []oapi.SecurityGroupRule
 		if isOneRule {
 			configRules = singleExpandedRule
 		} else {
@@ -298,7 +298,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 		rule := findOAPIRuleMatch(configRules, rules)
 
-		if rule == nil {
+		if len(rule) == 0 {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
 				flow, id, sgID)
 			return resource.RetryableError(fmt.Errorf("No match found"))
@@ -314,7 +314,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 	d.SetId(id)
 
-	ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules)
+	ips, err := setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.InboundRules))
 
 	if err != nil {
 		return err
@@ -322,7 +322,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 	d.Set("inbound_rules", ips)
 
-	ips, err = setOAPIFromIPPerm(d, sg, sg.OutboundRules)
+	ips, err = setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.OutboundRules))
 
 	if err != nil {
 		return err
@@ -410,13 +410,13 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 
 	rule := findOAPIRuleMatch(configRules, existingRules)
 
-	if rule == nil {
+	if len(rule) == 0 {
 		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
 			flow, d.Id(), sgID)
 		d.SetId("")
 	}
 
-	ips, err := setOAPIFromIPPerm(d, sg, sg.InboundRules)
+	ips, err := setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.InboundRules))
 
 	if err != nil {
 		return err
@@ -424,7 +424,7 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 
 	d.Set("inbound_rules", ips)
 
-	ips, err = setOAPIFromIPPerm(d, sg, sg.OutboundRules)
+	ips, err = setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.OutboundRules))
 
 	if err != nil {
 		return err
@@ -698,14 +698,14 @@ func ipOAPIPermissionIDHash(ruleType, sgID string, ips []oapi.SecurityGroupRule)
 	return fmt.Sprintf("sgrule-%d", hashcode.String(buf.String()))
 }
 
-func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule) *oapi.SecurityGroupRule {
-	var rule *oapi.SecurityGroupRule
-	fmt.Printf("Rules (from config) -> %+v\n", p)
-	fmt.Printf("Rules (from service) -> %+v\n", rules)
+func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule) []oapi.SecurityGroupRule {
+	var rule = make([]oapi.SecurityGroupRule, 0)
+	//fmt.Printf("Rules (from config) -> %+v\n", p)
+	//fmt.Printf("Rules (from service) -> %+v\n", rules)
 	for _, i := range p {
 		for _, r := range rules {
 
-			fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
+			//fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
 			if i.ToPortRange != r.ToPortRange {
 				continue
 			}
@@ -757,7 +757,7 @@ func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRul
 				continue
 			}
 
-			rule = &r
+			rule = append(rule, r)
 		}
 	}
 	return rule
