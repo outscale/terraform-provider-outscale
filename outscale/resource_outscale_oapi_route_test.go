@@ -2,29 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
-	var route fcu.Route
-	var routeTable fcu.RouteTable
+	var route oapi.Route
 
 	testCheck := func(s *terraform.State) error {
 		return nil
@@ -37,6 +23,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
+			skipIfNoOAPI(t)
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
@@ -52,7 +39,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 				Config: testAccOutscaleOAPIRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
-					testAccCheckRouteTableExists("outscale_route_table.test", &routeTable),
+					//testAccCheckRouteTableExists("outscale_route_table.test", &routeTable),
 					testCheckChange,
 				),
 			},
@@ -61,7 +48,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 }
 
 // func TestAccOutscaleRoute_doesNotCrashWithVPCEndpoint(t *testing.T) {
-// 	var route fcu.Route
+// 	var route oapi.Route
 
 // 	resource.Test(t, resource.TestCase{
 // 		PreCheck:     func() { testAccPreCheck(t) },
@@ -78,7 +65,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 // 	})
 // }
 
-func testAccCheckOutscaleOAPIRouteExists(n string, res *fcu.Route) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIRouteExists(n string, res *oapi.Route) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -89,11 +76,11 @@ func testAccCheckOutscaleOAPIRouteExists(n string, res *fcu.Route) resource.Test
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		r, err := findResourceRoute(
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		r, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_cidr_block"],
+			rs.Primary.Attributes["destination_ip_range"],
 		)
 
 		if err != nil {
@@ -116,11 +103,11 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		route, err := findResourceRoute(
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		route, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_cidr_block"],
+			rs.Primary.Attributes["destination_ip_range"],
 		)
 
 		if route == nil && err == nil {
@@ -133,28 +120,24 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 
 var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
 resource "outscale_net" "test" {
-  ip_range = "10.10.0.0/16"
+  ip_range = "10.0.0.0/24"
 }
 
 resource "outscale_route_table" "test" {
-  lin_id = "${outscale_net.test.id}"
+  net_id = "${outscale_net.test.net_id}"
 }
 
-resource "outscale_subnet" "test" {
-  lin_id = "${outscale_net.test.id}"
-  ip_range = "10.10.10.0/24"
+resource "outscale_internet_service" "outscale_internet_service" {}
+
+resource "outscale_internet_service_link" "outscale_internet_service_link" {
+  internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
+  net_id = "${outscale_net.test.net_id}"
 }
 
 resource "outscale_route" "test" {
-  route_table_id = "${outscale_route_table.test.id}"
-  destination_ip_range = "0.0.0.0/0"
-  vm_id = "${outscale_vm.nat.id}"
-}
-
-resource "outscale_vm" "nat" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-  subnet_id = "${outscale_subnet.test.id}"
+  gateway_id = "${outscale_internet_service.outscale_internet_service.id}"
+  destination_ip_range = "10.0.0.0/16"
+  route_table_id = "${outscale_route_table.test.route_table_id}"
 }
 `)
 

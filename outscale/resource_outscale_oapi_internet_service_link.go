@@ -30,11 +30,11 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	vpcID := d.Get("net_id").(string)
+	netId := d.Get("net_id").(string)
 	igID := d.Get("internet_service_id").(string)
 
 	req := &oapi.LinkInternetServiceRequest{
-		NetId:             vpcID,
+		NetId:             netId,
 		InternetServiceId: igID,
 	}
 
@@ -118,24 +118,22 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", errString)
 	}
 
-	result := resp.OK
+	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
+	// once filters work again. And use resp.OK.InternetServices[0]
+	err, result := getInternetService(resp.OK.InternetServices, id)
 
 	if resp == nil {
 		d.SetId("")
 		return errors.New("Got a nil response for internet service Link")
 	}
 
-	if result.InternetServices == nil {
-		return errors.New("Failed to retrieve attachments internet service Link")
-	}
-
-	if err := d.Set("tags", tagsOAPIToMap(result.InternetServices[0].Tags)); err != nil {
+	if err := d.Set("tags", tagsOAPIToMap(result.Tags)); err != nil {
 		return err
 	}
 
-	d.Set("state", result.InternetServices[0].State)
-	d.Set("internet_service_id", result.InternetServices[0].InternetServiceId)
-	d.Set("request_id", result.ResponseContext.RequestId)
+	d.Set("state", result.State)
+	d.Set("internet_service_id", result.InternetServiceId)
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
 	return nil
 }
@@ -143,11 +141,11 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	vpcID := d.Get("net_id").(string)
+	netId := d.Get("net_id").(string)
 	igID := d.Get("internet_service_id").(string)
 
 	req := &oapi.UnlinkInternetServiceRequest{
-		NetId:             vpcID,
+		NetId:             netId,
 		InternetServiceId: igID,
 	}
 

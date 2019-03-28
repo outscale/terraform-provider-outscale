@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/errwrap"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
@@ -27,12 +28,12 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"status": {
+			"state": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"code": {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
@@ -47,7 +48,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 			},
 			"accepter_net": vpcPeeringConnectionOptionsSchema(),
 			"source_net":   vpcPeeringConnectionOptionsSchema(),
-			"tag":          tagsSchema(),
+			"tags":         tagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -57,18 +58,19 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	id := d.Get("net_peering_id").(string)
 	d.SetId(id)
 
-	req := &fcu.AcceptVpcPeeringConnectionInput{
-		VpcPeeringConnectionId: aws.String(id),
+	req := &oapi.AcceptNetPeeringRequest{
+		NetPeeringId: id,
 	}
 
 	var err error
+	var resp *oapi.POST_AcceptNetPeeringResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.AcceptVpcPeeringConnection(req)
+		resp, err = conn.POST_AcceptNetPeering(*req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -78,15 +80,27 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 		}
 		return nil
 	})
-	if err != nil {
-		return errwrap.Wrapf("Error creating VPC Peering Connection accepter: {{err}}", err)
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("Error creating Net Peering accepter. Details: %s", errString)
 	}
 
-	if err := setTags(conn, d); err != nil {
+	if err := setOAPITags(conn, d); err != nil {
 		return err
 	}
 
-	d.SetPartial("tag_set")
+	d.SetPartial("tags")
 
 	return resourceOutscaleOAPILinPeeringRead(d, meta)
 }

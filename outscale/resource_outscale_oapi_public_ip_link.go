@@ -26,7 +26,7 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"reservation_id": &schema.Schema{
+			"public_ip_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -61,12 +61,16 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"link_id": &schema.Schema{
+			"link_public_ip_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 				ForceNew: true,
 			},
 			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"nic_account_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -79,10 +83,10 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 
 	request := oapi.LinkPublicIpRequest{}
 
-	// if v, ok := d.GetOk("reservation_id"); ok {
-	// 	fmt.Println(v.(string))
-	// 	request.ReservationId = v.(string)
-	// }
+	if v, ok := d.GetOk("public_ip_id"); ok {
+		fmt.Println(v.(string))
+		request.PublicIpId = v.(string)
+	}
 	if v, ok := d.GetOk("allow_relink"); ok {
 		request.AllowRelink = v.(bool)
 	}
@@ -123,13 +127,11 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 	//Using validation with request.
-	// if resp != nil && request.ReservationId != "" && len(request.ReservationId) > 0 {
-	// 	d.SetId(resp.LinkPublicIpId)
-	// } else {
-	// 	d.SetId(request.PublicIp)
-	// }
-
-	d.SetId(resp.LinkPublicIpId)
+	if resp != nil && resp.LinkPublicIpId != "" && len(resp.LinkPublicIpId) > 0 {
+		d.SetId(resp.LinkPublicIpId)
+	} else {
+		d.SetId(request.PublicIp)
+	}
 
 	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
@@ -140,19 +142,19 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	id := d.Id()
 	var request oapi.ReadPublicIpsRequest
 
-	// if strings.Contains(id, "eipassoc") {
-	// 	request = oapi.ReadPublicIpsRequest{
-	// 		Filters: oapi.FiltersPublicIp{
-	// 			ReservationIds: []string{id},
-	// 		},
-	// 	}
-	// } else {
-	request = oapi.ReadPublicIpsRequest{
-		Filters: oapi.FiltersPublicIp{
-			PublicIps: []string{id},
-		},
+	if strings.Contains(id, "eipassoc") {
+		request = oapi.ReadPublicIpsRequest{
+			Filters: oapi.FiltersPublicIp{
+				LinkPublicIpIds: []string{id},
+			},
+		}
+	} else {
+		request = oapi.ReadPublicIpsRequest{
+			Filters: oapi.FiltersPublicIp{
+				PublicIps: []string{id},
+			},
+		}
 	}
-	//}
 
 	var response *oapi.ReadPublicIpsResponse
 	var err error
@@ -173,7 +175,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	fmt.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkRead (%s)", err)
 
 	if err != nil {
-		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("reservation_id").(string), err)
+		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
 	}
 
 	if response.PublicIps == nil || len(response.PublicIps) == 0 {
@@ -189,7 +191,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	linkID := d.Get("link_id")
+	linkID := d.Get("link_public_ip_id")
 
 	opts := oapi.UnlinkPublicIpRequest{
 		LinkPublicIpId: linkID.(string),
@@ -210,9 +212,8 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 		return nil
 	})
 
-	fmt.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
-
 	if err != nil {
+		fmt.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
 	}
 
@@ -220,7 +221,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 }
 
 func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIp) error {
-	// if err := d.Set("reservation_id", address.ReservationId); err != nil {
+	// if err := d.Set("public_ip_id", address.ReservationId); err != nil {
 	// 	fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
 	// 	return err
@@ -246,7 +247,19 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIp
 		return err
 	}
 
-	if err := d.Set("link_id", address.LinkPublicIpId); err != nil {
+	if err := d.Set("link_public_ip_id", address.LinkPublicIpId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+
+		return err
+	}
+
+	if err := d.Set("nic_account_id", address.NicAccountId); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+
+		return err
+	}
+
+	if err := d.Set("public_ip_id", address.PublicIpId); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err

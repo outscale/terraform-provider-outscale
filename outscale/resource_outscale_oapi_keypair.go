@@ -54,7 +54,6 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp *oapi.POST_CreateKeypairResponses
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		var err error
 		resp, err = conn.POST_CreateKeypair(*req)
 
 		if err != nil {

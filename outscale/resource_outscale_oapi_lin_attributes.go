@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPILinAttributes() *schema.Resource {
@@ -23,21 +23,12 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"dns_hostnames_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
-				Optional: true,
-			},
-			"dns_support_enabled": {
-				Type:     schema.TypeBool,
+			"dhcp_options_set_id": {
+				Type:     schema.TypeString,
 				Computed: true,
 				Optional: true,
 			},
 			"net_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"attribute": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -46,22 +37,20 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.ModifyVpcAttributeInput{}
+	req := &oapi.UpdateNetRequest{}
 
-	req.VpcId = aws.String(d.Get("net_id").(string))
+	req.NetId = d.Get("net_id").(string)
 
-	if c, ok := d.GetOk("dns_hostnames_enabled"); ok {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
-	}
-	if c, ok := d.GetOk("dns_support_enabled"); ok {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(c.(bool))}
+	if c, ok := d.GetOk("dhcp_options_set_id"); ok {
+		req.DhcpOptionsSetId = c.(string)
 	}
 
 	var err error
+	var resp *oapi.POST_UpdateNetResponses
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.ModifyVpcAttribute(req)
+		resp, err = conn.POST_UpdateNet(*req)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
@@ -71,9 +60,20 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		}
 		return nil
 	})
-	if err != nil {
-		log.Printf("[DEBUG] Error creating lin (%s)", err)
-		return err
+
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", errString)
 	}
 
 	d.SetId(resource.UniqueId())
@@ -82,23 +82,20 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.ModifyVpcAttributeInput{}
+	req := &oapi.UpdateNetRequest{}
 
 	if d.HasChange("net_id") && !d.IsNewResource() {
-		req.VpcId = aws.String(d.Get("net_id").(string))
+		req.NetId = d.Get("net_id").(string)
 	}
-	if d.HasChange("dns_hostnames_enabled") && !d.IsNewResource() {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("dns_hostnames_enabled").(bool))}
-	}
-	if d.HasChange("dns_support_enabled") && !d.IsNewResource() {
-		req.EnableDnsHostnames = &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("dns_support_enabled").(bool))}
+	if d.HasChange("dhcp_options_set_id") && !d.IsNewResource() {
+		req.DhcpOptionsSetId = d.Get("dhcp_options_set_id").(string)
 	}
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.ModifyVpcAttribute(req)
+		_, err = conn.POST_UpdateNet(*req)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
@@ -117,17 +114,21 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 }
 
 func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeVpcAttributeInput{
-		Attribute: aws.String(d.Get("attribute").(string)),
-		VpcId:     aws.String(d.Get("net_id").(string)),
+	filters := oapi.FiltersNet{
+		NetIds: []string{d.Get("net_id").(string)},
 	}
 
-	var resp *fcu.DescribeVpcAttributeOutput
+	req := oapi.ReadNetsRequest{
+		Filters: filters,
+	}
+
+	var rs *oapi.POST_ReadNetsResponses
+	var resp *oapi.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpcAttribute(req)
+		rs, err = conn.POST_ReadNets(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -141,18 +142,20 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		log.Printf("[DEBUG] Error reading lin (%s)", err)
 	}
 
+	resp = rs.OK
+
 	if resp == nil {
 		d.SetId("")
-		return fmt.Errorf("Lin not found")
+		return fmt.Errorf("oAPI Lin not found")
 	}
 
-	d.Set("net_id", resp.VpcId)
-	if resp.EnableDnsHostnames != nil {
-		d.Set("dns_hostnames_enabled", *resp.EnableDnsHostnames.Value)
+	if len(resp.Nets) == 0 {
+		d.SetId("")
+		return fmt.Errorf("oAPI Lin not found")
 	}
-	if resp.EnableDnsSupport != nil {
-		d.Set("dns_support_enabled", *resp.EnableDnsSupport.Value)
-	}
+
+	d.Set("net_id", resp.Nets[0].NetId)
+	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
 
 	return nil
 }

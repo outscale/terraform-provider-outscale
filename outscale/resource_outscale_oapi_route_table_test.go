@@ -3,40 +3,26 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
-	var v fcu.RouteTable
+	var v oapi.RouteTable
 
 	testCheck := func(*terraform.State) error {
 		if len(v.Routes) != 1 {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
-		routes := make(map[string]*fcu.Route)
+		routes := make(map[string]oapi.Route)
 		for _, r := range v.Routes {
-			routes[*r.DestinationCidrBlock] = r
+			routes[r.DestinationIpRange] = r
 		}
 
 		if _, ok := routes["10.1.0.0/16"]; !ok {
@@ -54,9 +40,9 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
-		routes := make(map[string]*fcu.Route)
+		routes := make(map[string]oapi.Route)
 		for _, r := range v.Routes {
-			routes[*r.DestinationCidrBlock] = r
+			routes[r.DestinationIpRange] = r
 		}
 
 		if _, ok := routes["10.1.0.0/16"]; !ok {
@@ -73,7 +59,10 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -81,8 +70,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists(
-						"outscale_route_table.foo", &v),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v),
 					testCheck,
 				),
 			},
@@ -90,8 +78,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfigChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists(
-						"outscale_route_table.foo", &v),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v),
 					testCheckChange,
 				),
 			},
@@ -100,27 +87,16 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
-	var v fcu.RouteTable
+	var v oapi.RouteTable
 
 	testCheck := func(*terraform.State) error {
 		if len(v.Routes) != 1 {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
 
-		routes := make(map[string]*fcu.Route)
+		routes := make(map[string]oapi.Route)
 		for _, r := range v.Routes {
-			routes[*r.DestinationCidrBlock] = r
+			routes[r.DestinationIpRange] = r
 		}
 
 		if _, ok := routes["10.1.0.0/16"]; !ok {
@@ -134,7 +110,10 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -152,21 +131,13 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
-	var rt fcu.RouteTable
+	var rt oapi.RouteTable
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -175,7 +146,7 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 				Config: testAccOAPIRouteTableConfigTags,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt),
-					testAccCheckTags(&rt.Tags, "foo", "bar"),
+					testAccCheckOAPITags(rt.Tags, "foo", "bar"),
 				),
 			},
 		},
@@ -183,19 +154,23 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 }
 
 func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route_table" {
 			continue
 		}
 
-		var resp *fcu.DescribeRouteTablesOutput
+		var resp *oapi.POST_ReadRouteTablesResponses
 		var err error
+		params := &oapi.ReadRouteTablesRequest{
+			Filters: oapi.FiltersRouteTable{
+				RouteTableIds: []string{rs.Primary.ID},
+			},
+		}
+
 		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-				RouteTableIds: []*string{aws.String(rs.Primary.ID)},
-			})
+			resp, err = conn.POST_ReadRouteTables(*params)
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") || strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
@@ -209,7 +184,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			if len(resp.RouteTables) > 0 {
+			if len(resp.OK.RouteTables) > 0 {
 				return fmt.Errorf("still exist")
 			}
 
@@ -224,7 +199,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.TestCheckFunc {
+func testAccCheckOAPIRouteTableExists(n string, v *oapi.RouteTable) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -235,14 +210,17 @@ func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.Test
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		var resp *fcu.DescribeRouteTablesOutput
+		var resp *oapi.POST_ReadRouteTablesResponses
 		var err error
+		params := &oapi.ReadRouteTablesRequest{
+			Filters: oapi.FiltersRouteTable{
+				RouteTableIds: []string{rs.Primary.ID},
+			},
+		}
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-				RouteTableIds: []*string{aws.String(rs.Primary.ID)},
-			})
+			resp, err = conn.POST_ReadRouteTables(*params)
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
@@ -258,11 +236,11 @@ func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.Test
 		if err != nil {
 			return err
 		}
-		if len(resp.RouteTables) == 0 {
+		if len(resp.OK.RouteTables) == 0 {
 			return fmt.Errorf("RouteTable not found")
 		}
 
-		*v = *resp.RouteTables[0]
+		*v = resp.OK.RouteTables[0]
 
 		return nil
 	}
@@ -271,16 +249,16 @@ func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.Test
 // VPC Peering connections are prefixed with pcx
 // Right now there is no VPC Peering resource
 // func TestAccOutscaleRouteTable_vpcPeering(t *testing.T) {
-// 	var v fcu.RouteTable
+// 	var v oapi.RouteTable
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.Routes) != 2 {
 // 			return fmt.Errorf("bad routes: %#v", v.Routes)
 // 		}
 
-// 		routes := make(map[string]*fcu.Route)
+// 		routes := make(map[string]oapi.Route)
 // 		for _, r := range v.Routes {
-// 			routes[*r.DestinationCidrBlock] = r
+// 			routes[r.DestinationIpRange] = r
 // 		}
 
 // 		if _, ok := routes["10.1.0.0/16"]; !ok {
@@ -310,15 +288,15 @@ func testAccCheckOAPIRouteTableExists(n string, v *fcu.RouteTable) resource.Test
 // }
 
 // func TestAccOutscaleRouteTable_vgwRoutePropagation(t *testing.T) {
-// 	var v fcu.RouteTable
-// 	var vgw fcu.VpnGateway
+// 	var v oapi.RouteTable
+// 	var vgw oapi.VpnGateway
 
 // 	testCheck := func(*terraform.State) error {
 // 		if len(v.PropagatingVgws) != 1 {
 // 			return fmt.Errorf("bad propagating vgws: %#v", v.PropagatingVgws)
 // 		}
 
-// 		propagatingVGWs := make(map[string]*fcu.PropagatingVgw)
+// 		propagatingVGWs := make(map[string]*oapi.PropagatingVgw)
 // 		for _, gw := range v.PropagatingVgws {
 // 			propagatingVGWs[*gw.GatewayId] = gw
 // 		}
@@ -357,9 +335,7 @@ resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_net_internet_gateway" "foo" {
-	#net_id = "${outscale_net.foo.id}"
-}
+resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
 	net_id = "${outscale_net.foo.id}"
@@ -371,12 +347,10 @@ resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
 
-resource "outscale_net_internet_gateway" "foo" {
-	#lin_id = "${outscale_net.foo.id}"
-}
+resource "outscale_internet_service" "foo" {}
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_net.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 `
 
@@ -387,18 +361,18 @@ resource "outscale_net" "foo" {
 
 resource "outscale_subnet" "foo" {
 	ip_range = "10.1.1.0/24"
-	lin_id = "${outscale_net.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 
 resource "outscale_vm" "foo" {
 	# us-west-2
-	image_id = "ami-4fccb37f"
-	type = "m1.small"
+	image_id = "ami-b4bd8de2"
+	vm_type = "m1.small"
 	subnet_id = "${outscale_subnet.foo.id}"
 }
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_net.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 }
 `
 
@@ -408,7 +382,7 @@ resource "outscale_net" "foo" {
 }
 
 resource "outscale_route_table" "foo" {
-	lin_id = "${outscale_net.foo.id}"
+	net_id = "${outscale_net.foo.id}"
 
 	tag {
 		foo = "bar"
@@ -423,20 +397,20 @@ resource "outscale_route_table" "foo" {
 // 	ip_range = "10.1.0.0/16"
 // }
 
-// resource "outscale_net_internet_gateway" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// resource "outscale_internet_service" "foo" {
+// 	net_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_net" "bar" {
 // 	ip_range = "10.3.0.0/16"
 // }
 
-// resource "outscale_net_internet_gateway" "bar" {
-// 	lin_id = "${outscale_net.bar.id}"
+// resource "outscale_internet_service" "bar" {
+// 	net_id = "${outscale_net.bar.id}"
 // }
 
 // resource "aws_vpc_peering_connection" "foo" {
-// 		lin_id = "${outscale_net.foo.id}"
+// 		net_id = "${outscale_net.foo.id}"
 // 		peer_vpc_id = "${outscale_net.bar.id}"
 // 		tags {
 // 			foo = "bar"
@@ -444,7 +418,7 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "outscale_route_table" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 
 // 	route {
 // 		ip_range = "10.2.0.0/16"
@@ -460,11 +434,11 @@ resource "outscale_route_table" "foo" {
 // }
 
 // resource "aws_vpn_gateway" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 // }
 
 // resource "outscale_route_table" "foo" {
-// 	lin_id = "${outscale_net.foo.id}"
+// 	net_id = "${outscale_net.foo.id}"
 
 // 	propagating_vgws = ["${aws_vpn_gateway.foo.id}"]
 // }

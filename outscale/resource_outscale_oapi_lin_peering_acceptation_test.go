@@ -58,27 +58,29 @@ func testAccOutscaleOAPILinPeeringConnectionAccepterDestroy(s *terraform.State) 
 
 const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 resource "outscale_net" "foo" {
-	cidr_block = "10.0.0.0/16"
-	tag {
-		Name = "TestAccOutscaleOAPILinPeeringConnection_basic"
+	ip_range = "10.0.0.0/16"
+	tags {
+		key   = "Name"
+		value = "TestAccOutscaleOAPILinPeeringConnection_basic"
 	}
 }
 
 resource "outscale_net" "bar" {
-	cidr_block = "10.1.0.0/16"
+	ip_range = "10.1.0.0/16"
 }
 
 resource "outscale_net_peering" "foo" {
-	vpc_id = "${outscale_net.foo.id}"
-	peer_vpc_id = "${outscale_net.bar.id}"
+    source_net_id   = "${outscale_net.foo.id}"
+	accepter_net_id = "${outscale_net.bar.id}"
 }
 
 // Accepter's side of the connection.
 resource "outscale_net_peering_acceptation" "peer" {
-    vpc_peering_connection_id = "${outscale_net_peering.foo.id}"
+    net_peering_id= "${outscale_net_peering.foo.id}"
 
-    tag {
-       Side = "Accepter"
+    tags {
+	   key = "Side"
+	   value = "Accepter"
     }
 }
 `

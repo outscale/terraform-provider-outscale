@@ -1,17 +1,18 @@
 package outscale
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 // Creates a network interface in the specified subnet
@@ -206,7 +207,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Required: true,
 			},
 			"tag_set": tagsSchemaComputed(),
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -216,17 +217,32 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 
 //Read Nic
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	dnri := &fcu.DescribeNetworkInterfacesInput{
-		NetworkInterfaceIds: []*string{aws.String(d.Id())},
+	nicID, okID := d.GetOk("nic_id")
+	filters, okFilters := d.GetOk("filter")
+
+	if okID && okFilters {
+		return errors.New("nic_id and filter set")
 	}
 
-	var describeResp *fcu.DescribeNetworkInterfacesOutput
+	dnri := oapi.ReadNicsRequest{}
+
+	if okID {
+		dnri.Filters = oapi.FiltersNic{
+			NicIds: []string{nicID.(string)},
+		}
+	}
+
+	if okFilters {
+		dnri.Filters = buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set))
+	}
+
+	var describeResp *oapi.POST_ReadNicsResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
+		describeResp, err = conn.POST_ReadNics(dnri)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -250,79 +266,82 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(describeResp.NetworkInterfaces) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", describeResp.NetworkInterfaces)
+	if len(describeResp.OK.Nics) != 1 {
+		return fmt.Errorf("Unable to find ENI: %#v", describeResp.OK.Nics)
 	}
 
-	eni := describeResp.NetworkInterfaces[0]
-	if eni.Description != nil {
+	eni := describeResp.OK.Nics[0]
+	if eni.Description != "" {
 		d.Set("description", eni.Description)
 	}
 	d.Set("nic_id", eni.SubnetId)
 
 	b := make(map[string]interface{})
-	if eni.Association != nil {
-		b["reservation_id"] = aws.StringValue(eni.Association.AllocationId)
-		b["link_id"] = aws.StringValue(eni.Association.AssociationId)
-		b["public_ip_account_id"] = aws.StringValue(eni.Association.IpOwnerId)
-		b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
-		b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
-	}
+
+	link := eni.LinkPublicIp
+	b["reservation_id"] = link.PublicIpId
+	b["link_id"] = link.LinkPublicIpId
+	b["public_ip_account_id"] = link.PublicIpAccountId
+	b["public_dns_name"] = link.PublicDnsName
+	b["public_ip"] = link.PublicIp
+
 	if err := d.Set("public_ip_link", b); err != nil {
 		return err
 	}
 
 	aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
-	if eni.Attachment != nil {
-		bb["nic_link_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		bb["delete_on_vm_deletion"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-		bb["nic_sort_number"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-		bb["vm_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		bb["vm_account_id"] = aws.StringValue(eni.Attachment.Status)
-		bb["state"] = aws.StringValue(eni.Attachment.Status)
-	}
+
+	linkNic := eni.LinkNic
+
+	bb["nic_link_id"] = linkNic.LinkNicId
+	bb["delete_on_vm_deletion"] = linkNic.DeleteOnVmDeletion
+	bb["nic_sort_number"] = linkNic.DeviceNumber
+	bb["vm_id"] = linkNic.VmId
+	bb["vm_account_id"] = linkNic.VmAccountId
+	bb["state"] = linkNic.State
+
 	aa[0] = bb
 	if err := d.Set("nic_link", aa); err != nil {
 		return err
 	}
 
-	d.Set("sub_region_name", aws.StringValue(eni.AvailabilityZone))
+	d.Set("sub_region_name", eni.SubregionName)
 
-	x := make([]map[string]interface{}, len(eni.Groups))
-	for k, v := range eni.Groups {
+	x := make([]map[string]interface{}, len(eni.SecurityGroups))
+	for k, v := range eni.SecurityGroups {
 		b := make(map[string]interface{})
-		b["firewall_rules_set_id"] = aws.StringValue(v.GroupId)
-		b["firewall_rules_set_name"] = aws.StringValue(v.GroupName)
+		b["firewall_rules_set_id"] = v.SecurityGroupId
+		b["firewall_rules_set_name"] = v.SecurityGroupName
 		x[k] = b
 	}
 	if err := d.Set("firewall_rules_set", x); err != nil {
 		return err
 	}
 
-	d.Set("mac_address", aws.StringValue(eni.MacAddress))
-	d.Set("nic_id", aws.StringValue(eni.NetworkInterfaceId))
-	d.Set("account_id", aws.StringValue(eni.OwnerId))
-	d.Set("private_dns_name", aws.StringValue(eni.PrivateDnsName))
-	d.Set("private_ip_address", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("mac_address", eni.MacAddress)
+	d.Set("nic_id", eni.NicId)
+	d.Set("account_id", eni.AccountId)
+	d.Set("private_dns_name", eni.PrivateDnsName)
+	// Check this one later
+	d.Set("private_ip_address", eni.NetId)
 
-	y := make([]map[string]interface{}, len(eni.PrivateIpAddresses))
-	if eni.PrivateIpAddresses != nil {
-		for k, v := range eni.PrivateIpAddresses {
+	y := make([]map[string]interface{}, len(eni.PrivateIps))
+	if eni.PrivateIps != nil {
+		for k, v := range eni.PrivateIps {
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			if v.Association != nil {
-				d["reservation_id"] = aws.StringValue(v.Association.AllocationId)
-				d["link_id"] = aws.StringValue(v.Association.AssociationId)
-				d["public_ip_account_id"] = aws.StringValue(v.Association.IpOwnerId)
-				d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
-				d["public_ip"] = aws.StringValue(v.Association.PublicIp)
-			}
+			linkPrivateIP := v.LinkPublicIp
+			d["reservation_id"] = linkPrivateIP.PublicIpId
+			d["link_id"] = linkPrivateIP.LinkPublicIpId
+			d["public_ip_account_id"] = linkPrivateIP.PublicIpAccountId
+			d["public_dns_name"] = linkPrivateIP.PublicDnsName
+			d["public_ip"] = linkPrivateIP.PublicIpId
 			b["association"] = d
-			b["primary_ip"] = aws.BoolValue(v.Primary)
-			b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
-			b["private_ip"] = aws.StringValue(v.PrivateIpAddress)
+			b["primary_ip"] = v.IsPrimary
+			b["private_dns_name"] = v.PrivateDnsName
+			b["private_ip"] = v.PrivateIp
 			y[k] = b
 		}
 	}
@@ -330,16 +349,18 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	d.Set("request_id", describeResp.RequestId)
+	d.Set("request_id", describeResp.OK.ResponseContext.RequestId)
 
-	d.Set("requester_managed", aws.BoolValue(eni.RequesterManaged))
+	// Missing
+	// d.Set("requester_managed", aws.BoolValue(eni.))
 
-	d.Set("activated_check", aws.BoolValue(eni.SourceDestCheck))
-	d.Set("state", aws.StringValue(eni.Status))
-	d.Set("subnet_id", aws.StringValue(eni.SubnetId))
+	// Missing
+	// d.Set("activated_check", aws.BoolValue(eni.SourceDestCheck))
+	d.Set("state", eni.State)
+	d.Set("subnet_id", eni.SubnetId)
 	// Tags
-	d.Set("tags", tagsToMap(eni.TagSet))
-	d.Set("lin_id", eni.VpcId)
+	d.Set("tags", tagsOAPIToMap(eni.Tags))
+	d.Set("net_id", eni.NetId)
 
 	return nil
 }
@@ -348,16 +369,16 @@ func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{},
 	// if there was an old attachment, remove it
 	if oa != nil && len(oa) > 0 && oa[0] != nil {
 		oa := oa[0].(map[string]interface{})
-		dr := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(oa["attachment_id"].(string)),
-			Force:        aws.Bool(true),
+		dr := oapi.UnlinkNicRequest{
+			LinkNicId: oa["attachment_id"].(string),
 		}
-		conn := meta.(*OutscaleClient).FCU
+
+		conn := meta.(*OutscaleClient).OAPI
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DetachNetworkInterface(dr)
+			_, err = conn.POST_UnlinkNic(dr)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -389,18 +410,20 @@ func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{},
 	return nil
 }
 
-func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		dnri := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(id)},
+		dnri := oapi.ReadNicsRequest{
+			Filters: oapi.FiltersNic{
+				NicIds: []string{id},
+			},
 		}
 
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
+		var describeResp *oapi.POST_ReadNicsResponses
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnri)
+			describeResp, err = conn.POST_ReadNics(dnri)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -415,9 +438,48 @@ func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *fcu.Client, id st
 			return nil, "", err
 		}
 
-		eni := describeResp.NetworkInterfaces[0]
-		hasAttachment := strconv.FormatBool(eni.Attachment != nil)
+		eni := describeResp.OK.Nics[0]
+		hasAttachment := strconv.FormatBool(eni.LinkNic.LinkNicId != "")
 		log.Printf("[DEBUG] oAPI ENI %s has attachment state %s", id, hasAttachment)
 		return eni, hasAttachment, nil
 	}
+}
+
+func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oapi.FiltersNic {
+	var filters oapi.FiltersNic
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "net_ids":
+			filters.NetIds = filterValues
+		case "nic_ids":
+			filters.NicIds = filterValues
+		case "private_dns_names":
+			filters.PrivateDnsNames = filterValues
+		case "private_ips_link_public_ip_account_ids":
+			filters.PrivateIpsLinkPublicIpAccountIds = filterValues
+		case "private_ips_link_public_ip_public_ips":
+			filters.PrivateIpsLinkPublicIpPublicIps = filterValues
+		case "private_ips_private_ips":
+			filters.PrivateIpsPrivateIps = filterValues
+		case "security_group_ids":
+			filters.SecurityGroupIds = filterValues
+		case "security_group_names":
+			filters.SecurityGroupNames = filterValues
+		case "states":
+			filters.States = filterValues
+		case "subnet_ids":
+			filters.SubnetIds = filterValues
+		case "subregion_names":
+			filters.SubregionNames = filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }
