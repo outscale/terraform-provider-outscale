@@ -21,6 +21,7 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
 $ git clone git@github.com:terraform-providers/terraform-provider-outscale
+$ git checkout release-0.1.0RC3
 ```
 
 Enter the provider directory and build the provider
