@@ -42,6 +42,7 @@ Using the provider
 
 3. Execute `terraform plan`
 4. `terraform init`
+5. oAPI beta documentation is available at https://docs-beta.outscale.com
 
 Developing the Provider
 ---------------------------
