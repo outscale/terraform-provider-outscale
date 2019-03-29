@@ -1,15 +1,28 @@
 package outscale
 
 import (
+	"os"
+	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccOutscaleInstance_importBasic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if oapi != false {
+		t.Skip()
+	}
 	resourceName := "outscale_vm.basic"
 
-	// rInt := acctest.RandInt()
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -17,7 +30,7 @@ func TestAccOutscaleInstance_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleVMDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleServerConfig_basic(),
+				Config: testAccCheckOutscaleServerConfigBasic(rInt),
 			},
 
 			resource.TestStep{

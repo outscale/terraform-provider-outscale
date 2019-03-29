@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -73,6 +74,7 @@ func buildClient() *Client {
 		MarshalHander:         testBuildRequestHandler,
 		UnmarshalHandler:      unmarshalTestHandler,
 		UnmarshalErrorHandler: testUnmarshalErrorHandler,
+		SetHeaders:            testSetHeaders,
 		Config: Config{
 			UserAgent: "test",
 			Target:    "fcu",
@@ -88,7 +90,6 @@ func buildClient() *Client {
 func buildTestHandler(v interface{}, method, url string) (*http.Request, io.ReadSeeker, error) {
 	reader := strings.NewReader("{}")
 	req, _ := http.NewRequest(method, url, reader)
-
 	req.Header.Add("Content-Type", mediaTypeURLEncoded)
 
 	return req, reader, nil
@@ -98,12 +99,18 @@ func testBuildRequestHandler(v interface{}, action, version string) (string, err
 	return "{}", nil
 }
 
-func unmarshalTestHandler(v interface{}, req *http.Response) error {
+func unmarshalTestHandler(v interface{}, req *http.Response, op string) error {
 	return nil
 }
 
 func testUnmarshalErrorHandler(r *http.Response) error {
 	return errors.New("This is an error")
+}
+
+// SetHeaders sets the headers for the request
+func testSetHeaders(agent string, req *http.Request, operation string) {
+	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", agent, operation))
+	req.Header.Add("User-Agent", "test")
 }
 
 func TestSign(t *testing.T) {
@@ -128,17 +135,22 @@ func TestSign(t *testing.T) {
 func TestSetHeaders(t *testing.T) {
 	c := buildClient()
 
+	log.Printf("Client: %+v", c)
+
 	req, _ := http.NewRequest(http.MethodGet, "http//:example.org/", nil)
-	c.SetHeaders(req, "fcu", "DescribeInstances")
+
+	log.Printf("request: %+v", req)
+	c.SetHeaders(c.Config.Target, req, "DescribeInstances")
 
 	q := req.Header
 	targetExpected := "fcu.DescribeInstances"
 	agentExpected := "test"
 
-	if e, a := agentExpected, q.Get("User-Agent"); e != a {
+	if e, a := targetExpected, q.Get("X-Amz-Target"); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
-	if e, a := targetExpected, q.Get("X-Amz-Target"); e != a {
+
+	if e, a := agentExpected, q.Get("User-Agent"); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
 }

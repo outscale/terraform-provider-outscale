@@ -216,7 +216,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"association": {
-												Type:     schema.TypeList,
+												Type:     schema.TypeMap,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -236,7 +236,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												},
 											},
 											"attachment": {
-												Type:     schema.TypeList,
+												Type:     schema.TypeMap,
 												Computed: true,
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
@@ -305,7 +305,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												Elem: &schema.Resource{
 													Schema: map[string]*schema.Schema{
 														"association": {
-															Type:     schema.TypeList,
+															Type:     schema.TypeMap,
 															Computed: true,
 															Elem: &schema.Resource{
 																Schema: map[string]*schema.Schema{
@@ -352,7 +352,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 												Computed: true,
 											},
 											"vpc_id": {
-												Type:     schema.TypeInt,
+												Type:     schema.TypeString,
 												Computed: true,
 											},
 										},
@@ -431,7 +431,7 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"source_dest_check": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Computed: true,
 								},
 								"spot_instance_request_id": {
@@ -463,7 +463,8 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"tag_set": {
-									Type: schema.TypeList,
+									Type:     schema.TypeList,
+									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											"key": {
@@ -476,7 +477,6 @@ func getDataSourceVMSSchemas() map[string]*schema.Schema {
 											},
 										},
 									},
-									Computed: true,
 								},
 								"virtualization_type": {
 									Type:     schema.TypeString,
@@ -504,6 +504,10 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	filters, filtersOk := d.GetOk("filter")
 
 	instancesIds, instancesIdsOk := d.GetOk("instance_id")
+
+	if !filtersOk && !instancesIdsOk {
+		return fmt.Errorf("One of instance_id or filters must be assigned")
+	}
 
 	if instancesIdsOk {
 		var ids []*string
@@ -544,7 +548,7 @@ func dataSourceOutscaleVMSRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(resource.UniqueId())
 
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
-	d.Set("request_id", resp.RequesterId)
+	d.Set("request_id", resp.RequestId)
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
 	flattenedReservations := []map[string]interface{}{}

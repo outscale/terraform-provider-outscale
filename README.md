@@ -27,16 +27,16 @@ Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ make build
+$ go build -o terraform-provider-outscale_v0.1.0-rc3
 ```
 
 Using the provider
 ----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-2. Move `terraform-provider-outscale` executable to the root folder where main.tf is.
+2. Move the plugin to the repository ~/.terraform.d/plugins/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale /path/to/main.tf/folder
+  $ mv terraform-provider-outscale_v0.1.0-rc3 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
 3. Execute `terraform plan`

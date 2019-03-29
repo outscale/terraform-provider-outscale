@@ -3,19 +3,21 @@ package osc
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 const (
-	libraryVersion      = "1.0"
-	DefaultBaseURL      = "https://%s.%s.outscale.com"
-	opaqueBaseURL       = "/%s.%s.outscale.com/%s"
+	libraryVersion = "1.0"
+	// DefaultBaseURL ...
+	DefaultBaseURL = "https://%s.%s.outscale.com"
+	opaqueBaseURL  = "/%s.%s.outscale.com/%s"
+	// UserAgent ...
 	UserAgent           = "osc/" + libraryVersion
 	mediaTypeJSON       = "application/json"
 	mediaTypeWSDL       = "application/wsdl+xml"
@@ -30,10 +32,16 @@ type BuildRequestHandler func(v interface{}, method, url string) (*http.Request,
 type MarshalHander func(v interface{}, action, version string) (string, error)
 
 // UnmarshalHandler unmarshals the body request depending on different implementations
-type UnmarshalHandler func(v interface{}, req *http.Response) error
+type UnmarshalHandler func(v interface{}, req *http.Response, operation string) error
 
 // UnmarshalErrorHandler unmarshals the errors coming from an http respose
 type UnmarshalErrorHandler func(r *http.Response) error
+
+// SetHeaders unmarshals the errors coming from an http respose
+type SetHeaders func(agent string, req *http.Request, operation string)
+
+// BindBody unmarshals the errors coming from an http respose
+type BindBody func(operation string, body interface{}) string
 
 // Client manages the communication between the Outscale API's
 type Client struct {
@@ -45,6 +53,8 @@ type Client struct {
 	BuildRequestHandler   BuildRequestHandler
 	UnmarshalHandler      UnmarshalHandler
 	UnmarshalErrorHandler UnmarshalErrorHandler
+	SetHeaders            SetHeaders
+	BindBody              BindBody
 }
 
 // Config Configuration of the client
@@ -82,14 +92,21 @@ func (c Client) Sign(req *http.Request, body io.ReadSeeker, timestamp time.Time,
 
 // NewRequest creates a request and signs it
 func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr string, body interface{}) (*http.Request, error) {
-	rel, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
+	rel, errp := url.Parse(urlStr)
+	if errp != nil {
+		return nil, errp
 	}
 
-	b, err := c.MarshalHander(body, operation, "2017-12-15")
-	if err != nil {
-		return nil, err
+	var b interface{}
+	var err error
+
+	if method != http.MethodPost { // method for FCU & LBU API
+		b, err = c.MarshalHander(body, operation, "2018-05-14")
+		if err != nil {
+			return nil, err
+		}
+	} else if method == http.MethodPost { // method for ICU and DL API
+		b = c.BindBody(operation, body)
 	}
 
 	u := c.Config.BaseURL.ResolveReference(rel)
@@ -99,20 +116,14 @@ func (c *Client) NewRequest(ctx context.Context, operation, method, urlStr strin
 		return nil, err
 	}
 
-	fmt.Println(rel.Opaque)
+	c.SetHeaders(c.Config.Target, req, operation)
 
 	_, err = c.Sign(req, reader, time.Now(), c.Config.Target)
 	if err != nil {
 		return nil, err
 	}
-
+	utils.DebugRequest(req)
 	return req, nil
-}
-
-// SetHeaders sets the headers for the request
-func (c Client) SetHeaders(req *http.Request, target, operation string) {
-	req.Header.Add("User-Agent", c.Config.UserAgent)
-	req.Header.Add("X-Amz-Target", fmt.Sprintf("%s.%s", target, operation))
 }
 
 // Do sends the request to the API's
@@ -121,6 +132,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 	req = req.WithContext(ctx)
 
 	resp, err := c.Config.Client.Do(req)
+	utils.DebugResponse(resp)
 	if err != nil {
 		return err
 	}
@@ -130,7 +142,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) error
 		return err
 	}
 
-	return c.UnmarshalHandler(v, resp)
+	return c.UnmarshalHandler(v, resp, req.URL.RawQuery)
 }
 
 func (c Client) checkResponse(r *http.Response) error {

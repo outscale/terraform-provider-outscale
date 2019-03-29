@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -45,12 +44,12 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	// Build the creation struct
 	runOpts := &fcu.RunInstancesInput{
 		BlockDeviceMappings:   instanceOpts.BlockDeviceMappings,
-		DisableApiTermination: instanceOpts.DisableApiTermination,
+		DisableApiTermination: instanceOpts.DisableAPITermination,
 		EbsOptimized:          instanceOpts.EBSOptimized,
 		DryRun:                instanceOpts.DryRun,
 		// Monitoring:            instanceOpts.Monitoring,
 		// IamInstanceProfile:    instanceOpts.IAMInstanceProfile,
-		ImageId: instanceOpts.ImageID,
+		ImageId:                           instanceOpts.ImageID,
 		InstanceInitiatedShutdownBehavior: instanceOpts.InstanceInitiatedShutdownBehavior,
 		InstanceType:                      instanceOpts.InstanceType,
 		// Ipv6AddressCount:                  instanceOpts.Ipv6AddressCount,
@@ -68,11 +67,25 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 		UserData:         instanceOpts.UserData,
 	}
 
-	// Create the instance
-	log.Printf("[DEBUG] Run configuration: %+v", runOpts)
+	tagsSpec := make([]*fcu.TagSpecification, 0)
+
+	if v, ok := d.GetOk("tag"); ok {
+		tag := tagsFromMap(v.(map[string]interface{}))
+
+		spec := &fcu.TagSpecification{
+			ResourceType: aws.String("instance"),
+			Tags:         tag,
+		}
+
+		tagsSpec = append(tagsSpec, spec)
+	}
+
+	if len(tagsSpec) > 0 {
+		runOpts.TagSpecifications = tagsSpec
+	}
 
 	var runResp *fcu.Reservation
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
 		runResp, err = conn.VM.RunInstance(runOpts)
 
@@ -80,16 +93,23 @@ func resourceVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source instance: %s", err)
+		return fmt.Errorf("Error launching source instance 1: %s", err)
 	}
 	if runResp == nil || len(runResp.Instances) == 0 {
-		return errors.New("Error launching source instance: no instances returned in response")
+		return errors.New("Error launching source instance 2: no instances returned in response")
 	}
 
 	instance := runResp.Instances[0]
-	log.Printf("[INFO] Instance ID: %s", *instance.InstanceId)
 
 	d.SetId(*instance.InstanceId)
+	d.Set("instance_id", *instance.InstanceId)
+
+	if d.IsNewResource() {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+		d.SetPartial("tag_set")
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -143,18 +163,14 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		// If the instance was not found, return nil so that we can show
-		// that the instance is gone.
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
+		if strings.Contains(fmt.Sprint(err), "InvalidInstanceID.NotFound") {
 			d.SetId("")
 			return nil
 		}
 
-		// Some other error, report it
 		return err
 	}
 
-	// If nothing was found, then return no state
 	if len(resp.Reservations) == 0 {
 		d.SetId("")
 		return nil
@@ -163,39 +179,24 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 	instance := resp.Reservations[0].Instances[0]
 
 	d.Set("block_device_mapping", getBlockDeviceMapping(instance.BlockDeviceMappings))
-
 	d.Set("client_token", instance.ClientToken)
-
 	d.Set("ebs_optimized", instance.EbsOptimized)
-
 	d.Set("image_id", instance.ImageId)
-
 	d.Set("instance_type", instance.InstanceType)
-
 	d.Set("key_name", instance.KeyName)
-
 	d.Set("network_interface", getNetworkInterfaceSet(instance.NetworkInterfaces))
-
 	d.Set("private_ip", instance.PrivateIpAddress)
-
 	d.Set("ramdisk_id", instance.RamdiskId)
-
 	d.Set("subnet_id", instance.SubnetId)
-
-	err = d.Set("group_set", getGroupSet(resp.Reservations[0].Groups))
-	if err != nil {
-		fmt.Println(getGroupSet(resp.GroupSet))
-
-	}
-
+	d.Set("tag_set", tagsToMap(instance.Tags))
 	d.Set("owner_id", resp.Reservations[0].OwnerId)
-
-	d.Set("request_id", resp.RequesterId)
-
 	d.Set("reservation_id", resp.Reservations[0].ReservationId)
 
-	err = d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
-	if err != nil {
+	if err := d.Set("group_set", getGroupSet(resp.Reservations[0].Groups)); err != nil {
+		return err
+	}
+
+	if err := d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance})); err != nil {
 		return err
 	}
 
@@ -221,7 +222,7 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		})
 
 		if passRes == nil {
-			return fmt.Errorf("Error launching source instance: (%s)", d.Id())
+			return fmt.Errorf("Error launching source instance 3: (%s)", d.Id())
 		}
 
 		if err != nil {
@@ -233,15 +234,13 @@ func resourceVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	return nil
+	return d.Set("request_id", aws.StringValue(resp.RequestId))
 }
 
 func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	d.Partial(true)
-
-	log.Printf("[DEBUG] updating the instance %s", d.Id())
 
 	if d.HasChange("key_name") {
 		input := &fcu.ModifyInstanceKeyPairInput{
@@ -255,304 +254,108 @@ func resourceVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange("tag_set") {
+		if err := setTags(conn, d); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("instance_type") && !d.IsNewResource() {
-		log.Printf("[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		log.Printf("[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			InstanceType: &fcu.AttributeValue{
 				Value: aws.String(d.Get("instance_type").(string)),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "instance_type"); err != nil {
 			return err
-		}
-
-		log.Printf("[INFO] Starting Instance %q after instance_type change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
 		}
 	}
 
 	if d.HasChange("user_data") && !d.IsNewResource() {
-		log.Printf("[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		log.Printf("[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			UserData: &fcu.BlobAttributeValue{
 				Value: d.Get("user_data").([]byte),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "user_data"); err != nil {
 			return err
-		}
-
-		log.Printf("[INFO] Starting Instance %q after user_data change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
 		}
 	}
 
 	if d.HasChange("ebs_optimized") && !d.IsNewResource() {
-		log.Printf("[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		log.Printf("[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			EbsOptimized: &fcu.AttributeBooleanValue{
-				Value: d.Get("ebs_optimized").(*bool),
+				Value: aws.Bool(d.Get("ebs_optimized").(bool)),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "ebs_optimized"); err != nil {
 			return err
-		}
-
-		log.Printf("[INFO] Starting Instance %q after ebs_optimized change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
 		}
 	}
 
 	if d.HasChange("delete_on_termination") && !d.IsNewResource() {
-		log.Printf("[INFO] Stopping Instance %q for instance_type change", d.Id())
-		_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf := &resource.StateChangeConf{
-			Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
-			Target:     []string{"stopped"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to stop: %s", d.Id(), err)
-		}
-
-		log.Printf("[INFO] Modifying instance type %s", d.Id())
-		_, err = conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			DeleteOnTermination: &fcu.AttributeBooleanValue{
 				Value: d.Get("delete_on_termination").(*bool),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "delete_on_termination"); err != nil {
 			return err
-		}
-
-		log.Printf("[INFO] Starting Instance %q after delete_on_termination change", d.Id())
-		_, err = conn.VM.StartInstances(&fcu.StartInstancesInput{
-			InstanceIds: []*string{aws.String(d.Id())},
-		})
-
-		stateConf = &resource.StateChangeConf{
-			Pending:    []string{"pending", "stopped"},
-			Target:     []string{"running"},
-			Refresh:    InstanceStateRefreshFunc(conn, d.Id(), ""),
-			Timeout:    10 * time.Minute,
-			Delay:      10 * time.Second,
-			MinTimeout: 3 * time.Second,
-		}
-
-		_, err = stateConf.WaitForState()
-		if err != nil {
-			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
-				d.Id(), err)
 		}
 	}
 
 	if d.HasChange("disable_api_termination") {
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			DisableApiTermination: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("disable_api_termination").(bool)),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "disable_api_termination"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("instance_initiated_shutdown_behavior") {
-		log.Printf("[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			InstanceInitiatedShutdownBehavior: &fcu.AttributeValue{
 				Value: aws.String(d.Get("instance_initiated_shutdown_behavior").(string)),
 			},
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "instance_initiated_shutdown_behavior"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("group_set") {
-		log.Printf("[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			Groups:     d.Get("group_set").([]*string),
-		})
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "group_set"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("source_dest_check") {
-		log.Printf("[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
+		opts := &fcu.ModifyInstanceAttributeInput{
 			InstanceId: aws.String(d.Id()),
 			SourceDestCheck: &fcu.AttributeBooleanValue{
 				Value: aws.Bool(d.Get("source_dest_check").(bool)),
 			},
-		})
-
-		if err != nil {
+		}
+		if err := modifyInstanceAttr(conn, opts, "source_dest_check"); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("block_device_mapping") {
-
-		maps := d.Get("block_device_mapping").(*schema.Set).List()
-		mappings := []*fcu.InstanceBlockDeviceMappingSpecification{}
-
-		for _, m := range maps {
-			f := m.(map[string]interface{})
-			mapping := &fcu.InstanceBlockDeviceMappingSpecification{
-				DeviceName:  aws.String(f["device_name"].(string)),
-				NoDevice:    aws.String(f["no_device"].(string)),
-				VirtualName: aws.String(f["virtual_name"].(string)),
-			}
-
-			e := f["ebs"].(map[string]interface{})
-
-			ebs := &fcu.EbsInstanceBlockDeviceSpecification{
-				DeleteOnTermination: aws.Bool(e["delete_on_termination"].(bool)),
-				VolumeId:            aws.String(e["volume_id"].(string)),
-			}
-
-			mapping.Ebs = ebs
-
-			mappings = append(mappings, mapping)
-		}
-
-		log.Printf("[INFO] Modifying instance %s", d.Id())
-		_, err := conn.VM.ModifyInstanceAttribute(&fcu.ModifyInstanceAttributeInput{
-			InstanceId:          aws.String(d.Id()),
-			BlockDeviceMappings: mappings,
-		})
-
-		if err != nil {
+		if err := setBlockDevice(d.Get("block_device_mapping"), conn, d.Id()); err != nil {
 			return err
 		}
 	}
@@ -567,18 +370,16 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 
-	log.Printf("[INFO] Terminating instance: %s", id)
 	req := &fcu.TerminateInstancesInput{
 		InstanceIds: []*string{aws.String(id)},
 	}
 
 	var err error
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+	err = resource.Retry(3*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.TerminateInstances(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				log.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 
@@ -599,8 +400,6 @@ func resourceVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 		return fmt.Errorf("Error deleting the instance %s", err)
 	}
-
-	log.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
@@ -637,19 +436,19 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_termination": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"iops": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"snapshot_id": {
 									Type:     schema.TypeInt,
 									Optional: true,
 								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
 								"volume_size": {
-									Type:     schema.TypeFloat,
+									Type:     schema.TypeInt,
 									Optional: true,
 								},
 								"volume_type": {
@@ -679,6 +478,7 @@ func getVMSchema() map[string]*schema.Schema {
 		"disable_api_termination": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Computed: true,
 		},
 		"dry_run": {
 			Type:     schema.TypeBool,
@@ -694,7 +494,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		"instance_initiated_shutdown_behavior": {
-			Type:     schema.TypeBool,
+			Type:     schema.TypeString,
 			Optional: true,
 		},
 		"instance_type": {
@@ -719,9 +519,9 @@ func getVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"network_interface": {
-
-			Type:     schema.TypeSet,
-			Optional: true,
+			ConflictsWith: []string{"subnet_id", "security_group_id", "security_group"},
+			Type:          schema.TypeSet,
+			Optional:      true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_termination": {
@@ -737,7 +537,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"network_interface_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"private_ip_address": {
@@ -750,7 +550,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"primary": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeBool,
 									Optional: true,
 								},
 								"private_ip_address": {
@@ -761,7 +561,7 @@ func getVMSchema() map[string]*schema.Schema {
 						},
 					},
 					"secondary_private_ip_address_count": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Optional: true,
 					},
 					"security_group_id": {
@@ -794,7 +594,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"host_id": {
-						Type:     schema.TypeInt,
+						Type:     schema.TypeString,
 						Optional: true,
 					},
 					"tenancy": {
@@ -809,7 +609,7 @@ func getVMSchema() map[string]*schema.Schema {
 			Optional: true,
 		},
 		"private_ip_addresses": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeString,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -826,7 +626,8 @@ func getVMSchema() map[string]*schema.Schema {
 		"security_group_id": {
 			Type:     schema.TypeSet,
 			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+
+			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"subnet_id": {
 			Type:     schema.TypeString,
@@ -856,7 +657,6 @@ func getVMSchema() map[string]*schema.Schema {
 		"instances_set": {
 			Type:     schema.TypeSet,
 			Computed: true,
-			// Set:      resourceInstancSetHash,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ami_launch_index": {
@@ -900,6 +700,10 @@ func getVMSchema() map[string]*schema.Schema {
 						},
 					},
 					"client_token": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"instance_lifecycle": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -960,7 +764,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"name": {
@@ -1141,7 +945,7 @@ func getVMSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"vpc_id": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
@@ -1220,7 +1024,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"source_dest_check": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeBool,
 						Computed: true,
 					},
 					"spot_instance_request_id": {
@@ -1236,7 +1040,7 @@ func getVMSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"code": {
-									Type:     schema.TypeInt,
+									Type:     schema.TypeString,
 									Computed: true,
 								},
 								"message": {
@@ -1282,9 +1086,14 @@ func getVMSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"tag": tagsSchema(),
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
+		},
+		"requester_id": {
+			Type:     schema.TypeString,
+			Optional: true,
 		},
 		"reservation_id": {
 			Type:     schema.TypeString,
@@ -1300,11 +1109,11 @@ func getVMSchema() map[string]*schema.Schema {
 
 type outscaleInstanceOpts struct {
 	BlockDeviceMappings               []*fcu.BlockDeviceMapping
-	DisableApiTermination             *bool
+	DisableAPITermination             *bool
 	EBSOptimized                      *bool
 	DryRun                            *bool
 	ImageID                           *string
-	InstanceInitiatedShutdownBehavior *bool
+	InstanceInitiatedShutdownBehavior *string
 	InstanceType                      *string
 	Ipv6AddressCount                  *int64
 	KeyName                           *string
@@ -1336,23 +1145,17 @@ func buildOutscaleVMOpts(
 		InstanceType: aws.String(d.Get("instance_type").(string)),
 	}
 
-	if v := d.Get("instance_initiated_shutdown_behavior").(bool); v {
-		opts.InstanceInitiatedShutdownBehavior = aws.Bool(v)
+	if v := d.Get("instance_initiated_shutdown_behavior").(string); v != "" {
+		opts.InstanceInitiatedShutdownBehavior = aws.String(v)
 	}
 
 	userData := d.Get("user_data").(string)
 	opts.UserData = &userData
 
-	subnetID, hasSubnet := d.GetOk("subnet_id")
-	if hasSubnet {
-		s := subnetID.(string)
-		opts.SubnetID = &s
-	}
-
 	if t, hasDisableAPITerminartion := d.GetOk("disable_api_termination"); hasDisableAPITerminartion {
-		opts.DisableApiTermination = aws.Bool(t.(bool))
+		opts.DisableAPITermination = aws.Bool(t.(bool))
 	} else {
-		opts.DisableApiTermination = aws.Bool(false)
+		opts.DisableAPITermination = aws.Bool(false)
 	}
 
 	if t, hasTenancy := d.GetOk("tenancy"); hasTenancy {
@@ -1369,36 +1172,50 @@ func buildOutscaleVMOpts(
 		}
 	}
 
-	var groups []*string
-	if v := d.Get("security_group"); v != nil {
+	subnetID, hasSubnet := d.GetOk("subnet_id")
 
-		sgs := v.(*schema.Set).List()
-		for _, v := range sgs {
-			str := v.(string)
-			groups = append(groups, aws.String(str))
+	groups := make([]*string, 0)
+	if v := d.Get("security_group"); v != nil {
+		groups = expandStringList(v.(*schema.Set).List())
+		if len(groups) > 0 && hasSubnet {
+			log.Print("[WARN] Deprecated. Attempting to use 'security_group' within a VPC instance. Use 'security_group_id' instead.")
 		}
 	}
-
-	opts.SecurityGroups = groups
 
 	networkInterfaces, interfacesOk := d.GetOk("network_interface")
-	if interfacesOk {
+	if hasSubnet || interfacesOk {
 		opts.NetworkInterfaces = buildNetworkInterfaceOpts(d, groups, networkInterfaces)
-
-	}
-
-	if v, ok := d.GetOk("private_ip"); ok {
-		opts.PrivateIPAddress = aws.String(v.(string))
-	}
-
-	if v, ok := d.GetOk("vpc_security_group_ids"); ok && v.(*schema.Set).Len() > 0 {
-		for _, v1 := range v.(*schema.Set).List() {
-			opts.SecurityGroupIDs = append(opts.SecurityGroupIDs, aws.String(v1.(string)))
+	} else {
+		if hasSubnet {
+			s := subnetID.(string)
+			opts.SubnetID = &s
 		}
-	}
 
-	if v, ok := d.GetOk("ipv6_address_count"); ok {
-		opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
+		if opts.SubnetID != nil &&
+			*opts.SubnetID != "" {
+			opts.SecurityGroupIDs = groups
+		} else {
+			opts.SecurityGroups = groups
+		}
+
+		var groupIDs []*string
+		if v := d.Get("security_group_id"); v != nil {
+
+			sgs := v.(*schema.Set).List()
+			for _, v := range sgs {
+				str := v.(string)
+				groupIDs = append(groupIDs, aws.String(str))
+			}
+		}
+		opts.SecurityGroupIDs = groupIDs
+
+		if v, ok := d.GetOk("private_ip"); ok {
+			opts.PrivateIPAddress = aws.String(v.(string))
+		}
+
+		if v, ok := d.GetOk("ipv6_address_count"); ok {
+			opts.Ipv6AddressCount = aws.Int64(int64(v.(int)))
+		}
 	}
 
 	if v, ok := d.GetOk("key_name"); ok {
@@ -1417,17 +1234,10 @@ func buildOutscaleVMOpts(
 		opts.DryRun = aws.Bool(dryRun.(bool))
 	}
 
-	ramdiskID := d.Get("ramdisk_id").(string)
-	opts.RamdiskId = &ramdiskID
-
-	ownerID := d.Get("owner_id").(string)
-	opts.OwnerId = &ownerID
-
-	requesterID := d.Get("request_id").(string)
-	opts.RequesterId = &requesterID
-
-	reservationID := d.Get("reservation_id").(string)
-	opts.ReservationId = &reservationID
+	opts.RamdiskId = aws.String(d.Get("ramdisk_id").(string))
+	opts.OwnerId = aws.String(d.Get("owner_id").(string))
+	opts.RequesterId = aws.String(d.Get("requester_id").(string))
+	opts.ReservationId = aws.String(d.Get("reservation_id").(string))
 
 	if p := d.Get("password_data"); p != nil {
 		opts.PasswordData = aws.String(p.(string))
@@ -1440,17 +1250,9 @@ func buildOutscaleVMOpts(
 
 func buildNetworkInterfaceOpts(d *schema.ResourceData, groups []*string, nInterfaces interface{}) []*fcu.InstanceNetworkInterfaceSpecification {
 	networkInterfaces := []*fcu.InstanceNetworkInterfaceSpecification{}
-	// Get necessary items
 	subnet, hasSubnet := d.GetOk("subnet_id")
 
 	if hasSubnet {
-		// If we have a non-default VPC / Subnet specified, we can flag
-		// AssociatePublicIpAddress to get a Public IP assigned. By default these are not provided.
-		// You cannot specify both SubnetId and the NetworkInterface.0.* parameters though, otherwise
-		// you get: Network interfaces and an instance-level subnet ID may not be specified on the same request
-		// You also need to attach Security Groups to the NetworkInterface instead of the instance,
-		// to avoid: Network interfaces and an instance-level security groups may not be specified on
-		// the same request
 		ni := &fcu.InstanceNetworkInterfaceSpecification{
 			DeviceIndex: aws.Int64(int64(0)),
 			SubnetId:    aws.String(subnet.(string)),
@@ -1469,15 +1271,14 @@ func buildNetworkInterfaceOpts(d *schema.ResourceData, groups []*string, nInterf
 			ni.Ipv6AddressCount = aws.Int64(int64(v.(int)))
 		}
 
-		if v := d.Get("vpc_security_group_ids").(*schema.Set); v.Len() > 0 {
-			for _, v := range v.List() {
+		if v, ok := d.GetOk("security_group_id"); ok && v.(*schema.Set).Len() > 0 {
+			for _, v := range v.(*schema.Set).List() {
 				ni.Groups = append(ni.Groups, aws.String(v.(string)))
 			}
 		}
 
 		networkInterfaces = append(networkInterfaces, ni)
 	} else {
-		// If we have manually specified network interfaces, build and attach those here.
 		vL := nInterfaces.(*schema.Set).List()
 		for _, v := range vL {
 			ini := v.(map[string]interface{})
@@ -1549,7 +1350,7 @@ func readBlockDeviceMappingsFromConfig(
 			}
 
 			if bdm.NoDevice == nil && aws.StringValue(bdm.VirtualName) == "" {
-				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined.")
+				return nil, errors.New("virtual_name cannot be empty when no_device is false or undefined")
 			}
 
 			blockDevices = append(blockDevices, bdm)
@@ -1559,7 +1360,7 @@ func readBlockDeviceMappingsFromConfig(
 	if v, ok := d.GetOk("root_block_device"); ok {
 		vL := v.([]interface{})
 		if len(vL) > 1 {
-			return nil, errors.New("Cannot specify more than one root_block_device.")
+			return nil, errors.New("Cannot specify more than one root_block_device")
 		}
 		for _, v := range vL {
 			bd := v.(map[string]interface{})
@@ -1584,7 +1385,7 @@ func readBlockDeviceMappingsFromConfig(
 				ebs.Iops = aws.Int64(int64(v))
 			} else if v, ok := bd["iops"].(int); ok && v > 0 && *ebs.VolumeType != "io1" {
 				// Message user about incompatibility
-				log.Print("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
+				fmt.Print("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 			}
 		}
 	}
@@ -1592,6 +1393,7 @@ func readBlockDeviceMappingsFromConfig(
 	return blockDevices, nil
 }
 
+// InstanceStateRefreshFunc ...
 func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput
@@ -1605,8 +1407,6 @@ func InstanceStateRefreshFunc(conn *fcu.Client, instanceID, failState string) re
 		})
 
 		if err != nil {
-			log.Printf("Error on InstanceStateRefresh: %s", err)
-
 			return nil, "", err
 		}
 
@@ -1641,8 +1441,6 @@ func GetInstanceGetPasswordData(conn *fcu.Client, instanceID, failState string) 
 		})
 
 		if err != nil {
-			log.Printf("Error on InstanceStateRefresh: %s", err)
-
 			return nil, "", err
 		}
 
@@ -1654,14 +1452,12 @@ func GetInstanceGetPasswordData(conn *fcu.Client, instanceID, failState string) 
 
 		if len(*i) < 0 {
 			return nil, "running", nil
-		} else {
-			return nil, "terminated", nil
 		}
-
-		return nil, "", nil
+		return nil, "terminated", nil
 	}
 }
 
+// InstancePa ...
 func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *fcu.DescribeInstancesOutput
@@ -1676,8 +1472,6 @@ func InstancePa(conn *fcu.Client, instanceID, failState string) resource.StateRe
 		})
 
 		if err != nil {
-			log.Printf("Error on InstanceStateRefresh: %s", err)
-
 			return nil, "", err
 		}
 
@@ -1703,53 +1497,30 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 	instanceSet := map[string]interface{}{}
 	s := schema.NewSet(nil, []interface{}{})
 
-	instanceSet["ami_launch_index"] = *instance.AmiLaunchIndex
-	instanceSet["ebs_optimized"] = *instance.EbsOptimized
-	instanceSet["architecture"] = *instance.Architecture
-	instanceSet["client_token"] = *instance.ClientToken
-	instanceSet["hypervisor"] = *instance.Hypervisor
-	instanceSet["image_id"] = *instance.ImageId
-	instanceSet["instance_id"] = *instance.InstanceId
-	instanceSet["instance_type"] = *instance.InstanceType
-	instanceSet["kernel_id"] = *instance.KernelId
-	instanceSet["key_name"] = *instance.KeyName
-	instanceSet["private_dns_name"] = *instance.PrivateDnsName
-	instanceSet["private_ip_address"] = *instance.PrivateIpAddress
-	instanceSet["root_device_name"] = *instance.RootDeviceName
-
-	if instance.DnsName != nil {
-		instanceSet["dns_name"] = *instance.DnsName
-	}
-	if instance.IpAddress != nil {
-		instanceSet["ip_address"] = *instance.IpAddress
-	}
-	if instance.Platform != nil {
-		instanceSet["platform"] = *instance.Platform
-	}
-	if instance.RamdiskId != nil {
-		instanceSet["ramdisk_id"] = *instance.RamdiskId
-	}
-	if instance.Reason != nil {
-		instanceSet["reason"] = *instance.Reason
-	}
-	if instance.SourceDestCheck != nil {
-		instanceSet["source_dest_check"] = *instance.SourceDestCheck
-	}
-	if instance.SpotInstanceRequestId != nil {
-		instanceSet["spot_instance_request_id"] = *instance.SpotInstanceRequestId
-	}
-	if instance.SriovNetSupport != nil {
-		instanceSet["sriov_net_support"] = *instance.SriovNetSupport
-	}
-	if instance.SubnetId != nil {
-		instanceSet["subnet_id"] = *instance.SubnetId
-	}
-	if instance.VirtualizationType != nil {
-		instanceSet["virtualization_type"] = *instance.VirtualizationType
-	}
-	if instance.VpcId != nil {
-		instanceSet["vpc_id"] = *instance.VpcId
-	}
+	instanceSet["ami_launch_index"] = aws.Int64Value(instance.AmiLaunchIndex)
+	instanceSet["ebs_optimized"] = aws.BoolValue(instance.EbsOptimized)
+	instanceSet["architecture"] = aws.StringValue(instance.Architecture)
+	instanceSet["client_token"] = aws.StringValue(instance.ClientToken)
+	instanceSet["hypervisor"] = aws.StringValue(instance.Hypervisor)
+	instanceSet["image_id"] = aws.StringValue(instance.ImageId)
+	instanceSet["instance_id"] = aws.StringValue(instance.InstanceId)
+	instanceSet["instance_type"] = aws.StringValue(instance.InstanceType)
+	instanceSet["kernel_id"] = aws.StringValue(instance.KernelId)
+	instanceSet["key_name"] = aws.StringValue(instance.KeyName)
+	instanceSet["private_dns_name"] = aws.StringValue(instance.PrivateDnsName)
+	instanceSet["private_ip_address"] = aws.StringValue(instance.PrivateIpAddress)
+	instanceSet["root_device_name"] = aws.StringValue(instance.RootDeviceName)
+	instanceSet["dns_name"] = aws.StringValue(instance.DnsName)
+	instanceSet["ip_address"] = aws.StringValue(instance.IpAddress)
+	instanceSet["platform"] = aws.StringValue(instance.Platform)
+	instanceSet["ramdisk_id"] = aws.StringValue(instance.RamdiskId)
+	instanceSet["reason"] = aws.StringValue(instance.Reason)
+	instanceSet["source_dest_check"] = aws.BoolValue(instance.SourceDestCheck)
+	instanceSet["spot_instance_request_id"] = aws.StringValue(instance.SpotInstanceRequestId)
+	instanceSet["sriov_net_support"] = aws.StringValue(instance.SriovNetSupport)
+	instanceSet["subnet_id"] = aws.StringValue(instance.SubnetId)
+	instanceSet["virtualization_type"] = aws.StringValue(instance.VirtualizationType)
+	instanceSet["vpc_id"] = aws.StringValue(instance.VpcId)
 
 	s.Add(instanceSet)
 
@@ -1762,7 +1533,95 @@ func getInstanceSet(instance *fcu.Instance) *schema.Set {
 	// instanceSet["placement"] = getPlacement(instance.Placement)
 	// instanceSet["state_reason"] = getStateReason(instance.StateReason)
 	// instanceSet["product_codes"] = getProductCodes(instance.ProductCodes)
-	// instanceSet["tag_set"] = getTagSet(instance.Tags)
+	instanceSet["tag_set"] = getTagSet(instance.Tags)
 
 	return s
+}
+
+func modifyInstanceAttr(conn *fcu.Client, instanceAttrOpts *fcu.ModifyInstanceAttributeInput, attr string) error {
+
+	var err error
+	var stateConf *resource.StateChangeConf
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		stateConf, err = stopInstance(instanceAttrOpts, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := conn.VM.ModifyInstanceAttribute(instanceAttrOpts); err != nil {
+		return err
+	}
+
+	switch attr {
+	case "instance_type":
+		fallthrough
+	case "user_data":
+		fallthrough
+	case "ebs_optimized":
+		fallthrough
+	case "delete_on_termination":
+		err = startInstance(instanceAttrOpts, stateConf, conn, attr)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func stopInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, conn *fcu.Client, attr string) (*resource.StateChangeConf, error) {
+	_, err := conn.VM.StopInstances(&fcu.StopInstancesInput{
+		InstanceIds: []*string{instanceAttrOpts.InstanceId},
+	})
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
+		Target:     []string{"stopped"},
+		Refresh:    InstanceStateRefreshFunc(conn, *instanceAttrOpts.InstanceId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"Error waiting for instance (%s) to stop: %s", *instanceAttrOpts.InstanceId, err)
+	}
+
+	return stateConf, nil
+}
+
+func startInstance(instanceAttrOpts *fcu.ModifyInstanceAttributeInput, stateConf *resource.StateChangeConf, conn *fcu.Client, attr string) error {
+	if _, err := conn.VM.StartInstances(&fcu.StartInstancesInput{
+		InstanceIds: []*string{instanceAttrOpts.InstanceId},
+	}); err != nil {
+		return err
+	}
+
+	stateConf = &resource.StateChangeConf{
+		Pending:    []string{"pending", "stopped"},
+		Target:     []string{"running"},
+		Refresh:    InstanceStateRefreshFunc(conn, *instanceAttrOpts.InstanceId, ""),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", *instanceAttrOpts.InstanceId, err)
+	}
+
+	return nil
 }
