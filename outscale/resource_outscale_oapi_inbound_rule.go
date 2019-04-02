@@ -29,7 +29,7 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"firewall_rules_set_id": {
+			"security_group_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -39,12 +39,12 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_name": {
+			"security_group_name_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_account_id": {
+			"security_group_account_id_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -54,7 +54,7 @@ func resourceOutscaleOAPIInboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"inbound_rule": getIPOAPIPermissionsSchema(),
+			"rules": getIPOAPIPermissionsSchema(false),
 			"reques_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -85,9 +85,6 @@ func resourceOutscaleOAPIInboundRuleCreate(d *schema.ResourceData, meta interfac
 	if err := validateAwsSecurityGroupRule(ippems); err != nil {
 		return err
 	}
-
-	ruleType := "ingress"
-	isVPC := sg.NetId != ""
 
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Ingress", perms)
@@ -124,10 +121,10 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 
 		return fmt.Errorf(
 			"Error authorizing security group rule type %s: %s",
-			ruleType, autherr)
+			"", autherr)
 	}
 
-	id := ipOAPIPermissionIDHash(sgID, ruleType, perms)
+	id := ipOAPIPermissionIDHash(sgID, "", perms)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -141,11 +138,11 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 		var rules []oapi.SecurityGroupRule
 		rules = sg.InboundRules
 
-		rule := findOAPIRuleMatch(perms, rules, isVPC)
+		rule := findOAPIRuleMatch(perms, rules)
 
 		if rule == nil {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-				ruleType, id, sgID)
+				"", id, sgID)
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 
@@ -154,7 +151,7 @@ information and instructions for recovery. Error message: %s`, sgID, awsErr.Mess
 
 	if retErr != nil {
 		return fmt.Errorf("Error finding matching %s Security Group Rule (%s) for Group %s",
-			ruleType, id, sgID)
+			"", id, sgID)
 	}
 
 	d.SetId(id)
@@ -174,9 +171,7 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
-	isVPC := sg.NetId != ""
-
-	var rule *oapi.SecurityGroupRule
+	var rule []oapi.SecurityGroupRule
 	var rules []oapi.SecurityGroupRule
 	ruleType := "ingress"
 	rules = sg.InboundRules
@@ -193,7 +188,7 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 		return nil
 	}
 
-	rule = findOAPIRuleMatch(p, rules, isVPC)
+	rule = findOAPIRuleMatch(p, rules)
 
 	if rule == nil {
 		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",

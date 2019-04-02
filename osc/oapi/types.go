@@ -596,14 +596,14 @@ type CreateSecurityGroupResponse struct {
 type CreateSecurityGroupRuleRequest struct {
 	DryRun                       bool                `json:"DryRun,omitempty"`
 	Flow                         string              `json:"Flow,omitempty"`
-	FromPortRange                int64               `json:"FromPortRange,omitempty"`
+	FromPortRange                int64               `json:"FromPortRange"`
 	IpProtocol                   string              `json:"IpProtocol,omitempty"`
 	IpRange                      string              `json:"IpRange,omitempty"`
 	Rules                        []SecurityGroupRule `json:"Rules,omitempty"`
 	SecurityGroupAccountIdToLink string              `json:"SecurityGroupAccountIdToLink,omitempty"`
 	SecurityGroupId              string              `json:"SecurityGroupId,omitempty"`
 	SecurityGroupNameToLink      string              `json:"SecurityGroupNameToLink,omitempty"`
-	ToPortRange                  int64               `json:"ToPortRange,omitempty"`
+	ToPortRange                  int64               `json:"ToPortRange"`
 }
 
 // implements the service definition of CreateSecurityGroupRuleResponse
@@ -1055,14 +1055,14 @@ type DeleteSecurityGroupResponse struct {
 type DeleteSecurityGroupRuleRequest struct {
 	DryRun                         bool                `json:"DryRun,omitempty"`
 	Flow                           string              `json:"Flow,omitempty"`
-	FromPortRange                  int64               `json:"FromPortRange,omitempty"`
+	FromPortRange                  int64               `json:"FromPortRange"`
 	IpProtocol                     string              `json:"IpProtocol,omitempty"`
 	IpRange                        string              `json:"IpRange,omitempty"`
 	Rules                          []SecurityGroupRule `json:"Rules,omitempty"`
 	SecurityGroupAccountIdToUnlink string              `json:"SecurityGroupAccountIdToUnlink,omitempty"`
 	SecurityGroupId                string              `json:"SecurityGroupId,omitempty"`
 	SecurityGroupNameToUnlink      string              `json:"SecurityGroupNameToUnlink,omitempty"`
-	ToPortRange                    int64               `json:"ToPortRange,omitempty"`
+	ToPortRange                    int64               `json:"ToPortRange"`
 }
 
 // implements the service definition of DeleteSecurityGroupRuleResponse
@@ -3085,12 +3085,12 @@ type SecurityGroupLight struct {
 
 // implements the service definition of SecurityGroupRule
 type SecurityGroupRule struct {
-	FromPortRange         int64                  `json:"FromPortRange,omitempty"`
+	FromPortRange         int64                  `json:"FromPortRange"`
 	IpProtocol            string                 `json:"IpProtocol,omitempty"`
 	IpRanges              []string               `json:"IpRanges,omitempty"`
 	PrefixListIds         []string               `json:"PrefixListIds,omitempty"`
 	SecurityGroupsMembers []SecurityGroupsMember `json:"SecurityGroupsMembers,omitempty"`
-	ToPortRange           int64                  `json:"ToPortRange,omitempty"`
+	ToPortRange           int64                  `json:"ToPortRange"`
 }
 
 // implements the service definition of SecurityGroupsMember

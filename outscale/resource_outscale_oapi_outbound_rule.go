@@ -12,8 +12,12 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
+
+const OAPI_INBOUND_RULE = "Inbound"
+const OAPI_OUTBOUND_RULE = "Outbound"
 
 func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 	return &schema.Resource{
@@ -22,6 +26,15 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 		Delete: resourceOutscaleOAPIOutboundRuleDelete,
 
 		Schema: map[string]*schema.Schema{
+			"flow": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					OAPI_INBOUND_RULE,
+					OAPI_OUTBOUND_RULE,
+				}, false),
+			},
 			"ip_range": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -32,22 +45,33 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"firewall_rules_set_id": {
-				Type:     schema.TypeString,
-				Required: true,
+			"security_group_id": {
+				Type: schema.TypeString,
+				//Required: true,
+				Optional: true,
 				ForceNew: true,
+			},
+			"security_group_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"ip_protocol": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_name": {
+			"security_group_name_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"destination_firewall_rules_set_account_id": {
+			"security_group_account_id_to_link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -57,62 +81,104 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"inbound_rule": getIPOAPIPermissionsSchema(),
+			"rules":          getIPOAPIPermissionsSchema(false),
+			"inbound_rules":  getIPOAPIPermissionsSchema(true),
+			"outbound_rules": getIPOAPIPermissionsSchema(true),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func getIPOAPIPermissionsSchema() *schema.Schema {
+func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
-		ForceNew: true,
+		Computed: isForAttr,
+		ForceNew: !isForAttr,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_port_range": {
 					Type:     schema.TypeInt,
 					Optional: true,
-					ForceNew: true,
-				},
-				"groups": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-					Set:      schema.HashString,
-				},
-				"to_port_range": {
-					Type:     schema.TypeInt,
-					Optional: true,
-					ForceNew: true,
+					Computed: isForAttr,
+					ForceNew: !isForAttr,
 				},
 				"ip_protocol": {
 					Type:     schema.TypeString,
 					Optional: true,
-					ForceNew: true,
+					Computed: isForAttr,
+					ForceNew: !isForAttr,
 				},
 				"ip_ranges": {
 					Type:     schema.TypeList,
 					Optional: true,
-					ForceNew: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-						// ValidateFunc: validateCIDRNetworkAddress,
-					},
+					ForceNew: !isForAttr,
+					Computed: isForAttr,
+					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
-				"prefix_list_ids": {
+				"service_ids": {
 					Type:     schema.TypeList,
 					Optional: true,
-					ForceNew: true,
+					ForceNew: !isForAttr,
+					Computed: isForAttr,
 					Elem:     &schema.Schema{Type: schema.TypeString},
+				},
+				"to_port_range": {
+					Type:     schema.TypeInt,
+					Optional: true,
+					ForceNew: !isForAttr,
+					Computed: isForAttr,
+				},
+				"security_groups_members": &schema.Schema{
+					Type:     schema.TypeList,
+					Optional: true,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"account_id": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+							"security_group_id": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+							"security_group_name": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Computed: true,
+							},
+						},
+					},
 				},
 			},
 		},
 	}
 }
 
+func moreThanOnePresent(ipProtocol, accountIdtoLink string, rules []interface{}) bool {
+	argCount := 0
+	if ipProtocol != "" {
+		argCount++
+	}
+	if accountIdtoLink != "" {
+		argCount++
+	}
+	if len(rules) > 0 {
+		argCount++
+	}
+	return argCount > 1
+}
+
 func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	sgID := d.Get("firewall_rules_set_id").(string)
+
+	sgID := d.Get("security_group_id").(string)
 
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
@@ -122,31 +188,64 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		return err
 	}
 
-	perms, err := expandOAPIIPPermEgress(d, sg)
-	if err != nil {
-		return err
+	flow := d.Get("flow").(string)
+	ipRange := d.Get("ip_range").(string)
+	fromPortRange := d.Get("from_port_range").(int)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
+	nameToLink := d.Get("security_group_name_to_link").(string)
+	accountIdtoLink := d.Get("security_group_account_id_to_link").(string)
+	toPortRange := d.Get("to_port_range").(int)
+	rules := d.Get("rules").([]interface{})
+
+	if moreThanOnePresent(ipProtocol, accountIdtoLink, rules) {
+		return fmt.Errorf(
+			"These parameters cannot be provided together: ip_protocol, rules, security_group_account_id_to_link. Expected at most: 1")
 	}
 
-	ippems := d.Get("inbound_rule").([]interface{})
+	isOneRule := ipProtocol != ""
+	var expandedRules []oapi.SecurityGroupRule
+	var singleExpandedRule []oapi.SecurityGroupRule
 
-	if err := validateOAPISecurityGroupRule(ippems); err != nil {
-		return err
+	if !isOneRule {
+		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
+		if err != nil {
+			return err
+		}
+		if err := validateOAPISecurityGroupRule(rules); err != nil {
+			return err
+		}
+	} else {
+		singleExpandedRule = []oapi.SecurityGroupRule{
+			{
+				IpRanges:      []string{ipRange},
+				FromPortRange: int64(fromPortRange),
+				IpProtocol:    ipProtocol,
+				ToPortRange:   int64(toPortRange),
+			},
+		}
 	}
-
-	ruleType := "egress"
-	isVPC := sg.NetId != ""
-
-	var autherr error
-	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", perms)
 
 	req := oapi.CreateSecurityGroupRuleRequest{
-		SecurityGroupId: sg.SecurityGroupId,
-		Rules:           perms,
+		SecurityGroupId:              sg.SecurityGroupId,
+		Rules:                        expandedRules,
+		Flow:                         flow,
+		IpRange:                      ipRange,
+		FromPortRange:                int64(fromPortRange),
+		IpProtocol:                   ipProtocol,
+		SecurityGroupNameToLink:      nameToLink,
+		SecurityGroupAccountIdToLink: accountIdtoLink,
+		ToPortRange:                  int64(toPortRange),
 	}
 
+	//fmt.Printf("Req -> %+v\n", req)
+
+	var autherr error
+	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
+
+	var resp *oapi.POST_CreateSecurityGroupRuleResponses
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.POST_CreateSecurityGroupRule(req)
+		resp, err = conn.POST_CreateSecurityGroupRule(req)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -169,14 +268,15 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 		return fmt.Errorf(
 			"Error authorizing security group rule type %s: %s",
-			ruleType, autherr)
+			flow, autherr)
 	}
 
-	id := ipOAPIPermissionIDHash(sgID, ruleType, perms)
+	id := ipOAPIPermissionIDHash(flow, sgID, expandedRules)
 	log.Printf("[DEBUG] Computed group rule ID %s", id)
 
+	var configRules []oapi.SecurityGroupRule
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
+		sg, _, err = findOAPIResourceSecurityGroup(conn, sgID)
 
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
@@ -184,12 +284,23 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 		}
 
 		var rules []oapi.SecurityGroupRule
-		rules = sg.OutboundRules
-		rule := findOAPIRuleMatch(perms, rules, isVPC)
+		if OAPI_INBOUND_RULE == flow {
+			rules = sg.InboundRules
+		} else {
+			rules = sg.OutboundRules
+		}
 
-		if rule == nil {
+		if isOneRule {
+			configRules = singleExpandedRule
+		} else {
+			configRules = expandedRules
+		}
+
+		rule := findOAPIRuleMatch(configRules, rules)
+
+		if len(rule) == 0 {
 			log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-				ruleType, id, sgID)
+				flow, id, sgID)
 			return resource.RetryableError(fmt.Errorf("No match found"))
 		}
 
@@ -198,17 +309,38 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 
 	if retErr != nil {
 		return fmt.Errorf("Error finding matching %s Security Group Rule (%s) for Group %s",
-			ruleType, id, sgID)
+			flow, id, sgID)
 	}
 
 	d.SetId(id)
+
+	ips, err := setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.InboundRules))
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("inbound_rules", ips)
+
+	ips, err = setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.OutboundRules))
+
+	if err != nil {
+		return err
+	}
+
+	d.Set("outbound_rules", ips)
+	d.Set("security_group_name", sg.SecurityGroupName)
+	d.Set("net_id", sg.NetId)
+
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+
 	return nil
 }
 
 func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	sgID := d.Get("firewall_rules_set_id").(string)
-	sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
+	sgID := d.Get("security_group_id").(string)
+	sg, requestId, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(securityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -218,61 +350,143 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error finding security group (%s) for rule (%s): %s", sgID, d.Id(), err)
 	}
 
-	isVPC := sg.NetId != ""
+	if len(sg.InboundRules) == 0 && len(sg.OutboundRules) == 0 {
+		log.Printf("[WARN] No rules were found for Security Group (%s) looking for Security Group Rule (%s)",
+			sg.SecurityGroupName, d.Id())
+		d.SetId("")
+		return nil
+	}
 
-	var rule *oapi.SecurityGroupRule
-	var rules []oapi.SecurityGroupRule
-	ruleType := "egress"
-	rules = sg.OutboundRules
+	flow := d.Get("flow").(string)
+	ipRange := d.Get("ip_range").(string)
+	fromPortRange := d.Get("from_port_range").(int)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
+	//nameToLink := d.Get("security_group_name_to_link").(string)
+	accountIdtoLink := d.Get("security_group_account_id_to_link").(string)
+	toPortRange := d.Get("to_port_range").(int)
+	rules := d.Get("rules").([]interface{})
 
-	p, err := expandOAPIIPPermEgress(d, sg)
+	if moreThanOnePresent(ipProtocol, accountIdtoLink, rules) {
+		return fmt.Errorf(
+			"These parameters cannot be provided together: ip_protocol, rules, security_group_account_id_to_link. Expected at most: 1")
+	}
+
+	isOneRule := ipProtocol != ""
+	var expandedRules []oapi.SecurityGroupRule
+	var singleExpandedRule []oapi.SecurityGroupRule
+
+	if !isOneRule {
+		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
+		if err != nil {
+			return err
+		}
+		if err := validateOAPISecurityGroupRule(rules); err != nil {
+			return err
+		}
+	} else {
+		singleExpandedRule = []oapi.SecurityGroupRule{
+			{
+				IpRanges:      []string{ipRange},
+				FromPortRange: int64(fromPortRange),
+				IpProtocol:    ipProtocol,
+				ToPortRange:   int64(toPortRange),
+			},
+		}
+	}
+
+	var configRules []oapi.SecurityGroupRule
+	if isOneRule {
+		configRules = singleExpandedRule
+	} else {
+		configRules = expandedRules
+	}
+
+	var existingRules []oapi.SecurityGroupRule
+	if OAPI_INBOUND_RULE == flow {
+		existingRules = sg.InboundRules
+	} else {
+		existingRules = sg.OutboundRules
+	}
+
+	rule := findOAPIRuleMatch(configRules, existingRules)
+
+	if len(rule) == 0 {
+		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
+			flow, d.Id(), sgID)
+		d.SetId("")
+	}
+
+	ips, err := setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.InboundRules))
+
 	if err != nil {
 		return err
 	}
 
-	if len(rules) == 0 {
-		log.Printf("[WARN] No %s rules were found for Security Group (%s) looking for Security Group Rule (%s)",
-			ruleType, sg.SecurityGroupName, d.Id())
-		d.SetId("")
-		return nil
+	d.Set("inbound_rules", ips)
+
+	ips, err = setOAPIFromIPPerm(d, sg, findOAPIRuleMatch(configRules, sg.OutboundRules))
+
+	if err != nil {
+		return err
 	}
 
-	rule = findOAPIRuleMatch(p, rules, isVPC)
+	d.Set("outbound_rules", ips)
 
-	if rule == nil {
-		log.Printf("[DEBUG] Unable to find matching %s Security Group Rule (%s) for Group %s",
-			ruleType, d.Id(), sgID)
-		d.SetId("")
-		return nil
-	}
+	d.Set("security_group_name", sg.SecurityGroupName)
+	d.Set("net_id", sg.NetId)
 
-	if ips, err := setOAPIFromIPPerm(d, sg, p); err != nil {
-		return d.Set("inbound_rule", ips)
-	}
+	d.Set("request_id", requestId)
+
 	return nil
 }
 
 func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	sgID := d.Get("firewall_rules_set_id").(string)
+	sgID := d.Get("security_group_id").(string)
 
 	awsMutexKV.Lock(sgID)
 	defer awsMutexKV.Unlock(sgID)
+
+	flow := d.Get("flow").(string)
+	ipRange := d.Get("ip_range").(string)
+	fromPortRange := d.Get("from_port_range").(int)
+	ipProtocol := protocolForValue(d.Get("ip_protocol").(string))
+	nameToUnlink := d.Get("security_group_name_to_link").(string)
+	accountIdtoUnlink := d.Get("security_group_account_id_to_link").(string)
+	toPortRange := d.Get("to_port_range").(int)
+	rules := d.Get("rules").([]interface{})
 
 	sg, _, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if err != nil {
 		return err
 	}
 
-	perms, err := expandOAPIIPPermEgress(d, sg)
-	if err != nil {
-		return err
+	isOneRule := ipProtocol != ""
+	var expandedRules []oapi.SecurityGroupRule
+
+	if !isOneRule {
+		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
+		if err != nil {
+			return err
+		}
+		if err := validateOAPISecurityGroupRule(rules); err != nil {
+			return err
+		}
 	}
+
 	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
-		sgID, "egress", perms)
+		sgID, flow, expandedRules)
+
 	req := oapi.DeleteSecurityGroupRuleRequest{
-		SecurityGroupId: sg.SecurityGroupId,
-		Rules:           perms,
+		SecurityGroupId:                sg.SecurityGroupId,
+		Rules:                          expandedRules,
+		Flow:                           flow,
+		IpRange:                        ipRange,
+		FromPortRange:                  int64(fromPortRange),
+		IpProtocol:                     ipProtocol,
+		SecurityGroupNameToUnlink:      nameToUnlink,
+		SecurityGroupAccountIdToUnlink: accountIdtoUnlink,
+		ToPortRange:                    int64(toPortRange),
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -339,9 +553,9 @@ func findOAPIResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.Security
 	return &resp.OK.SecurityGroups[0], &resp.OK.ResponseContext.RequestId, nil
 }
 
-func expandOAPIIPPermEgress(d *schema.ResourceData, sg *oapi.SecurityGroup) ([]oapi.SecurityGroupRule, error) {
+func expandOAPISecurityGroupRules(d *schema.ResourceData, sg *oapi.SecurityGroup) ([]oapi.SecurityGroupRule, error) {
 
-	ippems := d.Get("inbound_rule").([]interface{})
+	ippems := d.Get("rules").([]interface{})
 	perms := make([]oapi.SecurityGroupRule, len(ippems))
 
 	return expandOAPIIPPerm(d, sg, perms, ippems)
@@ -358,42 +572,17 @@ func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oa
 		protocol := protocolForValue(v["ip_protocol"].(string))
 		perm.IpProtocol = protocol
 
-		groups := make(map[string]bool)
-		if raw, ok := d.GetOk("destination_firewall_rules_set_account_id"); ok {
-			groups[raw.(string)] = true
-		}
+		members := v["security_groups_members"].([]interface{})
 
-		if v, ok := d.GetOk("self"); ok && v.(bool) {
-			if sg.NetId != "" {
-				groups[sg.SecurityGroupId] = true
-			} else {
-				groups[sg.SecurityGroupName] = true
-			}
-		}
-
-		if len(groups) > 0 {
-			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(groups))
-			// build string list of group name/ids
-			var gl []string
-			for k := range groups {
-				gl = append(gl, k)
-			}
-
-			for i, name := range gl {
-				ownerID, id := "", name
-				if items := strings.Split(id, "/"); len(items) > 1 {
-					ownerID, id = items[0], items[1]
-				}
+		if len(members) > 0 {
+			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(members))
+			for i, v := range members {
+				member := v.(map[string]interface{})
 
 				perm.SecurityGroupsMembers[i] = oapi.SecurityGroupsMember{
-					SecurityGroupId: id,
-					AccountId:       ownerID,
-				}
-
-				if sg.NetId == "" {
-					perm.SecurityGroupsMembers[i].SecurityGroupId = ""
-					perm.SecurityGroupsMembers[i].SecurityGroupName = id
-					perm.SecurityGroupsMembers[i].AccountId = ""
+					AccountId:         member["account_id"].(string),
+					SecurityGroupId:   member["security_group_id"].(string),
+					SecurityGroupName: member["security_group_name"].(string),
 				}
 			}
 		}
@@ -405,21 +594,21 @@ func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oa
 				for i, v := range list {
 					cidrIP, ok := v.(string)
 					if !ok {
-						return nil, fmt.Errorf("empty element found in cidr_blocks - consider using the compact function")
+						return nil, fmt.Errorf("empty element found in ip_ranges - consider using the compact function")
 					}
 					perm.IpRanges[i] = cidrIP
 				}
 			}
 		}
 
-		if raw, ok := v["prefix_list_ids"]; ok {
+		if raw, ok := v["service_ids"]; ok {
 			list := raw.([]interface{})
 			if len(list) > 0 {
 				perm.PrefixListIds = make([]string, len(list))
 				for i, v := range list {
 					prefixListID, ok := v.(string)
 					if !ok {
-						return nil, fmt.Errorf("empty element found in prefix_list_ids - consider using the compact function")
+						return nil, fmt.Errorf("empty element found in service_ids - consider using the compact function")
 					}
 					perm.PrefixListIds[i] = prefixListID
 				}
@@ -436,20 +625,24 @@ func validateOAPISecurityGroupRule(ippems []interface{}) error {
 	for _, value := range ippems {
 		v := value.(map[string]interface{})
 
-		_, blocksOk := v["ip_ranges"]
-		_, sourceOk := v["destination_firewall_rules_set_account_id"]
-		_, selfOk := v["self"]
-		_, prefixOk := v["prefix_list_ids"]
-		if !blocksOk && !sourceOk && !selfOk && !prefixOk {
-			return fmt.Errorf(
-				"One of ['cidr_blocks', 'self', 'source_security_group_id', 'prefix_list_ids'] must be set to create an AWS Security Group Rule")
+		members := v["security_groups_members"].([]interface{})
+
+		if len(members) > 0 {
+			for _, v := range members {
+				member := v.(map[string]interface{})
+
+				if member["security_group_id"].(string) == "" {
+					return fmt.Errorf(
+						"'security_group_id' must be set")
+				}
+			}
 		}
 	}
 
 	return nil
 }
 
-func ipOAPIPermissionIDHash(sgID, ruleType string, ips []oapi.SecurityGroupRule) string {
+func ipOAPIPermissionIDHash(ruleType, sgID string, ips []oapi.SecurityGroupRule) string {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s-", sgID))
 
@@ -505,10 +698,14 @@ func ipOAPIPermissionIDHash(sgID, ruleType string, ips []oapi.SecurityGroupRule)
 	return fmt.Sprintf("sgrule-%d", hashcode.String(buf.String()))
 }
 
-func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule, isVPC bool) *oapi.SecurityGroupRule {
-	var rule *oapi.SecurityGroupRule
+func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule) []oapi.SecurityGroupRule {
+	var rule = make([]oapi.SecurityGroupRule, 0)
+	//fmt.Printf("Rules (from config) -> %+v\n", p)
+	//fmt.Printf("Rules (from service) -> %+v\n", rules)
 	for _, i := range p {
 		for _, r := range rules {
+
+			//fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
 			if i.ToPortRange != r.ToPortRange {
 				continue
 			}
@@ -550,14 +747,8 @@ func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRul
 			remaining = len(i.SecurityGroupsMembers)
 			for _, ip := range i.SecurityGroupsMembers {
 				for _, rip := range r.SecurityGroupsMembers {
-					if isVPC {
-						if ip.SecurityGroupId == rip.SecurityGroupId {
-							remaining--
-						}
-					} else {
-						if ip.SecurityGroupName == rip.SecurityGroupName {
-							remaining--
-						}
+					if ip.SecurityGroupId == rip.SecurityGroupId {
+						remaining--
 					}
 				}
 			}
@@ -566,15 +757,13 @@ func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRul
 				continue
 			}
 
-			rule = &r
+			rule = append(rule, r)
 		}
 	}
 	return rule
 }
 
 func setOAPIFromIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, rules []oapi.SecurityGroupRule) ([]map[string]interface{}, error) {
-	isVPC := sg.NetId != ""
-
 	ips := make([]map[string]interface{}, len(rules))
 
 	for k, rule := range rules {
@@ -584,16 +773,14 @@ func setOAPIFromIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, rules []o
 		ip["to_port_range"] = rule.ToPortRange
 		ip["ip_protocol"] = rule.IpProtocol
 		ip["ip_ranges"] = rule.IpRanges
-		ip["prefix_list_ids"] = rule.PrefixListIds
+		ip["service_ids"] = rule.PrefixListIds
 
 		if len(rule.SecurityGroupsMembers) > 0 {
 			s := rule.SecurityGroupsMembers[0]
 
-			if isVPC {
-				d.Set("destination_firewall_rules_set_account_id", s.SecurityGroupId)
-			} else {
-				d.Set("destination_firewall_rules_set_account_id", s.SecurityGroupName)
-			}
+			d.Set("account_id", s.AccountId)
+			d.Set("security_group_id", s.SecurityGroupId)
+			d.Set("security_group_name", s.SecurityGroupName)
 		}
 
 		ips[k] = ip
