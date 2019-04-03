@@ -13,6 +13,18 @@ Requirements
 -	[Terraform](https://www.terraform.io/downloads.html) 0.11.x
 -	[Go](https://golang.org/doc/install) 1.12 (to build the provider plugin)
 
+Installing The Provider
+-----------------------
+
+Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
+
+```sh
+$ wget https://github.com/outscale/terraform-provider-outscale/releases/download/release-0.1.0RC3/terraform-provider-outscale_linux_amd64_v0.1.0-rc3.zip
+$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc3.zip
+$ mv terraform-provider-outscale_v0.1.0-rc3 ~/.terraform.d/plugins/linux_amd64/.
+```
+
+
 Building The Provider
 ---------------------
 
