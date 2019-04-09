@@ -51,8 +51,8 @@ Using the provider
   $ mv terraform-provider-outscale_v0.1.0-rc3 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
-3. Execute `terraform plan`
-4. `terraform init`
+3. Execute `terraform init`
+4. Execute `terraform plan`
 5. oAPI beta documentation is available at https://docs-beta.outscale.com
 
 Developing the Provider
