@@ -169,7 +169,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
+		return fmt.Errorf("Error creating Outscale BSU volume: %s", errString)
 	}
 
 	result = resp.OK

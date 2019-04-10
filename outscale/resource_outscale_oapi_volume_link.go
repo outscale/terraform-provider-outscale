@@ -119,7 +119,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		_, err = stateConf.WaitForState()
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
+				"Error waiting for volume link (%s) to become ready: %s",
 				iID, err)
 		}
 
@@ -298,8 +298,8 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	opts := oapi.UnlinkVolumeRequest{
 		//VmId:       iID,
 		//ForceUnlink: d.Get("force_unlink").(bool),
-		DeviceName: d.Get("device_name").(string),
-		VolumeId:   vID,
+		//DeviceName: d.Get("device_name").(string), //Removed due oAPI Bug.
+		VolumeId: vID,
 	}
 
 	force, forceOk := d.GetOk("force_unlink")
