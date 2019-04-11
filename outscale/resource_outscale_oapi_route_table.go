@@ -128,28 +128,30 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	rt := rtRaw.(oapi.RouteTable)
 
 	for _, a := range rt.LinkRouteTables {
-		log.Printf("[INFO] Disassociating LinkRouteTable: %s", a.LinkRouteTableId)
+		if !a.Main {
+			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.LinkRouteTableId)
 
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err := conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
-				LinkRouteTableId: a.LinkRouteTableId,
-			})
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
+				_, err := conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
+					LinkRouteTableId: a.LinkRouteTableId,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
 				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
+				return nil
+			})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
-				err = nil
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
+					err = nil
+				}
+				return err
 			}
-			return err
 		}
 	}
 
