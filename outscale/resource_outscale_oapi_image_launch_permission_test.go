@@ -147,12 +147,12 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "outscale_instance" {
     count = 1
-    image_id           = "ami-880caa66"
-    type               = "t2.micro"
+    image_id           = "ami-3e158364"
+    vm_type               = "t2.micro"
 }
 
 resource "outscale_image" "outscale_image" {
-    name        = "terraform test-123-%d"
+    image_name        = "terraform test-123-%d"
     vm_id = "${outscale_vm.outscale_instance.id}"
 	no_reboot   = "true"
 }

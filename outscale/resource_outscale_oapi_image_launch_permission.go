@@ -93,7 +93,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	imageID, iok := d.GetOk("image_id")
 
-	if iok {
+	if !iok {
 		return fmt.Errorf("please provide the required attribute imageID")
 	}
 
