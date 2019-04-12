@@ -278,7 +278,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating ENI: %s", err)
+		return fmt.Errorf("Error creating NIC: %s", err)
 	}
 
 	d.SetId(resp.OK.Nic.NicId)
