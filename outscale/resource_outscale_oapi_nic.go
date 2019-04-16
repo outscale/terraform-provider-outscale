@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -358,7 +359,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	bb := make(map[string]interface{})
 	att := eni.LinkNic
 	bb["link_nic_id"] = att.LinkNicId
-	bb["delete_on_vm_deletion"] = strconv.FormatBool(att.DeleteOnVmDeletion)
+	bb["delete_on_vm_deletion"] = strconv.FormatBool(aws.BoolValue(att.DeleteOnVmDeletion))
 	bb["device_number"] = strconv.FormatInt(att.DeviceNumber, 10)
 	bb["vm_id"] = att.VmAccountId
 	bb["vm_account_id"] = att.VmAccountId
