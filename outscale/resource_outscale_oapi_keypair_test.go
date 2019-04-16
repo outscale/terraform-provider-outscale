@@ -70,7 +70,7 @@ func TestAccOutscaleOAPIKeyPair_basic_name(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_keypair.a_key_pair", "keypair_name", "tf-acc-key-pair",
+						"outscale_keypair.a_key_pair", "keypair_name", fmt.Sprintf("tf-acc-key-pair-%d", rInt),
 					),
 				),
 			},
