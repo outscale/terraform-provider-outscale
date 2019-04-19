@@ -156,7 +156,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	// Set NAT Service attributes
-	ng := ngRaw.(*oapi.NatService)
+	ng := ngRaw.(oapi.NatService)
 
 	if ng.NatServiceId != "" {
 		d.Set("nat_service_id", ng.NatServiceId)
