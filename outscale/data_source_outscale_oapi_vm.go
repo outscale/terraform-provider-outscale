@@ -598,6 +598,12 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"security_groups_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
 					"security_groups": {
 						Type:     schema.TypeSet,
 						Computed: true,
@@ -632,14 +638,17 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"placement": {
 			Type:     schema.TypeMap,
 			Computed: true,
+			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"sub_region_name": {
+					"subregion_name": {
 						Type:     schema.TypeString,
+						Optional: true,
 						Computed: true,
 					},
 					"tenancy": {
 						Type:     schema.TypeString,
+						Optional: true,
 						Computed: true,
 					},
 				},

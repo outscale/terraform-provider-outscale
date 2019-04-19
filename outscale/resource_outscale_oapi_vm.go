@@ -236,20 +236,16 @@ func buildCreateVmsRequest(
 		MinVmsCount:                 int64(1),
 	}
 
+	if p, pOk := d.GetOk("placement"); pOk {
+		placement := p.(map[string]string)
+
+		request.Placement = oapi.Placement{
+			SubregionName: placement["subregion_name"],
+			Tenancy:       placement["tenancy"],
+		}
+	}
+
 	subnetID, hasSubnet := d.GetOk("subnet_id")
-
-	//tenancy, tenancyOK := d.GetOk("tenancy")
-	//az, azOk := d.GetOk("availability_zone")
-	//gn, gnOk := d.GetOk("placement")
-
-	//if gnOk && tenancyOK && azOk {
-	//if tenancyOK && azOk {
-	//	opts.Placement = oapi.Placement{
-	//PlacementName: gn.(string),
-	//		SubregionName: az.(string),
-	//		Tenancy:       tenancy.(string),
-	//	}
-	//}
 
 	groups := make([]string, 0)
 	if v := d.Get("security_group_ids"); v != nil {
