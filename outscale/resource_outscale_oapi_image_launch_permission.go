@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -94,7 +95,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 	imageID, iok := d.GetOk("image_id")
 
 	if !iok {
-		return fmt.Errorf("please provide the required attribute imageID")
+		return fmt.Errorf("please provide the required attribute image_id")
 	}
 
 	request := &oapi.UpdateImageRequest{
@@ -104,7 +105,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 	//request.Attribute = aws.String("launchPermission")
 	launchPermission := oapi.PermissionsOnResourceCreation{}
 
-	if v, ok := d.GetOk("permission_create"); ok {
+	if v, ok := d.GetOk("permission_additions"); ok {
 		add := v.([]interface{})
 
 		if len(add) > 0 {
@@ -113,7 +114,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 			for k, v := range add {
 				att := v.(map[string]interface{})
 				if g, ok := att["global_permission"]; ok {
-					globalPermission = g.(bool)
+					globalPermission, _ = strconv.ParseBool(g.(string))
 				}
 				if g, ok := att["account_id"]; ok {
 					accountIds[k] = g.(string)
@@ -231,10 +232,10 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 	conn := meta.(*OutscaleClient).OAPI
 
 	imageID, iok := d.GetOk("image_id")
-	permission, lok := d.GetOk("permission_create")
+	permission, lok := d.GetOk("permission_additions")
 
-	if iok {
-		return fmt.Errorf("please provide the required attribute imageID")
+	if !iok {
+		return fmt.Errorf("please provide the required attribute image_id")
 	}
 
 	request := &oapi.UpdateImageRequest{
@@ -253,12 +254,13 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 			for k, v := range delete {
 				att := v.(map[string]interface{})
 				if g, ok := att["global_permission"]; ok {
-					globalPermission = g.(bool)
+					globalPermission, _ = strconv.ParseBool(g.(string))
 				}
 				if g, ok := att["account_id"]; ok {
 					accountIds[k] = g.(string)
 				}
 			}
+
 			launchPermission.Removals = oapi.PermissionsOnResource{
 				AccountIds:       accountIds,
 				GlobalPermission: globalPermission,
@@ -341,7 +343,14 @@ func hasOAPILaunchPermission(conn *oapi.Client, imageID string) (bool, error) {
 
 		return false, fmt.Errorf("Error creating Outscale VM volume: %s", errString)
 	}
+
+	if len(attrs.OK.Images) == 0 {
+		log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", imageID)
+		return false, nil
+	}
+
 	result := attrs.OK.Images[0]
+	fmt.Printf("RESULT: %+v\n", result)
 
 	if len(result.PermissionsToLaunch.AccountIds) > 0 {
 		return true, nil

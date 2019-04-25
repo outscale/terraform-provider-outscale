@@ -40,21 +40,21 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, false, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -62,7 +62,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageDisappears(&imageID),
 				),
@@ -103,6 +103,7 @@ func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *s
 }
 
 func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
+	fmt.Println("testAccOutscaleOAPIImageLaunchPermissionDestroyed")
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
@@ -143,25 +144,32 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionConfig(r int) string {
-	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_instance" {
-    count = 1
-    image_id           = "ami-3e158364"
-    vm_type               = "t2.micro"
-}
+func testAccOutscaleOAPIImageLaunchPermissionConfig(accountID string, includeLaunchPermission bool, r int) string {
+	base := fmt.Sprintf(`
+	resource "outscale_vm" "outscale_instance" {
+		count = 1
+		image_id           = "ami-3e158364"
+		vm_type               = "t2.micro"
+	}
+	
+	resource "outscale_image" "outscale_image" {
+		image_name        = "terraform test-123-%d"
+		vm_id = "${outscale_vm.outscale_instance.id}"
+		no_reboot   = "true"
+	}
+	`, r)
 
-resource "outscale_image" "outscale_image" {
-    image_name        = "terraform test-123-%d"
-    vm_id = "${outscale_vm.outscale_instance.id}"
-	no_reboot   = "true"
-}
+	if !includeLaunchPermission {
+		return base
+	}
+
+	return base + fmt.Sprintf(`
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
     permission_additions {
-        account_id = "520679080430"
+        account_id = "%s"
 	}
 }
-`, r)
+`, accountID)
 }
