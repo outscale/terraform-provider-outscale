@@ -33,4 +33,4 @@ No arguments are supported.
 * `vm_id` - The ID of the VM the External IP (EIP) is associated with (if any).
 * `request_id` - The ID of the request.
 
-See detailed information in [OAPI PublicIp](http://docs.outscale.com/oapi/index.html#tocspublicip).
+See detailed information in [OAPI PublicIp](http://docs-beta.outscale.com/oapi#tocspublicip).
