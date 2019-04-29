@@ -41,7 +41,7 @@ The following arguments are supported:
 * `vm_id` - (Optional) The ID of the VM.
   * In the public Cloud, this parameter is required.
   * In a Net, this parameter is required if the VM has only one NIC. Otherwise, you need to specify the NicId parameter instead. You cannot specify both parameters at the same time.
-* `public_ip` - (Optional) The External IP address.
+* `public_ip` - (Optional) The External IP. In the public Cloud, this parameter is required.
 
 ## Attributes Reference
 
