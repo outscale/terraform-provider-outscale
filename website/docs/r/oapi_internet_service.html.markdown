@@ -27,3 +27,4 @@ The following attributes are exported:
 * `request_id` - The ID of the request.
 
 See detailed information in [Create Internet Service](http://docs.outscale.com/api_fcu/operations/Action_CreateInternetGateway_get.html#_api_fcu-action_createinternetservice_get).
+More info (https://docs-beta.outscale.com/oapi#tocsinternetservice)

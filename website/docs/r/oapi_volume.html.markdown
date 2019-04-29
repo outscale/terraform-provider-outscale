@@ -8,7 +8,7 @@ description: |-
 
 # outscale_volume
 
-  Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
+  Provides an Outscale Volume resource. You can create a new empty volume or restore a volume from an existing snapshot. You can create the following volume types: Enterprise (io1) for provisioned IOPS SSD volumes, Performance (gp2) for general purpose SSD volumes, or Magnetic (standard) volumes
 
 ## Example Usage
 
@@ -45,7 +45,7 @@ The following attributes are exported:
   * For io1 volumes, the number of provisioned IOPS
   * For gp2 volumes, the baseline performance of the volume
 * `size` - The size of the volume, in Gibibytes (GiB).
-* `snapshot_id` - The snapshot from which the volume was created.
+* `snapshot_id` - The ID of the snapshot from which you want to create the volume.
 * `volume_type` - The type of the volume (`standard` | `gp2` | `io1`).
 * `linked_volumes` - Information about your volume attachment.
 * `state` - The state of the volume (`creating` | `available` | `in-use` | `deleting` | `error`).
@@ -54,3 +54,4 @@ The following attributes are exported:
 * `request_id` -  The ID of the request.
 
 See detailed information in [Read Volumes](http://docs.outscale.com/api_fcu/definitions/Volume.html#_api_fcu-volume).
+See more information in [Read Volume](https://docs-beta.outscale.com/oapi#outscale-api-volume)
