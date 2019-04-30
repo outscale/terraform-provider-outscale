@@ -47,5 +47,7 @@ The following arguments are supported:
 * `tags` - One or more tags associated with the Subnet.
 * `request_id`- The ID of the request.
 
+More info here [Subnet](https://docs-beta.outscale.com/oapi#outscale-api-subnet).
+More info here [Subnet](https://docs-beta.outscale.com/oapi#tocssubnet).
 See detailed information in [OAPI ReadSubnets](http://docs.outscale.com/api_fcu/operations/Action_DescribeSubnets_get.html#_api_fcu-action_describesubnets_get).
 See detailed information in [OAPI CreateSubnet](http://docs.outscale.com/api_fcu/operations/Action_CreateSubnet_get.html#_api_fcu-action_createsubnet_get).
