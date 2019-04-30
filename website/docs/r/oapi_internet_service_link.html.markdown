@@ -33,6 +33,7 @@ The following arguments are supported:
 * `net_id` - The ID of the Net to which you want to attach the Internet service.
 
 See detailed information in [Outscale Link Internet Service](http://docs.outscale.com/api_fcu/operations/Action_AttachInternetGateway_get.html#_api_fcu-action_attachinternetservice_get).
+More info here [Link Internet Service](https://docs-beta.outscale.com/oapi#linkinternetservice)
 
 ## Attributes Reference
 
@@ -43,3 +44,4 @@ The following attributes are exported:
 * `tags` - One or more tags associated with the Internet service.
 
 See detailed information in [Outscale Link Internet Service](http://docs.outscale.com/api_fcu/operations/Action_AttachInternetGateway_get.html#_api_fcu-action_attachinternetservice_get).
+More info here [Link Internet Service](https://docs-beta.outscale.com/oapi#linkinternetservice)
