@@ -33,30 +33,24 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"account_id": &schema.Schema{
-							Type:     schema.TypeString,
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
 							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
 			},
 			"description": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeString,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"value": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
 			"permissions": &schema.Schema{
 				Type:     schema.TypeList,
@@ -94,6 +88,8 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	imageID, iok := d.GetOk("image_id")
 
+	fmt.Println("Creating Outscale Image Launch Permission, image_id", imageID.(string))
+
 	if !iok {
 		return fmt.Errorf("please provide the required attribute image_id")
 	}
@@ -111,13 +107,16 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 		if len(add) > 0 {
 			accountIds := make([]string, len(add))
 			var globalPermission bool
-			for k, v := range add {
-				att := v.(map[string]interface{})
-				if g, ok := att["global_permission"]; ok {
-					globalPermission, _ = strconv.ParseBool(g.(string))
-				}
-				if g, ok := att["account_id"]; ok {
-					accountIds[k] = g.(string)
+
+			att := add[0].(map[string]interface{})
+			if g, ok := att["global_permission"]; ok {
+				globalPermission, _ = strconv.ParseBool(g.(string))
+			}
+			if g, ok := att["account_ids"]; ok {
+				accountIds = make([]string, len(g.([]interface{})))
+
+				for k, v := range g.([]interface{}) {
+					accountIds[k] = v.(string)
 				}
 			}
 
@@ -159,7 +158,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 	}
 
 	d.SetId(imageID.(string))
-	d.Set("description", map[string]string{"value": ""})
+	d.Set("description", "")
 	d.Set("permissions", make([]map[string]interface{}, 0))
 	return nil
 }
@@ -203,13 +202,13 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(attrs.Code500))
 		}
 
-		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
+		return fmt.Errorf("Error reading Outscale image permission: %s", errString)
 	}
 
 	result := attrs.OK.Images[0]
 
 	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
-	d.Set("description", map[string]string{"value": result.Description})
+	d.Set("description", result.Description)
 	accountIds := result.PermissionsToLaunch.AccountIds
 	lp := make([]map[string]interface{}, len(accountIds))
 	for k, v := range accountIds {
@@ -249,15 +248,18 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 		delete := permission.([]interface{})
 
 		if len(delete) > 0 {
-			accountIds := make([]string, len(delete))
+			accountIds := make([]string, 0)
 			var globalPermission bool
-			for k, v := range delete {
-				att := v.(map[string]interface{})
-				if g, ok := att["global_permission"]; ok {
-					globalPermission, _ = strconv.ParseBool(g.(string))
-				}
-				if g, ok := att["account_id"]; ok {
-					accountIds[k] = g.(string)
+
+			att := delete[0].(map[string]interface{})
+			if g, ok := att["global_permission"]; ok {
+				globalPermission, _ = strconv.ParseBool(g.(string))
+			}
+			if g, ok := att["account_ids"]; ok {
+				accountIds = make([]string, len(g.([]interface{})))
+
+				for k, v := range g.([]interface{}) {
+					accountIds[k] = v.(string)
 				}
 			}
 

@@ -168,7 +168,7 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(accountID string, includeLau
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
     image_id    = "${outscale_image.outscale_image.image_id}"
     permission_additions {
-        account_id = "%s"
+		account_ids = ["%s"]
 	}
 }
 `, accountID)
