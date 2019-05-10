@@ -30,7 +30,9 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
-					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "40"),
+					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
+					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "volume_type", "io1"),
+					testAccCheckState("data.outscale_volume.ebs_volume"),
 				),
 			},
 		},
@@ -61,9 +63,10 @@ resource "outscale_volume" "example" {
 		value = "External Volume"
 	}
 }
+
 data "outscale_volume" "ebs_volume" {
     filter {
-		name = "volume-ids"
+		name = "volume_ids"
 		values = ["${outscale_volume.example.id}"]
     }
 }

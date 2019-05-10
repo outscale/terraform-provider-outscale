@@ -123,23 +123,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	} else if t == "io1" {
 		request.Iops = int64(iops)
 	}
-	//Missing on Swagger Spec
-	// tagsSpec := make([]*oapi.Tags, 0)
-
-	// if v, ok := d.GetOk("tag"); ok {
-	// 	tag := tagsFromMap(v.(map[string]interface{}))
-
-	// 	spec := &oapi.TagSpecification{
-	// 		ResourceType: aws.String("volume"),
-	// 		Tags:         tag,
-	// 	}
-
-	// 	tagsSpec = append(tagsSpec, spec)
-	// }
-
-	// if len(tagsSpec) > 0 {
-	// 	request.TagSpecifications = tagsSpec
-	// }
 
 	var result *oapi.CreateVolumeResponse
 	var resp *oapi.POST_CreateVolumeResponses
@@ -191,7 +174,6 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(result.Volume.VolumeId)
 
-	//Missing in swagger spec
 	if d.IsNewResource() {
 		if err := setOAPITags(conn, d); err != nil {
 			return err
@@ -247,7 +229,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		request := &oapi.DeleteVolumeRequest{
 			VolumeId: d.Id(),
 		}
-		response, err := conn.POST_DeleteVolume(*request)
+		_, err := conn.POST_DeleteVolume(*request)
 		if err == nil {
 			return nil
 		}
@@ -256,7 +238,6 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			return resource.RetryableError(fmt.Errorf("Outscale VolumeInUse - trying again while it detaches"))
 		}
 		fmt.Println(err)
-		utils.PrintToJSON(response.OK, "##RESPONSE-DELETE")
 
 		return resource.NonRetryableError(err)
 	})
@@ -299,14 +280,11 @@ func readOAPIVolume(d *schema.ResourceData, volume *oapi.Volume) error {
 		d.Set("volume_type", volume.VolumeType)
 	} else if vType, ok := d.GetOk("volume_type"); ok {
 		volume.VolumeType = vType.(string)
+	} else {
+		d.Set("volume_type", "")
 	}
 
-	if volume.VolumeType != "" && volume.VolumeType == "io1" {
-		//if volume.Iops != "" {
-		d.Set("iops", volume.Iops)
-		//}
-	}
-
+	d.Set("iops", volume.Iops)
 	d.Set("state", volume.State)
 	d.Set("volume_id", volume.VolumeId)
 
