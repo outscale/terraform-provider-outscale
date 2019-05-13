@@ -204,7 +204,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 			},
 			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			"tag_set": tagsSchemaComputed(),
 			"net_id": {

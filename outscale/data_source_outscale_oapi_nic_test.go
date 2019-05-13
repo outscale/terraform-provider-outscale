@@ -201,27 +201,20 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 
 const testAccOutscaleOAPIENIDataSourceConfig = `
 resource "outscale_net" "outscale_net" {
-    count = 1
-
-    cidr_block = "10.0.0.0/16"
-}
-
+	ip_range = "10.0.0.0/16"
+  }
+  
 resource "outscale_subnet" "outscale_subnet" {
-    count = 1
-
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_net.outscale_net.vpc_id}"
+	subregion_name = "eu-west-2a"
+	ip_range       = "10.0.0.0/16"
+	net_id         = "${outscale_net.outscale_net.id}"
 }
 
 resource "outscale_nic" "outscale_nic" {
-    count = 1
-
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	subnet_id = "${outscale_subnet.outscale_subnet.id}"
 }
 
-data "outscale_nic" "nic" {
-		network_interface_id = "NICID"
-		subnet_id = "1"
-}
+data "outscale_nic" "outscale_nic" {
+	nic_id = "${outscale_nic.outscale_nic.id}"
+}  
 `
