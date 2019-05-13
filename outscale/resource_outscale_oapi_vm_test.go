@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +19,7 @@ import (
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	var server oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -28,7 +30,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large"),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -45,6 +47,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	var before oapi.Vm
 	var after oapi.Vm
@@ -58,7 +61,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "t2.micro"),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "t2.micro", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
@@ -67,7 +70,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro"),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
@@ -276,24 +279,36 @@ func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oapi.Vm, omi str
 	}
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType string) string {
+func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType string, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
 	image_id			= "%s"
 	vm_type            	= "%s"
 	keypair_name		= "terraform-basic"
-	security_group_ids	= ["sg-77bd190e"]
-}`, omi, vmType)
+	security_group_ids	= ["sg-d1b31a37"]
+
+	placement = {
+	  subregion_name = "%sa"
+	  tenancy = "default"
+	}
+
+}`, omi, vmType, region)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
 	return fmt.Sprintf(`
 resource "outscale_vm" "basic" {
   image_id = "%s"
   vm_type = "%s"
   keypair_name = "integ_sut_keypair"
-  security_group_ids = ["sg-77bd190e"]
-}`, omi, vmType)
+  security_group_ids = ["sg-d1b31a37"]
+
+  placement = {
+	subregion_name = "%sa"
+	tenancy = "default"
+  }
+
+}`, omi, vmType, region)
 }
 
 func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {

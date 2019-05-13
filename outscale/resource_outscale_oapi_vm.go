@@ -237,12 +237,20 @@ func buildCreateVmsRequest(
 	}
 
 	if p, pOk := d.GetOk("placement"); pOk {
-		placement := p.(map[string]string)
+		log.Printf("[DEBUG] Placement %+v", p)
 
-		request.Placement = oapi.Placement{
-			SubregionName: placement["subregion_name"],
-			Tenancy:       placement["tenancy"],
+		placement := p.(map[string]interface{})
+
+		request.Placement = oapi.Placement{}
+
+		if v, ok := placement["subregion_name"]; ok {
+			request.Placement.SubregionName = v.(string)
 		}
+
+		if v, ok := placement["tenancy"]; ok {
+			request.Placement.Tenancy = v.(string)
+		}
+
 	}
 
 	subnetID, hasSubnet := d.GetOk("subnet_id")
