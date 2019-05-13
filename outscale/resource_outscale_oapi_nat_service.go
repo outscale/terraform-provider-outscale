@@ -32,6 +32,10 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -130,6 +134,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("Error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
 
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	// Update our attributes and return
 	return resourceOAPINatServiceRead(d, meta)
 }
