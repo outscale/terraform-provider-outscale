@@ -28,7 +28,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"state": {
+			"status": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -48,7 +48,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 			},
 			"accepter_net": vpcPeeringConnectionOptionsSchema(),
 			"source_net":   vpcPeeringConnectionOptionsSchema(),
-			"tags":         tagsSchema(),
+			"tags":         tagsListOAPISchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
