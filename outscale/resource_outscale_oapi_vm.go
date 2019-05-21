@@ -204,6 +204,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	return nil
 }
+
 func getOApiVMSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{}
 
@@ -256,10 +257,10 @@ func buildCreateVmsRequest(
 	subnetID, hasSubnet := d.GetOk("subnet_id")
 
 	groups := make([]string, 0)
-	if v := d.Get("security_group_ids"); v != nil {
+	if v := d.Get("security_group_names"); v != nil {
 		groups = expandStringValueList(v.([]interface{}))
 		if len(groups) > 0 && hasSubnet {
-			log.Print("[WARN] Deprecated. Attempting to use 'security_group' within a VPC instance. Use 'security_group_id' instead.")
+			log.Print("[WARN] Deprecated. Attempting to use 'security_group_names' within a VPC instance. Use 'security_group_ids' instead.")
 		}
 	}
 

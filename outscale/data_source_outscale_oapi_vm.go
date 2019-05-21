@@ -604,6 +604,12 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Computed: true,
 						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
+					"security_groups_names": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
 					"security_groups": {
 						Type:     schema.TypeSet,
 						Computed: true,

@@ -74,14 +74,14 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					testAccCheckOAPIVMSecurityGroups(t, &before, &after),
+					testAccCheckOAPIVMSecurityGroupsUpdated(t, &before, &after),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOAPIVMSecurityGroups(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
 		expectedSecurityGroup := after.SecurityGroups[0].SecurityGroupId
@@ -301,7 +301,7 @@ resource "outscale_vm" "basic" {
   image_id = "%s"
   vm_type = "%s"
   keypair_name = "integ_sut_keypair"
-  security_group_ids = ["sg-d1b31a37"]
+  security_group_ids = ["sg-f4b1c2f8"]
 
   placement = {
 	subregion_name = "%sa"
@@ -313,7 +313,7 @@ resource "outscale_vm" "basic" {
 
 func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {
 	if a == b {
-		t.Fatalf(message+"Expected: %s and %s to differ.", a, b)
+		t.Fatalf(message+" Expected: %s and %s to differ.", a, b)
 	}
 }
 
