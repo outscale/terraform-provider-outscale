@@ -49,6 +49,10 @@ func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"link_nic_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -189,6 +193,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	d.Set("state", link.State)
 	d.Set("delete_on_vm_deletion", link.DeleteOnVmDeletion)
 	d.Set("vm_account_id", link.VmAccountId)
+	d.Set("link_nic_id", link.LinkNicId)
 	d.Set("request_id", result.ResponseContext.RequestId)
 
 	return nil
