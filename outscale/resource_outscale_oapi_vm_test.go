@@ -286,11 +286,7 @@ resource "outscale_vm" "basic" {
 	vm_type            	= "%s"
 	keypair_name		= "terraform-basic"
 	security_group_ids	= ["sg-d1b31a37"]
-
-	placement = {
-	  subregion_name = "%sa"
-	  tenancy = "default"
-	}
+	placement_subregion_name = "%sa"
 
 }`, omi, vmType, region)
 }
@@ -302,11 +298,8 @@ resource "outscale_vm" "basic" {
   vm_type = "%s"
   keypair_name = "integ_sut_keypair"
   security_group_ids = ["sg-f4b1c2f8"]
-
-  placement = {
-	subregion_name = "%sa"
-	tenancy = "default"
-  }
+  placement_subregion_name = "%sa"
+  
 
 }`, omi, vmType, region)
 }

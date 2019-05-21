@@ -117,10 +117,8 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("net_id", instance.NetId)
 	set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
 	set("os_family", instance.OsFamily)
-	set("placement", map[string]interface{}{
-		"subregion_name": instance.Placement.SubregionName,
-		"tenancy":        instance.Placement.Tenancy,
-	})
+	set("placement_subregion_name", instance.Placement.SubregionName)
+	set("placement_tenancy", instance.Placement.Tenancy)
 	set("private_dns_name", instance.PrivateDnsName)
 	set("private_ip", instance.PrivateIp)
 	set("product_codes", instance.ProductCodes)
@@ -641,25 +639,15 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"placement": {
-			Type:     schema.TypeMap,
-			Computed: true,
+		"placement_subregion_name": {
+			Type:     schema.TypeString,
 			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"subregion_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
-					"tenancy": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-						Default:  "default",
-					},
-				},
-			},
+			Computed: true,
+		},
+		"placement_tenancy": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
 		},
 		"private_dns_name": {
 			Type:     schema.TypeString,
