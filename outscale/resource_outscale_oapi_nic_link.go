@@ -188,11 +188,16 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 
 	link := eni.LinkNic
 
+	if link.VmAccountId != "" {
+		d.Set("vm_account_id", link.VmAccountId)
+	}
+	if link.State != "" {
+		d.Set("state", link.State)
+	}
+
 	d.Set("device_number", link.DeviceNumber)
 	d.Set("vm_id", link.VmId)
-	d.Set("state", link.State)
 	d.Set("delete_on_vm_deletion", link.DeleteOnVmDeletion)
-	d.Set("vm_account_id", link.VmAccountId)
 	d.Set("link_nic_id", link.LinkNicId)
 	d.Set("request_id", result.ResponseContext.RequestId)
 
