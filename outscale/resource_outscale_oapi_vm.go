@@ -104,6 +104,18 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		})
 	}
 
+	//Check if source dest check is enabled.
+	if v, ok := d.GetOk("is_source_dest_checked"); ok {
+		opts := &oapi.UpdateVmRequest{
+			VmId:                vm.VmId,
+			IsSourceDestChecked: v.(bool),
+		}
+		log.Printf("[DEBGUG] is_source_dest_checked argument is not in CreateVms, we have to update the vm (%s)", vm.VmId)
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
 	return resourceOAPIVMRead(d, meta)
 }
 
