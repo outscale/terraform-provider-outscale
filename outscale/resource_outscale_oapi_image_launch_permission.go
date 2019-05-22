@@ -39,10 +39,13 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
+							Default:  "false",
 						},
 						"account_ids": &schema.Schema{
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -55,15 +58,17 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 			"permissions": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"account_id": &schema.Schema{
-							Type:     schema.TypeString,
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -158,9 +163,8 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 	}
 
 	d.SetId(imageID.(string))
-	d.Set("description", "")
-	d.Set("permissions", make([]map[string]interface{}, 0))
-	return nil
+
+	return resourceOutscaleOAPIImageLaunchPermissionRead(d, meta)
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
@@ -209,22 +213,12 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 
 	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
 	d.Set("description", result.Description)
-	accountIds := result.PermissionsToLaunch.AccountIds
-	lp := make([]map[string]interface{}, len(accountIds))
-	for k, v := range accountIds {
-		l := make(map[string]interface{})
-		//if result.PermissionsToLaunch.GlobalPermission != nil {
-		l["global_permission"] = result.PermissionsToLaunch.GlobalPermission
-		//}
-		//if v.UserId != nil {
-		l["account_id"] = v
-		//}
-		lp[k] = l
-	}
 
-	d.Set("permissions", lp)
+	lp := make(map[string]interface{})
+	lp["global_permission"] = strconv.FormatBool(result.PermissionsToLaunch.GlobalPermission)
+	lp["account_ids"] = result.PermissionsToLaunch.AccountIds
 
-	return nil
+	return d.Set("permissions", []map[string]interface{}{lp})
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
