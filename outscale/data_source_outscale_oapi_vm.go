@@ -708,6 +708,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"subnet_id": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"tags": {
