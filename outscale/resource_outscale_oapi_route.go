@@ -323,7 +323,7 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
 		resp, err := conn.POST_DeleteRoute(*deleteOpts)
-		log.Printf("[DEBUG] Route delete result: %s", resp)
+		log.Printf("[DEBUG] Route delete result: %+v", resp)
 
 		if err == nil {
 			return nil
