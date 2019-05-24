@@ -45,8 +45,8 @@ func testAccDataSourceOutscaleOAPIVpcAttrCheck(name string) resource.TestCheckFu
 
 		attr := rs.Primary.Attributes
 
-		if attr["dns_support_enabled"] != "true" {
-			return fmt.Errorf("bad dns_support_enabled %s, expected: %s", attr["dns_support_enabled"], "true")
+		if attr["dhcp_options_set_id"] == "" {
+			return fmt.Errorf("bad dhcp_options_set_id is empty")
 		}
 
 		return nil
@@ -59,13 +59,11 @@ resource "outscale_net" "vpc" {
 }
 
 resource "outscale_net_attributes" "outscale_net_attributes" {
-	dns_support_enabled = true
 	net_id = "${outscale_net.vpc.id}"
-	attribute = "enableDnsSupport"
+	dhcp_options_set_id = "dopt-ca98300d"
 }
 
 data "outscale_net_attributes" "test" {
 	net_id = "${outscale_net.vpc.id}"
-	attribute = "enableDnsSupport"
 }
 `
