@@ -470,6 +470,11 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
+		"security_group_names": &schema.Schema{
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
 		"launch_number": {
 			Type:     schema.TypeInt,
 			Computed: true,
