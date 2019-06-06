@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -21,15 +22,17 @@ func TestAccOutscaleOAPIKeypairsDataSource_Instance(t *testing.T) {
 	if !oapi {
 		t.Skip()
 	}
+
+	keyPairName := fmt.Sprintf("test-acc-keypair-%d", acctest.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIKeypairsDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIKeypairsDataSourceConfig(keyPairName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleKeypairsDataSourceID("data.outscale_keypairs.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_keypairs.nat_ami", "keypairs.0.keypair_name", "TestKey"),
+					resource.TestCheckResourceAttr("data.outscale_keypairs.nat_ami", "keypairs.0.keypair_name", keyPairName),
 				),
 			},
 		},
@@ -51,17 +54,19 @@ func testAccCheckOutscaleOAPIKeypairsDataSourceID(n string) resource.TestCheckFu
 	}
 }
 
-const testAccCheckOutscaleOAPIKeypairsDataSourceConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	keypair_name   = "TestKey"
-}
-
-data "outscale_keypairs" "nat_ami" {
-	#keypair_names = ["${outscale_keypair.a_key_pair.id}"]
-	
-	filter {
-		name = "keypair_names"
-		values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+func testAccCheckOutscaleOAPIKeypairsDataSourceConfig(keyPairName string) string {
+	return fmt.Sprintf(`
+	resource "outscale_keypair" "a_key_pair" {
+		keypair_name   = "%s"
 	}
+	
+	data "outscale_keypairs" "nat_ami" {
+		#keypair_name = ["${outscale_keypair.a_key_pair.id}"]
+		
+		filter {
+			name = "keypair_names"
+			values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+		}
+	}
+	`, keyPairName)
 }
-`
