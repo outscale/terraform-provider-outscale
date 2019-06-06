@@ -31,16 +31,36 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 			},
 
 			// Attributes
-			"public_ip_link": {
+			"description": &schema.Schema{
+				Type: schema.TypeString,
+
+				Computed: true,
+			},
+			"private_ip": &schema.Schema{
+				Type: schema.TypeString,
+
+				Computed: true,
+			},
+			"security_group_id": &schema.Schema{
+				Type: schema.TypeList,
+
+				Elem: &schema.Schema{Type: schema.TypeString},
+			},
+			"subnet_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			// Attributes
+			"link_public_ip": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reservation_id": {
+						"public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"link_id": {
+						"link_public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -59,22 +79,21 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 					},
 				},
 			},
-
-			"nic_link": {
-				Type:     schema.TypeList,
+			"link_nic": {
+				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"nic_link_id": {
+						"link_nic_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"delete_on_vm_deletion": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"nic_sort_number": {
-							Type:     schema.TypeInt,
+						"device_number": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"vm_id": {
@@ -92,26 +111,20 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 					},
 				},
 			},
-
-			"sub_region_name": {
+			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"description": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"firewall_rules_set": {
+			"security_groups": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"firewall_rules_set_id": {
+						"security_group_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"firewall_rules_set_name": {
+						"security_group_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -127,32 +140,26 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"private_dns_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 
-			"private_dns_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"private_ip": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"private_ip_address_set": {
+			"private_ips": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"public_ip_link": {
+						"link_public_ip": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"reservation_id": {
+									"public_ip_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"link_id": {
+									"link_public_ip_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -171,16 +178,16 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 								},
 							},
 						},
-						"primary_ip": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
 						"private_dns_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"private_ip": {
 							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"is_primary": {
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 					},
@@ -194,15 +201,11 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"activated_check": {
+			"is_source_dest_checked": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
