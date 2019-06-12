@@ -182,12 +182,10 @@ func getOAPIKeyPairSchema() map[string]*schema.Schema {
 		// Attributes
 		"keypair_fingerprint": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"private_key": {
 			Type:     schema.TypeString,
-			Optional: true,
 			Computed: true,
 		},
 		"keypair_name": {

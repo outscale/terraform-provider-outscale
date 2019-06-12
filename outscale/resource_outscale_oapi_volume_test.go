@@ -40,6 +40,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 				Config: testAccOutscaleOAPIVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
+					testAccCheckState("outscale_volume.test"),
 				),
 			},
 		},
@@ -162,7 +163,7 @@ func testAccOutscaleOAPIVolumeConfig(region string) string {
 	return fmt.Sprintf(`
 resource "outscale_volume" "test" {
   subregion_name = "%sa"
-  type = "gp2"
+  volume_type = "gp2"
   size = 1
   tags {
 	key = "Name" 
