@@ -89,7 +89,7 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 			keypair["keypair_name"] = v.KeypairName
 		}
 		if v.KeypairFingerprint != "" {
-			keypair["key_fingerprint"] = v.KeypairFingerprint
+			keypair["keypair_fingerprint"] = v.KeypairFingerprint
 		}
 		keypairs[k] = keypair
 	}
@@ -116,7 +116,7 @@ func datasourceOutscaleOAPIKeyPairs() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key_fingerprint": {
+						"keypair_fingerprint": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
