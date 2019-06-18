@@ -55,7 +55,7 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"permissions": &schema.Schema{
+			"permissions_to_launch": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				MaxItems: 1,
@@ -218,7 +218,7 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 	lp["global_permission"] = strconv.FormatBool(result.PermissionsToLaunch.GlobalPermission)
 	lp["account_ids"] = result.PermissionsToLaunch.AccountIds
 
-	return d.Set("permissions", []map[string]interface{}{lp})
+	return d.Set("permissions_to_launch", []map[string]interface{}{lp})
 }
 
 func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
