@@ -30,9 +30,9 @@ resource "outscale_subnet" "subnet" {
 
 The following arguments are supported:
 
-* `subregion_name` - (Optional) The name of the Subregion in which you want to create the Subnet.
-* `ip_range` - (Required) The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
-* `net_id` - (Required) The ID of the Net for which you want to create a Subnet.
+* `subregion_name` - The name of the Subregion in which you want to create the Subnet.
+* `ip_range` - The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
+* `net_id` - The ID of the Net for which you want to create a Subnet.
 
 .
 
