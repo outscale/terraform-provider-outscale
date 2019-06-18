@@ -193,6 +193,9 @@ func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersR
 		switch name := m["name"].(string); name {
 		case "route_table_ids":
 			filters.RouteTableIds = filterValues
+		case "link_route_table_ids":
+			filters.LinkRouteTableLinkRouteTableIds = filterValues
+
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
