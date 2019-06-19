@@ -51,6 +51,10 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -114,6 +118,8 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("your query returned more than one result, please try a more " +
 			"specific search criteria")
 	}
+
+	d.Set("request_id", response.ResponseContext.RequestId)
 
 	return ngOAPIDescriptionAttributes(d, response.NatServices[0])
 }
