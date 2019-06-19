@@ -32,6 +32,10 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -75,6 +79,8 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		}
 		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", errString)
 	}
+
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
 	d.SetId(resource.UniqueId())
 
