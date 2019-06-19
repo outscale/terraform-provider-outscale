@@ -81,6 +81,35 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
+	var server oapi.Vm
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, "c4.large", region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "c4.large"),
+					testAccCheckState("outscale_vm.basic"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
@@ -302,6 +331,40 @@ resource "outscale_vm" "basic" {
   
 
 }`, omi, vmType, region)
+}
+
+func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	  }
+	  
+	  resource "outscale_subnet" "outscale_subnet" {
+		subregion_name = "%[3]sa"
+		ip_range       = "10.0.0.0/16"
+		net_id         = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_security_group" "outscale_security_group" {
+		count = 1
+	  
+		description         = "test group"
+		security_group_name = "sg1-test-group_test-net"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  
+	  resource "outscale_vm" "basic" {
+		image_id                 = "%[1]s"
+		vm_type                  = "%[2]s"
+		keypair_name             = "terraform-basic"
+		security_group_ids       = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+		placement_subregion_name = "%sa"
+		placement_tenancy        = "default"
+		subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+	  
+	  }	  
+`, omi, vmType, region)
 }
 
 func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {
