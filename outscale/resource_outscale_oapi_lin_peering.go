@@ -45,7 +45,7 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status": {
+			"state": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -241,7 +241,7 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("source_net", requester); err != nil {
 		return err
 	}
-	if err := d.Set("status", stat); err != nil {
+	if err := d.Set("state", stat); err != nil {
 		return err
 	}
 	if err := d.Set("net_peering_id", pc.NetPeeringId); err != nil {

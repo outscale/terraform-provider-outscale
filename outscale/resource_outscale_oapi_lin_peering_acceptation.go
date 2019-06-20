@@ -28,7 +28,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"status": {
+			"state": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
