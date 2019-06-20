@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPINatService() *schema.Resource {
@@ -21,7 +21,7 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			// Arguments
-			"reservation_id": {
+			"public_ip_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -32,18 +32,22 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 				ForceNew: true,
 				Computed: true,
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
 			// Attributes
-			"public_ip": {
+			"public_ips": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reservation_id": {
+						"public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -62,7 +66,7 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"lin_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -71,19 +75,20 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 }
 
 func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	// Create the NAT Gateway
-	createOpts := &fcu.CreateNatGatewayInput{
-		AllocationId: aws.String(d.Get("reservation_id").(string)),
-		SubnetId:     aws.String(d.Get("subnet_id").(string)),
+	// Create the NAT Service
+	createOpts := &oapi.CreateNatServiceRequest{
+		PublicIpId: d.Get("public_ip_id").(string),
+		SubnetId:   d.Get("subnet_id").(string),
 	}
 
-	var natResp *fcu.CreateNatGatewayOutput
+	var resp *oapi.POST_CreateNatServiceResponses
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		natResp, err = conn.VM.CreateNatGateway(createOpts)
+		resp, err = conn.POST_CreateNatService(*createOpts)
+
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -93,18 +98,31 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 
-	if err != nil {
+	var errString string
 
-		return fmt.Errorf("Error creating NAT Gateway: %s", err)
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("[DEBUG] Error creating NAT Service (%s)", errString)
 	}
 
-	// Get the ID and store it
-	ng := natResp.NatGateway
-	d.SetId(*ng.NatGatewayId)
-	fmt.Printf("\n\n[INFO] NAT Gateway ID: %s", d.Id())
+	response := resp.OK
 
-	// Wait for the NAT Gateway to become available
-	fmt.Printf("\n\n[DEBUG] Waiting for NAT Gateway (%s) to become available", d.Id())
+	// Get the ID and store it
+	ng := response.NatService
+	d.SetId(ng.NatServiceId)
+	fmt.Printf("\n\n[INFO] NAT Service ID: %s", d.Id())
+
+	// Wait for the NAT Service to become available
+	fmt.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
@@ -113,17 +131,18 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for NAT Gateway (%s) to become available: %s", d.Id(), err)
+		return fmt.Errorf("Error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
 
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	// Update our attributes and return
 	return resourceOAPINatServiceRead(d, meta)
 }
 
 func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	// Refresh the NAT Gateway state
+	// Refresh the NAT Service state
 	ngRaw, state, err := NGOAPIStateRefreshFunc(conn, d.Id())()
 	if err != nil {
 		return err
@@ -141,36 +160,36 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 
-	// Set NAT Gateway attributes
-	ng := ngRaw.(*fcu.NatGateway)
+	// Set NAT Service attributes
+	ng := ngRaw.(oapi.NatService)
 
-	if ng.NatGatewayId != nil {
-		d.Set("nat_service_id", *ng.NatGatewayId)
+	if ng.NatServiceId != "" {
+		d.Set("nat_service_id", ng.NatServiceId)
 	}
-	if ng.State != nil {
-		d.Set("state", *ng.State)
+	if ng.State != "" {
+		d.Set("state", ng.State)
 	}
-	if ng.SubnetId != nil {
-		d.Set("subnet_id", *ng.SubnetId)
+	if ng.SubnetId != "" {
+		d.Set("subnet_id", ng.SubnetId)
 	}
-	if ng.VpcId != nil {
-		d.Set("vpc_id", *ng.VpcId)
+	if ng.NetId != "" {
+		d.Set("net_id", ng.NetId)
 	}
 
-	if ng.NatGatewayAddresses != nil {
-		addresses := make([]map[string]interface{}, len(ng.NatGatewayAddresses))
+	if ng.PublicIps != nil {
+		addresses := make([]map[string]interface{}, len(ng.PublicIps))
 
-		for k, v := range ng.NatGatewayAddresses {
+		for k, v := range ng.PublicIps {
 			address := make(map[string]interface{})
-			if v.AllocationId != nil {
-				address["reservation_id"] = *v.AllocationId
+			if v.PublicIpId != "" {
+				address["public_ip_id"] = v.PublicIpId
 			}
-			if v.PublicIp != nil {
-				address["public_ip"] = *v.PublicIp
+			if v.PublicIp != "" {
+				address["public_ip"] = v.PublicIp
 			}
 			addresses[k] = address
 		}
-		if err := d.Set("public_ip", addresses); err != nil {
+		if err := d.Set("public_ips", addresses); err != nil {
 			return err
 		}
 	}
@@ -179,16 +198,18 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	deleteOpts := &fcu.DeleteNatGatewayInput{
-		NatGatewayId: aws.String(d.Id()),
+	deleteOpts := &oapi.DeleteNatServiceRequest{
+		NatServiceId: d.Id(),
 	}
-	fmt.Printf("\n\n[INFO] Deleting NAT Gateway: %s", d.Id())
+
+	fmt.Printf("\n\n[INFO] Deleting NAT Service: %s", d.Id())
+	var resp *oapi.POST_DeleteNatServiceResponses
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.VM.DeleteNatGateway(deleteOpts)
+		resp, err = conn.POST_DeleteNatService(*deleteOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -198,12 +219,24 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(err.Error(), "NatGatewayNotFound:") {
-			return nil
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			if strings.Contains(err.Error(), "NatGatewayNotFound:") {
+				return nil
+			}
+
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return err
+		return fmt.Errorf("[DEBUG] Error deleting Nat Service (%s)", errString)
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -217,24 +250,25 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 	_, stateErr := stateConf.WaitForState()
 	if stateErr != nil {
-		return fmt.Errorf("Error waiting for NAT Gateway (%s) to delete: %s", d.Id(), err)
+		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), err)
 	}
 
 	return nil
 }
 
 // NGOAPIStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
-// a NAT Gateway.
-func NGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+// a NAT Service.
+func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		opts := &fcu.DescribeNatGatewaysInput{
-			NatGatewayIds: []*string{aws.String(id)},
+		opts := &oapi.ReadNatServicesRequest{
+			Filters: oapi.FiltersNatService{NatServiceIds: []string{id}},
 		}
-		var resp *fcu.DescribeNatGatewaysOutput
+
+		var resp *oapi.POST_ReadNatServicesResponses
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
 
-			resp, err = conn.VM.DescribeNatGateways(opts)
+			resp, err = conn.POST_ReadNatServices(*opts)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -244,15 +278,29 @@ func NGOAPIStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFu
 			return nil
 		})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
-				return nil, "", nil
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
+					return nil, "", nil
+				}
+
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 			}
-			fmt.Printf("\n\nError on NGStateRefresh: %s", err)
-			return nil, "", err
+
+			return nil, "", fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 		}
 
-		ng := resp.NatGateways[0]
-		return ng, *ng.State, nil
+		response := resp.OK
+
+		ng := response.NatServices[0]
+		return ng, ng.State, nil
 	}
 }
