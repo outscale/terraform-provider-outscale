@@ -86,6 +86,10 @@ resource "outscale_net" "test" {
 }
 
 data "outscale_net" "by_id" {
-  net_id = "${outscale_net.test.id}"
+#  net_id = "${outscale_net.test.id}"
+filter {
+	name = "net_ids"
+	values = ["${outscale_net.test.id}"]
+}
 }`, ipRange, tag)
 }

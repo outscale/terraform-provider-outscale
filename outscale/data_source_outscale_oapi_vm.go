@@ -117,10 +117,8 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("net_id", instance.NetId)
 	set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
 	set("os_family", instance.OsFamily)
-	set("placement", map[string]interface{}{
-		"subregion_name": instance.Placement.SubregionName,
-		"tenancy":        instance.Placement.Tenancy,
-	})
+	set("placement_subregion_name", instance.Placement.SubregionName)
+	set("placement_tenancy", instance.Placement.Tenancy)
 	set("private_dns_name", instance.PrivateDnsName)
 	set("private_ip", instance.PrivateIp)
 	set("product_codes", instance.ProductCodes)
@@ -472,6 +470,11 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
+		"security_group_names": &schema.Schema{
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
 		"launch_number": {
 			Type:     schema.TypeInt,
 			Computed: true,
@@ -598,6 +601,18 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"security_groups_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"security_groups_names": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
 					"security_groups": {
 						Type:     schema.TypeSet,
 						Computed: true,
@@ -629,21 +644,15 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"placement": {
-			Type:     schema.TypeMap,
+		"placement_subregion_name": {
+			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"sub_region_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"tenancy": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
+		},
+		"placement_tenancy": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
 		},
 		"private_dns_name": {
 			Type:     schema.TypeString,
@@ -704,6 +713,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"subnet_id": {
 			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"tags": {

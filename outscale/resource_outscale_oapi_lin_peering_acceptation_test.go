@@ -59,7 +59,7 @@ func testAccOutscaleOAPILinPeeringConnectionAccepterDestroy(s *terraform.State) 
 const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 resource "outscale_net" "foo" {
 	ip_range = "10.0.0.0/16"
-	tags {
+	tags = {
 		key   = "Name"
 		value = "TestAccOutscaleOAPILinPeeringConnection_basic"
 	}

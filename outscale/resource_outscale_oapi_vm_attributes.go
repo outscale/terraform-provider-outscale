@@ -234,6 +234,16 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
+	if d.HasChange("security_group_names") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: expandStringValueList(d.Get("security_group_names").([]interface{})),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
 		opts := &oapi.UpdateVmRequest{
 			VmId:                        id,

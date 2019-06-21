@@ -124,7 +124,7 @@ func resourceVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
 		_, err = stateConf.WaitForState()
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for instance (%s) to become ready: %s",
+				"Error waiting for volume link (%s) to become ready: %s",
 				iID, err)
 		}
 

@@ -57,7 +57,7 @@ resource "outscale_net" "outscale_net" {
 }
 
 resource "outscale_subnet" "outscale_subnet" {
-    subregion_name = "us-west-1a"
+    subregion_name = "eu-west-2a"
     ip_range       = "10.0.0.0/16"
     net_id         = "${outscale_net.outscale_net.id}"
 }
@@ -67,7 +67,8 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-    nic_id    = "${outscale_nic.outscale_nic.id}"
+	nic_id    = "${outscale_nic.outscale_nic.nic_id}"
+	private_ips = ["10.0.45.67"]
 }
 `)
 }

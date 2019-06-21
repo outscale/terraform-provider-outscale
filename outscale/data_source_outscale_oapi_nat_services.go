@@ -5,11 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPINatServices() *schema.Resource {
@@ -18,24 +17,24 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"nat_service_id": {
+			"nat_service_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			// Attributes
-			"nat_service": {
+			"nat_services": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"public_ip": {
+						"public_ips": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"reservation_id": {
+									"public_ip_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -58,7 +57,7 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -70,35 +69,34 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
+	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
 
 	if filtersOk == false && natGatewayIDOK == false {
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
-	params := &fcu.DescribeNatGatewaysInput{}
+	params := &oapi.ReadNatServicesRequest{}
 	if filtersOk {
-		params.Filter = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set))
 	}
 	if natGatewayIDOK {
-		ids := make([]*string, len(natGatewayID.([]interface{})))
+		ids := make([]string, len(natGatewayID.([]interface{})))
 
 		for k, v := range natGatewayID.([]interface{}) {
-			ids[k] = aws.String(v.(string))
+			ids[k] = v.(string)
 		}
 
-		params.NatGatewayIds = ids
+		params.Filters.NatServiceIds = ids
 	}
 
-	var err error
-	var res *fcu.DescribeNatGatewaysOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	var resp *oapi.POST_ReadNatServicesResponses
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		res, err = conn.VM.DescribeNatGateways(params)
+		resp, err = conn.POST_ReadNatServices(*params)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -108,19 +106,33 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 		return nil
 	})
 
-	if err != nil {
-		return err
+	var errString string
+
+	if err != nil || resp.OK == nil {
+		if err != nil {
+			errString = err.Error()
+		} else if resp.Code401 != nil {
+			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+		} else if resp.Code400 != nil {
+			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+		} else if resp.Code500 != nil {
+			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		}
+
+		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
 
-	if len(res.NatGateways) < 1 {
+	response := resp.OK
+
+	if len(response.NatServices) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	return ngsOAPIDescriptionAttributes(d, res.NatGateways)
+	return ngsOAPIDescriptionAttributes(d, response.NatServices)
 }
 
 // populate the numerous fields that the image description returns.
-func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []*fcu.NatGateway) error {
+func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oapi.NatService) error {
 
 	d.SetId(resource.UniqueId())
 
@@ -129,37 +141,35 @@ func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []*fcu.NatGateway)
 	for k, v := range ngs {
 		addng := make(map[string]interface{})
 
-		if v.NatGatewayAddresses != nil {
-			ngas := make([]interface{}, len(v.NatGatewayAddresses))
+		ngas := make([]interface{}, len(v.PublicIps))
 
-			for i, w := range v.NatGatewayAddresses {
-				nga := make(map[string]interface{})
-				if w.AllocationId != nil {
-					nga["reservation_id"] = *w.AllocationId
-				}
-				if w.PublicIp != nil {
-					nga["public_ip"] = *w.PublicIp
-				}
-				ngas[i] = nga
+		for i, w := range v.PublicIps {
+			nga := make(map[string]interface{})
+			if w.PublicIpId != "" {
+				nga["public_ip_id"] = w.PublicIpId
 			}
-			addng["public_ip"] = ngas
+			if w.PublicIp != "" {
+				nga["public_ip"] = w.PublicIp
+			}
+			ngas[i] = nga
 		}
+		addng["public_ips"] = ngas
 
-		if v.NatGatewayId != nil {
-			addng["nat_service_id"] = *v.NatGatewayId
+		if v.NatServiceId != "" {
+			addng["nat_service_id"] = v.NatServiceId
 		}
-		if v.State != nil {
-			addng["state"] = *v.State
+		if v.State != "" {
+			addng["state"] = v.State
 		}
-		if v.SubnetId != nil {
-			addng["subnet_id"] = *v.SubnetId
+		if v.SubnetId != "" {
+			addng["subnet_id"] = v.SubnetId
 		}
-		if v.VpcId != nil {
-			addng["lin_id"] = *v.VpcId
+		if v.NetId != "" {
+			addng["net_id"] = v.NetId
 		}
 
 		addngs[k] = addng
 	}
 
-	return d.Set("nat_service", addngs)
+	return d.Set("nat_services", addngs)
 }

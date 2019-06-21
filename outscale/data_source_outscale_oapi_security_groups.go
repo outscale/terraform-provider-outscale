@@ -254,13 +254,13 @@ func flattenOAPISecurityGroupRule(p []oapi.SecurityGroupRule) []map[string]inter
 	for k, v := range p {
 		ip := make(map[string]interface{})
 		if v.FromPortRange != 0 {
-			ip["from_port"] = v.FromPortRange
+			ip["from_port_range"] = v.FromPortRange
 		}
 		if v.IpProtocol != "" {
 			ip["ip_protocol"] = v.IpProtocol
 		}
 		if v.ToPortRange != 0 {
-			ip["to_port"] = v.ToPortRange
+			ip["to_port_range"] = v.ToPortRange
 		}
 
 		if v.IpRanges != nil && len(v.IpRanges) > 0 {
@@ -288,7 +288,7 @@ func flattenOAPISecurityGroupRule(p []oapi.SecurityGroupRule) []map[string]inter
 
 				grp[i] = g
 			}
-			ip["security_group_members"] = grp
+			ip["security_groups_members"] = grp
 		}
 
 		ips[k] = ip

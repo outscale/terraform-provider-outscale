@@ -43,7 +43,8 @@ The following arguments are supported:
 
 * `route_table_id` - The ID of the route table.
 * `subnet_id` -	The ID of the subnet.
-* `link_id` -	The ID of the route table association.
-* `request_id` -	The ID of the request.
+* `link_route_table_id` - The ID of the route table association.
+* `main` - If true, the route table is the main one.
+* `request_id` - The ID of the request.
 
 See detailed information in [Associates Route Table Link](http://docs.outscale.com/api_fcu/operations/Action_AssociateRouteTable_get.html#_api_fcu-action_associateroutetable_get).

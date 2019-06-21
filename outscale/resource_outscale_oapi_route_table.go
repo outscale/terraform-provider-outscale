@@ -128,28 +128,30 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	rt := rtRaw.(oapi.RouteTable)
 
 	for _, a := range rt.LinkRouteTables {
-		log.Printf("[INFO] Disassociating LinkRouteTable: %s", a.LinkRouteTableId)
+		if !a.Main {
+			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.LinkRouteTableId)
 
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err := conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
-				LinkRouteTableId: a.LinkRouteTableId,
-			})
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
+				_, err := conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
+					LinkRouteTableId: a.LinkRouteTableId,
+				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
 				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
+				return nil
+			})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
-				err = nil
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
+					err = nil
+				}
+				return err
 			}
-			return err
 		}
 	}
 
@@ -317,7 +319,7 @@ func setOAPILinkRouteTables(rt []oapi.LinkRouteTable) []map[string]interface{} {
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
-			if r.Main != false {
+			if r.Main {
 				m["main"] = r.Main
 			}
 			if r.RouteTableId != "" {
@@ -446,6 +448,8 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 }
 
 func setOAPIPropagatingVirtualGateways(vg []oapi.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+	propagatingVGWs = make([]map[string]interface{}, len(vg))
+
 	if len(vg) > 0 {
 		for k, vgw := range vg {
 			m := make(map[string]interface{})
@@ -455,5 +459,5 @@ func setOAPIPropagatingVirtualGateways(vg []oapi.RoutePropagatingVirtualGateway)
 			propagatingVGWs[k] = m
 		}
 	}
-	return
+	return propagatingVGWs
 }

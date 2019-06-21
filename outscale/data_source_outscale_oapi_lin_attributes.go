@@ -2,13 +2,13 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
@@ -16,20 +16,12 @@ func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVpcAttrRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
-			"dns_hostnames_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"dns_support_enabled": {
-				Type:     schema.TypeBool,
+			//"filter": dataSourceFiltersSchema(),
+			"dhcp_options_set_id": {
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"net_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"attribute": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -42,60 +34,46 @@ func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.DescribeVpcAttributeInput{}
-
-	if id := d.Get("net_id"); id != "" {
-		req.VpcId = aws.String(id.(string))
-	} else {
-		return fmt.Errorf("Please provide a net_id to be able to make the request")
+	filters := oapi.FiltersNet{
+		NetIds: []string{d.Get("net_id").(string)},
 	}
 
-	if id := d.Get("attribute"); id != "" {
-		req.Attribute = aws.String(id.(string))
-	} else {
-		return fmt.Errorf("Please provide an attribute to be able to make the request")
+	req := oapi.ReadNetsRequest{
+		Filters: filters,
 	}
 
-	if v, ok := d.GetOk("filter"); ok {
-		req.Filters = buildOutscaleDataSourceFilters(v.(*schema.Set))
-	}
-
+	var rs *oapi.POST_ReadNetsResponses
+	var resp *oapi.ReadNetsResponse
 	var err error
-	var resp *fcu.DescribeVpcAttributeOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		rs, err = conn.POST_ReadNets(req)
 
-		resp, err = conn.VM.DescribeVpcAttribute(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.RetryableError(err)
 	})
-
 	if err != nil {
-		return err
+		log.Printf("[DEBUG] Error reading lin (%s)", err)
 	}
 
-	if resp == nil {
+	resp = rs.OK
+
+	if resp == nil || len(resp.Nets) == 0 {
 		d.SetId("")
-		return fmt.Errorf("Lin not found")
+		return fmt.Errorf("oAPI Net not found")
 	}
 
-	d.SetId(*resp.VpcId)
-	d.Set("net_id", resp.VpcId)
-	if resp.EnableDnsHostnames != nil {
-		d.Set("dns_hostnames_enabled", *resp.EnableDnsHostnames.Value)
-	}
-	if resp.EnableDnsSupport != nil {
-		d.Set("dns_support_enabled", *resp.EnableDnsSupport.Value)
-	}
+	d.SetId(resp.Nets[0].NetId)
 
-	d.Set("request_id", resp.RequestId)
+	d.Set("net_id", resp.Nets[0].NetId)
+	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }

@@ -33,8 +33,8 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRuleExists("outscale_firewall_rules_set.web", &group),
-					testAccCheckOutscaleOAPIRuleAttributes("outscale_outbound_rule.egress_1", &group, nil, "egress"),
+					testAccCheckOutscaleOAPIRuleExists("outscale_security_group.outscale_security_group", &group),
+					testAccCheckOutscaleOAPIRuleAttributes("outscale_security_group_rule.outscale_security_group_rule", &group, nil, "Inbound"),
 				),
 			},
 		},
@@ -43,22 +43,28 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 
 func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	return fmt.Sprintf(`
-	#resource "outscale_firewall_rules_set" "web" {
-	#	firewall_rules_set_name = "terraform_test_%d"
-	#	description = "Used in the terraform acceptance tests"
-	#	lin_id = "vpc-e9d09d63"
-	#	tag = {
-	#					Name = "tf-acc-test"
-	#	}
-	#}
-	resource "outscale_outbound_rule" "egress_1" {
-			inbound_rule = {
-				ip_protocol = "tcp"
-				from_port_range = 80
-				to_port_range = 8000
-				ip_ranges = ["10.0.0.0/8"]
-		}
-		#firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
-		firewall_rules_set_id = "123"
-	}`, rInt)
+resource "outscale_security_group_rule" "outscale_security_group_rule" {
+	flow              = "Inbound"
+	security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
+
+	from_port_range = "0"
+	to_port_range = "0"
+	ip_protocol = "tcp"
+	ip_range = "0.0.0.0/0"
+}
+
+resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
+	flow = "Inbound"
+	from_port_range = 443
+	to_port_range = 443
+	ip_protocol = "tcp"
+	ip_range = "46.231.147.8/32"
+	security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
+	}
+
+resource "outscale_security_group" "outscale_security_group" {
+	description         = "test group"
+	security_group_name = "sg1-test-group_test_%d"
+}
+`, rInt)
 }
