@@ -57,7 +57,7 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 
 	req := oapi.ReadNetsRequest{}
 
-	if v, ok := d.GetOk("filters"); ok {
+	if v, ok := d.GetOk("filter"); ok {
 		req.Filters = buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set))
 	}
 
@@ -113,18 +113,20 @@ func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.FiltersNet {
 		}
 
 		switch name := m["name"].(string); name {
-		case "ip-range":
+		case "net_ids":
+			filters.NetIds = filterValues
+		case "ip_range":
 			filters.IpRanges = filterValues
-		case "dhcp-options-set-id":
+		case "dhcp_options_set_id":
 			filters.DhcpOptionsSetIds = filterValues
-		case "is-default":
+		case "is_default":
 			//bool
 			//filters.IsDefault = filterValues
 		case "state":
 			filters.States = filterValues
-		case "tag-key":
+		case "tag_key":
 			filters.TagKeys = filterValues
-		case "tag-value":
+		case "tag_value":
 			filters.TagValues = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
