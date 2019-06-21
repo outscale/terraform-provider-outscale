@@ -41,3 +41,5 @@ The following arguments are supported:
 * `request_id` -	The ID of the request
 
 [See detailed information](http://docs.outscale.com/api_fcu/operations/Action_CreateRouteTable_get.html#_api_fcu-action_createroutetable_get).
+
+See more info at [oapi RouteTable] (https://docs-beta.outscale.com/oapi?shell#tocsroutetable)

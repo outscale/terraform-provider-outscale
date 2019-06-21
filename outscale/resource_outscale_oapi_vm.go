@@ -94,13 +94,13 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	// Initialize the connection info
 	if vm.PublicIp != "" {
 		d.SetConnInfo(map[string]string{
-			"vm_type": "ssh",
-			"host":    vm.PublicIp,
+			"type": "ssh",
+			"host": vm.PublicIp,
 		})
 	} else if vm.PrivateIp != "" {
 		d.SetConnInfo(map[string]string{
-			"vm_type": "ssh",
-			"host":    vm.PrivateIp,
+			"type": "ssh",
+			"host": vm.PrivateIp,
 		})
 	}
 
