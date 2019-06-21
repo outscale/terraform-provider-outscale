@@ -13,20 +13,16 @@ Creates an Outscale machine image (OMI) from an existing virtual machine (VM) wh
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "basic" {
-  image_id = "ami-b4bd8de2"
-  vm_type = "t2.micro"
-  keypair_name = "terraform-basic"
-  security_group_ids = ["sg-6ed31f3e"]
-}
-
-resource "outscale_image" "foo" {
-  image_name = "tf-testing-%d"
-  vm_id = "${outscale_vm.basic.id}"
-  vm_id = "i-b69de1d9"
-  no_reboot = "true"
-  description = "terraform testing"
-}
+	resource "outscale_vm" "outscale_instance" {
+		image_id      = "ami-3e158364"
+		vm_type       = "t2.micro"
+	}
+	
+	resource "outscale_image" "outscale_image" {
+		image_name  = "terraform test-123"
+		vm_id       = "${outscale_vm.outscale_instance.id}"
+		no_reboot   = "true"
+	}
 ```
 
 ## Argument Reference

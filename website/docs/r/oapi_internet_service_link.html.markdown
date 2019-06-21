@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "OUTSCALE: outscale_internet_service_link"
-sidebar_current: "docs-outscale-resource-internet_service-link"
+sidebar_current: "docs-outscale-resource-internet-service-link"
 description: |-
   Attaches an Internet service to a Net.
 ---

@@ -13,7 +13,7 @@ This action creates a security group either in the public Cloud or in a specifie
 When launching a virtual machine (VM), if no security group is explicitly specified, the appropriate default security group is assigned to the VM. Default security groups include a default rule granting VMs network access to each other.
 When creating a security group, you specify a name. Two security groups for use in the public Cloud or for use in a Net cannot have the same name.
 You can have up to 500 security groups in the public Cloud. You can create up to 500 security groups per Net.
-To add or remove rules, use the [CreateSecurityGroupRule](#createsecuritygrouprule) method.
+To add or remove rules, use the [CreateSecurityGroupRule](https://docs-beta.outscale.com/#createsecuritygrouprule) method.
 
 ## Example Usage
 
@@ -52,10 +52,4 @@ The following arguments are supported:
 * `request_id` - The ID of the request.
 * `tags` - One or more tags associated with the security group.
 
-See detailed information in [Authorize Security Group Rule](http://docs.outscale.com/api_fcu/operations/Action_AuthorizeSecurityGroupEgress_get.html#_api_fcu-action_authorizesecuritygroupegress_get).
-
-See detailed information in [Create Security Group](http://docs.outscale.com/api_fcu/operations/Action_CreateSecurityGroup_get.html#_api_fcu-action_createsecuritygroup_get).
-See detailed information in [Delete Security Group](http://docs.outscale.com/api_fcu/operations/Action_DeleteSecurityGroup_get.html#_api_fcu-action_deletesecuritygroup_get).
-See detailed information in [Describe Security Groups](http://docs.outscale.com/api_fcu/operations/Action_DescribeSecurityGroups_get.html#_api_fcu-action_describesecuritygroups_get).
-See detailed information in [Revoke Security Group Egress](http://docs.outscale.com/api_fcu/operations/Action_RevokeSecurityGroupEgress_get.html#_api_fcu-action_revokesecuritygroupegress_get).
-See detailed information in [Revoke Security Group Ingress](http://docs.outscale.com/api_fcu/operations/Action_RevokeSecurityGroupIngress_get.html#_api_fcu-action_revokesecuritygroupingress_get).
+Se detailed information: [Security Group](https://docs-beta.outscale.com/#createsecuritygroup)

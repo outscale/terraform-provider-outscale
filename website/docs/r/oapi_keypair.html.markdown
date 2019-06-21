@@ -30,7 +30,7 @@ The following arguments are supported:
 * `keypair_name` - (Required) A unique name for the keypair, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
 * `public_key` - (Optional) The public key. If you are not using command line tools, it must be encoded in Base64.
 
-See detailed information in [Outscale CreateKeypair](http://docs.outscale.com/api_fcu/operations/Action_CreateKeyPair_get.html#_api_fcu-action_createkeypair_get).
+See detailed information in [Outscale CreateKeypair](https://docs-beta.outscale.com/#createkeypair).
 
 ## Attributes Reference
 
@@ -41,4 +41,4 @@ The following attributes are exported:
 * `keypair_name` - The name of the keypair.
 * `request_id` - The ID of the request.
 
-See detailed information in [ReadKeyPairs](http://docs.outscale.com/api_fcu/definitions/KeyPairInfo.html#_api_fcu-keypairinfo).
+See detailed information in [ReadKeyPairs](https://docs-beta.outscale.com/#readkeypairs).

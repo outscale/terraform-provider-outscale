@@ -27,7 +27,7 @@ The following arguments are supported:
 * `ip_range` - (Required) The IP range for the Net, in CIDR notation (for example, 10.0.0.0/16).
 * `tenancy` - (Optional) The tenancy options for the VMs (`default` if a VM created in a Net can be launched with any tenancy, `dedicated` if it can be launched with dedicated tenancy VMs running on single-tenant hardware).
 
-See detailed information in [Outscale VMs](http://docs.outscale.com/api_fcu/operations/Action_CreateVpc_get.html#_api_fcu-action_createvpc_get).
+See detailed information in [Outscale VMs](https://docs-beta.outscale.com/#createvms).
 
 ## Attributes Reference
 
@@ -41,4 +41,4 @@ The following attributes are exported:
 * `net_id` - The ID of the Net.
 * `request_id` - The ID of the request.
 
-See detailed information in [CreateNet](http://docs.outscale.com/api_fcu/operations/Action_CreateVpc_get.html#_api_fcu-action_createvpc_get).
+See detailed information in [CreateNet](https://docs-beta.outscale.com/#createnet).

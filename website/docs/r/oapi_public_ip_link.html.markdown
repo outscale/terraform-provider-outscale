@@ -17,8 +17,8 @@ NOTE: You can associate an EIP with a network address translation (NAT) service 
 ```hcl
 resource "outscale_vm" "basic" {
   image_id = "ami-8a6a0120"
-  instance_type = "t2.micro"
-  key_name = "terraform-basic"
+  vm_type = "t2.micro"
+  keypair_name = "terraform-basic"
   subnet_id = "subnet-861fbecc"
 }
 

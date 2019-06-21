@@ -15,7 +15,7 @@ description: |-
 ```hcl
 resource "outscale_volume" "test" {
   subregion_name = "eu-west-2a"
-  type = "gp2"
+  volume_type = "gp2"
   size = 1
   tags {
     key = "Name"

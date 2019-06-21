@@ -68,4 +68,4 @@ The following arguments are supported:
 * `request_id` -	The ID of the request
 
 
-See detailed information in [Create Route](http://docs.outscale.com/api_fcu/operations/Action_CreateRoute_get.html#_api_fcu-action_createroute_get).
+See detailed information in [Create Route](https://docs-beta.outscale.com/#createroute).
