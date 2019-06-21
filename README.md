@@ -5,8 +5,6 @@ Terraform Provider
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-<img src="https://camo.githubusercontent.com/2f78124a1f0f4905d95b9e85b1fa00afddcf3e29/68747470733a2f2f63646e2e7261776769742e636f6d2f6861736869636f72702f7465727261666f726d2d776562736974652f6d61737465722f636f6e74656e742f736f757263652f6173736574732f696d616765732f6c6f676f2d6861736869636f72702e737667
-" width="600px">
 
 Requirements
 ------------
