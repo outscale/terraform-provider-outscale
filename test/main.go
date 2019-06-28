@@ -12,8 +12,8 @@ import (
 func main() {
 	config := osc.Config{
 		Credentials: &osc.Credentials{
-			AccessKey: "7E4U4AQ0CGLTWB78Q38V",
-			SecretKey: "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K",
+			AccessKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			SecretKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 			Region:    "eu-west-2",
 		},
 	}
