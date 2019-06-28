@@ -108,7 +108,7 @@ func testAccCheckOutscaleOAPIAccessKeyAttributes(accessKeyMetadata *icu.AccessKe
 
 const testAccOutscaleOAPIAccessKeyConfig = `
 resource "outscale_oapi_api_key" "a_key" {
-	#api_key_id = "7E4U4AQ0CGLTWB78Q38V"
-	#secret_key = "TDKLDVCNFDWFT6CVYBM9OPQ5YO9ZAJBN0JBJS99K"
+	#api_key_id = "AK"
+	#secret_key = "SK"
 }
 `
