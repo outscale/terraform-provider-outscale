@@ -25,6 +25,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 			},
 			"secondary_private_ip_count": {
 				Type:     schema.TypeInt,
+				Computed: true,
 				Optional: true,
 				ForceNew: true,
 			},
@@ -63,7 +64,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SecondaryPrivateIpCount = int64(v.(int))
+		input.SecondaryPrivateIpCount = int64(v.(int) - 1)
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
