@@ -29,7 +29,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPILinPeeringConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("data.outscale_net_peering.test_by_id"),
+					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("outscale_net_peering.net_peering"),
 				),
 				// ExpectNonEmptyPlan: true,
 			},
@@ -44,9 +44,9 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		pcxRs, ok := s.RootModule().Resources["outscale_net_peering.test"]
+		pcxRs, ok := s.RootModule().Resources["outscale_net_peering.net_peering"]
 		if !ok {
-			return fmt.Errorf("can't find outscale_net_peering.test in state")
+			return fmt.Errorf("can't find outscale_net_peering.net_peering in state")
 		}
 
 		attr := rs.Primary.Attributes
@@ -64,32 +64,25 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 }
 
 const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
-resource "outscale_net" "foo" {
-  ip_range = "10.1.0.0/16"
+	resource "outscale_net" "net" {
+		count    = 1
+		ip_range = "10.10.0.0/24"
+	}
 
-  tag {
-	  Name = "terraform-testacc-vpc-peering-connection-data-source-foo"
-  }
-}
+	resource "outscale_net" "net2" {
+		count    = 1
+		ip_range = "10.11.0.0/24"
+	}
 
-resource "outscale_net" "bar" {
-  ip_range = "10.2.0.0/16"
+	resource "outscale_net_peering" "net_peering" {
+		accepter_net_id = "${outscale_net.net.net_id}"
+		source_net_id   = "${outscale_net.net2.net_id}"
+	}
 
-  tag {
-	  Name = "terraform-testacc-vpc-peering-connection-data-source-bar"
-  }
-}
-
-resource "outscale_net_peering" "test" {
-	net_id = "${outscale_net.foo.id}"
-	peer_net_id = "${outscale_net.bar.id}"
-
-    tag {
-      Name = "terraform-testacc-vpc-peering-connection-data-source-foo-to-bar"
-    }
-}
-
-data "outscale_net_peering" "test_by_id" {
-	net_peering_id = "${outscale_net_peering.test.id}"
-}
+	data "outscale_net_peering" "net_peering_data" {
+		filter {
+			name   = "net_peering_ids"
+			values = ["${outscale_net_peering.net_peering.net_peering_id}"]
+		}
+	}
 `
