@@ -108,20 +108,23 @@ func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface)
 }
 
 func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
+		var resp *oapi.ReadNicsResponse
+		var r *oapi.POST_ReadNicsResponses
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		req := &oapi.ReadNicsRequest{
+			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DescribeNetworkInterfaces(dnir)
+			r, err = conn.POST_ReadNics(*req)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -131,15 +134,16 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return nil
-			}
+		resp = r.OK
 
+		if err != nil {
 			return err
 		}
-	}
 
+		if len(resp.Nics) != 0 {
+			return fmt.Errorf("Nic is not destroyed yet")
+		}
+	}
 	return nil
 }
 
