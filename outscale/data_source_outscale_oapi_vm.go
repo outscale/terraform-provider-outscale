@@ -452,6 +452,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"image_id": {
 			Type:     schema.TypeString,
+			ForceNew: true,
 			Optional: true,
 			Computed: true,
 		},
@@ -713,6 +714,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		},
 		"subnet_id": {
 			Type:     schema.TypeString,
+			ForceNew: true,
 			Optional: true,
 			Computed: true,
 		},

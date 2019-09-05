@@ -47,6 +47,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi2 := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var before oapi.Vm
@@ -61,16 +62,16 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "t2.micro", region),
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
 					resource.TestCheckResourceAttr("outscale_vm.basic", "image_id", omi),
-					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "t2.micro"),
+					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "c4.large"),
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi2, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
@@ -113,10 +114,12 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
-		expectedSecurityGroup := after.SecurityGroups[0].SecurityGroupId
-		for i := range before.SecurityGroups {
-			assertNotEqual(t, before.SecurityGroups[i].SecurityGroupId, expectedSecurityGroup,
-				"Outscale VM SecurityGroupId Either not found or are the same.")
+		if len(after.SecurityGroups) > 0 && len(before.SecurityGroups) > 0 {
+			expectedSecurityGroup := after.SecurityGroups[0].SecurityGroupId
+			for i := range before.SecurityGroups {
+				assertNotEqual(t, before.SecurityGroups[i].SecurityGroupId, expectedSecurityGroup,
+					"Outscale VM SecurityGroupId Either not found or are the same.")
+			}
 		}
 		return nil
 	}
@@ -173,7 +176,7 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*s
 
 func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assertEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
+		assertNotEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
 	}
 }
@@ -325,9 +328,9 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
 resource "outscale_vm" "basic" {
   image_id = "%s"
   vm_type = "%s"
-  keypair_name = "integ_sut_keypair"
+  keypair_name = "terraform-basic"
   security_group_ids = ["sg-f4b1c2f8"]
-  placement_subregion_name = "%sa"
+  placement_subregion_name = "%sb"
   
 
 }`, omi, vmType, region)
