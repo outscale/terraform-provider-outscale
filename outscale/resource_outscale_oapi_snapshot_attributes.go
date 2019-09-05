@@ -18,7 +18,7 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"permissions_to_create_volume": &schema.Schema{
+			"permissions_to_create_volume_additions": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
@@ -91,7 +91,7 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 
 	perms := oapi.PermissionsOnResourceCreation{}
 
-	if addPermsParam, ok := d.GetOk("permissions_to_create_volume"); ok {
+	if addPermsParam, ok := d.GetOk("permissions_to_create_volume_additions"); ok {
 		AddPerms := addPermsParam.([]interface{})
 
 		if len(AddPerms) > 0 {
@@ -195,7 +195,7 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
 
-	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+	if err := d.Set("permissions_to_create_volume_additions", lp); err != nil {
 		return err
 	}
 	if err := d.Set("account_id", attrs.OK.Snapshots[0].AccountId); err != nil {
