@@ -22,6 +22,7 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"account_ids": &schema.Schema{
@@ -59,22 +60,13 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"permissions_to_create_volume": &schema.Schema{
-				Type:     schema.TypeList,
+			"account_id": &schema.Schema{
+				Type:     schema.TypeString,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
-							Type:     schema.TypeList,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-						"global_permission": &schema.Schema{
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-					},
-				},
+			},
+			"request_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -203,11 +195,15 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
 	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
 
-	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+	if err := d.Set("permissions_to_create_volume_additions", lp); err != nil {
 		return err
 	}
-
-	d.Set("request_id", attrs.OK.ResponseContext.RequestId)
+	if err := d.Set("account_id", attrs.OK.Snapshots[0].AccountId); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", attrs.OK.ResponseContext.RequestId); err != nil {
+		return err
+	}
 
 	return nil
 }
