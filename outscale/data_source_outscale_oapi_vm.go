@@ -556,6 +556,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 					"nic_id": {
 						Type:     schema.TypeString,
+						Optional: true,
 						Computed: true,
 					},
 					"private_dns_name": {
@@ -757,6 +758,11 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
+		},
+		"private_ips": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 	}
 }
