@@ -272,6 +272,11 @@ func buildCreateVmsRequest(
 		sgIds = expandStringValueList(v.([]interface{}))
 	}
 
+	privateIPS := make([]string, 0)
+	if v := d.Get("private_ips"); v != nil {
+		privateIPS = expandStringValueList(v.([]interface{}))
+	}
+
 	if hasSubnet && interfacesOk {
 		request.Nics = buildNetworkOApiInterfaceOpts(d, sgNames, networkInterfaces)
 	} else {
@@ -282,6 +287,7 @@ func buildCreateVmsRequest(
 		//if request.SubnetId != "" {
 		request.SecurityGroupIds = sgIds
 		request.SecurityGroups = sgNames
+		request.PrivateIps = privateIPS
 		//}
 	}
 
@@ -305,15 +311,16 @@ func buildCreateVmsRequest(
 }
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
-	networkInterfaces := []oapi.NicForVmCreation{}
-	vL := nInterfaces.(*schema.Set).List()
-	//subnet, hasSubnet := d.GetOk("subnet_id")
 
+	networkInterfaces := []oapi.NicForVmCreation{}
+	vL := nInterfaces.([]interface{})
+	//subnet, hasSubnet := d.GetOk("subnet_id")
 	for _, v := range vL {
 		ini := v.(map[string]interface{})
 		subnet, hasSubnet := ini["subnet_id"]
 		if hasSubnet {
 			ni := oapi.NicForVmCreation{
+				NicId:            ini["nic_id"].(string),
 				DeviceNumber:     int64(0),
 				SubnetId:         subnet.(string),
 				SecurityGroupIds: groups,
