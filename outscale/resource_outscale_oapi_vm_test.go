@@ -382,11 +382,17 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 			image_id			           = "%s"
 			vm_type                  = "%s"
 			keypair_name		         = "terraform-basic"
-			subnet_id                ="${outscale_subnet.outscale_subnet.subnet_id}"
+			# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
 			placement_subregion_name = "%sa"
 			nics = [
 				{
-					nic_id ="${outscale_nic.outscale_nic.nic_id}"
+					delete_on_vm_deletion        = false
+					description                  = "myDescription"
+					device_number                =  0
+					nic_id                       = "${outscale_nic.outscale_nic.nic_id}"
+					# secondary_private_ip_count = 1
+					# security_groups_ids        = ["sg-f4b1c2f8"]
+					# subnet_id                  = "${outscale_subnet.outscale_subnet.subnet_id}"
 				}
 			]
 		}`, omi, vmType, region)
