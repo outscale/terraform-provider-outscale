@@ -490,17 +490,91 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"account_id": {
-						Type:     schema.TypeString,
+					"delete_on_vm_deletion": {
+						Type:     schema.TypeBool,
 						Computed: true,
+						Optional: true,
 					},
 					"description": {
 						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
 					},
+					"device_number": {
+						Type:     schema.TypeInt,
+						Computed: true,
+						Optional: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_public_ip": {
+									Type:     schema.TypeSet,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"public_dns_name": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip_account_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+										},
+									},
+								},
+								"private_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"private_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"secondary_private_ip_count": {
+						Type:     schema.TypeInt,
+						Optional: true,
+						Computed: true,
+					},
+					"security_groups_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
 					"is_source_dest_checked": {
 						Type:     schema.TypeBool,
 						Computed: true,
+					},
+
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
 					},
 					"link_nic": {
 						Type:     schema.TypeMap,
@@ -554,60 +628,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"nic_id": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
+
 					"private_dns_name": {
 						Type:     schema.TypeString,
 						Computed: true,
-					},
-					"private_ips": {
-						Type:     schema.TypeSet,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"is_primary": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"link_public_ip": {
-									Type:     schema.TypeSet,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"public_dns_name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"public_ip": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"public_ip_account_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"private_dns_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"private_ip": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"security_groups_ids": {
-						Type:     schema.TypeList,
-						Optional: true,
-						Computed: true,
-						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
 					"security_groups_names": {
 						Type:     schema.TypeList,
@@ -632,10 +656,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						},
 					},
 					"state": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"subnet_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
