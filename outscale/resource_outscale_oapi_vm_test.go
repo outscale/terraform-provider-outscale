@@ -378,21 +378,33 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 		}
 
+		resource "outscale_security_group" "outscale_security_group" {
+			description         = "test vm with nic"
+			security_group_name = "private-sg"
+			net_id              = "${outscale_net.outscale_net.net_id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id			           = "%s"
 			vm_type                  = "%s"
 			keypair_name		         = "terraform-basic"
 			# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
-			placement_subregion_name = "%sa"
+			# placement_subregion_name = "%sa"
 			nics = [
 				{
-					delete_on_vm_deletion        = false
-					description                  = "myDescription"
+					# delete_on_vm_deletion      = false
+					# description                = "myDescription"
 					device_number                =  0
-					nic_id                       = "${outscale_nic.outscale_nic.nic_id}"
+					# nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
 					# secondary_private_ip_count = 1
-					# security_groups_ids        = ["sg-f4b1c2f8"]
-					# subnet_id                  = "${outscale_subnet.outscale_subnet.subnet_id}"
+					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
+					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					subnet_id                  = "${outscale_subnet.outscale_subnet.subnet_id}"
+				  private_ips                  = [ 
+				  	{
+				  		private_ip = "10.0.0.123"
+				  		is_primary = true   
+				  	}
+				  ]
 				}
 			]
 		}`, omi, vmType, region)
