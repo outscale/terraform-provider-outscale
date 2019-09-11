@@ -312,8 +312,18 @@ func buildCreateVmsRequest(
 	return request, nil
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
+func expandPrivatePublicIps(privateIPS *schema.Set) []oapi.PrivateIpLight {
+	privatePublicIPS := make([]oapi.PrivateIpLight, len(privateIPS.List()))
 
+	for i, v := range privateIPS.List() {
+		value := v.(map[string]interface{})
+		privatePublicIPS[i].IsPrimary = value["is_primary"].(bool)
+		privatePublicIPS[i].PrivateIp = value["private_ip"].(string)
+	}
+	return privatePublicIPS
+}
+
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
 	networkInterfaces := []oapi.NicForVmCreation{}
 	vL := nInterfaces.([]interface{})
 
@@ -326,8 +336,9 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInt
 			DeviceNumber:       int64(ini["device_number"].(int)),
 		}
 
+		ni.PrivateIps = expandPrivatePublicIps(ini["private_ips"].(*schema.Set))
 		ni.SubnetId = ini["subnet_id"].(string)
-		ni.SecurityGroupIds = expandStringValueList(ini["security_groups_ids"].([]interface{}))
+		ni.SecurityGroupIds = expandStringValueList(ini["security_group_ids"].([]interface{}))
 		ni.SecondaryPrivateIpCount = int64(ini["secondary_private_ip_count"].(int))
 		ni.NicId = ini["nic_id"].(string)
 
