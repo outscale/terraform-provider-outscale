@@ -512,11 +512,13 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 					"private_ips": {
 						Type:     schema.TypeSet,
+						Optional: true,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"is_primary": {
 									Type:     schema.TypeBool,
+									Optional: true,
 									Computed: true,
 								},
 								"link_public_ip": {
@@ -545,6 +547,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								},
 								"private_ip": {
 									Type:     schema.TypeString,
+									Optional: true,
 									Computed: true,
 								},
 							},
@@ -555,7 +558,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Optional: true,
 						Computed: true,
 					},
-					"security_groups_ids": {
+					"security_group_ids": {
 						Type:     schema.TypeList,
 						Optional: true,
 						Computed: true,
