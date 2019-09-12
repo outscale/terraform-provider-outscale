@@ -259,9 +259,6 @@ func buildCreateVmsRequest(
 		request.Placement.Tenancy = v.(string)
 	}
 
-	subnetID, hasSubnet := d.GetOk("subnet_id")
-
-	networkInterfaces, interfacesOk := d.GetOk("nics")
 	sgNames := make([]string, 0)
 	if v := d.Get("security_group_names"); v != nil {
 		sgNames = expandStringValueList(v.([]interface{}))
@@ -272,17 +269,26 @@ func buildCreateVmsRequest(
 		sgIds = expandStringValueList(v.([]interface{}))
 	}
 
-	if hasSubnet && interfacesOk {
-		request.Nics = buildNetworkOApiInterfaceOpts(d, sgNames, networkInterfaces)
-	} else {
-		if hasSubnet {
-			request.SubnetId = subnetID.(string)
-		}
+	privateIPS := make([]string, 0)
+	if v := d.Get("private_ips"); v != nil {
+		privateIPS = expandStringValueList(v.([]interface{}))
+	}
 
-		//if request.SubnetId != "" {
+	subnetID, hasSubnet := d.GetOk("subnet_id")
+	networkInterfaces, interfacesOk := d.GetOk("nics")
+
+	if hasSubnet && interfacesOk {
+		return nil, errors.New("Error you need to specify only one: subnet_id or nics")
+	}
+
+	if interfacesOk {
+		request.Nics = buildNetworkOApiInterfaceOpts(d, sgNames, networkInterfaces)
+	}
+	if hasSubnet {
+		request.SubnetId = subnetID.(string)
 		request.SecurityGroupIds = sgIds
 		request.SecurityGroups = sgNames
-		//}
+		request.PrivateIps = privateIPS
 	}
 
 	if v, ok := d.GetOk("private_ip"); ok {
@@ -293,7 +299,9 @@ func buildCreateVmsRequest(
 		request.KeypairName = v.(string)
 	}
 
-	blockDevices, err := readBlockDeviceOApiMappingsFromConfig(d, conn)
+	var blockDevices []oapi.BlockDeviceMappingVmCreation
+	var err error
+	blockDevices, err = readBlockDeviceOApiMappingsFromConfig(d, conn)
 	if err != nil {
 		return nil, err
 	}
@@ -304,36 +312,43 @@ func buildCreateVmsRequest(
 	return request, nil
 }
 
+func expandPrivatePublicIps(privateIPS *schema.Set) []oapi.PrivateIpLight {
+	privatePublicIPS := make([]oapi.PrivateIpLight, len(privateIPS.List()))
+
+	for i, v := range privateIPS.List() {
+		value := v.(map[string]interface{})
+		privatePublicIPS[i].IsPrimary = value["is_primary"].(bool)
+		privatePublicIPS[i].PrivateIp = value["private_ip"].(string)
+	}
+	return privatePublicIPS
+}
+
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
 	networkInterfaces := []oapi.NicForVmCreation{}
-	vL := nInterfaces.(*schema.Set).List()
-	//subnet, hasSubnet := d.GetOk("subnet_id")
+	vL := nInterfaces.([]interface{})
 
 	for _, v := range vL {
 		ini := v.(map[string]interface{})
-		subnet, hasSubnet := ini["subnet_id"]
-		if hasSubnet {
-			ni := oapi.NicForVmCreation{
-				DeviceNumber:     int64(0),
-				SubnetId:         subnet.(string),
-				SecurityGroupIds: groups,
-			}
 
-			if v, ok := d.GetOk("private_ip"); ok {
-				ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
-					PrivateIp: v.(string),
-				}}
-			}
-
-			networkInterfaces = append(networkInterfaces, ni)
-		} else {
-			ni := oapi.NicForVmCreation{
-				NicId:              ini["nic_id"].(string),
-				DeviceNumber:       int64(ini["nic_sort_number"].(int)),
-				DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
-			}
-			networkInterfaces = append(networkInterfaces, ni)
+		ni := oapi.NicForVmCreation{
+			DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
+			Description:        ini["description"].(string),
+			DeviceNumber:       int64(ini["device_number"].(int)),
 		}
+
+		ni.PrivateIps = expandPrivatePublicIps(ini["private_ips"].(*schema.Set))
+		ni.SubnetId = ini["subnet_id"].(string)
+		ni.SecurityGroupIds = expandStringValueList(ini["security_group_ids"].([]interface{}))
+		ni.SecondaryPrivateIpCount = int64(ini["secondary_private_ip_count"].(int))
+		ni.NicId = ini["nic_id"].(string)
+
+		if v, ok := d.GetOk("private_ip"); ok {
+			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
+				PrivateIp: v.(string),
+			}}
+		}
+
+		networkInterfaces = append(networkInterfaces, ni)
 	}
 
 	return networkInterfaces
