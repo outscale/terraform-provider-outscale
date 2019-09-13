@@ -140,6 +140,35 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
+	var server oapi.Vm
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, "c4.large", region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "c4.large"),
+					testAccCheckState("outscale_vm.basic"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
@@ -455,6 +484,25 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	  
 	  }	  
 `, omi, vmType, region)
+}
+
+func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id              = "%[1]s"
+			vm_type               = "%[2]s"
+			keypair_name          = "terraform-basic"
+			block_device_mappings = [
+				{
+					device_name = "/dev/sdb"
+					bsu         = {
+						volume_size = 15
+						# snapshot_id = "snap-384a9b28"
+					}
+				}
+			]
+		}
+	`, omi, vmType, region)
 }
 
 func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {
