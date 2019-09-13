@@ -102,7 +102,7 @@ func resourceDataAttrSetter(d *schema.ResourceData, instance *oapi.Vm) error {
 func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
 	set("architecture", instance.Architecture)
-	if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+	if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
@@ -397,11 +397,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
 					"bsu": {
 						Type:     schema.TypeMap,
 						Optional: true,
@@ -411,6 +406,55 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								"delete_on_vm_deletion": {
 									Type:     schema.TypeBool,
 									Optional: true,
+								},
+								"iops": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+								"volume_size": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"volume_type": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+							},
+						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"no_device": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"virtual_device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"block_device_mappings_created": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
 									Computed: true,
 								},
 								"link_date": {
@@ -423,11 +467,14 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								},
 								"volume_id": {
 									Type:     schema.TypeFloat,
-									Optional: true,
 									Computed: true,
 								},
 							},
 						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 			},
