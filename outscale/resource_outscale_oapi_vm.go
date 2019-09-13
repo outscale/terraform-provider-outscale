@@ -4,10 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -236,8 +238,6 @@ func getOApiVMSchema() map[string]*schema.Schema {
 
 func buildCreateVmsRequest(
 	d *schema.ResourceData, meta interface{}) (*oapi.CreateVmsRequest, error) {
-	conn := meta.(*OutscaleClient).OAPI
-
 	request := &oapi.CreateVmsRequest{
 		DeletionProtection:          d.Get("deletion_protection").(bool),
 		BsuOptimized:                d.Get("bsu_optimized").(bool),
@@ -299,14 +299,12 @@ func buildCreateVmsRequest(
 		request.KeypairName = v.(string)
 	}
 
-	var blockDevices []oapi.BlockDeviceMappingVmCreation
 	var err error
-	blockDevices, err = readBlockDeviceOApiMappingsFromConfig(d, conn)
+	if v, ok := d.GetOk("block_device_mappings"); ok {
+		request.BlockDeviceMappings = expandBlockDeviceOApiMappings(v.([]interface{}))
+	}
 	if err != nil {
 		return nil, err
-	}
-	if len(blockDevices) > 0 {
-		request.BlockDeviceMappings = blockDevices
 	}
 
 	return request, nil
@@ -354,76 +352,41 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInt
 	return networkInterfaces
 }
 
-// func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
-// 	networkInterfaces := []oapi.NicForVmCreation{}
-// 	subnet, hasSubnet := d.GetOk("subnet_id")
+func expandBlockDeviceOApiMappings(block []interface{}) []oapi.BlockDeviceMappingVmCreation {
+	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, len(block))
 
-// 	if hasSubnet {
-// 		ni := oapi.NicForVmCreation{
-// 			DeviceNumber:     int64(0),
-// 			SubnetId:         subnet.(string),
-// 			SecurityGroupIds: groups,
-// 		}
+	for i, v := range block {
+		value := v.(map[string]interface{})
+		bsu := value["bsu"].(map[string]interface{})
 
-// 		if v, ok := d.GetOk("private_ip"); ok {
-// 			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
-// 				PrivateIp: v.(string),
-// 			}}
-// 		}
-
-// 		networkInterfaces = append(networkInterfaces, ni)
-// 	} else {
-// 		// If we have manually specified network interfaces, build and attach those here.
-// 		vL := nInterfaces.(*schema.Set).List()
-// 		for _, v := range vL {
-// 			ini := v.(map[string]interface{})
-// 			ni := oapi.NicForVmCreation{
-// 				NicId:              ini["nic_id"].(string),
-// 				DeviceNumber:       int64(ini["nic_sort_number"].(int)),
-// 				DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
-// 			}
-// 			networkInterfaces = append(networkInterfaces, ni)
-// 		}
-// 	}
-
-// 	return networkInterfaces
-// }
-
-func readBlockDeviceOApiMappingsFromConfig(
-	d *schema.ResourceData, conn *oapi.Client) ([]oapi.BlockDeviceMappingVmCreation, error) {
-	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, 0)
-
-	if v, ok := d.GetOk("bsu"); ok {
-		vL := v.(*schema.Set).List()
-		for _, v := range vL {
-			bd := v.(map[string]interface{})
-			ebs := oapi.BsuToCreate{
-				DeleteOnVmDeletion: bd["delete_on_vm_deletion"].(bool),
-			}
-
-			if v, ok := bd["snapshot_id"].(string); ok && v != "" {
-				ebs.SnapshotId = v
-			}
-			if v, ok := bd["volume_size"].(int); ok && v != 0 {
-				ebs.VolumeSize = int64(v)
-			}
-			if v, ok := bd["vm_type"].(string); ok && v != "" {
-				ebs.VolumeType = v
-			}
-			if v, ok := bd["iops"].(int); ok && v > 0 {
-				ebs.Iops = int64(v)
-			}
-
-			blockDevice := oapi.BlockDeviceMappingVmCreation{
-				Bsu:        ebs,
-				DeviceName: bd["device_name"].(string),
-			}
-
-			blockDevices = append(blockDevices, blockDevice)
+		if deleteOnVM, ok := bsu["delete_on_vm_deletion"]; ok {
+			blockDevices[i].Bsu.DeleteOnVmDeletion = deleteOnVM.(bool)
+		}
+		if iops, ok := bsu["iops"]; ok {
+			blockDevices[i].Bsu.Iops = int64(iops.(int))
+		}
+		if snapshotID, ok := bsu["snapshot_id"]; ok {
+			blockDevices[i].Bsu.SnapshotId = snapshotID.(string)
+		}
+		if v, ok := bsu["volume_size"]; ok {
+			log.Printf("LOG__VALUE \n\n %+v \n\n", v)
+			n, _ := strconv.Atoi(v.(string))
+			blockDevices[i].Bsu.VolumeSize = int64(n)
+		}
+		if volumeType, ok := bsu["volume_type"]; ok {
+			blockDevices[i].Bsu.VolumeType = volumeType.(string)
+		}
+		if deviceName, ok := value["device_name"]; ok {
+			blockDevices[i].DeviceName = deviceName.(string)
+		}
+		if noDevice, ok := value["no_device"]; ok {
+			blockDevices[i].NoDevice = noDevice.(string)
+		}
+		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
+			blockDevices[i].VirtualDeviceName = virtualDeviceName.(string)
 		}
 	}
-
-	return blockDevices, nil
+	return blockDevices
 }
 
 // InstanceStateOApiRefreshFunc ...
