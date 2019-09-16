@@ -51,6 +51,13 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 
 	result := r.OK
 
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), result.InternetService.InternetServiceId, conn)
+		if err != nil {
+			return err
+		}
+	}
+
 	d.SetId(result.InternetService.InternetServiceId)
 
 	return resourceOutscaleOAPIInternetServiceRead(d, meta)
@@ -189,6 +196,6 @@ func getOAPIInternetServiceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": dataSourceTagsSchema(),
+		"tags": tagsListOAPISchema(),
 	}
 }
