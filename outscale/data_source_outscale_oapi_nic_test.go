@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -17,9 +16,14 @@ import (
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
-	var conf fcu.NetworkInterface
+	var conf oapi.Nic
 
 	o := os.Getenv("OUTSCALE_OAPI")
+
+	subregion := os.Getenv("OUTSCALE_REGION")
+	if subregion == "" {
+		subregion = "in-west-2"
+	}
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -39,57 +43,12 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIENIDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIDataSourceExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIDataSourceAttributes(&conf),
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleOAPIENIDataSourceExists(n string, res *fcu.NetworkInterface) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ENI ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
-		}
-
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(describeResp.NetworkInterfaces) != 1 ||
-			*describeResp.NetworkInterfaces[0].NetworkInterfaceId != rs.Primary.ID {
-			return fmt.Errorf("ENI not found")
-		}
-
-		*res = *describeResp.NetworkInterfaces[0]
-
-		return nil
-	}
 }
 
 func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {

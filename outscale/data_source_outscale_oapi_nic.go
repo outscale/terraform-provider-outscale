@@ -42,13 +42,13 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Computed: true,
 			},
 			"security_group_id": &schema.Schema{
-				Type: schema.TypeList,
-
-				Elem: &schema.Schema{Type: schema.TypeString},
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Computed: true,
 			},
 			// Attributes
 			"link_public_ip": {
@@ -69,10 +69,6 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 							Computed: true,
 						},
 						"public_dns_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"public_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -282,30 +278,28 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	b := make(map[string]interface{})
 
 	link := eni.LinkPublicIp
-	b["reservation_id"] = link.PublicIpId
-	b["link_id"] = link.LinkPublicIpId
+	b["public_ip_id"] = link.PublicIpId
+	b["link_public_ip_id"] = link.LinkPublicIpId
 	b["public_ip_account_id"] = link.PublicIpAccountId
 	b["public_dns_name"] = link.PublicDnsName
 	b["public_ip"] = link.PublicIp
 
-	if err := d.Set("public_ip_link", b); err != nil {
+	if err := d.Set("link_public_ip", b); err != nil {
 		return err
 	}
 
-	aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
 
 	linkNic := eni.LinkNic
 
-	bb["nic_link_id"] = linkNic.LinkNicId
-	bb["delete_on_vm_deletion"] = linkNic.DeleteOnVmDeletion
-	bb["nic_sort_number"] = linkNic.DeviceNumber
+	bb["link_nic_id"] = linkNic.LinkNicId
+	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", linkNic.DeleteOnVmDeletion)
+	bb["device_number"] = strconv.FormatInt(linkNic.DeviceNumber, 10)
 	bb["vm_id"] = linkNic.VmId
 	bb["vm_account_id"] = linkNic.VmAccountId
 	bb["state"] = linkNic.State
 
-	aa[0] = bb
-	if err := d.Set("nic_link", aa); err != nil {
+	if err := d.Set("link_nic", bb); err != nil {
 		return err
 	}
 
@@ -314,11 +308,11 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	x := make([]map[string]interface{}, len(eni.SecurityGroups))
 	for k, v := range eni.SecurityGroups {
 		b := make(map[string]interface{})
-		b["firewall_rules_set_id"] = v.SecurityGroupId
-		b["firewall_rules_set_name"] = v.SecurityGroupName
+		b["security_group_id"] = v.SecurityGroupId
+		b["security_group_name"] = v.SecurityGroupName
 		x[k] = b
 	}
-	if err := d.Set("firewall_rules_set", x); err != nil {
+	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
@@ -335,117 +329,33 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			linkPrivateIP := v.LinkPublicIp
-			d["reservation_id"] = linkPrivateIP.PublicIpId
-			d["link_id"] = linkPrivateIP.LinkPublicIpId
-			d["public_ip_account_id"] = linkPrivateIP.PublicIpAccountId
-			d["public_dns_name"] = linkPrivateIP.PublicDnsName
-			d["public_ip"] = linkPrivateIP.PublicIpId
-			b["association"] = d
-			b["primary_ip"] = v.IsPrimary
+			assoc := v.LinkPublicIp
+			d["public_ip_id"] = assoc.PublicIpId
+			d["link_public_ip_id"] = assoc.LinkPublicIpId
+			d["public_ip_account_id"] = assoc.PublicIpAccountId
+			d["public_dns_name"] = assoc.PublicDnsName
+			d["public_ip"] = assoc.PublicIp
+
+			b["link_public_ip"] = d
 			b["private_dns_name"] = v.PrivateDnsName
 			b["private_ip"] = v.PrivateIp
+			b["is_primary"] = v.IsPrimary
+
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip_set", y); err != nil {
+	if err := d.Set("private_ips", y); err != nil {
 		return err
 	}
 
 	d.Set("request_id", describeResp.OK.ResponseContext.RequestId)
-
-	// Missing
-	// d.Set("requester_managed", aws.BoolValue(eni.))
-
-	// Missing
-	// d.Set("activated_check", aws.BoolValue(eni.SourceDestCheck))
+	d.Set("is_source_dest_checked", eni.IsSourceDestChecked)
 	d.Set("state", eni.State)
-	d.Set("subnet_id", eni.SubnetId)
-	// Tags
 	d.Set("tags", tagsOAPIToMap(eni.Tags))
 	d.Set("net_id", eni.NetId)
 
+	d.SetId(eni.NicId)
 	return nil
-}
-
-func resourceOutscaleOAPIDataSourceNicDetach(oa []interface{}, meta interface{}, eniID string) error {
-	// if there was an old attachment, remove it
-	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		oa := oa[0].(map[string]interface{})
-		dr := oapi.UnlinkNicRequest{
-			LinkNicId: oa["attachment_id"].(string),
-		}
-
-		conn := meta.(*OutscaleClient).OAPI
-
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.POST_UnlinkNic(dr)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return fmt.Errorf("Error detaching oAPI ENI: %s", err)
-			}
-		}
-
-		log.Printf("[DEBUG] Waiting for oAPI ENI (%s) to become dettached", eniID)
-		stateConf := &resource.StateChangeConf{
-			Pending: []string{"true"},
-			Target:  []string{"false"},
-			Refresh: networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn, eniID),
-			Timeout: 10 * time.Minute,
-		}
-		if _, err := stateConf.WaitForState(); err != nil {
-			return fmt.Errorf(
-				"Error waiting for oAPI ENI (%s) to become dettached: %s", eniID, err)
-		}
-	}
-
-	return nil
-}
-
-func networkInterfaceDataSourceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-
-		dnri := oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{
-				NicIds: []string{id},
-			},
-		}
-
-		var describeResp *oapi.POST_ReadNicsResponses
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.POST_ReadNics(dnri)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			log.Printf("[ERROR] Could not find oAPI network interface %s. %s", id, err)
-			return nil, "", err
-		}
-
-		eni := describeResp.OK.Nics[0]
-		hasAttachment := strconv.FormatBool(eni.LinkNic.LinkNicId != "")
-		log.Printf("[DEBUG] oAPI ENI %s has attachment state %s", id, hasAttachment)
-		return eni, hasAttachment, nil
-	}
 }
 
 func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oapi.FiltersNic {
