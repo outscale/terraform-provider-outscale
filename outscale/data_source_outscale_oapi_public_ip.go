@@ -111,7 +111,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	address := describeAddresses.PublicIps[0]
 
-	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
+	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
 	if address.LinkPublicIpId != "" {
 		d.Set("link_public_ip_id", address.LinkPublicIpId)

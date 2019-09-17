@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -119,10 +120,10 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	// Get the ID and store it
 	ng := response.NatService
 	d.SetId(ng.NatServiceId)
-	fmt.Printf("\n\n[INFO] NAT Service ID: %s", d.Id())
+	log.Printf("\n\n[INFO] NAT Service ID: %s", d.Id())
 
 	// Wait for the NAT Service to become available
-	fmt.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", d.Id())
+	log.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
@@ -131,7 +132,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
 
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
@@ -204,7 +205,8 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 		NatServiceId: d.Id(),
 	}
 
-	fmt.Printf("\n\n[INFO] Deleting NAT Service: %s", d.Id())
+	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
+
 	var resp *oapi.POST_DeleteNatServiceResponses
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -236,7 +238,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
 
-		return fmt.Errorf("[DEBUG] Error deleting Nat Service (%s)", errString)
+		return fmt.Errorf("error deleting Nat Service (%s)", errString)
 	}
 
 	stateConf := &resource.StateChangeConf{
