@@ -20,29 +20,39 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 				Config: testAccOAPIVMDataSourceConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "image_id", omi),
+						"outscale_vm.outscale_vm", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "type", "c4.large"),
+						"outscale_vm.outscale_vm", "vm_type", "c4.large"),
 				),
 			},
 		},
 	})
 }
 
-// Lookup based on InstanceID
 func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id               = "%s"
-			vm_type                = "%s"
-			keypair_name           = "terraform-basic"
-			security_group_ids     = ["sg-9752b7a6"]
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}	
+		 
+ 		resource "outscale_subnet" "outscale_subnet" {
+			net_id         = "${outscale_net.outscale_net.net_id}"
+			ip_range       = "10.0.0.0/24"
+			subregion_name = "eu-west-2a"
 		}
-
-		data "outscale_vm" "basic_web" {
-			filter {
-			name = "vm_ids"
-			values = ["${outscale_vm.basic.id}"]
+		 
+ 		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%s"
+			vm_type      = "%s"
+			keypair_name = "terraform-basic"
+			subnet_id    = "${outscale_subnet.outscale_subnet.subnet_id}"
+		}
+		 
+    data "outscale_vm" "basic_web" {
+		 filter {
+				name   = "vm_ids"
+				values = ["${outscale_vm.outscale_vm.vm_id}"]
 		  }
-		}`, omi, vmType)
+		}
+	`, omi, vmType)
 }
