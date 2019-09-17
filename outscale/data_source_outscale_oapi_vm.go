@@ -115,10 +115,13 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("keypair_name", instance.KeypairName)
 	set("launch_number", instance.LaunchNumber)
 	set("net_id", instance.NetId)
-	set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
+	if err := set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics)); err != nil {
+		log.Printf("[DEBUG] NICS ERR %+v", err)
+		return err
+	}
 	set("os_family", instance.OsFamily)
-	set("placement_subregion_name", instance.Placement.SubregionName)
-	set("placement_tenancy", instance.Placement.Tenancy)
+	set("placement.subregion_name", instance.Placement.SubregionName)
+	set("placement.tenancy", instance.Placement.Tenancy)
 	set("private_dns_name", instance.PrivateDnsName)
 	set("private_ip", instance.PrivateIp)
 	set("product_codes", instance.ProductCodes)
@@ -394,7 +397,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"block_device_mappings": {
 			Type:     schema.TypeList,
 			Optional: true,
-			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"bsu": {
@@ -535,6 +537,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"nics": {
 			Type:     schema.TypeList,
 			Optional: true,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_vm_deletion": {
@@ -690,7 +693,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
 					"security_groups": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
