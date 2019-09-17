@@ -3,10 +3,12 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"reflect"
+	"log"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
@@ -302,33 +304,16 @@ func getGroupSet(groupSet []*fcu.GroupIdentifier) []map[string]interface{} {
 	return res
 }
 
-func getOAPISecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
-	res := []map[string]interface{}{}
+func getOAPISecurityGroups(groupSet []oapi.SecurityGroupLight) (SecurityGroup []map[string]interface{}, SecurityGroupIds []string) {
 	for _, g := range groupSet {
-
-		r := map[string]interface{}{
-			"security_group_ids":  g.SecurityGroupId,
+		SecurityGroup = append(SecurityGroup, map[string]interface{}{
+			"security_group_id":   g.SecurityGroupId,
 			"security_group_name": g.SecurityGroupName,
-		}
-		res = append(res, r)
+		})
+		SecurityGroupIds = append(SecurityGroupIds, g.SecurityGroupId)
 	}
-
-	return res
+	return
 }
-
-// func getFirewallRulesSet(groupSet []*oapi.ReadVms_FirewallRulesSets) []map[string]interface{} {
-// 	res := []map[string]interface{}{}
-// 	for _, g := range groupSet {
-
-// 		r := map[string]interface{}{
-// 			"firewall_rules_set_id":   *g.FirewallRulesSetId,
-// 			"firewall_rules_set_name": *g.FirewallRulesSetName,
-// 		}
-// 		res = append(res, r)
-// 	}
-
-// 	return res
-// }
 
 func getIAMInstanceProfile(profile *fcu.IamInstanceProfile) map[string]interface{} {
 	iam := map[string]interface{}{}
@@ -402,75 +387,80 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 	return res
 }
 
-func getOAPIVMNetworkInterfaceSet(interfaces []oapi.NicLight) []map[string]interface{} {
-	res := []map[string]interface{}{}
+func getOAPILinkNic(l oapi.LinkNicLight) map[string]interface{} {
+	return map[string]interface{}{
+		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
+		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
+		"link_nic_id":           l.LinkNicId,
+		"state":                 l.State,
+	}
+}
 
-	if interfaces != nil {
-		for _, i := range interfaces {
-			inter := make(map[string]interface{})
-			assoc := make(map[string]interface{})
-			attach := make(map[string]interface{})
-
-			if !reflect.DeepEqual(i.LinkPublicIp, oapi.LinkPublicIp{}) {
-				assoc["public_ip_account_id"] = i.LinkPublicIp.PublicIpAccountId
-				assoc["public_dns_name"] = i.LinkPublicIp.PublicDnsName
-				assoc["public_ip"] = i.LinkPublicIp.PublicIp
-			}
-
-			if !reflect.DeepEqual(i.LinkNic, oapi.LinkNic{}) {
-				attach["nic_link_id"] = i.LinkNic.LinkNicId
-				attach["delete_on_vm_termination"] = i.LinkNic.DeleteOnVmDeletion
-				attach["nic_sort_number"] = i.LinkNic.DeviceNumber //TO Check
-				attach["state"] = i.LinkNic.State
-			}
-
-			//TODO: how to get FirewallRulesSet
-			// firewall := make([]map[string]interface{}, 0)
-			// if i.FirewallRulesSets != nil {
-			// 	for _, f := range i.FirewallRulesSets {
-			// 		r := map[string]interface{}{
-			// 			"firewall_rules_set_id": f.FirewallRulesSetId,
-			// 			"firewall_rules_name":   f.FirewallRulesSetName,
-			// 		}
-			// 		firewall = append(firewall, r)
-			// 	}
-			// }
-
-			ips := []map[string]interface{}{}
-
-			for _, p := range i.PrivateIps {
-
-				ip := map[string]interface{}{
-					"public_ip_link": map[string]interface{}{
-						"public_ip_account_id": p.LinkPublicIp.PublicIpAccountId,
-						"public_dns_name":      p.LinkPublicIp.PublicDnsName,
-						"public_ip":            p.LinkPublicIp.PublicIp,
-					},
-					"primary_ip":       p.IsPrimary,
-					"private_ip":       p.PrivateIp,
-					"private_dns_name": p.PrivateDnsName,
-				}
-				ips = append(ips, ip)
-			}
-
-			inter["public_ip_link"] = assoc
-			inter["nic_link"] = attach
-
-			inter["description"] = i.Description
-			//inter["firewall_rules_sets"] = firewall
-			inter["mac_address"] = i.MacAddress
-			inter["nic_id"] = i.NicId
-			inter["account_id"] = i.AccountId
-			inter["private_dns_name"] = i.PrivateDnsName
-			inter["private_ips"] = ips
-			inter["nat_check"] = i.IsSourceDestChecked
-			inter["state"] = i.State
-			inter["subnet_id"] = i.SubnetId
-			inter["lin_id"] = i.NetId
-
-			res = append(res, inter)
-		}
+func getOAPILinkPublicIP(l oapi.LinkPublicIpLightForVm) *schema.Set {
+	res := &schema.Set{
+		F: func(v interface{}) int {
+			var buf bytes.Buffer
+			m := v.(map[string]interface{})
+			buf.WriteString(fmt.Sprintf("%s-", m["public_ip"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", m["public_ip_account_id"].(string)))
+			return hashcode.String(buf.String())
+		},
 	}
 
+	res.Add(map[string]interface{}{
+		"public_dns_name":      l.PublicDnsName,
+		"public_ip":            l.PublicIp,
+		"public_ip_account_id": l.PublicIpAccountId,
+	})
 	return res
+}
+
+func getOAPIPrivateIPs(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
+	res := &schema.Set{
+		F: func(v interface{}) int {
+			var buf bytes.Buffer
+			m := v.(map[string]interface{})
+			buf.WriteString(fmt.Sprintf("%s-", m["private_ip"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", m["private_dns_name"].(string)))
+			return hashcode.String(buf.String())
+		},
+	}
+
+	for _, p := range privateIPs {
+		r := map[string]interface{}{
+			"is_primary": p.IsPrimary,
+			// "link_public_ip":   getOAPILinkPublicIP(p.LinkPublicIp),
+			"private_dns_name": p.PrivateDnsName,
+			"private_ip":       p.PrivateIp,
+		}
+		res.Add(r)
+	}
+	return res
+}
+
+func getOAPIVMNetworkInterfaceSet(nics []oapi.NicLight) (res []map[string]interface{}) {
+	log.Printf("LOG__ \n\n %v+ \n\n", nics)
+	if nics != nil {
+		for _, nic := range nics {
+			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.SecurityGroups)
+
+			res = append(res, map[string]interface{}{
+				"account_id":             nic.AccountId,
+				"description":            nic.Description,
+				"is_source_dest_checked": nic.IsSourceDestChecked,
+				// "link_nic":               getOAPILinkNic(nic.LinkNic),
+				// "link_public_ip":         getOAPILinkPublicIP(nic.LinkPublicIp),
+				"mac_address":        nic.MacAddress,
+				"net_id":             nic.NetId,
+				"nic_id":             nic.NicId,
+				"private_dns_name":   nic.PrivateDnsName,
+				"private_ips":        getOAPIPrivateIPs(nic.PrivateIps),
+				"security_groups":    securityGroups,
+				"security_group_ids": securityGroupIds,
+				"state":              nic.State,
+				"subnet_id":          nic.SubnetId,
+			})
+		}
+	}
+	return
 }
