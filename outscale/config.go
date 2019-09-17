@@ -13,6 +13,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+
+	"github.com/hashicorp/terraform/helper/logging"
 )
 
 // Config ...
@@ -79,6 +81,8 @@ func (c *Config) Client() (*OutscaleClient, error) {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
 	}
+
+	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
 
 	oapiClient := oapi.NewClient(oapicfg, skipClient)
 
