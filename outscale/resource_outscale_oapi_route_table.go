@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -194,17 +195,11 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 }
 
 func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...string) (interface{}, string, error) {
-	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_id %v", routeTableId, linkIds)
+	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableId, linkIds)
 	var resp *oapi.POST_ReadRouteTablesResponses
 	var err error
 	routeTableRequest := &oapi.ReadRouteTablesRequest{}
 	routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableId}}
-	if len(linkIds) > 0 {
-		routeTableRequest.Filters = oapi.FiltersRouteTable{
-			RouteTableIds:     []string{routeTableId},
-			LinkRouteTableIds: []string{linkIds[0]},
-		}
-	}
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
@@ -217,36 +212,42 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...strin
 		return nil
 	})
 
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			resp = nil
-		} else {
-			log.Printf("[DEBUG] Error on RouteTableStateRefresh: %s", err)
-			return nil, resp.OK.ResponseContext.RequestId, err
-		}
-	}
-
-	if resp == nil {
-		return resp, resp.OK.ResponseContext.RequestId, nil
-	}
-
-	result := resp.OK
 	var errString string
+	var requestID string
 	if err != nil || resp.OK == nil {
 		if err != nil {
 			errString = err.Error()
 		} else if resp.Code401 != nil {
 			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
+			requestID = resp.Code401.ResponseContext.RequestId
 		} else if resp.Code400 != nil {
 			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
+			requestID = resp.Code400.ResponseContext.RequestId
 		} else if resp.Code500 != nil {
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+			requestID = resp.Code500.ResponseContext.RequestId
 		}
 
-		return nil, "", fmt.Errorf("Error getting route table: %s", errString)
+		return nil, requestID, fmt.Errorf("Error getting route table: %s", errString)
 	}
+
+	result := resp.OK
+
 	if len(result.RouteTables) <= 0 {
 		return nil, resp.OK.ResponseContext.RequestId, err
+	}
+
+	//Fix for OAPI issue when passing routeTableIds and routeTableLinkIds
+	rts := result.RouteTables[0].LinkRouteTables
+	if len(linkIds) > 0 {
+		for _, linkID := range linkIds {
+			i := sort.Search(len(rts), func(i int) bool { return rts[i].LinkRouteTableId == linkID })
+			if len(rts) > 0 && rts[i].LinkRouteTableId == linkID {
+				return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
+			}
+
+		}
+		return nil, resp.OK.ResponseContext.RequestId, fmt.Errorf("Error getting route table: LinkRouteTables didn't match with provided (%+v)", linkIds)
 	}
 	return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
 }
