@@ -672,6 +672,12 @@ func tagsListOAPISchema() *schema.Schema {
 	}
 }
 
+func tagsListOAPISchemaForceNew() *schema.Schema {
+	tagsSchema := tagsListOAPISchema()
+	tagsSchema.ForceNew = true
+	return tagsSchema
+}
+
 func tagsOAPIListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
