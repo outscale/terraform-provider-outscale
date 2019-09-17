@@ -427,7 +427,8 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 					# nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
 					# secondary_private_ip_count = 1
 					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					subnet_id                  = "${outscale_subnet.outscale_subnet.subnet_id}"
+					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					
+					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
 				  private_ips                  = [ 
 				  	{
 				  		private_ip = "10.0.0.123"
