@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"strings"
 	"time"
@@ -97,14 +98,14 @@ func resourceOutscalePublicIPCreate(d *schema.ResourceData, meta interface{}) er
 	// the EIP api has a conditional unique ID (really), so
 	// if we're in a VPC we need to save the ID as such, otherwise
 	// it defaults to using the public IP
-	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
+	log.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 	if d.Get("domain").(string) == "vpc" {
 		d.SetId(*allocResp.AllocationId)
 	} else {
 		d.SetId(*allocResp.PublicIp)
 	}
 
-	fmt.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
+	log.Printf("[INFO] EIP ID: %s (domain: %v)", d.Id(), *allocResp.Domain)
 	return resourceOutscalePublicIPUpdate(d, meta)
 }
 
