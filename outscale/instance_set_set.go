@@ -3,7 +3,6 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -439,7 +438,6 @@ func getOAPIPrivateIPs(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
 }
 
 func getOAPIVMNetworkInterfaceSet(nics []oapi.NicLight) (res []map[string]interface{}) {
-	log.Printf("LOG__ \n\n %v+ \n\n", nics)
 	if nics != nil {
 		for _, nic := range nics {
 			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.SecurityGroups)
