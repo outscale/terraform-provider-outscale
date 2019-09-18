@@ -489,16 +489,28 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 
 func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
 	return fmt.Sprintf(`
+		resource "outscale_volume" "external1" {
+			subregion_name = "eu-west-2a"
+			size = 1
+		}
+		
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.external1.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id              = "%[1]s"
 			vm_type               = "%[2]s"
 			keypair_name          = "terraform-basic"
 			block_device_mappings = [
 				{
-					device_name = "/dev/sdb"
+					device_name = "/dev/sdc"
 					bsu         = {
-						volume_size = 15
-						# snapshot_id = "snap-384a9b28"
+						volume_size           = 22
+						volume_type           = "io1"
+						iops                  = 150
+						delete_on_vm_deletion = true
+						snapshot_id = "${outscale_snapshot.snapshot.id}"
 					}
 				}
 			]

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
+	"github.com/spf13/cast"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
@@ -860,29 +861,28 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMap
 		bsu := value["bsu"].(map[string]interface{})
 
 		if deleteOnVM, ok := bsu["delete_on_vm_deletion"]; ok {
-			blockDevices[i].Bsu.DeleteOnVmDeletion = deleteOnVM.(bool)
+			blockDevices[i].Bsu.DeleteOnVmDeletion = cast.ToBool(deleteOnVM)
 		}
 		if iops, ok := bsu["iops"]; ok {
-			blockDevices[i].Bsu.Iops = int64(iops.(int))
+			blockDevices[i].Bsu.Iops = cast.ToInt64(iops)
 		}
 		if snapshotID, ok := bsu["snapshot_id"]; ok {
-			blockDevices[i].Bsu.SnapshotId = snapshotID.(string)
+			blockDevices[i].Bsu.SnapshotId = cast.ToString(snapshotID)
 		}
-		if v, ok := bsu["volume_size"]; ok {
-			n, _ := strconv.Atoi(v.(string))
-			blockDevices[i].Bsu.VolumeSize = int64(n)
+		if volumeSize, ok := bsu["volume_size"]; ok {
+			blockDevices[i].Bsu.VolumeSize = cast.ToInt64(volumeSize)
 		}
 		if volumeType, ok := bsu["volume_type"]; ok {
-			blockDevices[i].Bsu.VolumeType = volumeType.(string)
+			blockDevices[i].Bsu.VolumeType = cast.ToString(volumeType)
 		}
 		if deviceName, ok := value["device_name"]; ok {
-			blockDevices[i].DeviceName = deviceName.(string)
+			blockDevices[i].DeviceName = cast.ToString(deviceName)
 		}
 		if noDevice, ok := value["no_device"]; ok {
-			blockDevices[i].NoDevice = noDevice.(string)
+			blockDevices[i].NoDevice = cast.ToString(noDevice)
 		}
 		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
-			blockDevices[i].VirtualDeviceName = virtualDeviceName.(string)
+			blockDevices[i].VirtualDeviceName = cast.ToString(virtualDeviceName)
 		}
 	}
 	return blockDevices
