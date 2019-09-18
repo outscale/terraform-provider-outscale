@@ -115,6 +115,11 @@ resource "outscale_volume" "test" {
 
 resource "outscale_snapshot" "test" {
 	volume_id = "${outscale_volume.test.id}"
+
+	tags = {
+	  key = "Name"
+	  value = "Terraform-Snapshot"
+	}
 }
 `
 
