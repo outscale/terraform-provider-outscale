@@ -427,8 +427,8 @@ func getOAPIPrivateIPs(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
 
 	for _, p := range privateIPs {
 		r := map[string]interface{}{
-			"is_primary": p.IsPrimary,
-			// "link_public_ip":   getOAPILinkPublicIP(p.LinkPublicIp),
+			"is_primary":       p.IsPrimary,
+			"link_public_ip":   getOAPILinkPublicIP(p.LinkPublicIp),
 			"private_dns_name": p.PrivateDnsName,
 			"private_ip":       p.PrivateIp,
 		}
@@ -446,17 +446,17 @@ func getOAPIVMNetworkInterfaceSet(nics []oapi.NicLight) (res []map[string]interf
 				"account_id":             nic.AccountId,
 				"description":            nic.Description,
 				"is_source_dest_checked": nic.IsSourceDestChecked,
-				// "link_nic":               getOAPILinkNic(nic.LinkNic),
-				// "link_public_ip":         getOAPILinkPublicIP(nic.LinkPublicIp),
-				"mac_address":        nic.MacAddress,
-				"net_id":             nic.NetId,
-				"nic_id":             nic.NicId,
-				"private_dns_name":   nic.PrivateDnsName,
-				"private_ips":        getOAPIPrivateIPs(nic.PrivateIps),
-				"security_groups":    securityGroups,
-				"security_group_ids": securityGroupIds,
-				"state":              nic.State,
-				"subnet_id":          nic.SubnetId,
+				"link_nic":               getOAPILinkNic(nic.LinkNic),
+				"link_public_ip":         getOAPILinkPublicIP(nic.LinkPublicIp),
+				"mac_address":            nic.MacAddress,
+				"net_id":                 nic.NetId,
+				"nic_id":                 nic.NicId,
+				"private_dns_name":       nic.PrivateDnsName,
+				"private_ips":            getOAPIPrivateIPs(nic.PrivateIps),
+				"security_groups":        securityGroups,
+				"security_group_ids":     securityGroupIds,
+				"state":                  nic.State,
+				"subnet_id":              nic.SubnetId,
 			})
 		}
 	}
