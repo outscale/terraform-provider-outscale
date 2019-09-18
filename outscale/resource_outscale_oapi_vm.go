@@ -252,7 +252,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups_names": {
