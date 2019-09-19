@@ -934,10 +934,15 @@ func expandPrivatePublicIps(p *schema.Set) []oapi.PrivateIpLight {
 }
 
 func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
-	return oapi.Placement{
-		SubregionName: d.Get("placement.subregion_name").(string),
-		Tenancy:       d.Get("placement.tenancy").(string),
+	placement := d.Get("placement").(*schema.Set).List()
+	res := oapi.Placement{}
+
+	for _, pla := range placement {
+		p := pla.(map[string]interface{})
+		res.SubregionName = p["subregion_name"].(string)
+		res.Tenancy = p["tenancy"].(string)
 	}
+	return res
 }
 
 // InstanceStateOApiRefreshFunc ...
