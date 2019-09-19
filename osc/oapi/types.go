@@ -148,7 +148,7 @@ type BsuCreated struct {
 
 // implements the service definition of BsuToCreate
 type BsuToCreate struct {
-	DeleteOnVmDeletion bool   `json:"DeleteOnVmDeletion,omitempty"`
+	DeleteOnVmDeletion *bool  `json:"DeleteOnVmDeletion,omitempty"`
 	Iops               int64  `json:"Iops,omitempty"`
 	SnapshotId         string `json:"SnapshotId,omitempty"`
 	VolumeSize         int64  `json:"VolumeSize,omitempty"`
