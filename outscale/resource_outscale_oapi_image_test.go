@@ -18,6 +18,7 @@ import (
 
 func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
 	isOapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -36,7 +37,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfigBasic(rInt),
+				Config: testAccOAPIImageConfigBasic(omi, "c4.large", rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
 					testAccCheckState("outscale_image.foo"),
@@ -173,21 +174,20 @@ func testAccCheckOAPIImageExists(n string, ami *oapi.Image) resource.TestCheckFu
 	}
 }
 
-func testAccOAPIImageConfigBasic(rInt int) string {
+func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 	return fmt.Sprintf(`
-#resource "outscale_vm" "basic" {
-#	image_id = "ami-b4bd8de2"
-#	vm_type = "t2.micro"
-#	keypair_name = "terraform-basic"
-#	#security_group_ids = ["sg-6ed31f3e"]
-#}
+		resource "outscale_vm" "basic" {
+			image_id			      = "%s"
+			vm_type             = "%s"
+			keypair_name		    = "terraform-basic"
+			#security_group_ids = ["sg-6ed31f3e"]
+		}
 
-resource "outscale_image" "foo" {
-	image_name = "tf-testing-%d"
-	#vm_id = "${outscale_vm.basic.id}"
-	vm_id = "i-b69de1d9"
-	no_reboot = "true"
-	description = "terraform testing"
-}
-	`, rInt)
+		resource "outscale_image" "foo" {
+			image_name  = "tf-testing-%d"
+			vm_id       = "${outscale_vm.basic.id}"
+			no_reboot   = "true"
+			description = "terraform testing"
+		}
+	`, omi, vmType, rInt)
 }
