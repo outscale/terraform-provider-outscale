@@ -502,15 +502,24 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			image_id              = "%[1]s"
 			vm_type               = "%[2]s"
 			keypair_name          = "terraform-basic"
-			block_device_mappings = [
+	    block_device_mappings = [
+				{
+					device_name = "/dev/sdb"
+					bsu = {
+						volume_size=15
+						volume_type = "gp2"
+						snapshot_id = "${outscale_snapshot.snapshot.id}"
+						delete_on_vm_deletion = true
+					}
+				},
 				{
 					device_name = "/dev/sdc"
-					bsu         = {
-						volume_size           = 22
-						volume_type           = "io1"
-						iops                  = 150
-						delete_on_vm_deletion = true
+					bsu = {
+						volume_size=22
+						volume_type = "io1"
+						iops      = 150
 						snapshot_id = "${outscale_snapshot.snapshot.id}"
+						delete_on_vm_deletion = false
 					}
 				}
 			]
