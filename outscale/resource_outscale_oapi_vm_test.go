@@ -48,7 +48,6 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 	var server oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
-	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -59,7 +58,7 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, "c4.large", region),
+				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -407,7 +406,7 @@ func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oapi.Vm, omi str
 	}
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType string, region string) string {
+func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -420,16 +419,18 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType string, region string) st
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			           = "%s"
-			vm_type                  = "%s"
-			keypair_name		         = "terraform-basic"
-			placement_subregion_name = "%sa"
-			subnet_id                ="${outscale_subnet.outscale_subnet.subnet_id}"
-			private_ips              = ["10.0.0.12"]
+			image_id			 = "%s"
+			vm_type        = "%s"
+			keypair_name	 = "terraform-basic"
+			placement      =  {
+				subregion_name = "%sa"
+			}
+			subnet_id      ="${outscale_subnet.outscale_subnet.subnet_id}"
+			private_ips    = ["10.0.0.12"]
 		}`, omi, vmType, region)
 }
 
-func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region string) string {
+func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
@@ -456,7 +457,6 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 			vm_type                  = "%s"
 			keypair_name		         = "terraform-basic"
 			# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
-			# placement_subregion_name = "%sa"
 			nics = [
 				{
 					# delete_on_vm_deletion      = false
@@ -471,58 +471,62 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 				  	{
 				  		private_ip = "10.0.0.123"
 				  		is_primary = true   
+						},
+						{
+				  		private_ip = "10.0.0.124"
+				  		is_primary = false   
 				  	}
 				  ]
 				}
 			]
-		}`, omi, vmType, region)
+		}`, omi, vmType)
 }
 
 func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "basic" {
-  image_id = "%s"
-  vm_type = "%s"
-  keypair_name = "terraform-basic"
-  security_group_ids = ["sg-f4b1c2f8"]
-  placement_subregion_name = "%sb"
-  
-
-}`, omi, vmType, region)
+		resource "outscale_vm" "basic" {
+			image_id           = "%s"
+			vm_type            = "%s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement          =  {
+				subregion_name = "%sb"
+			}
+		}
+	`, omi, vmType, region)
 }
 
 func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region string) string {
 	return fmt.Sprintf(`
-	resource "outscale_net" "outscale_net" {
-		ip_range = "10.0.0.0/16"
-	  }
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}
 	  
 	  resource "outscale_subnet" "outscale_subnet" {
-		subregion_name = "%[3]sa"
-		ip_range       = "10.0.0.0/16"
-		net_id         = "${outscale_net.outscale_net.net_id}"
+			subregion_name = "%[3]sa"
+			ip_range       = "10.0.0.0/16"
+			net_id         = "${outscale_net.outscale_net.net_id}"
 	  }
 	  
 	  resource "outscale_security_group" "outscale_security_group" {
-		count = 1
-	  
-		description         = "test group"
-		security_group_name = "sg1-test-group_test-net"
-		net_id              = "${outscale_net.outscale_net.net_id}"
+			count = 1
+			description         = "test group"
+			security_group_name = "sg1-test-group_test-net"
+			net_id              = "${outscale_net.outscale_net.net_id}"
 	  }
 	  
-	  
 	  resource "outscale_vm" "basic" {
-		image_id                 = "%[1]s"
-		vm_type                  = "%[2]s"
-		keypair_name             = "terraform-basic"
-		security_group_ids       = ["${outscale_security_group.outscale_security_group.security_group_id}"]
-		placement_subregion_name = "%sa"
-		placement_tenancy        = "default"
-		subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
-	  
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
+			placement          =  {
+				subregion_name = "%sa"
+				tenancy        = "default"
+			}
 	  }	  
-`, omi, vmType, region)
+	`, omi, vmType, region)
 }
 
 func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
