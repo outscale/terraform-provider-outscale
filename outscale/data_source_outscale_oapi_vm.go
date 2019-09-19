@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -120,8 +121,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 		return err
 	}
 	set("os_family", instance.OsFamily)
-	set("placement.subregion_name", instance.Placement.SubregionName)
-	set("placement.tenancy", instance.Placement.Tenancy)
+	set("placement", getOAPIVMPlacement(instance.Placement))
 	set("private_dns_name", instance.PrivateDnsName)
 	set("private_ip", instance.PrivateIp)
 	set("product_codes", instance.ProductCodes)
@@ -143,6 +143,20 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
 
 	return set("vm_type", instance.VmType)
+}
+
+func getOAPIVMPlacement(placement oapi.Placement) *schema.Set {
+	res := &schema.Set{
+		F: func(v interface{}) int {
+			return hashcode.String("0")
+		},
+	}
+
+	res.Add(map[string]interface{}{
+		"subregion_name": placement.SubregionName,
+		"tenancy":        placement.Tenancy,
+	})
+	return res
 }
 
 func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCreated) []map[string]interface{} {
