@@ -11,7 +11,7 @@ require (
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/davecgh/go-spew v1.1.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.0.0 // indirect
 	github.com/hashicorp/errwrap v0.0.0-20141028054710-7554cd9344ce
@@ -43,6 +43,7 @@ require (
 	github.com/outscale/osc-go v0.0.2
 	github.com/posener/complete v0.0.0-20171104095702-dc2bc5a81acc // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/spf13/cast v1.3.0
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	github.com/zclconf/go-cty v0.0.0-20180106055834-709e4033eeb0 // indirect

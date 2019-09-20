@@ -3,7 +3,6 @@ package outscale
 import (
 	"crypto/tls"
 	"net/http"
-	"os"
 
 	"github.com/outscale/osc-go/oapi"
 
@@ -66,14 +65,12 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 
-	u := os.Getenv("OUTSCALE_OAPI_URL")
-
 	oapicfg := &oapi.Config{
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
 		Region:    c.Region,
 		Service:   "api",
-		URL:       u,
+		URL:       "outscale.com/oapi/latest",
 	}
 
 	skipClient := &http.Client{
