@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -162,9 +163,9 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oapi.Volume
 		res := make([]map[string]interface{}, len(volume.LinkedVolumes))
 		for k, g := range volume.LinkedVolumes {
 			r := make(map[string]interface{})
-			//if g.DeleteOnVmDeletion != "" {
-			r["delete_on_vm_termination"] = g.DeleteOnVmDeletion
-			//}
+			if g.DeleteOnVmDeletion != nil {
+				r["delete_on_vm_termination"] = aws.BoolValue(g.DeleteOnVmDeletion)
+			}
 			if g.DeviceName != "" {
 				r["device"] = g.DeviceName
 			}

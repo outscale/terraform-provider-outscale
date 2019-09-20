@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -13,16 +11,6 @@ import (
 )
 
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
 
 	var i oapi.Vm
 	var v oapi.Volume
@@ -83,7 +71,7 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oapi.Vm, v *oapi.Volume
 
 const testAccOAPIVolumeAttachmentConfig = `
 resource "outscale_vm" "web" {
-	image_id               = "ami-bcfc34e0"
+	image_id               = "ami-fbead1f5"
 	vm_type                = "c4.large"
 	keypair_name           = "integ_sut_keypair"
 	security_group_ids     = ["sg-6ed31f3e"]
