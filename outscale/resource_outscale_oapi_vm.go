@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -287,6 +288,9 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				Set: func(v interface{}) int {
+					return hashcode.String("0")
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"subregion_name": {
@@ -934,15 +938,11 @@ func expandPrivatePublicIps(p *schema.Set) []oapi.PrivateIpLight {
 }
 
 func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
-	placement := d.Get("placement").(*schema.Set).List()
-	res := oapi.Placement{}
-
-	for _, pla := range placement {
-		p := pla.(map[string]interface{})
-		res.SubregionName = p["subregion_name"].(string)
-		res.Tenancy = p["tenancy"].(string)
+	placement := d.Get("placement").(*schema.Set).List()[0].(map[string]interface{})
+	return oapi.Placement{
+		SubregionName: placement["subregion_name"].(string),
+		Tenancy:       placement["tenancy"].(string),
 	}
-	return res
 }
 
 // InstanceStateOApiRefreshFunc ...
