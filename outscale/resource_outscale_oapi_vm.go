@@ -11,13 +11,15 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+
+	"github.com/spf13/cast"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVMCreate,
 		Read:   resourceOAPIVMRead,
-		Update: resourceOAPIVMAttributesUpdate,
+		Update: resourceOAPIVMUpdate,
 		Delete: resourceOAPIVMDelete,
 
 		Timeouts: &schema.ResourceTimeout{
@@ -26,7 +28,464 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getOApiVMSchema(),
+		Schema: map[string]*schema.Schema{
+			"block_device_mappings": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bsu": {
+							Type:     schema.TypeMap,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Optional: true,
+									},
+									"iops": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
+									"snapshot_id": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+									"volume_size": {
+										Type:     schema.TypeInt,
+										Optional: true,
+									},
+									"volume_type": {
+										Type:     schema.TypeString,
+										Optional: true,
+									},
+								},
+							},
+						},
+						"device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"no_device": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"virtual_device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"bsu_optimized": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"client_token": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"deletion_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"image_id": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+			},
+			"keypair_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"nics": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"delete_on_vm_deletion": {
+							Type:     schema.TypeBool,
+							Computed: true,
+							Optional: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+						},
+						"device_number": {
+							Type:     schema.TypeInt,
+							Computed: true,
+							Optional: true,
+						},
+						"nic_id": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"private_ips": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_primary": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Computed: true,
+									},
+									"link_public_ip": {
+										Type:     schema.TypeSet,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"public_dns_name": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"public_ip": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"public_ip_account_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+											},
+										},
+									},
+									"private_dns_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"private_ip": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"secondary_private_ip_count": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+						"account_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
+						"is_source_dest_checked": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+
+						"subnet_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+						},
+						"link_nic": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"device_number": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"link_nic_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"link_public_ip": {
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"public_dns_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_ip": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"public_ip_account_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"net_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+
+						"private_dns_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"security_group_ids": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"security_groups_names": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"security_groups": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"security_group_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"placement": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"subregion_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"tenancy": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"private_ips": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"security_group_ids": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"security_group_names": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"subnet_id": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+			},
+
+			"security_groups": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"security_group_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"security_group_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"architecture": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"block_device_mappings_created": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bsu": {
+							Type:     schema.TypeMap,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"link_date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"volume_id": {
+										Type:     schema.TypeFloat,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"hypervisor": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"is_source_dest_checked": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
+			"launch_number": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"os_family": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"private_dns_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"product_codes": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"public_dns_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"public_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"reservation_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"root_device_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"root_device_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state_reason": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+				Computed: true,
+			},
+			"user_data": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"vm_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+			},
+			"vm_initiated_shutdown_behavior": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"vm_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
 	}
 }
 
@@ -121,20 +580,17 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	filters := oapi.FiltersVm{
-		VmIds: []string{d.Id()},
-	}
-
-	input := &oapi.ReadVmsRequest{
-		Filters: filters,
-	}
 
 	var resp *oapi.ReadVmsResponse
 	var rs *oapi.POST_ReadVmsResponses
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		rs, err = conn.POST_ReadVms(*input)
+		rs, err = conn.POST_ReadVms(*&oapi.ReadVmsRequest{
+			Filters: oapi.FiltersVm{
+				VmIds: []string{d.Id()},
+			},
+		})
 
 		return resource.RetryableError(err)
 	})
@@ -167,6 +623,158 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceDataAttrSetter(d, &instance)
+}
+
+func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	id := d.Get("vm_id").(string)
+
+	var stateConf *resource.StateChangeConf
+	var err error
+	if d.HasChange("vm_type") && !d.IsNewResource() ||
+		d.HasChange("user_data") && !d.IsNewResource() ||
+		d.HasChange("bsu_optimized") && !d.IsNewResource() {
+		stateConf, err = oapiStopInstance(id, conn)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("vm_type") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:   id,
+			VmType: d.Get("vm_type").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("user_data") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:     id,
+			UserData: d.Get("user_data").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:         id,
+			BsuOptimized: d.Get("bsu_optimized").(bool),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("deletion_protection") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:               id,
+			DeletionProtection: d.Get("deletion_protection").(bool),
+		}
+
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("keypair_name") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:        id,
+			KeypairName: d.Get("keypair_name").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("security_group_ids") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: expandStringValueList(d.Get("security_group_ids").([]interface{})),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("security_group_names") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:             id,
+			SecurityGroupIds: expandStringValueList(d.Get("security_group_names").([]interface{})),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:                        id,
+			VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
+			IsSourceDestChecked: d.Get("is_source_dest_checked").(bool),
+		}
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
+		maps := d.Get("block_device_mappings").(*schema.Set).List()
+		mappings := []oapi.BlockDeviceMappingVmUpdate{}
+
+		for _, m := range maps {
+			f := m.(map[string]interface{})
+			mapping := oapi.BlockDeviceMappingVmUpdate{
+				DeviceName:        f["device_name"].(string),
+				NoDevice:          f["no_device"].(string),
+				VirtualDeviceName: f["virtual_device_name"].(string),
+			}
+
+			e := f["bsu"].(map[string]interface{})
+
+			bsu := oapi.BsuToUpdateVm{
+				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				VolumeId:           e["volume_id"].(string),
+			}
+
+			mapping.Bsu = bsu
+
+			mappings = append(mappings, mapping)
+		}
+
+		opts := &oapi.UpdateVmRequest{
+			VmId:                id,
+			BlockDeviceMappings: mappings,
+		}
+
+		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	d.Partial(false)
+
+	if err := oapiStartInstance(id, stateConf, conn); err != nil {
+		return err
+	}
+
+	return resourceOAPIVMRead(d, meta)
 }
 
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
@@ -217,105 +825,104 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getOApiVMSchema() map[string]*schema.Schema {
-	wholeSchema := map[string]*schema.Schema{}
-
-	attrsSchema := getOApiVMAttributesSchema()
-
-	for k, v := range attrsSchema {
-		wholeSchema[k] = v
-	}
-
-	wholeSchema["request_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-
-	return wholeSchema
-}
-
-func buildCreateVmsRequest(
-	d *schema.ResourceData, meta interface{}) (*oapi.CreateVmsRequest, error) {
-	conn := meta.(*OutscaleClient).OAPI
-
+func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.CreateVmsRequest, error) {
 	request := &oapi.CreateVmsRequest{
-		DeletionProtection:          d.Get("deletion_protection").(bool),
+		BlockDeviceMappings:         expandBlockDeviceOApiMappings(d),
 		BsuOptimized:                d.Get("bsu_optimized").(bool),
+		ClientToken:                 d.Get("client_token").(string),
+		DeletionProtection:          d.Get("deletion_protection").(bool),
 		ImageId:                     d.Get("image_id").(string),
-		VmType:                      d.Get("vm_type").(string),
-		VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
-		UserData:                    d.Get("user_data").(string),
+		KeypairName:                 d.Get("keypair_name").(string),
 		MaxVmsCount:                 int64(1),
 		MinVmsCount:                 int64(1),
+		Nics:                        buildNetworkOApiInterfaceOpts(d),
+		PrivateIps:                  expandStringValueList(d.Get("private_ips").([]interface{})),
+		SecurityGroupIds:            expandStringValueList(d.Get("security_group_ids").([]interface{})),
+		SecurityGroups:              expandStringValueList(d.Get("security_group_names").([]interface{})),
+		SubnetId:                    d.Get("subnet_id").(string),
+		UserData:                    d.Get("user_data").(string),
+		VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
+		VmType:                      d.Get("vm_type").(string),
 	}
 
-	request.Placement = oapi.Placement{}
-
-	if v, ok := d.GetOk("placement_subregion_name"); ok {
-		request.Placement.SubregionName = v.(string)
+	if _, ok := d.GetOk("placement"); ok {
+		request.Placement = expandOAPIPlacement(d)
 	}
-
-	if v, ok := d.GetOk("placement_tenancy"); ok {
-		request.Placement.Tenancy = v.(string)
-	}
-
-	sgNames := make([]string, 0)
-	if v := d.Get("security_group_names"); v != nil {
-		sgNames = expandStringValueList(v.([]interface{}))
-	}
-
-	sgIds := make([]string, 0)
-	if v := d.Get("security_group_ids"); v != nil {
-		sgIds = expandStringValueList(v.([]interface{}))
-	}
-
-	privateIPS := make([]string, 0)
-	if v := d.Get("private_ips"); v != nil {
-		privateIPS = expandStringValueList(v.([]interface{}))
-	}
-
-	subnetID, hasSubnet := d.GetOk("subnet_id")
-	networkInterfaces, interfacesOk := d.GetOk("nics")
-
-	if hasSubnet && interfacesOk {
-		return nil, errors.New("Error you need to specify only one: subnet_id or nics")
-	}
-
-	if interfacesOk {
-		request.Nics = buildNetworkOApiInterfaceOpts(d, sgNames, networkInterfaces)
-	}
-	if hasSubnet {
-		request.SubnetId = subnetID.(string)
-		request.SecurityGroupIds = sgIds
-		request.SecurityGroups = sgNames
-		request.PrivateIps = privateIPS
-	}
-
-	if v, ok := d.GetOk("private_ip"); ok {
-		request.PrivateIps = []string{v.(string)}
-	}
-
-	if v, ok := d.GetOk("keypair_name"); ok {
-		request.KeypairName = v.(string)
-	}
-
-	var blockDevices []oapi.BlockDeviceMappingVmCreation
-	var err error
-	blockDevices, err = readBlockDeviceOApiMappingsFromConfig(d, conn)
-	if err != nil {
-		return nil, err
-	}
-	if len(blockDevices) > 0 {
-		request.BlockDeviceMappings = blockDevices
-	}
-
 	return request, nil
 }
 
-func expandPrivatePublicIps(privateIPS *schema.Set) []oapi.PrivateIpLight {
-	privatePublicIPS := make([]oapi.PrivateIpLight, len(privateIPS.List()))
+func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMappingVmCreation {
 
-	for i, v := range privateIPS.List() {
+	block := d.Get("block_device_mappings").([]interface{})
+	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, len(block))
+
+	for i, v := range block {
+		value := v.(map[string]interface{})
+		bsu := value["bsu"].(map[string]interface{})
+
+		deleteOnVMDeletion := (cast.ToBool(bsu["delete_on_vm_deletion"]) == true)
+		blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
+
+		if iops, ok := bsu["iops"]; ok {
+			blockDevices[i].Bsu.Iops = cast.ToInt64(iops)
+		}
+		if snapshotID, ok := bsu["snapshot_id"]; ok {
+			blockDevices[i].Bsu.SnapshotId = cast.ToString(snapshotID)
+		}
+		if volumeSize, ok := bsu["volume_size"]; ok {
+			blockDevices[i].Bsu.VolumeSize = cast.ToInt64(volumeSize)
+		}
+		if volumeType, ok := bsu["volume_type"]; ok {
+			blockDevices[i].Bsu.VolumeType = cast.ToString(volumeType)
+		}
+		if deviceName, ok := value["device_name"]; ok {
+			blockDevices[i].DeviceName = cast.ToString(deviceName)
+		}
+		if noDevice, ok := value["no_device"]; ok {
+			blockDevices[i].NoDevice = cast.ToString(noDevice)
+		}
+		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
+			blockDevices[i].VirtualDeviceName = cast.ToString(virtualDeviceName)
+		}
+	}
+	return blockDevices
+}
+
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oapi.NicForVmCreation {
+
+	nics := d.Get("nics").([]interface{})
+	networkInterfaces := []oapi.NicForVmCreation{}
+
+	for _, v := range nics {
+		nic := v.(map[string]interface{})
+
+		ni := oapi.NicForVmCreation{
+			DeleteOnVmDeletion: nic["delete_on_vm_deletion"].(bool),
+			Description:        nic["description"].(string),
+			DeviceNumber:       int64(nic["device_number"].(int)),
+		}
+
+		ni.PrivateIps = expandPrivatePublicIps(nic["private_ips"].(*schema.Set))
+		ni.SubnetId = nic["subnet_id"].(string)
+		ni.SecurityGroupIds = expandStringValueList(nic["security_group_ids"].([]interface{}))
+		ni.SecondaryPrivateIpCount = int64(nic["secondary_private_ip_count"].(int))
+		ni.NicId = nic["nic_id"].(string)
+
+		if v, ok := d.GetOk("private_ip"); ok {
+			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
+				PrivateIp: v.(string),
+			}}
+		}
+		networkInterfaces = append(networkInterfaces, ni)
+	}
+
+	return networkInterfaces
+}
+
+func expandPrivatePublicIps(p *schema.Set) []oapi.PrivateIpLight {
+	privatePublicIPS := make([]oapi.PrivateIpLight, len(p.List()))
+
+	for i, v := range p.List() {
 		value := v.(map[string]interface{})
 		privatePublicIPS[i].IsPrimary = value["is_primary"].(bool)
 		privatePublicIPS[i].PrivateIp = value["private_ip"].(string)
@@ -323,107 +930,11 @@ func expandPrivatePublicIps(privateIPS *schema.Set) []oapi.PrivateIpLight {
 	return privatePublicIPS
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
-	networkInterfaces := []oapi.NicForVmCreation{}
-	vL := nInterfaces.([]interface{})
-
-	for _, v := range vL {
-		ini := v.(map[string]interface{})
-
-		ni := oapi.NicForVmCreation{
-			DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
-			Description:        ini["description"].(string),
-			DeviceNumber:       int64(ini["device_number"].(int)),
-		}
-
-		ni.PrivateIps = expandPrivatePublicIps(ini["private_ips"].(*schema.Set))
-		ni.SubnetId = ini["subnet_id"].(string)
-		ni.SecurityGroupIds = expandStringValueList(ini["security_group_ids"].([]interface{}))
-		ni.SecondaryPrivateIpCount = int64(ini["secondary_private_ip_count"].(int))
-		ni.NicId = ini["nic_id"].(string)
-
-		if v, ok := d.GetOk("private_ip"); ok {
-			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
-				PrivateIp: v.(string),
-			}}
-		}
-
-		networkInterfaces = append(networkInterfaces, ni)
+func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
+	return oapi.Placement{
+		SubregionName: d.Get("placement.subregion_name").(string),
+		Tenancy:       d.Get("placement.tenancy").(string),
 	}
-
-	return networkInterfaces
-}
-
-// func buildNetworkOApiInterfaceOpts(d *schema.ResourceData, groups []string, nInterfaces interface{}) []oapi.NicForVmCreation {
-// 	networkInterfaces := []oapi.NicForVmCreation{}
-// 	subnet, hasSubnet := d.GetOk("subnet_id")
-
-// 	if hasSubnet {
-// 		ni := oapi.NicForVmCreation{
-// 			DeviceNumber:     int64(0),
-// 			SubnetId:         subnet.(string),
-// 			SecurityGroupIds: groups,
-// 		}
-
-// 		if v, ok := d.GetOk("private_ip"); ok {
-// 			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
-// 				PrivateIp: v.(string),
-// 			}}
-// 		}
-
-// 		networkInterfaces = append(networkInterfaces, ni)
-// 	} else {
-// 		// If we have manually specified network interfaces, build and attach those here.
-// 		vL := nInterfaces.(*schema.Set).List()
-// 		for _, v := range vL {
-// 			ini := v.(map[string]interface{})
-// 			ni := oapi.NicForVmCreation{
-// 				NicId:              ini["nic_id"].(string),
-// 				DeviceNumber:       int64(ini["nic_sort_number"].(int)),
-// 				DeleteOnVmDeletion: ini["delete_on_vm_deletion"].(bool),
-// 			}
-// 			networkInterfaces = append(networkInterfaces, ni)
-// 		}
-// 	}
-
-// 	return networkInterfaces
-// }
-
-func readBlockDeviceOApiMappingsFromConfig(
-	d *schema.ResourceData, conn *oapi.Client) ([]oapi.BlockDeviceMappingVmCreation, error) {
-	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, 0)
-
-	if v, ok := d.GetOk("bsu"); ok {
-		vL := v.(*schema.Set).List()
-		for _, v := range vL {
-			bd := v.(map[string]interface{})
-			ebs := oapi.BsuToCreate{
-				DeleteOnVmDeletion: bd["delete_on_vm_deletion"].(bool),
-			}
-
-			if v, ok := bd["snapshot_id"].(string); ok && v != "" {
-				ebs.SnapshotId = v
-			}
-			if v, ok := bd["volume_size"].(int); ok && v != 0 {
-				ebs.VolumeSize = int64(v)
-			}
-			if v, ok := bd["vm_type"].(string); ok && v != "" {
-				ebs.VolumeType = v
-			}
-			if v, ok := bd["iops"].(int); ok && v > 0 {
-				ebs.Iops = int64(v)
-			}
-
-			blockDevice := oapi.BlockDeviceMappingVmCreation{
-				Bsu:        ebs,
-				DeviceName: bd["device_name"].(string),
-			}
-
-			blockDevices = append(blockDevices, blockDevice)
-		}
-	}
-
-	return blockDevices, nil
 }
 
 // InstanceStateOApiRefreshFunc ...

@@ -140,6 +140,35 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
+	var server oapi.Vm
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, "c4.large", region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "c4.large"),
+					testAccCheckState("outscale_vm.basic"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
@@ -398,7 +427,8 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string, region st
 					# nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
 					# secondary_private_ip_count = 1
 					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					subnet_id                  = "${outscale_subnet.outscale_subnet.subnet_id}"
+					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					
+					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
 				  private_ips                  = [ 
 				  	{
 				  		private_ip = "10.0.0.123"
@@ -455,6 +485,46 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	  
 	  }	  
 `, omi, vmType, region)
+}
+
+func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "external1" {
+			subregion_name = "eu-west-2a"
+			size = 1
+		}
+		
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.external1.id}"
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id              = "%[1]s"
+			vm_type               = "%[2]s"
+			keypair_name          = "terraform-basic"
+	    block_device_mappings = [
+				{
+					device_name = "/dev/sdb"
+					bsu = {
+						volume_size=15
+						volume_type = "gp2"
+						snapshot_id = "${outscale_snapshot.snapshot.id}"
+						delete_on_vm_deletion = true
+					}
+				},
+				{
+					device_name = "/dev/sdc"
+					bsu = {
+						volume_size=22
+						volume_type = "io1"
+						iops      = 150
+						snapshot_id = "${outscale_snapshot.snapshot.id}"
+						delete_on_vm_deletion = false
+					}
+				}
+			]
+		}
+	`, omi, vmType, region)
 }
 
 func assertNotEqual(t *testing.T, a interface{}, b interface{}, message string) {

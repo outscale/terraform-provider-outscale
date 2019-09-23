@@ -548,7 +548,7 @@ func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]i
 		}
 		if !reflect.DeepEqual(v.Bsu, oapi.Bsu{}) {
 			bsu := map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
+				"delete_on_vm_deletion": fmt.Sprintf("%t", *v.Bsu.DeleteOnVmDeletion),
 				"volume_size":           fmt.Sprintf("%d", v.Bsu.VolumeSize),
 				"volume_type":           v.Bsu.VolumeType,
 			}

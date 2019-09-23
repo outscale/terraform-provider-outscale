@@ -102,7 +102,7 @@ func resourceDataAttrSetter(d *schema.ResourceData, instance *oapi.Vm) error {
 func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
 	set("architecture", instance.Architecture)
-	if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+	if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
@@ -115,10 +115,13 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("keypair_name", instance.KeypairName)
 	set("launch_number", instance.LaunchNumber)
 	set("net_id", instance.NetId)
-	set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics))
+	if err := set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics)); err != nil {
+		log.Printf("[DEBUG] NICS ERR %+v", err)
+		return err
+	}
 	set("os_family", instance.OsFamily)
-	set("placement_subregion_name", instance.Placement.SubregionName)
-	set("placement_tenancy", instance.Placement.Tenancy)
+	set("placement.subregion_name", instance.Placement.SubregionName)
+	set("placement.tenancy", instance.Placement.Tenancy)
 	set("private_dns_name", instance.PrivateDnsName)
 	set("private_ip", instance.PrivateIp)
 	set("product_codes", instance.ProductCodes)
@@ -394,14 +397,8 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"block_device_mappings": {
 			Type:     schema.TypeList,
 			Optional: true,
-			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-						Computed: true,
-					},
 					"bsu": {
 						Type:     schema.TypeMap,
 						Optional: true,
@@ -411,6 +408,55 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								"delete_on_vm_deletion": {
 									Type:     schema.TypeBool,
 									Optional: true,
+								},
+								"iops": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+								"volume_size": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"volume_type": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+							},
+						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"no_device": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"virtual_device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"block_device_mappings_created": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
 									Computed: true,
 								},
 								"link_date": {
@@ -423,11 +469,14 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 								},
 								"volume_id": {
 									Type:     schema.TypeFloat,
-									Optional: true,
 									Computed: true,
 								},
 							},
 						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
 					},
 				},
 			},
@@ -488,6 +537,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 		"nics": {
 			Type:     schema.TypeList,
 			Optional: true,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"delete_on_vm_deletion": {
@@ -643,7 +693,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
 					"security_groups": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
