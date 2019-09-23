@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,16 +10,6 @@ import (
 )
 
 func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
 	var group oapi.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -46,7 +34,6 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 resource "outscale_security_group_rule" "outscale_security_group_rule" {
 	flow              = "Inbound"
 	security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
-
 	from_port_range = "0"
 	to_port_range = "0"
 	ip_protocol = "tcp"
@@ -60,7 +47,7 @@ resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
 	ip_protocol = "tcp"
 	ip_range = "46.231.147.8/32"
 	security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
-	}
+}
 
 resource "outscale_security_group" "outscale_security_group" {
 	description         = "test group"
