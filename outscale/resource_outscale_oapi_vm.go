@@ -565,6 +565,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	//Check if source dest check is enabled.
 	if v, ok := d.GetOk("is_source_dest_checked"); ok {
+
 		opts := &oapi.UpdateVmRequest{
 			VmId:                vm.VmId,
 			IsSourceDestChecked: v.(bool),
@@ -674,9 +675,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("deletion_protection") && !d.IsNewResource() {
+		deletionProtection := d.Get("deletion_protection").(bool)
 		opts := &oapi.UpdateVmRequest{
 			VmId:               id,
-			DeletionProtection: d.Get("deletion_protection").(bool),
+			DeletionProtection: &deletionProtection,
 		}
 
 		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
@@ -830,7 +832,6 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.Crea
 		BlockDeviceMappings:         expandBlockDeviceOApiMappings(d),
 		BsuOptimized:                d.Get("bsu_optimized").(bool),
 		ClientToken:                 d.Get("client_token").(string),
-		DeletionProtection:          d.Get("deletion_protection").(bool),
 		ImageId:                     d.Get("image_id").(string),
 		KeypairName:                 d.Get("keypair_name").(string),
 		MaxVmsCount:                 int64(1),
@@ -844,6 +845,9 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.Crea
 		VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
 		VmType:                      d.Get("vm_type").(string),
 	}
+
+	deletionProtection := cast.ToBool(d.Get("deletion_protection")) == true
+	request.DeletionProtection = &deletionProtection
 
 	if _, ok := d.GetOk("placement"); ok {
 		request.Placement = expandOAPIPlacement(d)
