@@ -419,14 +419,12 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			 = "%s"
-			vm_type        = "%s"
-			keypair_name	 = "terraform-basic"
-			placement      =  {
-				subregion_name = "%sa"
-			}
-			subnet_id      ="${outscale_subnet.outscale_subnet.subnet_id}"
-			private_ips    = ["10.0.0.12"]
+			image_id			           = "%s"
+			vm_type                  = "%s"
+			keypair_name	           = "terraform-basic"
+			placement_subregion_name = "%sa"
+			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			private_ips              =  ["10.0.0.12"]
 		}`, omi, vmType, region)
 }
 
@@ -489,9 +487,7 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
 			vm_type            = "%s"
 			keypair_name       = "terraform-basic"
 			security_group_ids = ["sg-f4b1c2f8"]
-			placement          =  {
-				subregion_name = "%sb"
-			}
+			placement_subregion_name = "%sb"
 		}
 	`, omi, vmType, region)
 }
@@ -516,15 +512,13 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	  }
 	  
 	  resource "outscale_vm" "basic" {
-			image_id           = "%[1]s"
-			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
-			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
-			placement          =  {
-				subregion_name = "%sa"
-				tenancy        = "default"
-			}
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			placement_subregion_name = "%sa"
+			placement_tenancy        = "default"
 	  }	  
 	`, omi, vmType, region)
 }
