@@ -388,7 +388,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 
 func getOAPILinkNicLight(l oapi.LinkNicLight) map[string]interface{} {
 	return map[string]interface{}{
-		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
+		"delete_on_vm_deletion": strconv.FormatBool(*l.DeleteOnVmDeletion),
 		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
 		"link_nic_id":           l.LinkNicId,
 		"state":                 l.State,

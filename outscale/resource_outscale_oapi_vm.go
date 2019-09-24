@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/outscale/osc-go/oapi"
 	"github.com/spf13/cast"
@@ -807,7 +807,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 			e := f["bsu"].(map[string]interface{})
 
 			bsu := oapi.BsuToUpdateVm{
-				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				DeleteOnVmDeletion: aws.Bool(e["delete_on_vm_deletion"].(bool)),
 				VolumeId:           e["volume_id"].(string),
 			}
 
