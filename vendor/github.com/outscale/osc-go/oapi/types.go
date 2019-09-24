@@ -596,14 +596,14 @@ type CreateSecurityGroupResponse struct {
 type CreateSecurityGroupRuleRequest struct {
 	DryRun                       bool                `json:"DryRun,omitempty"`
 	Flow                         string              `json:"Flow,omitempty"`
-	FromPortRange                int64               `json:"FromPortRange,omitempty"`
+	FromPortRange                int64               `json:"FromPortRange"`
 	IpProtocol                   string              `json:"IpProtocol,omitempty"`
 	IpRange                      string              `json:"IpRange,omitempty"`
 	Rules                        []SecurityGroupRule `json:"Rules,omitempty"`
 	SecurityGroupAccountIdToLink string              `json:"SecurityGroupAccountIdToLink,omitempty"`
 	SecurityGroupId              string              `json:"SecurityGroupId,omitempty"`
 	SecurityGroupNameToLink      string              `json:"SecurityGroupNameToLink,omitempty"`
-	ToPortRange                  int64               `json:"ToPortRange,omitempty"`
+	ToPortRange                  int64               `json:"ToPortRange"`
 }
 
 // implements the service definition of CreateSecurityGroupRuleResponse
@@ -727,7 +727,7 @@ type CreateVmsRequest struct {
 	BlockDeviceMappings         []BlockDeviceMappingVmCreation `json:"BlockDeviceMappings,omitempty"`
 	BsuOptimized                bool                           `json:"BsuOptimized,omitempty"`
 	ClientToken                 string                         `json:"ClientToken,omitempty"`
-	DeletionProtection          bool                           `json:"DeletionProtection,omitempty"`
+	DeletionProtection          *bool                          `json:"DeletionProtection,omitempty"`
 	DryRun                      bool                           `json:"DryRun,omitempty"`
 	ImageId                     string                         `json:"ImageId,omitempty"`
 	KeypairName                 string                         `json:"KeypairName,omitempty"`
@@ -3554,7 +3554,7 @@ type UpdateUserResponse struct {
 type UpdateVmRequest struct {
 	BlockDeviceMappings         []BlockDeviceMappingVmUpdate `json:"BlockDeviceMappings,omitempty"`
 	BsuOptimized                bool                         `json:"BsuOptimized,omitempty"`
-	DeletionProtection          bool                         `json:"DeletionProtection,omitempty"`
+	DeletionProtection          *bool                        `json:"DeletionProtection,omitempty"`
 	DryRun                      bool                         `json:"DryRun,omitempty"`
 	IsSourceDestChecked         bool                         `json:"IsSourceDestChecked,omitempty"`
 	KeypairName                 string                       `json:"KeypairName,omitempty"`

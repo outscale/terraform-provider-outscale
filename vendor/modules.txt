@@ -47,7 +47,7 @@ github.com/bgentry/go-netrc/netrc
 github.com/bgentry/speakeasy
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
-# github.com/davecgh/go-spew v1.1.0
+# github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/golang/protobuf v1.0.0
 github.com/golang/protobuf/proto
@@ -149,9 +149,8 @@ github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
-# github.com/outscale/osc-go v0.0.1
+# github.com/outscale/osc-go v0.0.3
 github.com/outscale/osc-go/oapi
-github.com/outscale/osc-go/utils
 # github.com/posener/complete v0.0.0-20171104095702-dc2bc5a81acc
 github.com/posener/complete
 github.com/posener/complete/cmd/install
@@ -159,6 +158,8 @@ github.com/posener/complete/cmd
 github.com/posener/complete/match
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
+# github.com/spf13/cast v1.3.0
+github.com/spf13/cast
 # github.com/ulikunitz/xz v0.5.4
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/xlog
@@ -189,7 +190,7 @@ golang.org/x/crypto/cast5
 golang.org/x/crypto/openpgp/elgamal
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/internal/subtle
-# golang.org/x/net v0.0.0-20190311183353-d8887717615a
+# golang.org/x/net v0.0.0-20190916140828-c8589233b77d
 golang.org/x/net/context
 golang.org/x/net/html
 golang.org/x/net/http2

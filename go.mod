@@ -40,14 +40,12 @@ require (
 	github.com/mitchellh/mapstructure v0.0.0-20180111000720-b4575eea38cc // indirect
 	github.com/mitchellh/reflectwalk v0.0.0-20170726202117-63d60e9d0dbc // indirect
 	github.com/oklog/run v1.0.0 // indirect
-	github.com/outscale/osc-go v0.0.2
+	github.com/outscale/osc-go v0.0.3
 	github.com/posener/complete v0.0.0-20171104095702-dc2bc5a81acc // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/spf13/cast v1.3.0
-	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	github.com/zclconf/go-cty v0.0.0-20180106055834-709e4033eeb0 // indirect
-	golang.org/x/net v0.0.0-20190311183353-d8887717615a // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	google.golang.org/genproto v0.0.0-20180125080656-4eb30f4778ee // indirect
 	google.golang.org/grpc v1.9.2 // indirect

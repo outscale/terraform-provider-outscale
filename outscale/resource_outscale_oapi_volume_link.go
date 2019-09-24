@@ -245,8 +245,6 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		Filters: oapi.FiltersVolume{
 			VolumeIds: []string{d.Get("volume_id").(string)},
 		},
-		//Name:   aws.String("attachment.instance-id"),
-
 	}
 
 	var err error

@@ -15,7 +15,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/signer/v4"
-	"github.com/outscale/osc-go/utils"
 )
 
 type Client struct {
@@ -82,7 +81,7 @@ func (c *Client) Sign(req *http.Request, body []byte) error {
 	reader := strings.NewReader(string(body))
 	timestamp := time.Now()
 	_, err := c.signer.Sign(req, reader, "oapi", c.config.Region, timestamp)
-	utils.DebugRequest(req)
+	
 	return err
 
 }
@@ -93,10 +92,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		log.Printf("[DEBUG] Error in Do Request %s", err)
 	}
-
-	if resp != nil {
-		utils.DebugResponse(resp)
-	} else {
+ else {
 		log.Println("[DEBUG] No response to show.")
 	}
 
@@ -6329,11 +6325,8 @@ func (client *Client) POST_ReadListenerRules(
 	if err != nil {
 		return
 	}
-	utils.DebugRequest(req)
+	
 	resp, err := client.Do(req)
-	if resp != nil {
-		utils.DebugResponse(resp)
-	}
 	if err != nil {
 		return
 	}
@@ -7353,11 +7346,8 @@ func (client *Client) POST_ReadReservedVms(
 	if err != nil {
 		return
 	}
-	utils.DebugRequest(req)
+	
 	resp, err := client.Do(req)
-	if resp != nil {
-		utils.DebugResponse(resp)
-	}
 	if err != nil {
 		return
 	}
@@ -8934,11 +8924,8 @@ func (client *Client) POST_UnlinkInternetService(
 	if err != nil {
 		return
 	}
-	utils.DebugRequest(req)
+	
 	resp, err := client.Do(req)
-	if resp != nil {
-		utils.DebugResponse(resp)
-	}
 	if err != nil {
 		return
 	}
@@ -10381,11 +10368,8 @@ func (client *Client) POST_UpdateVm(
 	if err != nil {
 		return
 	}
-	utils.DebugRequest(req)
+	
 	resp, err := client.Do(req)
-	if resp != nil {
-		utils.DebugResponse(resp)
-	}
 	if err != nil {
 		return
 	}
