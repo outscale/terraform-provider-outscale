@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/signer/v4"
+	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 )
 
 type Client struct {
@@ -81,7 +81,7 @@ func (c *Client) Sign(req *http.Request, body []byte) error {
 	reader := strings.NewReader(string(body))
 	timestamp := time.Now()
 	_, err := c.signer.Sign(req, reader, "oapi", c.config.Region, timestamp)
-	
+
 	return err
 
 }
@@ -91,8 +91,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
 		log.Printf("[DEBUG] Error in Do Request %s", err)
-	}
- else {
+	} else {
 		log.Println("[DEBUG] No response to show.")
 	}
 
@@ -6325,7 +6324,7 @@ func (client *Client) POST_ReadListenerRules(
 	if err != nil {
 		return
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
@@ -7346,7 +7345,7 @@ func (client *Client) POST_ReadReservedVms(
 	if err != nil {
 		return
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
@@ -8924,7 +8923,7 @@ func (client *Client) POST_UnlinkInternetService(
 	if err != nil {
 		return
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
@@ -10368,7 +10367,7 @@ func (client *Client) POST_UpdateVm(
 	if err != nil {
 		return
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return
