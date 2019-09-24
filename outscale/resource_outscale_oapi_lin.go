@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -116,7 +115,7 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading network (%s)", err)
+		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
 	}
 
 	resp = rs.OK

@@ -171,6 +171,10 @@ resource "outscale_subnet" "outscale_subnet" {
 
 resource "outscale_nic" "outscale_nic" {
 	subnet_id = "${outscale_subnet.outscale_subnet.id}"
+	tags {
+		value = "tf-value"
+		key   = "tf-key"
+	}
 }
 
 data "outscale_nic" "outscale_nic" {

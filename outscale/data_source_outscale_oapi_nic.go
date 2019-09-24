@@ -32,8 +32,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 
 			// Attributes
 			"description": &schema.Schema{
-				Type: schema.TypeString,
-
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"private_ip": &schema.Schema{
@@ -205,7 +204,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": tagsSchemaComputed(),
+			"tags": tagsOAPIListSchemaComputed(),
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -270,10 +269,11 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	eni := describeResp.OK.Nics[0]
-	if eni.Description != "" {
-		d.Set("description", eni.Description)
-	}
+
+	d.Set("description", eni.Description)
 	d.Set("nic_id", eni.SubnetId)
+	d.Set("subregion_name", eni.SubregionName)
+	d.Set("subnet_id", eni.SubnetId)
 
 	b := make(map[string]interface{})
 
