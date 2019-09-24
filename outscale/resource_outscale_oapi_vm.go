@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -284,27 +283,15 @@ func resourceOutscaleOApiVM() *schema.Resource {
 					},
 				},
 			},
-			"placement": {
-				Type:     schema.TypeSet,
+			"placement_subregion_name": {
+				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
-				Set: func(v interface{}) int {
-					return hashcode.String("0")
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"subregion_name": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"tenancy": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-					},
-				},
+			},
+			"placement_tenancy": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"private_ips": {
 				Type:     schema.TypeList,
@@ -852,9 +839,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.Crea
 	deletionProtection := cast.ToBool(d.Get("deletion_protection")) == true
 	request.DeletionProtection = &deletionProtection
 
-	if _, ok := d.GetOk("placement"); ok {
-		request.Placement = expandOAPIPlacement(d)
-	}
+	request.Placement = expandOAPIPlacement(d)
 	return request, nil
 }
 
@@ -938,10 +923,9 @@ func expandPrivatePublicIps(p *schema.Set) []oapi.PrivateIpLight {
 }
 
 func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
-	placement := d.Get("placement").(*schema.Set).List()[0].(map[string]interface{})
 	return oapi.Placement{
-		SubregionName: placement["subregion_name"].(string),
-		Tenancy:       placement["tenancy"].(string),
+		SubregionName: d.Get("placement_subregion_name").(string),
+		Tenancy:       d.Get("placement_tenancy").(string),
 	}
 }
 
