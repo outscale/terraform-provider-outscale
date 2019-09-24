@@ -100,9 +100,10 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if v, ok := d.GetOk("deletion_protection"); ok {
+		deletionProtection := v.(bool)
 		opts := &oapi.UpdateVmRequest{
 			VmId:               id,
-			DeletionProtection: v.(bool),
+			DeletionProtection: &deletionProtection,
 		}
 		log.Printf("UPDATE (deletion_protection) %+v => %+v == %+v", ok, d.Get("deletion_protection"), v)
 		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
@@ -246,9 +247,10 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if d.HasChange("deletion_protection") && !d.IsNewResource() {
+		deletionProtection := d.Get("deletion_protection").(bool)
 		opts := &oapi.UpdateVmRequest{
 			VmId:               id,
-			DeletionProtection: d.Get("deletion_protection").(bool),
+			DeletionProtection: &deletionProtection,
 		}
 
 		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
