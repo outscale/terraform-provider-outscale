@@ -169,6 +169,44 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "true"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "true"),
+				),
+			},
+			{
+				Config: testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, "false"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "deletion_protection", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "outscale_vm" {
+			image_id            = "%s"
+			vm_type             = "c4.large"
+			keypair_name        = "terraform-basic"
+			deletion_protection = %s
+		}
+	`, omi, deletionProtection)
+}
+
 func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
