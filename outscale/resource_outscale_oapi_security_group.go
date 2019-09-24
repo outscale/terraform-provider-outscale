@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -129,8 +130,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	}
 	securityGroupOpts.SecurityGroupName = groupName
 
-	fmt.Printf(
-		"[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
+	log.Printf("[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
 	var createResp *oapi.CreateSecurityGroupResponse
 	var resp *oapi.POST_CreateSecurityGroupResponses
@@ -168,10 +168,10 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 
 	d.SetId(createResp.SecurityGroup.SecurityGroupId)
 
-	fmt.Printf("\n\n[INFO] Security Group ID: %s", d.Id())
+	log.Printf("[INFO] Security Group ID: %s", d.Id())
 
 	// Wait for the security group to truly exist
-	fmt.Printf("\n\n[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
+	log.Printf("[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
 		Target:  []string{"exists"},
@@ -284,7 +284,7 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	fmt.Printf("\n\n[DEBUG] Security Group destroy: %v", d.Id())
+	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err := conn.POST_DeleteSecurityGroup(oapi.DeleteSecurityGroupRequest{
