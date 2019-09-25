@@ -459,21 +459,9 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
+			"admin_password": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -585,7 +573,6 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 		return resource.RetryableError(err)
 	})
-
 	if err != nil {
 		return fmt.Errorf("Error reading the VM %s", err)
 	}
@@ -610,6 +597,12 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 	instance := resp.Vms[0]
+
+	// Get the admin password from the server
+	adminPassword, err := getOAPIVMAdminPassword(instance.VmId, conn)
+	if err != nil {
+		return err
+	}
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
@@ -654,9 +647,18 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		set("user_data", instance.UserData)
 		set("vm_id", instance.VmId)
 		set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
+		set("admin_password", adminPassword)
 
 		return set("vm_type", instance.VmType)
 	})
+}
+
+func getOAPIVMAdminPassword(VMID string, conn *oapi.Client) (string, error) {
+	resp, err := conn.POST_ReadAdminPassword(oapi.ReadAdminPasswordRequest{VmId: VMID})
+	if err != nil {
+		return "", fmt.Errorf("Error reading the VM %s", err)
+	}
+	return resp.OK.AdminPassword, nil
 }
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
