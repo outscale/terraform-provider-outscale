@@ -435,22 +435,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
 			"user_data": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -475,6 +459,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
@@ -518,11 +503,11 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(vm.VmId)
 
-	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), vm.VmId, conn)
+		if err != nil {
 			return err
 		}
-		d.SetPartial("tag")
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -609,11 +594,54 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId("")
 		return nil
 	}
-
 	instance := resp.Vms[0]
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
-	return resourceDataAttrSetter(d, &instance)
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(instance.VmId)
+
+		set("architecture", instance.Architecture)
+		if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+			log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
+			return err
+		}
+		set("bsu_optimized", instance.BsuOptimized)
+		set("client_token", instance.ClientToken)
+		set("deletion_protection", instance.DeletionProtection)
+		set("hypervisor", instance.Hypervisor)
+		set("image_id", instance.ImageId)
+		set("is_source_dest_checked", instance.IsSourceDestChecked)
+		set("keypair_name", instance.KeypairName)
+		set("launch_number", instance.LaunchNumber)
+		set("net_id", instance.NetId)
+		if err := set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics)); err != nil {
+			log.Printf("[DEBUG] NICS ERR %+v", err)
+			return err
+		}
+		set("os_family", instance.OsFamily)
+		set("placement_subregion_name", instance.Placement.SubregionName)
+		set("placement_tenancy", instance.Placement.Tenancy)
+		set("private_dns_name", instance.PrivateDnsName)
+		set("private_ip", instance.PrivateIp)
+		set("product_codes", instance.ProductCodes)
+		set("public_dns_name", instance.PublicDnsName)
+		set("public_ip", instance.PublicIp)
+		set("reservation_id", instance.ReservationId)
+		set("root_device_name", instance.RootDeviceName)
+		set("root_device_type", instance.RootDeviceType)
+		if err := set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups)); err != nil {
+			log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
+			return err
+		}
+		set("state", instance.State)
+		set("state_reason", instance.StateReason)
+		set("subnet_id", instance.SubnetId)
+		set("user_data", instance.UserData)
+		set("vm_id", instance.VmId)
+		set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
+
+		return set("vm_type", instance.VmType)
+	})
 }
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1018,4 +1046,14 @@ func getVMsFilterByVMID(vmID string) oapi.FiltersVm {
 	return oapi.FiltersVm{
 		VmIds: []string{vmID},
 	}
+}
+
+// AttributeSetter you can use this function to set the attributes
+type AttributeSetter func(key string, value interface{}) error
+
+func resourceDataAttrSetter(d *schema.ResourceData, callback func(AttributeSetter) error) error {
+	setterFunc := func(key string, value interface{}) error {
+		return d.Set(key, value)
+	}
+	return callback(setterFunc)
 }
