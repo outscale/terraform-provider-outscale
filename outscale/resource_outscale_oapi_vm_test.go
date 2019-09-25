@@ -45,6 +45,35 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
+	var server oapi.Vm
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "c4.large"),
+					testAccCheckState("outscale_vm.basic"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 	var server oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
@@ -488,6 +517,23 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
 			keypair_name       = "terraform-basic"
 			security_group_ids = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%sb"
+		}
+	`, omi, vmType, region)
+}
+
+func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+
+			tags = {
+				key   = "name"
+				value = "terraform-subnet"
+			}
 		}
 	`, omi, vmType, region)
 }
