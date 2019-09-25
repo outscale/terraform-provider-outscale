@@ -85,17 +85,12 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", instance.VmId)
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
-	return resourceDataAttrSetter(d, &instance)
-}
 
-type AttributeSetter func(key string, value interface{}) error
-
-func resourceDataAttrSetter(d *schema.ResourceData, instance *oapi.Vm) error {
-	setterFunc := func(key string, value interface{}) error {
-		return d.Set(key, value)
-	}
-	d.SetId(instance.VmId)
-	return oapiVMDescriptionAttributes(setterFunc, instance)
+	// Populate instance attribute fields with the returned instance
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(instance.VmId)
+		return oapiVMDescriptionAttributes(set, &instance)
+	})
 }
 
 // Populate instance attribute fields with the returned instance
