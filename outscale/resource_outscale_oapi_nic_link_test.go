@@ -37,7 +37,7 @@ func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_nic_link.outscale_nic_link", "device_index", "1"),
+						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet(
 						"outscale_nic_link.outscale_nic_link", "vm_id"),
 					resource.TestCheckResourceAttrSet(
@@ -50,18 +50,18 @@ func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
 
 func testAccOutscaleOAPINetworkInterfaceAttachmentConfigBasic(rInt int) string {
 	return fmt.Sprintf(`
-#resource "outscale_vm" "outscale_instance" {                 
-#    image_id  = "ami-5c450b62"
-#    vm_type   = "c4.large"
-#    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-#}
+resource "outscale_vm" "outscale_instance" {                 
+    image_id  = "ami-3e158364"
+    vm_type   = "c4.large"
+    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+}
 
 resource "outscale_net" "outscale_net" {
     ip_range = "10.0.0.0/16"
 }
 
 resource "outscale_subnet" "outscale_subnet" {
-    subregion_name = "us-west-1a"
+    subregion_name = "eu-west-2a"
     ip_range       = "10.0.0.0/16"
     net_id         = "${outscale_net.outscale_net.id}"
 }
@@ -71,9 +71,9 @@ resource "outscale_nic" "outscale_nic" {
 }
 
 resource "outscale_nic_link" "outscale_nic_link" {
-		device_number   = "1"
-		//vm_id             = "${outscale_vm.outscale_instance.id}"
-		vm_id = "i-fcefc32f"   
+		device_number   = 1
+		vm_id             = "${outscale_vm.outscale_instance.id}"
+		#vm_id = "i-fcefc32f"   
 		nic_id    = "${outscale_nic.outscale_nic.id}"
 }
 

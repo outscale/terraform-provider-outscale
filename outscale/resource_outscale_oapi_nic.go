@@ -187,10 +187,6 @@ func getOAPINicSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"pip": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
 					"private_dns_name": {
 						Type:     schema.TypeString,
 						Computed: true,
@@ -282,7 +278,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating ENI: %s", err)
+		return fmt.Errorf("Error creating NIC: %s", err)
 	}
 
 	d.SetId(resp.OK.Nic.NicId)
@@ -414,7 +410,6 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 			d["public_ip"] = assoc.PublicIp
 
 			b["link_public_ip"] = d
-			b["pip"] = v.IsPrimary
 			b["private_dns_name"] = v.PrivateDnsName
 			b["private_ip"] = v.PrivateIp
 			b["is_primary"] = v.IsPrimary
