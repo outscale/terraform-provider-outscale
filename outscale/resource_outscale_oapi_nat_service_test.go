@@ -29,17 +29,15 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 	var natGateway oapi.NatService
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_nat_service.gateway",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPINatGatewayDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOAPINatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natGateway),
 				),
-				ExpectNonEmptyPlan: true, //Change once we get the route table link oapi issue solved.
 			},
 		},
 	})
@@ -98,6 +96,11 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 				"deleting": true,
 				"failed":   true,
 			}
+
+			if len(response.NatServices) == 0 {
+				return nil
+			}
+
 			if _, ok := status[strings.ToLower(response.NatServices[0].State)]; len(response.NatServices) > 0 && !ok {
 				return fmt.Errorf("still exists")
 			}

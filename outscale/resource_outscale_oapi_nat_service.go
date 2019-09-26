@@ -302,6 +302,10 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 
 		response := resp.OK
 
+		if len(response.NatServices) == 0 {
+			return nil, "deleted", nil
+		}
+
 		ng := response.NatServices[0]
 		return ng, ng.State, nil
 	}
