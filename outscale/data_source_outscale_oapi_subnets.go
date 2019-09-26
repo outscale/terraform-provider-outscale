@@ -49,7 +49,7 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tag": tagsSchemaComputed(),
+						"tags": tagsOAPIListSchemaComputed(),
 
 						"net_id": {
 							Type:     schema.TypeString,
@@ -147,7 +147,7 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 			subnet["subnet_id"] = v.SubnetId
 		}
 		if v.Tags != nil {
-			subnet["tag"] = tagsOAPIToMap(v.Tags)
+			subnet["tags"] = tagsOAPIToMap(v.Tags)
 		}
 		if v.NetId != "" {
 			subnet["net_id"] = v.NetId
