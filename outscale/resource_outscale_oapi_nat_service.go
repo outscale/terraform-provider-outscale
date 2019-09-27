@@ -284,6 +284,8 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 
 		if err != nil || resp.OK == nil {
 			if err != nil {
+				log.Printf("LOGG_____ Response 287 %+v ", err)
+
 				if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
 					return nil, "", nil
 				}
@@ -302,11 +304,14 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 
 		response := resp.OK
 
+		log.Printf("LOGG_____ Response 305 %+v ", response)
+
 		if len(response.NatServices) == 0 {
 			return nil, "deleted", nil
 		}
 
 		ng := response.NatServices[0]
+		log.Printf("LOGG_____ ng 313 %+v ", ng)
 		return ng, ng.State, nil
 	}
 }
