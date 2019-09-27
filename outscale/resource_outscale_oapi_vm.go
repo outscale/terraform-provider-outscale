@@ -598,7 +598,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	instance := resp.Vms[0]
 
-	// Get the admin password from the server
+	// Get the admin password from the server to save in the state
 	adminPassword, err := getOAPIVMAdminPassword(instance.VmId, conn)
 	if err != nil {
 		return err
