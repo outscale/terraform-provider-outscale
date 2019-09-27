@@ -252,7 +252,7 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 	_, stateErr := stateConf.WaitForState()
 	if stateErr != nil {
-		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), err)
+		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), stateErr)
 	}
 
 	return nil
