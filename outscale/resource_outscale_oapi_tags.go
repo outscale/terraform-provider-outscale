@@ -311,3 +311,23 @@ func oapiTagDescIgnored(t *oapi.Tag) bool {
 	}
 	return false
 }
+
+func assignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) error {
+	request := oapi.CreateTagsRequest{}
+	request.Tags = tagsOAPIFromSliceMap(tag)
+	request.ResourceIds = []string{resourceID}
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		_, err := conn.POST_CreateTags(request)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}

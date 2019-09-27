@@ -34,7 +34,7 @@ func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_nets.by_id", "net.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_nets.by_id", "nets.#", "1"),
 				),
 			},
 		},
@@ -43,17 +43,17 @@ func TestAccDataSourceOutscaleOAPIVpcs_basic(t *testing.T) {
 
 func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "test" {
+			ip_range = "%s"
+			
+			tags {
+			key = "Name"
+			value = "%s"
+			}
+		}
 
-resource "outscale_net" "test" {
-  ip_range = "%s"
-	
-  tags {
-	key = "Name"
-	value = "%s"
-  }
-}
-
-data "outscale_nets" "by_id" {
-  net_id = ["${outscale_net.test.id}"]
-}`, ipRange, tag)
+		data "outscale_nets" "by_id" {
+			net_id = ["${outscale_net.test.id}"]
+		}
+	`, ipRange, tag)
 }

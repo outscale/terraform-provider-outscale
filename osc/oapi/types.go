@@ -148,7 +148,7 @@ type BsuCreated struct {
 
 // implements the service definition of BsuToCreate
 type BsuToCreate struct {
-	DeleteOnVmDeletion bool   `json:"DeleteOnVmDeletion,omitempty"`
+	DeleteOnVmDeletion *bool  `json:"DeleteOnVmDeletion,omitempty"`
 	Iops               int64  `json:"Iops,omitempty"`
 	SnapshotId         string `json:"SnapshotId,omitempty"`
 	VolumeSize         int64  `json:"VolumeSize,omitempty"`
@@ -727,7 +727,7 @@ type CreateVmsRequest struct {
 	BlockDeviceMappings         []BlockDeviceMappingVmCreation `json:"BlockDeviceMappings,omitempty"`
 	BsuOptimized                bool                           `json:"BsuOptimized,omitempty"`
 	ClientToken                 string                         `json:"ClientToken,omitempty"`
-	DeletionProtection          bool                           `json:"DeletionProtection,omitempty"`
+	DeletionProtection          *bool                          `json:"DeletionProtection,omitempty"`
 	DryRun                      bool                           `json:"DryRun,omitempty"`
 	ImageId                     string                         `json:"ImageId,omitempty"`
 	KeypairName                 string                         `json:"KeypairName,omitempty"`
@@ -3554,7 +3554,7 @@ type UpdateUserResponse struct {
 type UpdateVmRequest struct {
 	BlockDeviceMappings         []BlockDeviceMappingVmUpdate `json:"BlockDeviceMappings,omitempty"`
 	BsuOptimized                bool                         `json:"BsuOptimized,omitempty"`
-	DeletionProtection          bool                         `json:"DeletionProtection,omitempty"`
+	DeletionProtection          *bool                        `json:"DeletionProtection,omitempty"`
 	DryRun                      bool                         `json:"DryRun,omitempty"`
 	IsSourceDestChecked         bool                         `json:"IsSourceDestChecked,omitempty"`
 	KeypairName                 string                       `json:"KeypairName,omitempty"`

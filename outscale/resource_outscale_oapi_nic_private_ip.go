@@ -23,13 +23,12 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-
 			"secondary_private_ip_count": {
 				Type:     schema.TypeInt,
+				Computed: true,
 				Optional: true,
 				ForceNew: true,
 			},
-
 			"nic_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -40,6 +39,10 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"primary_private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -61,7 +64,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SecondaryPrivateIpCount = int64(v.(int))
+		input.SecondaryPrivateIpCount = int64(v.(int) - 1)
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
@@ -161,8 +164,16 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	}
 
 	var ips []string
+
+	// We need to avoid to store inside private_ips when private IP is the primary IP
+	//because the primary can't remove.
+	var primaryPrivateID string
 	for _, v := range eni.PrivateIps {
-		ips = append(ips, v.PrivateIp)
+		if v.IsPrimary {
+			primaryPrivateID = v.PrivateIp
+		} else {
+			ips = append(ips, v.PrivateIp)
+		}
 	}
 
 	_, ok := d.GetOk("allow_relink")
@@ -171,6 +182,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	d.Set("private_ips", ips)
 	d.Set("secondary_private_ip_count", len(eni.PrivateIps))
 	d.Set("nic_id", eni.NicId)
+	d.Set("primary_private_ip", primaryPrivateID)
 	d.Set("request_id", result.ResponseContext.RequestId)
 
 	return nil

@@ -1,0 +1,754 @@
+==> Checking that code complies with gofmt requirements...
+TF_ACC=1 go test $(go list ./... |grep -v 'vendor') -v -run=TestAccOutscaleOAPISnapshot_basic -timeout 120m
+?   	github.com/terraform-providers/terraform-provider-outscale	[no test files]
+
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc	0.026s [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/common	[no test files]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/dl	0.017s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/eim	0.023s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/fcu	0.023s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/handler	0.022s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/icu	0.021s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/osc/lbu	0.025s [no tests to run]
+?   	github.com/terraform-providers/terraform-provider-outscale/osc/oapi	[no test files]
+=== RUN   TestAccOutscaleOAPISnapshot_basic
+2019/09/17 15:41:19 [DEBUG] Test: Executing step 0
+2019/09/17 15:41:19 [DEBUG] New state was assigned lineage "17f2b8ea-403d-43ca-a071-b4bc32e664c2"
+2019/09/17 15:41:19 [INFO] terraform: building graph: GraphTypeValidate
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_snapshot.test": outscale_snapshot.test
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_volume.test": outscale_volume.test
+2019/09/17 15:41:19 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:19 [DEBUG] Starting graph walk: walkValidate
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_volume.test": outscale_volume.test
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_snapshot.test": outscale_snapshot.test
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:19 [INFO] terraform: building graph: GraphTypeRefresh
+2019/09/17 15:41:19 [DEBUG] Starting graph walk: walkRefresh
+2019/09/17 15:41:19 [INFO] terraform: building graph: GraphTypePlan
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_snapshot.test": outscale_snapshot.test
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_volume.test": outscale_volume.test
+2019/09/17 15:41:19 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:19 [DEBUG] Starting graph walk: walkPlan
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_volume.test": outscale_volume.test
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_snapshot.test": outscale_snapshot.test
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:19 [WARN] Test: Step plan: DIFF:
+
+CREATE: outscale_snapshot.test
+  account_alias:                  "" => "<computed>"
+  account_id:                     "" => "<computed>"
+  permissions_to_create_volume.#: "" => "<computed>"
+  progress:                       "" => "<computed>"
+  request_id:                     "" => "<computed>"
+  snapshot_id:                    "" => "<computed>"
+  state:                          "" => "<computed>"
+  tags.#:                         "" => "1" (forces new resource)
+  tags.0.key:                     "" => "Name"
+  tags.0.value:                   "" => "Terraform-Snapshot"
+  volume_id:                      "" => "<computed>" (forces new resource)
+  volume_size:                    "" => "<computed>"
+CREATE: outscale_volume.test
+  iops:             "" => "<computed>" (forces new resource)
+  linked_volumes.#: "" => "<computed>"
+  request_id:       "" => "<computed>"
+  size:             "" => "1" (forces new resource)
+  snapshot_id:      "" => "<computed>" (forces new resource)
+  state:            "" => "<computed>"
+  subregion_name:   "" => "eu-west-2a" (forces new resource)
+  tags.#:           "" => "<computed>"
+  volume_id:        "" => "<computed>"
+  volume_type:      "" => "<computed>" (forces new resource)
+
+STATE:
+
+<no state>
+2019/09/17 15:41:19 [INFO] terraform: building graph: GraphTypeApply
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_snapshot.test": outscale_snapshot.test
+2019/09/17 15:41:19 [DEBUG] Resource state not found for "outscale_volume.test": outscale_volume.test
+2019/09/17 15:41:19 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test outscale_volume.test]
+2019/09/17 15:41:19 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:19 [DEBUG] Starting graph walk: walkApply
+2019/09/17 15:41:19 [DEBUG] apply: outscale_volume.test: executing Apply
+2019/09/17 15:41:19 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:19 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/CreateVolume HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 40
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=4c4044707c17f60a2dd77b2f5c532174dc5ff9b6a54e36abf25a7291841e3de5
+Content-Type: application/json
+X-Amz-Date: 20190917T204119Z
+Accept-Encoding: gzip
+
+{"Size":1,"SubregionName":"eu-west-2a"}
+
+-----------------------------------------------------
+2019/09/17 15:41:21 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 219
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:21 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"6917d8c0-6c71-4ff2-89ab-c771727a6cea"},"Volume":{"LinkedVolumes":[],"Size":1,"State":"creating","SubregionName":"eu-west-2a","Tags":[],"VolumeId":"vol-48189dc8","VolumeType":"standard"}}
+-----------------------------------------------------
+2019/09/17 15:41:21 [DEBUG] Waiting for Volume to become available
+2019/09/17 15:41:21 [DEBUG] Waiting for state to become: [available]
+2019/09/17 15:41:31 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadVolumes HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 43
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=2b339635371c2e2b41efca1cbcf989f9f4952fd4fbdd4e91cc099dbe83e353ad
+Content-Type: application/json
+X-Amz-Date: 20190917T204131Z
+Accept-Encoding: gzip
+
+{"Filters":{"VolumeIds":["vol-48189dc8"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:31 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 223
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:31 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"b0fcbde4-5853-44c2-b470-8a3c9a8a76bd"},"Volumes":[{"LinkedVolumes":[],"Size":1,"State":"available","SubregionName":"eu-west-2a","Tags":[],"VolumeId":"vol-48189dc8","VolumeType":"standard"}]}
+-----------------------------------------------------
+2019/09/17 15:41:31 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:31 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadVolumes HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 43
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=2b339635371c2e2b41efca1cbcf989f9f4952fd4fbdd4e91cc099dbe83e353ad
+Content-Type: application/json
+X-Amz-Date: 20190917T204131Z
+Accept-Encoding: gzip
+
+{"Filters":{"VolumeIds":["vol-48189dc8"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:31 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 223
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:31 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"cb4a7e73-c083-4a80-8ed0-a613bd7fbaa2"},"Volumes":[{"LinkedVolumes":[],"Size":1,"State":"available","SubregionName":"eu-west-2a","Tags":[],"VolumeId":"vol-48189dc8","VolumeType":"standard"}]}
+-----------------------------------------------------
+
+
+[DEBUG] ##RESPONSE READ{
+  "ResponseContext": {
+    "RequestId": "cb4a7e73-c083-4a80-8ed0-a613bd7fbaa2"
+  },
+  "Volumes": [
+    {
+      "Size": 1,
+      "State": "available",
+      "SubregionName": "eu-west-2a",
+      "VolumeId": "vol-48189dc8",
+      "VolumeType": "standard"
+    }
+  ]
+}2019/09/17 15:41:31 [DEBUG] apply: outscale_snapshot.test: executing Apply
+2019/09/17 15:41:31 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:31 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/CreateSnapshot HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 28
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=10548e26d7f4037457a0636ca23eda2eeb6bbafb7d52481ebb94704c4e4918f4
+Content-Type: application/json
+X-Amz-Date: 20190917T204131Z
+Accept-Encoding: gzip
+
+{"VolumeId":"vol-48189dc8"}
+
+-----------------------------------------------------
+2019/09/17 15:41:32 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 318
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:31 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"e347ef1f-3efd-42f3-bf77-c106d32aed0e"},"Snapshot":{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":0,"SnapshotId":"snap-1f1ae862","State":"pending/queued","Tags":[],"VolumeId":"vol-48189dc8","VolumeSize":1}}
+-----------------------------------------------------
+2019/09/17 15:41:32 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:32 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/CreateTags HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 87
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=1a7a80732a824355c8d68277b90f0270400aa661787d81df32d2a50b1164b4f7
+Content-Type: application/json
+X-Amz-Date: 20190917T204132Z
+Accept-Encoding: gzip
+
+{"ResourceIds":["snap-1f1ae862"],"Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}]}
+
+-----------------------------------------------------
+2019/09/17 15:41:32 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 72
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:32 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"c1ba8fa2-d2dd-4fdc-9a28-023af0b42744"}}
+-----------------------------------------------------
+2019/09/17 15:41:32 Waiting for Snapshot snap-1f1ae862 to become available...
+2019/09/17 15:41:32 [DEBUG] Waiting for state to become: [completed]
+2019/09/17 15:41:37 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:37 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadSnapshots HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 46
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=85cd0f0cadb293fb21792be0d9beef2e289a1eb6014e0a279c7bc2bb988adb2f
+Content-Type: application/json
+X-Amz-Date: 20190917T204137Z
+Accept-Encoding: gzip
+
+{"Filters":{"SnapshotIds":["snap-1f1ae862"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:37 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 361
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:37 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"c2f42766-535d-4c7b-ad6f-e0e3683a26f4"},"Snapshots":[{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":100,"SnapshotId":"snap-1f1ae862","State":"completed","Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}],"VolumeId":"vol-48189dc8","VolumeSize":1}]}
+-----------------------------------------------------
+2019/09/17 15:41:37 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:37 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadSnapshots HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 46
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=85cd0f0cadb293fb21792be0d9beef2e289a1eb6014e0a279c7bc2bb988adb2f
+Content-Type: application/json
+X-Amz-Date: 20190917T204137Z
+Accept-Encoding: gzip
+
+{"Filters":{"SnapshotIds":["snap-1f1ae862"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:37 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 361
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:37 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"a05b5487-0835-43fa-8517-7db7524ba187"},"Snapshots":[{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":100,"SnapshotId":"snap-1f1ae862","State":"completed","Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}],"VolumeId":"vol-48189dc8","VolumeSize":1}]}
+-----------------------------------------------------
+2019/09/17 15:41:37 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:37 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadSnapshots HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 46
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=85cd0f0cadb293fb21792be0d9beef2e289a1eb6014e0a279c7bc2bb988adb2f
+Content-Type: application/json
+X-Amz-Date: 20190917T204137Z
+Accept-Encoding: gzip
+
+{"Filters":{"SnapshotIds":["snap-1f1ae862"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:38 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 361
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:37 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"e2389455-c0df-4421-b3d5-a23f4b604c5b"},"Snapshots":[{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":100,"SnapshotId":"snap-1f1ae862","State":"completed","Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}],"VolumeId":"vol-48189dc8","VolumeSize":1}]}
+-----------------------------------------------------
+2019/09/17 15:41:38 [INFO] terraform: building graph: GraphTypePlan
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc000032c80), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032d20), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:38 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:38 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:38 [DEBUG] Starting graph walk: walkPlan
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc000032c80), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:38 [DEBUG] Instance Diff is nil in Diff()
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032d20), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:38 [DEBUG] Instance Diff is nil in Diff()
+2019/09/17 15:41:38 [INFO] terraform: building graph: GraphTypeRefresh
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0000da2d0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0000da4b0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:38 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:38 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:38 [DEBUG] Starting graph walk: walkRefresh
+2019/09/17 15:41:38 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0000da2d0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:38 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:38 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:38 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadVolumes HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 43
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=eb0f9e7e563a9c1370f8e1546424ad0f42b1c8adeb99bc54634ee4324c313413
+Content-Type: application/json
+X-Amz-Date: 20190917T204138Z
+Accept-Encoding: gzip
+
+{"Filters":{"VolumeIds":["vol-48189dc8"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:39 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 223
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:38 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"79a6d891-6485-473b-8bd1-fbceee97f53b"},"Volumes":[{"LinkedVolumes":[],"Size":1,"State":"available","SubregionName":"eu-west-2a","Tags":[],"VolumeId":"vol-48189dc8","VolumeType":"standard"}]}
+-----------------------------------------------------
+
+
+[DEBUG] ##RESPONSE READ{
+  "ResponseContext": {
+    "RequestId": "79a6d891-6485-473b-8bd1-fbceee97f53b"
+  },
+  "Volumes": [
+    {
+      "Size": 1,
+      "State": "available",
+      "SubregionName": "eu-west-2a",
+      "VolumeId": "vol-48189dc8",
+      "VolumeType": "standard"
+    }
+  ]
+}2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0000da4b0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:39 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:39 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadSnapshots HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 46
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=883da723a7f417102236c7f80ef8c0c93a4843e4fe191d48a0969262a4eefebf
+Content-Type: application/json
+X-Amz-Date: 20190917T204139Z
+Accept-Encoding: gzip
+
+{"Filters":{"SnapshotIds":["snap-1f1ae862"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:39 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 361
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:39 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"1c327335-5ad9-41cf-b1ae-57f791c21e0c"},"Snapshots":[{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":100,"SnapshotId":"snap-1f1ae862","State":"completed","Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}],"VolumeId":"vol-48189dc8","VolumeSize":1}]}
+-----------------------------------------------------
+2019/09/17 15:41:39 [INFO] terraform: building graph: GraphTypePlan
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0000325f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032640), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:39 [DEBUG] Starting graph walk: walkPlan
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0000325f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] Instance Diff is nil in Diff()
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032640), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:39 [DEBUG] Instance Diff is nil in Diff()
+2019/09/17 15:41:39 [WARN] Test: Executing destroy step
+2019/09/17 15:41:39 [INFO] terraform: building graph: GraphTypeValidate
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004283c0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032500), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:39 [DEBUG] Starting graph walk: walkValidate
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004283c0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000032500), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:39 [INFO] terraform: building graph: GraphTypeRefresh
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0005eb4a0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0005eb4f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:39 [DEBUG] Starting graph walk: walkRefresh
+2019/09/17 15:41:39 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0005eb4a0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:39 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:39 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:39 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadVolumes HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 43
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=d8934eeb243099ca05ac8384d12c1009fa585b0ff47d93dced7b251e2a2ba56f
+Content-Type: application/json
+X-Amz-Date: 20190917T204139Z
+Accept-Encoding: gzip
+
+{"Filters":{"VolumeIds":["vol-48189dc8"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:40 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 223
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:40 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"d0507c67-f4f6-4b36-9246-474304b554c2"},"Volumes":[{"LinkedVolumes":[],"Size":1,"State":"available","SubregionName":"eu-west-2a","Tags":[],"VolumeId":"vol-48189dc8","VolumeType":"standard"}]}
+-----------------------------------------------------
+
+
+[DEBUG] ##RESPONSE READ{
+  "ResponseContext": {
+    "RequestId": "d0507c67-f4f6-4b36-9246-474304b554c2"
+  },
+  "Volumes": [
+    {
+      "Size": 1,
+      "State": "available",
+      "SubregionName": "eu-west-2a",
+      "VolumeId": "vol-48189dc8",
+      "VolumeType": "standard"
+    }
+  ]
+}2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0005eb4f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: []
+2019/09/17 15:41:40 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:40 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/ReadSnapshots HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 46
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=0746afe7f749e4a908ef2d9a3f809b7325559da4cc925bbd09edc67df28c1ddb
+Content-Type: application/json
+X-Amz-Date: 20190917T204140Z
+Accept-Encoding: gzip
+
+{"Filters":{"SnapshotIds":["snap-1f1ae862"]}}
+
+-----------------------------------------------------
+2019/09/17 15:41:40 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 361
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:40 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"02549db3-2f55-45cd-8dd3-20f7378a69ef"},"Snapshots":[{"AccountId":"520679080430","Description":"","PermissionsToCreateVolume":{"AccountIds":[],"GlobalPermission":false},"Progress":100,"SnapshotId":"snap-1f1ae862","State":"completed","Tags":[{"Key":"Name","Value":"Terraform-Snapshot"}],"VolumeId":"vol-48189dc8","VolumeSize":1}]}
+-----------------------------------------------------
+2019/09/17 15:41:40 [INFO] terraform: building graph: GraphTypePlanDestroy
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_volume.test (destroy)": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004de460), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000428410), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test (destroy)": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc000428410), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004de460), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_volume.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_snapshot.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_volume.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:40 [DEBUG] Starting graph walk: walkPlanDestroy
+2019/09/17 15:41:40 [WARN] Test: Step plan: DIFF:
+
+DESTROY: outscale_snapshot.test
+DESTROY: outscale_volume.test
+
+STATE:
+
+outscale_snapshot.test:
+  ID = snap-1f1ae862
+  provider = provider.outscale
+  account_alias = 
+  account_id = 520679080430
+  description = 
+  permissions_to_create_volume.# = 1
+  permissions_to_create_volume.0.account_ids.# = 0
+  permissions_to_create_volume.0.global_permission = false
+  progress = 100
+  request_id = 02549db3-2f55-45cd-8dd3-20f7378a69ef
+  snapshot_id = snap-1f1ae862
+  state = completed
+  tags.# = 1
+  tags.0.key = Name
+  tags.0.value = Terraform-Snapshot
+  volume_id = vol-48189dc8
+  volume_size = 1
+
+  Dependencies:
+    outscale_volume.test
+outscale_volume.test:
+  ID = vol-48189dc8
+  provider = provider.outscale
+  iops = 0
+  linked_volumes.# = 0
+  request_id = d0507c67-f4f6-4b36-9246-474304b554c2
+  size = 1
+  snapshot_id = 
+  state = available
+  subregion_name = eu-west-2a
+  tags.# = 0
+  volume_id = vol-48189dc8
+  volume_type = standard
+2019/09/17 15:41:40 [INFO] terraform: building graph: GraphTypeApply
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_volume.test (destroy)": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004294a0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test (destroy)": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0004294f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_snapshot.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_volume.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_volume.test": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004294a0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_volume.test (destroy)": &terraform.ResourceState{Type:"outscale_volume", Dependencies:[]string{}, Primary:(*terraform.InstanceState)(0xc0004294a0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0004294f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] Attaching resource state to "outscale_snapshot.test (destroy)": &terraform.ResourceState{Type:"outscale_snapshot", Dependencies:[]string{"outscale_volume.test"}, Primary:(*terraform.InstanceState)(0xc0004294f0), Deposed:[]*terraform.InstanceState{}, Provider:"provider.outscale", mu:sync.Mutex{state:0, sema:0x0}}
+2019/09/17 15:41:40 [DEBUG] adding missing provider: outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_snapshot.test using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_snapshot.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_volume.test using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] resource outscale_volume.test (destroy) using provider provider.outscale
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_volume.test" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_volume.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test" references: [outscale_volume.test]
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_snapshot.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "outscale_volume.test (destroy)" references: []
+2019/09/17 15:41:40 [DEBUG] ReferenceTransformer: "provider.outscale" references: []
+2019/09/17 15:41:40 [DEBUG] Starting graph walk: walkDestroy
+2019/09/17 15:41:40 [DEBUG] apply: outscale_snapshot.test: executing Apply
+2019/09/17 15:41:40 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:40 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:40 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/DeleteSnapshot HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 31
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=dbe70e564edebcd94ef81fc461f2df0d6ff719f78d9b3c4449e94fda2c5a85f6
+Content-Type: application/json
+X-Amz-Date: 20190917T204140Z
+Accept-Encoding: gzip
+
+{"SnapshotId":"snap-1f1ae862"}
+
+-----------------------------------------------------
+2019/09/17 15:41:42 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 72
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:41 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"42a940d5-f2b5-4e6d-856b-ae53cb6057d9"}}
+-----------------------------------------------------
+2019/09/17 15:41:42 [DEBUG] apply: outscale_volume.test: executing Apply
+2019/09/17 15:41:42 [DEBUG] Waiting for state to become: [success]
+2019/09/17 15:41:42 [DEBUG] Outscale API Request Details:
+---[ REQUEST ]---------------------------------------
+POST /oapi/latest/DeleteVolume HTTP/1.1
+Host: api.eu-west-2.outscale.com
+User-Agent: Go-http-client/1.1
+Content-Length: 28
+Authorization: AWS4-HMAC-SHA256 Credential=JOYH9HCEVKKD2VKHII67/20190917/eu-west-2/oapi/aws4_request, SignedHeaders=content-type;host;x-amz-date, Signature=c80e00c90cd69a9778e90b35f6c450c6388c9928401a908a140cffd4c0f2fba6
+Content-Type: application/json
+X-Amz-Date: 20190917T204142Z
+Accept-Encoding: gzip
+
+{"VolumeId":"vol-48189dc8"}
+
+-----------------------------------------------------
+2019/09/17 15:41:42 [DEBUG] Outscale API Response Details:
+---[ RESPONSE ]--------------------------------------
+HTTP/1.1 200 OK
+Content-Length: 72
+Connection: keep-alive
+Content-Type: text/plain
+Date: Tue, 17 Sep 2019 20:41:42 GMT
+Referrer-Policy: same-origin
+Server: nginx
+Strict-Transport-Security: max-age=31536000; includeSubdomains;
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+X-Xss-Protection: 1; mode=block
+
+{"ResponseContext":{"RequestId":"a4439d5d-7deb-46a0-9351-33f6921c58a7"}}
+-----------------------------------------------------
+2019/09/17 15:41:42 [INFO] terraform: building graph: GraphTypePlanDestroy
+2019/09/17 15:41:42 [DEBUG] Starting graph walk: walkPlanDestroy
+2019/09/17 15:41:42 [INFO] terraform: building graph: GraphTypeRefresh
+2019/09/17 15:41:42 [DEBUG] Starting graph walk: walkRefresh
+2019/09/17 15:41:42 [INFO] terraform: building graph: GraphTypePlanDestroy
+2019/09/17 15:41:42 [DEBUG] Starting graph walk: walkPlanDestroy
+--- PASS: TestAccOutscaleOAPISnapshot_basic (22.32s)
+PASS
+ok  	github.com/terraform-providers/terraform-provider-outscale/outscale	22.339s
+?   	github.com/terraform-providers/terraform-provider-outscale/test	[no test files]
+?   	github.com/terraform-providers/terraform-provider-outscale/utils	[no test files]

@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -17,9 +16,14 @@ import (
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
-	var conf fcu.NetworkInterface
+	var conf oapi.Nic
 
 	o := os.Getenv("OUTSCALE_OAPI")
+
+	subregion := os.Getenv("OUTSCALE_REGION")
+	if subregion == "" {
+		subregion = "in-west-2"
+	}
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {
@@ -39,57 +43,12 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIENIDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIENIDataSourceExists("outscale_nic.outscale_nic", &conf),
-					testAccCheckOutscaleOAPIENIDataSourceAttributes(&conf),
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
 				),
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleOAPIENIDataSourceExists(n string, res *fcu.NetworkInterface) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ENI ID is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
-		}
-
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(describeResp.NetworkInterfaces) != 1 ||
-			*describeResp.NetworkInterfaces[0].NetworkInterfaceId != rs.Primary.ID {
-			return fmt.Errorf("ENI not found")
-		}
-
-		*res = *describeResp.NetworkInterfaces[0]
-
-		return nil
-	}
 }
 
 func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {
@@ -108,20 +67,23 @@ func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface)
 }
 
 func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(rs.Primary.ID)},
+		var resp *oapi.ReadNicsResponse
+		var r *oapi.POST_ReadNicsResponses
+		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		req := &oapi.ReadNicsRequest{
+			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			_, err = conn.VM.DescribeNetworkInterfaces(dnir)
+			r, err = conn.POST_ReadNics(*req)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -131,15 +93,16 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return nil
-			}
+		resp = r.OK
 
+		if err != nil {
 			return err
 		}
-	}
 
+		if len(resp.Nics) != 0 {
+			return fmt.Errorf("Nic is not destroyed yet")
+		}
+	}
 	return nil
 }
 
@@ -197,27 +160,24 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 
 const testAccOutscaleOAPIENIDataSourceConfig = `
 resource "outscale_net" "outscale_net" {
-    count = 1
-
-    cidr_block = "10.0.0.0/16"
-}
-
+	ip_range = "10.0.0.0/16"
+  }
+  
 resource "outscale_subnet" "outscale_subnet" {
-    count = 1
-
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_net.outscale_net.vpc_id}"
+	subregion_name = "eu-west-2a"
+	ip_range       = "10.0.0.0/16"
+	net_id         = "${outscale_net.outscale_net.id}"
 }
 
 resource "outscale_nic" "outscale_nic" {
-    count = 1
-
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	subnet_id = "${outscale_subnet.outscale_subnet.id}"
+	tags {
+		value = "tf-value"
+		key   = "tf-key"
+	}
 }
 
-data "outscale_nic" "nic" {
-		network_interface_id = "NICID"
-		subnet_id = "1"
-}
+data "outscale_nic" "outscale_nic" {
+	nic_id = "${outscale_nic.outscale_nic.id}"
+}  
 `

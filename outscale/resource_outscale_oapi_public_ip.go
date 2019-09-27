@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -72,7 +73,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 		//Placement: domainOpt,
 	}
 
-	fmt.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
+	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
 	resp, err := conn.POST_CreatePublicIp(allocOpts)
 	if err != nil {
 		return fmt.Errorf("Error creating EIP: %s", err)
@@ -84,7 +85,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	allocResp := resp.OK
 
-	fmt.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
+	log.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 	// if d.Get("placement").(string) == "vpc" {
 	// 	d.SetId(allocResp.ReservationId)
 	// } else {
@@ -93,7 +94,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	d.SetId(allocResp.PublicIp.PublicIp)
 
-	fmt.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.PublicIp)
+	log.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.PublicIp)
 	return resourceOutscaleOAPIPublicIPUpdate(d, meta)
 }
 
@@ -138,7 +139,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 
 	address := describeAddresses.PublicIps[0]
 
-	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
+	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
 	if address.LinkPublicIpId != "" {
 		d.Set("link_public_ip_id", address.LinkPublicIpId)
@@ -166,7 +167,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	d.Set("public_ip_id", address.PublicIpId)
 
 	// if address.Placement == "vpc" && net.ParseIP(id) != nil {
-	// 	fmt.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
+	// 	log.Printf("[DEBUG] Re-assigning EIP ID (%s) to it's Allocation ID (%s)", d.Id(), address.ReservationId)
 	// 	d.SetId(address.ReservationId)
 	// } else {
 	// 	d.SetId(address.PublicIp)
@@ -246,7 +247,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 	linkPublicIpID, okAssociationID := d.GetOk("link_public_ip_id")
 
 	if (okInstance && vInstance.(string) != "") || (okAssociationID && linkPublicIpID.(string) != "") {
-		fmt.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
+		log.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
@@ -279,13 +280,13 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		// 		ReservationId: d.Id(),
 		// 	})
 		// case "standard":
-		// 	fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
+		// 	log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
 		// 	_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
 		// 		PublicIp: d.Id(),
 		// 	})
 		// }
 
-		fmt.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
+		log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
 		_, err = conn.POST_DeletePublicIp(oapi.DeletePublicIpRequest{
 			PublicIp: d.Id(),
 		})

@@ -77,15 +77,16 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 }
 
 const testAccDataSourceOutscaleOAPIPublicIPConfig = `
-resource "outscale_public_ip" "test" {}
+	resource "outscale_public_ip" "test" {}
 
-data "outscale_public_ip" "by_public_ip_id" {
-  public_ip_id = "${outscale_public_ip.test.public_ip_id}"
-}
-data "outscale_public_ip" "by_public_ip" {
-	filter {
-		name  = "public_ip"
-		values = [${outscale_public_ip.test.public_ip}]
- 	}  
-}
+	data "outscale_public_ip" "by_public_ip_id" {
+	  public_ip_id = "${outscale_public_ip.test.public_ip_id}"
+	}
+
+	data "outscale_public_ip" "by_public_ip" {
+		filter {
+			name = "public_ips"
+			values = ["${outscale_public_ip.test.public_ip}"]
+		}
+	}
 `

@@ -64,6 +64,10 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -127,6 +131,8 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 	if len(response.NatServices) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
+
+	d.Set("request_id", response.ResponseContext.RequestId)
 
 	return ngsOAPIDescriptionAttributes(d, response.NatServices)
 }

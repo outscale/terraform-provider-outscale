@@ -71,7 +71,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 					},
 				},
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": tagsListOAPISchemaForceNew(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -120,14 +120,12 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	d.SetId(res.OK.Snapshot.SnapshotId)
 	d.Set("snapshot_id", res.OK.Snapshot.SnapshotId)
 
-	/*
-		if d.IsNewResource() {
-			if err := setTags(conn, d); err != nil {
-				return err
-			}
-			d.SetPartial("tag")
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), res.OK.Snapshot.SnapshotId, conn)
+		if err != nil {
+			return err
 		}
-	*/
+	}
 
 	err = resourceOutscaleOAPISnapshotWaitForAvailable(d.Id(), conn)
 	if err != nil {
@@ -189,7 +187,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	return nil
+	return d.Set("tags", tagsOAPIToMap(snapshot.Tags))
 }
 
 func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {

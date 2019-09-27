@@ -4,6 +4,7 @@ examples/terraform.tfstate
 examples/terraform.tfstate.backup
 
 test/
+log.txt
 terraform-provider-outscale
 
 .DS_Store

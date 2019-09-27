@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -23,24 +22,22 @@ func TestAccDataSourceOutscaleOAPISubnet(t *testing.T) {
 		t.Skip()
 	}
 
-	rInt := acctest.RandIntRange(0, 256)
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPISubnetConfig(rInt),
+				Config: testAccDataSourceOutscaleOAPISubnetConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_id", rInt),
-					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter", rInt),
+					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_id"),
+					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPISubnetCheck(name string, rInt int) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -62,7 +59,7 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string, rInt int) resource.Te
 			)
 		}
 
-		if attr["ip_range"] != fmt.Sprintf("172.%d.123.0/24", rInt) {
+		if attr["ip_range"] != "10.0.0.0/16" {
 			return fmt.Errorf("bad ip_range %s", attr["ip_range"])
 		}
 		if attr["subregion_name"] != "eu-west-2a" {
@@ -73,23 +70,25 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string, rInt int) resource.Te
 	}
 }
 
-func testAccDataSourceOutscaleOAPISubnetConfig(rInt int) string {
-	return fmt.Sprintf(`
-		resource "outscale_subnet" "test" {
-		  net_id            = "vpc-e9d09d63"
-		  ip_range        = "172.%d.123.0/24"
-		  subegion_name = "eu-west-2a"
-		}
-		
-		data "outscale_subnet" "by_id" {
-		  subnet_id = "${outscale_subnet.test.id}"
-		}
+const testAccDataSourceOutscaleOAPISubnetConfig = `
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	}
+
+	resource "outscale_subnet" "test" {
+		net_id        = "${outscale_net.outscale_net.net_id}"
+		ip_range      = "10.0.0.0/16"
+		subregion_name = "eu-west-2a"
+	}
 	
-		data "outscale_subnet" "by_filter" {
-		  filter {
-		    name = "subnet_ids"
-		    values = ["${outscale_subnet.test.id}"]
-		  }
+	data "outscale_subnet" "by_id" {
+		subnet_id = "${outscale_subnet.test.id}"
+	}
+
+	data "outscale_subnet" "by_filter" {
+		filter {
+			name   = "subnet_ids"
+			values = ["${outscale_subnet.test.id}"]
 		}
-		`, rInt)
-}
+	}
+`

@@ -109,18 +109,23 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestChe
 
 const testAccOutscaleOAPISnapshotConfig = `
 resource "outscale_volume" "test" {
-	subregion_name = "in-west-2a"
+	subregion_name = "eu-west-2a"
 	size = 1
 }
 
 resource "outscale_snapshot" "test" {
 	volume_id = "${outscale_volume.test.id}"
+
+	tags = {
+	  key = "Name"
+	  value = "Terraform-Snapshot"
+	}
 }
 `
 
 const testAccOutscaleOAPISnapshotConfigWithDescription = `
 resource "outscale_volume" "description_test" {
-	subregion_name = "in-west-2a"
+	subregion_name = "eu-west-2a"
 	size = 1
 }
 

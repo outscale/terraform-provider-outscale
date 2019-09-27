@@ -21,20 +21,16 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"filter": dataSourceFiltersSchema(),
-		"public_ip": {
+		"public_ips": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"reservation_id": {
+					"link_public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"link_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"placement": {
+					"public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -79,22 +75,6 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	//if id := d.Get("reservation_id"); id != nil {
-	//	var allocs []*string
-	//	for _, v := range id.([]interface{}) {
-	//		allocs = append(allocs, aws.String(v.(string)))
-	//	}
-	//	req.Filters.AllocationIds = allocs
-	//}
-	//if id := d.Get("public_ip"); id != nil {
-	//	var ips []string
-	//	for _, v := range id.([]interface{}) {
-	//		ips = append(ips, v.(string))
-	//	}
-
-	//	req.Filters.PublicIps = ips
-	//}
-
 	var describeAddresses *oapi.POST_ReadPublicIpsResponses
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
@@ -124,13 +104,12 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 
 		add := make(map[string]interface{})
 
-		add["link_id"] = v.LinkPublicIpId
+		add["link_public_ip_id"] = v.LinkPublicIpId
+		add["public_ip_id"] = v.PublicIpId
 		add["vm_id"] = v.VmId
 		add["nic_id"] = v.NicId
 		add["nic_account_id"] = v.NicAccountId
 		add["private_ip"] = v.PrivateIp
-		add["placement"] = ""
-		add["reservation_id"] = ""
 		add["public_ip"] = v.PublicIp
 
 		address[k] = add
@@ -140,7 +119,7 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 
 	d.Set("request_id", describeAddresses.OK.ResponseContext.RequestId)
 
-	err = d.Set("public_ip", address)
+	err = d.Set("public_ips", address)
 
 	return err
 }

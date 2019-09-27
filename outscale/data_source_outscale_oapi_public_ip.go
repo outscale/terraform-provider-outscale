@@ -111,7 +111,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	address := describeAddresses.PublicIps[0]
 
-	fmt.Printf("[DEBUG] EIP read configuration: %+v", address)
+	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
 	if address.LinkPublicIpId != "" {
 		d.Set("link_public_ip_id", address.LinkPublicIpId)
@@ -165,21 +165,21 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPu
 		}
 
 		switch name := m["name"].(string); name {
-		// case "reservation-ids":
-		// 	filters.ReservationIds = filterValues
-		case "link_id":
+		case "public_ip_ids":
+			filters.PublicIpIds = filterValues
+		case "link_ids":
 			filters.LinkPublicIpIds = filterValues
-		case "placement":
+		case "placements":
 			filters.Placements = filterValues
-		case "vm_id":
+		case "vm_ids":
 			filters.VmIds = filterValues
-		case "nic_id":
+		case "nic_ids":
 			filters.NicIds = filterValues
-		case "nic_account_id":
+		case "nic_account_ids":
 			filters.NicAccountIds = filterValues
-		case "private_ip":
+		case "private_ips":
 			filters.PrivateIps = filterValues
-		case "public_ip":
+		case "public_ips":
 			filters.PublicIps = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

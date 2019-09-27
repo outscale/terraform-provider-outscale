@@ -36,7 +36,6 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 				Config: testAccOutscaleOAPISubnetConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubNetExists("outscale_subnet.subnet", &conf),
-					testAccCheckState("outscale_subnet.subnet"),
 				),
 			},
 		},
@@ -151,8 +150,13 @@ resource "outscale_net" "net" {
 }
 resource "outscale_subnet" "subnet" {
 	ip_range = "10.0.0.0/16"
-	subregion_name = "in-west-2a"
+	subregion_name = "eu-west-2a"
 	net_id = "${outscale_net.net.id}"
+
+	tags = {
+		key = "name"
+		value = "terraform-subnet"
+	 }
 }
 
 `

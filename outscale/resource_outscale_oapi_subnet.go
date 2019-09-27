@@ -73,6 +73,13 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 
 	result := resp.OK
 
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), result.Subnet.SubnetId, conn)
+		if err != nil {
+			return err
+		}
+	}
+
 	d.SetId(result.Subnet.SubnetId)
 
 	return resourceOutscaleOAPISubNetRead(d, meta)

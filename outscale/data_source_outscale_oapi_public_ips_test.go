@@ -11,14 +11,15 @@ import (
 func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
+	isOAPI, err := strconv.ParseBool(o)
 	if err != nil {
-		oapi = false
+		isOAPI = false
 	}
 
-	if !oapi {
+	if !isOAPI {
 		t.Skip()
 	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -26,12 +27,12 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPIPublicIPSConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.0.domain", "standard"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.1.domain", "standard"),
-					resource.TestCheckResourceAttr(
-						"data.outscale_public_ips.by_public_ips", "addresses_set.2.domain", "standard"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.0.public_ip"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.1.public_ip"),
+					resource.TestCheckResourceAttrSet(
+						"data.outscale_public_ips.by_public_ips", "public_ips.2.public_ip"),
 				),
 			},
 		},

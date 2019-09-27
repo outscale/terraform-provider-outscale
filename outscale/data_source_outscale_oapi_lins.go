@@ -21,7 +21,7 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"net": {
+			"nets": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -129,7 +129,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 		nets[i] = net
 	}
 
-	d.Set("net", nets)
+	d.Set("nets", nets)
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 
 	return nil
