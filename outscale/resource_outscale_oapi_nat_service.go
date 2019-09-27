@@ -201,17 +201,16 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	deleteOpts := &oapi.DeleteNatServiceRequest{
+	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
+	req := &oapi.DeleteNatServiceRequest{
 		NatServiceId: d.Id(),
 	}
-
-	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
 
 	var resp *oapi.POST_DeleteNatServiceResponses
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		resp, err = conn.POST_DeleteNatService(*deleteOpts)
+		resp, err = conn.POST_DeleteNatService(*req)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -221,14 +220,13 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	})
 
-	var errString string
-
 	if err != nil || resp.OK == nil {
+		var errString string
+
 		if err != nil {
 			if strings.Contains(err.Error(), "NatGatewayNotFound:") {
 				return nil
 			}
-
 			errString = err.Error()
 		} else if resp.Code401 != nil {
 			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
@@ -237,7 +235,6 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 		} else if resp.Code500 != nil {
 			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 		}
-
 		return fmt.Errorf("error deleting Nat Service (%s)", errString)
 	}
 
@@ -267,29 +264,20 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 		}
 
 		var resp *oapi.POST_ReadNatServicesResponses
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
+		var err error
 
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.POST_ReadNatServices(*opts)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
+			return resource.NonRetryableError(err)
 		})
 
-		var errString string
-
 		if err != nil || resp.OK == nil {
+			var errString string
 			if err != nil {
-				log.Printf("LOGG_____ Response 287 %+v ", err)
 
 				if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
 					return nil, "", nil
 				}
-
 				errString = err.Error()
 			} else if resp.Code401 != nil {
 				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
@@ -298,20 +286,16 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 			} else if resp.Code500 != nil {
 				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
 			}
-
 			return nil, "", fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 		}
 
 		response := resp.OK
 
-		log.Printf("LOGG_____ Response 305 %+v ", response)
-
-		if len(response.NatServices) == 0 {
-			return nil, "deleted", nil
+		if response == nil || len(response.NatServices) == 0 {
+			return oapi.NatService{NatServiceId: id, State: "deleted"}, "deleted", nil
 		}
 
 		ng := response.NatServices[0]
-		log.Printf("LOGG_____ ng 313 %+v ", ng)
 		return ng, ng.State, nil
 	}
 }
