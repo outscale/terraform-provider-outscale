@@ -132,8 +132,22 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
-						"tag": dataSourceTagsSchema(),
-					},
+						"tags": {
+							Type: schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+							Computed: true,
+						}},
 				},
 			},
 		},
@@ -248,12 +262,10 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 		if v.ProductCodes != nil {
 			im["product_codes"] = v.ProductCodes
 		}
-		//if v.StateComment != nil {
 		im["state_comment"] = omiOAPIStateReason(&v.StateComment)
-		//}
-		// if v.Tags != nil {
-		// 	im["tag"] = dataSourceTags(v.Tags)
-		// }
+
+		im["tags"] = getOapiTagSet(v.Tags)
+
 		i[k] = im
 	}
 
