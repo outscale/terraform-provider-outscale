@@ -156,7 +156,22 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 					},
 				},
 			},
-			"tag": dataSourceTagsSchema(),
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -350,10 +365,12 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("permissions_to_launch", setResourcePermissions(image.PermissionsToLaunch)); err != nil {
 		return err
 	}
+	if err := d.Set("tags", getOapiTagSet(image.Tags)); err != nil {
+		return err
+	}
 
 	d.Set("request_id", result.ResponseContext.RequestId)
 
-	//return d.Set("tag", dataSourceTags(image.Tags))
 	return nil
 }
 
@@ -377,7 +394,7 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 	// 	return err
 	// }
 
-	// d.SetPartial("tag")
+	// d.SetPartial("tags")
 
 	if d.Get("description").(string) != "" {
 		_, err := conn.POST_UpdateImage(oapi.UpdateImageRequest{
