@@ -74,12 +74,12 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 }
 
 const testAccCheckOutscaleOAPIImageDataSourceBasicConfig = `
-data "outscale_image" "omi" {
-	filter {
-      name = "image_ids"
-      values = ["ami-b0829808"]
+	data "outscale_image" "omi" {
+		filter {
+				name = "architectures"
+				values = ["x86_64"]
+		}
 	}
-}
 `
 
 func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region string) string {
