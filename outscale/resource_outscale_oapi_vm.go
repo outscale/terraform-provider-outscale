@@ -462,6 +462,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"admin_password": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
 			"tags": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
