@@ -898,8 +898,10 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMap
 		value := v.(map[string]interface{})
 		bsu := value["bsu"].(map[string]interface{})
 
-		deleteOnVMDeletion := (cast.ToBool(bsu["delete_on_vm_deletion"]) == true)
-		blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
+		if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
+			deleteOnVMDeletion := (cast.ToBool(deleteOnVMDeletion) == true)
+			blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
+		}
 
 		if iops, ok := bsu["iops"]; ok {
 			blockDevices[i].Bsu.Iops = cast.ToInt64(iops)
