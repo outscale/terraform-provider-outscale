@@ -97,7 +97,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 
 	set("architecture", instance.Architecture)
-	if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+	if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
@@ -140,19 +140,21 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	return set("vm_type", instance.VmType)
 }
 
-func getOAPIVMBlockDeviceMapping(b []oapi.BlockDeviceMappingCreated) (blockDeviceMapping []map[string]interface{}) {
-	for i := 0; i < len(b); i++ {
-		blockDeviceMapping = append(blockDeviceMapping, map[string]interface{}{
-			"device_name": b[i].DeviceName,
+func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCreated) []map[string]interface{} {
+	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
+
+	for k, v := range blockDeviceMappings {
+		blockDeviceMapping[k] = map[string]interface{}{
+			"device_name": v.DeviceName,
 			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", b[i].Bsu.DeleteOnVmDeletion),
-				"volume_id":             b[i].Bsu.VolumeId,
-				"state":                 b[i].Bsu.State,
-				"link_date":             b[i].Bsu.LinkDate,
+				"delete_on_vm_deletion": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
+				"volume_id":             v.Bsu.VolumeId,
+				"state":                 v.Bsu.State,
+				"link_date":             v.Bsu.LinkDate,
 			},
-		})
+		}
 	}
-	return
+	return blockDeviceMapping
 }
 
 func getOAPIVMSecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
@@ -394,6 +396,57 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"bsu": {
 						Type:     schema.TypeMap,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Optional: true,
+								},
+								"iops": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"snapshot_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+								"volume_size": {
+									Type:     schema.TypeInt,
+									Optional: true,
+								},
+								"volume_type": {
+									Type:     schema.TypeString,
+									Optional: true,
+								},
+							},
+						},
+					},
+					"device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"no_device": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"virtual_device_name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"block_device_mappings_created": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -406,11 +459,11 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"state": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeInt,
 									Computed: true,
 								},
 								"volume_id": {
-									Type:     schema.TypeString,
+									Type:     schema.TypeFloat,
 									Computed: true,
 								},
 							},
@@ -418,7 +471,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 					},
 					"device_name": {
 						Type:     schema.TypeString,
-						Computed: true,
+						Optional: true,
 					},
 				},
 			},

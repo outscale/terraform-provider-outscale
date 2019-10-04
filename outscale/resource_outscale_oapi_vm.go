@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -31,11 +30,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"block_device_mappings": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
-				Set: func(v interface{}) int {
-					return hashcode.String(v.(map[string]interface{})["device_name"].(string))
-				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
@@ -46,20 +42,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
-										Computed: true,
 										Optional: true,
-									},
-									"link_date": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"state": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"volume_id": {
-										Type:     schema.TypeString,
-										Computed: true,
 									},
 									"iops": {
 										Type:     schema.TypeInt,
@@ -82,7 +65,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						},
 						"device_name": {
 							Type:     schema.TypeString,
-							Computed: true,
 							Optional: true,
 						},
 						"no_device": {
@@ -353,6 +335,44 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"block_device_mappings_created": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bsu": {
+							Type:     schema.TypeMap,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"delete_on_vm_deletion": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"link_date": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"state": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"volume_id": {
+										Type:     schema.TypeFloat,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"device_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 			"hypervisor": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -608,8 +628,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		d.SetId(instance.VmId)
 
 		set("architecture", instance.Architecture)
-		// we need to get since index 1 ([1:]) all the slices because the server response always gets us another one item.
-		if err := set("block_device_mappings", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)[1:]); err != nil {
+		if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
 			log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 			return err
 		}
@@ -891,7 +910,7 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.Crea
 
 func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMappingVmCreation {
 
-	block := d.Get("block_device_mappings").(*schema.Set).List()
+	block := d.Get("block_device_mappings").([]interface{})
 	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, len(block))
 
 	for i, v := range block {
