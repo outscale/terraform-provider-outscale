@@ -63,9 +63,23 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 									},
 									"security_groups_members": {
 										Type:     schema.TypeSet,
-										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-										Set:      schema.HashString,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"account_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"security_group_name": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"security_group_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+											},
+										},
 									},
 									"to_port_range": {
 										Type:     schema.TypeInt,
@@ -102,9 +116,23 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 									},
 									"security_groups_members": {
 										Type:     schema.TypeSet,
-										Optional: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-										Set:      schema.HashString,
+										Computed: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"account_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"security_group_name": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+												"security_group_id": {
+													Type:     schema.TypeString,
+													Computed: true,
+												},
+											},
+										},
 									},
 									"to_port_range": {
 										Type:     schema.TypeInt,
@@ -134,13 +162,13 @@ func dataSourceOutscaleOAPISecurityGroups() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"request_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"tags": tagsOAPIListSchemaComputed(),
 					},
 				},
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -168,7 +196,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		for _, v := range gid.([]interface{}) {
 			g = append(g, v.(string))
 		}
-		req.Filters.SecurityGroupNames = g
+		req.Filters.SecurityGroupIds = g
 	}
 
 	if filtersOk {
@@ -199,7 +227,6 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 				resp = nil
 				err = nil
 			} else {
-				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
 				errString = err.Error()
 			}
 
@@ -217,7 +244,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 	result := resp.OK
 
 	if result == nil || len(result.SecurityGroups) == 0 {
-		return fmt.Errorf("Unable to find Security Group")
+		return fmt.Errorf("Unable to find Security Groups by the following %s", utils.ToJSONString(req.Filters))
 	}
 
 	sg := make([]map[string]interface{}, len(result.SecurityGroups))
@@ -239,7 +266,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		sg[k] = s
 	}
 
-	fmt.Printf("[DEBUG] security_groups %s", sg)
+	fmt.Printf("[DEBUG] security_groups %+v", sg)
 
 	d.SetId(resource.UniqueId())
 	d.Set("request_id", result.ResponseContext.RequestId)

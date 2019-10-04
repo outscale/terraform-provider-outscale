@@ -31,7 +31,7 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPISubnetsConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_subnets", "subnets.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_subnets.by_filter", "subnets.#", "1"),
 				),
 			},
 		},
@@ -40,17 +40,25 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 
 func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 	return fmt.Sprintf(`
-		
-		resource "outscale_subnet" "test" {
-		  net_id            = "vpc-e9d09d63"
-		  ip_range        = "172.%d.123.0/24"
-		  subregion_name = "eu-west-2a"
+	resource "outscale_net" "net" {
+		ip_range = "172.%[1]d.123.0/24"
+	}
+
+	resource "outscale_subnet" "subnet" {
+		ip_range = "172.%[1]d.123.0/24"
+		subregion_name = "eu-west-2a"
+		net_id = "${outscale_net.net.id}"
+	
+		tags = {
+			key = "name"
+			value = "terraform-subnet"
+		}
 		}
 	
 		data "outscale_subnets" "by_filter" {
 		  filter {
 		    name = "subnet_ids"
-		    values = ["${outscale_subnet.test.id}"]
+		    values = ["${outscale_subnet.subnet.id}"]
 		  }
 		}
 		`, rInt)

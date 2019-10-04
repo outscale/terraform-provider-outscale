@@ -463,6 +463,25 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -648,6 +667,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		set("vm_id", instance.VmId)
 		set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
 		set("admin_password", adminPassword)
+		set("tags", getOapiTagSet(instance.Tags))
 
 		return set("vm_type", instance.VmType)
 	})
@@ -897,8 +917,10 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMap
 		value := v.(map[string]interface{})
 		bsu := value["bsu"].(map[string]interface{})
 
-		deleteOnVMDeletion := (cast.ToBool(bsu["delete_on_vm_deletion"]) == true)
-		blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
+		if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
+			deleteOnVMDeletion := (cast.ToBool(deleteOnVMDeletion) == true)
+			blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
+		}
 
 		if iops, ok := bsu["iops"]; ok {
 			blockDevices[i].Bsu.Iops = cast.ToInt64(iops)

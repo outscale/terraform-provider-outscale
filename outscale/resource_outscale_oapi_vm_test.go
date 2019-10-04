@@ -587,6 +587,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 	    block_device_mappings = [
 				{
 					device_name = "/dev/sdb"
+					no_device   =  "/dev/xvdb"
 					bsu = {
 						volume_size=15
 						volume_type = "gp2"
@@ -602,6 +603,15 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 						iops      = 150
 						snapshot_id = "${outscale_snapshot.snapshot.id}"
 						delete_on_vm_deletion = false
+					}
+				},
+				{
+					device_name = "/dev/sdc"
+					bsu = {
+						volume_size=22
+						volume_type = "io1"
+						iops      = 150
+						snapshot_id = "${outscale_snapshot.snapshot.id}"
 					}
 				}
 			]

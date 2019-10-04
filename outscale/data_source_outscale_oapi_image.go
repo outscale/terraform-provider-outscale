@@ -143,7 +143,22 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 					},
 				},
 			},
-			"tag": dataSourceTagsSchema(),
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+				Computed: true,
+			},
 		},
 	}
 }
@@ -266,6 +281,9 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
 		return err
 	}
+	if err := d.Set("tags", getOapiTagSet(image.Tags)); err != nil {
+		return err
+	}
 
 	accountIds := image.PermissionsToLaunch.AccountIds
 	lp := make([]map[string]interface{}, len(accountIds))
@@ -282,6 +300,5 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 
 	d.Set("permissions_to_launch", lp)
 
-	//return d.Set("tag", tagsToMap(image.Tags))
 	return nil
 }
