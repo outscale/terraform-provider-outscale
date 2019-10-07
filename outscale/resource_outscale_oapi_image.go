@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"reflect"
 	"strings"
 	"time"
+
+	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -119,20 +120,10 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				},
 			},
 			"product_codes": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
-				Set:      omiOAPIProductCodesHash,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"product_code": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"state_comment": {
@@ -355,7 +346,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
-	if err := d.Set("product_codes", omiOAPIProductCodes(image.ProductCodes)); err != nil {
+	if err := d.Set("product_codes", image.ProductCodes); err != nil {
 		return err
 	}
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
@@ -558,36 +549,22 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, client *oapi.Client) err
 
 // Returns a set of block device mappings.
 func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]interface{} {
-	bdm := make([]map[string]interface{}, len(m))
+	blockDeviceMapping := make([]map[string]interface{}, len(m))
+
 	for k, v := range m {
-		mapping := map[string]interface{}{
-			"device_name": v.DeviceName,
-		}
-		if !reflect.DeepEqual(v.Bsu, oapi.Bsu{}) {
-			bsu := map[string]interface{}{
+		blockDeviceMapping[k] = map[string]interface{}{
+			"device_name":         v.DeviceName,
+			"virtual_device_name": v.VirtualDeviceName,
+			"bsu": map[string]interface{}{
 				"delete_on_vm_deletion": fmt.Sprintf("%t", *v.Bsu.DeleteOnVmDeletion),
-				"volume_size":           fmt.Sprintf("%d", v.Bsu.VolumeSize),
+				"iops":                  cast.ToString(v.Bsu.Iops),
+				"snapshot_id":           v.Bsu.SnapshotId,
+				"volume_size":           cast.ToString(v.Bsu.VolumeSize),
 				"volume_type":           v.Bsu.VolumeType,
-			}
-
-			//	if v.Bsu.Iops != nil {
-			bsu["iops"] = fmt.Sprintf("%d", v.Bsu.Iops)
-			//	} else {
-			//		bsu["iops"] = "0"
-			//	}
-			if v.Bsu.SnapshotId != "" {
-				bsu["snapshot_id"] = v.Bsu.SnapshotId
-			}
-
-			mapping["bsu"] = bsu
+			},
 		}
-		if v.VirtualDeviceName != "" {
-			mapping["virtual_device_name"] = v.VirtualDeviceName
-		}
-		log.Printf("[DEBUG] outscale_image - adding block device mapping: %v", mapping)
-		bdm[k] = mapping
 	}
-	return bdm
+	return blockDeviceMapping
 }
 
 // Returns a set of product codes.
