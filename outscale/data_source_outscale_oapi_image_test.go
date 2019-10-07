@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"testing"
 
@@ -12,35 +11,21 @@ import (
 )
 
 func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIImageConfigBasic(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "architecture", "x86_64"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "block_device_mapping.#", "1"),
-					resource.TestMatchResourceAttr("data.outscale_image.nat_ami", "image_id", regexp.MustCompile("^ami-")),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "type", "machine"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "product_code.#", "0"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "root_device_name", "/dev/sda1"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "root_device_type", "ebs"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "state", "available"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "state_comment.code", "UNSET"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "state_comment.message", "UNSET"),
-					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "tag.#", "0"),
 				),
 			},
 		},
@@ -97,30 +82,34 @@ data "outscale_image" "omi" {
 }
 `
 
-const testAccCheckOutscaleOAPIImageDataSourceConfig = `
-#Commented until security group will be merged.
-#resource "outscale_keypair" "a_key_pair" {
-#	keypair_name   = "terraform-key-%d"
-#}
+func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}
 
-#resource "outscale_security_group" "web" {
-#  group_name = "terraform_acceptance_test_example_1"
-#  group_description = "Used in the terraform acceptance tests"
-#}
+		resource "outscale_subnet" "outscale_subnet" {
+			net_id              = "${outscale_net.outscale_net.net_id}"
+			ip_range            = "10.0.0.0/24"
+			subregion_name      = "eu-west-2a"
+		}
 
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	type = "t2.micro"
-	#security_group_ids = ["${outscale_security_group.web.id}"]
-	#keypair_name = "${outscale_keypair.a_key_pair.keypair_name}"
+		resource "outscale_vm" "basic" {
+			image_id			           = "%s"
+			vm_type                  = "%s"
+			keypair_name	           = "terraform-basic"
+			placement_subregion_name = "%sa"
+			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			private_ips              =  ["10.0.0.12"]
+		}
+
+		resource "outscale_image" "foo" {
+			image_name = "myImageName"
+			vm_id = "${outscale_vm.basic.id}"
+		}
+
+		data "outscale_image" "nat_ami" {
+			image_id = "${outscale_image.foo.id}"
+		}
+	`, omi, vmType, region)
 }
-
-resource "outscale_image" "foo" {
-	name = "tf-testing-%d"
-	vm_id = "${outscale_vm.basic.id}"
-}
-
-data "outscale_image" "nat_ami" {
-	image_id = "${outscale_image.foo.id}"
-}
-`
