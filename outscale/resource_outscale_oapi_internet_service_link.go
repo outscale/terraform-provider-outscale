@@ -154,15 +154,17 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		_, err = conn.POST_UnlinkInternetService(*req)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(), "424 Failed Dependency") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
 	})
+
 	if err != nil {
 		log.Printf("[DEBUG] Error dettaching internet service id (%s)", err)
+		return err
 	}
 
 	d.SetId("")
