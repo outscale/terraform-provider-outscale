@@ -98,9 +98,8 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 						},
 						// Complex computed values
 						"block_device_mappings": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Computed: true,
-							Set:      omiOAPIBlockDeviceMappingHash,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"device_name": {
@@ -123,20 +122,10 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							},
 						},
 						"product_codes": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Computed: true,
-							Set:      omiOAPIProductCodesHash,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"product_code": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"type": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
 							},
 						},
 						"state_comment": {
