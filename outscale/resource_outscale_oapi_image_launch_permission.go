@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -30,6 +32,28 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 				ForceNew: true,
 			},
 			"permission_additions": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+							Default:  "false",
+						},
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
+			"permission_removals": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
@@ -88,49 +112,45 @@ func resourceOutscaleOAPIImageLaunchPermissionExists(d *schema.ResourceData, met
 	return hasOAPILaunchPermission(conn, imageID)
 }
 
+func expandOAPIImagePermission(permissionType interface{}) (res oapi.PermissionsOnResource) {
+
+	if len(permissionType.([]interface{})) > 0 {
+		permission := permissionType.([]interface{})[0].(map[string]interface{})
+
+		if globalPermission, ok := permission["global_permission"]; ok {
+			res.GlobalPermission = cast.ToBool(globalPermission)
+		}
+
+		if accountIDs, ok := permission["account_ids"]; ok {
+			for _, accountID := range accountIDs.([]interface{}) {
+				res.AccountIds = append(res.AccountIds, accountID.(string))
+			}
+		}
+	}
+	return
+}
+
 func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	imageID, iok := d.GetOk("image_id")
+	imageID, ok := d.GetOk("image_id")
 
-	fmt.Println("Creating Outscale Image Launch Permission, image_id", imageID.(string))
-
-	if !iok {
+	if !ok {
 		return fmt.Errorf("please provide the required attribute image_id")
+	}
+	log.Printf("Creating Outscale Image Launch Permission, image_id (%+v)", imageID.(string))
+
+	permissionLunch := &oapi.PermissionsOnResourceCreation{}
+	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
+		permissionLunch.Additions = expandOAPIImagePermission(permissionAdditions)
+	}
+	if permissionRemovals, ok := d.GetOk("permission_removals"); ok {
+		permissionLunch.Removals = expandOAPIImagePermission(permissionRemovals)
 	}
 
 	request := &oapi.UpdateImageRequest{
-		ImageId: imageID.(string),
-	}
-
-	//request.Attribute = aws.String("launchPermission")
-	launchPermission := oapi.PermissionsOnResourceCreation{}
-
-	if v, ok := d.GetOk("permission_additions"); ok {
-		add := v.([]interface{})
-
-		if len(add) > 0 {
-			accountIds := make([]string, len(add))
-			var globalPermission bool
-
-			att := add[0].(map[string]interface{})
-			if g, ok := att["global_permission"]; ok {
-				globalPermission, _ = strconv.ParseBool(g.(string))
-			}
-			if g, ok := att["account_ids"]; ok {
-				accountIds = make([]string, len(g.([]interface{})))
-
-				for k, v := range g.([]interface{}) {
-					accountIds[k] = v.(string)
-				}
-			}
-
-			launchPermission.Additions = oapi.PermissionsOnResource{
-				AccountIds:       accountIds,
-				GlobalPermission: globalPermission,
-			}
-		}
-		request.PermissionsToLaunch = launchPermission
+		ImageId:             imageID.(string),
+		PermissionsToLaunch: *permissionLunch,
 	}
 
 	var resp *oapi.POST_UpdateImageResponses
