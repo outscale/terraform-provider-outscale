@@ -105,23 +105,24 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"main": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
 									"route_table_to_subnet_link_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
+									"link_route_table_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
 									"route_table_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-
 									"subnet_id": {
 										Type:     schema.TypeString,
-										Computed: true,
-									},
-
-									"main": {
-										Type:     schema.TypeBool,
 										Computed: true,
 									},
 								},
@@ -147,10 +148,10 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 	}
 
 	if rtbOk {
-		i := rtbID.([]string)
+		i := rtbID.([]interface{})
 		in := make([]string, len(i))
 		for k, v := range i {
-			in[k] = v
+			in[k] = v.(string)
 		}
 		params.Filters.RouteTableIds = in
 	}
@@ -199,7 +200,7 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-		routeTable["route_propagating_vpn_gateways"] = setOAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
+		routeTable["route_propagating_virtual_gateways"] = setOAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
 		routeTable["route_table_id"] = v.RouteTableId
 		routeTable["net_id"] = v.NetId
 		routeTable["tags"] = tagsOAPIToMap(v.Tags)

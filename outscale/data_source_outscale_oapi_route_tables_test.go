@@ -17,8 +17,8 @@ func TestAccDataSourceOutscaleOAPIRouteTables_basic(t *testing.T) {
 			{
 				Config: testAccDataSourceOutscaleOAPIRouteTablesGroupConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_route_tables.by_filter", "route_table_set.#", "1"),
-					resource.TestCheckResourceAttr("data.outscale_route_tables.by_id", "route_table_set.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_route_tables.by_filter", "route_tables.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_route_tables.by_id", "route_tables.#", "1"),
 				),
 			},
 		},
@@ -38,10 +38,10 @@ resource "outscale_net" "test" {
 resource "outscale_subnet" "test" {
   ip_range = "172.16.0.0/24"
   net_id     = "${outscale_net.test.id}"
-  # tags {
-  #   key = "Name"
-  #   value = "terraform-testacc-data-source"
-  # }
+  tags {
+	key = "Name"
+	value = "terraform-testacc-data-source"
+  }
 }
 
 resource "outscale_route_table" "test" {
@@ -54,7 +54,7 @@ resource "outscale_route_table" "test" {
 
 data "outscale_route_tables" "by_filter" {
   filter {
-    name = "route-table-id"
+    name = "route_table_ids"
     values = ["${outscale_route_table.test.id}"]
   }
 }
