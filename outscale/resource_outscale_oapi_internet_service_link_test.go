@@ -58,7 +58,7 @@ func testAccCheckOutscaleOAPIInternetServiceLinkExists(n string, res *oapi.Inter
 		var resp *oapi.POST_ReadInternetServicesResponses
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
-		id := rs.Primary.Attributes["internet_gateway_id"]
+		id := rs.Primary.Attributes["internet_service_id"]
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
