@@ -39,7 +39,11 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			// Computed values.
-			"image": {
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"images": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -218,6 +222,8 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 
 	result = resp.OK
 
+	d.Set("request_id", result.ResponseContext.RequestId)
+
 	if len(result.Images) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -269,7 +275,7 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 		i[k] = im
 	}
 
-	err := d.Set("image", i)
+	err := d.Set("images", i)
 	d.SetId(resource.UniqueId())
 
 	return err
