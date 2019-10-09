@@ -389,55 +389,6 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"block_device_mappings": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"bsu": {
-						Type:     schema.TypeMap,
-						Optional: true,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"delete_on_vm_deletion": {
-									Type:     schema.TypeBool,
-									Optional: true,
-								},
-								"iops": {
-									Type:     schema.TypeInt,
-									Optional: true,
-								},
-								"snapshot_id": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-								"volume_size": {
-									Type:     schema.TypeInt,
-									Optional: true,
-								},
-								"volume_type": {
-									Type:     schema.TypeString,
-									Optional: true,
-								},
-							},
-						},
-					},
-					"device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"no_device": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-					"virtual_device_name": {
-						Type:     schema.TypeString,
-						Optional: true,
-					},
-				},
-			},
-		},
 		"block_device_mappings_created": {
 			Type:     schema.TypeList,
 			Optional: true,
