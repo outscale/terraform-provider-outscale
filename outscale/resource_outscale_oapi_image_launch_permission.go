@@ -244,79 +244,50 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	imageID, iok := d.GetOk("image_id")
-	permission, lok := d.GetOk("permission_additions")
-
-	if !iok {
+	imageID, ok := d.GetOk("image_id")
+	if !ok {
 		return fmt.Errorf("please provide the required attribute image_id")
 	}
 
-	request := &oapi.UpdateImageRequest{
-		ImageId: imageID.(string),
-	}
+	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
+		request := &oapi.UpdateImageRequest{
+			ImageId: imageID.(string),
+			PermissionsToLaunch: oapi.PermissionsOnResourceCreation{
+				Removals: expandOAPIImagePermission(permissionAdditions),
+			},
+		}
 
-	if lok {
-		//request.Attribute = aws.String("launchPermission")
-		launchPermission := oapi.PermissionsOnResourceCreation{}
-
-		delete := permission.([]interface{})
-
-		if len(delete) > 0 {
-			accountIds := make([]string, 0)
-			var globalPermission bool
-
-			att := delete[0].(map[string]interface{})
-			if g, ok := att["global_permission"]; ok {
-				globalPermission, _ = strconv.ParseBool(g.(string))
-			}
-			if g, ok := att["account_ids"]; ok {
-				accountIds = make([]string, len(g.([]interface{})))
-
-				for k, v := range g.([]interface{}) {
-					accountIds[k] = v.(string)
+		var resp *oapi.POST_UpdateImageResponses
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			resp, err = conn.POST_UpdateImage(*request)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
 				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		var errString string
+
+		if err != nil || resp.OK == nil {
+			if err != nil {
+				errString = err.Error()
+			} else if resp.Code401 != nil {
+				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
+			} else if resp.Code400 != nil {
+				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
+			} else if resp.Code500 != nil {
+				errString = fmt.Sprintf("Status Code: 500, %s", utils.ToJSONString(resp.Code500))
 			}
 
-			launchPermission.Removals = oapi.PermissionsOnResource{
-				AccountIds:       accountIds,
-				GlobalPermission: globalPermission,
-			}
+			return fmt.Errorf("error removing omi launch permission: %s", errString)
 		}
-
-		request.PermissionsToLaunch = launchPermission
-	}
-
-	var resp *oapi.POST_UpdateImageResponses
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		resp, err = conn.POST_UpdateImage(*request)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status Code: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("error removing omi launch permission: %s", errString)
 	}
 
 	d.SetId("")
-
 	return nil
 }
 
