@@ -522,7 +522,6 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	vm := runResp.Vms[0]
-	fmt.Printf("[INFO] Instance ID: %s", vm.VmId)
 
 	d.SetId(vm.VmId)
 
@@ -534,7 +533,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
+		Pending:    []string{"pending", "ending/wait"},
 		Target:     []string{"running"},
 		Refresh:    InstanceStateOApiRefreshFunc(conn, vm.VmId, "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -545,7 +544,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for instance (%s) to stop: %s", d.Id(), err)
+			"Error waiting for instance (%s) to become created: %s", d.Id(), err)
 	}
 
 	// Initialize the connection info
@@ -863,7 +862,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the instance")
 	}
 
-	fmt.Printf("[DEBUG] Waiting for instance (%s) to become terminated", id)
+	log.Printf("[DEBUG] Waiting for vm (%s) to become terminated", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},

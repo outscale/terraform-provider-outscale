@@ -2068,7 +2068,7 @@ type Nic struct {
 type NicForVmCreation struct {
 	DeleteOnVmDeletion      bool             `json:"DeleteOnVmDeletion,omitempty"`
 	Description             string           `json:"Description,omitempty"`
-	DeviceNumber            int64            `json:"DeviceNumber,omitempty"`
+	DeviceNumber            int64            `json:"DeviceNumber"`
 	NicId                   string           `json:"NicId,omitempty"`
 	PrivateIps              []PrivateIpLight `json:"PrivateIps,omitempty"`
 	SecondaryPrivateIpCount int64            `json:"SecondaryPrivateIpCount,omitempty"`

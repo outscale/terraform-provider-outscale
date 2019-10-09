@@ -38,7 +38,6 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
-					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
@@ -67,7 +66,6 @@ func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
-					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
@@ -95,7 +93,6 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
-					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
@@ -161,7 +158,6 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
-					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
@@ -190,7 +186,6 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "vm_type", "c4.large"),
-					testAccCheckState("outscale_vm.basic"),
 				),
 			},
 		},
