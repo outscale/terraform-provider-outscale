@@ -107,20 +107,10 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				},
 			},
 			"product_codes": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
-				Set:      omiOAPIProductCodesHash,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"product_code": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"state_comment": {
@@ -275,7 +265,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
-	if err := d.Set("product_codes", omiOAPIProductCodes(image.ProductCodes)); err != nil {
+	if err := d.Set("product_codes", image.ProductCodes); err != nil {
 		return err
 	}
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
