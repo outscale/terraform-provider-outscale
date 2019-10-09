@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -275,20 +277,17 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 		return err
 	}
 
-	accountIds := image.PermissionsToLaunch.AccountIds
-	lp := make([]map[string]interface{}, len(accountIds))
-	for k, v := range accountIds {
-		l := make(map[string]interface{})
-		//if image.PermissionsToLaunch.GlobalPermission != nil {
-		l["global_permission"] = image.PermissionsToLaunch.GlobalPermission
-		//}
-		//if v.UserId != nil {
-		l["account_id"] = v
-		//}
-		lp[k] = l
-	}
-
-	d.Set("permissions_to_launch", lp)
+	d.Set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch))
 
 	return nil
+}
+
+func omiOAPIPermissionToLuch(p oapi.PermissionsOnResource) (res []map[string]interface{}) {
+	for _, v := range p.AccountIds {
+		res = append(res, map[string]interface{}{
+			"account_id":        v,
+			"global_permission": cast.ToString(p.GlobalPermission),
+		})
+	}
+	return
 }
