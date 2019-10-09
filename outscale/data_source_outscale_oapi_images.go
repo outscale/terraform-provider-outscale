@@ -48,26 +48,6 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"architecture": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"creation_date": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"osu_location": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"account_alias": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -76,27 +56,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"is_public": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"root_device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"root_device_type": {
+						"architecture": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -125,12 +85,64 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 								},
 							},
 						},
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"file_location": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"permissions_to_launch": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"global_permission": &schema.Schema{
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"account_id": &schema.Schema{
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
 						"product_codes": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+						},
+						"root_device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"root_device_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 						"state_comment": {
 							Type:     schema.TypeMap,
@@ -151,7 +163,8 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 								},
 							},
 							Computed: true,
-						}},
+						},
+					},
 				},
 			},
 		},
@@ -247,16 +260,17 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 			im["description"] = v.Description
 		}
 		im["image_id"] = v.ImageId
-		im["osu_location"] = v.FileLocation
+		im["file_location"] = v.FileLocation
 		if v.AccountAlias != "" {
 			im["account_alias"] = v.AccountAlias
 		}
 		im["account_id"] = v.AccountId
-		im["type"] = v.ImageType
+		im["image_type"] = v.ImageType
 		im["state"] = v.State
-		im["name"] = v.ImageName
-		//Missing on swager spec
-		//im["is_public"] = v.Public
+		im["image_name"] = v.ImageName
+
+		im["permissions_to_launch"] = omiOAPIPermissionToLuch(v.PermissionsToLaunch)
+
 		if v.RootDeviceName != "" {
 			im["root_device_name"] = v.RootDeviceName
 		}
@@ -292,7 +306,7 @@ func omiOAPIBlockDeviceMappingHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%s-", e["delete_on_vm_termination"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", e["iops"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", e["volume_size"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["type"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", e["image_type"].(string)))
 		}
 	}
 	if d, ok := m["no_device"]; ok {
