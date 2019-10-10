@@ -386,7 +386,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 	return res
 }
 
-func getOAPILinkNic(l oapi.LinkNicLight) map[string]interface{} {
+func getOAPILinkNicLight(l oapi.LinkNicLight) map[string]interface{} {
 	return map[string]interface{}{
 		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
 		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
@@ -395,7 +395,18 @@ func getOAPILinkNic(l oapi.LinkNicLight) map[string]interface{} {
 	}
 }
 
-func getOAPILinkPublicIP(l oapi.LinkPublicIpLightForVm) *schema.Set {
+func getOAPILinkNic(l oapi.LinkNic) map[string]interface{} {
+	return map[string]interface{}{
+		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
+		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
+		"link_nic_id":           l.LinkNicId,
+		"state":                 l.State,
+		"vm_account_id":         l.VmAccountId,
+		"vm_id":                 l.VmId,
+	}
+}
+
+func getOAPILinkPublicIPLight(l oapi.LinkPublicIpLightForVm) *schema.Set {
 	res := &schema.Set{
 		F: func(v interface{}) int {
 			var buf bytes.Buffer
@@ -414,7 +425,51 @@ func getOAPILinkPublicIP(l oapi.LinkPublicIpLightForVm) *schema.Set {
 	return res
 }
 
-func getOAPIPrivateIPs(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
+func getOAPILinkPublicIP(l oapi.LinkPublicIp) *schema.Set {
+	res := &schema.Set{
+		F: func(v interface{}) int {
+			var buf bytes.Buffer
+			m := v.(map[string]interface{})
+			buf.WriteString(fmt.Sprintf("%s-", m["public_ip"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", m["public_ip_account_id"].(string)))
+			return hashcode.String(buf.String())
+		},
+	}
+
+	res.Add(map[string]interface{}{
+		"link_public_ip_id":    l.LinkPublicIpId,
+		"public_dns_name":      l.PublicDnsName,
+		"public_ip":            l.PublicIp,
+		"public_ip_account_id": l.PublicIpAccountId,
+		"public_ip_id":         l.PublicIpId,
+	})
+	return res
+}
+
+func getOAPIPrivateIPsLight(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
+	res := &schema.Set{
+		F: func(v interface{}) int {
+			var buf bytes.Buffer
+			m := v.(map[string]interface{})
+			buf.WriteString(fmt.Sprintf("%s-", m["private_ip"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", m["private_dns_name"].(string)))
+			return hashcode.String(buf.String())
+		},
+	}
+
+	for _, p := range privateIPs {
+		r := map[string]interface{}{
+			"is_primary":       p.IsPrimary,
+			"link_public_ip":   getOAPILinkPublicIPLight(p.LinkPublicIp),
+			"private_dns_name": p.PrivateDnsName,
+			"private_ip":       p.PrivateIp,
+		}
+		res.Add(r)
+	}
+	return res
+}
+
+func getOAPIPrivateIPs(privateIPs []oapi.PrivateIp) *schema.Set {
 	res := &schema.Set{
 		F: func(v interface{}) int {
 			var buf bytes.Buffer
@@ -437,7 +492,33 @@ func getOAPIPrivateIPs(privateIPs []oapi.PrivateIpLightForVm) *schema.Set {
 	return res
 }
 
-func getOAPIVMNetworkInterfaceSet(nics []oapi.NicLight) (res []map[string]interface{}) {
+func getOAPIVMNetworkInterfaceLightSet(nics []oapi.NicLight) (res []map[string]interface{}) {
+	if nics != nil {
+		for _, nic := range nics {
+			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.SecurityGroups)
+
+			res = append(res, map[string]interface{}{
+				"account_id":             nic.AccountId,
+				"description":            nic.Description,
+				"is_source_dest_checked": nic.IsSourceDestChecked,
+				"link_nic":               getOAPILinkNicLight(nic.LinkNic),
+				"link_public_ip":         getOAPILinkPublicIPLight(nic.LinkPublicIp),
+				"mac_address":            nic.MacAddress,
+				"net_id":                 nic.NetId,
+				"nic_id":                 nic.NicId,
+				"private_dns_name":       nic.PrivateDnsName,
+				"private_ips":            getOAPIPrivateIPsLight(nic.PrivateIps),
+				"security_groups":        securityGroups,
+				"security_group_ids":     securityGroupIds,
+				"state":                  nic.State,
+				"subnet_id":              nic.SubnetId,
+			})
+		}
+	}
+	return
+}
+
+func getOAPIVMNetworkInterfaceSet(nics []oapi.Nic) (res []map[string]interface{}) {
 	if nics != nil {
 		for _, nic := range nics {
 			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.SecurityGroups)
@@ -457,6 +538,8 @@ func getOAPIVMNetworkInterfaceSet(nics []oapi.NicLight) (res []map[string]interf
 				"security_group_ids":     securityGroupIds,
 				"state":                  nic.State,
 				"subnet_id":              nic.SubnetId,
+				"sub_region_name":        nic.SubregionName,
+				"tags":                   getOapiTagSet(nic.Tags),
 			})
 		}
 	}
