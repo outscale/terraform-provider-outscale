@@ -267,16 +267,6 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
-			if r.GatewayId != "" && r.GatewayId == "local" {
-				continue
-			}
-			if r.CreationMethod != "" && r.CreationMethod == "EnableVgwRoutePropagation" {
-				continue
-			}
-			if r.DestinationPrefixListId != "" {
-				continue
-			}
-
 			if r.CreationMethod != "" {
 				m["creation_method"] = r.CreationMethod
 			}
