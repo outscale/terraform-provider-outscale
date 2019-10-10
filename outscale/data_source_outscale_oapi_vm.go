@@ -110,7 +110,8 @@ func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
 	set("keypair_name", instance.KeypairName)
 	set("launch_number", instance.LaunchNumber)
 	set("net_id", instance.NetId)
-	if err := set("nics", getOAPIVMNetworkInterfaceSet(instance.Nics)); err != nil {
+
+	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(instance.Nics)); err != nil {
 		log.Printf("[DEBUG] NICS ERR %+v", err)
 		return err
 	}
