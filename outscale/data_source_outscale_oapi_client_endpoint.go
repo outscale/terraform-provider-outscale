@@ -18,7 +18,7 @@ func dataSourceOutscaleOAPICustomerGateway() *schema.Resource {
 		Read: dataSourceOutscaleOAPICustomerGatewayRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersOApiSchema(),
 			"bgp_asn": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -43,7 +43,7 @@ func dataSourceOutscaleOAPICustomerGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag": tagsSchemaComputed(),
+			"tag": tagsOAPISchemaComputed(),
 		},
 	}
 }
