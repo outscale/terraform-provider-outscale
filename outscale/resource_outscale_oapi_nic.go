@@ -46,7 +46,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_id": &schema.Schema{
+		"security_group_ids": &schema.Schema{
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -155,8 +155,10 @@ func getOAPINicSchema() map[string]*schema.Schema {
 		},
 
 		"private_ips": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Computed: true,
+			Optional: true,
+			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"link_public_ip": {
@@ -194,10 +196,12 @@ func getOAPINicSchema() map[string]*schema.Schema {
 					"private_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
 					},
 					"is_primary": {
 						Type:     schema.TypeBool,
 						Computed: true,
+						Optional: true,
 					},
 				},
 			},
@@ -239,7 +243,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		request.Description = v.(string)
 	}
 
-	if v, ok := d.GetOk("security_group_id"); ok {
+	if v, ok := d.GetOk("security_group_ids"); ok {
 		m := v.([]interface{})
 		a := make([]string, len(m))
 		for k, v := range m {
@@ -248,16 +252,8 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		request.SecurityGroupIds = a
 	}
 
-	if v, ok := d.GetOk("private_ip"); ok {
-		privateIP := oapi.PrivateIpLight{
-			IsPrimary: true,
-			PrivateIp: v.(string),
-		}
-
-		privateIPs := []oapi.PrivateIpLight{
-			privateIP,
-		}
-		request.PrivateIps = privateIPs
+	if v, ok := d.GetOk("private_ips"); ok {
+		request.PrivateIps = expandPrivateIPLight(v.(*schema.Set).List())
 	}
 
 	log.Printf("[DEBUG] Creating network interface")
@@ -555,20 +551,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("link_nic")
 	}
 
-	if d.HasChange("private_ip") {
-		o, n := d.GetChange("private_ip")
-		if o == nil {
-			o = new([]interface{})
-		}
-		if n == nil {
-			n = new([]interface{})
-		}
+	if d.HasChange("private_ips") {
+		o, n := d.GetChange("private_ips")
 
 		// Unassign old IP addresses
-		if len(o.([]interface{})) != 0 {
+		if len(o.(*schema.Set).List()) != 0 {
 			input := oapi.UnlinkPrivateIpsRequest{
 				NicId:      d.Id(),
-				PrivateIps: expandStringValueList(o.([]interface{})),
+				PrivateIps: flattenPrivateIPLightToStringSlice(o.(*schema.Set).List()),
 			}
 
 			var err error
@@ -590,10 +580,10 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 
 		// Assign new IP addresses
-		if len(n.([]interface{})) != 0 {
+		if len(n.(*schema.Set).List()) != 0 {
 			input := oapi.LinkPrivateIpsRequest{
 				NicId:      d.Id(),
-				PrivateIps: expandStringValueList(n.([]interface{})),
+				PrivateIps: flattenPrivateIPLightToStringSlice(n.(*schema.Set).List()),
 			}
 
 			var err error
@@ -710,10 +700,10 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
-	if d.HasChange("security_groups") {
+	if d.HasChange("security_group_ids") {
 		request := oapi.UpdateNicRequest{
 			NicId:            d.Id(),
-			SecurityGroupIds: expandStringValueList(d.Get("security_groups").(*schema.Set).List()),
+			SecurityGroupIds: expandStringValueList(d.Get("security_group_ids").([]interface{})),
 		}
 
 		var err error
@@ -851,4 +841,26 @@ func networkInterfaceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) res
 		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
 		return eni, hasAttachment, nil
 	}
+}
+
+func expandPrivateIPLight(pIPs []interface{}) []oapi.PrivateIpLight {
+	privateIPs := make([]oapi.PrivateIpLight, 0)
+	for _, v := range pIPs {
+		privateIpMap := v.(map[string]interface{})
+		privateIP := oapi.PrivateIpLight{
+			IsPrimary: privateIpMap["is_primary"].(bool),
+			PrivateIp: privateIpMap["private_ip"].(string),
+		}
+		privateIPs = append(privateIPs, privateIP)
+	}
+	return privateIPs
+}
+
+func flattenPrivateIPLightToStringSlice(pIPs []interface{}) []string {
+	privateIPs := make([]string, 0)
+	for _, v := range pIPs {
+		privateIpMap := v.(map[string]interface{})
+		privateIPs = append(privateIPs, privateIpMap["private_ip"].(string))
+	}
+	return privateIPs
 }

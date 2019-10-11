@@ -43,9 +43,17 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_nic.outscale_nic"),
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "2"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccOutscaleOAPIENIConfigUpdate(subregion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "3"),
 				),
 			},
 		},
@@ -127,20 +135,74 @@ func testAccCheckOutscaleOAPIENIAttributes(conf *oapi.Nic, suregion string) reso
 
 func testAccOutscaleOAPIENIConfig(subregion string) string {
 	return fmt.Sprintf(`
-resource "outscale_net" "outscale_net" {
-    ip_range = "10.0.0.0/16"
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	  }
+	  
+	  resource "outscale_subnet" "outscale_subnet" {
+		subregion_name = "%sa"
+		ip_range       = "10.0.0.0/16"
+		net_id         = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_security_group" "outscale_sg" {
+		description         = "sg for terraform tests"
+		security_group_name = "terraform-sg"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_nic" "outscale_nic" {
+		subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
+		security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
+	  
+		private_ips = [{
+		  is_primary = true
+		  private_ip = "10.0.0.23"
+		},
+		  {
+			is_primary = false
+			private_ip = "10.0.0.46"
+		  },
+		]
+	  }	  
+`, subregion)
 }
 
-resource "outscale_subnet" "outscale_subnet" {
-    subregion_name   = "%sa"
-    ip_range          = "10.0.0.0/16"
-    net_id              = "${outscale_net.outscale_net.net_id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    count = 1
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
+func testAccOutscaleOAPIENIConfigUpdate(subregion string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	  }
+	  
+	  resource "outscale_subnet" "outscale_subnet" {
+		subregion_name = "%sa"
+		ip_range       = "10.0.0.0/16"
+		net_id         = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_security_group" "outscale_sg" {
+		description         = "sg for terraform tests"
+		security_group_name = "terraform-sg"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_nic" "outscale_nic" {
+		subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
+		security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
+	  
+		private_ips = [{
+		  is_primary = true
+		  private_ip = "10.0.0.23"
+		},
+		  {
+			is_primary = false
+			private_ip = "10.0.0.46"
+		  },
+		  {
+			is_primary = false
+			private_ip = "10.0.0.69"
+		  },
+		]
+	  }	  
 `, subregion)
 }
