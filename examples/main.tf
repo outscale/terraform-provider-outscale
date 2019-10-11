@@ -1,508 +1,600 @@
-# resource "outscale_lin" "outscale_lin1" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_route_table" "outscale_route_table1" {
-#   vpc_id = "${outscale_lin.outscale_lin1.vpc_id}"
-# }
-# resource "outscale_route_table" "outscale_route_table2" {
-#   vpc_id = "${outscale_lin.outscale_lin1.vpc_id}"
-# }
-# data "outscale_route_tables" "outscale_route_tables" {
-#   route_table_id = ["${outscale_route_table.outscale_route_table1.route_table_id}", "${outscale_route_table.outscale_route_table2.route_table_id}"]
-# }
-# resource "outscale_lin" "outscale_lin2" {
-#   count = 1
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_subnet" "outscale_subnet1" {
-#   count = 1
-#   availability_zone = "eu-west-2a"
-#   cidr_block        = "10.0.0.0/16"
-#   vpc_id            = "${outscale_lin.outscale_lin2.vpc_id}"
-# }
-# output "outscale_subnet1" {
-#   value = "${outscale_subnet.outscale_subnet1.subnet_id}"
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/24"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-# resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-#   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
-#   vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_route" "outscale_route" {
-#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.internet_gateway_id}"
-#   destination_cidr_block = "10.0.0.0/16"
-#   route_table_id         = "${outscale_route_table.outscale_route_table.route_table_id}"
-# }
-# resource "outscale_keypair_importation" "outscale_keypair_importation" {
-#   key_name            = "keyname_test"
-#   public_key_material = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_subnet" "outscale_subnet" {
-#   vpc_id     = "${outscale_lin.outscale_lin.vpc_id}"
-#   cidr_block = "10.0.0.0/18"
-# }
-# resource "outscale_public_ip" "outscale_public_ip" {
-#   #domain = "Standard" # BUG doc API
-#   domain = ""
-# }
-# resource "outscale_nat_service" "outscale_nat_service" {
-#   depends_on    = ["outscale_route.outscale_route"]
-#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_route" "outscale_route" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-#   route_table_id         = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_route_table_link" "outscale_route_table_link" {
-#   subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-# resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-#   vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
-#   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-# }
-# resource "outscale_client_endpoint" "outscale_client_endpoint" {
-#   bgp_asn    = "3"
-#   ip_address = "171.33.74.122"
-#   type       = "ipsec.1"
-# }
-# resource "outscale_dhcp_option" "outscale_dhcp_option" {}
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_dhcp_option_link" "outscale_dhcp_option_link" {
-#   dhcp_options_id = "${outscale_dhcp_option.outscale_dhcp_option.dhcp_options_id}"
-#   vpc_id          = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_keypair" "outscale_keypair" {
-#   count = 1
-#   key_name = "keyname_test_123"
-# }
-# resource "outscale_volume" "outscale_volume" {
-#   availability_zone = "eu-west-2a"
-#   size              = 40
-# }
-# resource "outscale_vm" "outscale_vm" {
-#   image_id      = "ami-880caa66"
-#   instance_type = "c4.large"
-#   # key_name       = "integ_sut_keypair"
-#   # security_group = ["sg-c73d3b6b"]
-# }
-# resource "outscale_volumes_link" "outscale_volumes_link" {
-#   device      = "/dev/sdb"
-#   volume_id   = "${outscale_volume.outscale_volume.id}"
-#   instance_id = "${outscale_vm.outscale_vm.id}"
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_subnet" "outscale_subnet" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-#   cidr_block = "10.0.0.0/18"
-# }
-# resource "outscale_public_ip" "outscale_public_ip" {
-#   #domain               = "Standard"       # BUG doc API
-#   domain = ""
-# }
-# resource "outscale_nat_service" "outscale_nat_service" {
-#   depends_on = ["outscale_route.outscale_route"]
-#   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_route" "outscale_route" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_route_table_link" "outscale_route_table_link" {
-#   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-# resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-#   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-# }
-# data "outscale_nat_service" "outscale_nat_service" {
-#   nat_gateway_id = "${outscale_nat_service.outscale_nat_service.nat_gateway_id}"
-# }
-# resource "outscale_volume" "outscale_volume" {
-#   availability_zone = "eu-west-2a"
-#   size = 40
-# }
-# data "outscale_volume" "outscale_volume" {
-#   volume_id = "${outscale_volume.outscale_volume.volume_id}"
-# }
-# resource "outscale_client_endpoint" "outscale_client_endpoint" {
-#   bgp_asn = "3"
-#   ip_address = "171.33.74.122"
-#   type = "ipsec.1"
-# }
-# data "outscale_client_endpoints" "outscale_client_endpoints" {
-#   depends_on = ["outscale_client_endpoint.outscale_client_endpoint"]
-#   filter {
-#     name = "ip-address"
-#     values = ["171.33.74.122"]
-#   }
-#   /* filter {
-#         name = "bgp-asn"
-#         values = ["3"] }
-#     filter {
-#         name = "type"
-#         values = ["ipsec.1"] }
-#     */
-# }
-# resource "outscale_client_endpoint" "outscale_client_endpoint" {
-#   bgp_asn    = "3"
-#   ip_address = "171.33.74.122"
-#   type       = "ipsec.1"
-#   }
-# resource "outscale_lin" "outscale_lin" {
-#   count = 1
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-#   type = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway_link" "test" {
-#   vpc_id         = "${outscale_lin.outscale_lin.id}"
-#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   count = 1
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_vpn_gateway_route_propagation" "foo" {
-#   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
-# }
-# resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
-#   count = 1
-#   export_to_osu {
-#     disk_image_format = "raw"
-#     osu_bucket        = "test"
-#   }
-#   snapshot_id = "snap-5bcc0764"
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_subnet" "outscale_subnet" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-#   cidr_block = "10.0.0.0/18"
-# }
-# resource "outscale_public_ip" "outscale_public_ip" {
-#   #domain               = "Standard"       # BUG doc API
-#   domain = ""
-# }
-# resource "outscale_nat_service" "outscale_nat_service" {
-#   depends_on = ["outscale_route.outscale_route"]
-#   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_route" "outscale_route" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_route_table_link" "outscale_route_table_link" {
-#   subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
-# resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-# resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-#   internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-# }
-# data "outscale_nat_service" "outscale_nat_service" {
-#   nat_gateway_id = "${outscale_nat_service.outscale_nat_service.nat_gateway_id}"
-# }
-# resource "outscale_vm" "outscale_vm" {
-#   image_id                = "ami-880caa66"
-#   instance_type           = "c4.large"
-#   disable_api_termination = false
-# }
-# data "outscale_vms_state" "outscale_vms_state" {
-#   instance_id = ["${outscale_vm.outscale_vm.id}"]
-# }
-# data "outscale_vm_state" "outscale_vm_state" {
-#   instance_id = ["${outscale_vm.outscale_vm.id}"]
-# }
-# data "outscale_vpn_connection" "outscale_vpn_connection1" {
-#   vpn_connection_id = "${outscale_vpn_connection.outscale_vpn_connection.id}"
-# }
-# data "outscale_vpn_connections" "outscale_vpn_connections" {
-#   vpn_connection_id = ["${outscale_vpn_connection.outscale_vpn_connection.id}", "${outscale_vpn_connection.outscale_vpn_connection2.id}"]
-# }
-# resource "outscale_vpn_connection" "outscale_vpn_connection" {
-#   customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint.id}"
-#   vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-#   type                = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-#   type = "ipsec.1"
-# }
-# resource "outscale_client_endpoint" "outscale_client_endpoint" {
-#   bgp_asn    = "3"
-#   ip_address = "171.33.74.125"
-#   type       = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link" {
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-#   #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_vpn_connection" "outscale_vpn_connection2" {
-#   customer_gateway_id = "${outscale_client_endpoint.outscale_client_endpoint2.id}"
-#   vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
-#   type                = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway" "outscale_vpn_gateway2" {
-#   type = "ipsec.1"
-# }
-# resource "outscale_client_endpoint" "outscale_client_endpoint2" {
-#   bgp_asn    = "3"
-#   ip_address = "171.33.74.126"
-#   type       = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway_link" "outscale_vpn_gateway_link2" {
-#   vpc_id = "${outscale_lin.outscale_lin2.vpc_id}"
-#   #vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.vpn_gateway_id}"
-#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway2.id}"
-# }
-# resource "outscale_lin" "outscale_lin2" {
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_volume" "test" {
-#   availability_zone = "eu-west-2a"
-#   size              = 1
-# }
-# resource "outscale_snapshot" "test" {
-#   volume_id = "${outscale_volume.test.id}"
-# }
-# resource "outscale_load_balancer" "outscale_load_balancer" {
-#   count = 1
-#   load_balancer_name = "foobar-terraform-elb"
-#   availability_zones = ["eu-west-2a"]
-#   listeners {
-#     instance_port = 1024
-#     instance_protocol = "HTTP"
-#     load_balancer_port = 25
-#     protocol = "HTTP"
-#   }
-# }
-# resource "outscale_load_balancer" "outscale_load_balancer2" {
-#   count = 1
-#   load_balancer_name = "foobar-terraform-elb2"
-#   availability_zones = ["eu-west-2a"]
-#   listeners {
-#     instance_port = 1024
-#     instance_protocol = "HTTP"
-#     load_balancer_port = 25
-#     protocol = "HTTP"
-#   }
-# }
-# data "outscale_load_balancers" "outscale_load_balancers" {
-#   load_balancer_name = ["${outscale_load_balancer.outscale_load_balancer.load_balancer_name}", "${outscale_load_balancer.outscale_load_balancer2.load_balancer_name}"]
-# }
-# resource "outscale_lin" "outscale_lin" {
-#   count = 1
-#   cidr_block = "10.0.0.0/16"
-# }
-# resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
-#   type = "ipsec.1"
-# }
-# resource "outscale_vpn_gateway_link" "test" {
-#   vpc_id         = "${outscale_lin.outscale_lin.id}"
-#   vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-# }
-# resource "outscale_route_table" "outscale_route_table" {
-#   count = 1
-#   vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-# }
-# resource "outscale_vpn_gateway_route_propagation" "foo" {
-#   gateway_id     = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
-# }
+#---001------------------------------------------------------------------
+resource "outscale_vm" "vm001" {
+    image_id                 = "${var.image_id}"
+    vm_type                  = "${var.vm_type}"
+    keypair_name             = "${var.keypair_name}"
+    security_group_ids       = ["${var.security_group_id}"]
+    placement_subregion_name = "${var.region}a"
+    placement_tenancy        = "default"
+}
+#------------------------------------------------------------------------
 
-# resource "outscale_vm" "basic" {
-#   image_id      = "ami-880caa66"
-#   instance_type = "t2.micro"
-# }
+#---002------------------------------------------------------------------
+resource "outscale_vm" "vm002" {
+    image_id                 = "${var.image_id}"
+    vm_type                  = "${var.vm_type}"
+    keypair_name             = "${var.keypair_name}"
+    security_group_names     = ["${var.security_group_name}"]
+    placement_subregion_name = "${var.region}a"
+    placement_tenancy        = "default"
+}
+#------------------------------------------------------------------------
 
-# resource "outscale_image" "foo" {
-#   name        = "tf-testing-foo"
-#   instance_id = "${outscale_vm.basic.id}"
-# }
-
-# resource "outscale_volume" "outscale_volume" {
-#   availability_zone = "eu-west-2a"
-#   size              = 40
-# }
-
-# resource "outscale_snapshot" "outscale_snapshot" {
-#   volume_id = "${outscale_volume.outscale_volume.volume_id}"
-# }
-
-# resource "outscale_image_register" "outscale_image_register" {
-#   name = "registeredImageFromSnapshot"
-
-#   root_device_name = "/dev/sda1"
-
-#   block_device_mapping {
-#     ebs {
-#       snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
-#     }
-#   }
-# }
-
-# resource "outscale_volume" "example" {
-#   availability_zone = "eu-west-2a"
-#   volume_type       = "gp2"
-#   size              = 40
-
-#   tag {
-#     Name = "External Volume"
-#   }
-# }
-
-# resource "outscale_snapshot" "snapshot" {
-#   volume_id = "${outscale_volume.example.id}"
-# }
-
-# data "outscale_snapshot" "snapshot" {
-#   snapshot_id = "${outscale_snapshot.snapshot.id}"
-# }
-
-# resource "outscale_vm" "outscale_instance" {
-#   image_id      = "ami-880caa66"
-#   instance_type = "c4.large"
-#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
-# }
-
-resource "outscale_lin" "outscale_lin" {
-  cidr_block = "10.0.0.0/16"
+#---003------------------------------------------------------------------
+resource "outscale_vm" "vm003" {
+    image_id           = "${var.image_id}"
+    vm_type            = "${var.vm_type}"
+    keypair_name       = "${var.keypair_name}"
+    security_group_ids = ["${var.security_group_id}"]
 }
 
-resource "outscale_subnet" "outscale_subnet" {
-  availability_zone = "eu-west-2a"
-  cidr_block        = "10.0.0.0/16"
-  vpc_id            = "${outscale_lin.outscale_lin.id}"
+data "outscale_vm" "vm_003d" {
+	filter {
+        name   = "vm_ids"
+        values = ["${outscale_vm.vm003.vm_id}"]
+    }
+}
+#------------------------------------------------------------------------
+
+#---004------------------------------------------------------------------
+resource "outscale_vm" "vm004" {
+    count = 2
+
+    image_id           = "${var.image_id}"
+    vm_type            = "${var.vm_type}"
+    keypair_name       = "${var.keypair_name}"
+    security_group_ids = ["${var.security_group_id}"]
 }
 
-resource "outscale_nic" "outscale_nic" {
-  subnet_id         = "${outscale_subnet.outscale_subnet.subnet_id}"
-  security_group_id = ["${outscale_firewall_rules_set.web.id}"]
+data "outscale_vm" "outscale_vm004_0d" {
+	filter {
+        name   = "vm_ids"
+        values = ["${outscale_vm.vm004.*.vm_id[0]}"]
+    }
 }
 
-resource "outscale_nic_link" "outscale_nic_link" {
-  device_index         = "1"
-  instance_id          = "${outscale_vm.basic.id}"
-  network_interface_id = "${outscale_nic.outscale_nic.id}"
+data "outscale_vm" "outscale_vm_004_1d" {
+	filter {
+        name   = "vm_ids"
+        values = ["${outscale_vm.vm004.*.vm_id[1]}"]
+    }
+}
+#------------------------------------------------------------------------
+
+#---005------------------------------------------------------------------
+resource "outscale_net" "net005" {
+    ip_range = "10.0.0.0/16"
 }
 
-resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-  network_interface_id               = "${outscale_nic.outscale_nic.id}"
-  secondary_private_ip_address_count = 5
+resource "outscale_subnet" "subnet005" {
+    subregion_name = "${var.region}a"
+    ip_range       = "10.0.0.0/16"
+    net_id         = "${outscale_net.net005.net_id}"
 }
 
-resource "outscale_keypair" "a_key_pair" {
-  key_name = "terraform-key-test21"
+resource "outscale_security_group" "security_group005" {
+    count = 1
+
+    description         = "test group005"
+    security_group_name = "sg1-test-group_test-net005"
+    net_id              = "${outscale_net.net005.net_id}"
 }
 
-resource "outscale_firewall_rules_set" "web" {
-  group_name        = "lin_ucP2_sg_allow_me"
-  group_description = "Allow inbound traffic from me"
-  vpc_id            = "${outscale_lin.outscale_lin.id}"
+resource "outscale_vm" "outscale_vm005" {
+    image_id                 = "${var.image_id}"
+    vm_type                  = "${var.vm_type}"
+    keypair_name             = "${var.keypair_name}"
+    security_group_ids       = ["${outscale_security_group.security_group005.security_group_id}"]
+    placement_subregion_name = "${var.region}a"
+    placement_tenancy        = "default"
+    #is_source_dest_checked   = true
+    subnet_id                = "${outscale_subnet.subnet005.subnet_id}"
+}
+#------------------------------------------------------------------------
 
-  tag {
-    Name = "lin_ucP2_sg_allow_me"
-  }
+#---014------------------------------------------------------------------
+#TODO outscale_vm_attributes (merged in outscale_vm)
+
+#------------------------------------------------------------------------
+
+
+
+#------------------------------------------------------------------------
+
+#---006------------------------------------------------------------------
+resource "outscale_vm" "vm006" {
+    image_id                 = "${var.image_id}"
+    vm_type                  = "${var.vm_type}"
+    keypair_name             = "${var.keypair_name}"
+    security_group_ids       = ["${var.security_group_id}"]
+    #placement_subregion_name = "${var.region}a"
+    #placement_tenancy        = "default"
 }
 
-resource "outscale_inbound_rule" "allow_men2" {
-  ip_permissions = {
-    ip_protocol = "tcp"
-    from_port   = 22
-    to_port     = 22
-    ip_ranges   = ["10.0.0.0/16"]
-  }
+data "outscale_vm_state" "vm_state006d" {
+     filter {
+         name   = "vm_ids"
+         values = ["${outscale_vm.vm006.vm_id}"]
+     }
+}
+#------------------------------------------------------------------------
 
-  group_id = "${outscale_firewall_rules_set.web.id}"
+#---007------------------------------------------------------------------
+resource "outscale_public_ip" "public_ip007" {
+}
+#------------------------------------------------------------------------
+
+#---008------------------------------------------------------------------
+resource "outscale_public_ip" "public_ip008" {
 }
 
-resource "outscale_vm" "basic" {
-  image_id       = "ami-880caa66"
-  instance_type  = "c4.large"
-  subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
-  key_name       = "${outscale_keypair.a_key_pair.key_name}"
-  security_group = ["${outscale_firewall_rules_set.web.id}"]
+data "outscale_public_ip" "public_ip008d" {
+   filter {
+      name  = "public_ips"
+      values = ["${outscale_public_ip.public_ip008.public_ip}"]
+   }    
+}
+#------------------------------------------------------------------------
+
+#---009------------------------------------------------------------------
+resource "outscale_public_ip" "public_ip009" {
 }
 
-resource "outscale_lin_internet_gateway" "outscale_lin_internet_gateway" {}
-
-resource "outscale_lin_internet_gateway_link" "outscale_lin_internet_gateway_link" {
-  vpc_id              = "${outscale_lin.outscale_lin.id}"
-  internet_gateway_id = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
+resource "outscale_vm" "vm009" {
+    image_id           = "${var.image_id}"
+    vm_type            = "${var.vm_type}"
+    keypair_name       = "${var.keypair_name}"
+    security_group_ids = ["${var.security_group_id}"]
 }
 
-# resource "outscale_nat_service" "outscale_nat_service" {
-#   depends_on    = ["outscale_route.outscale_route"]
-#   subnet_id     = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   allocation_id = "${outscale_public_ip.outscale_public_ip.allocation_id}"
-# }
+resource "outscale_public_ip_link" "public_ip_link009" {
+    vm_id     = "${outscale_vm.vm009.vm_id}"
+    public_ip = "${outscale_public_ip.public_ip009.public_ip}"
+}
+#------------------------------------------------------------------------
+
+#---010------------------------------------------------------------------
+resource "outscale_volume" "volume010" {
+    subregion_name = "${var.region}a"
+    size           = 10
+}
+#------------------------------------------------------------------------
+
+#---011------------------------------------------------------------------
+resource "outscale_volume" "volume011" {
+    subregion_name = "${var.region}a"
+    size            = 10
+    iops            = 100
+    volume_type     = "io1"
+}
+#------------------------------------------------------------------------
+
+#---012------------------------------------------------------------------
+resource "outscale_volume" "volume012" {
+    subregion_name = "${var.region}a"
+    size            = 10
+    snapshot_id     = "${var.snapshot_id}"
+}
+#------------------------------------------------------------------------
+
+#---013------------------------------------------------------------------
+resource "outscale_volume" "volume013" {
+    subregion_name = "${var.region}a"
+    size           = 10
+    iops           = 100
+    volume_type    = "io1"
+
+}
+
+data "outscale_volume" "outscale_volume014d" {
+    filter {
+        name   = "volume_ids"
+        values = ["${outscale_volume.volume013.volume_id}"]
+    }    
+}
+#------------------------------------------------------------------------
+
+#---015------------------------------------------------------------------
+resource "outscale_volume" "volume015" {
+    subregion_name = "${var.region}a"
+    size           = 40
+}
+
+resource "outscale_vm" "vm015" {
+    image_id           = "${var.image_id}"
+    vm_type            = "${var.vm_type}"
+    keypair_name       = "${var.keypair_name}"
+    security_group_ids = ["${var.security_group_id}"]
+}
+
+resource "outscale_volumes_link" "volumes_link015" {
+    device_name = "/dev/xvdc"
+    volume_id   = "${outscale_volume.volume015.id}"
+    vm_id       = "${outscale_vm.vm015.id}"
+}
+#------------------------------------------------------------------------
+
+#---016------------------------------------------------------------------
+resource "outscale_internet_service" "internet_service016" {
+} 
+#------------------------------------------------------------------------
+
+#---017------------------------------------------------------------------
+resource "outscale_internet_service" "internet_service017" {
+}
+
+data "outscale_internet_service" "internet_service017d" {
+    filter {
+        name   = "internet_service_ids"
+        values = ["${outscale_internet_service.internet_service017.internet_service_id}"]
+    }
+}
+#------------------------------------------------------------------------
+
+#---018------------------------------------------------------------------
+resource "outscale_internet_service_link" "internet_service_link018" {
+    internet_service_id = "${outscale_internet_service.internet_service018.internet_service_id}" 
+    net_id              = "${outscale_net.net018.net_id}"
+}
+
+resource "outscale_net" "net018" {
+    ip_range = "10.0.0.0/18"
+}
+
+resource "outscale_internet_service" "internet_service018" {
+} 
+#------------------------------------------------------------------------
+
+#---019------------------------------------------------------------------
+resource "outscale_net" "net019" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet019" {
+    net_id     = "${outscale_net.net019.net_id}"
+    ip_range = "10.0.0.0/18"
+}
+
+resource "outscale_public_ip" "public_ip019" {
+}
+
+resource "outscale_nat_service" "nat_service019" {
+    depends_on   = ["outscale_route.route019"]
+    subnet_id    = "${outscale_subnet.subnet019.subnet_id}"
+    public_ip_id = "${outscale_public_ip.public_ip019.public_ip_id}"
+}
+
+resource "outscale_route_table" "route_table019" {
+    net_id = "${outscale_net.net019.net_id}"
+}
+
+resource "outscale_route" "route019" {
+    destination_ip_range = "0.0.0.0/0"
+    gateway_id           = "${outscale_internet_service.internet_service019.internet_service_id}"
+    route_table_id       = "${outscale_route_table.route_table019.route_table_id}"
+}
+
+resource "outscale_route_table_link" "route_table_link019" {
+    subnet_id      = "${outscale_subnet.subnet019.subnet_id}"
+    route_table_id = "${outscale_route_table.route_table019.id}"
+}
+
+resource "outscale_internet_service" "internet_service019" {
+}
+
+resource "outscale_internet_service_link" "internet_service_link019" {
+    net_id              = "${outscale_net.net019.net_id}"
+    internet_service_id = "${outscale_internet_service.internet_service019.id}"
+}
+
+data "outscale_nat_service" "nat_service019" {
+    filter {
+        name   = "nat_service_ids"
+        values = ["${outscale_nat_service.nat_service019.nat_service_id}"]
+    }    
+}
+#------------------------------------------------------------------------
+
+#---020------------------------------------------------------------------
+resource "outscale_net" "net020" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet020" {
+    net_id   = "${outscale_net.net020.net_id}"
+    ip_range = "10.0.0.0/18"
+}
+#------------------------------------------------------------------------
 
 
-# resource "outscale_route_table" "outscale_route_table" {
-#   vpc_id = "${outscale_lin.outscale_lin.id}"
-# }
 
 
-# resource "outscale_route" "outscale_route" {
-#   destination_cidr_block = "0.0.0.0/0"
-#   gateway_id             = "${outscale_lin_internet_gateway.outscale_lin_internet_gateway.id}"
-#   route_table_id         = "${outscale_route_table.outscale_route_table.id}"
-# }
+
+#------------------------------------------------------------------------
+#TODO outscale_route_table
+resource "outscale_net" "outscale_net50" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_route_table" "outscale_route_table51" {
+    net_id = "${outscale_net.outscale_net50.net_id}"
+}
+
+data "outscale_route_table" "outscale_route_table51" {
+    filter {
+        name   = "route_table_ids"
+        values = ["${outscale_route_table.outscale_route_table51.route_table_id}"]
+    }
+} 
+#------------------------------------------------------------------------
+#TODO outscale_route_table_link (1)
+
+resource "outscale_subnet" "outscale_subnet52" {
+    net_id   = "${outscale_net.outscale_net50.net_id}"
+    ip_range = "10.0.0.0/18"
+}
+
+resource "outscale_route_table_link" "outscale_route_table_link53" {
+    route_table_id  = "${outscale_route_table.outscale_route_table51.route_table_id}"
+    subnet_id       = "${outscale_subnet.outscale_subnet52.subnet_id}"
+} 
 
 
-# resource "outscale_route_table_link" "outscale_route_table_link" {
-#   subnet_id      = "${outscale_subnet.outscale_subnet.subnet_id}"
-#   route_table_id = "${outscale_route_table.outscale_route_table.id}"
-# }
+#------------------------------------------------------------------------
+#TODO outscale_route
+
+resource "outscale_internet_service" "outscale_internet_service54" {
+}
+
+resource "outscale_internet_service_link" "outscale_internet_service_link54" {
+    internet_service_id = "${outscale_internet_service.outscale_internet_service54.internet_service_id}"
+    net_id = "${outscale_net.outscale_net50.net_id}"
+}
 
 
-# resource "outscale_public_ip" "outscale_public_ip" {
-#   domain = "vpc"
-# }
+resource "outscale_route" "outscale_route55" {
+    gateway_id           = "${outscale_internet_service.outscale_internet_service54.id}" 
+    destination_ip_range = "20.0.0.0/16"
+    route_table_id       = "${outscale_route_table.outscale_route_table51.route_table_id}"
+} 
 
 
-# resource "outscale_public_ip_link" "by_public_ip" {
-#   public_ip   = "${outscale_public_ip.outscale_public_ip.public_ip}"
-#   instance_id = "${outscale_vm.basic.id}"
-#   depends_on  = ["outscale_vm.basic", "outscale_public_ip.outscale_public_ip"]
-# }
+#------------------------------------------------------------------------
+
+
+#---024------------------------------------------------------------------
+resource "outscale_net" "net024" {
+    ip_range = "10.0.0.0/16"
+    
+    tags = [{
+        key = "Name"
+        value = "outscale_net_resource"
+    },
+    {
+        key = "VerSion"
+        value = "1Q84"
+    }]
+}
+
+data "outscale_net" "net024d" {
+    filter {
+        name   = "net_ids"
+        values = ["${outscale_net.net024.net_id}"]
+    }
+} 
+#------------------------------------------------------------------------
+
+#---025------------------------------------------------------------------
+resource "outscale_net" "net025" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_net_attributes" "net_attributes025" {
+     net_id              = "${outscale_net.net025.net_id}"
+     dhcp_options_set_id = "${var.dhcp_options_set_id}"
+}
+
+data "outscale_net_attributes" "net_attributes025d" {
+     net_id             = "${outscale_net.net025.net_id}"
+}
+#------------------------------------------------------------------------
+
+
+
+#---026------------------------------------------------------------------
+#TODO outscale_net_peering
+#------------------------------------------------------------------------
+resource "outscale_net" "outscale_net56" {
+    ip_range = "10.10.0.0/24"
+}
+
+resource "outscale_net" "outscale_net57" {
+    ip_range = "10.31.0.0/16"
+}
+
+resource "outscale_net_peering" "outscale_net_peering58" {
+    accepter_net_id = "${outscale_net.outscale_net56.net_id}"
+    source_net_id = "${outscale_net.outscale_net57.net_id}"
+}
+
+#---027------------------------------------------------------------------
+#TODO outscale_net_peering_acceptation (6)
+
+resource "outscale_net_peering_acceptation" "outscale_net_peering_acceptation58" {
+    net_peering_id = "${outscale_net_peering.outscale_net_peering58.net_peering_id}"
+}
+
+#------------------------------------------------------------------------
+
+
+
+
+#---021------------------------------------------------------------------
+data "outscale_image" "image021" {
+    filter {
+        name   = "image_ids"
+        values = ["${var.image_id}"]
+    }
+} 
+#------------------------------------------------------------------------
+
+
+#---022------------------------------------------------------------------
+resource "outscale_image" "image022" {
+    image_name = "terraform test for image attributes"
+    vm_id      = "${var.vm_id}"
+    no_reboot  = "true"
+} 
+#------------------------------------------------------------------------
+
+
+#---023------------------------------------------------------------------
+resource "outscale_vm" "vm023" {
+    image_id           = "${var.image_id}"
+    vm_type            = "${var.vm_type}"
+    keypair_name       = "${var.keypair_name}"
+    security_group_ids = ["${var.security_group_id}"]
+}
+
+resource "outscale_image" "image023" {
+    image_name = "terraform test image launch permission"
+    vm_id      = "${outscale_vm.vm023.vm_id}"
+    no_reboot  = "true"
+}
+
+resource "outscale_image_launch_permission" "image_launch_permission023" {
+    image_id = "${outscale_image.image023.image_id}"
+
+    permission_additions = {
+		account_ids = ["${var.account_id}"]
+	}
+} 
+#------------------------------------------------------------------------
+
+
+
+
+
+
+#---028------------------------------------------------------------------
+resource "outscale_keypair" "keypair028" {
+    keypair_name = "keyname_test_ford028"
+}
+
+data "outscale_keypair" "keypair028d" {
+    filter {
+        name   = "keypair_names"
+        values = ["${outscale_keypair.keypair028.keypair_name}"]
+    }    
+}
+#------------------------------------------------------------------------
+
+#---029------------------------------------------------------------------
+resource "outscale_keypair" "keypair029" {
+    keypair_name = "keyname_test_import029"
+    public_key   = "${file("keypair_public_test.pub")}"
+} 
+#------------------------------------------------------------------------
+
+
+
+#---030------------------------------------------------------------------
+resource "outscale_net" "net030" {
+    ip_range = "10.0.0.0/16"
+
+    tags = {
+        key   = "Name"
+        value = "outscale_net_resource030"
+    }
+}
+
+data "outscale_security_group" "security_group030d" {     
+    filter {
+        name   = "security_group_ids"
+        values = ["${outscale_security_group.security_group030.security_group_id}"]
+    }
+}
+
+resource "outscale_security_group" "security_group030" {
+    description         = "test group"
+    security_group_name = "sg1-test-group_test-d030"
+    net_id              = "${outscale_net.net030.net_id}"
+}
+#------------------------------------------------------------------------
+
+#---031------------------------------------------------------------------
+resource "outscale_security_group" "security_group031" {
+    description         = "test group031"
+    security_group_name = "sg1-test-group_test031"
+}
+
+resource "outscale_security_group_rule" "security_group_rule031" {
+    flow              = "Inbound"
+    security_group_id = "${outscale_security_group.security_group031.id}"
+
+    from_port_range   = "0"
+    to_port_range     = "0"
+    #ip_protocol       = "-1"
+    ip_protocol       = "tcp"
+    ip_range          = "0.0.0.0/0"
+} 
+#------------------------------------------------------------------------
+
+#---032------------------------------------------------------------------
+resource "outscale_net" "net032" {
+    ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet032" {
+    subregion_name = "${var.region}a"
+    ip_range       = "10.0.0.0/16"
+    net_id         = "${outscale_net.net032.net_id}"
+}
+
+resource "outscale_nic" "nic032" {
+    subnet_id = "${outscale_subnet.subnet032.subnet_id}"
+} 
+#------------------------------------------------------------------------
+
+#---033------------------------------------------------------------------
+resource "outscale_volume" "volume033" {
+    subregion_name = "${var.region}a"
+    size           = 40
+}
+
+resource "outscale_snapshot" "snapshot033" {
+    volume_id = "${outscale_volume.volume033.volume_id}"
+}
+
+data "outscale_snapshot" "snapshot033d" {
+    filter {
+        name   = "snapshot_ids"
+        values = ["${outscale_snapshot.snapshot033.snapshot_id}"]
+    }
+} 
+#------------------------------------------------------------------------
+
+
+#---034------------------------------------------------------------------
+resource "outscale_volume" "volume034" {
+    subregion_name = "${var.region}a"
+    size            = 40
+}
+
+resource "outscale_snapshot" "snapshot038" {
+    volume_id = "${outscale_volume.volume034.volume_id}"
+}
+
+resource "outscale_snapshot_attributes" "snapshot_attributes038" {
+    snapshot_id = "${outscale_snapshot.snapshot038.snapshot_id}"
+    permissions_to_create_volume_additions = {
+			account_ids = ["<ACCOUNTNUMBER>"]
+	}
+}
+
+data "outscale_snapshot" "snapshot038d" {
+    depends_on  = ["outscale_snapshot_attributes.snapshot_attributes038"]
+    snapshot_id = "${outscale_snapshot.snapshot038.snapshot_id}"
+} 
+#------------------------------------------------------------------------
 
