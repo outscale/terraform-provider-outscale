@@ -163,3 +163,42 @@ func dataSourceOutscaleOAPIVpcEndpointsRead(d *schema.ResourceData, meta interfa
 
 	return d.Set("net_api_access", vpcEndpoints)
 }
+
+func getPrefixList(conn *fcu.Client, serviceName string) (*string, []interface{}, error) {
+	req := &fcu.DescribePrefixListsInput{}
+	req.Filters = buildFCUAttributeFilterListOAPI(
+		map[string]string{
+			"prefix-list-name": serviceName,
+		},
+	)
+
+	var resp *fcu.DescribePrefixListsOutput
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, err = conn.VM.DescribePrefixLists(req)
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, make([]interface{}, 0), err
+	}
+	if resp != nil && len(resp.PrefixLists) > 0 {
+		if len(resp.PrefixLists) > 1 {
+			return nil, make([]interface{}, 0), fmt.Errorf("multiple prefix lists associated with the service name '%s'. Unexpected", serviceName)
+		}
+
+		pl := resp.PrefixLists[0]
+
+		return pl.PrefixListId, flattenStringList(pl.Cidrs), nil
+
+	}
+	return nil, make([]interface{}, 0), nil
+}

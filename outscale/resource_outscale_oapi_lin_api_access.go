@@ -325,7 +325,7 @@ func vpcEndpointAttributesOAPI(d *schema.ResourceData, vpce *fcu.VpcEndpoint, co
 	d.Set("route_table_id", flattenStringList(vpce.RouteTableIds))
 
 	req := &fcu.DescribePrefixListsInput{}
-	req.Filters = buildFCUAttributeFilterList(
+	req.Filters = buildFCUAttributeFilterListOAPI(
 		map[string]string{
 			"prefix-list-name": serviceName,
 		},

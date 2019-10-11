@@ -200,3 +200,7 @@ func resourceOutscaleOAPIDirectLinkDelete(d *schema.ResourceData, meta interface
 	}
 	return nil
 }
+
+func isNoSuchDxConnectionErr(err error) bool {
+	return strings.Contains(fmt.Sprint(err), "DirectConnectClientException")
+}

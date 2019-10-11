@@ -873,3 +873,11 @@ func flattenOAPIHealthCheck(check *lbu.HealthCheck) map[string]interface{} {
 
 	return chk
 }
+
+func flattenStringList(list []*string) []interface{} {
+	vs := make([]interface{}, 0, len(list))
+	for _, v := range list {
+		vs = append(vs, *v)
+	}
+	return vs
+}
