@@ -73,7 +73,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						},
 					},
 					"link_public_ip": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -117,7 +117,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"private_ips": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -126,7 +126,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 									Computed: true,
 								},
 								"link_public_ip": {
-									Type:     schema.TypeSet,
+									Type:     schema.TypeMap,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
@@ -180,11 +180,6 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"security_group_ids": &schema.Schema{
-						Type:     schema.TypeList,
-						Optional: true,
-						Elem:     &schema.Schema{Type: schema.TypeString},
-					},
 					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
@@ -193,7 +188,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"sub_region_name": {
+					"subegion_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
