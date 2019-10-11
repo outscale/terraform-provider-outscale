@@ -33,7 +33,7 @@ func resourceOutscaleRouteTableImportState(
 
 	{
 		// Construct the routes
-		subResource := resourceOutscaleRoute()
+		subResource := resourceOutscaleOAPIRoute()
 		for _, route := range table.Routes {
 			// Ignore the local/default route
 			if route.GatewayId != nil && *route.GatewayId == "local" {
@@ -58,7 +58,7 @@ func resourceOutscaleRouteTableImportState(
 
 	{
 		// Construct the associations
-		subResource := resourceOutscaleRouteTableAssociation()
+		subResource := resourceOutscaleOAPILinkRouteTable()
 		for _, assoc := range table.Associations {
 			if *assoc.Main {
 				// Ignore
