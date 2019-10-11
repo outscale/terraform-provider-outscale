@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"testing"
 
@@ -30,15 +29,6 @@ func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.architecture", "x86_64"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.description", "Debian 9 - 4.9.51"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.block_device_mappings.#", "1"),
-					resource.TestMatchResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_id", regexp.MustCompile("^ami-")),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.type", "machine"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.is_public", "true"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_name", "/dev/sda1"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_type", "ebs"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.state", "available"),
 				),
 			},
 		},
@@ -61,22 +51,10 @@ func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc
 }
 
 const testAccCheckOutscaleOAPIImagesDataSourceConfig = `
-data "outscale_images" "nat_ami" {
-	filter {
-		name = "architectures"
-		values = ["x86_64"]
+	data "outscale_images" "nat_ami" {
+		filter {
+			name = "architectures"
+			values = ["x86_64"]
+		}
 	}
-	filter {
-		name = "virtualization_types"
-		values = ["hvm"]
-	}
-	filter {
-		name = "root_device_types"
-		values = ["ebs"]
-	}
-	filter {
-		name = "block_device_mapping_volume_type"
-		values = ["standard"]
-	}
-}
 `

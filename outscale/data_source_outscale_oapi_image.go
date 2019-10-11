@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
@@ -107,20 +109,10 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				},
 			},
 			"product_codes": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
-				Set:      omiOAPIProductCodesHash,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"product_code": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"state_comment": {
@@ -275,7 +267,7 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
 		return err
 	}
-	if err := d.Set("product_codes", omiOAPIProductCodes(image.ProductCodes)); err != nil {
+	if err := d.Set("product_codes", image.ProductCodes); err != nil {
 		return err
 	}
 	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
@@ -285,20 +277,17 @@ func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) err
 		return err
 	}
 
-	accountIds := image.PermissionsToLaunch.AccountIds
-	lp := make([]map[string]interface{}, len(accountIds))
-	for k, v := range accountIds {
-		l := make(map[string]interface{})
-		//if image.PermissionsToLaunch.GlobalPermission != nil {
-		l["global_permission"] = image.PermissionsToLaunch.GlobalPermission
-		//}
-		//if v.UserId != nil {
-		l["account_id"] = v
-		//}
-		lp[k] = l
-	}
-
-	d.Set("permissions_to_launch", lp)
+	d.Set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch))
 
 	return nil
+}
+
+func omiOAPIPermissionToLuch(p oapi.PermissionsOnResource) (res []map[string]interface{}) {
+	for _, v := range p.AccountIds {
+		res = append(res, map[string]interface{}{
+			"account_id":        v,
+			"global_permission": cast.ToString(p.GlobalPermission),
+		})
+	}
+	return
 }

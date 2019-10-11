@@ -1,33 +1,24 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_net_peerings.test_by_id", "net_peering.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_net_peerings.outscale_net_peerings", "net_peerings.#", "1"),
 				),
 				// ExpectNonEmptyPlan: true,
 			},
@@ -36,32 +27,30 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 }
 
 const testAccDataSourceOutscaleOAPILinPeeringsConnectionConfig = `
-resource "outscale_net" "foo" {
-  ip_range = "10.1.0.0/16"
+	resource "outscale_net" "outscale_net" {
+		count = 1
+		ip_range = "10.10.0.0/24"
+	}
 
-  tag {
-	  Name = "terraform-testacc-vpc-peering-connection-data-source-foo"
-  }
-}
+	resource "outscale_net" "outscale_net2" {
+		count = 1
+		ip_range = "10.31.0.0/16"
+	}
 
-resource "outscale_net" "bar" {
-  ip_range = "10.2.0.0/16"
+	resource "outscale_net_peering" "outscale_net_peering" {
+		accepter_net_id = "${outscale_net.outscale_net.net_id}"
+		source_net_id   = "${outscale_net.outscale_net2.net_id}"
+	}
 
-  tag {
-	  Name = "terraform-testacc-vpc-peering-connection-data-source-bar"
-  }
-}
+	resource "outscale_net_peering" "outscale_net_peering2" {
+		accepter_net_id = "${outscale_net.outscale_net.net_id}"
+		source_net_id   = "${outscale_net.outscale_net2.net_id}"
+	}
 
-resource "outscale_net_peering" "test" {
-	net_id = "${outscale_net.foo.id}"
-	peer_net_id = "${outscale_net.bar.id}"
-
-    tag {
-      Name = "terraform-testacc-vpc-peering-connection-data-source-foo-to-bar"
-    }
-}
-
-data "outscale_net_peerings" "test_by_id" {
-	net_peering_id = "[${outscale_net_peering.test.id}]"
-}
+	data "outscale_net_peerings" "outscale_net_peerings" {
+		filter {
+			name   = "net_peering_ids"
+			values = ["${outscale_net_peering.outscale_net_peering.net_peering_id}", "${outscale_net_peering.outscale_net_peering2.net_peering_id}"]
+		}
+	}
 `

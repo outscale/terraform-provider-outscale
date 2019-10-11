@@ -18,11 +18,13 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 		Read: dataSourceOutscaleOAPILinPeeringConnectionRead,
 
 		Schema: map[string]*schema.Schema{
-			"filter": dataSourceFiltersSchema(),
+			"filter":       dataSourceFiltersSchema(),
+			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"source_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"state": {
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -31,19 +33,15 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
-							Optional: true,
 						},
 						"message": {
 							Type:     schema.TypeString,
 							Computed: true,
-							Optional: true,
 						},
 					},
 				},
 			},
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tags":         tagsSchemaComputed(),
+			"tags": tagsOAPIListSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

@@ -48,10 +48,6 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"virtual_gateway_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"vm_id": {
 							Type:     schema.TypeString,
 							Computed: true,

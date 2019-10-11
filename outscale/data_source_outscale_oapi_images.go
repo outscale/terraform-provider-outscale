@@ -39,31 +39,15 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			// Computed values.
-			"image": {
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"images": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"architecture": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"creation_date": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"osu_location": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"account_alias": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -72,35 +56,14 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"is_public": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"root_device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"root_device_type": {
+						"architecture": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						// Complex computed values
 						"block_device_mappings": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Computed: true,
-							Set:      omiOAPIBlockDeviceMappingHash,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"device_name": {
@@ -122,28 +85,85 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 								},
 							},
 						},
-						"product_codes": {
-							Type:     schema.TypeSet,
+						"creation_date": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Set:      omiOAPIProductCodesHash,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"file_location": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"permissions_to_launch": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"product_code": {
+									"global_permission": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"type": {
+									"account_id": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
+						"product_codes": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"root_device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"root_device_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"state_comment": {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
-						"tag": dataSourceTagsSchema(),
+						"tags": {
+							Type: schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -215,6 +235,8 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 
 	result = resp.OK
 
+	d.Set("request_id", result.ResponseContext.RequestId)
+
 	if len(result.Images) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -238,16 +260,17 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 			im["description"] = v.Description
 		}
 		im["image_id"] = v.ImageId
-		im["osu_location"] = v.FileLocation
+		im["file_location"] = v.FileLocation
 		if v.AccountAlias != "" {
 			im["account_alias"] = v.AccountAlias
 		}
 		im["account_id"] = v.AccountId
-		im["type"] = v.ImageType
+		im["image_type"] = v.ImageType
 		im["state"] = v.State
-		im["name"] = v.ImageName
-		//Missing on swager spec
-		//im["is_public"] = v.Public
+		im["image_name"] = v.ImageName
+
+		im["permissions_to_launch"] = omiOAPIPermissionToLuch(v.PermissionsToLaunch)
+
 		if v.RootDeviceName != "" {
 			im["root_device_name"] = v.RootDeviceName
 		}
@@ -259,16 +282,14 @@ func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) 
 		if v.ProductCodes != nil {
 			im["product_codes"] = v.ProductCodes
 		}
-		//if v.StateComment != nil {
 		im["state_comment"] = omiOAPIStateReason(&v.StateComment)
-		//}
-		// if v.Tags != nil {
-		// 	im["tag"] = dataSourceTags(v.Tags)
-		// }
+
+		im["tags"] = getOapiTagSet(v.Tags)
+
 		i[k] = im
 	}
 
-	err := d.Set("image", i)
+	err := d.Set("images", i)
 	d.SetId(resource.UniqueId())
 
 	return err
@@ -285,7 +306,7 @@ func omiOAPIBlockDeviceMappingHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%s-", e["delete_on_vm_termination"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", e["iops"].(string)))
 			buf.WriteString(fmt.Sprintf("%s-", e["volume_size"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["type"].(string)))
+			buf.WriteString(fmt.Sprintf("%s-", e["image_type"].(string)))
 		}
 	}
 	if d, ok := m["no_device"]; ok {

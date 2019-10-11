@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +15,8 @@ import (
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	imageID := ""
 	accountID := "520679080430"
@@ -34,27 +25,28 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 
 	r.Test(t, r.TestCase{
 		PreCheck: func() {
+			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			// Scaffold everything
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, false, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, false, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -62,11 +54,42 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			r.TestStep{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageDisappears(&imageID),
 				),
 				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	var imageID string
+	rInt := acctest.RandInt()
+
+	r.Test(t, r.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []r.TestStep{
+			// Scaffold everything
+			r.TestStep{
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, false),
+				Check: r.ComposeTestCheckFunc(
+					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+				),
+			},
+			r.TestStep{
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, true),
+				Check: r.ComposeTestCheckFunc(
+					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+				),
 			},
 		},
 	})
@@ -80,12 +103,12 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 			return fmt.Errorf("Not found: %s", name)
 		}
 
-		is := rs.Primary
-		if is == nil {
+		if rs.Primary == nil {
 			return fmt.Errorf("No primary instance: %s", name)
 		}
 
-		*value = is.Attributes[key]
+		*value = rs.Primary.Attributes[key]
+
 		return nil
 	}
 }
@@ -144,20 +167,22 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionConfig(accountID string, includeLaunchPermission bool, r int) string {
+func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int) string {
 	base := fmt.Sprintf(`
-	resource "outscale_vm" "outscale_instance" {
-		count = 1
-		image_id           = "ami-3e158364"
-		vm_type               = "t2.micro"
-	}
-	
-	resource "outscale_image" "outscale_image" {
-		image_name        = "terraform test-123-%d"
-		vm_id = "${outscale_vm.outscale_instance.id}"
-		no_reboot   = "true"
-	}
-	`, r)
+		resource "outscale_vm" "outscale_instance" {
+			image_id           = "%s"
+			vm_type            = "%s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
+		
+		resource "outscale_image" "outscale_image" {
+			image_name        = "terraform test-123-%d"
+			vm_id = "${outscale_vm.outscale_instance.id}"
+			no_reboot   = "true"
+		}
+	`, omi, vmType, region, r)
 
 	if !includeLaunchPermission {
 		return base
@@ -172,4 +197,47 @@ resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
 	}
 }
 `, accountID)
+}
+
+func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool) string {
+	base := fmt.Sprintf(`
+		resource "outscale_vm" "outscale_instance" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
+		
+		resource "outscale_image" "outscale_image" {
+			image_name = "terraform test-123-%d"
+			vm_id      = "${outscale_vm.outscale_instance.id}"
+			no_reboot  = "true"
+		}
+	`, omi, vmType, region, r)
+
+	if includeAddtion {
+		return base + `
+			resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
+				image_id = "${outscale_image.outscale_image.image_id}"
+			
+				permission_additions = {
+					account_ids = ["520679080430"]
+				}
+			}
+		`
+	}
+
+	if includeRemoval {
+		return base + `
+			resource "outscale_image_launch_permission" "outscale_image_launch_permission_two" {
+				image_id = "${outscale_image_launch_permission.outscale_image_launch_permission.image_id}"
+
+				permission_removals = {
+					account_ids = ["520679080430"]
+				}
+			}
+		`
+	}
+	return base
 }

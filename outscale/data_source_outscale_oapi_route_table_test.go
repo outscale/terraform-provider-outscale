@@ -28,24 +28,6 @@ func TestAccDataSourceOutscaleOAPIRouteTable_basic(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceOutscaleOAPIRouteTable_main(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccDataSourceOutscaleOAPIRouteTableMainRoute,
-				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleOAPIRouteTableCheckMain("data.outscale_route_table.by_filter"),
-				),
-			},
-		},
-	})
-}
-
 func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -173,28 +155,5 @@ data "outscale_route_table" "by_filter" {
 data "outscale_route_table" "by_id" {
   route_table_id = "${outscale_route_table.test.id}"
   depends_on = ["outscale_route_table_link.a"]
-}
-`
-
-const testAccDataSourceOutscaleOAPIRouteTableMainRoute = `
-
-resource "outscale_net" "test" {
-  ip_range = "172.16.0.0/16"
-
-  tags {
-    key = "Name"
-	value = "terraform-testacc-data-source"
-  }
-}
-
-data "outscale_route_table" "by_filter" {
-  filter {
-    name = "association.main"
-    values = ["true"]
-  }
-  filter {
-    name = "vpc-id"
-    values = ["${outscale_net.test.id}"]
-  }
 }
 `
