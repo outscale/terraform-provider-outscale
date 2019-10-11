@@ -173,3 +173,11 @@ func getOAPIPrefixList(conn *fcu.Client, serviceName string) (*string, []interfa
 	return nil, make([]interface{}, 0), nil
 
 }
+
+func flattenStringList(list []*string) []interface{} {
+	vs := make([]interface{}, 0, len(list))
+	for _, v := range list {
+		vs = append(vs, *v)
+	}
+	return vs
+}
