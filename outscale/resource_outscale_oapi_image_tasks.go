@@ -217,6 +217,25 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 	return resourceOAPIImageTasksRead(d, meta)
 }
 
+func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
+	fmt.Printf("Waiting for Image Task %s to become available...", ID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "pending/queued", "queued"},
+		Target:     []string{"available"},
+		Refresh:    OAPIImageTaskStateRefreshFunc(client, ID),
+		Timeout:    OutscaleImageRetryTimeout,
+		Delay:      OutscaleImageRetryDelay,
+		MinTimeout: OutscaleImageRetryMinTimeout,
+	}
+
+	info, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", ID, err)
+	}
+	return info.(*fcu.Image), nil
+}
+
 func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 

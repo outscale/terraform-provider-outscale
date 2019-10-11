@@ -399,3 +399,14 @@ func expandStringList(configured []interface{}) []*string {
 	}
 	return vs
 }
+
+// Generates a hash for the set hash function used by the product_codes
+// attribute.
+func amiProductCodesHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	// All keys added in alphabetical order.
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
+	return hashcode.String(buf.String())
+}
