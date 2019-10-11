@@ -209,6 +209,43 @@ func resourceOutscaleOAPIVpnConnectionCreate(d *schema.ResourceData, meta interf
 	return resourceOutscaleOAPIVpnConnectionRead(d, meta)
 }
 
+func vpnConnectionRefreshFunc(conn *fcu.Client, connectionID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		var resp *fcu.DescribeVpnConnectionsOutput
+		var err error
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeVpnConnections(&fcu.DescribeVpnConnectionsInput{
+				VpnConnectionIds: []*string{aws.String(connectionID)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpnConnectionID.NotFound") {
+				resp = nil
+			} else {
+				log.Printf("Error on VPNConnectionRefresh: %s", err)
+				return nil, "", err
+			}
+		}
+
+		if resp == nil || len(resp.VpnConnections) == 0 {
+			return nil, "", nil
+		}
+
+		connection := resp.VpnConnections[0]
+		return connection, *connection.State, nil
+	}
+}
+
 func resourceOutscaleOAPIVpnConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 

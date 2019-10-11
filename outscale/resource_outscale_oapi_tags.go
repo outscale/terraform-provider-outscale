@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/aws/aws-sdk-go/aws"
