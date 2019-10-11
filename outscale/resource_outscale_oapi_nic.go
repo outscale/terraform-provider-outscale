@@ -158,6 +158,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeSet,
 			Computed: true,
 			Optional: true,
+			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"link_public_ip": {
