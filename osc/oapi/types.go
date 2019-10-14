@@ -3031,16 +3031,16 @@ type ResponseContext struct {
 
 // implements the service definition of Route
 type Route struct {
-	CreationMethod          string `json:"CreationMethod,omitempty"`
-	DestinationIpRange      string `json:"DestinationIpRange,omitempty"`
-	DestinationPrefixListId string `json:"DestinationPrefixListId,omitempty"`
-	GatewayId               string `json:"GatewayId,omitempty"`
-	NatServiceId            string `json:"NatServiceId,omitempty"`
-	NetPeeringId            string `json:"NetPeeringId,omitempty"`
-	NicId                   string `json:"NicId,omitempty"`
-	State                   string `json:"State,omitempty"`
-	VmAccountId             string `json:"VmAccountId,omitempty"`
-	VmId                    string `json:"VmId,omitempty"`
+	CreationMethod       string `json:"CreationMethod,omitempty"`
+	DestinationIpRange   string `json:"DestinationIpRange,omitempty"`
+	DestinationServiceId string `json:"DestinationServiceId,omitempty"`
+	GatewayId            string `json:"GatewayId,omitempty"`
+	NetAccessPointId     string `json:"NetAccessPointId,omitempty"`
+	NetPeeringId         string `json:"NetPeeringId,omitempty"`
+	NicId                string `json:"NicId,omitempty"`
+	State                string `json:"State,omitempty"`
+	VmAccountId          string `json:"VmAccountId,omitempty"`
+	VmId                 string `json:"VmId,omitempty"`
 }
 
 // implements the service definition of RouteLight
