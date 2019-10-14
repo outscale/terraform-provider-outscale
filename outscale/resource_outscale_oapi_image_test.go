@@ -55,6 +55,35 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOapi, err := strconv.ParseBool(o)
+	if err != nil {
+		isOapi = false
+	}
+
+	if !isOapi {
+		t.Skip()
+	}
+	var ami oapi.Image
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIImageDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOAPIImageRegisterConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOAPIImageExists("outscale_image.outscale_image_register", &ami),
+					testAccCheckState("outscale_image.foo"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
@@ -191,3 +220,13 @@ func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 		}
 	`, omi, vmType, rInt)
 }
+
+const testAccOAPIImageRegisterConfig = `
+resource "outscale_image" "outscale_image" {
+	description = "Terraform-register-OMI"
+	image_name = "terraform-OMI-register"
+	file_location ="https://osu.eu-west-2.outscale.com/test-imagedou/testing-imagedou"
+	
+	root_device_name= "/dev/sda1"
+	}
+`
