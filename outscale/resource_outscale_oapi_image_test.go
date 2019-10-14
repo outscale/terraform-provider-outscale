@@ -84,6 +84,35 @@ func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIImageCopyConfig_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOapi, err := strconv.ParseBool(o)
+	if err != nil {
+		isOapi = false
+	}
+
+	if !isOapi {
+		t.Skip()
+	}
+	var ami oapi.Image
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIImageDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOAPIImageCopyConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOAPIImageExists("outscale_image.outscale_image_copy", &ami),
+					testAccCheckState("outscale_image.foo"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
@@ -230,3 +259,12 @@ resource "outscale_image" "outscale_image" {
 	root_device_name= "/dev/sda1"
 	}
 `
+
+const testAccOAPIImageCopyConfig = `
+resource "outscale_image" "outscale_image" {
+	description = "Terraform-copy-OMI"
+	image_name = "terraform-OMI-copy"
+	source_image_id= "ami-3303b434"
+	source_region_name= "eu-west-2"
+	}
+	`

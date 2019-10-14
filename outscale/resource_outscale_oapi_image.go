@@ -52,15 +52,15 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"architecture": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"creation_date": {
+			"source_region_name": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"image_id": {
+			"source_image_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"file_location": {
 				Type:     schema.TypeString,
@@ -68,23 +68,23 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"account_alias": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"account_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"state": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"image_type": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			"is_public": {
 				Type:     schema.TypeBool,
-				Computed: true,
+				Optional: true,
 			},
 			"root_device_name": {
 				Type:     schema.TypeString,
@@ -92,7 +92,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"root_device_type": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 			// Complex computed values
 			"block_device_mappings": {
@@ -175,14 +175,15 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := &oapi.CreateImageRequest{
-		ImageName:      d.Get("image_name").(string),
-		VmId:           d.Get("vm_id").(string),
-		Description:    d.Get("description").(string),
-		NoReboot:       d.Get("no_reboot").(bool),
-		Architecture:   d.Get("architecture").(string),
-		FileLocation:   d.Get("file_location").(string),
-		SourceImageId:  d.Get("image_id").(string),
-		RootDeviceName: d.Get("root_device_name").(string),
+		ImageName:        d.Get("image_name").(string),
+		VmId:             d.Get("vm_id").(string),
+		Description:      d.Get("description").(string),
+		NoReboot:         d.Get("no_reboot").(bool),
+		Architecture:     d.Get("architecture").(string),
+		FileLocation:     d.Get("file_location").(string),
+		SourceImageId:    d.Get("source_image_id").(string),
+		SourceRegionName: d.Get("source_region_name").(string),
+		RootDeviceName:   d.Get("root_device_name").(string),
 	}
 
 	var result *oapi.CreateImageResponse
