@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cast"
-
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -28,24 +26,28 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"file_location": &schema.Schema{
-				Type:     schema.TypeString,
+			"snapshot_size": {
+				Type:     schema.TypeInt,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
-			"snapshot_size": &schema.Schema{
+			"file_location": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
-			"source_region_name": &schema.Schema{
+			"source_region_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
-			"source_snapshot_id": &schema.Schema{
+			"source_snapshot_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 			"volume_id": {
@@ -108,13 +110,26 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
+	v, ok := d.GetOk("volume_id")
+	snp, sok := d.GetOk("snapshot_size")
+
+	if !ok && !sok {
+		return fmt.Errorf("please provide the volume_id or snapshot_size argument")
+	}
+
 	request := oapi.CreateSnapshotRequest{
 		Description:      d.Get("description").(string),
 		FileLocation:     d.Get("file_location").(string),
-		SnapshotSize:     cast.ToInt64(d.Get("snapshot_size")),
 		SourceRegionName: d.Get("source_region_name").(string),
 		SourceSnapshotId: d.Get("source_snapshot_id").(string),
-		VolumeId:         d.Get("volume_id").(string),
+	}
+
+	if ok {
+		request.VolumeId = v.(string)
+	}
+
+	if sok && snp.(int) > 0 {
+		request.SnapshotSize = int64(snp.(int))
 	}
 
 	var res *oapi.POST_CreateSnapshotResponses
