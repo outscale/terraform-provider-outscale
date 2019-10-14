@@ -273,14 +273,14 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 			if r.DestinationIpRange != "" {
 				m["destination_ip_range"] = r.DestinationIpRange
 			}
-			if r.DestinationPrefixListId != "" {
-				m["destination_prefix_list_id"] = r.DestinationPrefixListId
+			if r.DestinationServiceId != "" {
+				m["destination_prefix_list_id"] = r.DestinationServiceId
 			}
 			if r.GatewayId != "" {
 				m["gateway_id"] = r.GatewayId
 			}
-			if r.NatServiceId != "" {
-				m["nat_service_id"] = r.NatServiceId
+			if r.NetAccessPointId != "" {
+				m["nat_service_id"] = r.NetAccessPointId
 			}
 			if r.NetPeeringId != "" {
 				m["net_peering_id"] = r.NetPeeringId
