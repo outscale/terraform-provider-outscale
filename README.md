@@ -18,9 +18,9 @@ Installing The Provider
 Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
 
 ```sh
-$ wget https://github.com/outscale/terraform-provider-outscale/releases/download/release-0.1.0RC4/terraform-provider-outscale_linux_amd64_v0.1.0-rc4.zip
-$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc4.zip
-$ mv terraform-provider-outscale_v0.1.0-rc4 ~/.terraform.d/plugins/linux_amd64/.
+$ wget https://github.com/outscale/terraform-provider-outscale/releases/download/release-0.1.0RC5/terraform-provider-outscale_linux_amd64_v0.1.0-rc5.zip
+$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc5.zip
+$ mv terraform-provider-outscale_v0.1.0-rc5 ~/.terraform.d/plugins/linux_amd64/.
 ```
 Set environment variables to use oAPI (3DS OUTSCALE API)
 
@@ -38,14 +38,14 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch release-0.1.0RC3 git@github.com:outscale/terraform-provider-outscale
+$ git clone --branch release-0.1.0RC5 git@github.com:outscale/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.1.0-rc4
+$ go build -o terraform-provider-outscale_v0.1.0-rc5
 ```
 
 Using the provider
@@ -54,7 +54,7 @@ Using the provider
 2. Move the plugin to the repository ~/.terraform.d/plugins/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.1.0-rc4 ~/.terraform.d/plugins/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.1.0-rc5 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
 3. Execute `terraform init`
