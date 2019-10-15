@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"destination_prefix_list_id": {
+									"destination_service_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -81,7 +81,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"nat_service_id": {
+									"net_access_point_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},

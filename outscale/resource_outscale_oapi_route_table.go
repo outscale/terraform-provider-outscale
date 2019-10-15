@@ -274,13 +274,13 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 				m["destination_ip_range"] = r.DestinationIpRange
 			}
 			if r.DestinationServiceId != "" {
-				m["destination_prefix_list_id"] = r.DestinationServiceId
+				m["destination_service_id"] = r.DestinationServiceId
 			}
 			if r.GatewayId != "" {
 				m["gateway_id"] = r.GatewayId
 			}
 			if r.NetAccessPointId != "" {
-				m["nat_service_id"] = r.NetAccessPointId
+				m["net_access_point_id"] = r.NetAccessPointId
 			}
 			if r.NetPeeringId != "" {
 				m["net_peering_id"] = r.NetPeeringId
@@ -368,7 +368,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"destination_prefix_list_id": {
+					"destination_service_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -396,7 +396,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"nat_service_id": {
+					"net_access_point_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
