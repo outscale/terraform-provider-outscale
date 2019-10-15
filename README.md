@@ -5,13 +5,31 @@ Terraform Provider
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/source/assets/images/logo-text.svg" width="600px">
 
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.8 (to build the provider plugin)
+-	[Terraform](https://www.terraform.io/downloads.html) 0.11.x
+-	[Go](https://golang.org/doc/install) 1.12 (to build the provider plugin)
+
+Installing The Provider
+-----------------------
+
+Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
+
+```sh
+$ wget https://github.com/outscale/terraform-provider-outscale/releases/download/release-0.1.0RC4/terraform-provider-outscale_linux_amd64_v0.1.0-rc4.zip
+$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc4.zip
+$ mv terraform-provider-outscale_v0.1.0-rc4 ~/.terraform.d/plugins/linux_amd64/.
+```
+Set environment variables to use oAPI (3DS OUTSCALE API)
+
+```sh
+$ export OUTSCALE_OAPI_URL=outscale.com/oapi/latest
+$ export OUTSCALE_OAPI=true
+$ export OUTSCALE_REGION=eu-west-2
+```
+
 
 Building The Provider
 ---------------------
@@ -20,14 +38,14 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-outscale
+$ git clone --branch release-0.1.0RC3 git@github.com:outscale/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.1.0-rc3
+$ go build -o terraform-provider-outscale_v0.1.0-rc4
 ```
 
 Using the provider
@@ -36,11 +54,12 @@ Using the provider
 2. Move the plugin to the repository ~/.terraform.d/plugins/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.1.0-rc3 ~/.terraform.d/plugins/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.1.0-rc4 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
-3. Execute `terraform plan`
-4. `terraform init`
+3. Execute `terraform init`
+4. Execute `terraform plan`
+5. oAPI beta documentation is available at https://docs-beta.outscale.com
 
 Developing the Provider
 ---------------------------
