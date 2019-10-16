@@ -59,3 +59,22 @@ snapshot_size = ""
 }
 `)
 }
+
+func testAccOutscaleSnapshotCopyConfig() string {
+	return fmt.Sprintf(`
+resource "outscale_volume" "test" {
+	availability_zone = "eu-west-2a"
+	size = 1
+}
+
+resource "outscale_snapshot" "test" {
+	volume_id = "${outscale_volume.test.id}"
+	description = "Snapshot Acceptance Test"
+}
+
+resource "outscale_snapshot_copy" "test" {
+	source_region =  "eu-west-2"
+	source_snapshot_id = "${outscale_snapshot.test.id}"
+}
+`)
+}
