@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -20,37 +22,44 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 		Delete: resourceOutscaleOAPISnapshotDelete,
 
 		Schema: map[string]*schema.Schema{
-			"volume_id": {
+			"description": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
-			"description": {
+			"file_location": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"account_id": {
+			"snapshot_size": &schema.Schema{
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
+				ForceNew: true,
 			},
-			"progress": {
-				Type:     schema.TypeInt,
-				Computed: true,
+			"source_region_name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
+			"source_snapshot_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"volume_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+
 			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"snapshot_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"volume_size": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"state": {
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -71,7 +80,23 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 					},
 				},
 			},
-			"tags": tagsListOAPISchemaForceNew(),
+			"progress": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"snapshot_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsOAPIListSchemaComputed(),
+			"volume_size": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -83,54 +108,53 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	v, ok := d.GetOk("volume_id")
-	de, dok := d.GetOk("description")
-
+	volumeID, ok := d.GetOk("volume_id")
 	if !ok {
 		return fmt.Errorf("please provide the volume_id required attribute")
 	}
 
 	request := oapi.CreateSnapshotRequest{
-		VolumeId: v.(string),
-	}
-
-	if dok {
-		request.Description = de.(string)
+		Description:      d.Get("description").(string),
+		FileLocation:     d.Get("file_location").(string),
+		SnapshotSize:     cast.ToInt64(d.Get("snapshot_size")),
+		SourceRegionName: d.Get("source_region_name").(string),
+		SourceSnapshotId: d.Get("source_snapshot_id").(string),
+		VolumeId:         volumeID.(string),
 	}
 
 	var res *oapi.POST_CreateSnapshotResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		res, err = conn.POST_CreateSnapshot(request)
-
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
-
 	if err != nil {
 		return err
+	}
+
+	log.Printf("Waiting for Snapshot %s to become available...", res.OK.Snapshot.SnapshotId)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "pending/queued", "queued"},
+		Target:     []string{"completed"},
+		Refresh:    SnapshotOAPIStateRefreshFunc(conn, res.OK.Snapshot.SnapshotId),
+		Timeout:    OutscaleImageRetryTimeout,
+		Delay:      OutscaleImageRetryDelay,
+		MinTimeout: OutscaleImageRetryMinTimeout,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", res.OK.Snapshot.SnapshotId, err)
 	}
 
 	d.SetId(res.OK.Snapshot.SnapshotId)
-	d.Set("snapshot_id", res.OK.Snapshot.SnapshotId)
-
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), res.OK.Snapshot.SnapshotId, conn)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = resourceOutscaleOAPISnapshotWaitForAvailable(d.Id(), conn)
-	if err != nil {
-		return err
-	}
 
 	return resourceOutscaleOAPISnapshotRead(d, meta)
 }
@@ -141,53 +165,40 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	req := oapi.ReadSnapshotsRequest{
 		Filters: oapi.FiltersSnapshot{SnapshotIds: []string{d.Id()}},
 	}
+
 	var res *oapi.POST_ReadSnapshotsResponses
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		res, err = conn.POST_ReadSnapshots(req)
-
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
 
-	if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidSnapshotID.NotFound" {
-		log.Printf("Snapshot %q Not found - removing from state", d.Id())
-		d.SetId("")
-		return nil
+	if err != nil {
+		return fmt.Errorf("Error reading the snapshot %s", err)
 	}
 
-	snapshot := res.OK.Snapshots[0]
+	s := res.OK.Snapshots[0]
 
-	d.Set("description", snapshot.Description)
-	d.Set("account_id", snapshot.AccountId)
-	d.Set("progress", snapshot.Progress)
-	d.Set("snapshot_id", snapshot.SnapshotId)
-	d.Set("account_alias", snapshot.AccountAlias)
-	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("state", snapshot.State)
-	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("volume_size", snapshot.VolumeSize)
-	if err := d.Set("tags", tagsOAPIToMap(snapshot.Tags)); err != nil {
-		return err
-	}
-	d.Set("request_id", res.OK.ResponseContext.RequestId)
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 
-	lp := make([]map[string]interface{}, 1)
-	lp[0] = make(map[string]interface{})
-	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
-	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
-
-	if err := d.Set("permissions_to_create_volume", lp); err != nil {
-		return err
-	}
-
-	return d.Set("tags", tagsOAPIToMap(snapshot.Tags))
+		set("description", s.Description)
+		set("volume_id", s.VolumeId)
+		set("account_alias", s.AccountAlias)
+		set("account_id", s.AccountId)
+		set("permissions_to_create_volume", omiOAPIPermissionToLuch(s.PermissionsToCreateVolume))
+		set("progress", s.Progress)
+		set("snapshot_id", s.SnapshotId)
+		set("state", s.State)
+		set("tags", tagsOAPIToMap(s.Tags))
+		set("volume_size", s.VolumeSize)
+		return set("request_id", res.OK.ResponseContext.RequestId)
+	})
 }
 
 func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
@@ -225,25 +236,6 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 
 		return resource.NonRetryableError(err)
 	})
-}
-
-func resourceOutscaleOAPISnapshotWaitForAvailable(id string, conn *oapi.Client) error {
-	log.Printf("Waiting for Snapshot %s to become available...", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
-		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, id),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
-	}
-
-	_, err := stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", id, err)
-	}
-	return nil
 }
 
 // SnapshotOAPIStateRefreshFunc ...
