@@ -62,7 +62,6 @@ func init() {
 			"outscale_snapshot_attributes":           resourcedOutscaleSnapshotAttributes,
 			"outscale_lin_api_access":                resourceOutscaleVpcEndpoint,
 			"outscale_snapshot_import":               resourcedOutscaleSnapshotImport,
-			"outscale_snapshot_copy":                 resourcedOutscaleSnapshotCopy,
 		},
 		"oapi": ResourceMap{
 			"outscale_vm":                            resourceOutscaleOApiVM,
@@ -121,7 +120,6 @@ func init() {
 			"outscale_lin_api_access":                resourceOutscaleOAPIVpcEndpoint,
 			"outscale_net_api_access":                resourceOutscaleOAPIVpcEndpoint,
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
-			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 			"outscale_policy":                        resourceOutscaleOAPIPolicy,
 			"outscale_directlink":                    resourceOutscaleOAPIDirectLink,
 			"outscale_group":                         resourceOutscaleOAPIGroup,
