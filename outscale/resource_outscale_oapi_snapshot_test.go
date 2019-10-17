@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,23 +14,18 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
 	var v oapi.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfig,
+				Config: testAccOutscaleOAPISnapshotConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 				),
@@ -41,23 +35,40 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
 	var v oapi.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotConfigWithDescription,
+				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	var v oapi.Snapshot
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
@@ -107,25 +118,49 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestChe
 	}
 }
 
-const testAccOutscaleOAPISnapshotConfig = `
-	resource "outscale_volume" "test" {
-		subregion_name = "eu-west-2a"
-		size = 1
-	}
+func testAccOutscaleOAPISnapshotConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "test" {
+			subregion_name = "%sa"
+			size = 1
+		}
 
-	resource "outscale_snapshot" "test" {
-		volume_id = "${outscale_volume.test.id}"
-	}
-`
+		resource "outscale_snapshot" "test" {
+			volume_id = "${outscale_volume.test.id}"
+		}
+	`, region)
+}
 
-const testAccOutscaleOAPISnapshotConfigWithDescription = `
-	resource "outscale_volume" "description_test" {
-		subregion_name = "eu-west-2a"
-		size = 1
-	}
+func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "%sa"
+			size = 1
+		}
 
-	resource "outscale_snapshot" "test" {
-		volume_id = "${outscale_volume.description_test.id}"
-		description = "Snapshot Acceptance Test"
-	}
-`
+		resource "outscale_snapshot" "test" {
+			volume_id = "${outscale_volume.description_test.id}"
+			description = "Snapshot Acceptance Test"
+		}
+	`, region)
+}
+
+func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "%[1]sb"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "source" {
+			volume_id   = "${outscale_volume.description_test.id}"
+			description = "Source Snapshot Acceptance Test"
+		}
+
+		resource "outscale_snapshot" "test" {
+			source_region_name = "%[1]sa"
+			source_snapshot_id = "${outscale_snapshot.source.id}"
+			description        = "Target Snapshot Acceptance Test"
+		}
+	`, region)
+}
