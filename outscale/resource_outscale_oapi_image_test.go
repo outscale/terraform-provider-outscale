@@ -77,7 +77,7 @@ func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
 				Config: testAccOAPIImageRegisterConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.outscale_image_register", &ami),
-					testAccCheckState("outscale_image.foo"),
+					testAccCheckState("outscale_image.outscale_image_register.foo"),
 				),
 			},
 		},
@@ -251,20 +251,19 @@ func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 }
 
 const testAccOAPIImageRegisterConfig = `
-resource "outscale_image" "outscale_image" {
-	description = "Terraform-register-OMI"
-	image_name = "terraform-OMI-register"
-	file_location ="https://osu.eu-west-2.outscale.com/test-imagedou/testing-imagedou"
-	
-	root_device_name= "/dev/sda1"
-	}
+resource "outscale_image" "outscale_image_register"
+{ description = "Terraform-register-OMI"
+image_name = "terraform-OMI-register"
+file_location ="http://osu.eu-west-2.outscale.com/new-export-omi/omi-for-terraform/ami-b7d7f165/manifest?AWSAccessKeyId=S6AZO8TT4DOY9GOUOQ3U&Expires=1571754478&Signature=eOvObi6%2BFDW0AHEqafg5hZsLeJ4%3D"
+# root_device_name= "/dev/sda1" (should not be used for register image)
+}
 `
 
 const testAccOAPIImageCopyConfig = `
-resource "outscale_image" "outscale_image" {
+resource "outscale_image" "outscale_image_copy" {
 	description = "Terraform-copy-OMI"
 	image_name = "terraform-OMI-copy"
-	source_image_id= "ami-3303b434"
+	source_image_id= "ami-3aa9428e"
 	source_region_name= "eu-west-2"
 	}
 	`

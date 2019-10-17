@@ -35,6 +35,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"vm_id": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
 			"image_name": {
@@ -53,6 +54,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			"architecture": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"source_region_name": {
 				Type:     schema.TypeString,
@@ -61,38 +63,41 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			"source_image_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"file_location": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"account_alias": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"account_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"state": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"image_type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"is_public": {
 				Type:     schema.TypeBool,
-				Optional: true,
+				Computed: true,
 			},
 			"root_device_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"root_device_type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			// Complex computed values
 			"block_device_mappings": {
