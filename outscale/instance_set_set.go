@@ -515,7 +515,7 @@ func getOAPIVMNetworkInterfaceSet(nics []oapi.Nic) (res []map[string]interface{}
 				"security_groups":        securityGroups,
 				"state":                  nic.State,
 				"subnet_id":              nic.SubnetId,
-				"subegion_name":          nic.SubregionName,
+				"subregion_name":         nic.SubregionName,
 				"tags":                   getOapiTagSet(nic.Tags),
 			})
 		}

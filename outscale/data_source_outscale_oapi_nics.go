@@ -188,7 +188,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"subegion_name": {
+					"subregion_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
