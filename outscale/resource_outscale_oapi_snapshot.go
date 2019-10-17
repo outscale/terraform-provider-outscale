@@ -108,18 +108,13 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	volumeID, ok := d.GetOk("volume_id")
-	if !ok {
-		return fmt.Errorf("please provide the volume_id required attribute")
-	}
-
 	request := oapi.CreateSnapshotRequest{
 		Description:      d.Get("description").(string),
 		FileLocation:     d.Get("file_location").(string),
 		SnapshotSize:     cast.ToInt64(d.Get("snapshot_size")),
 		SourceRegionName: d.Get("source_region_name").(string),
 		SourceSnapshotId: d.Get("source_snapshot_id").(string),
-		VolumeId:         volumeID.(string),
+		VolumeId:         d.Get("volume_id").(string),
 	}
 
 	var res *oapi.POST_CreateSnapshotResponses
