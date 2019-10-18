@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -30,7 +31,7 @@ func TestAccOutscaleImage_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOAPIImageConfigBasic(rInt),
+				Config: testAccImageConfigBasic(rInt),
 			},
 
 			resource.TestStep{
@@ -41,4 +42,29 @@ func TestAccOutscaleImage_importBasic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccImageConfigBasic(rInt int) string {
+	return fmt.Sprintf(`
+resource "outscale_keypair" "a_key_pair" {
+	key_name   = "terraform-key-%d"
+}
+
+resource "outscale_firewall_rules_set" "web" {
+  group_name = "terraform_acceptance_test_example_1"
+  group_description = "Used in the terraform acceptance tests"
+}
+
+resource "outscale_vm" "basic" {
+	image_id = "ami-8a6a0120"
+	instance_type = "t2.micro"
+	security_group = ["${outscale_firewall_rules_set.web.id}"]
+	key_name = "${outscale_keypair.a_key_pair.key_name}"
+}
+
+resource "outscale_image" "foo" {
+	name = "tf-testing-%d"
+	instance_id = "${outscale_vm.basic.id}"
+}
+	`, rInt, rInt)
 }
