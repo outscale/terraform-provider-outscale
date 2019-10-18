@@ -28,8 +28,8 @@ func init() {
 }
 
 func TestGetOMIByRegion(t *testing.T) {
-	if omi := getOMIByRegion("eu-west-2", "ubuntu"); omi.OMI != "ami-7eb39d40" {
-		t.Fatalf("expected %s, but got %s", "ami-7eb39d40", omi.OMI)
+	if omi := getOMIByRegion("eu-west-2", "ubuntu"); omi.OMI != "ami-fbead1f5" {
+		t.Fatalf("expected %s, but got %s", "ami-fbead1f5", omi.OMI)
 	}
 	if omi := getOMIByRegion("eu-west-2", "centos"); omi.OMI != "ami-4a7bf2b3" {
 		t.Fatalf("expected %s, but got %s", "ami-4a7bf2b3", omi.OMI)
