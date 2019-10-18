@@ -38,16 +38,15 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	request := oapi.CreateTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
-
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
-
-	if tagsOk == false && resourceIdsOk == false {
+	if !tagsOk && !resourceIdsOk {
 		return fmt.Errorf("One tag and resource id, must be assigned")
 	}
 
 	if tagsOk {
 		request.Tags = tagsOAPIFromMap(tag.(map[string]interface{}))
 	}
+
 	if resourceIdsOk {
 		var rids []string
 		sgs := resourceIds.(*schema.Set).List()
