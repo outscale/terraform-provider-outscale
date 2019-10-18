@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPIEIMGroupPolicyAttachment_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var out eim.ListAttachedGroupPoliciesOutput
 
@@ -36,7 +25,10 @@ func TestAccOutscaleOAPIEIMGroupPolicyAttachment_basic(t *testing.T) {
 	policyName3 := fmt.Sprintf("tf-acc-policy-gpa-basic-3-%s", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIGroupPolicyAttachmentDestroy,
 		Steps: []resource.TestStep{

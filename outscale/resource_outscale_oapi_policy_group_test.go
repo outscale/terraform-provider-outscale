@@ -3,8 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,21 +15,15 @@ import (
 )
 
 func TestAccOutscaleOAPIPolicyGroup_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var groupPolicy1, groupPolicy2 eim.GetGroupPolicyOutput
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIEIMGroupPolicyDestroy,
 		Steps: []resource.TestStep{

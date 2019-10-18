@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,16 +12,7 @@ import (
 )
 
 func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var cert eim.ServerCertificate
 	rInt := acctest.RandInt()
@@ -31,7 +20,10 @@ func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
 	unixFile := "test-fixtures/eim-ssl-unix-line-endings.pem"
 	winFile := "test-fixtures/eim-ssl-windows-line-endings.pem.winfile"
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIServerCertificateDestroy,
 		Steps: []resource.TestStep{

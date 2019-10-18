@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPIPolicyUserLink_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var out eim.ListAttachedUserPoliciesOutput
 	rName := acctest.RandString(10)
@@ -34,7 +23,10 @@ func TestAccOutscaleOAPIPolicyUserLink_basic(t *testing.T) {
 	policyName3 := fmt.Sprintf("test-policy-%s", acctest.RandString(10))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIPolicyUserLinkDestroy,
 		Steps: []resource.TestStep{

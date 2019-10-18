@@ -3,8 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,22 +15,16 @@ import (
 )
 
 func TestAccOutscaleOAPIGroup_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var conf eim.GetGroupOutput
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIGroupDestroy,
 		Steps: []resource.TestStep{
@@ -141,16 +133,18 @@ func testAccCheckOutscaleOAPIGroupAttributes(group *eim.GetGroupOutput, name str
 
 func testAccOutscaleOAPIGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_group" "group" {
-		group_name = "test-group-%d"
-		path = "/"
-	}`, rInt)
+		resource "outscale_group" "group" {
+			group_name = "test-group-%d"
+			path       = "/"
+		}
+	`, rInt)
 }
 
 func testAccOutscaleOAPIGroupConfig2(rInt int) string {
 	return fmt.Sprintf(`
-resource "outscale_group" "group2" {
-	group_name = "test-group-%d-2"
-	path = "/funnypath/"
-}`, rInt)
+		resource "outscale_group" "group2" {
+			group_name = "test-group-%d-2"
+			path       = "/funnypath/"
+		}
+	`, rInt)
 }

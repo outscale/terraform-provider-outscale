@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,21 +14,15 @@ import (
 )
 
 func TestAccOutscaleOAPIDirectLink_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	connectionName := fmt.Sprintf("tf-dx-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIDirectLinkDestroy,
 		Steps: []resource.TestStep{
@@ -97,10 +89,10 @@ func testAccCheckOutscaleOAPIDirectLinkExists(name string) resource.TestCheckFun
 
 func testAccDxOAPIConnectionConfig(n string) string {
 	return fmt.Sprintf(`
-resource "outscale_directlink" "hoge" {
-  direct_link_name = "%s"
-  bandwidth = "1Gbps"
-  site = "EqSe2"
-}
-`, n)
+		resource "outscale_directlink" "hoge" {
+			direct_link_name = "%s"
+			bandwidth        = "1Gbps"
+			site             = "EqSe2"
+		}
+	`, n)
 }

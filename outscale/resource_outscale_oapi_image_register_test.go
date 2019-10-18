@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,21 +14,15 @@ import (
 )
 
 func TestAccOutscaleOAPIImageRegister_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	r := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIImageRegisterDestroy,
 		Steps: []resource.TestStep{
@@ -90,20 +82,21 @@ func testAccCheckOutscaleOAPIImageRegisterExists(n string) resource.TestCheckFun
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Role name is set")
 		}
-
 		return nil
 	}
 }
 
 func testAccOutscaleOAPIImageRegisterConfig(r int) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_vm" {
-    count = 1
-    image_id                    = "ami-880caa66"
-    type               = "c4.large"
-}
-resource "outscale_image_register" "outscale_image_register" {
-    name        = "image_%d"
-    vm_id = "${outscale_vm.outscale_vm.id}"
-}`, r)
+		resource "outscale_vm" "outscale_vm" {
+			count    = 1
+			image_id = "ami-880caa66"
+			type     = "c4.large"
+		}
+		
+		resource "outscale_image_register" "outscale_image_register" {
+			name  = "image_%d"
+			vm_id = "${outscale_vm.outscale_vm.id}"
+		}
+	`, r)
 }

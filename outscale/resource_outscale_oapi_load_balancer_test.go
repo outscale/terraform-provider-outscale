@@ -16,12 +16,16 @@ import (
 )
 
 func TestAccOutscaleOAPILBUBasic(t *testing.T) {
+	t.Skip()
 	var conf lbu.LoadBalancerDescription
 
 	r := acctest.RandIntRange(0, 10)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,

@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDirectLinkInterface_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	key := "OUTSCALE_CONNECTION_ID"
 	connectionID := os.Getenv(key)
@@ -36,7 +26,10 @@ func TestAccOutscaleOAPIDirectLinkInterface_basic(t *testing.T) {
 	bgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIDirectLinkInterfaceDestroy,
 		Steps: []resource.TestStep{
@@ -107,21 +100,21 @@ func testAccCheckOutscaleOAPIDirectLinkInterfaceExists(name string) resource.Tes
 
 func testAccOAPIDxPrivateVirtualInterfaceConfig(cid, n string, bgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_vpn_gateway" "foo" {
-  tag {
-    Name = "%s"
-  }
-}
-
-resource "outscale_directlink_interface" "foo" {
-  connection_id    = "%s"
-
-	new_private_virtual_interface {
-		vpn_gateway_id = "${outscale_vpn_gateway.foo.id}"
-		direct_link_interface_name = "%s"
-		vlan           = 4094
-		bgp_asn        = %d
-	}
-}
-`, n, cid, n, bgpAsn)
+		resource "outscale_vpn_gateway" "foo" {
+			tag {
+				Name = "%s"
+			}
+		}
+		
+		resource "outscale_directlink_interface" "foo" {
+			connection_id = "%s"
+		
+			new_private_virtual_interface {
+				vpn_gateway_id             = "${outscale_vpn_gateway.foo.id}"
+				direct_link_interface_name = "%s"
+				vlan                       = 4094
+				bgp_asn                    = %d
+			}
+		}
+	`, n, cid, n, bgpAsn)
 }
