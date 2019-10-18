@@ -70,7 +70,7 @@ func dataSourceOutscaleOAPIDirectLinkInterfaces() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"direct_link_Interface_name": {
+						"direct_link_interface_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},

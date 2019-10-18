@@ -19,19 +19,19 @@ func dataSourceOutscaleOAPIPolicy() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"group_name": {
 				Type:     schema.TypeString,
-				Required: false,
+				Required: true,
 			},
 			"is_linked": {
 				Type:     schema.TypeBool,
-				Required: false,
+				Required: true,
 			},
 			"path": {
 				Type:     schema.TypeString,
-				Required: false,
+				Required: true,
 			},
 			"user_name": {
 				Type:     schema.TypeString,
-				Required: false,
+				Required: true,
 			},
 			"resources_count": {
 				Type:     schema.TypeInt,

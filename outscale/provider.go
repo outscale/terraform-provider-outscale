@@ -86,7 +86,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes(),
 			"outscale_net_api_access":                resourceOutscaleOAPIVpcEndpoint(),
 			"outscale_snapshot_import":               resourcedOutscaleOAPISnapshotImport(),
-			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy(),
 			"outscale_policy":                        resourceOutscaleOAPIPolicy(),
 			"outscale_group":                         resourceOutscaleOAPIGroup(),
 			"outscale_group_user":                    resourceOutscaleOAPIGroupUser(),

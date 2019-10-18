@@ -68,7 +68,6 @@ func init() {
 			"outscale_net_api_access":                resourceOutscaleOAPIVpcEndpoint,
 			"outscale_image_register":                resourceOutscaleOAPIImageRegister,
 			"outscale_policy":                        resourceOutscaleOAPIPolicy,
-			"outscale_snapshot_copy":                 resourcedOutscaleOAPISnapshotCopy,
 			"outscale_group":                         resourceOutscaleOAPIGroup,
 			"outscale_group_user":                    resourceOutscaleOAPIGroupUser,
 			"outscale_user":                          resourceOutscaleOAPIUser,

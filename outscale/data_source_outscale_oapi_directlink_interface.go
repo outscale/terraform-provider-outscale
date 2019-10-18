@@ -53,7 +53,7 @@ func dataSourceOutscaleOAPIDirectLinkInterface() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"direct_link_Interface_name": {
+			"direct_link_interface_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -122,7 +122,7 @@ func dataSourceOutscaleOAPIDirectLinkInterfaceRead(d *schema.ResourceData, meta 
 	d.Set("outscale_private_ip", vif.AmazonAddress)
 	d.Set("vpn_gateway_id", vif.VirtualGatewayID)
 	d.Set("direct_link_interface_id", vif.VirtualInterfaceID)
-	d.Set("direct_link_Interface_name", vif.VirtualInterfaceName)
+	d.Set("direct_link_interface_name", vif.VirtualInterfaceName)
 	d.Set("state", vif.VirtualInterfaceState)
 	d.Set("type", vif.VirtualInterfaceType)
 	d.Set("vlan", vif.Vlan)
