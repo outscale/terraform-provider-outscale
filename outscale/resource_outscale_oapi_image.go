@@ -35,7 +35,8 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"vm_id": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 			},
 			"image_name": {
 				Type:     schema.TypeString,
@@ -52,18 +53,21 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"architecture": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
-			"creation_date": {
+			"source_region_name": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
-			"image_id": {
+			"source_image_id": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
 			"file_location": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
 			"account_alias": {
@@ -88,6 +92,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 			},
 			"root_device_name": {
 				Type:     schema.TypeString,
+				Optional: true,
 				Computed: true,
 			},
 			"root_device_type": {
@@ -175,15 +180,15 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
 	req := &oapi.CreateImageRequest{
-		ImageName: d.Get("image_name").(string),
-		VmId:      d.Get("vm_id").(string),
-	}
-
-	if a, aok := d.GetOk("description"); aok {
-		req.Description = a.(string)
-	}
-	if a, aok := d.GetOk("no_reboot"); aok {
-		req.NoReboot = a.(bool)
+		ImageName:        d.Get("image_name").(string),
+		VmId:             d.Get("vm_id").(string),
+		Description:      d.Get("description").(string),
+		NoReboot:         d.Get("no_reboot").(bool),
+		Architecture:     d.Get("architecture").(string),
+		FileLocation:     d.Get("file_location").(string),
+		SourceImageId:    d.Get("source_image_id").(string),
+		SourceRegionName: d.Get("source_region_name").(string),
+		RootDeviceName:   d.Get("root_device_name").(string),
 	}
 
 	var result *oapi.CreateImageResponse

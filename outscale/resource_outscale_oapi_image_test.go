@@ -55,6 +55,56 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOapi, err := strconv.ParseBool(o)
+	if err != nil {
+		isOapi = false
+	}
+
+	if !isOapi {
+		t.Skip()
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIImageDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOAPIImageRegisterConfig,
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPIImageCopyConfig_basic(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOapi, err := strconv.ParseBool(o)
+	if err != nil {
+		isOapi = false
+	}
+
+	if !isOapi {
+		t.Skip()
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIImageDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOAPIImageCopyConfig,
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 
@@ -191,3 +241,21 @@ func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 		}
 	`, omi, vmType, rInt)
 }
+
+const testAccOAPIImageRegisterConfig = `
+resource "outscale_image" "outscale_image_register"
+{ description = "Terraform-register-OMI"
+image_name = "terraform-OMI-register"
+file_location ="http://osu.eu-west-2.outscale.com/new-export-omi/omi-for-terraform/ami-b7d7f165/manifest?AWSAccessKeyId=S6AZO8TT4DOY9GOUOQ3U&Expires=1571754478&Signature=eOvObi6%2BFDW0AHEqafg5hZsLeJ4%3D"
+# root_device_name= "/dev/sda1" (should not be used for register image)
+}
+`
+
+const testAccOAPIImageCopyConfig = `
+resource "outscale_image" "outscale_image_copy" {
+	description = "Terraform-copy-OMI"
+	image_name = "terraform-OMI-copy"
+	source_image_id= "ami-3aa9428e"
+	source_region_name= "eu-west-2"
+	}
+	`
