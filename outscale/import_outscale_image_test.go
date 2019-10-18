@@ -27,10 +27,10 @@ func TestAccOutscaleImage_importBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckImageDestroy,
+		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccImageConfigBasic(rInt),
+				Config: testAccOAPIImageConfigBasic(rInt),
 			},
 
 			resource.TestStep{
