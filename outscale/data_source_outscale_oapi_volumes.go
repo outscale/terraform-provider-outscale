@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -27,32 +29,10 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						//Schema: map[string]*schema.Schema{
-						// Arguments
-						"subregion_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"iops": {
-							Type: schema.TypeInt,
-
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"size": {
-							Type: schema.TypeInt,
-
-							Computed: true,
-						},
-						"snapshot_id": {
-							Type: schema.TypeString,
-
-							Computed: true,
-						},
-						"volume_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						// Attributes
 						"linked_volumes": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -81,12 +61,28 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 								},
 							},
 						},
+						"size": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"snapshot_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subregion_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"tags": tagsOAPIListSchemaComputed(),
 						"volume_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -106,7 +102,6 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-
 	params := &oapi.ReadVolumesRequest{
 		Filters: oapi.FiltersVolume{},
 	}
@@ -115,11 +110,14 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		volIDs := expandStringValueList(volumeIds.([]interface{}))
 		params.Filters.VolumeIds = volIDs
 	}
+	log.Printf("LOOOGGG___ filtersOk \n %+v \n", filtersOk)
 
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
 	}
-	var resp *oapi.ReadVolumesResponse
+
+	log.Printf("LOOOGGG___ Filters \n %+v \n", params.Filters)
+
 	var rs *oapi.POST_ReadVolumesResponses
 	var err error
 
@@ -133,83 +131,57 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return resource.NonRetryableError(err)
 	})
-
 	if err != nil {
 		return err
 	}
-	resp = rs.OK
 
-	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
+	log.Printf("Found These Volumes %s", spew.Sdump(rs.OK.Volumes))
 
-	filteredVolumes := resp.Volumes[:]
+	volumes := rs.OK.Volumes
 
-	if len(filteredVolumes) < 1 {
+	if len(volumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	d.Set("request_id", resp.ResponseContext.RequestId)
+	log.Printf("LOOOGGG___ volumes \n %+v \n", volumes)
 
-	return volumesOAPIDescriptionAttributes(d, filteredVolumes)
-}
-
-func volumesOAPIDescriptionAttributes(d *schema.ResourceData, volumes []oapi.Volume) error {
-
-	i := make([]interface{}, len(volumes))
-
-	for k, v := range volumes {
-		im := make(map[string]interface{})
-
-		if v.LinkedVolumes != nil {
-			a := make([]map[string]interface{}, len(v.LinkedVolumes))
-			for k, v := range v.LinkedVolumes {
-				at := make(map[string]interface{})
-				//if v.DeleteOnVmDeletion != nil {
-				at["delete_on_vm_termination"] = v.DeleteOnVmDeletion
-				//}
-				if v.DeviceName != "" {
-					at["device_name"] = v.DeviceName
-				}
-				if v.VmId != "" {
-					at["vm_id"] = v.VmId
-				}
-				if v.State != "" {
-					at["state"] = v.State
-				}
-				if v.VolumeId != "" {
-					at["volume_id"] = v.VolumeId
-				}
-				a[k] = at
-			}
-			im["linked_volumes"] = a
-		}
-		if v.SubregionName != "" {
-			im["subregion_name"] = v.SubregionName
-		}
-
-		im["iops"] = v.Iops
-		im["size"] = v.Size
-
-		if v.SnapshotId != "" {
-			im["snapshot_id"] = v.SnapshotId
-		}
-		if v.Tags != nil {
-			im["tags"] = tagsOAPIToMap(v.Tags)
-		}
-		//commented until issue is fixed
-		//if v.VolumeType != "" {
-		im["volume_type"] = v.VolumeType
-		//}
-		if v.State != "" {
-			im["state"] = v.State
-		}
-		if v.VolumeId != "" {
-			im["volume_id"] = v.VolumeId
-		}
-		i[k] = im
+	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
+		return err
 	}
 
-	err := d.Set("volumes", i)
+	d.Set("request_id", rs.OK.ResponseContext.RequestId)
+
 	d.SetId(resource.UniqueId())
 
-	return err
+	return nil
+}
+
+func getOAPIVolumes(volumes []oapi.Volume) (res []map[string]interface{}) {
+	for _, v := range volumes {
+		res = append(res, map[string]interface{}{
+			"iops":           v.Iops,
+			"linked_volumes": v.LinkedVolumes,
+			"size":           v.Size,
+			"snapshot_id":    v.SnapshotId,
+			"state":          v.State,
+			"subregion_name": v.SubregionName,
+			"tags":           tagsOAPIToMap(v.Tags),
+			"volume_id":      v.VolumeId,
+			"volume_type":    v.VolumeType,
+		})
+	}
+	return
+}
+
+func getOAPILinkedVolumes(linkedVolumes []oapi.LinkedVolume) (res []map[string]interface{}) {
+	for _, l := range linkedVolumes {
+		res = append(res, map[string]interface{}{
+			"delete_on_vm_deletion": cast.ToString(l.DeleteOnVmDeletion),
+			"device_name":           l.DeviceName,
+			"vm_id":                 l.VmId,
+			"state":                 l.State,
+			"volume_id":             l.VolumeId,
+		})
+	}
+	return
 }
