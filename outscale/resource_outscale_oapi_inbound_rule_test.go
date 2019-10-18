@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,16 +13,8 @@ import (
 )
 
 func TestAccOutscaleOAPIInboundRule(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
 	var group oapi.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -44,7 +34,10 @@ func TestAccOutscaleOAPIInboundRule(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
@@ -156,20 +149,24 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oapi.SecurityGroup) res
 
 func testAccOutscaleOAPISecurityGroupRuleIngressConfig(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_firewall_rules_set" "web" {
-		firewall_rules_set_name = "terraform_test_%d"
-		description = "Used in the terraform acceptance tests"
-					tag = {
-									Name = "tf-acc-test"
-					}
-	}
-	resource "outscale_inbound_rule" "ingress_1" {
-		inbound_rule = {
-				ip_protocol = "tcp"
-				from_port_range = 80
-				to_port_range = 8000
-				ip_ranges = ["10.0.0.0/8"]
+		resource "outscale_firewall_rules_set" "web" {
+			firewall_rules_set_name = "terraform_test_%d"
+			description             = "Used in the terraform acceptance tests"
+		
+			tag = {
+				Name = "tf-acc-test"
+			}
 		}
-		firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
-	}`, rInt)
+		
+		resource "outscale_inbound_rule" "ingress_1" {
+			inbound_rule = {
+				ip_protocol     = "tcp"
+				from_port_range = 80
+				to_port_range   = 8000
+				ip_ranges       = ["10.0.0.0/8"]
+			}
+		
+			firewall_rules_set_id = "${outscale_firewall_rules_set.web.id}"
+		}
+	`, rInt)
 }

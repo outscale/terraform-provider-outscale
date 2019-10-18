@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -15,25 +14,21 @@ import (
 )
 
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapiFlag, err := strconv.ParseBool(o)
-	if err != nil {
-		oapiFlag = false
-	}
-
-	if !oapiFlag {
-		t.Skip()
-	}
+	t.Skip()
 	var v oapi.Vm
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOAPIInstanceConfigTags,
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					oapiTestAccCheckOutscaleVMExists("outscale_vm.foo", &v),
 					testAccCheckOAPITags(v.Tags, "foo", "bar"),
@@ -126,16 +121,22 @@ func testAccCheckOAPITags(
 	}
 }
 
-const testAccCheckOAPIInstanceConfigTags = `
-resource "outscale_vm" "foo" {
-	image_id = "ami-8a6a0120"
-	type = "m1.small"
-}
+func testAccCheckOAPIInstanceConfigTags(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "vm" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
 
-resource "outscale_tag" "foo" {
-	resource_ids = ["${outscale_vm.foo.id}"]
-	tag = {
-		faz = "baz"
-	}
+		resource "outscale_tag" "foo" {
+			resource_ids = ["${outscale_vm.vm.id}"]
+
+			tag = {
+				faz = "baz"
+			}
+		}
+	`, omi, vmType, region)
 }
-`
