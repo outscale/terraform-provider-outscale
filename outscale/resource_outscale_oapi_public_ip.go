@@ -244,9 +244,9 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 	}
 
 	vInstance, okInstance := d.GetOk("vm_id")
-	linkPublicIpID, okAssociationID := d.GetOk("link_public_ip_id")
+	linkPublicIPID, okAssociationID := d.GetOk("link_public_ip_id")
 
-	if (okInstance && vInstance.(string) != "") || (okAssociationID && linkPublicIpID.(string) != "") {
+	if (okInstance && vInstance.(string) != "") || (okAssociationID && linkPublicIPID.(string) != "") {
 		log.Printf("[DEBUG] Disassociating EIP: %s", d.Id())
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
