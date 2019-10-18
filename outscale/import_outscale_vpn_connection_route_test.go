@@ -14,10 +14,10 @@ func TestAccOutscaleVpnConnectionRoute_importBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleVpnConnectionRouteDestroy,
+		CheckDestroy: testAccOutscaleOAPIVpnConnectionRouteDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleVpnConnectionRouteConfig(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionRouteConfig(rBgpAsn),
 			},
 
 			resource.TestStep{
