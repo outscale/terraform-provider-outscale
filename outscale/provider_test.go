@@ -54,14 +54,8 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func skipIfNoOAPI(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
+	isOAPI, err := strconv.ParseBool(os.Getenv("OUTSCALE_OAPI"))
+	if err != nil || !isOAPI {
 		t.Skip()
 	}
 }
