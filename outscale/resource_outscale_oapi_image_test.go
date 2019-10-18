@@ -17,22 +17,16 @@ import (
 )
 
 func TestAccOutscaleOAPIImage_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
 	var ami oapi.Image
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
@@ -230,7 +224,6 @@ func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 			image_id			      = "%s"
 			vm_type             = "%s"
 			keypair_name		    = "terraform-basic"
-			#security_group_ids = ["sg-6ed31f3e"]
 		}
 
 		resource "outscale_image" "foo" {

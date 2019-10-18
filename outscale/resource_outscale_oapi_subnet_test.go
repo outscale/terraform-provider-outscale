@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,25 +14,19 @@ import (
 )
 
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var conf oapi.Subnet
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckOutscaleLinDestroyed, //TODO: fix net destroy test
+		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPISubnetConfig,
+				Config: testAccOutscaleOAPISubnetConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubNetExists("outscale_subnet.subnet", &conf),
 				),
@@ -140,23 +133,24 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
-const testAccOutscaleOAPISubnetConfig = `
-resource "outscale_net" "net" {
-	ip_range = "10.0.0.0/16"
-}
-resource "outscale_subnet" "subnet" {
-	ip_range = "10.0.0.0/16"
-	subregion_name = "eu-west-2a"
-	net_id = "${outscale_net.net.id}"
+func testAccOutscaleOAPISubnetConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+		}
 
-	tags = {
-		key = "name"
-		value = "terraform-subnet"
-	 }
-}
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%sa"
+			net_id         = "${outscale_net.net.id}"
 
-`
+			tags = {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+	`, region)
+}

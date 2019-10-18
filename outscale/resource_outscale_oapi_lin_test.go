@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,23 +13,16 @@ import (
 )
 
 func TestAccOutscaleOAPILin_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var conf1 oapi.Net
 	var conf2 oapi.Net
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckOutscaleLinDestroyed, TODO: FIX OAPI Test func
+		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinConfig,
@@ -145,13 +136,13 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestChe
 // }
 
 const testAccOutscaleOAPILinConfig = `
-resource "outscale_net" "vpc" {
-	ip_range = "10.0.0.0/16"
-	count = 2
+	resource "outscale_net" "vpc" {
+		ip_range = "10.0.0.0/16"
+		count = 2
 
-	tags {
-		key = "Name" 
-		value = "outscale_net"
-	}	
-}
+		tags {
+			key = "Name" 
+			value = "outscale_net"
+		}	
+	}
 `

@@ -116,7 +116,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
@@ -129,7 +129,6 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					testAccCheckOAPIVMSecurityGroupsUpdated(t, &before, &after),
 				),
 			},
 		},
@@ -504,13 +503,13 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
 		}`, omi, vmType)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id           = "%s"
-			vm_type            = "%s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%sb"
 		}
 	`, omi, vmType, region)

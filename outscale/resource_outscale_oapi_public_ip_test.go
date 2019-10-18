@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,21 +14,13 @@ import (
 )
 
 func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
-
 	var conf oapi.PublicIp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -46,27 +37,22 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var conf oapi.PublicIp
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -74,7 +60,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -87,26 +73,21 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var one oapi.PublicIp
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -114,7 +95,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 			},
 
 			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch,
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -292,56 +273,74 @@ const testAccOutscaleOAPIPublicIPConfig = `
 resource "outscale_public_ip" "bar" {}
 `
 
-const testAccOutscaleOAPIPublicIPInstanceConfig = `
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-}
-resource "outscale_public_ip" "bar" {}
-`
+func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
 
-const testAccOutscaleOAPIPublicIPInstanceConfig2 = `
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
-resource "outscale_public_ip" "bar" {}
-`
 
-const testAccOutscaleOAPIPublicIPInstanceConfigAssociated = `
-resource "outscale_vm" "foo" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-  private_ip_address = "10.0.0.12"
-  subnet_id  = "subnet-861fbecc"
-}
-resource "outscale_vm" "bar" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-  private_ip_address = "10.0.0.19"
-  subnet_id  = "subnet-861fbecc"
-}
-resource "outscale_public_ip" "bar" {}
-`
+func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
 
-const testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch = `
-resource "outscale_vm" "foo" {
- image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-  private_ip_address = "10.0.0.12"
-  subnet_id  = "subnet-861fbecc"
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
-resource "outscale_vm" "bar" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-  private_ip_address = "10.0.0.19"
-  subnet_id  = "subnet-861fbecc"
+
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_vm" "basic2" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
-resource "outscale_public_ip" "bar" {}
-`
+
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_vm" "basic2" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
+}

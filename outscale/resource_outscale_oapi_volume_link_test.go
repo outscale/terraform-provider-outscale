@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,17 +12,22 @@ import (
 )
 
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	var i oapi.Vm
 	var v oapi.Volume
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig,
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
@@ -69,24 +75,26 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oapi.Vm, v *oapi.Volume
 	}
 }
 
-const testAccOAPIVolumeAttachmentConfig = `
-resource "outscale_vm" "web" {
-	image_id               = "ami-fbead1f5"
-	vm_type                = "c4.large"
-	keypair_name           = "integ_sut_keypair"
-	security_group_ids     = ["sg-6ed31f3e"]
-}
+func testAccOAPIVolumeAttachmentConfig(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "web" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
 
+		resource "outscale_volume" "volume" {
+			subregion_name = "%[3]sb"
+			volume_type    = "gp2"
+			size           = 1
+		}
 
-resource "outscale_volume" "example" {
-  subregion_name ="eu-west-2a" 
-  size = 10
-  volume_type = "standard"
+		resource "outscale_volumes_link" "ebs_att" {
+			device_name = "/dev/sdh"
+			volume_id   = "${outscale_volume.volume.id}"
+			vm_id       = "${outscale_vm.web.id}"
+		}
+	`, omi, vmType, region)
 }
-resource "outscale_volumes_link" "ebs_att" {
-  device_name = "/dev/sdh"
-	volume_id = "${outscale_volume.example.id}"
-	vm_id = "${outscale_vm.web.id}"
-	#vm_id = "i-bd72859b"
-}
-`

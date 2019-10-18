@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,30 +13,24 @@ import (
 )
 
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
-
 	var a oapi.PublicIp
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig,
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckState("outscale_public_ip_link.by_public_ip"),
 					testAccCheckOutscaleOAPIPublicIPLExists(
-						"outscale_public_ip.bar", &a),
+						"outscale_public_ip.ip", &a),
 					testAccCheckOutscaleOAPIPublicIPLinkExists(
 						"outscale_public_ip_link.by_public_ip", &a),
 				),
@@ -209,19 +202,21 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resou
 	}
 }
 
-const testAccOutscaleOAPIPublicIPLinkConfig = `
-#resource "outscale_vm" "basic" {
-#	image_id = "ami-8a6a0120"
-#	instance_type = "t2.micro"
-#	key_name = "terraform-basic"
-#	subnet_id = "subnet-861fbecc"
-#}
-
-resource "outscale_public_ip" "bar" {}
-
-resource "outscale_public_ip_link" "by_public_ip" {
-	public_ip = "${outscale_public_ip.bar.public_ip}"
-	#vm_id = "${outscale_vm.basic.id}"
-	vm_id = "i-538c7b0d"
-	#depends_on = ["outscale_vm.basic", "outscale_public_ip.bar"]
-}`
+func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "vm" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
+		
+		resource "outscale_public_ip" "ip" {}
+		
+		resource "outscale_public_ip_link" "by_public_ip" {
+			public_ip = "${outscale_public_ip.ip.public_ip}"
+			vm_id     = "${outscale_vm.vm.id}"
+		}
+	`, omi, vmType, region)
+}

@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,20 +14,13 @@ import (
 )
 
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var conf oapi.InternetService
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceDestroyed,
 		Steps: []resource.TestStep{
@@ -152,11 +143,11 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 }
 
 const testAccOutscaleOAPIInternetServiceConfig = `
-resource "outscale_internet_service" "gateway" {
-	tags =
-	{       
-		key   = "name"     
-		value = "Terraform_IGW"       
+	resource "outscale_internet_service" "gateway" {
+		tags =
+		{       
+			key   = "name"     
+			value = "Terraform_IGW"       
+		}
 	}
-}
 `
