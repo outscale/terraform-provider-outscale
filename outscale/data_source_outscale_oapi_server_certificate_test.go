@@ -28,7 +28,7 @@ func TestAccOutscaleDSOAPIEIMServerCertificate_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckEIMServerCertificateDestroy,
+		CheckDestroy: testAccCheckOAPIServerCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDSOAPIEIMServerCertConfigFile(rInt, unixFile),

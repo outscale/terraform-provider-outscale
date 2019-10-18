@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
@@ -51,4 +52,19 @@ func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
 			}
 		}
 	`, subregion)
+}
+
+func testAccCheckOutscaleNicsDataSourceID(n string) resource.TestCheckFunc {
+	// Wait for IAM role
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Can't find NICS data source: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("NICS data source ID not set")
+		}
+		return nil
+	}
 }

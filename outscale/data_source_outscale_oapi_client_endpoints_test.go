@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccOutscaleOAPIDSCustomerGateways_basic(t *testing.T) {
@@ -39,6 +40,21 @@ func TestAccOutscaleOAPIDSCustomerGateways_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckOutscaleCGsDataSourceID(n string) resource.TestCheckFunc {
+	// Wait for IAM role
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Can't find Customer Gateway data source: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("Customer Gateway data source ID not set")
+		}
+		return nil
+	}
 }
 
 func testAccOAPICustomerGatewaysDSConfig(rInt, rBgpAsn int) string {
