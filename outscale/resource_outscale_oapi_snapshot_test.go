@@ -71,7 +71,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
-					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
+					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
 				),
 			},
 		},
@@ -158,7 +158,7 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 		}
 
 		resource "outscale_snapshot" "test" {
-			source_region_name = "%[1]sa"
+			source_region_name = "%[1]s"
 			source_snapshot_id = "${outscale_snapshot.source.id}"
 			description        = "Target Snapshot Acceptance Test"
 		}
