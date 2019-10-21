@@ -50,19 +50,12 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
+	t.Skip()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
@@ -75,19 +68,12 @@ func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageCopyConfig_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
+	t.Skip()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
