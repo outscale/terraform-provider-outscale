@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,21 +10,15 @@ import (
 )
 
 func TestAccOutscaleOAPIDSDL_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -56,7 +48,6 @@ func testAccCheckOutscaleOAPIDLDataSourceID(n string) resource.TestCheckFunc {
 
 func testAccOAPIDLDSConfig(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
-
 		data "outscale_sites" "test" {}
 
 		resource "outscale_directlink" "hoge" {

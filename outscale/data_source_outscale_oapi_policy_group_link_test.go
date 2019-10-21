@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,23 +10,17 @@ import (
 )
 
 func TestAccOutscaleOAPIPolicyGroupLinkDataSource(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	rString := acctest.RandString(8)
 	groupName := fmt.Sprintf("tf-acc-group-gpa-basic-%s", rString)
 	policyName := fmt.Sprintf("tf-acc-policy-gpa-basic-%s", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -59,35 +51,35 @@ func testAccCheckOutscaleOAPIPolicyGLDataSourceID(n string) resource.TestCheckFu
 
 func testAccOutscaleOAPIDSGroupPolicyAttachConfig(groupName, policyName string) string {
 	return fmt.Sprintf(`
-resource "outscale_group" "group" {
-    group_name = "%s"
-}
+		resource "outscale_group" "group" {
+				group_name = "%s"
+		}
 
-resource "outscale_policy" "policy" {
-    policy_name = "%s"
-    policy_document = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "iam:ChangePassword"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-}
+		resource "outscale_policy" "policy" {
+				policy_name = "%s"
+				policy_document = <<EOF
+		{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Action": [
+						"iam:ChangePassword"
+					],
+					"Resource": "*",
+					"Effect": "Allow"
+				}
+			]
+		}
+		EOF
+		}
 
-resource "outscale_policy_group_link" "test-attach" {
-    group_name = "${outscale_group.group.group_name}"
-    policy_arn = "${outscale_policy.policy.arn}"
-}
+		resource "outscale_policy_group_link" "test-attach" {
+				group_name = "${outscale_group.group.group_name}"
+				policy_arn = "${outscale_policy.policy.arn}"
+		}
 
-data "outscale_policy_group_link" "outscale_policy_group_link" {
-    group_name = "${outscale_group.group.group_name}"
-}
-`, groupName, policyName)
+		data "outscale_policy_group_link" "outscale_policy_group_link" {
+				group_name = "${outscale_group.group.group_name}"
+		}
+	`, groupName, policyName)
 }

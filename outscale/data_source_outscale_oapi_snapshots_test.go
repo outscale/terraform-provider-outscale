@@ -1,27 +1,19 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -35,16 +27,16 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 }
 
 const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
-resource "outscale_volume" "example" {
-    subregion_name = "in-west-2a"
-	size = 1
-}
+	resource "outscale_volume" "example" {
+		subregion_name = "in-west-2a"
+		size           = 1
+	}
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.example.id}"
-}
+	resource "outscale_snapshot" "snapshot" {
+		volume_id = "${outscale_volume.example.id}"
+	}
 
-data "outscale_snapshots" "outscale_snapshots" {
-    snapshot_id = ["${outscale_snapshot.snapshot.id}"]
-}
+	data "outscale_snapshots" "outscale_snapshots" {
+		snapshot_id = ["${outscale_snapshot.snapshot.id}"]
+	}
 `

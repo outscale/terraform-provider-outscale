@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -13,16 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSGroupUser_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var group eim.GetGroupOutput
 
@@ -30,7 +19,10 @@ func TestAccOutscaleOAPIDSGroupUser_basic(t *testing.T) {
 	configBase := fmt.Sprintf(testAccOutscaleOAPIDSGroupUserConfig, rInt, rInt)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -59,22 +51,22 @@ func testAccCheckOutscaleOAPIDSGroupUserExists(n string, g *eim.GetGroupOutput) 
 }
 
 const testAccOutscaleOAPIDSGroupUserConfig = `
-resource "outscale_group" "group" {
-	group_name = "test-group-%d"
-	path = "/"
-}
+	resource "outscale_group" "group" {
+		group_name = "test-group-%d"
+		path = "/"
+	}
 
-resource "outscale_user" "user" {
-	user_name = "test-user-%d"
-	path = "/"
-}
+	resource "outscale_user" "user" {
+		user_name = "test-user-%d"
+		path = "/"
+	}
 
-resource "outscale_group_user" "team" {
-	user_name = "${outscale_user.user.user_name}"
-	group_name = "${outscale_group.group.group_name}"
-}
+	resource "outscale_group_user" "team" {
+		user_name = "${outscale_user.user.user_name}"
+		group_name = "${outscale_group.group.group_name}"
+	}
 
-data "outscale_groups_for_user" "team" {
-	user_name = "${outscale_user.user.user_name}"
-}
+	data "outscale_groups_for_user" "team" {
+		user_name = "${outscale_user.user.user_name}"
+	}
 `

@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"testing"
 
@@ -11,18 +10,13 @@ import (
 )
 
 func TestAccOutscaleOAPIVpcEndpointServicesDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

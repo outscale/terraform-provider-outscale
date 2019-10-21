@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,16 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSDirectLinkInterfaces_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	key := "OUTSCALE_CONNECTION_ID"
 	connectionID := os.Getenv(key)
@@ -32,7 +22,10 @@ func TestAccOutscaleOAPIDSDirectLinkInterfaces_basic(t *testing.T) {
 	bgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -59,25 +52,25 @@ func testAccCheckOutscaleOAPIDSDirectLinkInterfacesExists(name string) resource.
 
 func testAccOAPIDSDxPrivateVirtualInterfacesConfig(cid, n string, bgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_vpn_gateway" "foo" {
-  tag {
-    Name = "%s"
-  }
-}
+		resource "outscale_vpn_gateway" "foo" {
+			tag {
+				Name = "%s"
+			}
+		}
 
-resource "outscale_directlink_interface" "foo" {
-  connection_id    = "%s"
+		resource "outscale_directlink_interface" "foo" {
+			connection_id    = "%s"
 
-	new_private_virtual_interface {
-		virtual_gateway_id = "${outscale_vpn_gateway.foo.id}"
-		virtual_interface_name = "%s"
-		vlan           = 4094
-		asn        = %d
-	}
-}
+			new_private_virtual_interface {
+				virtual_gateway_id = "${outscale_vpn_gateway.foo.id}"
+				virtual_interface_name = "%s"
+				vlan           = 4094
+				asn        = %d
+			}
+		}
 
-data "outscale_directlink_interfaces" "outscale_directlink_interfaces" {
-  connection_id = %s
-}
-`, n, cid, n, bgpAsn, cid)
+		data "outscale_directlink_interfaces" "outscale_directlink_interfaces" {
+			connection_id = %s
+		}
+	`, n, cid, n, bgpAsn, cid)
 }
