@@ -20,7 +20,6 @@ func TestAccDataSourceOutscaleOAPILinPeeringsConnection_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_net_peerings.outscale_net_peerings", "net_peerings.#", "1"),
 				),
-				// ExpectNonEmptyPlan: true,
 			},
 		},
 	})

@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -17,10 +19,9 @@ func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleOAPIVmStateConfig,
+				Config: testAccDataSourceOutscaleOAPIVmStateConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIVMStateCheck("data.outscale_vm_state.state"),
-					// testAccDataSourceOutscaleVMStateCheck("data.outscale_public_ip.by_public_ip"),
 				),
 			},
 		},
@@ -49,20 +50,20 @@ func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFu
 				vm.Primary.Attributes["vm_id"],
 			)
 		}
-
 		return nil
 	}
 }
 
-const testAccDataSourceOutscaleOAPIVmStateConfig = `
-resource "outscale_vm" "basic" {
-	image_id               = "ami-5c450b62"
-	vm_type                = "c4.large"
-	keypair_name           = "testkp"
-	security_group_ids     = ["sg-9752b7a6"]
-}
+func testAccDataSourceOutscaleOAPIVmStateConfig(omi, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id     = "%s"
+			vm_type      = "%s"
+			keypair_name = "terraform-basic"
+		}
 
-data "outscale_vm_state" "state" {
-  vm_id = "${outscale_vm.basic.id}"
+		data "outscale_vm_state" "state" {
+			vm_id = "${outscale_vm.basic.id}"
+		}
+	`, omi, vmType)
 }
-`

@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,26 +10,20 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig,
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1073741824"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
 				),
 			},
 		},
@@ -38,12 +31,17 @@ func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPISnapshotDataSource_multipleFilters(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters,
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "10"),
@@ -67,36 +65,41 @@ func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFu
 	}
 }
 
-const testAccCheckOutscaleOAPISnapshotDataSourceConfig = `
-resource "outscale_volume" "example" {
-    subregion_name = "in-west-2a"
-	size = 1
+func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "example" {
+			subregion_name = "%sa"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.example.id}"
+		}
+
+		data "outscale_snapshot" "snapshot" {
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
+		}
+	`, region)
 }
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.example.id}"
-}
+func testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "external1" {
+			subregion_name = "%sa"
+			size           = 10
+		}
 
-data "outscale_snapshot" "snapshot" {
-    snapshot_id = "${outscale_snapshot.snapshot.id}"
-}
-`
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.external1.id}"
+		}
 
-const testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters = `
-resource "outscale_volume" "external1" {
-	subregion_name = "in-west-2a"
-    size = 10
-}
+		data "outscale_snapshot" "snapshot" {
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.external1.id}"
+			filter {
+				name   = "volume_sizes"
+				values = ["10"]
+			}
+		}
+	`, region)
 }
-
-data "outscale_snapshot" "snapshot" {
-    snapshot_id = "${outscale_snapshot.snapshot.id}"
-    filter {
-	name = "volume_sizes"
-	values = ["10"]
-    }
-}
-`

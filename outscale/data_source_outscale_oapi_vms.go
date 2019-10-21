@@ -51,7 +51,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	// Build up search parameters
 	params := oapi.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVmFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if vmIDOk {
 		params.Filters.VmIds = []string{vmID.(string)}

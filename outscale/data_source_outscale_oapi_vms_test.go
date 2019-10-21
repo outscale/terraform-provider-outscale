@@ -32,18 +32,17 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 	})
 }
 
-// Lookup based on InstanceID
 func testAccOAPIVMSDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id			= "%s"
 			vm_type				= "%s"
-			keypair_name		= "terraform-basic"
+			keypair_name	= "terraform-basic"
 		}
 
 		data "outscale_vms" "basic_web" {
 			filter {
-				name = "vm_ids"
+				name   = "vm_ids"
 				values = ["${outscale_vm.basic.id}"]
 			}
 		}`, omi, vmType)
