@@ -41,16 +41,19 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("One tag and resource id, must be assigned")
 	}
 
-	request.Tags = tagsOAPIFromMap(tag.(map[string]interface{}))
-
-	var rids []string
-	sgs := resourceIds.(*schema.Set).List()
-	for _, v := range sgs {
-		str := v.(string)
-		rids = append(rids, str)
+	if tagsOk {
+		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
 	}
+	if resourceIdsOk {
+		var rids []string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, str)
+		}
 
-	request.ResourceIds = rids
+		request.ResourceIds = rids
+	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.POST_CreateTags(request)
@@ -81,7 +84,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 
 	tag, tagsOk := d.GetOk("tag")
 	if tagsOk {
-		tgs := tagsOAPIFromMap(tag.(map[string]interface{}))
+		tgs := tagsOAPIFromSliceMap(tag.([]interface{}))
 		keys := make([]string, 0, len(tgs))
 		values := make([]string, 0, len(tgs))
 		for _, t := range tgs {
@@ -142,7 +145,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsOAPIFromMap(tag.(map[string]interface{}))
+		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
 	}
 	if resourceIdsOk {
 		var rids []string
@@ -182,7 +185,7 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"tag": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeList,
 			Optional: true,
 			ForceNew: true,
 			Elem: &schema.Resource{
