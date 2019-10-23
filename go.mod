@@ -40,7 +40,7 @@ require (
 	github.com/mitchellh/mapstructure v0.0.0-20180111000720-b4575eea38cc // indirect
 	github.com/mitchellh/reflectwalk v0.0.0-20170726202117-63d60e9d0dbc // indirect
 	github.com/oklog/run v1.0.0 // indirect
-	github.com/outscale/osc-go v0.0.6
+	github.com/outscale/osc-go v0.0.7
 	github.com/posener/complete v0.0.0-20171104095702-dc2bc5a81acc // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/spf13/cast v1.3.0
