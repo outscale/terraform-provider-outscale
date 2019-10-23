@@ -209,8 +209,6 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	response = resp.OK
 
-	utils.PrintToJSON(response, "##RESPONSE READ")
-
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidVolume.NotFound") {
 			d.SetId("")
