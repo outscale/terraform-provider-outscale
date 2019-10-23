@@ -267,30 +267,20 @@ func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
-			if r.GatewayId != "" && r.GatewayId == "local" {
-				continue
-			}
-			if r.CreationMethod != "" && r.CreationMethod == "EnableVgwRoutePropagation" {
-				continue
-			}
-			if r.DestinationPrefixListId != "" {
-				continue
-			}
-
 			if r.CreationMethod != "" {
 				m["creation_method"] = r.CreationMethod
 			}
 			if r.DestinationIpRange != "" {
 				m["destination_ip_range"] = r.DestinationIpRange
 			}
-			if r.DestinationPrefixListId != "" {
-				m["destination_prefix_list_id"] = r.DestinationPrefixListId
+			if r.DestinationServiceId != "" {
+				m["destination_service_id"] = r.DestinationServiceId
 			}
 			if r.GatewayId != "" {
 				m["gateway_id"] = r.GatewayId
 			}
-			if r.NatServiceId != "" {
-				m["nat_service_id"] = r.NatServiceId
+			if r.NetAccessPointId != "" {
+				m["net_access_point_id"] = r.NetAccessPointId
 			}
 			if r.NetPeeringId != "" {
 				m["net_peering_id"] = r.NetPeeringId
@@ -378,7 +368,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"destination_prefix_list_id": {
+					"destination_service_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -406,7 +396,7 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"nat_service_id": {
+					"net_access_point_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},

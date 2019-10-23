@@ -211,10 +211,10 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oapi.Route, requestId string) {
-	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
+	d.Set("destination_prefix_list_id", route.DestinationServiceId)
 	d.Set("gateway_id", route.GatewayId)
 	d.Set("vm_id", route.VmId)
-	d.Set("nat_service_id", route.NatServiceId)
+	d.Set("nat_service_id", route.NetAccessPointId)
 	d.Set("nic_id", route.NicId)
 	d.Set("net_peering_id", route.NetPeeringId)
 	d.Set("vm_account_id", route.VmAccountId)
