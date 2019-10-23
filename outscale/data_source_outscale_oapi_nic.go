@@ -293,7 +293,11 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	linkNic := eni.LinkNic
 
 	bb["link_nic_id"] = linkNic.LinkNicId
-	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", *linkNic.DeleteOnVmDeletion)
+
+	if linkNic.DeleteOnVmDeletion != nil {
+		bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", *linkNic.DeleteOnVmDeletion)
+	}
+
 	bb["device_number"] = strconv.FormatInt(linkNic.DeviceNumber, 10)
 	bb["vm_id"] = linkNic.VmId
 	bb["vm_account_id"] = linkNic.VmAccountId

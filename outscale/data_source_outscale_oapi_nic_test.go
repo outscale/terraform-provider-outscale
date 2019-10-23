@@ -51,6 +51,42 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
+	var conf oapi.Nic
+
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	subregion := os.Getenv("OUTSCALE_REGION")
+	if subregion == "" {
+		subregion = "in-west-2"
+	}
+
+	oapi, err := strconv.ParseBool(o)
+	if err != nil {
+		oapi = false
+	}
+
+	if !oapi {
+		t.Skip()
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: "outscale_nic.outscale_nic",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOutscaleOAPIENIDataSourceConfigFilter,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIAttributes(&conf, subregion),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
@@ -179,5 +215,32 @@ resource "outscale_nic" "outscale_nic" {
 
 data "outscale_nic" "outscale_nic" {
 	nic_id = "${outscale_nic.outscale_nic.id}"
+}  
+`
+
+const testAccOutscaleOAPIENIDataSourceConfigFilter = `
+resource "outscale_net" "outscale_net" {
+	ip_range = "10.0.0.0/16"
+  }
+  
+resource "outscale_subnet" "outscale_subnet" {
+	subregion_name = "eu-west-2a"
+	ip_range       = "10.0.0.0/16"
+	net_id         = "${outscale_net.outscale_net.id}"
+}
+
+resource "outscale_nic" "outscale_nic" {
+	subnet_id = "${outscale_subnet.outscale_subnet.id}"
+	tags {
+		value = "tf-value"
+		key   = "tf-key"
+	}
+}
+
+data "outscale_nic" "outscale_nic" {
+	filter {
+        name = "nic_ids"
+        values = ["${outscale_nic.outscale_nic.nic_id}"]
+    } 
 }  
 `
