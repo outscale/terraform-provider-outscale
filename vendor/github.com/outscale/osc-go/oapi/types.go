@@ -2159,7 +2159,7 @@ type PrivateIp struct {
 
 // implements the service definition of PrivateIpLight
 type PrivateIpLight struct {
-	IsPrimary bool   `json:"IsPrimary,omitempty"`
+	IsPrimary bool   `json:"IsPrimary"`
 	PrivateIp string `json:"PrivateIp,omitempty"`
 }
 
