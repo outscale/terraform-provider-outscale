@@ -14,10 +14,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func tagsSchemaComputed() *schema.Schema {
