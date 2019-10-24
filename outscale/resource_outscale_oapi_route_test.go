@@ -100,24 +100,24 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 }
 
 var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
-resource "outscale_net" "test" {
-  ip_range = "10.0.0.0/24"
-}
+	resource "outscale_net" "test" {
+		ip_range = "10.0.0.0/24"
+	}
 
-resource "outscale_route_table" "test" {
-  net_id = "${outscale_net.test.net_id}"
-}
+	resource "outscale_route_table" "test" {
+		net_id = "${outscale_net.test.net_id}"
+	}
 
-resource "outscale_internet_service" "outscale_internet_service" {}
+	resource "outscale_internet_service" "outscale_internet_service" {}
 
-resource "outscale_internet_service_link" "outscale_internet_service_link" {
-  internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
-  net_id = "${outscale_net.test.net_id}"
-}
+	resource "outscale_internet_service_link" "outscale_internet_service_link" {
+		internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
+		net_id              = "${outscale_net.test.net_id}"
+	}
 
-resource "outscale_route" "test" {
-  gateway_id = "${outscale_internet_service.outscale_internet_service.id}"
-  destination_ip_range = "10.0.0.0/16"
-  route_table_id = "${outscale_route_table.test.route_table_id}"
-}
+	resource "outscale_route" "test" {
+		gateway_id           = "${outscale_internet_service.outscale_internet_service.id}"
+		destination_ip_range = "10.0.0.0/16"
+		route_table_id       = "${outscale_route_table.test.route_table_id}"
+	}
 `)
