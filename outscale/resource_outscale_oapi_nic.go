@@ -847,10 +847,10 @@ func networkInterfaceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) res
 func expandPrivateIPLight(pIPs []interface{}) []oapi.PrivateIpLight {
 	privateIPs := make([]oapi.PrivateIpLight, 0)
 	for _, v := range pIPs {
-		privateIpMap := v.(map[string]interface{})
+		privateIPMap := v.(map[string]interface{})
 		privateIP := oapi.PrivateIpLight{
-			IsPrimary: privateIpMap["is_primary"].(bool),
-			PrivateIp: privateIpMap["private_ip"].(string),
+			IsPrimary: privateIPMap["is_primary"].(bool),
+			PrivateIp: privateIPMap["private_ip"].(string),
 		}
 		privateIPs = append(privateIPs, privateIP)
 	}
@@ -860,8 +860,8 @@ func expandPrivateIPLight(pIPs []interface{}) []oapi.PrivateIpLight {
 func flattenPrivateIPLightToStringSlice(pIPs []interface{}) []string {
 	privateIPs := make([]string, 0)
 	for _, v := range pIPs {
-		privateIpMap := v.(map[string]interface{})
-		privateIPs = append(privateIPs, privateIpMap["private_ip"].(string))
+		privateIPMap := v.(map[string]interface{})
+		privateIPs = append(privateIPs, privateIPMap["private_ip"].(string))
 	}
 	return privateIPs
 }
