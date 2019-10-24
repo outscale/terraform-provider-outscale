@@ -224,9 +224,11 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oap
 
 func getTarget(d *schema.ResourceData) (n int, target string) {
 	for _, allowedTarget := range allowedTargets {
-		if len(d.Get(allowedTarget).(string)) > 0 {
-			n++
-			target = allowedTarget
+		if allowed := d.Get(allowedTarget); allowed != nil {
+			if len(allowed.(string)) > 0 {
+				n++
+				target = allowedTarget
+			}
 		}
 	}
 	return
