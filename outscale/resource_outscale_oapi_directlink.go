@@ -200,3 +200,53 @@ func resourceOutscaleOAPIDirectLinkDelete(d *schema.ResourceData, meta interface
 	}
 	return nil
 }
+
+func dxConnectionRefreshStateFunc(conn *dl.Client, connID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		input := &dl.DescribeConnectionsInput{
+			ConnectionID: aws.String(connID),
+		}
+
+		var resp *dl.Connections
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.API.DescribeConnections(input)
+
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return nil, "failed", err
+		}
+		if len(resp.Connections) < 1 {
+			return resp, "deleted", nil
+		}
+		return resp, *resp.Connections[0].ConnectionState, nil
+	}
+}
+
+func isNoSuchDxConnectionErr(err error) bool {
+	return strings.Contains(fmt.Sprint(err), "DirectConnectClientException")
+}
+
+func validateDxConnectionBandWidth(v interface{}, k string) (ws []string, errors []error) {
+	val, ok := v.(string)
+	if !ok {
+		errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
+		return
+	}
+	validBandWidth := []string{"1Gbps", "10Gbps"}
+	for _, str := range validBandWidth {
+		if val == str {
+			return
+		}
+	}
+	errors = append(errors, fmt.Errorf("expected %s to be one of %v, got %s", k, validBandWidth, val))
+	return
+}

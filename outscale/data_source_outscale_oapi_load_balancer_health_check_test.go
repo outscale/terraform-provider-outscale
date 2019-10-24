@@ -30,7 +30,7 @@ func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: getTestAccDSOutscaleOAPILBUHConfig(rs),

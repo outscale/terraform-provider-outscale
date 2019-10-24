@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -83,7 +84,7 @@ func resourceOutscaleOAPIVpnGatewayLinkRead(d *schema.ResourceData, meta interfa
 		return nil
 	}
 
-	vga := vpnGatewayGetAttachment(vgw)
+	vga := oapiVpnGatewayGetAttachment(vgw)
 	if len(vgw.VpcAttachments) == 0 || *vga.State == "detached" {
 		d.Set("lin_id", "")
 		return nil
@@ -217,4 +218,59 @@ func resourceOutscaleOAPIVpnGatewayLinkDelete(d *schema.ResourceData, meta inter
 	}
 
 	return nil
+}
+
+func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcID, vgwID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		var err error
+		var resp *fcu.DescribeVpnGatewaysOutput
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeVpnGateways(&fcu.DescribeVpnGatewaysInput{
+				Filters: []*fcu.Filter{
+					&fcu.Filter{
+						Name:   aws.String("attachment.vpc-id"),
+						Values: []*string{aws.String(vpcID)},
+					},
+				},
+				VpnGatewayIds: []*string{aws.String(vgwID)},
+			})
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+					return resource.RetryableError(
+						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			awsErr, ok := err.(awserr.Error)
+			if ok {
+				switch awsErr.Code() {
+				case "InvalidVPNGatewayID.NotFound":
+					fallthrough
+				case "InvalidVpnGatewayAttachment.NotFound":
+					return nil, "", nil
+				}
+			}
+
+			return nil, "", err
+		}
+
+		vgw := resp.VpnGateways[0]
+		if len(vgw.VpcAttachments) == 0 {
+			return vgw, "detached", nil
+		}
+
+		vga := oapiVpnGatewayGetAttachment(vgw)
+
+		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
+		return vgw, *vga.State, nil
+	}
+}
+
+func vpnGatewayAttachmentID(vpcID, vgwID string) string {
+	return fmt.Sprintf("vpn-attachment-%x", hashcode.String(fmt.Sprintf("%s-%s", vpcID, vgwID)))
 }

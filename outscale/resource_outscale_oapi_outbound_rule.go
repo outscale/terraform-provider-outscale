@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/hashcode"
+	"github.com/hashicorp/terraform/helper/mutexkv"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -91,6 +92,8 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 		},
 	}
 }
+
+var awsMutexKV = mutexkv.NewMutexKV()
 
 func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
 	return &schema.Schema{
@@ -341,7 +344,7 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("security_group_id").(string)
 	sg, requestId, err := findOAPIResourceSecurityGroup(conn, sgID)
-	if _, notFound := err.(securityGroupNotFound); notFound {
+	if _, notFound := err.(oapiSecurityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
 		return nil
@@ -815,4 +818,22 @@ func (b ByGroupsMember) Less(i, j int) bool {
 	}
 
 	panic("mismatched security group rules, may be a terraform bug")
+}
+
+func validateAwsSecurityGroupRule(ippems []interface{}) error {
+
+	for _, value := range ippems {
+		v := value.(map[string]interface{})
+
+		_, blocksOk := v["ip_ranges"]
+		_, sourceOk := v["source_security_group_owner_id"]
+		_, selfOk := v["self"]
+		_, prefixOk := v["prefix_list_ids"]
+		if !blocksOk && !sourceOk && !selfOk && !prefixOk {
+			return fmt.Errorf(
+				"One of ['cidr_blocks', 'self', 'source_security_group_id', 'prefix_list_ids'] must be set to create an AWS Security Group Rule")
+		}
+	}
+
+	return nil
 }

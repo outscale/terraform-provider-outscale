@@ -38,7 +38,7 @@ func TestAccOutscaleOAPIServerCertificate_basic(t *testing.T) {
 			{
 				Config: testAccOAPIServerCertConfigFile(rInt, unixFile),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCertExists("outscale_server_certificate.test_cert", &cert),
+					testAccOAPICheckCertExists("outscale_server_certificate.test_cert", &cert),
 				),
 			},
 			{
@@ -77,6 +77,7 @@ func testAccOAPICheckCertExists(n string, cert *eim.ServerCertificate) resource.
 		return nil
 	}
 }
+
 func testAccCheckOAPIServerCertificateDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).EIM
 	for _, rs := range s.RootModule().Resources {

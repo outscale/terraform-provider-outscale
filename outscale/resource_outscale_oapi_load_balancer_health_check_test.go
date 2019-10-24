@@ -28,10 +28,10 @@ func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer_health_check.test",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleHealthCheckConfig(r),
+				Config: testAccOutscaleOAPIHealthCheckConfig(r),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer_health_check.test", "health_check.healthy_threshold", "2"),

@@ -167,6 +167,24 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	}
 }
 
+func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ms := s.RootModule()
+		rs, ok := ms.Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		is := rs.Primary
+		if is == nil {
+			return fmt.Errorf("No primary instance: %s", name)
+		}
+
+		*value = is.Attributes[key]
+		return nil
+	}
+}
+
 func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int) string {
 	base := fmt.Sprintf(`
 		resource "outscale_vm" "outscale_instance" {

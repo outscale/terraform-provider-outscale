@@ -16,6 +16,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
+const (
+	// OutscaleImageRetryTimeout ...
+	OutscaleImageRetryTimeout = 40 * time.Minute
+	// OutscaleImageDeleteRetryTimeout ...
+	OutscaleImageDeleteRetryTimeout = 90 * time.Minute
+	// OutscaleImageRetryDelay ...
+	OutscaleImageRetryDelay = 5 * time.Second
+	// OutscaleImageRetryMinTimeout ...
+	OutscaleImageRetryMinTimeout = 3 * time.Second
+)
+
 func resourceOutscaleOAPIImage() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIImageCreate,

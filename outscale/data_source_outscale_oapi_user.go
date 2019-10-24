@@ -28,7 +28,7 @@ func dataSourceOutscaleOAPIUser() *schema.Resource {
 			"user_name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validateOutscaleUserName,
+				ValidateFunc: validateOutscaleOAPIUserName,
 			},
 			"path": &schema.Schema{
 				Type:     schema.TypeString,

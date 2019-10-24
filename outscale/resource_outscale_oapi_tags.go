@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -284,50 +283,3 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 
 // 	return nil
 // }
-
-func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	for k, t := range ts {
-		if !oapiTagDescIgnored(&t) {
-			r := map[string]string{}
-			r["load_balancer_name"] = t.Key
-			r["value"] = t.Value
-			r["resource_id"] = t.ResourceId
-			r["resource_type"] = t.ResourceType
-
-			result[k] = r
-		}
-	}
-
-	return result
-}
-
-func oapiTagDescIgnored(t *oapi.Tag) bool {
-	filter := []string{"^outscale:"}
-	for _, v := range filter {
-		if r, _ := regexp.MatchString(v, t.Key); r == true {
-			return true
-		}
-	}
-	return false
-}
-
-func assignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) error {
-	request := oapi.CreateTagsRequest{}
-	request.Tags = tagsOAPIFromSliceMap(tag)
-	request.ResourceIds = []string{resourceID}
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.POST_CreateTags(request)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), ".NotFound") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}

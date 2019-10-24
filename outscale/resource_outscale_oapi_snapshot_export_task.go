@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -255,6 +256,25 @@ func resourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
+func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.SnapshotExportTask, error) {
+	log.Printf("Waiting for Image Task %s to become available...", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "pending/queued", "queued"},
+		Target:     []string{"active"},
+		Refresh:    SnapshotTaskStateRefreshFunc(client, id),
+		Timeout:    OutscaleImageRetryTimeout,
+		Delay:      OutscaleImageRetryDelay,
+		MinTimeout: OutscaleImageRetryMinTimeout,
+	}
+
+	info, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %s", id, err)
+	}
+	return info.(*fcu.SnapshotExportTask), nil
+}
+
 func resourceOAPIImageExportTasksDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
@@ -263,4 +283,51 @@ func resourceOAPIImageExportTasksDelete(d *schema.ResourceData, meta interface{}
 	d.Set("request_id", nil)
 
 	return nil
+}
+
+// SnapshotTaskStateRefreshFunc ...
+func SnapshotTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		emptyResp := &fcu.DescribeSnapshotExportTasksOutput{}
+
+		var resp *fcu.DescribeSnapshotExportTasksOutput
+		var err error
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = client.VM.DescribeSnapshotExportTasks(&fcu.DescribeSnapshotExportTasksInput{
+				SnapshotExportTaskId: []*string{aws.String(id)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				return emptyResp, "destroyed", nil
+
+			} else if resp != nil && len(resp.SnapshotExportTask) == 0 {
+				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
+				return emptyResp, "destroyed", nil
+			} else {
+				return emptyResp, "", fmt.Errorf("Error on refresh: %+v", err)
+			}
+		}
+
+		if resp == nil || resp.SnapshotExportTask == nil || len(resp.SnapshotExportTask) == 0 {
+			return emptyResp, "destroyed", nil
+		}
+
+		if *resp.SnapshotExportTask[0].State == "failed" {
+			return resp.SnapshotExportTask[0], *resp.SnapshotExportTask[0].State, fmt.Errorf(*resp.SnapshotExportTask[0].StatusMessage)
+		}
+
+		// OMI is valid, so return it's state
+		return resp.SnapshotExportTask[0], *resp.SnapshotExportTask[0].State, nil
+	}
 }

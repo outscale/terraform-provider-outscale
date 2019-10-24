@@ -209,3 +209,70 @@ func resourceOutscaleOAPIPolicyDelete(d *schema.ResourceData, meta interface{}) 
 
 	return nil
 }
+
+func eimPolicyDeleteNondefaultVersions(arn string, EIM *eim.Client) error {
+	versions, err := eimPolicyListVersions(arn, EIM)
+	if err != nil {
+		return err
+	}
+	for _, version := range versions {
+		if *version.IsDefaultVersion {
+			continue
+		}
+		if err := eimPolicyDeleteVersion(arn, *version.VersionId, EIM); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func eimPolicyDeleteVersion(arn, versionID string, EIM *eim.Client) error {
+	request := &eim.DeletePolicyVersionInput{
+		PolicyArn: aws.String(arn),
+		VersionId: aws.String(versionID),
+	}
+
+	var err error
+
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, err = EIM.API.DeletePolicyVersion(request)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error deleting version %s from IAM policy %s: %s", versionID, arn, err)
+	}
+	return nil
+}
+
+func eimPolicyListVersions(arn string, conn *eim.Client) ([]*eim.PolicyVersion, error) {
+	request := &eim.ListPolicyVersionsInput{
+		PolicyArn: aws.String(arn),
+	}
+
+	var err error
+	var response *eim.ListPolicyVersionsOutput
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		response, err = conn.API.ListPolicyVersions(request)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Error listing versions for IAM policy %s: %s", arn, err)
+	}
+	return response.ListPolicyVersionsResult.Versions, nil
+}

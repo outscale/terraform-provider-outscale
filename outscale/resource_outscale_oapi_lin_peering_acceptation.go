@@ -46,8 +46,8 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 					},
 				},
 			},
-			"accepter_net": vpcPeeringConnectionOptionsSchema(),
-			"source_net":   vpcPeeringConnectionOptionsSchema(),
+			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
 			"tags":         tagsListOAPISchema(),
 			"request_id": {
 				Type:     schema.TypeString,

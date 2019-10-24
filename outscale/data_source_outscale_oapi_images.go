@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -355,4 +357,37 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) oapi.FiltersImage
 		}
 	}
 	return filters
+}
+
+func expandStringValueList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, v.(string))
+		}
+	}
+	return vs
+}
+
+func expandStringList(configured []interface{}) []*string {
+	vs := make([]*string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, aws.String(v.(string)))
+		}
+	}
+	return vs
+}
+
+// Generates a hash for the set hash function used by the product_codes
+// attribute.
+func amiProductCodesHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	// All keys added in alphabetical order.
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
+	return hashcode.String(buf.String())
 }

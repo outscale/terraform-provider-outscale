@@ -26,7 +26,7 @@ func TestAccOutscaleLinAttr_import(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleLinAttrConfig,
+				Config: testAccOutscaleOAPILinAttrConfig,
 			},
 
 			resource.TestStep{

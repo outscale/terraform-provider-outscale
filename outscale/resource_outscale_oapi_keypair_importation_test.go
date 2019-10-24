@@ -34,10 +34,10 @@ func TestAccOutscaleOAPIKeyPairImportation_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleKeyPairDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIKeyPairImportationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleKeyPairConfig(rInt),
+				Config: testAccOutscaleOAPIKeyPairConfig(rInt),
 				Check:  resource.ComposeTestCheckFunc(
 				//	testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 				//	testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
@@ -64,10 +64,10 @@ func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleKeyPairDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIKeyPairImportationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleKeyPairConfigRetrieveName(rInt),
+				Config: testAccOutscaleOAPIKeyPairConfigRetrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					//testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 					resource.TestCheckResourceAttr(
@@ -78,6 +78,7 @@ func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
 		},
 	})
 }
+
 func TestAccOutscaleOAPIKeyPairImportation_generatedName(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -94,10 +95,10 @@ func TestAccOutscaleOAPIKeyPairImportation_generatedName(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleKeyPairDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleKeyPairConfigGeneratedName,
+				Config: testAccOutscaleOAPIKeyPairConfigGeneratedName,
 				Check: resource.ComposeTestCheckFunc(
 					//testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 					//testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
@@ -234,10 +235,10 @@ func testAccCheckOutscaleOAPIKeyPairImportationNamePrefix(t *testing.T) {
 		IDRefreshName:   "outscale_keypair_importation.a_key_pair",
 		IDRefreshIgnore: []string{"key_name_prefix"},
 		Providers:       testAccProviders,
-		CheckDestroy:    testAccCheckOutscaleKeyPairDestroy,
+		CheckDestroy:    testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckOutscaleKeyPairPrefixNameConfig(rInt),
+				Config: testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					//testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair_importation.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(

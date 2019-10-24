@@ -82,7 +82,7 @@ func resourceOutscaleOAPIVpcEndpointCreate(d *schema.ResourceData, meta interfac
 		ServiceName: aws.String(d.Get("prefix_list_name").(string)),
 	}
 
-	setVpcEndpointCreateList(d, "route_table_id", &req.RouteTableIds)
+	setVpcEndpointCreateListOAPI(d, "route_table_id", &req.RouteTableIds)
 
 	log.Printf("[DEBUG] Creating VPC Endpoint: %#v", req)
 
@@ -107,11 +107,11 @@ func resourceOutscaleOAPIVpcEndpointCreate(d *schema.ResourceData, meta interfac
 	vpce := resp.VpcEndpoint
 	d.SetId(aws.StringValue(vpce.VpcEndpointId))
 
-	if err := vpcEndpointWaitUntilAvailable(d, conn); err != nil {
+	if err := vpcEndpointWaitUntilAvailableOAPI(d, conn); err != nil {
 		return err
 	}
 
-	return resourceOutscaleVpcEndpointRead(d, meta)
+	return resourceOutscaleOAPIVpcEndpointRead(d, meta)
 }
 
 func resourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interface{}) error {
@@ -158,7 +158,7 @@ func resourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interface{
 	}
 
 	d.Set("request_id", *resp.RequestId)
-	return vpcEndpointAttributes(d, vpce, conn)
+	return vpcEndpointAttributesOAPI(d, vpce, conn)
 }
 
 func resourceOutscaleOAPIVpcEndpointUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -181,7 +181,7 @@ func resourceOutscaleOAPIVpcEndpointUpdate(d *schema.ResourceData, meta interfac
 		}
 	}
 
-	setVpcEndpointUpdateLists(d, "route_table_id", &req.AddRouteTableIds, &req.RemoveRouteTableIds)
+	setVpcEndpointUpdateListsOAPI(d, "route_table_id", &req.AddRouteTableIds, &req.RemoveRouteTableIds)
 
 	log.Printf("[DEBUG] Updating VPC Endpoint: %#v", req)
 
@@ -203,11 +203,11 @@ func resourceOutscaleOAPIVpcEndpointUpdate(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("Error updating VPC Endpoint: %s", err.Error())
 	}
 
-	if err := vpcEndpointWaitUntilAvailable(d, conn); err != nil {
+	if err := vpcEndpointWaitUntilAvailableOAPI(d, conn); err != nil {
 		return err
 	}
 
-	return resourceOutscaleVpcEndpointRead(d, meta)
+	return resourceOutscaleOAPIVpcEndpointRead(d, meta)
 }
 
 func resourceOutscaleOAPIVpcEndpointDelete(d *schema.ResourceData, meta interface{}) error {
@@ -242,7 +242,7 @@ func resourceOutscaleOAPIVpcEndpointDelete(d *schema.ResourceData, meta interfac
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending", "deleting"},
 		Target:     []string{"deleted"},
-		Refresh:    vpcEndpointStateRefresh(conn, d.Id()),
+		Refresh:    vpcEndpointStateRefreshOAPI(conn, d.Id()),
 		Timeout:    10 * time.Minute,
 		Delay:      5 * time.Second,
 		MinTimeout: 5 * time.Second,
@@ -325,7 +325,7 @@ func vpcEndpointAttributesOAPI(d *schema.ResourceData, vpce *fcu.VpcEndpoint, co
 	d.Set("route_table_id", flattenStringList(vpce.RouteTableIds))
 
 	req := &fcu.DescribePrefixListsInput{}
-	req.Filters = buildFCUAttributeFilterList(
+	req.Filters = buildFCUAttributeFilterListOAPI(
 		map[string]string{
 			"prefix-list-name": serviceName,
 		},

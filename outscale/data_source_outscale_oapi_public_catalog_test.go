@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIDSPublicCatalog_basic(t *testing.T) {
 			{
 				Config: testAccDSOAPIPublicCatalogConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicCatalogDataSourceID("data.outscale_public_catalog.test"),
+					testAccCheckOutscaleOAPIPublicCatalogDataSourceID("data.outscale_public_catalog.test"),
 					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.#"),
 					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.0.catalog_entries.#"),
 					resource.TestCheckResourceAttrSet("data.outscale_public_catalog.test", "catalog.0.catalog_attributes.#"),

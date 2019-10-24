@@ -136,7 +136,7 @@ func dataSourceOutscaleOAPIVpcEndpointRead(d *schema.ResourceData, meta interfac
 
 func getOAPIPrefixList(conn *fcu.Client, serviceName string) (*string, []interface{}, error) {
 	req := &fcu.DescribePrefixListsInput{}
-	req.Filters = buildFCUAttributeFilterList(
+	req.Filters = buildFCUAttributeFilterListOAPI(
 		map[string]string{
 			"prefix-list-name": serviceName,
 		},
@@ -172,4 +172,12 @@ func getOAPIPrefixList(conn *fcu.Client, serviceName string) (*string, []interfa
 	}
 	return nil, make([]interface{}, 0), nil
 
+}
+
+func flattenStringList(list []*string) []interface{} {
+	vs := make([]interface{}, 0, len(list))
+	for _, v := range list {
+		vs = append(vs, *v)
+	}
+	return vs
 }

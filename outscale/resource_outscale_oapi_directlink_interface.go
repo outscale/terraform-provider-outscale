@@ -305,3 +305,69 @@ func resourceOutscaleOAPIDirectLinkInterfaceDelete(d *schema.ResourceData, meta 
 func resourceOutscaleOAPIDirectLinkInterfaceImport(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	return []*schema.ResourceData{d}, nil
 }
+
+func dxPrivateVirtualInterfaceWaitUntilAvailable(d *schema.ResourceData, conn *dl.Client) error {
+	return dxVirtualInterfaceWaitUntilAvailable(
+		d,
+		conn,
+		[]string{
+			"pending",
+		},
+		[]string{
+			"available",
+			"down",
+		})
+}
+
+func dxVirtualInterfaceWaitUntilAvailable(d *schema.ResourceData, conn *dl.Client, pending, target []string) error {
+	stateConf := &resource.StateChangeConf{
+		Pending:    pending,
+		Target:     target,
+		Refresh:    dxVirtualInterfaceStateRefresh(conn, d.Id()),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for Direct Connect virtual interface (%s) to become available: %s", d.Id(), err)
+	}
+
+	return nil
+}
+
+func dxVirtualInterfaceStateRefresh(conn *dl.Client, vifID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		var err error
+		var resp *dl.DescribeVirtualInterfacesOutput
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.API.DescribeVirtualInterfaces(&dl.DescribeVirtualInterfacesInput{
+				VirtualInterfaceID: aws.String(vifID),
+			})
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return nil, "", err
+		}
+
+		n := len(resp.VirtualInterfaces)
+		switch n {
+		case 0:
+			return "", "deleted", nil
+
+		case 1:
+			vif := resp.VirtualInterfaces[0]
+			return vif, aws.StringValue(vif.VirtualInterfaceState), nil
+
+		default:
+			return nil, "", fmt.Errorf("Found %d Direct Connect virtual interfaces for %s, expected 1", n, vifID)
+		}
+	}
+}

@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -789,6 +790,114 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 	d.SetId("")
 
 	return nil
+}
+
+func isLoadBalancerNotFound(err error) bool {
+	return strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound")
+}
+
+func expandListeners(configured []interface{}) ([]*lbu.Listener, error) {
+	listeners := make([]*lbu.Listener, 0, len(configured))
+
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+
+		ip := int64(data["instance_port"].(int))
+		lp := int64(data["load_balancer_port"].(int))
+		l := &lbu.Listener{
+			InstancePort:     &ip,
+			InstanceProtocol: aws.String(data["instance_protocol"].(string)),
+			LoadBalancerPort: &lp,
+			Protocol:         aws.String(data["protocol"].(string)),
+		}
+
+		if v, ok := data["ssl_certificate_id"]; ok && v != "" {
+			l.SSLCertificateId = aws.String(v.(string))
+		}
+
+		var valid bool
+		if l.SSLCertificateId != nil && *l.SSLCertificateId != "" {
+			// validate the protocol is correct
+			for _, p := range []string{"https", "ssl"} {
+				if (strings.ToLower(*l.InstanceProtocol) == p) || (strings.ToLower(*l.Protocol) == p) {
+					valid = true
+				}
+			}
+		} else {
+			valid = true
+		}
+
+		if valid {
+			listeners = append(listeners, l)
+		} else {
+			return nil, fmt.Errorf("[ERR] ELB Listener: ssl_certificate_id may be set only when protocol is 'https' or 'ssl'")
+		}
+	}
+
+	return listeners, nil
+}
+
+func flattenInstances(list []*lbu.Instance) []map[string]string {
+	result := make([]map[string]string, len(list))
+	for _, i := range list {
+		result = append(result, map[string]string{"instance_id": *i.InstanceId})
+	}
+	return result
+}
+
+// Expands an array of String Instance IDs into a []Instances
+func expandInstanceString(list []interface{}) []*lbu.Instance {
+	result := make([]*lbu.Instance, 0, len(list))
+	for _, i := range list {
+		result = append(result, &lbu.Instance{InstanceId: aws.String(i.(string))})
+	}
+	return result
+}
+
+// Flattens an array of Backend Descriptions into a a map of instance_port to policy names.
+func flattenBackendPolicies(backends []*lbu.BackendServerDescription) map[int64][]string {
+	policies := make(map[int64][]string)
+	for _, i := range backends {
+		for _, p := range i.PolicyNames {
+			policies[*i.InstancePort] = append(policies[*i.InstancePort], *p)
+		}
+		sort.Strings(policies[*i.InstancePort])
+	}
+	return policies
+}
+
+// Flattens an array of Listeners into a []map[string]interface{}
+func flattenListeners(list []*lbu.ListenerDescription) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+
+	for _, i := range list {
+		l := make(map[string]interface{})
+		listener := map[string]interface{}{
+			"instance_port":      strconv.Itoa(int(aws.Int64Value(i.Listener.InstancePort))),
+			"instance_protocol":  strings.ToLower(aws.StringValue(i.Listener.InstanceProtocol)),
+			"load_balancer_port": strconv.Itoa(int(aws.Int64Value(i.Listener.LoadBalancerPort))),
+			"protocol":           strings.ToLower(aws.StringValue(i.Listener.Protocol)),
+			"ssl_certificate_id": aws.StringValue(i.Listener.SSLCertificateId),
+		}
+		l["listener"] = listener
+		l["policy_names"] = flattenStringList(i.PolicyNames)
+		result = append(result, l)
+	}
+	return result
+}
+
+func flattenHealthCheck(check *lbu.HealthCheck) map[string]interface{} {
+	chk := make(map[string]interface{})
+
+	if check != nil {
+		chk["unhealthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.UnhealthyThreshold)))
+		chk["healthy_threshold"] = strconv.Itoa(int(aws.Int64Value(check.HealthyThreshold)))
+		chk["target"] = aws.StringValue(check.Target)
+		chk["timeout"] = strconv.Itoa(int(aws.Int64Value(check.Timeout)))
+		chk["interval"] = strconv.Itoa(int(aws.Int64Value(check.Interval)))
+	}
+
+	return chk
 }
 
 func expandOAPIListeners(configured []interface{}) ([]*lbu.Listener, error) {

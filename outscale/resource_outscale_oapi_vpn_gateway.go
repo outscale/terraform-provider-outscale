@@ -190,6 +190,54 @@ func resourceOutscaleOAPIVpnGatewayDelete(d *schema.ResourceData, meta interface
 	})
 }
 
+// vpnGatewayAttachStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// the state of a VPN gateway's attachment
+func vpnGatewayAttachStateRefreshFunc(conn *fcu.Client, id string, expected string) resource.StateRefreshFunc {
+	var start time.Time
+	return func() (interface{}, string, error) {
+		if start.IsZero() {
+			start = time.Now()
+		}
+
+		var resp *fcu.DescribeVpnGatewaysOutput
+		var err error
+
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.VM.DescribeVpnGateways(&fcu.DescribeVpnGatewaysInput{
+				VpnGatewayIds: []*string{aws.String(id)},
+			})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+				resp = nil
+			} else {
+				fmt.Printf("[ERROR] Error on VpnGatewayStateRefresh: %s", err)
+				return nil, "", err
+			}
+		}
+
+		if resp == nil {
+			return nil, "", nil
+		}
+
+		vpnGateway := resp.VpnGateways[0]
+		if len(vpnGateway.VpcAttachments) == 0 {
+			return vpnGateway, "detached", nil
+		}
+
+		vpnAttachment := oapiVpnGatewayGetAttachment(vpnGateway)
+		return vpnGateway, *vpnAttachment.State, nil
+	}
+}
+
 func oapiVpnGatewayGetAttachment(vgw *fcu.VpnGateway) *fcu.VpcAttachment {
 	for _, v := range vgw.VpcAttachments {
 		if *v.State == "attached" {

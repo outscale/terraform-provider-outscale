@@ -38,7 +38,7 @@ func resourceOutscaleOAPServerCertificate() *schema.Resource {
 				Type:      schema.TypeString,
 				Optional:  true,
 				ForceNew:  true,
-				StateFunc: normalizeCert,
+				StateFunc: oAPINormalizeCert,
 			},
 			"group_path": {
 				Type:     schema.TypeString,
@@ -49,7 +49,7 @@ func resourceOutscaleOAPServerCertificate() *schema.Resource {
 				Type:      schema.TypeString,
 				Required:  true,
 				ForceNew:  true,
-				StateFunc: normalizeCert,
+				StateFunc: oAPINormalizeCert,
 				Sensitive: true,
 			},
 			"server_certificate_name": {
@@ -138,8 +138,8 @@ func resourceOutscaleOAPServerCertificateRead(d *schema.ResourceData, meta inter
 	d.SetId(*resp.ServerCertificate.ServerCertificateMetadata.ServerCertificateID)
 	// these values should always be present, and have a default if not set in
 	// configuration, and so safe to reference with nil checks
-	d.Set("certificate_body", normalizeCert(resp.ServerCertificate.CertificateBody))
-	c := normalizeCert(resp.ServerCertificate.CertificateChain)
+	d.Set("certificate_body", oAPINormalizeCert(resp.ServerCertificate.CertificateBody))
+	c := oAPINormalizeCert(resp.ServerCertificate.CertificateChain)
 	if c != "" {
 		d.Set("certificate_chain", c)
 	}

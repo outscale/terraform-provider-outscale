@@ -30,7 +30,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleVMDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOAPIInstanceConfigTags,

@@ -206,5 +206,5 @@ func resourceOAPIImageCopyCreate(d *schema.ResourceData, meta interface{}) error
 	// 	return err
 	// }
 
-	return resourceImageUpdate(d, meta)
+	return resourceOAPIImageUpdate(d, meta)
 }

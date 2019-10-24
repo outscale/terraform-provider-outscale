@@ -13,7 +13,7 @@ import (
 
 func dataSourceOutscaleOAPIIamAccessKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleIamAccessKeyRead,
+		Read: dataSourceOutscaleOAPIIamAccessKeyRead,
 
 		Schema: map[string]*schema.Schema{
 			"api_key": {
@@ -41,7 +41,7 @@ func dataSourceOutscaleOAPIIamAccessKey() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tag_set": tagsSchemaComputed(),
+						"tag_set": tagsOAPISchemaComputed(),
 					},
 				},
 			},

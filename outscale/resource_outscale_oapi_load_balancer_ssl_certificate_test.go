@@ -30,7 +30,7 @@ func TestAccOutscaleLBUOAPISSLCertificate_basic(t *testing.T) {
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_load_balancer_ssl_certificate.test",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleLBUDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPISSLCertificateConfig(rInt, unixFile),

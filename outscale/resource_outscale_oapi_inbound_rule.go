@@ -162,7 +162,7 @@ func resourceOutscaleOAPIInboundRuleRead(d *schema.ResourceData, meta interface{
 	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("firewall_rules_set_id").(string)
 	sg, reqID, err := findOAPIResourceSecurityGroup(conn, sgID)
-	if _, notFound := err.(securityGroupNotFound); notFound {
+	if _, notFound := err.(oapiSecurityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
 		return nil
@@ -288,7 +288,7 @@ func oapiFindResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.Security
 		return nil, nil, err
 	}
 	if resp == nil {
-		return nil, nil, securityGroupNotFound{id, nil}
+		return nil, nil, oapiSecurityGroupNotFound{id, nil}
 	}
 	if len(resp.OK.SecurityGroups) != 1 {
 		return nil, nil, oapiSecurityGroupNotFound{id, resp.OK.SecurityGroups}
