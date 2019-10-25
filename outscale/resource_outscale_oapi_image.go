@@ -112,6 +112,10 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"creation_date": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			// Complex computed values
 			"block_device_mappings": {
 				Type:     schema.TypeList,
