@@ -825,6 +825,12 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
 	d.Partial(false)
 
 	if err := oapiStartInstance(id, stateConf, conn); err != nil {
