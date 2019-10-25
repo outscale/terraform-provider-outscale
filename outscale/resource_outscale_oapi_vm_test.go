@@ -100,9 +100,9 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
-	omi2 := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	omi := getOMIByRegion(region, "ubuntu").OMI
+	omi2 := getOMIByRegion(region, "centos").OMI
 
 	var before oapi.Vm
 	var after oapi.Vm
@@ -453,55 +453,54 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 }
 
 func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
-	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
+	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	  }
+	  
+	  resource "outscale_subnet" "outscale_subnet" {
+		net_id         = "${outscale_net.outscale_net.net_id}"
+		ip_range       = "10.0.0.0/24"
+		subregion_name = "eu-west-2a"
+	  }
+	  
+	  resource "outscale_nic" "outscale_nic" {
+		subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	  }
+	  
+	  resource "outscale_security_group" "outscale_security_group" {
+		description         = "test vm with nic"
+		security_group_name = "private-sg"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_vm" "basic" {
+		image_id     = "%s"
+		vm_type      = "%s"
+		keypair_name = "terraform-basic"
+	  
+		# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
+		nics {
+		  # delete_on_vm_deletion      = false
+		  # description                = "myDescription"
+		  device_number = 0
+	  
+		  # nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
+		  # secondary_private_ip_count = 1
+		  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	  
+		  security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+	  
+		  private_ips {
+			private_ip = "10.0.0.123"
+			is_primary = true
+		  }
+	  
+		  private_ips {
+			private_ip = "10.0.0.124"
+			is_primary = false
+		  }
 		}
-
-		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
-			ip_range            = "10.0.0.0/24"
-			subregion_name      = "eu-west-2a"
-		}
-
-		resource "outscale_nic" "outscale_nic" {
-			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-		}
-
-		resource "outscale_security_group" "outscale_security_group" {
-			description         = "test vm with nic"
-			security_group_name = "private-sg"
-			net_id              = "${outscale_net.outscale_net.net_id}"
-		}
-
-		resource "outscale_vm" "basic" {
-			image_id			           = "%s"
-			vm_type                  = "%s"
-			keypair_name		         = "terraform-basic"
-			# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
-			nics = [
-				{
-					# delete_on_vm_deletion      = false
-					# description                = "myDescription"
-					device_number                =  0
-					# nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
-					# secondary_private_ip_count = 1
-					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					
-					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-				  private_ips                  = [ 
-				  	{
-				  		private_ip = "10.0.0.123"
-				  		is_primary = true   
-						},
-						{
-				  		private_ip = "10.0.0.124"
-				  		is_primary = false   
-				  	}
-				  ]
-				}
-			]
-		}`, omi, vmType)
+	  }`, omi, vmType)
 }
 
 func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region string) string {
@@ -525,7 +524,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region string) string 
 			security_group_ids       = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%sb"
 
-			tags = {
+			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}
@@ -546,7 +545,6 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	  }
 	  
 	  resource "outscale_security_group" "outscale_security_group" {
-			count = 1
 			description         = "test group"
 			security_group_name = "sg1-test-group_test-net"
 			net_id              = "${outscale_net.outscale_net.net_id}"
