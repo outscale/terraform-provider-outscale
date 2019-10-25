@@ -120,7 +120,6 @@ func expandOAPIImagePermission(permissionType interface{}) (res oapi.Permissions
 		if globalPermission, ok := permission["global_permission"]; ok {
 			res.GlobalPermission = cast.ToBool(globalPermission)
 		}
-
 		if accountIDs, ok := permission["account_ids"]; ok {
 			for _, accountID := range accountIDs.([]interface{}) {
 				res.AccountIds = append(res.AccountIds, accountID.(string))
