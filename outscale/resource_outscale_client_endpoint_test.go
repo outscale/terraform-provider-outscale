@@ -18,6 +18,8 @@ import (
 )
 
 func TestAccOutscaleCustomerGateway_basic(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -61,6 +63,8 @@ func TestAccOutscaleCustomerGateway_basic(t *testing.T) {
 }
 
 func TestAccOutscaleCustomerGateway_similarAlreadyExists(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -96,6 +100,8 @@ func TestAccOutscaleCustomerGateway_similarAlreadyExists(t *testing.T) {
 }
 
 func TestAccOutscaleCustomerGateway_disappears(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)

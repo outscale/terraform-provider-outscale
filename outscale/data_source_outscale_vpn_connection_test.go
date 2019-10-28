@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccOutscaleVpnConnectionDataSource_basic(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)

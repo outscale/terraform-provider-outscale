@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccOutscaleAPIKey_importBasic(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)

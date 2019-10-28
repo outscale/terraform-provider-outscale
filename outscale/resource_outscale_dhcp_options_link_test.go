@@ -10,6 +10,7 @@ import (
 )
 
 func TestAccOutscaleDHCPOptionsAssociation_basic(t *testing.T) {
+	t.Skip()
 	var v fcu.Vpc
 	var d fcu.DhcpOptions
 

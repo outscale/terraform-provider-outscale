@@ -12,6 +12,7 @@ import (
 )
 
 func TestAccOutscaleAccessKey_basic(t *testing.T) {
+	t.Skip()
 	var conf icu.AccessKeyMetadata
 
 	resource.Test(t, resource.TestCase{

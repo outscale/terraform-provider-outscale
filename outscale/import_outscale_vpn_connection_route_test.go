@@ -8,6 +8,7 @@ import (
 )
 
 func TestAccOutscaleVpnConnectionRoute_importBasic(t *testing.T) {
+	t.Skip()
 	resourceName := "outscale_vpn_connection_route.foo"
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 
