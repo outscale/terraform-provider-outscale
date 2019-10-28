@@ -805,6 +805,7 @@ func (err oapiSecurityGroupNotFound) Error() string {
 		err.id, err.securityGroups)
 }
 
+// ByGroupsMember ..
 type ByGroupsMember []oapi.SecurityGroupsMember
 
 func (b ByGroupsMember) Len() int      { return len(b) }
