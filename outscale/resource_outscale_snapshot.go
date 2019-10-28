@@ -17,6 +17,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPISnapshotCreate,
 		Read:   resourceOutscaleOAPISnapshotRead,
+		Update: resourceOutscaleOAPISnapshotUpdate,
 		Delete: resourceOutscaleOAPISnapshotDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -94,7 +95,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": tagsListOAPISchema(),
 			"volume_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -167,6 +168,14 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", res.OK.Snapshot.SnapshotId, err)
 	}
+	result := res.OK
+
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), result.Snapshot.SnapshotId, conn)
+		if err != nil {
+			return err
+		}
+	}
 
 	d.SetId(res.OK.Snapshot.SnapshotId)
 
@@ -213,6 +222,21 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		set("volume_size", s.VolumeSize)
 		return set("request_id", res.OK.ResponseContext.RequestId)
 	})
+}
+
+func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPISnapshotRead(d, meta)
 }
 
 func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {

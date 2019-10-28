@@ -39,6 +39,24 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPINICDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+			resource.TestStep{
+				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net2"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -146,3 +164,14 @@ const testAccOutscaleOAPILinConfig = `
 		}	
 	}
 `
+
+func testAccOutscaleOAPILinConfigUpdateTags(value string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "outscale_net" { 
+		ip_range = "10.0.0.0/16"
+		tags =[{ 
+		key = "name" 
+		value = "%s"  }] 
+	   }
+`, value)
+}

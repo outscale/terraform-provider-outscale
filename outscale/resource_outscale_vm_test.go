@@ -237,11 +237,11 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM"),
-				Check:  resource.ComposeTestCheckFunc(),
+				//Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
 				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM2"),
-				Check:  resource.ComposeTestCheckFunc(),
+				//Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
 	})

@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
-	var conf oapi.InternetService
+	//var conf oapi.InternetService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -24,10 +24,16 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceDestroyed,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOutscaleOAPIInternetServiceConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW"),
+				Check:  resource.ComposeTestCheckFunc(
+				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW2"),
+				Check:  resource.ComposeTestCheckFunc(
+				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
 				),
 			},
 		},
@@ -142,11 +148,13 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 	return nil
 }
 
-const testAccOutscaleOAPIInternetServiceConfig = `
+func testAccOutscaleOAPIInternetServiceConfig(value string) string {
+	return fmt.Sprintf(`
 	resource "outscale_internet_service" "gateway" {
-		tags {       
+		tags =
+		{       
 			key   = "name"     
-			value = "Terraform_IGW"       
+			value = "%s"       
 		}
-	}
-`
+	}`, value)
+}

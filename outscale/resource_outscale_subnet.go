@@ -16,6 +16,7 @@ func resourceOutscaleOAPISubNet() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPISubNetCreate,
 		Read:   resourceOutscaleOAPISubNetRead,
+		Update: resourceOutscaleOAPISubNetUpdate,
 		Delete: resourceOutscaleOAPISubNetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -141,6 +142,21 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		return readOutscaleOAPISubNet(d, &response.Subnets[0])
 	}
 	return fmt.Errorf("No subnet (%s) found", d.Id())
+}
+
+func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPISubNetRead(d, meta)
 }
 
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {

@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -30,6 +31,34 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISubNetExists("outscale_subnet.subnet", &conf),
 				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPISubNetTagsUpdate(t *testing.T) {
+	o := os.Getenv("OUTSCALE_OAPI")
+	region := os.Getenv("OUTSCALE_REGION")
+
+	isOAPI, err := strconv.ParseBool(o)
+	if err != nil {
+		isOAPI = false
+	}
+
+	if !isOAPI {
+		t.Skip()
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPITagsUpdate(region, "terraform-subnet"),
+			},
+			{
+				Config: testAccOutscaleOAPITagsUpdate(region, "terraform-subnet2"),
 			},
 		},
 	})
@@ -153,4 +182,22 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 			}
 		}
 	`, region)
+}
+
+func testAccOutscaleOAPITagsUpdate(region, value string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "net" {
+		ip_range = "10.0.0.0/16"
+	}
+	resource "outscale_subnet" "subnet" {
+		ip_range = "10.0.0.0/16"
+		subregion_name = "%sb"
+		net_id = "${outscale_net.net.id}"
+	
+		tags = {
+			key = "name"
+			value = "%s"
+		 }
+	}
+		`, region, value)
 }

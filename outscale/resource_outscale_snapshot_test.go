@@ -78,6 +78,29 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	//var v oapi.Snapshot
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+			{
+				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -163,4 +186,17 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 			description        = "Target Snapshot Acceptance Test"
 		}
 	`, region)
+}
+
+func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
+	return fmt.Sprintf(`
+	resource "outscale_volume" "outscale_volume" {
+		subregion_name = "%sa" size = 10 
+	   }
+	   resource "outscale_snapshot" "outscale_snapshot" {
+	   volume_id = "${outscale_volume.outscale_volume.volume_id}" 
+	   tags = {
+		key = "Name" 
+	   value = "%s" }
+		}	`, region, value)
 }
