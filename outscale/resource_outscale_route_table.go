@@ -17,6 +17,7 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPIRouteTableCreate,
 		Read:   resourceOutscaleOAPIRouteTableRead,
+		Update: resourceOutscaleOAPIRouteTableUpdate,
 		Delete: resourceOutscaleOAPIRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceOutscaleRouteTableImportState,
@@ -114,6 +115,21 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	d.Set("tags", tagsOAPIToMap(rt.Tags))
 
 	return nil
+}
+
+func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
 
 func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {

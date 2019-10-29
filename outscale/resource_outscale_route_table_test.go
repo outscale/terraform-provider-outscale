@@ -120,24 +120,30 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
-	t.Skip()
-	var rt oapi.RouteTable
-
+	value1 := `{ 
+		key = "name" 
+		value = "Terraform-nic"  }`
+	value2 := `{ 
+		key = "name" 
+		value = "Terraform-RT"
+		},
+		{
+		key = "name2" 
+		value = "Terraform-RT2"
+		}`
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
-		IDRefreshName: "outscale_route_table.foo",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigTags,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt),
-					testAccCheckOAPITags(rt.Tags, "foo", "bar"),
-				),
+				Config: testAccOAPIRouteTableConfigTags(value1),
+			},
+			{
+				Config: testAccOAPIRouteTableConfigTags(value2),
 			},
 		},
 	})
@@ -370,7 +376,8 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 	`, omi, vmType, region)
 }
 
-const testAccOAPIRouteTableConfigTags = `
+func testAccOAPIRouteTableConfigTags(value string) string {
+	return fmt.Sprintf(`
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
 }
@@ -378,11 +385,10 @@ resource "outscale_net" "foo" {
 resource "outscale_route_table" "foo" {
 	net_id = "${outscale_net.foo.id}"
 
-	tag {
-		foo = "bar"
-	}
+	tags =[%s] 
 }
-`
+`, value)
+}
 
 // TODO: missing resource vpc peering to make this test
 // VPC Peering connections are prefixed with pcx

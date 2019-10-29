@@ -88,6 +88,27 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVolume_updateTags(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	if region == "" {
+		region = "dv-west-1"
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPIVolumeConfigUpdateTags(region, "Terraform-Volume"),
+			},
+			{
+				Config: testAccOutscaleOAPIVolumeConfigUpdateTags(region, "Terraform-Volume2"),
+			},
+		},
+	})
+}
+
 func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -170,4 +191,17 @@ func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
 			iops           = 5
 		}
 	`, region)
+}
+
+func testAccOutscaleOAPIVolumeConfigUpdateTags(region, value string) string {
+	return fmt.Sprintf(`
+	resource "outscale_volume" "outscale_volume" {
+	  volume_type = "gp2"
+	  subregion_name = "%sa"
+	  size = 10
+	  tags {
+		key = "name" 
+		value = "%s"
+	  }
+	}`, region, value)
 }

@@ -18,6 +18,7 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOAPIVolumeCreate,
 		Read:   resourceOAPIVolumeRead,
+		Update: resourceOAPIVolumeUpdate,
 		Delete: resourceOAPIVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -219,6 +220,21 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("request_id", response.ResponseContext.RequestId)
 	return readOAPIVolume(d, &response.Volumes[0])
+}
+
+func resourceOAPIVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOAPIVolumeRead(d, meta)
 }
 
 func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
