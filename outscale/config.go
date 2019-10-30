@@ -3,9 +3,8 @@ package outscale
 import (
 	"crypto/tls"
 	"net/http"
-	"os"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/dl"
@@ -66,14 +65,12 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 
-	u := os.Getenv("OUTSCALE_OAPI_URL")
-
 	oapicfg := &oapi.Config{
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
 		Region:    c.Region,
 		Service:   "api",
-		URL:       u,
+		URL:       "outscale.com/oapi/latest",
 	}
 
 	skipClient := &http.Client{

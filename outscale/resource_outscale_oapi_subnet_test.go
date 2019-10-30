@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 

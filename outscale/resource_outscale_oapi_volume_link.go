@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 )
 
 func resourceOutscaleOAPIVolumeLink() *schema.Resource {
@@ -245,8 +245,6 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		Filters: oapi.FiltersVolume{
 			VolumeIds: []string{d.Get("volume_id").(string)},
 		},
-		//Name:   aws.String("attachment.instance-id"),
-
 	}
 
 	var err error

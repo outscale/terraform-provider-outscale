@@ -9,11 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func tagsSchemaComputed() *schema.Schema {

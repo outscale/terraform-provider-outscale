@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -154,7 +154,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		_, err = conn.POST_UnlinkInternetService(*req)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "424 Failed Dependency") {
+			if strings.Contains(err.Error(), "DependencyProblem") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
@@ -163,7 +163,7 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 	})
 
 	if err != nil {
-		log.Printf("[DEBUG] Error dettaching internet service id (%s)", err)
+		log.Printf("[DEBUG] Error unlink internet service id (%s)", err)
 		return err
 	}
 

@@ -5,9 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 )
 
 func resourceOutscaleOAPIVMAttributes() *schema.Resource {
@@ -170,7 +171,7 @@ func resourceOAPIVMAttributesCreate(d *schema.ResourceData, meta interface{}) er
 			e := f["bsu"].(map[string]interface{})
 
 			bsu := oapi.BsuToUpdateVm{
-				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				DeleteOnVmDeletion: aws.Bool(e["delete_on_vm_deletion"].(bool)),
 				VolumeId:           e["volume_id"].(string),
 			}
 
@@ -323,7 +324,7 @@ func resourceOAPIVMAttributesUpdate(d *schema.ResourceData, meta interface{}) er
 			e := f["bsu"].(map[string]interface{})
 
 			bsu := oapi.BsuToUpdateVm{
-				DeleteOnVmDeletion: e["delete_on_vm_deletion"].(bool),
+				DeleteOnVmDeletion: aws.Bool(e["delete_on_vm_deletion"].(bool)),
 				VolumeId:           e["volume_id"].(string),
 			}
 

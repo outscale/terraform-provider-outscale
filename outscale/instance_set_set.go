@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
 )
 
 func flattenedInstanceSet(instances []*fcu.Instance) []map[string]interface{} {
@@ -388,7 +388,7 @@ func getNetworkInterfaceSet(interfaces []*fcu.InstanceNetworkInterface) []map[st
 
 func getOAPILinkNicLight(l oapi.LinkNicLight) map[string]interface{} {
 	return map[string]interface{}{
-		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
+		"delete_on_vm_deletion": strconv.FormatBool(aws.BoolValue(l.DeleteOnVmDeletion)),
 		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
 		"link_nic_id":           l.LinkNicId,
 		"state":                 l.State,
@@ -397,7 +397,7 @@ func getOAPILinkNicLight(l oapi.LinkNicLight) map[string]interface{} {
 
 func getOAPILinkNic(l oapi.LinkNic) map[string]interface{} {
 	return map[string]interface{}{
-		"delete_on_vm_deletion": strconv.FormatBool(l.DeleteOnVmDeletion),
+		"delete_on_vm_deletion": strconv.FormatBool(aws.BoolValue(l.DeleteOnVmDeletion)),
 		"device_number":         strconv.FormatInt(l.DeviceNumber, 10),
 		"link_nic_id":           l.LinkNicId,
 		"state":                 l.State,

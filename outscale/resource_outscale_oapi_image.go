@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"strings"
@@ -9,10 +8,9 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -107,6 +105,14 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Computed: true,
 			},
 			"root_device_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"image_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -583,21 +589,6 @@ func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]i
 	return blockDeviceMapping
 }
 
-// Returns a set of product codes.
-func omiOAPIProductCodes(m []string) *schema.Set {
-	s := &schema.Set{
-		F: omiOAPIProductCodesHash,
-	}
-	for _, v := range m {
-		code := map[string]interface{}{
-			"product_code": v,
-			"type":         "UNSET",
-		}
-		s.Add(code)
-	}
-	return s
-}
-
 // Returns the state reason.
 func omiOAPIStateReason(m *oapi.StateComment) map[string]interface{} {
 	s := make(map[string]interface{})
@@ -609,12 +600,4 @@ func omiOAPIStateReason(m *oapi.StateComment) map[string]interface{} {
 		s["state_message"] = "UNSET"
 	}
 	return s
-}
-
-func omiOAPIProductCodesHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["type"].(string)))
-	return hashcode.String(buf.String())
 }

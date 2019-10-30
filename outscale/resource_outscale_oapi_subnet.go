@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -135,7 +135,12 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
 	d.Set("request_id", response.ResponseContext.RequestId)
-	return readOutscaleOAPISubNet(d, &response.Subnets[0])
+
+	if len(response.Subnets) > 0 {
+
+		return readOutscaleOAPISubNet(d, &response.Subnets[0])
+	}
+	return fmt.Errorf("No subnet (%s) found", d.Id())
 }
 
 func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {

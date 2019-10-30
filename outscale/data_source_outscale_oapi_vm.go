@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIVM() *schema.Resource {
@@ -148,7 +149,7 @@ func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCr
 		blockDeviceMapping[k] = map[string]interface{}{
 			"device_name": v.DeviceName,
 			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", v.Bsu.DeleteOnVmDeletion),
+				"delete_on_vm_deletion": fmt.Sprintf("%t", aws.BoolValue(v.Bsu.DeleteOnVmDeletion)),
 				"volume_id":             v.Bsu.VolumeId,
 				"state":                 v.Bsu.State,
 				"link_date":             v.Bsu.LinkDate,
@@ -207,7 +208,8 @@ func buildOutscaleOAPIDataSourceVmFilters(set *schema.Set) oapi.FiltersVm {
 		case "architectures":
 			filters.Architectures = filterValues
 		case "block_device_mapping_delete_on_vm_deletion":
-			filters.BlockDeviceMappingDeleteOnVmDeletion, _ = strconv.ParseBool(filterValues[0])
+			filterDeleteOnVmDeletion, _ := strconv.ParseBool(filterValues[0])
+			filters.BlockDeviceMappingDeleteOnVmDeletion = aws.Bool(filterDeleteOnVmDeletion)
 		case "block_device_mapping_device_names":
 			filters.BlockDeviceMappingDeviceNames = filterValues
 		case "block_device_mapping_link_dates":

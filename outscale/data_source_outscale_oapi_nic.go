@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/oapi"
+	"github.com/outscale/osc-go/oapi"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -293,7 +294,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 	linkNic := eni.LinkNic
 
 	bb["link_nic_id"] = linkNic.LinkNicId
-	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", linkNic.DeleteOnVmDeletion)
+	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", aws.BoolValue(linkNic.DeleteOnVmDeletion))
 	bb["device_number"] = strconv.FormatInt(linkNic.DeviceNumber, 10)
 	bb["vm_id"] = linkNic.VmId
 	bb["vm_account_id"] = linkNic.VmAccountId
