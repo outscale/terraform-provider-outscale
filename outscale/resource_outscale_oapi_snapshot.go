@@ -112,16 +112,16 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	v, ok := d.GetOk("volume_id")
 	snp, sok := d.GetOk("snapshot_size")
+	source, sourceok := d.GetOk("source_snapshot_id")
 
-	if !ok && !sok {
-		return fmt.Errorf("please provide the volume_id or snapshot_size argument")
+	if !ok && !sok && !sourceok {
+		return fmt.Errorf("please provide the source_snapshot_id, volume_id or snapshot_size argument")
 	}
 
 	request := oapi.CreateSnapshotRequest{
 		Description:      d.Get("description").(string),
 		FileLocation:     d.Get("file_location").(string),
 		SourceRegionName: d.Get("source_region_name").(string),
-		SourceSnapshotId: d.Get("source_snapshot_id").(string),
 	}
 
 	if ok {
@@ -130,6 +130,10 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	if sok && snp.(int) > 0 {
 		request.SnapshotSize = int64(snp.(int))
+	}
+
+	if sourceok {
+		request.SourceSnapshotId = source.(string)
 	}
 
 	var res *oapi.POST_CreateSnapshotResponses

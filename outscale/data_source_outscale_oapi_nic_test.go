@@ -3,7 +3,9 @@ package outscale
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
+
 	"testing"
 	"time"
 
@@ -206,3 +208,30 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 		}
 	`, subregion)
 }
+
+const testAccOutscaleOAPIENIDataSourceConfigFilter = `
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	}
+	
+	resource "outscale_subnet" "outscale_subnet" {
+		subregion_name = "eu-west-2a"
+		ip_range       = "10.0.0.0/16"
+		net_id         = "${outscale_net.outscale_net.id}"
+	}
+
+	resource "outscale_nic" "outscale_nic" {
+		subnet_id = "${outscale_subnet.outscale_subnet.id}"
+		tags {
+			value = "tf-value"
+			key   = "tf-key"
+		}
+	}
+
+	data "outscale_nic" "outscale_nic" {
+		filter {
+			name = "nic_ids"
+			values = ["${outscale_nic.outscale_nic.nic_id}"]
+		} 
+	}  
+`

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"testing"
 )
@@ -49,6 +49,6 @@ func TestUnmarshalXMLRequestMetadata(t *testing.T) {
 		}
 	}
 
-	fmt.Printf("[Debug] %s\n", *v.ResponseMetadata.RequestID)
+	log.Printf("[DEBUG] %s\n", *v.ResponseMetadata.RequestID)
 
 }

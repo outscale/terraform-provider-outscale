@@ -167,6 +167,7 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	var server oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	vmType := "t2.micro"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -177,14 +178,14 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, "c4.large", region),
+				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", "c4.large"),
+						"outscale_vm.basic", vmType, "t2.micro"),
 				),
 			},
 		},

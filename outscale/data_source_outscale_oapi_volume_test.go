@@ -25,7 +25,6 @@ func TestAccOutscaleOAPIVolumeDataSource_basic(t *testing.T) {
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volume.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "size", "10"),
 					resource.TestCheckResourceAttr("data.outscale_volume.ebs_volume", "volume_type", "gp2"),
-					testAccCheckState("data.outscale_volume.ebs_volume"),
 				),
 			},
 		},

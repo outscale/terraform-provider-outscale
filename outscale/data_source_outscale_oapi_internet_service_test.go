@@ -18,7 +18,6 @@ func TestAccOutscaleOAPIINternetServiceDatasource_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOutscaleOAPIINternetServiceDatasourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("data.outscale_internet_service.outscale_internet_serviced"),
 					resource.TestCheckResourceAttrSet("data.outscale_internet_service.outscale_internet_serviced", "internet_service_id"),
 				),
 			},

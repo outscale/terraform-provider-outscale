@@ -20,9 +20,6 @@ func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_public_ip.test"),
-					testAccCheckState("data.outscale_public_ip.by_public_ip_id"),
-					testAccCheckState("data.outscale_public_ip.by_public_ip"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),

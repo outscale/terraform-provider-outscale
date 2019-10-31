@@ -292,7 +292,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil || resp.OK == nil {
 		if err != nil {
 			if strings.Contains(err.Error(), "InvalidAMIID.NotFound") {
-				fmt.Printf("[DEBUG] %s no longer exists, so we'll drop it from the state", id)
+				log.Printf("[DEBUG] %s no longer exists, so we'll drop it from the state", id)
 				d.SetId("")
 				return nil
 			}

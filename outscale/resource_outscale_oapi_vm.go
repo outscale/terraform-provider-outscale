@@ -839,7 +839,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 
-	fmt.Printf("[INFO] Terminating instance: %s", id)
+	log.Printf("[INFO] Terminating VM: %s", id)
 	req := &oapi.DeleteVmsRequest{
 		VmIds: []string{id},
 	}

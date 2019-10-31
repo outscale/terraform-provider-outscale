@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -28,7 +29,6 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_public_ip_link.by_public_ip"),
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),
 					testAccCheckOutscaleOAPIPublicIPLinkExists(
@@ -60,9 +60,8 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp)
 		}
 		describe, err := conn.OAPI.POST_ReadPublicIps(request)
 
-		fmt.Printf("\n [DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
-
 		if err != nil {
+			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
 			return err
 		}
 

@@ -46,7 +46,6 @@ func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
-					testAccCheckState("data.outscale_image.omi"),
 				),
 			},
 		},

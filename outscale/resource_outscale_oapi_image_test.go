@@ -32,7 +32,6 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 				Config: testAccOAPIImageConfigBasic(omi, "c4.large", rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
-					testAccCheckState("outscale_image.foo"),
 					resource.TestCheckResourceAttr(
 						"outscale_image.foo", "image_name", fmt.Sprintf("tf-testing-%d", rInt)),
 					resource.TestCheckResourceAttr(

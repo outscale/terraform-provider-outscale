@@ -22,7 +22,6 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
-					testAccCheckState("data.outscale_volumes.ebs_volume"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "1"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "gp2"),
 				),

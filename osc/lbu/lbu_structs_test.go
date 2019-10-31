@@ -2,13 +2,12 @@ package lbu
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"testing"
 
 	"github.com/terraform-providers/terraform-provider-outscale/osc/handler"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestUnmarshalXMLDescribeLoadBalancers(t *testing.T) {
@@ -30,8 +29,6 @@ func TestUnmarshalXMLDescribeLoadBalancers(t *testing.T) {
 		}
 	}
 
-	utils.PrintToJSON(v, "Describe")
-
-	fmt.Printf("[Debug] %s\n", *v.ResponseMetadata.RequestID)
+	log.Printf("[DEBUG] %s\n", *v.ResponseMetadata.RequestID)
 
 }

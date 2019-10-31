@@ -28,7 +28,6 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 				Config: testAccOutscaleOAPIVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
-					testAccCheckState("outscale_volume.test"),
 				),
 			},
 		},
