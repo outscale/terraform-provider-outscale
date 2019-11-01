@@ -204,21 +204,20 @@ func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
 	return result
 }
 
-func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	for k, t := range ts {
-		if !oapiTagDescIgnored(&t) {
-			r := map[string]string{}
-			r["load_balancer_name"] = t.Key
-			r["value"] = t.Value
-			r["resource_id"] = t.ResourceId
-			r["resource_type"] = t.ResourceType
+func oapiTagsDescToList(ts []oapi.Tag) []map[string]interface{} {
+	res := make([]map[string]interface{}, len(ts))
 
-			result[k] = r
+	for i, t := range ts {
+		if !oapiTagDescIgnored(&t) {
+			res[i] = map[string]interface{}{
+				"key":           t.Key,
+				"value":         t.Value,
+				"resource_id":   t.ResourceId,
+				"resource_type": t.ResourceType,
+			}
 		}
 	}
-
-	return result
+	return res
 }
 
 func oapiTagDescIgnored(t *oapi.Tag) bool {
