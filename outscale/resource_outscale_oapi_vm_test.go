@@ -564,51 +564,52 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 
 func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_volume" "external1" {
-			subregion_name = "eu-west-2a"
-			size = 1
+	resource "outscale_volume" "external1" {
+		subregion_name = "eu-west-2a"
+		size           = 1
+	  }
+	  
+	  resource "outscale_snapshot" "snapshot" {
+		volume_id = "${outscale_volume.external1.id}"
+	  }
+	  
+	  resource "outscale_vm" "basic" {
+		image_id     = "%[1]s"
+		vm_type      = "%[2]s"
+		keypair_name = "terraform-basic"
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdb"
+		  no_device   = "/dev/xvdb"
+		  bsu = {
+			volume_size           = 15
+			volume_type           = "gp2"
+			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			delete_on_vm_deletion = true
+		  }
 		}
-		
-		resource "outscale_snapshot" "snapshot" {
-			volume_id = "${outscale_volume.external1.id}"
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdc"
+		  bsu = {
+			volume_size           = 22
+			volume_type           = "io1"
+			iops                  = 150
+			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			delete_on_vm_deletion = false
+		  }
 		}
-
-		resource "outscale_vm" "basic" {
-			image_id              = "%[1]s"
-			vm_type               = "%[2]s"
-			keypair_name          = "terraform-basic"
-	    block_device_mappings = [
-				{
-					device_name = "/dev/sdb"
-					no_device   =  "/dev/xvdb"
-					bsu = {
-						volume_size=15
-						volume_type = "gp2"
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-						delete_on_vm_deletion = true
-					}
-				},
-				{
-					device_name = "/dev/sdc"
-					bsu = {
-						volume_size=22
-						volume_type = "io1"
-						iops      = 150
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-						delete_on_vm_deletion = false
-					}
-				},
-				{
-					device_name = "/dev/sdc"
-					bsu = {
-						volume_size=22
-						volume_type = "io1"
-						iops      = 150
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-					}
-				}
-			]
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdc"
+		  bsu = {
+			volume_size = 22
+			volume_type = "io1"
+			iops        = 150
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
+		  }
 		}
+	  }
 	`, omi, vmType, region)
 }
 
