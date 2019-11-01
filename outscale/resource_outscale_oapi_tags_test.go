@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
-	t.Skip()
 	var v oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
@@ -28,12 +27,15 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region),
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region, "keyOriginal", "valueOriginal"),
 				Check: resource.ComposeTestCheckFunc(
-					oapiTestAccCheckOutscaleVMExists("outscale_vm.foo", &v),
-					testAccCheckOAPITags(v.Tags, "foo", "bar"),
-					// Guard against regression of https://github.com/hashicorp/terraform/issues/914
-					testAccCheckOAPITags(v.Tags, "#", ""),
+					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", &v),
+				),
+			},
+			{
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region, "keyUpdated", "valueUpdated"),
+				Check: resource.ComposeTestCheckFunc(
+					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", &v),
 				),
 			},
 		},
@@ -121,7 +123,7 @@ func testAccCheckOAPITags(
 	}
 }
 
-func testAccCheckOAPIInstanceConfigTags(omi, vmType, region string) string {
+func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "vm" {
 			image_id                 = "%s"
@@ -134,9 +136,10 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region string) string {
 		resource "outscale_tag" "foo" {
 			resource_ids = ["${outscale_vm.vm.id}"]
 
-			tag = {
-				faz = "baz"
+			tag {
+				key   = "%s"
+				value = "%s"			
 			}
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, key, value)
 }
