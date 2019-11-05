@@ -185,7 +185,11 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
+<<<<<<< HEAD
 						"outscale_vm.basic", "vm_type", "t2.micro"),
+=======
+						"outscale_vm.basic", "vm_type", vmType),
+>>>>>>> test: 0.12 upgrade - fix failing test cases
 				),
 			},
 		},
@@ -596,7 +600,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			volume_type           = "io1"
 			iops                  = 150
 			snapshot_id           = "${outscale_snapshot.snapshot.id}"
-			delete_on_vm_deletion = false
+			delete_on_vm_deletion = true
 		  }
 		}
 	  

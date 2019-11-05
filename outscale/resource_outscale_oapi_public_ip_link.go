@@ -84,7 +84,6 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	request := oapi.LinkPublicIpRequest{}
 
 	if v, ok := d.GetOk("public_ip_id"); ok {
-		fmt.Println(v.(string))
 		request.PublicIpId = v.(string)
 	}
 	if v, ok := d.GetOk("allow_relink"); ok {
@@ -123,7 +122,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		fmt.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
+		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
 		return err
 	}
 	//Using validation with request.
@@ -212,7 +211,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 	})
 
 	if err != nil {
-		fmt.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
+		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
 	}
 
@@ -221,45 +220,46 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 
 func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIp) error {
 	// if err := d.Set("public_ip_id", address.ReservationId); err != nil {
-	// 	fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
+	// 	log.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
 	// 	return err
 	// }
+
 	if err := d.Set("vm_id", address.VmId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
+		log.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("nic_id", address.NicId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
+		log.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("private_ip", address.PrivateIp); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
+		log.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
 
 		return err
 	}
 	if err := d.Set("public_ip", address.PublicIp); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		log.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("link_public_ip_id", address.LinkPublicIpId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		log.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("nic_account_id", address.NicAccountId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		log.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}
 
 	if err := d.Set("public_ip_id", address.PublicIpId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+		log.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}

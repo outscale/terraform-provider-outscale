@@ -146,7 +146,6 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 
 	if filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourceSecurityGroupFilters(filters.(*schema.Set))
-		fmt.Printf("%+v\n", req)
 	}
 
 	var err error

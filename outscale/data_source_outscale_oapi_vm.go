@@ -38,8 +38,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 		params.Filters.VmIds = []string{instanceID.(string)}
 	}
 
-	fmt.Printf("ReadVmsRequest -> %+v\n", params)
-
 	var resp *oapi.POST_ReadVmsResponses
 	var err error
 

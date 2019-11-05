@@ -55,12 +55,10 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 
 const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
 	resource "outscale_net" "net" {
-		count    = 1
 		ip_range = "10.10.0.0/24"
 	}
 
 	resource "outscale_net" "net2" {
-		count    = 1
 		ip_range = "10.11.0.0/24"
 	}
 

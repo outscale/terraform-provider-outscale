@@ -126,7 +126,6 @@ func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *s
 }
 
 func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
-	fmt.Println("testAccOutscaleOAPIImageLaunchPermissionDestroyed")
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
 		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
@@ -238,7 +237,7 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 			resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
 				image_id = "${outscale_image.outscale_image.image_id}"
 			
-				permission_additions = {
+				permission_additions {
 					account_ids = ["520679080430"]
 				}
 			}
@@ -250,7 +249,7 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 			resource "outscale_image_launch_permission" "outscale_image_launch_permission_two" {
 				image_id = "${outscale_image_launch_permission.outscale_image_launch_permission.image_id}"
 
-				permission_removals = {
+				permission_removals {
 					account_ids = ["520679080430"]
 				}
 			}

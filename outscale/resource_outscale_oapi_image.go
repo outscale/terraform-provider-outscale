@@ -462,7 +462,7 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOutscaleOAPIImageWaitForAvailable(id string, client *oapi.Client, i int) (*oapi.Image, error) {
-	fmt.Printf("Waiting for OMI %s to become available...", id)
+	log.Printf("[INFO] Waiting for OMI %s to become available...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
@@ -550,7 +550,7 @@ func ImageOAPIStateRefreshFunc(client *oapi.Client, id string) resource.StateRef
 }
 
 func resourceOutscaleOAPIImageWaitForDestroy(id string, client *oapi.Client) error {
-	fmt.Printf("Waiting for OMI %s to be deleted...", id)
+	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"available", "pending", "failed"},
