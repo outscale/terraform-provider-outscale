@@ -121,6 +121,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
+	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	tg := oapiTagsDescToList(resp.OK.Tags)
 	err = d.Set("tags", tg)
 
@@ -225,6 +226,10 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
