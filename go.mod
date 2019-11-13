@@ -3,7 +3,7 @@ module github.com/terraform-providers/terraform-provider-outscale
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.25.3
+	github.com/aws/aws-sdk-go v1.25.33
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
