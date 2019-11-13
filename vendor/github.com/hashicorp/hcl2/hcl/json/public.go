@@ -19,22 +19,19 @@ import (
 // the subset of data that was able to be parsed, which may be none.
 func Parse(src []byte, filename string) (*hcl.File, hcl.Diagnostics) {
 	rootNode, diags := parseFileContent(src, filename)
-
-	switch rootNode.(type) {
-	case *objectVal, *arrayVal:
-		// okay
-	default:
+	if _, ok := rootNode.(*objectVal); !ok {
 		diags = diags.Append(&hcl.Diagnostic{
 			Severity: hcl.DiagError,
 			Summary:  "Root value must be object",
-			Detail:   "The root value in a JSON-based configuration must be either a JSON object or a JSON array of objects.",
+			Detail:   "The root value in a JSON-based configuration must be a JSON object.",
 			Subject:  rootNode.StartRange().Ptr(),
 		})
-
-		// Since we've already produced an error message for this being
-		// invalid, we'll return an empty placeholder here so that trying to
-		// extract content from our root body won't produce a redundant
-		// error saying the same thing again in more general terms.
+		// Put in a placeholder objectVal just so the caller always gets
+		// a valid file, even if it appears empty. This is useful for callers
+		// that are doing static analysis of possibly-erroneous source code,
+		// which will try to process the returned file even if we return
+		// diagnostics of severity error. This way, they'll get a file that
+		// has an empty body rather than a body that panics when probed.
 		fakePos := hcl.Pos{
 			Byte:   0,
 			Line:   1,
@@ -46,18 +43,17 @@ func Parse(src []byte, filename string) (*hcl.File, hcl.Diagnostics) {
 			End:      fakePos,
 		}
 		rootNode = &objectVal{
-			Attrs:     []*objectAttr{},
+			Attrs:     map[string]*objectAttr{},
 			SrcRange:  fakeRange,
 			OpenRange: fakeRange,
 		}
 	}
-
 	file := &hcl.File{
 		Body: &body{
-			val: rootNode,
+			obj: rootNode.(*objectVal),
 		},
 		Bytes: src,
-		Nav:   navigation{rootNode},
+		Nav:   navigation{rootNode.(*objectVal)},
 	}
 	return file, diags
 }

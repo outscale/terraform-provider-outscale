@@ -9,7 +9,7 @@ import (
 )
 
 // ZipDecompressor is an implementation of Decompressor that can
-// decompress zip files.
+// decompress tar.gzip files.
 type ZipDecompressor struct{}
 
 func (d *ZipDecompressor) Decompress(dst, src string, dir bool) error {
@@ -42,11 +42,6 @@ func (d *ZipDecompressor) Decompress(dst, src string, dir bool) error {
 	for _, f := range zipR.File {
 		path := dst
 		if dir {
-			// Disallow parent traversal
-			if containsDotDot(f.Name) {
-				return fmt.Errorf("entry contains '..': %s", f.Name)
-			}
-
 			path = filepath.Join(path, f.Name)
 		}
 

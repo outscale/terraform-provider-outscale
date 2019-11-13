@@ -3,7 +3,6 @@ package schema
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 // FieldReaders are responsible for decoding fields out of data into
@@ -40,13 +39,6 @@ func (r *FieldReadResult) ValueOrZero(s *Schema) interface{} {
 	}
 
 	return s.ZeroValue()
-}
-
-// SchemasForFlatmapPath tries its best to find a sequence of schemas that
-// the given dot-delimited attribute path traverses through.
-func SchemasForFlatmapPath(path string, schemaMap map[string]*Schema) []*Schema {
-	parts := strings.Split(path, ".")
-	return addrToSchema(parts, schemaMap)
 }
 
 // addrToSchema finds the final element schema for the given address
@@ -134,8 +126,6 @@ func addrToSchema(addr []string, schemaMap map[string]*Schema) []*Schema {
 				switch v := current.Elem.(type) {
 				case ValueType:
 					current = &Schema{Type: v}
-				case *Schema:
-					current, _ = current.Elem.(*Schema)
 				default:
 					// maps default to string values. This is all we can have
 					// if this is nested in another list or map.
@@ -259,10 +249,11 @@ func readObjectField(
 }
 
 // convert map values to the proper primitive type based on schema.Elem
-func mapValuesToPrimitive(k string, m map[string]interface{}, schema *Schema) error {
-	elemType, err := getValueType(k, schema)
-	if err != nil {
-		return err
+func mapValuesToPrimitive(m map[string]interface{}, schema *Schema) error {
+
+	elemType := TypeString
+	if et, ok := schema.Elem.(ValueType); ok {
+		elemType = et
 	}
 
 	switch elemType {
