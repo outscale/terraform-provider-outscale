@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -8,12 +9,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 
 	"github.com/outscale/osc-go/oapi"
 	"github.com/spf13/cast"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
@@ -514,10 +517,12 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	connOsc := meta.(*OutscaleClient).OSCAPI
+
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
 		Target:     []string{"running"},
-		Refresh:    InstanceStateOApiRefreshFunc(conn, vm.VmId, "terminated"),
+		Refresh:    InstanceStateOApiRefreshFunc(connOsc, vm.VmId, "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -575,28 +580,29 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		return fmt.Errorf("Error reading the VM %s", err)
+		return fmt.Errorf("Error reading the VM (%s): %s", d.Id(), err)
 	}
 
 	resp = rs.OK
 
-	if err != nil {
-		// If the instance was not found, return nil so that we can show
-		// that the instance is gone.
-		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
-			d.SetId("")
-			return nil
-		}
+	// if err != nil {
+	// 	// If the instance was not found, return nil so that we can show
+	// 	// that the instance is gone.
+	// 	if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		// Some other error, report it
-		return err
-	}
+	// 	// Some other error, report it
+	// 	return err
+	// }
 
 	// If nothing was found, then return no state
 	if len(resp.Vms) == 0 {
 		d.SetId("")
 		return nil
 	}
+
 	instance := resp.Vms[0]
 
 	// Get the admin password from the server to save in the state
@@ -852,10 +858,11 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] Waiting for vm (%s) to become terminated", id)
 
+	connOsc := meta.(*OutscaleClient).OSCAPI
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"terminated"},
-		Refresh:    InstanceStateOApiRefreshFunc(conn, id, ""),
+		Refresh:    InstanceStateOApiRefreshFunc(connOsc, id, ""),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -985,48 +992,47 @@ func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
 }
 
 // InstanceStateOApiRefreshFunc ...
-func InstanceStateOApiRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
+func InstanceStateOApiRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		var resp *oapi.ReadVmsResponse
-		var rs *oapi.POST_ReadVmsResponses
-		var err error
-
-		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			rs, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
-				Filters: getVMsFilterByVMID(instanceID),
-			})
-			return resource.RetryableError(err)
+		resp, _, err := conn.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
+			ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+				Filters: &oscgo.FiltersVm{
+					VmIds: &[]string{instanceID},
+				},
+			}),
 		})
 
 		if err != nil {
-			fmt.Printf("Error on InstanceStateRefresh: %s", err)
-
+			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)
 			return nil, "", err
 		}
 
-		resp = rs.OK
-
-		if resp == nil || len(resp.Vms) == 0 {
+		if !resp.HasVms() {
 			return nil, "", nil
 		}
 
-		i := resp.Vms[0]
-		state := i.State
+		vm := resp.GetVms()[0]
+		state := vm.GetState()
 
 		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
-				i.State)
+			return vm, state, fmt.Errorf("Failed to reach target state. Reason: %v", vm.State)
 
 		}
 
-		return i, state, nil
+		return vm, state, nil
 	}
 }
 
-func stopVM(vmID string, conn *oapi.Client, attr string) (*resource.StateChangeConf, error) {
-	_, err := conn.POST_StopVms(oapi.StopVmsRequest{
-		VmIds: []string{vmID},
+func stopVM(vmID string, conn *oscgo.APIClient, attr string) (*resource.StateChangeConf, error) {
+	_, _, err := conn.VmApi.StopVms(context.Background(), &oscgo.StopVmsOpts{
+		StopVmsRequest: optional.NewInterface(oscgo.StopVmsRequest{
+			VmIds: []string{vmID},
+		}),
 	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error stopping vms %s", err)
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
@@ -1046,11 +1052,15 @@ func stopVM(vmID string, conn *oapi.Client, attr string) (*resource.StateChangeC
 	return stateConf, nil
 }
 
-func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oapi.Client, attr string) error {
-	if _, err := conn.POST_StartVms(oapi.StartVmsRequest{
-		VmIds: []string{vmID},
-	}); err != nil {
-		return err
+func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APIClient, attr string) error {
+	_, _, err := conn.VmApi.StartVms(context.Background(), &oscgo.StartVmsOpts{
+		StartVmsRequest: optional.NewInterface(oscgo.StartVmsRequest{
+			VmIds: []string{vmID},
+		}),
+	})
+
+	if err != nil {
+		return fmt.Errorf("error starting vm %s", err)
 	}
 
 	stateConf = &resource.StateChangeConf{
