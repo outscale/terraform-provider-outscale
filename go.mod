@@ -10,6 +10,7 @@ require (
 	github.com/hashicorp/hcl v0.0.0-20171017181929-23c074d0eceb // indirect
 	github.com/hashicorp/terraform v0.12.12
 	github.com/marinsalinas/osc-sdk-go v0.0.0-20191112221552-df1645cbd455
+	github.com/openlyinc/pointy v1.1.2
 	github.com/outscale/osc-go v0.0.9
 	github.com/spf13/cast v1.3.0
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392 // indirect

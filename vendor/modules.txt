@@ -222,6 +222,8 @@ github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
+# github.com/openlyinc/pointy v1.1.2
+github.com/openlyinc/pointy
 # github.com/outscale/osc-go v0.0.9
 github.com/outscale/osc-go/oapi
 # github.com/posener/complete v1.2.1
