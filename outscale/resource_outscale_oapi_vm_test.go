@@ -185,7 +185,7 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", vmType, "t2.micro"),
+						"outscale_vm.basic", "vm_type", "t2.micro"),
 				),
 			},
 		},
