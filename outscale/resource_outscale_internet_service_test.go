@@ -116,6 +116,8 @@ func testAccCheckOutscaleOSCAPIInternetServiceExists(n string, res *oscgo.Intern
 
 		return nil
 	}
+
+	return nil
 }
 
 func testAccCheckOutscaleOSCAPIInternetServiceDestroyed(s *terraform.State) error {
