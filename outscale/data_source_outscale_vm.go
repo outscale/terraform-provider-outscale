@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/outscale/osc-go/oapi"
 )
 
 func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
@@ -251,6 +251,60 @@ func sliceAtoi(sa []string) ([]int64, error) {
 	return si, nil
 }
 
+<<<<<<< HEAD:outscale/data_source_outscale_vm.go
+=======
+func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range *tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
+func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
+func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
+>>>>>>> refactor: - vm rs and ds - Add new SDK to VMs resource and data sources:outscale/data_source_outscale_oapi_vm.go
 func getOApiVMAttributesSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes

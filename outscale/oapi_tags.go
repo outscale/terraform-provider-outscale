@@ -9,11 +9,10 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -311,6 +310,24 @@ func tagsFromSliceMap(m []interface{}) []oscgo.ResourceTag {
 		t := oscgo.ResourceTag{
 			Key:   tag["key"].(string),
 			Value: tag["value"].(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	for k, t := range ts {
+		if !oapiTagDescIgnored(&t) {
+			r := map[string]string{}
+			r["load_balancer_name"] = t.Key
+			r["value"] = t.Value
+			r["resource_id"] = t.ResourceId
+			r["resource_type"] = t.ResourceType
+
+			result[k] = r
 		}
 		result = append(result, t)
 	}
