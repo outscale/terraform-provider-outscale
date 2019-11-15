@@ -1,20 +1,33 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
-	var conf oapi.InternetService
+	o := os.Getenv("OUTSCALE_OAPI")
+
+	isOAPI, err := strconv.ParseBool(o)
+	if err != nil {
+		isOAPI = false
+	}
+
+	if !isOAPI {
+		t.Skip()
+	}
+	var conf oscgo.InternetService
 
 	resourceName := "outscale_internet_service.gateway"
 
@@ -24,12 +37,12 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceDestroyed,
+		CheckDestroy: testAccCheckOutscaleOSCAPIInternetServiceDestroyed,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIInternetServiceExists(resourceName, &conf),
+					testAccCheckOutscaleOSCAPIInternetServiceExists(resourceName, &conf),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW"),
@@ -38,7 +51,7 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW2"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					testAccCheckOutscaleOSCAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW2"),
@@ -47,7 +60,7 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPIInternetServiceWithoutTags(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					testAccCheckOutscaleOSCAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
 					resource.TestCheckNoResourceAttr(resourceName, "tags.#"),
 				),
 			},
@@ -55,7 +68,7 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIInternetServiceExists(n string, res *oapi.InternetService) resource.TestCheckFunc {
+func testAccCheckOutscaleOSCAPIInternetServiceExists(n string, res *oscgo.InternetService) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -65,14 +78,14 @@ func testAccCheckOutscaleOAPIInternetServiceExists(n string, res *oapi.InternetS
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No internet gateway id is set")
 		}
-		var resp *oapi.POST_ReadInternetServicesResponses
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		var resp oscgo.ReadInternetServicesResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.POST_ReadInternetServices(oapi.ReadInternetServicesRequest{
-				Filters: oapi.FiltersInternetService{InternetServiceIds: []string{rs.Primary.ID}},
-			})
+			r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -80,43 +93,33 @@ func testAccCheckOutscaleOAPIInternetServiceExists(n string, res *oapi.InternetS
 				}
 				return resource.NonRetryableError(err)
 			}
+			resp = r
 			return nil
 		})
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
+		if err != nil {
+			errString = err.Error()
 
 			return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", errString)
 		}
 
-		result := resp.OK
-
 		if err != nil {
 			return err
 		}
-		if len(result.InternetServices) != 1 ||
-			result.InternetServices[0].InternetServiceId != rs.Primary.ID {
+		if len(resp.GetInternetServices()) != 1 || resp.GetInternetServices()[0].GetInternetServiceId() != rs.Primary.ID {
 			return fmt.Errorf("Internet Gateway not found")
 		}
 
-		*res = result.InternetServices[0]
+		*res = resp.GetInternetServices()[0]
 
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+func testAccCheckOutscaleOSCAPIInternetServiceDestroyed(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_internet_service" {
@@ -124,13 +127,13 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 		}
 
 		// Try to find an internet gateway
-		var resp *oapi.POST_ReadInternetServicesResponses
+		var resp oscgo.ReadInternetServicesResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
 
-			resp, err = conn.POST_ReadInternetServices(oapi.ReadInternetServicesRequest{
-				Filters: oapi.FiltersInternetService{InternetServiceIds: []string{rs.Primary.ID}},
-			})
+			r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -138,18 +141,13 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 				}
 				return resource.NonRetryableError(err)
 			}
+			resp = r
 
 			return resource.RetryableError(err)
 		})
 
-		if resp.OK == nil {
-			return nil
-		}
-
-		result := resp.OK
-
 		if err == nil {
-			if len(result.InternetServices) > 0 {
+			if len(resp.GetInternetServices()) > 0 {
 				return fmt.Errorf("still exist")
 			}
 			return nil

@@ -3,15 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -65,6 +66,56 @@ func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
 					ResourceIds: []string{d.Id()},
 					Tags:        create,
 				})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
+
+	if d.HasChange("tags") {
+		oraw, nraw := d.GetChange("tags")
+		o := oraw.([]interface{})
+		n := nraw.([]interface{})
+		create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
+
+		// Set tag
+		if len(remove) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, _, err := conn.TagApi.DeleteTags(context.Background(), &oscgo.DeleteTagsOpts{DeleteTagsRequest: optional.NewInterface(oscgo.DeleteTagsRequest{
+					ResourceIds: []string{d.Id()},
+					Tags:        remove,
+				})})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), ".NotFound") {
+						return resource.RetryableError(err) // retry
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		if len(create) > 0 {
+			err := resource.Retry(60*time.Second, func() *resource.RetryError {
+				_, _, err := conn.TagApi.CreateTags(context.Background(), &oscgo.CreateTagsOpts{CreateTagsRequest: optional.NewInterface(oscgo.CreateTagsRequest{
+					ResourceIds: []string{d.Id()},
+					Tags:        create,
+				})})
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
@@ -154,10 +205,40 @@ func tagsOAPIToMap(ts []oapi.ResourceTag) []map[string]string {
 	return result
 }
 
+// tagsOSCsAPI	ToMap turns the list of tag into a map.
+func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
+	result := make([]map[string]string, len(ts))
+	if len(ts) > 0 {
+		for k, t := range ts {
+			tag := make(map[string]string)
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+			result[k] = tag
+		}
+	} else {
+		result = make([]map[string]string, 0)
+	}
+
+	return result
+}
+
 func tagsOAPIFromMap(m map[string]interface{}) []oapi.ResourceTag {
 	result := make([]oapi.ResourceTag, 0, len(m))
 	for k, v := range m {
 		t := oapi.ResourceTag{
+			Key:   k,
+			Value: v.(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func tagsOSCAPIFromMap(m map[string]interface{}) []oscgo.ResourceTag {
+	result := make([]oscgo.ResourceTag, 0, len(m))
+	for k, v := range m {
+		t := oscgo.ResourceTag{
 			Key:   k,
 			Value: v.(string),
 		}
@@ -187,6 +268,25 @@ func diffOAPITags(oldTags, newTags []oapi.ResourceTag) ([]oapi.ResourceTag, []oa
 	}
 
 	return tagsOAPIFromMap(create), remove
+}
+
+func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
+	// First, we're creating everything we have
+	create := make(map[string]interface{})
+	for _, t := range newTags {
+		create[t.Key] = t.Value
+	}
+
+	// Build the list of what to remove
+	var remove []oscgo.ResourceTag
+	for _, t := range oldTags {
+		old, ok := create[t.Key]
+		if !ok || old != t.Value {
+			remove = append(remove, t)
+		}
+	}
+
+	return tagsOSCAPIFromMap(create), remove
 }
 
 func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
