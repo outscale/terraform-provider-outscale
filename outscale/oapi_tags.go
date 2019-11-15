@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -639,4 +640,38 @@ func tagsFromMapCommon(m map[string]interface{}) []*common.Tag {
 	}
 
 	return result
+}
+
+func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range *tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
+}
+
+func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
+	res := []map[string]interface{}{}
+
+	if tags != nil {
+		for _, t := range tags {
+			tag := map[string]interface{}{}
+
+			tag["key"] = t.Key
+			tag["value"] = t.Value
+
+			res = append(res, tag)
+		}
+	}
+
+	return res
 }
