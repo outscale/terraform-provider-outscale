@@ -1,14 +1,17 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
@@ -200,12 +203,26 @@ func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
 	return result
 }
 
-func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
-	res := make([]map[string]string, len(ts))
+func tagsFromSliceMap(m []interface{}) []oscgo.ResourceTag {
+	result := make([]oscgo.ResourceTag, 0, len(m))
+	for _, v := range m {
+		tag := v.(map[string]interface{})
+		t := oscgo.ResourceTag{
+			Key:   tag["key"].(string),
+			Value: tag["value"].(string),
+		}
+		result = append(result, t)
+	}
+
+	return result
+}
+
+func oapiTagsDescToList(ts []oapi.Tag) []map[string]interface{} {
+	res := make([]map[string]interface{}, len(ts))
 
 	for i, t := range ts {
 		if !oapiTagDescIgnored(&t) {
-			res[i] = map[string]string{
+			res[i] = map[string]interface{}{
 				"key":           t.Key,
 				"value":         t.Value,
 				"resource_id":   t.ResourceId,
@@ -254,6 +271,28 @@ func unAssignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) e
 		_, err := conn.POST_DeleteTags(request)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func assignTags(tag []interface{}, resourceID string, conn *oscgo.APIClient) error {
+	request := oscgo.CreateTagsRequest{}
+	request.Tags = tagsFromSliceMap(tag)
+	request.ResourceIds = []string{resourceID}
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		_, _, err := conn.TagApi.CreateTags(context.Background(), &oscgo.CreateTagsOpts{
+			CreateTagsRequest: optional.NewInterface(request),
+		})
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "NotFound") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)

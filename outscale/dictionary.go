@@ -26,7 +26,6 @@ func init() {
 			"outscale_public_ip_link":                resourceOutscaleOAPIPublicIPLink,
 			"outscale_volume":                        resourceOutscaleOAPIVolume,
 			"outscale_volumes_link":                  resourceOutscaleOAPIVolumeLink,
-			"outscale_vm_attributes":                 resourceOutscaleOAPIVMAttributes,
 			"outscale_inbound_rule":                  resourceOutscaleOAPIInboundRule,
 			"outscale_outbound_rule":                 resourceOutscaleOAPIOutboundRule,
 			"outscale_security_group_rule":           resourceOutscaleOAPIOutboundRule,

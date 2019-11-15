@@ -77,6 +77,7 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 
 func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
+	connOsc := meta.(*OutscaleClient).OSCAPI
 	name := d.Get("device_name").(string)
 	iID := d.Get("vm_id").(string)
 	vID := d.Get("volume_id").(string)
@@ -107,10 +108,11 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		// This handles the situation where the instance is created by
 		// a spot request and whilst the request has been fulfilled the
 		// instance is not running yet
+
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
-			Refresh:    vmStateRefreshFunc(conn, iID, ""),
+			Refresh:    vmStateRefreshFunc(connOsc, iID, ""),
 			Timeout:    10 * time.Minute,
 			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
@@ -351,37 +353,4 @@ func volumeOAPIAttachmentID(name, volumeID, instanceID string) string {
 	buf.WriteString(fmt.Sprintf("%s-", volumeID))
 
 	return fmt.Sprintf("vai-%d", hashcode.String(buf.String()))
-}
-
-func vmStateRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		var resp *oapi.POST_ReadVmsResponses
-		var err error
-
-		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			resp, err = conn.POST_ReadVms(oapi.ReadVmsRequest{
-				Filters: oapi.FiltersVm{VmIds: []string{instanceID}},
-			})
-			return resource.RetryableError(err)
-		})
-
-		if err != nil {
-			return nil, "", err
-		}
-
-		if resp == nil || len(resp.OK.Vms) == 0 {
-			return nil, "", nil
-		}
-
-		i := resp.OK.Vms[0]
-		state := i.State
-
-		if state == failState {
-			return i, state, fmt.Errorf("Failed to reach target state. Reason: %v",
-				i.State)
-
-		}
-
-		return i, state, nil
-	}
 }

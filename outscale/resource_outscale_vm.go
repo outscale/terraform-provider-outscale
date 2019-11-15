@@ -115,7 +115,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"delete_on_vm_deletion": {
 							Type:     schema.TypeBool,
-							Computed: true,
+							Default:  true,
 							Optional: true,
 						},
 						"description": {
@@ -473,19 +473,20 @@ func resourceOutscaleOApiVM() *schema.Resource {
 }
 
 func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	instanceOpts, err := buildCreateVmsRequest(d, meta)
+	vmOpts, err := buildCreateVmsRequest(d, meta)
 	if err != nil {
 		return err
 	}
 
-	// Create the instance
-	var runResp *oapi.CreateVmsResponse
-	var resp *oapi.POST_CreateVmsResponses
+	// Create the vm
+	var resp oscgo.CreateVmsResponse
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.POST_CreateVms(*instanceOpts)
+		resp, _, err = conn.VmApi.CreateVms(context.Background(), &oscgo.CreateVmsOpts{
+			CreateVmsRequest: optional.NewInterface(vmOpts),
+		})
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -497,32 +498,28 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source instance: %s", err)
+		return fmt.Errorf("Error launching source VM: %s", err)
 	}
 
-	runResp = resp.OK
-
-	if runResp == nil || len(runResp.Vms) == 0 {
-		return errors.New("Error launching source instance: no instances returned in response")
+	if !resp.HasVms() || len(resp.GetVms()) == 0 {
+		return errors.New("Error launching source VM: no VMs returned in response")
 	}
 
-	vm := runResp.Vms[0]
+	vm := resp.GetVms()[0]
 
-	d.SetId(vm.VmId)
+	d.SetId(vm.GetVmId())
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), vm.VmId, conn)
+		err := assignTags(tags.([]interface{}), vm.GetVmId(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	connOsc := meta.(*OutscaleClient).OSCAPI
-
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
 		Target:     []string{"running"},
-		Refresh:    InstanceStateOApiRefreshFunc(connOsc, vm.VmId, "terminated"),
+		Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -535,27 +532,28 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Initialize the connection info
-	if vm.PublicIp != "" {
+	if vm.HasPublicIp() {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": vm.PublicIp,
+			"host": vm.GetPublicIp(),
 		})
-	} else if vm.PrivateIp != "" {
+	} else if vm.HasPrivateIp() {
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
-			"host": vm.PrivateIp,
+			"host": vm.GetPrivateIp(),
 		})
 	}
 
 	//Check if source dest check is enabled.
 	if v, ok := d.GetOk("is_source_dest_checked"); ok {
-
-		opts := &oapi.UpdateVmRequest{
-			VmId:                vm.VmId,
-			IsSourceDestChecked: v.(bool),
+		opts := oscgo.UpdateVmRequest{
+			VmId: vm.GetVmId(),
 		}
-		log.Printf("[DEBGUG] is_source_dest_checked argument is not in CreateVms, we have to update the vm (%s)", vm.VmId)
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+
+		opts.SetIsSourceDestChecked(v.(bool))
+
+		log.Printf("[DEBUG] is_source_dest_checked argument is not in CreateVms, we have to update the vm (%s)", vm.GetVmId())
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
@@ -564,113 +562,71 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var resp *oapi.ReadVmsResponse
-	var rs *oapi.POST_ReadVmsResponses
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		rs, err = conn.POST_ReadVms(*&oapi.ReadVmsRequest{
-			Filters: oapi.FiltersVm{
-				VmIds: []string{d.Id()},
-			},
+	var resp oscgo.ReadVmsResponse
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+		r, _, err := conn.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
+			ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+				Filters: &oscgo.FiltersVm{
+					VmIds: &[]string{d.Id()},
+				},
+			}),
 		})
 
-		return resource.RetryableError(err)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		resp = r
+		return nil
 	})
+
 	if err != nil {
-		return fmt.Errorf("Error reading the VM (%s): %s", d.Id(), err)
+		return fmt.Errorf("error reading the VM (%s): %s", d.Id(), err)
 	}
 
-	resp = rs.OK
-
-	// if err != nil {
-	// 	// If the instance was not found, return nil so that we can show
-	// 	// that the instance is gone.
-	// 	if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "InvalidInstanceID.NotFound" {
-	// 		d.SetId("")
-	// 		return nil
-	// 	}
-
-	// 	// Some other error, report it
-	// 	return err
-	// }
-
 	// If nothing was found, then return no state
-	if len(resp.Vms) == 0 {
+	if !resp.HasVms() {
 		d.SetId("")
 		return nil
 	}
 
-	instance := resp.Vms[0]
+	vm := resp.GetVms()[0]
 
 	// Get the admin password from the server to save in the state
-	adminPassword, err := getOAPIVMAdminPassword(instance.VmId, conn)
+	adminPassword, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
 	if err != nil {
 		return err
 	}
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(instance.VmId)
-
-		set("architecture", instance.Architecture)
-		if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
-			log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
-			return err
-		}
-		set("bsu_optimized", instance.BsuOptimized)
-		set("client_token", instance.ClientToken)
-		set("deletion_protection", instance.DeletionProtection)
-		set("hypervisor", instance.Hypervisor)
-		set("image_id", instance.ImageId)
-		set("is_source_dest_checked", instance.IsSourceDestChecked)
-		set("keypair_name", instance.KeypairName)
-		set("launch_number", instance.LaunchNumber)
-		set("net_id", instance.NetId)
-		if err := set("nics", getOAPIVMNetworkInterfaceLightSet(instance.Nics)); err != nil {
-			log.Printf("[DEBUG] NICS ERR %+v", err)
-			return err
-		}
-		set("os_family", instance.OsFamily)
-		set("placement_subregion_name", instance.Placement.SubregionName)
-		set("placement_tenancy", instance.Placement.Tenancy)
-		set("private_dns_name", instance.PrivateDnsName)
-		set("private_ip", instance.PrivateIp)
-		set("product_codes", instance.ProductCodes)
-		set("public_dns_name", instance.PublicDnsName)
-		set("public_ip", instance.PublicIp)
-		set("reservation_id", instance.ReservationId)
-		set("root_device_name", instance.RootDeviceName)
-		set("root_device_type", instance.RootDeviceType)
-		if err := set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups)); err != nil {
-			log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
-			return err
-		}
-		set("state", instance.State)
-		set("state_reason", instance.StateReason)
-		set("subnet_id", instance.SubnetId)
-		set("user_data", instance.UserData)
-		set("vm_id", instance.VmId)
-		set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
-		set("admin_password", adminPassword)
-		set("tags", getOapiTagSet(instance.Tags))
-
-		return set("vm_type", instance.VmType)
+		d.Set("admin_password", adminPassword)
+		d.SetId(vm.GetVmId())
+		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
 
-func getOAPIVMAdminPassword(VMID string, conn *oapi.Client) (string, error) {
-	resp, err := conn.POST_ReadAdminPassword(oapi.ReadAdminPasswordRequest{VmId: VMID})
+func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
+	resp, _, err := conn.VmApi.ReadAdminPassword(context.Background(),
+		&oscgo.ReadAdminPasswordOpts{
+			ReadAdminPasswordRequest: optional.NewInterface(oscgo.ReadAdminPasswordRequest{VmId: VMID}),
+		},
+	)
+
 	if err != nil {
-		return "", fmt.Errorf("Error reading the VM %s", err)
+		return "", fmt.Errorf("error reading the VM's password %s", err)
 	}
-	return resp.OK.AdminPassword, nil
+	return resp.GetAdminPassword(), nil
 }
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
+	oapiConn := meta.(*OutscaleClient).OAPI
 
 	d.Partial(true)
 
@@ -681,139 +637,123 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
 		d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		stateConf, err = oapiStopInstance(id, conn)
+		stateConf, err = stopVM(id, conn)
 		if err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("vm_type") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:   id,
-			VmType: d.Get("vm_type").(string),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetVmType(d.Get("vm_type").(string))
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("user_data") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:     id,
-			UserData: d.Get("user_data").(string),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetUserData(d.Get("user_data").(string))
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:         id,
-			BsuOptimized: d.Get("bsu_optimized").(bool),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("deletion_protection") && !d.IsNewResource() {
-		deletionProtection := d.Get("deletion_protection").(bool)
-		opts := &oapi.UpdateVmRequest{
-			VmId:               id,
-			DeletionProtection: &deletionProtection,
-		}
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetDeletionProtection(d.Get("deletion_protection").(bool))
 
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("keypair_name") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:        id,
-			KeypairName: d.Get("keypair_name").(string),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetKeypairName(d.Get("keypair_name").(string))
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("security_group_ids") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:             id,
-			SecurityGroupIds: expandStringValueList(d.Get("security_group_ids").([]interface{})),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+
+		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_ids").([]interface{})))
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("security_group_names") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:             id,
-			SecurityGroupIds: expandStringValueList(d.Get("security_group_names").([]interface{})),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetSecurityGroupIds(expandStringValueList(d.Get("security_group_names").([]interface{})))
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("vm_initiated_shutdown_behavior") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:                        id,
-			VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetVmInitiatedShutdownBehavior(d.Get("vm_initiated_shutdown_behavior").(string))
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
-		opts := &oapi.UpdateVmRequest{
-			VmId:                id,
-			IsSourceDestChecked: d.Get("is_source_dest_checked").(bool),
-		}
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
 		maps := d.Get("block_device_mappings").(*schema.Set).List()
-		mappings := []oapi.BlockDeviceMappingVmUpdate{}
+		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
-			mapping := oapi.BlockDeviceMappingVmUpdate{
-				DeviceName:        f["device_name"].(string),
-				NoDevice:          f["no_device"].(string),
-				VirtualDeviceName: f["virtual_device_name"].(string),
-			}
+			mapping := oscgo.BlockDeviceMappingVmUpdate{}
+			mapping.SetDeviceName(f["device_name"].(string))
+			mapping.SetNoDevice(f["no_device"].(string))
+			mapping.SetVirtualDeviceName(f["virtual_device_name"].(string))
 
 			e := f["bsu"].(map[string]interface{})
+			bsu := oscgo.BsuToUpdateVm{}
 
-			bsu := oapi.BsuToUpdateVm{
-				DeleteOnVmDeletion: aws.Bool(e["delete_on_vm_deletion"].(bool)),
-				VolumeId:           e["volume_id"].(string),
-			}
+			bsu.SetDeleteOnVmDeletion(e["delete_on_vm_deletion"].(bool))
+			bsu.SetVolumeId(e["volume_id"].(string))
 
-			mapping.Bsu = bsu
+			mapping.SetBsu(bsu)
 
 			mappings = append(mappings, mapping)
 		}
 
-		opts := &oapi.UpdateVmRequest{
-			VmId:                id,
-			BlockDeviceMappings: mappings,
-		}
+		opts := oscgo.UpdateVmRequest{VmId: id}
 
-		if err := oapiModifyInstanceAttr(conn, opts); err != nil {
+		opts.SetBlockDeviceMappings(mappings)
+
+		if err := updateVmAttr(conn, opts); err != nil {
 			return err
 		}
 	}
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOAPITags(oapiConn, d); err != nil {
 		return err
 	}
 
@@ -821,7 +761,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
-	if err := oapiStartInstance(id, stateConf, conn); err != nil {
+	if err := startVM(id, stateConf, conn); err != nil {
 		return err
 	}
 
@@ -829,40 +769,40 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
 	log.Printf("[INFO] Terminating VM: %s", id)
-	req := &oapi.DeleteVmsRequest{
-		VmIds: []string{id},
-	}
 
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, err = conn.POST_DeleteVms(*req)
+		_, _, err = conn.VmApi.DeleteVms(context.Background(), &oscgo.DeleteVmsOpts{
+			DeleteVmsRequest: optional.NewInterface(oscgo.DeleteVmsRequest{
+				VmIds: []string{id},
+			}),
+		})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
-
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error deleting the instance")
+		return fmt.Errorf("Error deleting the VM")
 	}
 
-	log.Printf("[DEBUG] Waiting for vm (%s) to become terminated", id)
+	log.Printf("[DEBUG] Waiting for VM (%s) to become terminated", id)
 
-	connOsc := meta.(*OutscaleClient).OSCAPI
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"terminated"},
-		Refresh:    InstanceStateOApiRefreshFunc(connOsc, id, ""),
+		Refresh:    vmStateRefreshFunc(conn, id, ""),
 		Timeout:    d.Timeout(schema.TimeoutDelete),
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -877,95 +817,148 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (*oapi.CreateVmsRequest, error) {
-	request := &oapi.CreateVmsRequest{
-		BlockDeviceMappings:         expandBlockDeviceOApiMappings(d),
-		BsuOptimized:                d.Get("bsu_optimized").(bool),
-		ClientToken:                 d.Get("client_token").(string),
-		ImageId:                     d.Get("image_id").(string),
-		KeypairName:                 d.Get("keypair_name").(string),
-		MaxVmsCount:                 int64(1),
-		MinVmsCount:                 int64(1),
-		Nics:                        buildNetworkOApiInterfaceOpts(d),
-		PrivateIps:                  expandStringValueList(d.Get("private_ips").([]interface{})),
-		SecurityGroupIds:            expandStringValueList(d.Get("security_group_ids").([]interface{})),
-		SecurityGroups:              expandStringValueList(d.Get("security_group_names").([]interface{})),
-		SubnetId:                    d.Get("subnet_id").(string),
-		UserData:                    d.Get("user_data").(string),
-		VmInitiatedShutdownBehavior: d.Get("vm_initiated_shutdown_behavior").(string),
-		VmType:                      d.Get("vm_type").(string),
+func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.CreateVmsRequest, error) {
+	request := oscgo.CreateVmsRequest{
+		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
+		BsuOptimized:       oscgo.PtrBool(d.Get("bsu_optimized").(bool)),
+		MaxVmsCount:        oscgo.PtrInt32(1),
+		MinVmsCount:        oscgo.PtrInt32(1),
+		ImageId:            d.Get("image_id").(string),
+		Placement:          expandPlacement(d),
 	}
 
-	deletionProtection := cast.ToBool(d.Get("deletion_protection")) == true
-	request.DeletionProtection = &deletionProtection
+	if nics := buildNetworkOApiInterfaceOpts(d); len(nics) > 0 {
+		request.SetNics(nics)
+	}
 
-	request.Placement = expandOAPIPlacement(d)
+	if blockDevices := expandBlockDeviceOApiMappings(d); len(blockDevices) > 0 {
+		request.SetBlockDeviceMappings(blockDevices)
+	}
+
+	if privateIPs := expandStringValueList(d.Get("private_ips").([]interface{})); len(privateIPs) > 0 {
+		request.SetPrivateIps(privateIPs)
+	}
+
+	if sgIDs := expandStringValueList(d.Get("security_group_ids").([]interface{})); len(sgIDs) > 0 {
+		request.SetSecurityGroupIds(sgIDs)
+	}
+
+	if sgNames := expandStringValueList(d.Get("security_group_names").([]interface{})); len(sgNames) > 0 {
+		request.SetSecurityGroups(sgNames)
+	}
+
+	if v := d.Get("subnet_id").(string); v != "" {
+		request.SetSubnetId(v)
+	}
+
+	if v := d.Get("user_data").(string); v != "" {
+		request.SetUserData(v)
+	}
+
+	if v := d.Get("vm_type").(string); v != "" {
+		request.SetVmType(v)
+	}
+
+	if v := d.Get("client_token").(string); v != "" {
+		request.SetClientToken(v)
+	}
+
+	if v := d.Get("keypair_name").(string); v != "" {
+		request.SetKeypairName(v)
+	}
+
 	return request, nil
 }
 
-func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oapi.BlockDeviceMappingVmCreation {
+func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMappingVmCreation {
+	var blockDevices []oscgo.BlockDeviceMappingVmCreation
 
 	block := d.Get("block_device_mappings").([]interface{})
-	blockDevices := make([]oapi.BlockDeviceMappingVmCreation, len(block))
 
-	for i, v := range block {
+	for _, v := range block {
+		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
+
 		value := v.(map[string]interface{})
 		bsu := value["bsu"].(map[string]interface{})
 
-		if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
-			deleteOnVMDeletion := (cast.ToBool(deleteOnVMDeletion) == true)
-			blockDevices[i].Bsu.DeleteOnVmDeletion = &deleteOnVMDeletion
-		}
+		blockDevice.SetBsu(expandBlockDeviceBSU(bsu))
 
-		if iops, ok := bsu["iops"]; ok {
-			blockDevices[i].Bsu.Iops = cast.ToInt64(iops)
-		}
-		if snapshotID, ok := bsu["snapshot_id"]; ok {
-			blockDevices[i].Bsu.SnapshotId = cast.ToString(snapshotID)
-		}
-		if volumeSize, ok := bsu["volume_size"]; ok {
-			blockDevices[i].Bsu.VolumeSize = cast.ToInt64(volumeSize)
-		}
-		if volumeType, ok := bsu["volume_type"]; ok {
-			blockDevices[i].Bsu.VolumeType = cast.ToString(volumeType)
-		}
 		if deviceName, ok := value["device_name"]; ok {
-			blockDevices[i].DeviceName = cast.ToString(deviceName)
+			blockDevice.SetDeviceName(cast.ToString(deviceName))
 		}
 		if noDevice, ok := value["no_device"]; ok {
-			blockDevices[i].NoDevice = cast.ToString(noDevice)
+			blockDevice.SetNoDevice(cast.ToString(noDevice))
 		}
 		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
-			blockDevices[i].VirtualDeviceName = cast.ToString(virtualDeviceName)
+			blockDevice.SetVirtualDeviceName(cast.ToString(virtualDeviceName))
 		}
+
+		blockDevices = append(blockDevices, blockDevice)
 	}
 	return blockDevices
 }
 
-func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oapi.NicForVmCreation {
+func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
+	bsuToCreate := oscgo.BsuToCreate{}
+
+	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
+		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
+	}
+
+	if iops, ok := bsu["iops"]; ok {
+		bsuToCreate.SetIops(cast.ToInt32(iops))
+	}
+	if snapshotID, ok := bsu["snapshot_id"]; ok {
+		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
+	}
+	if volumeSize, ok := bsu["volume_size"]; ok {
+		bsuToCreate.SetVolumeSize(cast.ToInt32(volumeSize))
+	}
+	if volumeType, ok := bsu["volume_type"]; ok {
+		bsuToCreate.SetVolumeType(cast.ToString(volumeType))
+	}
+
+	return bsuToCreate
+}
+
+func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
 
 	nics := d.Get("nics").([]interface{})
-	networkInterfaces := []oapi.NicForVmCreation{}
+	log.Printf("[DEBUG] NICS TO CREATE -> %+v", nics)
+	networkInterfaces := []oscgo.NicForVmCreation{}
 
 	for _, v := range nics {
 		nic := v.(map[string]interface{})
 
-		ni := oapi.NicForVmCreation{
-			DeleteOnVmDeletion: nic["delete_on_vm_deletion"].(bool),
-			Description:        nic["description"].(string),
-			DeviceNumber:       int64(nic["device_number"].(int)),
+		ni := oscgo.NicForVmCreation{
+			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
 		}
 
-		ni.PrivateIps = expandPrivatePublicIps(nic["private_ips"].(*schema.Set))
-		ni.SubnetId = nic["subnet_id"].(string)
-		ni.SecurityGroupIds = expandStringValueList(nic["security_group_ids"].([]interface{}))
-		ni.SecondaryPrivateIpCount = int64(nic["secondary_private_ip_count"].(int))
-		ni.NicId = nic["nic_id"].(string)
+		if v := nic["nic_id"].(string); v != "" {
+			ni.SetNicId(v)
+		}
+
+		if v := nic["secondary_private_ip_count"].(int); v > 0 {
+			ni.SetSecondaryPrivateIpCount(int32(v))
+		}
+
+		if d, dOk := nic["delete_on_vm_deletion"]; dOk {
+			ni.SetDeleteOnVmDeletion(d.(bool))
+		}
+
+		ni.SetDescription(nic["description"].(string))
+
+		ni.SetPrivateIps(expandPrivatePublicIps(nic["private_ips"].(*schema.Set)))
+		ni.SetSubnetId(nic["subnet_id"].(string))
+
+		if sg := expandStringValueList(nic["security_group_ids"].([]interface{})); len(sg) > 0 {
+			ni.SetSecurityGroupIds(sg)
+		}
 
 		if v, ok := d.GetOk("private_ip"); ok {
-			ni.PrivateIps = []oapi.PrivateIpLight{oapi.PrivateIpLight{
-				PrivateIp: v.(string),
-			}}
+			ni.SetPrivateIps([]oscgo.PrivateIpLight{oscgo.PrivateIpLight{
+				PrivateIp: aws.String(v.(string)),
+			}})
 		}
 		networkInterfaces = append(networkInterfaces, ni)
 	}
@@ -973,26 +966,34 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oapi.NicForVmCreati
 	return networkInterfaces
 }
 
-func expandPrivatePublicIps(p *schema.Set) []oapi.PrivateIpLight {
-	privatePublicIPS := make([]oapi.PrivateIpLight, len(p.List()))
+func expandPrivatePublicIps(p *schema.Set) []oscgo.PrivateIpLight {
+	privatePublicIPS := make([]oscgo.PrivateIpLight, len(p.List()))
 
 	for i, v := range p.List() {
 		value := v.(map[string]interface{})
-		privatePublicIPS[i].IsPrimary = value["is_primary"].(bool)
-		privatePublicIPS[i].PrivateIp = value["private_ip"].(string)
+		privatePublicIPS[i].SetIsPrimary(value["is_primary"].(bool))
+		privatePublicIPS[i].SetPrivateIp(value["private_ip"].(string))
 	}
 	return privatePublicIPS
 }
 
-func expandOAPIPlacement(d *schema.ResourceData) oapi.Placement {
-	return oapi.Placement{
-		SubregionName: d.Get("placement_subregion_name").(string),
-		Tenancy:       d.Get("placement_tenancy").(string),
+func expandPlacement(d *schema.ResourceData) *oscgo.Placement {
+	var placement *oscgo.Placement
+
+	subregionName, sOK := d.GetOk("placement_subregion_name")
+	tenancy, tOK := d.GetOk("placement_tenancy")
+
+	if sOK || tOK {
+		placement = &oscgo.Placement{
+			SubregionName: oscgo.PtrString(subregionName.(string)),
+		}
+
+		placement.Tenancy = oscgo.PtrString(tenancy.(string))
 	}
+	return placement
 }
 
-// InstanceStateOApiRefreshFunc ...
-func InstanceStateOApiRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
+func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, _, err := conn.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
 			ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
@@ -1023,7 +1024,7 @@ func InstanceStateOApiRefreshFunc(conn *oscgo.APIClient, instanceID, failState s
 	}
 }
 
-func stopVM(vmID string, conn *oscgo.APIClient, attr string) (*resource.StateChangeConf, error) {
+func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, error) {
 	_, _, err := conn.VmApi.StopVms(context.Background(), &oscgo.StopVmsOpts{
 		StopVmsRequest: optional.NewInterface(oscgo.StopVmsRequest{
 			VmIds: []string{vmID},
@@ -1037,7 +1038,7 @@ func stopVM(vmID string, conn *oscgo.APIClient, attr string) (*resource.StateCha
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "running", "shutting-down", "stopped", "stopping"},
 		Target:     []string{"stopped"},
-		Refresh:    InstanceStateOApiRefreshFunc(conn, vmID, ""),
+		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -1052,7 +1053,7 @@ func stopVM(vmID string, conn *oscgo.APIClient, attr string) (*resource.StateCha
 	return stateConf, nil
 }
 
-func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APIClient, attr string) error {
+func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APIClient) error {
 	_, _, err := conn.VmApi.StartVms(context.Background(), &oscgo.StartVmsOpts{
 		StartVmsRequest: optional.NewInterface(oscgo.StartVmsRequest{
 			VmIds: []string{vmID},
@@ -1066,7 +1067,7 @@ func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APICl
 	stateConf = &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
 		Target:     []string{"running"},
-		Refresh:    InstanceStateOApiRefreshFunc(conn, vmID, ""),
+		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -1076,6 +1077,15 @@ func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APICl
 		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", vmID, err)
 	}
 
+	return nil
+}
+
+func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest) error {
+	if _, _, err := conn.VmApi.UpdateVm(context.Background(), &oscgo.UpdateVmOpts{
+		UpdateVmRequest: optional.NewInterface(instanceAttrOpts),
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 

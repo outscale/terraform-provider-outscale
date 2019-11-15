@@ -51,7 +51,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_public_ip_link":                resourceOutscaleOAPIPublicIPLink(),
 			"outscale_volume":                        resourceOutscaleOAPIVolume(),
 			"outscale_volumes_link":                  resourceOutscaleOAPIVolumeLink(),
-			"outscale_vm_attributes":                 resourceOutscaleOAPIVMAttributes(),
 			"outscale_net_attributes":                resourceOutscaleOAPILinAttributes(),
 			"outscale_nat_service":                   resourceOutscaleOAPINatService(),
 			"outscale_subnet":                        resourceOutscaleOAPISubNet(),
