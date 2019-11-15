@@ -15,6 +15,8 @@ import (
 )
 
 func TestAccOutscaleDHCPOptions_basic(t *testing.T) {
+	t.Skip()
+
 	var d fcu.DhcpOptions
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -43,6 +45,7 @@ func TestAccOutscaleDHCPOptions_basic(t *testing.T) {
 }
 
 func TestAccOutscaleDHCPOptions_deleteOptions(t *testing.T) {
+	t.Skip()
 	var d fcu.DhcpOptions
 	o := os.Getenv("OUTSCALE_OAPI")
 

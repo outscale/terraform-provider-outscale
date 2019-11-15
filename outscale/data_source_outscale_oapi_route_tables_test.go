@@ -26,40 +26,42 @@ func TestAccDataSourceOutscaleOAPIRouteTables_basic(t *testing.T) {
 }
 
 const testAccDataSourceOutscaleOAPIRouteTablesGroupConfig = `
-resource "outscale_net" "test" {
-  ip_range = "172.16.0.0/16"
+	resource "outscale_net" "test" {
+		ip_range = "172.16.0.0/16"
 
-  tags {
-    key = "Name"
-    value = "terraform-testacc-data-source"
-  }
-}
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-data-source"
+		}
+	}
 
-resource "outscale_subnet" "test" {
-  ip_range = "172.16.0.0/24"
-  net_id     = "${outscale_net.test.id}"
-  tags {
-	key = "Name"
-	value = "terraform-testacc-data-source"
-  }
-}
+	resource "outscale_subnet" "test" {
+		ip_range = "172.16.0.0/24"
+		net_id   = "${outscale_net.test.id}"
 
-resource "outscale_route_table" "test" {
-  net_id = "${outscale_net.test.id}"
-  tags {
-	key = "Name"
-	value = "terraform-testacc-routetable-data-source"
-  }
-}
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-data-source"
+		}
+	}
 
-data "outscale_route_tables" "by_filter" {
-  filter {
-    name = "route_table_ids"
-    values = ["${outscale_route_table.test.id}"]
-  }
-}
+	resource "outscale_route_table" "test" {
+		net_id = "${outscale_net.test.id}"
 
-data "outscale_route_tables" "by_id" {
-  route_table_id = ["${outscale_route_table.test.id}"]
-}
+		tags {
+			key   = "Name"
+			value = "terraform-testacc-routetable-data-source"
+		}
+	}
+
+	data "outscale_route_tables" "by_filter" {
+		filter {
+			name   = "route_table_ids"
+			values = ["${outscale_route_table.test.id}"]
+		}
+	}
+
+	data "outscale_route_tables" "by_id" {
+		route_table_id = ["${outscale_route_table.test.id}"]
+	}
 `

@@ -242,7 +242,7 @@ func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error 
 	var resp *fcu.DescribeImageExportTasksOutput
 	var err error
 
-	fmt.Printf("[DEBUG] DESCRIBE IMAGE TASK")
+	log.Printf("[DEBUG] DESCRIBE IMAGE TASK")
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{

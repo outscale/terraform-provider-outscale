@@ -3,8 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -14,22 +12,16 @@ import (
 )
 
 func TestAccOutscaleOAPIGroupDS_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var conf eim.GetGroupOutput
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -60,15 +52,14 @@ func testAccCheckOutscaleOAPIGroupDSExists(n string, res *eim.GetGroupOutput) re
 
 func testAccOutscaleOAPIGroupDSConfig(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_group" "group" {
-		group_name = "test-group-%d"
-		path = "/"
-	}
-	
-	
-	data "outscale_group" "outscale_group" {
-		group_name = "${outscale_group.group.group_name}"
-	}
-	
+		resource "outscale_group" "group" {
+			group_name = "test-group-%d"
+			path       = "/"
+		}
+		
+		
+		data "outscale_group" "outscale_group" {
+			group_name = "${outscale_group.group.group_name}"
+		}
 	`, rInt)
 }

@@ -54,7 +54,7 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 
 	params := oapi.ReadVmsStateRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVmStateFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set))
 	}
 	if instanceIdsOk {
 		params.Filters.VmIds = oapiExpandStringList(instanceIds.([]interface{}))

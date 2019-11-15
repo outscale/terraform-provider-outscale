@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,19 +9,13 @@ import (
 )
 
 func TestAccOutscaleOAPIPolicyDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -56,26 +48,26 @@ func testAccCheckOutscaleOAPIPolicyDataSourceID(n string) resource.TestCheckFunc
 }
 
 const testAccCheckOutscaleOAPIPolicyDataSourceConfig = `
-resource "outscale_policy" "policy" {
-  path = "/test1"
-  policy_name = "test-name"
-  policy_document = <<EOF
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Action": [
-          "ec2:Describe*"
-        ],
-        "Effect": "Allow",
-        "Resource": "*"
-      }
-    ]
-  }
-EOF
-}
+	resource "outscale_policy" "policy" {
+		path = "/test1"
+		policy_name = "test-name"
+		policy_document = <<EOF
+		{
+			"Version": "2012-10-17",
+			"Statement": [
+				{
+					"Action": [
+						"ec2:Describe*"
+					],
+					"Effect": "Allow",
+					"Resource": "*"
+				}
+			]
+		}
+	EOF
+	}
 
-data "outscale_policy" "policy_ds" {
-	path = "${outscale_policy.policy.arn}"
-}
+	data "outscale_policy" "policy_ds" {
+		path = "${outscale_policy.policy.arn}"
+	}
 `

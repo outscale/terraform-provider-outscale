@@ -11,8 +11,8 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotImport_Basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
 	t.Skip()
+	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {

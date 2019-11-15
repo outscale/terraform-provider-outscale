@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -58,6 +60,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 }
 
 func TestAccOutscaleAppCookieStickinessPolicy_missingLB(t *testing.T) {
+	t.Skip()
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)

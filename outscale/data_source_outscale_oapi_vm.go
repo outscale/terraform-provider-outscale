@@ -32,7 +32,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Build up search parameters
 	params := oapi.ReadVmsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVmFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if instanceIDOk {
 		params.Filters.VmIds = []string{instanceID.(string)}
@@ -191,7 +191,7 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func buildOutscaleOAPIDataSourceVmFilters(set *schema.Set) oapi.FiltersVm {
+func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) oapi.FiltersVm {
 	var filters oapi.FiltersVm
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

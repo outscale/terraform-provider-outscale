@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -266,7 +267,7 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 		sg[k] = s
 	}
 
-	fmt.Printf("[DEBUG] security_groups %+v", sg)
+	log.Printf("[DEBUG] security_groups %+v", sg)
 
 	d.SetId(resource.UniqueId())
 	d.Set("request_id", result.ResponseContext.RequestId)

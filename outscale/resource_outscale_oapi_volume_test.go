@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,25 +13,14 @@ import (
 )
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
 	region := os.Getenv("OUTSCALE_REGION")
-
-	if region == "" {
-		region = "dv-west-1"
-	}
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
 
 	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_volume.test",
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
@@ -40,7 +28,6 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 				Config: testAccOutscaleOAPIVolumeConfig(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
-					testAccCheckState("outscale_volume.test"),
 				),
 			},
 		},
@@ -48,25 +35,14 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
 	region := os.Getenv("OUTSCALE_REGION")
-
-	if region == "" {
-		region = "dv-west-1"
-	}
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
 
 	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_volume.test",
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
@@ -89,25 +65,21 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
+	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oapi.Volume
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_volume.test-io",
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testOutscaleOAPIVolumeConfigIO1Type,
+				Config: testOutscaleOAPIVolumeConfigIO1Type(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test-io", &v),
 				),
@@ -161,38 +133,41 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFu
 
 func testAccOutscaleOAPIVolumeConfig(region string) string {
 	return fmt.Sprintf(`
-resource "outscale_volume" "test" {
-  subregion_name = "%sa"
-  volume_type = "gp2"
-  size = 1
-  tags {
-	key = "Name" 
-	value = "tf-acc-test-ebs-volume-test"
-  }
-}
-`, region)
+		resource "outscale_volume" "test" {
+			subregion_name = "%sa"
+			volume_type    = "gp2"
+			size           = 1
+		
+			tags {
+				key   = "Name"
+				value = "tf-acc-test-ebs-volume-test"
+			}
+		}
+	`, region)
 }
 
 func testOutscaleOAPIVolumeConfigUpdateSize(region string) string {
 	return fmt.Sprintf(`
-resource "outscale_volume" "test" {
-  volume_type = "gp2"
-  subregion_name = "%sa"
-  size = 10
-  tags {
-	key = "Name" 
-	value = "tf-acc-test-ebs-volume-test"
-  }
-}
-`, region)
-}
-
-const testOutscaleOAPIVolumeConfigIO1Type = `
-resource "outscale_volume" "test-io" {
-	subregion_name = "dv-west-1a"
-	size = 10
-	iops = 5
-	volume_type = "io1"
+		resource "outscale_volume" "test" {
+			subregion_name = "%sa"
+			volume_type    = "gp2"
+			size           = 10
+		
+			tags {
+				key   = "Name"
+				value = "tf-acc-test-ebs-volume-test"
+			}
+		}
+	`, region)
 }
 
-`
+func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "test-io" {
+			subregion_name = "%sa"
+			volume_type    = "io1"
+			size           = 10
+			iops           = 5
+		}
+	`, region)
+}

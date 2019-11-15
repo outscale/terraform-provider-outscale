@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"math/rand"
-	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -13,23 +11,15 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
 	rand.Seed(time.Now().UTC().UnixNano())
 	rInt := rand.Intn(16)
 	ipRange := fmt.Sprintf("172.%d.0.0/16", rInt)
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%d", rInt)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -74,22 +64,22 @@ func testAccDataSourceOutscaleOAPIVpcCheck(name, ipRange, tag string) resource.T
 
 func testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
-
-resource "outscale_net" "test" {
-  ip_range = "%s"
-  
-  #not supported yet
-  tags {
-	key = "Name"
-	value = "%s"
-  }
-}
-
-data "outscale_net" "by_id" {
-#  net_id = "${outscale_net.test.id}"
-filter {
-	name = "net_ids"
-	values = ["${outscale_net.test.id}"]
-}
-}`, ipRange, tag)
+		resource "outscale_net" "test" {
+			ip_range = "%s"
+		
+			#not supported yet
+			tags {
+				key   = "Name"
+				value = "%s"
+			}
+		}
+		
+		data "outscale_net" "by_id" {
+			#  net_id = "${outscale_net.test.id}"
+			filter {
+				name   = "net_ids"
+				values = ["${outscale_net.test.id}"]
+			}
+		}
+	`, ipRange, tag)
 }

@@ -30,11 +30,11 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	netId := d.Get("net_id").(string)
+	netID := d.Get("net_id").(string)
 	igID := d.Get("internet_service_id").(string)
 
 	req := &oapi.LinkInternetServiceRequest{
-		NetId:             netId,
+		NetId:             netID,
 		InternetServiceId: igID,
 	}
 
@@ -120,7 +120,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 
 	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
 	// once filters work again. And use resp.OK.InternetServices[0]
-	err, result := getInternetService(resp.OK.InternetServices, id)
+	result, err := getInternetService(resp.OK.InternetServices, id)
 
 	if resp == nil {
 		d.SetId("")
@@ -141,11 +141,11 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
-	netId := d.Get("net_id").(string)
+	netID := d.Get("net_id").(string)
 	igID := d.Get("internet_service_id").(string)
 
 	req := &oapi.UnlinkInternetServiceRequest{
-		NetId:             netId,
+		NetId:             netID,
 		InternetServiceId: igID,
 	}
 

@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,24 +14,16 @@ import (
 )
 
 func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var connection oapi.NetPeering
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_net_peering.foo",
-
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOAPIVpcPeeringConfig,
@@ -48,16 +38,6 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var connection oapi.NetPeering
 
 	// reach out and DELETE the VPC Peering connection outside of Terraform
@@ -74,7 +54,10 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
@@ -133,10 +116,10 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 
 		result := resp.OK
 
-		var pc *oapi.NetPeering
+		pc := &oapi.NetPeering{}
 		for _, c := range result.NetPeerings {
 			if rs.Primary.ID == c.NetPeeringId {
-				*pc = c
+				pc = &c
 			}
 		}
 
@@ -156,7 +139,6 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 		// it's not in an expected state
 		return fmt.Errorf("Fall through error for testAccCheckOutscaleOAPILinPeeringConnectionDestroy")
 	}
-
 	return nil
 }
 
@@ -216,6 +198,26 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oa
 	}
 }
 
+const testAccOAPIVpcPeeringConfig = `
+	resource "outscale_net" "foo" {
+		ip_range = "10.0.0.0/16"
+
+		tags {
+			key   = "Name"
+			value = "TestAccOutscaleOAPILinPeeringConnection_basic"
+		}
+	}
+
+	resource "outscale_net" "bar" {
+		ip_range = "10.1.0.0/16"
+	}
+
+	resource "outscale_net_peering" "foo" {
+		source_net_id   = "${outscale_net.foo.id}"
+		accepter_net_id = "${outscale_net.bar.id}"
+	}
+`
+
 //FIXME: check where is used.
 // func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, options *oapi.NetPeeringOptionsDescription) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
@@ -265,22 +267,3 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oa
 // 		return nil
 // 	}
 // }
-
-const testAccOAPIVpcPeeringConfig = `
-resource "outscale_net" "foo" {
-	ip_range = "10.0.0.0/16"
-	tags {
-		key = "Name"
-		value = "TestAccOutscaleOAPILinPeeringConnection_basic"
-	}
-}
-
-resource "outscale_net" "bar" {
-	ip_range = "10.1.0.0/16"
-}
-
-resource "outscale_net_peering" "foo" {
-	source_net_id = "${outscale_net.foo.id}"
-	accepter_net_id = "${outscale_net.bar.id}"
-}
-`

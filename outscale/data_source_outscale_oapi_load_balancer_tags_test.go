@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,21 +10,15 @@ import (
 )
 
 func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	r := acctest.RandString(4)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -57,31 +49,33 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 
 func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string) string {
 	return fmt.Sprintf(`
-resource "outscale_load_balancer" "bar" {
-  sub_region = ["eu-west-2a"]
-	load_balancer_name = "foobar-terraform-elb-%s"
-  listeners {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
-
-	tag {
-		bar = "baz"
-	}
-}
-
-resource "outscale_load_balancer_tags" "tags" {
-	load_balancer_name = ["${outscale_load_balancer.bar.id}"]
-	tag = [{
-		key = "bar2" 
-		value = "baz2"
-	}]
-}
-
-data "outscale_load_balancer_tags" "testds" {
-	load_balancer_name = ["${outscale_load_balancer.bar.id}"]
-}
-`, r)
+		resource "outscale_load_balancer" "bar" {
+			sub_region         = ["eu-west-2a"]
+			load_balancer_name = "foobar-terraform-elb-%s"
+		
+			listeners {
+				backend_port           = 8000
+				backend_protocol       = "HTTP"
+				load_balancer_port     = 80
+				load_balancer_protocol = "HTTP"
+			}
+		
+			tag {
+				bar = "baz"
+			}
+		}
+		
+		resource "outscale_load_balancer_tags" "tags" {
+			load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+		
+			tag = [{
+				key   = "bar2"
+				value = "baz2"
+			}]
+		}
+		
+		data "outscale_load_balancer_tags" "testds" {
+			load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+		}
+	`, r)
 }

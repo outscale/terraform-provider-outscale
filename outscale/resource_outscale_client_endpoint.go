@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -85,7 +86,7 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 	}
 
 	// Create the Customer Gateway.
-	fmt.Printf("[DEBUG] Creating customer gateway")
+	log.Printf("[DEBUG] Creating customer gateway")
 
 	var resp *fcu.CreateCustomerGatewayOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {

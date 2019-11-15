@@ -9,25 +9,17 @@ import (
 )
 
 func TestAccOutscaleLBUOAPISSLCertificate_basic(t *testing.T) {
-	// o := os.Getenv("OUTSCALE_OAPI")
-
-	// oapi, err := strconv.ParseBool(o)
-	// if err != nil {
-	// 	oapi = false
-	// }
-
-	// if oapi {
-	// 	t.Skip()
-	// }
-
-	//WIP: Missing correct test case
 	t.Skip()
 
+	//WIP: Missing correct test case
 	rInt := acctest.RandIntRange(0, 10)
 	unixFile := "test-fixtures/eim-ssl-unix-line-endings.pem"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_load_balancer_ssl_certificate.test",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,

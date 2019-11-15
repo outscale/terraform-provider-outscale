@@ -204,7 +204,7 @@ func resourceOutscaleOAPIVpnGatewayLinkDelete(d *schema.ResourceData, meta inter
 	}
 
 	// Wait for it to be fully detached before continuing
-	fmt.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("vpn_gateway_id").(string))
+	log.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("vpn_gateway_id").(string))
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"attached", "detaching", "available"},
 		Target:  []string{"detached"},

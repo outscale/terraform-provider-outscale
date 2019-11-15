@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,26 +9,17 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckState("outscale_public_ip.test"),
-					testAccCheckState("data.outscale_public_ip.by_public_ip_id"),
-					testAccCheckState("data.outscale_public_ip.by_public_ip"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),

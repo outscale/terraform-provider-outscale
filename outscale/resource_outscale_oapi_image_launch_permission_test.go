@@ -207,14 +207,13 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 	}
 
 	return base + fmt.Sprintf(`
-
-resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-    image_id    = "${outscale_image.outscale_image.image_id}"
-    permission_additions {
-		account_ids = ["%s"]
-	}
-}
-`, accountID)
+		resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
+				image_id    = "${outscale_image.outscale_image.image_id}"
+				permission_additions {
+				account_ids = ["%s"]
+			}
+		}
+	`, accountID)
 }
 
 func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool) string {

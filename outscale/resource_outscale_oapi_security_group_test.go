@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,21 +15,14 @@ import (
 )
 
 func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if isOapi == false {
-		t.Skip()
-	}
 	var group oapi.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISGRuleDestroy,
 		Steps: []resource.TestStep{
@@ -41,7 +32,6 @@ func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
 					testAccCheckOutscaleOAPISecurityGroupRuleExists("outscale_security_group.web", &group),
 					resource.TestCheckResourceAttr(
 						"outscale_security_group.web", "security_group_name", fmt.Sprintf("terraform_test_%d", rInt)),
-					testAccCheckState("outscale_security_group.web"),
 				),
 			},
 		},
@@ -84,10 +74,9 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 			if err != nil {
 				if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
 					return err
-				} else {
-					//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-					errString = err.Error()
 				}
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
 
 			} else if resp.Code401 != nil {
 				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
@@ -194,18 +183,20 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oapi.Secur
 
 func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
-	resource "outscale_net" "net" {
-		ip_range = "10.0.0.0/16"
-	}
-
-
-	resource "outscale_security_group" "web" {
-		security_group_name = "terraform_test_%d"
-		description = "Used in the terraform acceptance tests"
-		tags = {
-			key= "Name" 
-			value = "tf-acc-test"
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
 		}
-		net_id = "${outscale_net.net.id}"
-	}`, rInt)
+		
+		resource "outscale_security_group" "web" {
+			security_group_name = "terraform_test_%d"
+			description         = "Used in the terraform acceptance tests"
+		
+			tags = {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+		
+			net_id = "${outscale_net.net.id}"
+		}	
+	`, rInt)
 }

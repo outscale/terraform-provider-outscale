@@ -1,35 +1,28 @@
 package outscale
 
 import (
+	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters,
+				Config: testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.ebs_volume"),
-					testAccCheckState("data.outscale_volumes.ebs_volume"),
-					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "10"),
+					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.size", "1"),
 					resource.TestCheckResourceAttr("data.outscale_volumes.ebs_volume", "volumes.0.volume_type", "gp2"),
 				),
 			},
@@ -38,71 +31,70 @@ func TestAccOutscaleOAPIVolumesDataSource_multipleFilters(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter,
+				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
-					//Commented until backend issue is solved
-					//resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volume_set.0.size", "40"),
+					resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "40"),
 				),
 			},
 		},
 	})
 }
 
-const testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters = `
-resource "outscale_volume" "external1" {
-	subregion_name = "us-west-1a"
-    type = "gp2"
-    size = 10
-	tags {
-		key = "Name" 
-		value = "tf-acc-test-ebs-volume-test"
-	}
+func testAccCheckOutscaleOAPIVolumeDataSourceConfigWithMultipleFilters(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "external" {
+			subregion_name = "%sa"
+			volume_type    = "gp2"
+			size           = 1
+		
+			tags {
+				key   = "Name"
+				value = "tf-acc-test-ebs-volume-test"
+			}
+		}
+
+		data "outscale_volumes" "ebs_volume" {
+			filter {
+				name   = "volume_sizes"
+				values = ["${outscale_volume.external.size}"]
+			}
+
+			filter {
+				name   = "volume_types"
+				values = ["${outscale_volume.external.volume_type}"]
+			}
+		}
+	`, region)
 }
 
-data "outscale_volumes" "ebs_volume" {
-    filter {
-	name = "size"
-	values = ["${outscale_volume.external1.size}"]
-    }
-    filter {
-	name = "volume-type"
-	values = ["${outscale_volume.external1.type}"]
-    }
-}
-`
+func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "outscale_volume" {
+			subregion_name = "%[1]sa"
+			size           = 40
+		}
 
-const testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter = `
-resource "outscale_volume" "outscale_volume" {
-	subregion_name = "us-west-1a"
-	size = 40
-}
+		resource "outscale_volume" "outscale_volume2" {
+			subregion_name = "%[1]sa"
+			size           = 40
+		}
 
-resource "outscale_volume" "outscale_volume2" {
-	subregion_name = "us-west-1a"
-	size = 40
+		data "outscale_volumes" "outscale_volumes" {
+			filter {
+				name   = "volume_ids"
+				values = ["${outscale_volume.outscale_volume.volume_id}", "${outscale_volume.outscale_volume2.volume_id}"]
+			}
+		}
+	`, region)
 }
-
-data "outscale_volumes" "outscale_volumes" {
-	filter {
-		name = "volume-ids"
-		values = ["${outscale_volume.outscale_volume.volume_id}", "${outscale_volume.outscale_volume2.volume_id}"]
-	}
-}
-`

@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,20 +15,13 @@ import (
 )
 
 func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 	var conf oapi.InternetService
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceLinkDettached,
 		Steps: []resource.TestStep{
@@ -174,14 +165,14 @@ func testAccCheckOutscaleOAPIInternetServiceLinkDettached(s *terraform.State) er
 }
 
 const testAccOutscaleOAPIInternetServiceLinkConfig = `
-resource "outscale_internet_service" "gateway" {}
+	resource "outscale_internet_service" "gateway" {}
 
-resource "outscale_net" "vpc" {
-	ip_range = "10.0.0.0/16"
-}
+	resource "outscale_net" "vpc" {
+		ip_range = "10.0.0.0/16"
+	}
 
-resource "outscale_internet_service_link" "link" {
-	net_id = "${outscale_net.vpc.id}"
-	internet_service_id = "${outscale_internet_service.gateway.id}"
-}
+	resource "outscale_internet_service_link" "link" {
+		net_id              = "${outscale_net.vpc.id}"
+		internet_service_id = "${outscale_internet_service.gateway.id}"
+	}
 `

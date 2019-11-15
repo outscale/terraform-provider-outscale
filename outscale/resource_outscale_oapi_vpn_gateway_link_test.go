@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,22 +13,16 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var vpc fcu.Vpc
 	var vgw fcu.VpnGateway
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway_link.test",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
@@ -54,16 +46,7 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 }
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var vpc fcu.Vpc
 	var vgw fcu.VpnGateway
@@ -79,7 +62,10 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway_link.test",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
@@ -181,24 +167,24 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 }
 
 const testAccNoOAPIVpnGatewayAttachmentConfig = `
-resource "outscale_net" "test" {
-	cidr_block = "10.0.0.0/16"
-}
+	resource "outscale_net" "test" {
+		cidr_block = "10.0.0.0/16"
+	}
 
-resource "outscale_vpn_gateway" "test" { }
+	resource "outscale_vpn_gateway" "test" {}
 `
 
 const testAccOAPIVpnGatewayAttachmentConfig = `
-resource "outscale_net" "test" {
-	ip_range = "10.0.0.0/16"
-}
+	resource "outscale_net" "test" {
+		ip_range = "10.0.0.0/16"
+	}
 
-resource "outscale_vpn_gateway" "test" { 
-	type = "ipsec.1" 
-}
+	resource "outscale_vpn_gateway" "test" { 
+		type = "ipsec.1" 
+	}
 
-resource "outscale_vpn_gateway_link" "test" {
-	net_id = "${outscale_net.test.id}"
-	vpn_gateway_id = "${outscale_vpn_gateway.test.id}"
-}
+	resource "outscale_vpn_gateway_link" "test" {
+		net_id         = "${outscale_net.test.id}"
+		vpn_gateway_id = "${outscale_vpn_gateway.test.id}"
+	}
 `

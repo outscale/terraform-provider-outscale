@@ -95,7 +95,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	rtRaw, requestId, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
+	rtRaw, requestID, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	}
 
 	rt := rtRaw.(oapi.RouteTable)
-	d.Set("request_id", requestId)
+	d.Set("request_id", requestID)
 	d.Set("route_table_id", rt.RouteTableId)
 	d.Set("net_id", rt.NetId)
 	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
@@ -194,12 +194,12 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...string) (interface{}, string, error) {
-	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableId, linkIds)
+func readOAPIRouteTable(conn *oapi.Client, routeTableID string, linkIds ...string) (interface{}, string, error) {
+	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableID, linkIds)
 	var resp *oapi.POST_ReadRouteTablesResponses
 	var err error
 	routeTableRequest := &oapi.ReadRouteTablesRequest{}
-	routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableId}}
+	routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableID}}
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
 		resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
@@ -252,9 +252,9 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableId string, linkIds ...strin
 	return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
 }
 
-func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, routeTableId string, linkIds ...string) resource.StateRefreshFunc {
+func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		rtRaw, _, err := readOAPIRouteTable(conn, routeTableId, linkIds...)
+		rtRaw, _, err := readOAPIRouteTable(conn, routeTableID, linkIds...)
 		if rtRaw == nil {
 			return nil, "", err
 		}

@@ -7,6 +7,7 @@ import (
 )
 
 func TestAccOutscaleVpnGateway_importBasic(t *testing.T) {
+	t.Skip()
 	resourceName := "outscale_vpn_gateway.foo"
 
 	resource.Test(t, resource.TestCase{

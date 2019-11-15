@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +14,7 @@ import (
 )
 
 func TestAccOutscaleOAPIUser_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var conf eim.GetUserOutput
 
@@ -35,7 +24,10 @@ func TestAccOutscaleOAPIUser_basic(t *testing.T) {
 	path2 := "/path2/"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIUserDestroy,
 		Steps: []resource.TestStep{
@@ -145,8 +137,9 @@ func testAccCheckOutscaleOAPIUserAttributes(user *eim.GetUserOutput, name string
 
 func testAccOutscaleOAPIUserConfig(r, p string) string {
 	return fmt.Sprintf(`
-resource "outscale_user" "user" {
-	user_name = "%s"
-	path = "%s"
-}`, r, p)
+		resource "outscale_user" "user" {
+			user_name = "%s"
+			path      = "%s"
+		}
+	`, r, p)
 }

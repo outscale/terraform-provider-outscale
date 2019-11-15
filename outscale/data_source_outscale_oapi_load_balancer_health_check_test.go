@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,22 +10,16 @@ import (
 )
 
 func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var conf lbu.LoadBalancerDescription
 	rs := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_load_balancer.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
@@ -46,23 +38,24 @@ func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
 }
 func getTestAccDSOutscaleOAPILBUHConfig(r string) string {
 	return fmt.Sprintf(`
-resource "outscale_load_balancer" "bar" {
-  sub_regions = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb-%s"
-  listener {
-    backend_port = 8000
-    backend_protocol = "HTTP"
-    load_balancer_port = 80
-    load_balancer_protocol = "HTTP"
-  }
-
-	tag {
-		bar = "baz"
-	}
-}
-
-data "outscale_load_balancer_health_check" "test" {
-	load_balancer_name = "${outscale_load_balancer.bar.id}"
-}
-`, r)
+		resource "outscale_load_balancer" "bar" {
+			sub_regions        = ["eu-west-2a"]
+			load_balancer_name = "foobar-terraform-elb-%s"
+		
+			listener {
+				backend_port           = 8000
+				backend_protocol       = "HTTP"
+				load_balancer_port     = 80
+				load_balancer_protocol = "HTTP"
+			}
+		
+			tag {
+				bar = "baz"
+			}
+		}
+		
+		data "outscale_load_balancer_health_check" "test" {
+			load_balancer_name = "${outscale_load_balancer.bar.id}"
+		}
+	`, r)
 }

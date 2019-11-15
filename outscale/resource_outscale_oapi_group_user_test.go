@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,16 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIGroupUser_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var group eim.GetGroupOutput
 
@@ -36,7 +25,10 @@ func TestAccOutscaleOAPIGroupUser_basic(t *testing.T) {
 	testUser := fmt.Sprintf("test-user-%s", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIGroupUserDestroy,
 		Steps: []resource.TestStep{
@@ -151,16 +143,16 @@ func testAccCheckOutscaleOAPIGroupUserAttributes(group *eim.GetGroupOutput, user
 }
 
 const testAccOutscaleOAPIGroupUserConfig = `
-resource "outscale_group" "group" {
-	group_name = "test-group-%s"
-}
+	resource "outscale_group" "group" {
+		group_name = "test-group-%s"
+	}
 
-resource "outscale_user" "user" {
-	user_name = "test-user-%s"
-}
+	resource "outscale_user" "user" {
+		user_name = "test-user-%s"
+	}
 
-resource "outscale_group_user" "team" {
-	user_name = "${outscale_user.user.name}"
-	group_name = "${outscale_group.group.name}"
-}
+	resource "outscale_group_user" "team" {
+		user_name  = "${outscale_user.user.name}"
+		group_name = "${outscale_group.group.name}"
+	}
 `

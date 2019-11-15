@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -281,7 +282,7 @@ func tagsToMapI(ts []*icu.Tag) []map[string]string {
 		result = make([]map[string]string, 0)
 	}
 
-	fmt.Printf("[DEBUG] TAG_SET %s", result)
+	log.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
 }

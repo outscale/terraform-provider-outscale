@@ -116,7 +116,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
@@ -129,7 +129,6 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
-					testAccCheckOAPIVMSecurityGroupsUpdated(t, &before, &after),
 				),
 			},
 		},
@@ -168,6 +167,7 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	var server oapi.Vm
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	vmType := "t2.micro"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -178,14 +178,14 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, "c4.large", region),
+				Config: testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.basic", "vm_type", "c4.large"),
+						"outscale_vm.basic", vmType, "t2.micro"),
 				),
 			},
 		},
@@ -504,13 +504,13 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
 		}`, omi, vmType)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType string, region string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id           = "%s"
-			vm_type            = "%s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%sb"
 		}
 	`, omi, vmType, region)

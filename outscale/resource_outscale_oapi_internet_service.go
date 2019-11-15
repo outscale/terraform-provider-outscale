@@ -107,7 +107,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 
 	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
 	// once filters work again. And use resp.OK.InternetServices[0]
-	err, result := getInternetService(resp.OK.InternetServices, id)
+	result, err := getInternetService(resp.OK.InternetServices, id)
 
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	d.Set("internet_service_id", result.InternetServiceId)
@@ -123,13 +123,13 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	return d.Set("tags", tagsOAPIToMap(result.Tags))
 }
 
-func getInternetService(internetServices []oapi.InternetService, id string) (error, oapi.InternetService) {
+func getInternetService(internetServices []oapi.InternetService, id string) (oapi.InternetService, error) {
 	for _, element := range internetServices {
 		if element.InternetServiceId == id {
-			return nil, element
+			return element, nil
 		}
 	}
-	return fmt.Errorf("InternetService %+s not found", id), oapi.InternetService{}
+	return oapi.InternetService{}, fmt.Errorf("InternetService %+s not found", id)
 }
 
 func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {

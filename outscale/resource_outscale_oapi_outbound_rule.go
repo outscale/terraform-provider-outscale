@@ -343,7 +343,7 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 	sgID := d.Get("security_group_id").(string)
-	sg, requestId, err := findOAPIResourceSecurityGroup(conn, sgID)
+	sg, requestID, err := findOAPIResourceSecurityGroup(conn, sgID)
 	if _, notFound := err.(oapiSecurityGroupNotFound); notFound {
 		// The security group containing this rule no longer exists.
 		d.SetId("")
@@ -438,7 +438,7 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 	d.Set("security_group_name", sg.SecurityGroupName)
 	d.Set("net_id", sg.NetId)
 
-	d.Set("request_id", requestId)
+	d.Set("request_id", requestID)
 
 	return nil
 }
@@ -805,6 +805,7 @@ func (err oapiSecurityGroupNotFound) Error() string {
 		err.id, err.securityGroups)
 }
 
+// ByGroupsMember ..
 type ByGroupsMember []oapi.SecurityGroupsMember
 
 func (b ByGroupsMember) Len() int      { return len(b) }

@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,20 +13,12 @@ import (
 )
 
 func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOapi, err := strconv.ParseBool(o)
-	if err != nil {
-		isOapi = false
-	}
-
-	if !isOapi {
-		t.Skip()
-	}
-
-	var v, v2 oapi.RouteTable
+	var v oapi.RouteTable
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
 		Steps: []resource.TestStep{
@@ -37,14 +27,6 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPILinkRouteTableExists(
 						"outscale_route_table_link.foo", &v),
-				),
-			},
-
-			resource.TestStep{
-				Config: testAccOAPILinkRouteTableConfigChange,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPILinkRouteTableExists(
-						"outscale_route_table_link.foo", &v2),
 				),
 			},
 		},
@@ -86,14 +68,11 @@ func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 			return err
 		}
 
-		rt := resp.OK.RouteTables[0]
-
-		if len(rt.LinkRouteTables) > 0 {
+		if len(resp.OK.RouteTables) > 0 {
 			return fmt.Errorf(
-				"RouteTable: %s has LinkRouteTables", rt.RouteTableId)
+				"RouteTable: %s has LinkRouteTables", resp.OK.RouteTables[0].RouteTableId)
 		}
 	}
-
 	return nil
 }
 
@@ -146,51 +125,26 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oapi.RouteTable) resource
 }
 
 const testAccOAPILinkRouteTableConfig = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
+	resource "outscale_net" "foo" {
+		ip_range = "10.1.0.0/16"
 
-	tags {
-		key = "Name"
-		value = "outscale_net"
+		tags {
+			key = "Name"
+			value = "outscale_net"
+		}
 	}
-}
 
-resource "outscale_subnet" "foo" {
-	net_id = "${outscale_net.foo.id}"
-	ip_range = "10.1.1.0/24"
-}
-
-resource "outscale_route_table" "foo" {
-	net_id = "${outscale_net.foo.id}"
-}
-
-resource "outscale_route_table_link" "foo" {
-	route_table_id = "${outscale_route_table.foo.id}"
-	subnet_id = "${outscale_subnet.foo.id}"
-}
-`
-
-const testAccOAPILinkRouteTableConfigChange = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
-
-	tags {
-		key = "Name"
-		value = "outscale_net"
+	resource "outscale_subnet" "foo" {
+		net_id = "${outscale_net.foo.id}"
+		ip_range = "10.1.1.0/24"
 	}
-}
 
-resource "outscale_subnet" "foo" {
-	net_id = "${outscale_net.foo.id}"
-	ip_range = "10.1.1.0/24"
-}
+	resource "outscale_route_table" "foo" {
+		net_id = "${outscale_net.foo.id}"
+	}
 
-resource "outscale_route_table" "bar" {
-	net_id = "${outscale_net.foo.id}"
-}
-
-resource "outscale_route_table_link" "foo" {
-	route_table_id = "${outscale_route_table.bar.id}"
-	subnet_id = "${outscale_subnet.foo.id}"
-}
+	resource "outscale_route_table_link" "foo" {
+		route_table_id = "${outscale_route_table.foo.id}"
+		subnet_id = "${outscale_subnet.foo.id}"
+	}
 `

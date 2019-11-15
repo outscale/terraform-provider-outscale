@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,21 +16,14 @@ import (
 )
 
 func TestAccOutscaleOAPIKeyPairImportation_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-	//var conf fcu.KeyPairInfo
+	t.Skip()
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairImportationDestroy,
 		Steps: []resource.TestStep{
@@ -48,21 +39,14 @@ func TestAccOutscaleOAPIKeyPairImportation_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-	//var conf fcu.KeyPairInfo
+	t.Skip()
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairImportationDestroy,
 		Steps: []resource.TestStep{
@@ -80,20 +64,14 @@ func TestAccOutscaleOAPIKeyPairImportation_basic_name(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPairImportation_generatedName(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 	var conf fcu.KeyPairInfo
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -217,21 +195,15 @@ func testAccCheckOutscaleOAPIKeyPairImportationExists(n string, res *fcu.KeyPair
 }
 
 func testAccCheckOutscaleOAPIKeyPairImportationNamePrefix(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 	//var conf fcu.KeyPairInfo
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:        func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName:   "outscale_keypair_importation.a_key_pair",
 		IDRefreshIgnore: []string{"key_name_prefix"},
 		Providers:       testAccProviders,

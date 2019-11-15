@@ -110,7 +110,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
-			Refresh:    VMStateRefreshFunc(conn, iID, ""),
+			Refresh:    vmStateRefreshFunc(conn, iID, ""),
 			Timeout:    10 * time.Minute,
 			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
@@ -353,7 +353,7 @@ func volumeOAPIAttachmentID(name, volumeID, instanceID string) string {
 	return fmt.Sprintf("vai-%d", hashcode.String(buf.String()))
 }
 
-func VMStateRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
+func vmStateRefreshFunc(conn *oapi.Client, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		var resp *oapi.POST_ReadVmsResponses
 		var err error

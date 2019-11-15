@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,16 +11,7 @@ import (
 )
 
 func TestAccOutscaleOAPIDSDirectLinkInterface_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	key := "OUTSCALE_CONNECTION_ID"
 	connectionID := os.Getenv(key)
@@ -32,7 +22,10 @@ func TestAccOutscaleOAPIDSDirectLinkInterface_basic(t *testing.T) {
 	bgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -59,25 +52,25 @@ func testAccCheckOutscaleOAPIDSDirectLinkInterfaceExists(name string) resource.T
 
 func testAccOAPIDSDxPrivateVirtualInterfaceConfig(cid, n string, bgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_vpn_gateway" "foo" {
-  tag {
-    Name = "%s"
-  }
-}
+		resource "outscale_vpn_gateway" "foo" {
+			tag {
+				Name = "%s"
+			}
+		}
 
-resource "outscale_directlink_interface" "foo" {
-  connection_id    = "%s"
+		resource "outscale_directlink_interface" "foo" {
+			connection_id    = "%s"
 
-	new_private_virtual_interface {
-		vpn_gateway_id = "${outscale_vpn_gateway.foo.id}"
-		direct_link_Interface_name = "%s"
-		vlan           = 4094
-		bgp_asn        = %d
-	}
-}
+			new_private_virtual_interface {
+				vpn_gateway_id = "${outscale_vpn_gateway.foo.id}"
+				direct_link_Interface_name = "%s"
+				vlan           = 4094
+				bgp_asn        = %d
+			}
+		}
 
-data "outscale_directlink_interface" "outscale_directlink_interface" {
-  direct_link_interface_id = "${outscale_directlink_interface.outscale_directlink_interface.id}"
-}
-`, n, cid, n, bgpAsn)
+		data "outscale_directlink_interface" "outscale_directlink_interface" {
+			direct_link_interface_id = "${outscale_directlink_interface.outscale_directlink_interface.id}"
+		}
+	`, n, cid, n, bgpAsn)
 }

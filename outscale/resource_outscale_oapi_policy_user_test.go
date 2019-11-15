@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,21 +14,15 @@ import (
 )
 
 func TestAccOutscaleOAPIUserPolicy_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIUserPolicyDestroy,
 		Steps: []resource.TestStep{
@@ -57,10 +49,15 @@ func TestAccOutscaleOAPIUserPolicy_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIUserPolicy_namePrefix(t *testing.T) {
+	t.Skip()
+
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_policy_user.test",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIUserPolicyDestroy,
@@ -79,10 +76,15 @@ func TestAccOutscaleOAPIUserPolicy_namePrefix(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIUserPolicy_generatedName(t *testing.T) {
+	t.Skip()
+
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_policy_user.test",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIUserPolicyDestroy,

@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,22 +16,16 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnConnection_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccOutscaleOAPIVpnConnectionDestroy,
@@ -55,21 +47,16 @@ func TestAccOutscaleOAPIVpnConnection_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVpnConnection_withoutStaticRoutes(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccOutscaleOAPIVpnConnectionDestroy,
@@ -92,21 +79,16 @@ func TestAccOutscaleOAPIVpnConnection_withoutStaticRoutes(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVpnConnection_disappears(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccOutscaleOAPIVpnConnectionDestroy,
 		Steps: []resource.TestStep{
@@ -305,48 +287,48 @@ func testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn int) string {
 		}
 
 		resource "outscale_client_endpoint" "customer_gateway" {
-		  bgp_asn = %d
+		  bgp_asn    = %d
 		  ip_address = "178.0.0.1"
-		  type = "ipsec.1"
+		  type       = "ipsec.1"
 			tag {
 				Name = "main-customer-gateway"
 			}
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-		  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
+		  vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
 		  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-		  type = "ipsec.1"
+		  type                = "ipsec.1"
 		  options {
 				static_routes_only = true
 			}
 		}
-		`, rBgpAsn)
+	`, rBgpAsn)
 }
 
 // Change static_routes_only to be false, forcing a refresh.
 func testAccOutscaleOAPIVpnConnectionConfigUpdate(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
-	resource "outscale_vpn_gateway" "vpn_gateway" {
-	  tag {
-	    Name = "vpn_gateway"
-	  }
-	}
+		resource "outscale_vpn_gateway" "vpn_gateway" {
+			tag {
+				Name = "vpn_gateway"
+			}
+		}
 
-	resource "outscale_client_endpoint" "customer_gateway" {
-	  bgp_asn = %d
-	  ip_address = "178.0.0.1"
-	  type = "ipsec.1"
-		tag {
-	    Name = "main-customer-gateway-%d"
-	  }
-	}
+		resource "outscale_client_endpoint" "customer_gateway" {
+			bgp_asn    = %d
+			ip_address = "178.0.0.1"
+			type       = "ipsec.1"
+			tag {
+				Name = "main-customer-gateway-%d"
+			}
+		}
 
-	resource "outscale_vpn_connection" "foo" {
-	  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
-	  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-	  type = "ipsec.1"
-	  static_routes_only = false
-	}
+		resource "outscale_vpn_connection" "foo" {
+			vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
+			customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
+			type                = "ipsec.1"
+			static_routes_only  = false
+		}
 	`, rBgpAsn, rInt)
 }

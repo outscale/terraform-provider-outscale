@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -12,16 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	keyPairName := fmt.Sprintf("acc-test-keypair-%d", acctest.RandIntRange(0, 400))
 
@@ -57,16 +46,16 @@ func testAccCheckOutscaleOAPIKeypairDataSourceID(n string) resource.TestCheckFun
 
 func testAccCheckOutscaleOAPIKeypairDataSourceConfig(keypairName string) string {
 	return fmt.Sprintf(`
-resource "outscale_keypair" "a_key_pair" {
-	keypair_name   = "%s"
-}
-
-data "outscale_keypair" "nat_ami" {
-	#keypair_name = "${outscale_keypair.a_key_pair.id}"
-	filter {
-		name = "keypair_names"
-		values = ["${outscale_keypair.a_key_pair.keypair_name}"]
-	}
-}
-`, keypairName)
+		resource "outscale_keypair" "a_key_pair" {
+			keypair_name = "%s"
+		}
+		
+		data "outscale_keypair" "nat_ami" {
+			#keypair_name = "${outscale_keypair.a_key_pair.id}"
+			filter {
+				name   = "keypair_names"
+				values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+			}
+		}
+	`, keypairName)
 }

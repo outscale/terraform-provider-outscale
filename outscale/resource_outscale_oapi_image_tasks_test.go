@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -11,20 +9,13 @@ import (
 )
 
 func TestAccOutscaleOAPIImageTask_basic(t *testing.T) {
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -53,26 +44,26 @@ func testAccCheckOutscaleOAPIImageTaskExists(n string) resource.TestCheckFunc {
 }
 
 var testAccOutscaleOAPIImageTaskConfig = `
-resource "outscale_vm" "outscale_vm" {
-    count = 1
+	resource "outscale_vm" "outscale_vm" {
+		count = 1
 
-    image_id                    = "ami-880caa66"
-    type               = "c4.large"
+		image_id = "ami-880caa66"
+		type     = "c4.large"
+	}
 
-}
+	resource "outscale_image" "outscale_image" {
+		name  = "image_${outscale_vm.outscale_vm.id}"
+		vm_id = "${outscale_vm.outscale_vm.id}"
+	}
 
-resource "outscale_image" "outscale_image" {
-    name            = "image_${outscale_vm.outscale_vm.id}"
-    vm_id     = "${outscale_vm.outscale_vm.id}"
-}
-
-resource "outscale_image_tasks" "outscale_image_tasks" {
-    count = 1
+	resource "outscale_image_tasks" "outscale_image_tasks" {
+		count = 1
 
 		osu_export {
 			disk_image_format = "raw"
-			osu_bucket = "test"
+			osu_bucket        = "test"
 		}
-    image_id = "${outscale_image.outscale_image.image_id}"
-}
+
+		image_id = "${outscale_image.outscale_image.image_id}"
+	}
 `

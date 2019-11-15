@@ -3,7 +3,6 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -33,25 +32,20 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig,
+				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
-					testAccCheckState("data.outscale_image.omi"),
 				),
 			},
 		},
@@ -73,14 +67,40 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 	}
 }
 
-const testAccCheckOutscaleOAPIImageDataSourceBasicConfig = `
-	data "outscale_image" "omi" {
-		filter {
-				name = "architectures"
-				values = ["x86_64"]
+func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
 		}
-	}
-`
+		
+		resource "outscale_subnet" "outscale_subnet" {
+			net_id         = "${outscale_net.outscale_net.net_id}"
+			ip_range       = "10.0.0.0/24"
+			subregion_name = "%[3]sa"
+		}
+		
+		resource "outscale_vm" "basic" {
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "terraform-basic"
+			placement_subregion_name = "%[3]sa"
+			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			private_ips              = ["10.0.0.12"]
+		}
+		
+		resource "outscale_image" "foo" {
+			image_name = "myImageName"
+			vm_id      = "${outscale_vm.basic.id}"
+		}
+		
+		data "outscale_image" "omi" {
+			filter {
+				name   = "image_ids"
+				values = ["${outscale_image.foo.id}"]
+			}
+		}
+	`, omi, vmType, region)
+}
 
 func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region string) string {
 	return fmt.Sprintf(`
@@ -91,14 +111,14 @@ func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region string) string
 		resource "outscale_subnet" "outscale_subnet" {
 			net_id              = "${outscale_net.outscale_net.net_id}"
 			ip_range            = "10.0.0.0/24"
-			subregion_name      = "eu-west-2a"
+			subregion_name      = "%[3]sa"
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			           = "%s"
-			vm_type                  = "%s"
+			image_id			           = "%[1]s"
+			vm_type                  = "%[2]s"
 			keypair_name	           = "terraform-basic"
-			placement_subregion_name = "%sa"
+			placement_subregion_name = "%[3]sa"
 			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
 			private_ips              =  ["10.0.0.12"]
 		}

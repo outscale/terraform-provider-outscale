@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"testing"
 
@@ -11,19 +10,13 @@ import (
 )
 
 func TestAccDataSourceOutscaleOAPIPrefixList(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -69,7 +62,7 @@ func testAccDataSourceOutscaleOAPIPrefixListCheck(name string) resource.TestChec
 }
 
 const testAccDataSourceOutscaleOAPIPrefixListConfig = `
-data "outscale_prefix_list" "s3_by_id" {
-  prefix_list_id = "pl-a14a8cdc"
-}
+	data "outscale_prefix_list" "s3_by_id" {
+		prefix_list_id = "pl-a14a8cdc"
+	}
 `

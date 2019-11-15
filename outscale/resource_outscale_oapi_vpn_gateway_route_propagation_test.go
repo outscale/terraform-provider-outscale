@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,21 +16,14 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnRoutePropagation_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
+	t.Skip()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVpnRoutePropagationDestroy,
 		Steps: []resource.TestStep{
@@ -130,30 +121,31 @@ func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheck
 
 func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_net" "outscale_net" {
-    count = 1
-
-    ip_range = "10.0.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+		resource "outscale_net" "outscale_net" {
+			count    = 1
+			ip_range = "10.0.0.0/16"
+		}
+		
+		resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+			type = "ipsec.1"
     type = "ipsec.1" 
+			type = "ipsec.1"
+		}
+		
+		resource "outscale_vpn_gateway_link" "test" {
+			lin_id         = "${outscale_net.outscale_net.id}"
+			vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+		}
+		
+		resource "outscale_route_table" "outscale_route_table" {
+			net_id = "${outscale_net.outscale_net.id}"
+		}
+		
+		resource "outscale_vpn_gateway_route_propagation" "foo" {
+			vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+			route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+		}	
 }
-
-resource "outscale_vpn_gateway_link" "test" {
-	lin_id = "${outscale_net.outscale_net.id}"
-	vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-}
-
-resource "outscale_route_table" "outscale_route_table" {
-    count = 1
-
-    lin_id = "${outscale_net.outscale_net.net_id}"
-}
-
-resource "outscale_vpn_gateway_route_propagation" "foo" {
-    vpn_gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-		route_table_id  = "${outscale_route_table.outscale_route_table.route_table_id}"
-}
-`)
+		}	
+	`)
 }

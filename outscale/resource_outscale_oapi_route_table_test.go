@@ -3,6 +3,7 @@ package outscale
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -28,10 +29,6 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		// if _, ok := routes["10.2.0.0/16"]; !ok {
-		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
-		// }
-
 		return nil
 	}
 
@@ -48,13 +45,6 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		// if _, ok := routes["10.3.0.0/16"]; !ok {
-		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
-		// }
-		// if _, ok := routes["10.4.0.0/16"]; !ok {
-		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
-		// }
-
 		return nil
 	}
 
@@ -87,6 +77,9 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
 	var v oapi.RouteTable
 
 	testCheck := func(*terraform.State) error {
@@ -102,10 +95,6 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		if _, ok := routes["10.1.0.0/16"]; !ok {
 			return fmt.Errorf("bad routes: %#v", v.Routes)
 		}
-		// if _, ok := routes["10.2.0.0/16"]; !ok {
-		// 	return fmt.Errorf("bad routes: %#v", v.Routes)
-		// }
-
 		return nil
 	}
 
@@ -119,7 +108,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance,
+				Config: testAccOAPIRouteTableConfigInstance(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
 						"outscale_route_table.foo", &v),
@@ -131,6 +120,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
+	t.Skip()
 	var rt oapi.RouteTable
 
 	resource.Test(t, resource.TestCase{
@@ -354,27 +344,31 @@ resource "outscale_route_table" "foo" {
 }
 `
 
-const testAccOAPIRouteTableConfigInstance = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
+func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "foo" {
+			ip_range = "10.1.0.0/16"
+		}
+		
+		resource "outscale_subnet" "foo" {
+			ip_range = "10.1.1.0/24"
+			net_id   = "${outscale_net.foo.id}"
+		}
+		
+		resource "outscale_vm" "foo" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			subnet_id                = "${outscale_subnet.foo.id}"
+			placement_subregion_name = "%sa"
+			placement_tenancy        = "default"
+		}
+		
+		resource "outscale_route_table" "foo" {
+			net_id = "${outscale_net.foo.id}"
+		}
+	`, omi, vmType, region)
 }
-
-resource "outscale_subnet" "foo" {
-	ip_range = "10.1.1.0/24"
-	net_id = "${outscale_net.foo.id}"
-}
-
-resource "outscale_vm" "foo" {
-	# us-west-2
-	image_id = "ami-b4bd8de2"
-	vm_type = "m1.small"
-	subnet_id = "${outscale_subnet.foo.id}"
-}
-
-resource "outscale_route_table" "foo" {
-	net_id = "${outscale_net.foo.id}"
-}
-`
 
 const testAccOAPIRouteTableConfigTags = `
 resource "outscale_net" "foo" {

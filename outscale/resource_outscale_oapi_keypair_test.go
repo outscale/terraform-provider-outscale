@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,20 +16,13 @@ import (
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 	var conf oapi.Keypair
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -48,20 +39,13 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 	var conf oapi.Keypair
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if isOAPI == false {
-		t.Skip()
-	}
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -81,19 +65,11 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 	var conf oapi.Keypair
 
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if isOAPI == false {
-		t.Skip()
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -225,7 +201,10 @@ func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:        func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName:   "outscale_keypair.a_key_pair",
 		IDRefreshIgnore: []string{"keypair_name_prefix"},
 		Providers:       testAccProviders,
@@ -262,36 +241,33 @@ func testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
 }
 
 func testAccOutscaleOAPIKeyPairConfig(r int) string {
-	return fmt.Sprintf(
-		`
-resource "outscale_keypair" "a_key_pair" {
-	keypair_name   = "tf-acc-key-pair-%d"
-	public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
-}
-`, r)
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "a_key_pair" {
+			keypair_name   = "tf-acc-key-pair-%d"
+			public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+		}
+	`, r)
 }
 
 func testAccOutscaleOAPIKeyPairConfigRetrieveName(r int) string {
-	return fmt.Sprintf(
-		`
-resource "outscale_keypair" "a_key_pair" {
-	keypair_name   = "tf-acc-key-pair-%d"
-}
-`, r)
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "a_key_pair" {
+			keypair_name   = "tf-acc-key-pair-%d"
+		}
+	`, r)
 }
 
 const testAccOutscaleOAPIKeyPairConfigGeneratedName = `
-resource "outscale_keypair" "a_key_pair" {
-	public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
-}
+	resource "outscale_keypair" "a_key_pair" {
+		public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+	}
 `
 
 func testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(r int) string {
-	return fmt.Sprintf(
-		`
-resource "outscale_keypair" "a_key_pair" {
-	keypair_name_prefix   = "baz-%d"
-	public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
-}
-`, r)
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "a_key_pair" {
+			keypair_name_prefix   = "baz-%d"
+			public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
+		}
+	`, r)
 }

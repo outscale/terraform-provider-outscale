@@ -2,9 +2,7 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -18,22 +16,16 @@ import (
 )
 
 func TestAccOutscaleOAPICustomerGateway_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var gateway fcu.CustomerGateway
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
@@ -61,22 +53,16 @@ func TestAccOutscaleOAPICustomerGateway_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPICustomerGateway_similarAlreadyExists(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	var gateway fcu.CustomerGateway
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
@@ -96,22 +82,16 @@ func TestAccOutscaleOAPICustomerGateway_similarAlreadyExists(t *testing.T) {
 }
 
 func TestAccOutscaleOAPICustomerGateway_disappears(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+	t.Skip()
 
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var gateway fcu.CustomerGateway
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
@@ -269,7 +249,7 @@ func testAccOAPICustomerGatewayConfig(rInt, rBgpAsn int) string {
 				Name = "foo-gateway-%d"
 			}
 		}
-		`, rBgpAsn, rInt)
+	`, rBgpAsn, rInt)
 }
 
 func testAccOAPICustomerGatewayConfigIdentical(randInt, rBgpAsn int) string {
@@ -282,6 +262,7 @@ func testAccOAPICustomerGatewayConfigIdentical(randInt, rBgpAsn int) string {
 				Name = "foo-gateway-%d"
 			}
 		}
+
 		resource "outscale_client_endpoint" "identical" {
 			bgp_asn = %d
 			public_ip = "172.0.0.1"
@@ -290,21 +271,21 @@ func testAccOAPICustomerGatewayConfigIdentical(randInt, rBgpAsn int) string {
 				Name = "foo-gateway-identical-%d"
 			}
 		}
-		`, rBgpAsn, randInt, rBgpAsn, randInt)
+	`, rBgpAsn, randInt, rBgpAsn, randInt)
 }
 
 // Add the Another: "tag" tag.
 func testAccOAPICustomerGatewayConfigUpdateTags(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
-	resource "outscale_client_endpoint" "foo" {
-		bgp_asn = %d
-		public_ip = "172.0.0.1"
-		type = "ipsec.1"
-		tag {
-			Name = "foo-gateway-%d"
-			Another = "tag"
+		resource "outscale_client_endpoint" "foo" {
+			bgp_asn = %d
+			public_ip = "172.0.0.1"
+			type = "ipsec.1"
+			tag {
+				Name = "foo-gateway-%d"
+				Another = "tag"
+			}
 		}
-	}
 	`, rBgpAsn, rInt)
 }
 
@@ -320,5 +301,5 @@ func testAccOAPICustomerGatewayConfigForceReplace(rInt, rBgpAsn int) string {
 				Another = "tag"
 			}
 		}
-		`, rBgpAsn, rInt)
+	`, rBgpAsn, rInt)
 }

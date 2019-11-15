@@ -52,12 +52,12 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 
 func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
-	subnetId := d.Get("subnet_id").(string)
-	routeTableId := d.Get("route_table_id").(string)
-	log.Printf("[INFO] Creating route table link: %s => %s", subnetId, routeTableId)
+	subnetID := d.Get("subnet_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
+	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
 	linkRouteTableOpts := oapi.LinkRouteTableRequest{
-		RouteTableId: routeTableId,
-		SubnetId:     subnetId,
+		RouteTableId: routeTableID,
+		SubnetId:     subnetID,
 	}
 
 	var resp *oapi.POST_LinkRouteTableResponses

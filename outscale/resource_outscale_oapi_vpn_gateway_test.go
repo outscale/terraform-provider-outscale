@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,20 +14,14 @@ import (
 )
 
 func TestAccOutscaleOAPIVpnGateway_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
+	t.Skip()
 	var v, v2 fcu.VpnGateway
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVpnGatewayDestroy,
@@ -53,16 +45,8 @@ func TestAccOutscaleOAPIVpnGateway_basic(t *testing.T) {
 	})
 }
 func TestAccOutscaleOAPIVpnGateway_delete(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
 	var vpnGateway fcu.VpnGateway
 
 	testDeleted := func(r string) resource.TestCheckFunc {
@@ -76,7 +60,10 @@ func TestAccOutscaleOAPIVpnGateway_delete(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVpnGatewayDestroy,
@@ -254,25 +241,23 @@ func testAccCheckOAPIVpnGatewayExists(n string, ig *fcu.VpnGateway) resource.Tes
 }
 
 const testAccOAPINoVpnGatewayConfig = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
-}
+	resource "outscale_net" "foo" {
+		ip_range = "10.1.0.0/16"
+	}
 `
 
 const testAccOAPIVpnGatewayConfig = `
-resource "outscale_net" "foo" {
-	ip_range = "10.1.0.0/16"
-}
+	resource "outscale_net" "foo" {
+		ip_range = "10.1.0.0/16"
+	}
 
-resource "outscale_vpn_gateway" "foo" {
-}
+	resource "outscale_vpn_gateway" "foo" {}
 `
 
 const testAccOAPIVpnGatewayConfigChangeVPC = `
-resource "outscale_net" "bar" {
-	ip_range = "10.2.0.0/16"
-}
+	resource "outscale_net" "bar" {
+		ip_range = "10.2.0.0/16"
+	}
 
-resource "outscale_vpn_gateway" "foo" {
-}
+	resource "outscale_vpn_gateway" "foo" {}
 `

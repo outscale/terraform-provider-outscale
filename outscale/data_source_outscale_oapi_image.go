@@ -163,7 +163,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
 
-	if executableUsersOk == false && filtersOk == false && aisOk == false && imageIDOk == false {
+	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
 		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 

@@ -81,18 +81,18 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 	conn := meta.(*OutscaleClient).OAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	instanceId, instanceIdOk := d.GetOk("vm_id")
+	instanceID, instanceIDOk := d.GetOk("vm_id")
 
-	if !instanceIdOk && !filtersOk {
+	if !instanceIDOk && !filtersOk {
 		return errors.New("vm_id or filter must be set")
 	}
 
 	params := oapi.ReadVmsStateRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVmStateFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set))
 	}
-	if instanceIdOk {
-		params.Filters.VmIds = []string{instanceId.(string)}
+	if instanceIDOk {
+		params.Filters.VmIds = []string{instanceID.(string)}
 	}
 
 	params.AllVms = false
@@ -166,7 +166,7 @@ func statusSetOAPIVMState(status []oapi.MaintenanceEvent) []map[string]interface
 	return s
 }
 
-func buildOutscaleOAPIDataSourceVmStateFilters(set *schema.Set) oapi.FiltersVmsState {
+func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oapi.FiltersVmsState {
 	var filters oapi.FiltersVmsState
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
