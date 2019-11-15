@@ -1,10 +1,14 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
@@ -15,20 +19,24 @@ import (
 )
 
 func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
-	var conf oapi.InternetService
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceLinkDettached,
+		CheckDestroy: testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOutscaleOAPIInternetServiceLinkConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIInternetServiceLinkExists("outscale_internet_service_link.link", &conf),
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW"),
+				Check:  resource.ComposeTestCheckFunc(
+				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW2"),
+				Check:  resource.ComposeTestCheckFunc(
+				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
 				),
 			},
 		},
@@ -164,15 +172,95 @@ func testAccCheckOutscaleOAPIInternetServiceLinkDettached(s *terraform.State) er
 	return nil
 }
 
-const testAccOutscaleOAPIInternetServiceLinkConfig = `
-	resource "outscale_internet_service" "gateway" {}
+func testAccCheckOutscaleOSCAPIInternetServiceLinkExists(n string, res *oscgo.InternetService) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
 
-	resource "outscale_net" "vpc" {
-		ip_range = "10.0.0.0/16"
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No internet gateway id is set")
+		}
+		var resp oscgo.ReadInternetServicesResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
+			})})
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			resp = r
+			return nil
+		})
+
+		var errString string
+
+		if err != nil {
+			errString = err.Error()
+
+			return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", errString)
+		}
+
+		if err != nil {
+			return err
+		}
+		if len(resp.GetInternetServices()) != 1 || resp.GetInternetServices()[0].GetInternetServiceId() != rs.Primary.ID {
+			return fmt.Errorf("Internet Gateway not found")
+		}
+
+		*res = resp.GetInternetServices()[0]
+
+		return nil
+	}
+}
+
+func testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_internet_service" {
+			continue
+		}
+
+		// Try to find an internet gateway
+		var resp oscgo.ReadInternetServicesResponse
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+
+			r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
+			})})
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			resp = r
+
+			return resource.RetryableError(err)
+		})
+
+		if err == nil {
+			if len(resp.GetInternetServices()) > 0 {
+				return fmt.Errorf("still exist")
+			}
+			return nil
+		}
+
+		if !strings.Contains(fmt.Sprintf("%s", err), "InvalidInternetService.NotFound") {
+			return err
+		}
 	}
 
-	resource "outscale_internet_service_link" "link" {
-		net_id              = "${outscale_net.vpc.id}"
-		internet_service_id = "${outscale_internet_service.gateway.id}"
-	}
-`
+	return nil
+}
