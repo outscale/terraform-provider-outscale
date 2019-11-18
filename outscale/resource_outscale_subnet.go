@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -137,6 +138,21 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
 	}
 	return fmt.Errorf("No subnet (%s) found", d.Id())
+}
+
+func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPISubNetRead(d, meta)
 }
 
 func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
