@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -12,6 +13,7 @@ import (
 func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -21,7 +23,7 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageConfigBasic(omi, "c4.large", region),
+				Config: testAccCheckOutscaleOAPIImageConfigBasic(omi, "t2.micro", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.nat_ami"),
 					resource.TestCheckResourceAttr("data.outscale_image.nat_ami", "architecture", "x86_64"),
@@ -34,6 +36,7 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -43,7 +46,7 @@ func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, "c4.large", region),
+				Config: testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, "t2.micro", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageDataSourceID("data.outscale_image.omi"),
 				),
@@ -67,69 +70,45 @@ func testAccCheckOutscaleOAPIImageDataSourceID(n string) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region string) string {
+func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
-		}
-		
-		resource "outscale_subnet" "outscale_subnet" {
-			net_id         = "${outscale_net.outscale_net.net_id}"
-			ip_range       = "10.0.0.0/24"
-			subregion_name = "%[3]sa"
-		}
-		
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name             = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
-			private_ips              = ["10.0.0.12"]
 		}
 		
-		resource "outscale_image" "foo" {
-			image_name = "myImageName"
+		resource "outscale_image" "image" {
+			image_name = "%[4]s"
 			vm_id      = "${outscale_vm.basic.id}"
 		}
 		
 		data "outscale_image" "omi" {
 			filter {
 				name   = "image_ids"
-				values = ["${outscale_image.foo.id}"]
+				values = ["${outscale_image.image.id}"]
 			}
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, imageName)
 }
 
-func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region string) string {
+func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
-		}
-
-		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
-			ip_range            = "10.0.0.0/24"
-			subregion_name      = "%[3]sa"
-		}
-
 		resource "outscale_vm" "basic" {
 			image_id			           = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name	           = "terraform-basic"
 			placement_subregion_name = "%[3]sa"
-			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
-			private_ips              =  ["10.0.0.12"]
 		}
 
 		resource "outscale_image" "foo" {
-			image_name = "myImageName"
-			vm_id = "${outscale_vm.basic.id}"
+			image_name = "%[4]s"
+			vm_id      = "${outscale_vm.basic.id}"
 		}
 
 		data "outscale_image" "nat_ami" {
 			image_id = "${outscale_image.foo.id}"
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, imageName)
 }
