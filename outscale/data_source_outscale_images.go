@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIImages() *schema.Resource {
@@ -62,7 +63,6 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						// Complex computed values
 						"block_device_mappings": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -174,184 +174,133 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
 	aids, ownersOk := d.GetOk("account_ids")
-
-	if executableUsersOk == false && filtersOk == false && ownersOk == false {
+	if !executableUsersOk && !filtersOk && !ownersOk {
 		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
 	}
 
-	params := &oapi.ReadImagesRequest{
-		Filters: oapi.FiltersImage{},
-	}
-	if executableUsersOk {
-		params.Filters.PermissionsToLaunchAccountIds = expandStringValueList(executableUsers.([]interface{}))
-	}
-
+	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
-		o := expandStringValueList(aids.([]interface{}))
-
-		if len(o) > 0 {
-			params.Filters.AccountIds = o
-		}
+		filtersReq.SetAccountIds([]string{aids.(string)})
+	}
+	if executableUsersOk {
+		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
 	}
 
-	var result *oapi.ReadImagesResponse
-	var resp *oapi.POST_ReadImagesResponses
-	var err error
-	err = resource.Retry(20*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadImages(*params)
+	req := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: filtersReq,
+		}),
+	}
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available", "destroyed"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "deregistered"),
+		Timeout:    5 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	value, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error retrieving Outscale Images: %v", err)
+	}
+
+	resp := value.(oscgo.ReadImagesResponse)
+	images := resp.GetImages()
+
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(resource.UniqueId())
+
+		imgs := make([]map[string]interface{}, len(images))
+		for i, image := range images {
+			imgs[i] = map[string]interface{}{
+				"architecture":          image.GetArchitecture(),
+				"creation_date":         image.GetCreationDate(),
+				"description":           image.GetDescription(),
+				"image_id":              image.GetImageId(),
+				"file_location":         image.GetFileLocation(),
+				"account_alias":         image.GetAccountAlias(),
+				"account_id":            image.GetAccountId(),
+				"image_type":            image.GetImageType(),
+				"image_name":            image.GetImageName(),
+				"root_device_name":      image.GetRootDeviceName(),
+				"root_device_type":      image.GetRootDeviceType(),
+				"state":                 image.GetState(),
+				"block_device_mappings": omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings),
+				"product_codes":         image.GetProductCodes(),
+				"state_comment":         omiOAPIStateReason(image.StateComment),
+				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
+				"tags":                  getOapiTagSet(image.Tags),
 			}
-			return resource.NonRetryableError(err)
 		}
 
-		return nil
+		d.Set("request_id", resp.ResponseContext.RequestId)
+		return set("images", imgs)
 	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("Error retrieving Outscale Images: %s", errString)
-	}
-
-	result = resp.OK
-
-	d.Set("request_id", result.ResponseContext.RequestId)
-
-	if len(result.Images) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
-
-	return omisOAPIDescriptionAttributes(d, result.Images)
 }
 
-// populate the numerous fields that the image description returns.
-func omisOAPIDescriptionAttributes(d *schema.ResourceData, images []oapi.Image) error {
-
-	i := make([]interface{}, len(images))
-
-	for k, v := range images {
-		im := make(map[string]interface{})
-
-		im["architecture"] = v.Architecture
-		if v.CreationDate != "" {
-			im["creation_date"] = v.CreationDate
-		}
-		if v.Description != "" {
-			im["description"] = v.Description
-		}
-		im["image_id"] = v.ImageId
-		im["file_location"] = v.FileLocation
-		if v.AccountAlias != "" {
-			im["account_alias"] = v.AccountAlias
-		}
-		im["account_id"] = v.AccountId
-		im["image_type"] = v.ImageType
-		im["state"] = v.State
-		im["image_name"] = v.ImageName
-
-		im["permissions_to_launch"] = omiOAPIPermissionToLuch(v.PermissionsToLaunch)
-
-		if v.RootDeviceName != "" {
-			im["root_device_name"] = v.RootDeviceName
-		}
-		im["root_device_type"] = v.RootDeviceType
-
-		if v.BlockDeviceMappings != nil {
-			im["block_device_mappings"] = omiOAPIBlockDeviceMappings(v.BlockDeviceMappings)
-		}
-		if v.ProductCodes != nil {
-			im["product_codes"] = v.ProductCodes
-		}
-		im["state_comment"] = omiOAPIStateReason(&v.StateComment)
-
-		im["tags"] = getOapiTagSet(v.Tags)
-
-		i[k] = im
-	}
-
-	err := d.Set("images", i)
-	d.SetId(resource.UniqueId())
-
-	return err
-}
-
-func omiOAPIBlockDeviceMappingHash(v interface{}) int {
-	var buf bytes.Buffer
-	// All keys added in alphabetical order.
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["device_name"].(string)))
-	if d, ok := m["bsu"]; ok {
-		if len(d.(map[string]interface{})) > 0 {
-			e := d.(map[string]interface{})
-			buf.WriteString(fmt.Sprintf("%s-", e["delete_on_vm_termination"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["iops"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["volume_size"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["image_type"].(string)))
-		}
-	}
-	if d, ok := m["no_device"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["virtual_device_name"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["snapshot_id"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	return hashcode.String(buf.String())
-}
-
-func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) oapi.FiltersImage {
-	var filters oapi.FiltersImage
+func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
+	filters := &oscgo.FiltersImage{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
+
 		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
+			filterValues = append(filterValues, cast.ToString(e))
 		}
 
 		switch name := m["name"].(string); name {
 		case "account_aliases":
-			filters.AccountAliases = filterValues
+			filters.SetAccountAliases(filterValues)
 		case "account_ids":
-			filters.AccountIds = filterValues
+			filters.SetAccountIds(filterValues)
 		case "architectures":
-			filters.Architectures = filterValues
-		case "image_ids":
-			filters.ImageIds = filterValues
-		case "image_names":
-			filters.ImageNames = filterValues
-		case "image_types":
-			filters.ImageTypes = filterValues
-		case "virtualization_types":
-			filters.VirtualizationTypes = filterValues
-		case "root_device_types":
-			filters.RootDeviceTypes = filterValues
+			filters.SetArchitectures(filterValues)
+		case "block_device_mapping_delete_on_vm_deletion":
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "block_device_mapping_device_names":
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "block_device_mapping_snapshot_ids":
+			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
+		case "block_device_mapping_volume_sizes":
+			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
 		case "block_device_mapping_volume_type":
-			filters.BlockDeviceMappingVolumeType = filterValues
-		//Some params are missing.
+			filters.SetBlockDeviceMappingVolumeTypes(filterValues)
+		case "description":
+			filters.SetDescriptions(filterValues)
+		case "file_locations":
+			filters.SetFileLocations(filterValues)
+		case "image_ids":
+			filters.SetImageIds(filterValues)
+		case "permissions_to_launch_account_ids":
+			filters.SetPermissionsToLaunchAccountIds(filterValues)
+		case "permissions_to_launch_global_permission":
+			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues))
+		case "root_device_names":
+			filters.SetRootDeviceNames(filterValues)
+		case "root_device_types":
+			filters.SetRootDeviceTypes(filterValues)
+		case "image_names":
+			filters.SetImageNames(filterValues)
+		case "states":
+			filters.SetStates(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "virtualization_types":
+			filters.SetVirtualizationTypes(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
