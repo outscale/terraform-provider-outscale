@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -9,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISubnet() *schema.Resource {
@@ -59,24 +61,24 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oapi.ReadSubnetsRequest{}
+	req := oscgo.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_id"); id != "" {
-		req.Filters = oapi.FiltersSubnet{SubnetIds: []string{id.(string)}}
+		req.Filters = &oscgo.FiltersSubnet{SubnetIds: &[]string{id.(string)}}
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOSCAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *oapi.POST_ReadSubnetsResponses
+	var resp oscgo.ReadSubnetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSubnets(*req)
+		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -84,46 +86,35 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 			}
 			return resource.NonRetryableError(err)
 		}
+		resp = r
 		return nil
 	})
 
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString := err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	response := resp.OK
-
-	if resp == nil || len(response.Subnets) == 0 {
+	if len(resp.GetSubnets()) == 0 {
 		return fmt.Errorf("no matching subnet found")
 	}
 
-	if len(response.Subnets) > 1 {
+	if len(resp.GetSubnets()) > 1 {
 		return fmt.Errorf("multiple subnets matched; use additional constraints to reduce matches to a single subnet")
 	}
 
-	subnet := response.Subnets[0]
+	subnet := resp.GetSubnets()[0]
 
-	d.SetId(subnet.SubnetId)
-	d.Set("subnet_id", subnet.SubnetId)
-	d.Set("net_id", subnet.NetId)
-	d.Set("subregion_name", subnet.SubregionName)
-	d.Set("ip_range", subnet.IpRange)
-	d.Set("state", subnet.State)
-	d.Set("tags", tagsOAPIToMap(subnet.Tags))
-	d.Set("available_ips_count", subnet.AvailableIpsCount)
-	d.Set("request_id", response.ResponseContext.RequestId)
+	d.SetId(subnet.GetSubnetId())
+	d.Set("subnet_id", subnet.GetSubnetId())
+	d.Set("net_id", subnet.GetNetId())
+	d.Set("subregion_name", subnet.GetSubregionName())
+	d.Set("ip_range", subnet.GetIpRange())
+	d.Set("state", subnet.GetState())
+	d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
+	d.Set("available_ips_count", subnet.GetAvailableIpsCount())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }
@@ -155,4 +146,33 @@ func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) oapi.FiltersSubne
 		}
 	}
 	return filters
+}
+
+func buildOutscaleOSCAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+	var filters oscgo.FiltersSubnet
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		// case "available_ips_counts":
+		// 	filters.AvailableIpsCounts = filterValues
+		case "ip_ranges":
+			filters.IpRanges = &filterValues
+		case "net_ids":
+			filters.NetIds = &filterValues
+		case "states":
+			filters.States = &filterValues
+		case "subnet_ids":
+			filters.SubnetIds = &filterValues
+		case "subregion_names":
+			filters.SubregionNames = &filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return &filters
 }

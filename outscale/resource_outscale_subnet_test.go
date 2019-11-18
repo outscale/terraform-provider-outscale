@@ -194,7 +194,7 @@ func testAccOutscaleOAPITagsUpdate(region, value string) string {
 		subregion_name = "%sb"
 		net_id = "${outscale_net.net.id}"
 	
-		tags = {
+		tags {
 			key = "name"
 			value = "%s"
 		 }
