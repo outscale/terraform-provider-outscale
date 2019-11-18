@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -81,8 +79,7 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 }
 
 func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	connOsc := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	name := d.Get("device_name").(string)
 	iID := d.Get("vm_id").(string)
 	vID := d.Get("volume_id").(string)
