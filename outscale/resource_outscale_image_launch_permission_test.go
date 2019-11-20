@@ -143,6 +143,7 @@ func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID
 func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		connOsc := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		req := &oapi.DeleteImageRequest{
 			ImageId: aws.StringValue(imageID),
 		}
@@ -162,7 +163,7 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 			return err
 		}
 
-		return resourceOutscaleOAPIImageWaitForDestroy(*imageID, conn)
+		return resourceOutscaleOAPIImageWaitForDestroy(*imageID, connOsc)
 	}
 }
 

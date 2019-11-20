@@ -356,11 +356,20 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error deleting the image")
 	}
 
-	fmt.Printf("Waiting for OMI %s to be deleted...", d.Id())
+	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), conn); err != nil {
+		return err
+	}
+
+	d.SetId("")
+	return nil
+}
+
+func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
+	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
 	filterReq := &oscgo.ReadImagesOpts{
 		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{d.Id()}},
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
 		}),
 	}
 
@@ -373,12 +382,10 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 		Delay:      1 * time.Minute,
 	}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for OMI (%s) to be deleted: %v", d.Id(), err)
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for OMI (%s) to be deleted: %v", id, err)
 	}
 
-	d.SetId("")
 	return nil
 }
 

@@ -99,14 +99,16 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 }
 
 func getOAPINetPeerings(peerings []oapi.NetPeering) (res []map[string]interface{}) {
-	for _, p := range peerings {
-		res = append(res, map[string]interface{}{
-			"accepter_net":   getOAPINetPeeringAccepterNet(p.AccepterNet),
-			"net_peering_id": p.NetPeeringId,
-			"source_net":     getOAPINetPeeringSourceNet(p.SourceNet),
-			"state":          getOAPINetPeeringState(p.State),
-			"tags":           getOapiTagSet(p.Tags),
-		})
+	if peerings != nil {
+		for _, p := range peerings {
+			res = append(res, map[string]interface{}{
+				"accepter_net":   getOAPINetPeeringAccepterNet(p.AccepterNet),
+				"net_peering_id": p.NetPeeringId,
+				"source_net":     getOAPINetPeeringSourceNet(p.SourceNet),
+				"state":          getOAPINetPeeringState(p.State),
+				//"tags":           getOapiTagSet(p.Tags),
+			})
+		}
 	}
 	return res
 }

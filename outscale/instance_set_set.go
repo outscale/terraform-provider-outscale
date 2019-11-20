@@ -328,7 +328,7 @@ func getOAPIVMNetworkInterfaceSet(nics []oapi.Nic) (res []map[string]interface{}
 				"state":          nic.State,
 				"subnet_id":      nic.SubnetId,
 				"subregion_name": nic.SubregionName,
-				"tags":           getOapiTagSet(nic.Tags),
+				//"tags":           getOapiTagSet(nic.Tags),
 			})
 		}
 	}
