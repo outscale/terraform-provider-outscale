@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
