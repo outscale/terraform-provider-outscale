@@ -41,3 +41,11 @@ func StringSliceToInt64Slice(src []string) (res []int64) {
 	}
 	return
 }
+
+// StringSliceToInt32Slice converts []string to []int32 ...
+func StringSliceToInt32Slice(src []string) (res []int32) {
+	for _, str := range src {
+		res = append(res, cast.ToInt32(str))
+	}
+	return
+}

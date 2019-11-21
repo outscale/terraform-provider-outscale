@@ -1095,6 +1095,12 @@ func getVMsFilterByVMID(vmID string) oapi.FiltersVm {
 	}
 }
 
+func getOSCVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
+	return &oscgo.FiltersVm{
+		VmIds: &[]string{vmID},
+	}
+}
+
 // AttributeSetter you can use this function to set the attributes
 type AttributeSetter func(key string, value interface{}) error
 
