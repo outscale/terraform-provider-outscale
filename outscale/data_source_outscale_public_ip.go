@@ -1,14 +1,17 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/outscale/osc-go/oapi"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIPublicIP() *schema.Resource {
@@ -58,36 +61,35 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 }
 
 func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.ReadPublicIpsRequest{
-		Filters: oapi.FiltersPublicIp{},
+	req := oscgo.ReadPublicIpsRequest{
+		Filters: &oscgo.FiltersPublicIp{},
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOSCAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
 	if id := d.Get("public_ip_id"); id != "" {
-		req.Filters.PublicIpIds = []string{id.(string)}
+		req.Filters.SetPublicIpIds([]string{id.(string)})
 	}
 	if id := d.Get("public_ip"); id != "" {
-		req.Filters.PublicIps = []string{id.(string)}
+		req.Filters.SetPublicIps([]string{id.(string)})
 	}
 
-	var describeAddresses *oapi.ReadPublicIpsResponse
+	var response oscgo.ReadPublicIpsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err := conn.POST_ReadPublicIps(req)
+		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		describeAddresses = resp.OK
 		return nil
 	})
 
@@ -101,48 +103,48 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	}
 
 	// Verify Outscale returned our EIP
-	if describeAddresses == nil || len(describeAddresses.PublicIps) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.PublicIps)
+	if len(response.GetPublicIps()) == 0 {
+		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
 	}
 
-	if len(describeAddresses.PublicIps) > 1 {
+	if len(response.GetPublicIps()) > 1 {
 		return fmt.Errorf("multiple External IPs matched; use additional constraints to reduce matches to a single External IP")
 	}
 
-	address := describeAddresses.PublicIps[0]
+	address := response.GetPublicIps()[0]
 
 	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.LinkPublicIpId != "" {
-		d.Set("link_public_ip_id", address.LinkPublicIpId)
+	if address.GetLinkPublicIpId() != "" {
+		d.Set("link_public_ip_id", address.GetLinkPublicIpId())
 	} else {
 		d.Set("link_public_ip_id", "")
 	}
-	if address.VmId != "" {
-		d.Set("vm_id", address.VmId)
+	if address.GetVmId() != "" {
+		d.Set("vm_id", address.GetVmId())
 	} else {
 		d.Set("vm_id", "")
 	}
-	if address.NicId != "" {
-		d.Set("nic_id", address.NicId)
+	if address.GetNicId() != "" {
+		d.Set("nic_id", address.GetNicId())
 	} else {
 		d.Set("nic_id", "")
 	}
-	if address.NicAccountId != "" {
-		d.Set("nic_account_id", address.NicAccountId)
+	if address.GetNicAccountId() != "" {
+		d.Set("nic_account_id", address.GetNicAccountId())
 	} else {
 		d.Set("nic_account_id", "")
 	}
-	if address.PrivateIp != "" {
-		d.Set("private_ip", address.PrivateIp)
+	if address.GetPrivateIp() != "" {
+		d.Set("private_ip", address.GetPrivateIp())
 	} else {
 		d.Set("private_ip", "")
 	}
 
-	d.Set("request_id", describeAddresses.ResponseContext.RequestId)
-	d.Set("public_ip_id", address.PublicIpId)
+	d.Set("request_id", response.ResponseContext.GetRequestId())
+	d.Set("public_ip_id", address.GetPublicIpId())
 
-	d.Set("public_ip", address.PublicIp)
+	d.Set("public_ip", address.GetPublicIp())
 	//missing
 	// if address.Placement == "vpc" {
 	// 	d.SetId(address.ReservationId)
@@ -150,9 +152,9 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	// 	d.SetId(address.PublicIp)
 	// }
 
-	d.SetId(address.PublicIp)
+	d.SetId(address.GetPublicIp())
 
-	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
+	return d.Set("request_id", response.ResponseContext.GetRequestId())
 }
 
 func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPublicIp {
@@ -186,4 +188,37 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPu
 		}
 	}
 	return filters
+}
+
+func buildOutscaleOSCAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
+	var filters oscgo.FiltersPublicIp
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "public_ip_ids":
+			filters.SetPublicIpIds(filterValues)
+		case "link_ids":
+			filters.SetLinkPublicIpIds(filterValues)
+		case "placements":
+			filters.SetPlacements(filterValues)
+		case "vm_ids":
+			filters.SetVmIds(filterValues)
+		case "nic_ids":
+			filters.SetNicIds(filterValues)
+		case "nic_account_ids":
+			filters.SetNicAccountIds(filterValues)
+		case "private_ips":
+			filters.SetPrivateIps(filterValues)
+		case "public_ips":
+			filters.SetPublicIps(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return &filters
 }
