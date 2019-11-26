@@ -1,0 +1,4 @@
+
+python file: provider_outscale_oapi/test//outscale_outbound_rule/test_outscale_outbound_rule_resource_std_ok.py
+tf file: provider_outscale_oapi/config/outscale_outbound_rule/config_outscale_outbound_rule_resource_ok
+WARNING: No check file !!!

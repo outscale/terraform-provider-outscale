@@ -1,0 +1,4 @@
+
+python file: provider_outscale_oapi/test//outscale_net_attributes/test_outscale_lin_attributes_resource_nok.py
+tf file: provider_outscale/config/outscale_lin_attributes/config_outscale_lin_attributes_resource_nok
+WARNING: No check file !!!

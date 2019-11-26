@@ -1,0 +1,4 @@
+
+python file: provider_outscale_oapi/test//outscale_image_launch_permission/test_outscale_image_launch_permission_removal_user_resource_ok.py
+tf file: provider_outscale_oapi/config/outscale_image_launch_permission/config_outscale_image_launch_permission_removal_user_resource_ok
+WARNING: No check file !!!

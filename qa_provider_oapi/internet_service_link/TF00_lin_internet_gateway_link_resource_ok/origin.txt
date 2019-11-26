@@ -1,0 +1,3 @@
+
+python file: provider_outscale_oapi/test//outscale_internet_service_link/test_outscale_lin_internet_gateway_link_resource_ok.py
+WARNING: tf file not found 'provider_outscale_oapi/config/outscale_net_internet_gateway_link/config_outscale_net_internet_gateway_link_resource_ok'

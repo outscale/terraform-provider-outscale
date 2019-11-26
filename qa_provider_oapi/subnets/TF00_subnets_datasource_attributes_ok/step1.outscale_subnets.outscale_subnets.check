@@ -1,0 +1,24 @@
+subnets.#
+subnets.0.available_ips_count
+subnets.0.ip_range
+subnets.0.net_id
+subnets.0.state
+subnets.0.subnet_id
+subnets.0.subregion_name
+subnets.0.tags.#
+subnets.0.tags.0.key
+subnets.0.tags.0.value
+subnets.1.available_ips_count
+subnets.1.ip_range
+subnets.1.net_id
+subnets.1.state
+subnets.1.subnet_id
+subnets.1.subregion_name
+subnets.1.tags.#
+subnets.1.tags.0.key
+subnets.1.tags.0.value
+request_id
+# correctives below
+id
+#subnet_ids.#
+#subnet_ids.0
