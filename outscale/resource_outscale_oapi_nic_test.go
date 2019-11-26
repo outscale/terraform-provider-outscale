@@ -142,16 +142,15 @@ func testAccOutscaleOAPIENIConfig(subregion string) string {
 			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
 			security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
 		
-			private_ips = [
-				{
-					is_primary = true
-					private_ip = "10.0.0.23"
-				},
-				{
-					is_primary = false
-					private_ip = "10.0.0.46"
-				},
-			]
+			private_ips {
+				is_primary = true
+				private_ip = "10.0.0.23"
+			}
+
+			private_ips	{
+				is_primary = false
+				private_ip = "10.0.0.46"
+			}
 		}
 	`, subregion)
 }
@@ -178,20 +177,20 @@ func testAccOutscaleOAPIENIConfigUpdate(subregion string) string {
 			subnet_id          = "${outscale_subnet.outscale_subnet.subnet_id}"
 			security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
 		
-			private_ips = [
-				{
-					is_primary = true
-					private_ip = "10.0.0.23"
-				},
-				{
-					is_primary = false
-					private_ip = "10.0.0.46"
-				},
-				{
-					is_primary = false
-					private_ip = "10.0.0.69"
-				},
-			]
+			private_ips {
+				is_primary = true
+				private_ip = "10.0.0.23"
+			}
+			
+			private_ips {
+				is_primary = false
+				private_ip = "10.0.0.46"
+			}
+			
+			private_ips {
+				is_primary = false
+				private_ip = "10.0.0.69"
+			}
 		}	 
 	`, subregion)
 }

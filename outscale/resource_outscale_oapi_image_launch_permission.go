@@ -336,7 +336,6 @@ func hasOAPILaunchPermission(conn *oapi.Client, imageID string) (bool, error) {
 	}
 
 	result := attrs.OK.Images[0]
-	fmt.Printf("RESULT: %+v\n", result)
 
 	if len(result.PermissionsToLaunch.AccountIds) > 0 {
 		return true, nil

@@ -147,7 +147,7 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 			subregion_name = "%sa"
 			net_id         = "${outscale_net.net.id}"
 
-			tags = {
+			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}

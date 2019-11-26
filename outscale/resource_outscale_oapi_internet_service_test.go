@@ -144,8 +144,7 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 
 const testAccOutscaleOAPIInternetServiceConfig = `
 	resource "outscale_internet_service" "gateway" {
-		tags =
-		{       
+		tags {       
 			key   = "name"     
 			value = "Terraform_IGW"       
 		}

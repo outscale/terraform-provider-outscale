@@ -100,9 +100,9 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
-	omi2 := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
+	omi := getOMIByRegion(region, "ubuntu").OMI
+	omi2 := getOMIByRegion(region, "centos").OMI
 
 	var before oapi.Vm
 	var after oapi.Vm
@@ -185,7 +185,11 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"outscale_vm.basic", "image_id", omi),
 					resource.TestCheckResourceAttr(
+<<<<<<< HEAD
 						"outscale_vm.basic", "vm_type", "t2.micro"),
+=======
+						"outscale_vm.basic", "vm_type", vmType),
+>>>>>>> test: 0.12 upgrade - fix failing test cases
 				),
 			},
 		},
@@ -453,55 +457,54 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 }
 
 func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
-	return fmt.Sprintf(`
-		resource "outscale_net" "outscale_net" {
-			ip_range = "10.0.0.0/16"
+	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+	  }
+	  
+	  resource "outscale_subnet" "outscale_subnet" {
+		net_id         = "${outscale_net.outscale_net.net_id}"
+		ip_range       = "10.0.0.0/24"
+		subregion_name = "eu-west-2a"
+	  }
+	  
+	  resource "outscale_nic" "outscale_nic" {
+		subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	  }
+	  
+	  resource "outscale_security_group" "outscale_security_group" {
+		description         = "test vm with nic"
+		security_group_name = "private-sg"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	  }
+	  
+	  resource "outscale_vm" "basic" {
+		image_id     = "%s"
+		vm_type      = "%s"
+		keypair_name = "terraform-basic"
+	  
+		# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
+		nics {
+		  # delete_on_vm_deletion      = false
+		  # description                = "myDescription"
+		  device_number = 0
+	  
+		  # nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
+		  # secondary_private_ip_count = 1
+		  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+	  
+		  security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
+	  
+		  private_ips {
+			private_ip = "10.0.0.123"
+			is_primary = true
+		  }
+	  
+		  private_ips {
+			private_ip = "10.0.0.124"
+			is_primary = false
+		  }
 		}
-
-		resource "outscale_subnet" "outscale_subnet" {
-			net_id              = "${outscale_net.outscale_net.net_id}"
-			ip_range            = "10.0.0.0/24"
-			subregion_name      = "eu-west-2a"
-		}
-
-		resource "outscale_nic" "outscale_nic" {
-			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-		}
-
-		resource "outscale_security_group" "outscale_security_group" {
-			description         = "test vm with nic"
-			security_group_name = "private-sg"
-			net_id              = "${outscale_net.outscale_net.net_id}"
-		}
-
-		resource "outscale_vm" "basic" {
-			image_id			           = "%s"
-			vm_type                  = "%s"
-			keypair_name		         = "terraform-basic"
-			# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
-			nics = [
-				{
-					# delete_on_vm_deletion      = false
-					# description                = "myDescription"
-					device_number                =  0
-					# nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
-					# secondary_private_ip_count = 1
-					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-					security_group_ids           = ["${outscale_security_group.outscale_security_group.security_group_id}"]					
-					subnet_id                    = "${outscale_subnet.outscale_subnet.subnet_id}"
-				  private_ips                  = [ 
-				  	{
-				  		private_ip = "10.0.0.123"
-				  		is_primary = true   
-						},
-						{
-				  		private_ip = "10.0.0.124"
-				  		is_primary = false   
-				  	}
-				  ]
-				}
-			]
-		}`, omi, vmType)
+	  }`, omi, vmType)
 }
 
 func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region string) string {
@@ -525,7 +528,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region string) string 
 			security_group_ids       = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%sb"
 
-			tags = {
+			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}
@@ -546,7 +549,6 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	  }
 	  
 	  resource "outscale_security_group" "outscale_security_group" {
-			count = 1
 			description         = "test group"
 			security_group_name = "sg1-test-group_test-net"
 			net_id              = "${outscale_net.outscale_net.net_id}"
@@ -566,51 +568,52 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 
 func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_volume" "external1" {
-			subregion_name = "eu-west-2a"
-			size = 1
+	resource "outscale_volume" "external1" {
+		subregion_name = "eu-west-2a"
+		size           = 1
+	  }
+	  
+	  resource "outscale_snapshot" "snapshot" {
+		volume_id = "${outscale_volume.external1.id}"
+	  }
+	  
+	  resource "outscale_vm" "basic" {
+		image_id     = "%[1]s"
+		vm_type      = "%[2]s"
+		keypair_name = "terraform-basic"
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdb"
+		  no_device   = "/dev/xvdb"
+		  bsu = {
+			volume_size           = 15
+			volume_type           = "gp2"
+			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			delete_on_vm_deletion = true
+		  }
 		}
-		
-		resource "outscale_snapshot" "snapshot" {
-			volume_id = "${outscale_volume.external1.id}"
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdc"
+		  bsu = {
+			volume_size           = 22
+			volume_type           = "io1"
+			iops                  = 150
+			snapshot_id           = "${outscale_snapshot.snapshot.id}"
+			delete_on_vm_deletion = true
+		  }
 		}
-
-		resource "outscale_vm" "basic" {
-			image_id              = "%[1]s"
-			vm_type               = "%[2]s"
-			keypair_name          = "terraform-basic"
-	    block_device_mappings = [
-				{
-					device_name = "/dev/sdb"
-					no_device   =  "/dev/xvdb"
-					bsu = {
-						volume_size=15
-						volume_type = "gp2"
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-						delete_on_vm_deletion = true
-					}
-				},
-				{
-					device_name = "/dev/sdc"
-					bsu = {
-						volume_size=22
-						volume_type = "io1"
-						iops      = 150
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-						delete_on_vm_deletion = false
-					}
-				},
-				{
-					device_name = "/dev/sdc"
-					bsu = {
-						volume_size=22
-						volume_type = "io1"
-						iops      = 150
-						snapshot_id = "${outscale_snapshot.snapshot.id}"
-					}
-				}
-			]
+	  
+		block_device_mappings {
+		  device_name = "/dev/sdc"
+		  bsu = {
+			volume_size = 22
+			volume_type = "io1"
+			iops        = 150
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
+		  }
 		}
+	  }
 	`, omi, vmType, region)
 }
 

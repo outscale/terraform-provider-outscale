@@ -40,7 +40,7 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 			subregion_name = "eu-west-2a"
 			net_id         = "${outscale_net.net.id}"
 		
-			tags = {
+			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}

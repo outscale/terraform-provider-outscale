@@ -191,7 +191,7 @@ func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 			security_group_name = "terraform_test_%d"
 			description         = "Used in the terraform acceptance tests"
 		
-			tags = {
+			tags {
 				key   = "Name"
 				value = "tf-acc-test"
 			}

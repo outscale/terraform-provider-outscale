@@ -41,7 +41,6 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 
 func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		fmt.Printf("%#v", s.RootModule().Resources)
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Not found: %s", name)
@@ -89,8 +88,6 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 			return fmt.Errorf("No Public IP Link ID is set")
 		}
 
-		fmt.Printf("%#v", rs.Primary.Attributes)
-
 		id := rs.Primary.Attributes["link_id"]
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
@@ -102,7 +99,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 		}
 		describe, err := conn.OAPI.POST_ReadPublicIps(request)
 
-		fmt.Printf("\n [DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
+		log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
 
 		if err != nil {
 			return err
