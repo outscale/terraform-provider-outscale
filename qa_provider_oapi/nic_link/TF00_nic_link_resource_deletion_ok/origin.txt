@@ -1,4 +1,5 @@
 
 python file: provider_outscale_oapi/test//outscale_nic_link/test_outscale_nic_link_resource_deletion_ok.py
+WARNING: LIN found in tf file 'provider_outscale_oapi/config/outscale_nic_link/config_outscale_nic_link_resource_deletion_ok'
 tf file: provider_outscale_oapi/config/outscale_nic_link/config_outscale_nic_link_resource_deletion_ok
 WARNING: No check file !!!

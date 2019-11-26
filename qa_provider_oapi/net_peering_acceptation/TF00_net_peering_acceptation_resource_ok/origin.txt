@@ -1,6 +1,8 @@
 
 python file: provider_outscale_oapi/test//outscale_net_peering_acceptation/test_outscale_net_peering_acceptation_resource_ok.py
+WARNING: LIN found in tf file 'provider_outscale_oapi/config/outscale_net_peering_acceptation/config_outscale_net_peering_acceptation_resource_creation_ok'
 tf file: provider_outscale_oapi/config/outscale_net_peering_acceptation/config_outscale_net_peering_acceptation_resource_creation_ok
 WARNING: No check file !!!
+WARNING: LIN found in tf file 'provider_outscale_oapi/config/outscale_net_peering_acceptation/config_outscale_net_peering_acceptation_resource_deletion_ok'
 tf file: provider_outscale_oapi/config/outscale_net_peering_acceptation/config_outscale_net_peering_acceptation_resource_deletion_ok
 WARNING: No check file !!!

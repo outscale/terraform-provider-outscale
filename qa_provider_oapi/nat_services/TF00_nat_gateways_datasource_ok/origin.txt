@@ -1,5 +1,6 @@
 
 python file: provider_outscale_oapi/test//outscale_nat_services/test_outscale_nat_gateways_datasource_ok.py
+WARNING: LIN found in tf file 'provider_outscale_oapi/config/outscale_nat_services/config_outscale_nat_gateways_datasource_ok'
 tf file: provider_outscale_oapi/config/outscale_nat_services/config_outscale_nat_gateways_datasource_ok
 WARNING: No check file !!!
 WARNING: tf file not found 'provider_outscale_oapi/config/outscale_nat_services/config_outscale_nat_gateways_datasource_ok3'

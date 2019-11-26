@@ -229,8 +229,12 @@ Log: {}
             self.error = True
             raise
         finally:
-            self.run_cmd("terraform destroy -force -no-color")
-            self.run_cmd("rm -f test.tf")
+            try:
+                self.run_cmd("terraform destroy -force -no-color")
+            finally:
+                self.run_cmd("rm -f test.tf")
+                self.run_cmd("rm -f terraform.tfstate")
+
 
     def run_cmd(self, cmd, exp_ret_code=0):
         self.logger.debug("Exec: %s", cmd)
