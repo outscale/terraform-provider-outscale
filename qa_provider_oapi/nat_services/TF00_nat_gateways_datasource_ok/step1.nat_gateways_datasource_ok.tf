@@ -7,7 +7,7 @@ resource "outscale_lin" "outscale_lin" {
 resource "outscale_subnet" "outscale_subnet" {
   count = 1
 
-  vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+  vpc_id = outscale_lin.outscale_lin.vpc_id
 }
 
 resource "outscale_public_ip" "outscale_public_ip" {
@@ -20,9 +20,9 @@ resource "outscale_nat_service" "outscale_nat_service" {
     count = 1
 
     #allocation_id = ""
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+    subnet_id = outscale_subnet.outscale_subnet.subnet_id
 }
 
 output "outscale_nat_service" {
-    value = "${outscale_nat_service.outscale_nat_service.allocation_id}"
+    value = outscale_nat_service.outscale_nat_service.allocation_id
 }

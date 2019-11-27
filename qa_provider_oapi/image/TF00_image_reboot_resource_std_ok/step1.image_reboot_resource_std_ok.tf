@@ -13,8 +13,8 @@ resource "outscale_vm" "outscale_vm" {
 }
 
 resource "outscale_image" "outscale_image" {
-    name       = "image_${outscale_vm.outscale_vm.id}"
-    vm_id      = "${outscale_vm.outscale_vm.id}"
+    name       = "image_${outscale_vm.outscale_vm.id
+    vm_id      = outscale_vm.outscale_vm.id
     #no_reboot = "false"                 # default value
     no_reboot  = "true"                 # test value
 }
@@ -33,9 +33,9 @@ resource "null_resource" "nullr" {
             type        = "ssh"
             user        = "centos"
             
-            private_key = "${file("outscale_integ_sut_keypair.rsa.txt")}"
-            #private_key = "${file("outscale_ct_test.rsa.txt")}"
-            host        = "${outscale_vm.outscale_vm.instances_set.0.ip_address}"
+            private_key = file("outscale_integ_sut_keypair.rsa.txt")
+            #private_key = file("outscale_ct_test.rsa.txt")
+            host        = outscale_vm.outscale_vm.instances_set.0.ip_address
         }
      }
 }

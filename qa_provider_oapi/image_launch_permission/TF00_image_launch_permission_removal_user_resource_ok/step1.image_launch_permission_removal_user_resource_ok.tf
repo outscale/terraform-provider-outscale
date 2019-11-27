@@ -12,18 +12,18 @@ resource "outscale_vm" "outscale_instance" {
         command = "date"
     }
     provisioner "local-exec" {
-        command = "date; echo ${self.image_id} ${self.instance_type} ${self.id}"
+        command = "date; echo ${self.image_id} ${self.instance_type} ${self.id
     }
 }
 
 resource "outscale_image" "outscale_image" {
     name        = "terraform test"
-    vm_id = "${outscale_vm.outscale_instance.instance_id}"
+    vm_id = outscale_vm.outscale_instance.instance_id
     no_reboot   = "true"
 }
 
 resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-    image_id       = "${outscale_image.outscale_image.image_id}"
+    image_id       = outscale_image.outscale_image.image_id
     permission_removals = [{
 		account_id = "339215505907"
 	}]

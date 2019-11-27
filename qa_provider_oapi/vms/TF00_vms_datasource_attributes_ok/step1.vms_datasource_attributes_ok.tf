@@ -13,6 +13,6 @@ data "outscale_vms" "outscale_vms" {
    
    filter {
       name  = "vm_ids"
-      values = ["${outscale_vm.outscale_vm_centos.0.vm_id}","${outscale_vm.outscale_vm_centos.1.vm_id}"]
+      values = [outscale_vm.outscale_vm_centos.0.vm_id,outscale_vm.outscale_vm_centos.1.vm_id]
    }  
 }

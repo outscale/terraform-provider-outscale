@@ -5,5 +5,5 @@ resource "outscale_keypair" "outscale_keypair" {
 }
 
 output "keypair" {
-    value ="${outscale_keypair.outscale_keypair.key_name}"
+    value =outscale_keypair.outscale_keypair.key_name
 }

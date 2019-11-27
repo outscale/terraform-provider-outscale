@@ -11,6 +11,6 @@ resource "outscale_security_group" "outscale_security_group2" {
 data "outscale_security_groups" "outscale_security_groups" {
     filter {
         name  = "security_group_ids"
-        values = ["${outscale_security_group.outscale_security_group.security_group_id}","${outscale_security_group.outscale_security_group2.security_group_id}"]
+        values = [outscale_security_group.outscale_security_group.security_group_id,outscale_security_group.outscale_security_group2.security_group_id]
     }
 }

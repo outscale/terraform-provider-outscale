@@ -5,6 +5,6 @@ resource "outscale_keypair" "outscale_keypair" {
 data "outscale_keypair" "outscale_keypair" {
     filter {
         name   = "keypair_names"
-        values = ["${outscale_keypair.outscale_keypair.keypair_name}"]
+        values = [outscale_keypair.outscale_keypair.keypair_name]
     }    
 }

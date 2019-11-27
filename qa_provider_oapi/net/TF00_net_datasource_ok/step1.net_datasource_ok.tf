@@ -5,6 +5,6 @@ resource "outscale_net" "outscale_net" {
 }
 
 output "net" {
-    value = "${outscale_net.outscale_net.net_id}"
+    value = outscale_net.outscale_net.net_id
 }
 

@@ -15,6 +15,6 @@ resource "outscale_net" "outscale_net" {
 data "outscale_net" "outscale_net" {
     filter {
         name   = "net_ids"
-        values = ["${outscale_net.outscale_net.net_id}"]
+        values = [outscale_net.outscale_net.net_id]
     }
 }

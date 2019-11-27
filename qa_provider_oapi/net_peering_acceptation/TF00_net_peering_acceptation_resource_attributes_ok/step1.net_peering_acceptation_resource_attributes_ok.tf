@@ -7,11 +7,11 @@ resource "outscale_net" "outscale_net2" {
 }
 
 resource "outscale_net_peering" "outscale_net_peering" {
-    accepter_net_id = "${outscale_net.outscale_net.net_id}"
-    source_net_id = "${outscale_net.outscale_net2.net_id}"
+    accepter_net_id = outscale_net.outscale_net.net_id
+    source_net_id = outscale_net.outscale_net2.net_id
 }
 
 resource "outscale_net_peering_acceptation" "outscale_net_peering_acceptation" {
-    net_peering_id = "${outscale_net_peering.outscale_net_peering.net_peering_id}"
-    #net_peering_ids = "${outscale_lin_peering.outscale_net_peering.lin_peering_id}"
+    net_peering_id = outscale_net_peering.outscale_net_peering.net_peering_id
+    #net_peering_ids = outscale_lin_peering.outscale_net_peering.lin_peering_id
 }

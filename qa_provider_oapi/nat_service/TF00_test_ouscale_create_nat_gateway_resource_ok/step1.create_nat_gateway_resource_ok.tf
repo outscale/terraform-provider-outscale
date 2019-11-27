@@ -7,15 +7,15 @@ resource "outscale_net" "outscale_net" {
 resource "outscale_subnet" "outscale_subnet" {
   count = 1
 
-  net_id = "${outscale_net.outscale_net.vpc_id}"
+  net_id = outscale_net.outscale_net.vpc_id
 }
 
 resource "outscale_nat_service" "outscale_nat_service" {
   count = 1
 
-  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+  subnet_id = outscale_subnet.outscale_subnet.subnet_id
 }
 
 output "outscale_nat_service" {
-  value = "${outscale_nat_service.outscale_nat_service.allocation_id}"
+  value = outscale_nat_service.outscale_nat_service.allocation_id
 }

@@ -5,5 +5,5 @@ resource "outscale_nat_service" "outscale_nat_service" {
 }
 
 output "outscale_nat_service" {
-  value = "${outscale_nat_service.outscale_nat_service.allocation_id}"
+  value = outscale_nat_service.outscale_nat_service.allocation_id
 }

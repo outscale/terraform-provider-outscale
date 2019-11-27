@@ -7,5 +7,5 @@ resource "ouscale_lin" "outscale_lin" {
 resource "outscale_lin_attribute" "outscale_lin_attribute" {
     enable_dns_hostnames = True
     enable_dns_support = True
-    vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
+    vpc_id = outscale_lin.outscale_lin.vpc_id
 }

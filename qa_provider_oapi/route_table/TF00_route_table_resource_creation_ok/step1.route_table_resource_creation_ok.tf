@@ -7,5 +7,5 @@ resource "outscale_net" "outscale_net" {
 resource "outscale_route_table" "outscale_route_table" {
     count = 1
 
-    net_id = "${outscale_net.outscale_net.net_id}"
+    net_id = outscale_net.outscale_net.net_id
 }

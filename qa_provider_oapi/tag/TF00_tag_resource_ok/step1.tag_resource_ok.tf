@@ -16,7 +16,7 @@ data "outscale_vm" "vmd" {
 }
 
 output "datasource_arch" {
-    value = "${data.outscale_vm.vmd.instances_set.0.architecture}"
+    value = data.outscale_vm.vmd.instances_set.0.architecture
 }
 
 data "outscale_tag" "tag" {
@@ -32,6 +32,6 @@ data "outscale_tag" "tag" {
 }
 
 output "tag" {
-    value = "${data.outscale_tag.tag.resource_type}"
+    value = data.outscale_tag.tag.resource_type
 }
 */

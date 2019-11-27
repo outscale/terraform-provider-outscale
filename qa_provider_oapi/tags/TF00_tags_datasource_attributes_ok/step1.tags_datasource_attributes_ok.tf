@@ -41,6 +41,6 @@ resource "outscale_vm" "outscale_vm2" {
 data "outscale_tags" "outscale_tags" {
     filter {
         name = "resource_ids"
-        values = ["${outscale_vm.outscale_vm.vm_id}", "${outscale_vm.outscale_vm2.vm_id}"]
+        values = [outscale_vm.outscale_vm.vm_id, outscale_vm.outscale_vm2.vm_id]
     }
 }

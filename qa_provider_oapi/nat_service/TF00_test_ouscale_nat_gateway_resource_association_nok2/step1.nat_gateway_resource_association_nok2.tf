@@ -7,16 +7,16 @@ resource "outscale_net" "outscale_net" {
 resource "outscale_subnet" "outscale_subnet" {
   count = 1
 
-  vpc_id = "${outscale_net.outscale_net.vpc_id}"
+  vpc_id = outscale_net.outscale_net.vpc_id
 }
 
 resource "outscale_nat_service" "outscale_nat_service" {
   count = 1
 
-  subnet_id = "${outscale_vm.outscale_vm.subnet_id}"
+  subnet_id = outscale_vm.outscale_vm.subnet_id
   public_ip = "171.33.100.89"
 }
 
 output "outscale_nat_service" {
-  value = "${outscale_nat_service.outscale_nat_service.allocation_id}"
+  value = outscale_nat_service.outscale_nat_service.allocation_id
 }

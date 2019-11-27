@@ -13,12 +13,12 @@ resource "outscale_vm" "outscale_instance" {                  # OK
         command = "date"
     }
     provisioner "local-exec" {
-        command = "date; echo ${self.image_id} ${self.instance_type} ${self.id}"
+        command = "date; echo ${self.image_id} ${self.instance_type} ${self.id
     }
 }
 
 resource "outscale_nic_link" "outscale_nic_link" {
     device_index            = 1
-    instance_id             = "${outscale_vm.outscale_vm.instance_id}"
+    instance_id             = outscale_vm.outscale_vm.instance_id
     #netword_interface_id    = ""
 }
