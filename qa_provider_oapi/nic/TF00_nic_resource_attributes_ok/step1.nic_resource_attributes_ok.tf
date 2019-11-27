@@ -27,11 +27,12 @@ resource "outscale_security_group" "outscale_sg" {
 resource "outscale_nic" "outscale_nic2" {
     subnet_id = outscale_subnet.outscale_subnet.subnet_id
     security_group_ids = [outscale_security_group.outscale_sg.security_group_id]
-    private_ips = [{
+    private_ips {
      is_primary = true
      private_ip = "10.0.0.23"
-   },
-   {is_primary = false
+   }
+     private_ips {
+     is_primary = false
      private_ip = "10.0.0.46"
-   } ]
+   }
 }

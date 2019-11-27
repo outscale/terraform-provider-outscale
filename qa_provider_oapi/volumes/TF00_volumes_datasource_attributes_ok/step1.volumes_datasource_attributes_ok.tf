@@ -2,17 +2,17 @@ resource "outscale_volume" "outscale_volume" {
     subregion_name = format("%s%s", var.region, "a")
     size = 40
 
-    tags = [{
+    tags {
         key = "Name"
         value = "volume"
-    }]
+    }
 }
 
 resource "outscale_volume" "outscale_volume2" {
     subregion_name = format("%s%s", var.region, "a")
     size = 40
 
-    tags = {
+    tags {
         key = "Name"
         value = "volume2"
     }

@@ -1,17 +1,17 @@
 resource "outscale_net" "outscale_net" {
-    count = 1
+    #count = 1
 
     ip_range = "10.10.0.0/24"
 }
 
 resource "outscale_net" "outscale_net2" {
-    count = 1
+    #count = 1
 
     ip_range = "10.31.0.0/16"
 }
 
 resource "outscale_net" "outscale_net3" {
-    count = 1
+    #count = 1
 
     ip_range = "20.0.0.0/16"
 }

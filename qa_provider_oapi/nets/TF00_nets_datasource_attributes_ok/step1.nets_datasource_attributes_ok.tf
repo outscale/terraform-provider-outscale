@@ -1,7 +1,7 @@
 resource "outscale_net" "outscale_net" {
     ip_range = "10.0.0.0/17"
 
-    tags = {
+    tags  {
         key   = "Name"
         value = "outscale_net_resource"
     }
@@ -14,7 +14,7 @@ resource "outscale_net" "outscale_net" {
 resource "outscale_net" "outscale_net2" {
     ip_range = "10.2.0.0/17"
 
-    tags = {
+    tags  {
         key   = "Name"
         value = "outscale_net_resource2"
     }

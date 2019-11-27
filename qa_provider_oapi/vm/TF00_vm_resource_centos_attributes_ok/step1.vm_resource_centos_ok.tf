@@ -25,10 +25,10 @@ resource "outscale_vm" "outscale_vm2" {
 resource "outscale_net" "outscale_net" {
     ip_range = "10.0.0.0/16"
 
-    ####tags = {                               
-    ####    key   = "name"
-    ####    value = "Terraform_net"
-    ####  }
+    tags  {                               
+        key   = "name"
+        value = "Terraform_net"
+      }
 }
 
 resource "outscale_subnet" "outscale_subnet" {
@@ -36,7 +36,7 @@ resource "outscale_subnet" "outscale_subnet" {
     ip_range       = "10.0.0.0/24"
     subregion_name = "eu-west-2b"
 
-    tags = {                               
+    tags {                               
         key   = "name"
         value = "Terraform_subnet"
       }
@@ -65,7 +65,7 @@ resource "outscale_internet_service" "outscale_internet_service" {
 resource "outscale_route_table" "outscale_route_table" {
     net_id = outscale_net.outscale_net.net_id
 
-    tags = {                               
+    tags {                               
         key   = "name"
         value = "Terraform_RT"
       }
