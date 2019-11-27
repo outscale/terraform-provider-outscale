@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
@@ -51,19 +52,19 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	subnetID := d.Get("subnet_id").(string)
 	routeTableID := d.Get("route_table_id").(string)
 	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
-	linkRouteTableOpts := oapi.LinkRouteTableRequest{
+	linkRouteTableOpts := oscgo.LinkRouteTableRequest{
 		RouteTableId: routeTableID,
 		SubnetId:     subnetID,
 	}
 
-	var resp *oapi.POST_LinkRouteTableResponses
+	var resp oscgo.LinkRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_LinkRouteTable(linkRouteTableOpts)
+		resp, _, err = conn.RouteTableApi.LinkRouteTable(context.Background(), &oscgo.LinkRouteTableOpts{LinkRouteTableRequest: optional.NewInterface(linkRouteTableOpts)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 				return resource.RetryableError(err)
@@ -78,30 +79,22 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 
 	// Set the ID and return
 	var errString string
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("Error creating route table link: %s", errString)
 	}
 
-	d.SetId(resp.OK.LinkRouteTableId)
+	d.SetId(resp.GetLinkRouteTableId())
 	d.Set("link_route_table_id", d.Id())
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
 
 	return nil
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(
 		conn, d.Get("route_table_id").(string), d.Get("link_route_table_id").(string))()
@@ -111,15 +104,15 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	if rtRaw == nil {
 		return nil
 	}
-	rt := rtRaw.(oapi.RouteTable)
+	rt := rtRaw.(oscgo.RouteTable)
 	log.Printf("[DEBUG] LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_route_table_id"))
 
 	found := false
-	for _, a := range rt.LinkRouteTables {
-		if a.LinkRouteTableId == d.Id() {
+	for _, a := range rt.GetLinkRouteTables() {
+		if a.GetLinkRouteTableId() == d.Id() {
 			found = true
-			d.Set("subnet_id", a.SubnetId)
-			d.Set("main", a.Main)
+			d.Set("subnet_id", a.GetSubnetId())
+			d.Set("main", a.GetMain())
 			break
 		}
 	}
@@ -132,15 +125,15 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 }
 
 func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting link route table: %s", d.Id())
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
+		_, _, err = conn.RouteTableApi.UnlinkRouteTable(context.Background(), &oscgo.UnlinkRouteTableOpts{UnlinkRouteTableRequest: optional.NewInterface(oscgo.UnlinkRouteTableRequest{
 			LinkRouteTableId: d.Id(),
-		})
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

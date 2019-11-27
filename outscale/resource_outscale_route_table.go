@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"sort"
 	"strings"
@@ -10,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -28,17 +30,17 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 }
 
 func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	createOpts := &oapi.CreateRouteTableRequest{
+	createOpts := oscgo.CreateRouteTableRequest{
 		NetId: d.Get("net_id").(string),
 	}
 	log.Printf("[DEBUG] RouteTable create config: %#v", createOpts)
 
-	var resp *oapi.POST_CreateRouteTableResponses
+	var resp oscgo.CreateRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_CreateRouteTable(*createOpts)
+		resp, _, err = conn.RouteTableApi.CreateRouteTable(context.Background(), &oscgo.CreateRouteTableOpts{CreateRouteTableRequest: optional.NewInterface(createOpts)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -48,22 +50,13 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 		return nil
 	})
 	var errString string
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("Error creating route table: %s", errString)
 	}
 
-	result := resp.OK
-	d.SetId(result.RouteTable.RouteTableId)
+	d.SetId(resp.RouteTable.GetRouteTableId())
 	log.Printf("[INFO] Route Table ID: %s", d.Id())
 
 	log.Printf("[DEBUG] Waiting for route table (%s) to become available", d.Id())
@@ -80,7 +73,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	}
 
 	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -88,7 +81,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 
 	a := make([]interface{}, 0)
 
-	d.Set("tags", a)
+	//d.Set("tags", a)
 	d.Set("routes", a)
 	d.Set("link_route_tables", a)
 
@@ -96,7 +89,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	rtRaw, requestID, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
+	rtRaw, requestID, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -105,24 +98,24 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 		return nil
 	}
 
-	rt := rtRaw.(oapi.RouteTable)
+	rt := rtRaw.(oscgo.RouteTable)
 	d.Set("request_id", requestID)
-	d.Set("route_table_id", rt.RouteTableId)
-	d.Set("net_id", rt.NetId)
-	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
-	d.Set("routes", setOAPIRoutes(rt.Routes))
-	d.Set("link_route_tables", setOAPILinkRouteTables(rt.LinkRouteTables))
-	d.Set("tags", tagsOAPIToMap(rt.Tags))
+	d.Set("route_table_id", rt.GetRouteTableId())
+	d.Set("net_id", rt.GetNetId())
+	d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways()))
+	d.Set("routes", setOSCAPIRoutes(rt.GetRoutes()))
+	d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
+	d.Set("tags", tagsOSCAPIToMap(rt.GetTags()))
 
 	return nil
 }
 
 func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -133,27 +126,27 @@ func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OAPI, d.Id())
+	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
 	if rtRaw == nil {
 		return nil
 	}
-	rt := rtRaw.(oapi.RouteTable)
+	rt := rtRaw.(oscgo.RouteTable)
 
-	for _, a := range rt.LinkRouteTables {
-		if !a.Main {
-			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.LinkRouteTableId)
+	for _, a := range rt.GetLinkRouteTables() {
+		if !a.GetMain() {
+			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.GetLinkRouteTableId())
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-				_, err := conn.POST_UnlinkRouteTable(oapi.UnlinkRouteTableRequest{
-					LinkRouteTableId: a.LinkRouteTableId,
-				})
+				_, _, err := conn.RouteTableApi.UnlinkRouteTable(context.Background(), &oscgo.UnlinkRouteTableOpts{UnlinkRouteTableRequest: optional.NewInterface(oscgo.UnlinkRouteTableRequest{
+					LinkRouteTableId: a.GetLinkRouteTableId(),
+				})})
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 						return resource.RetryableError(err)
@@ -175,9 +168,9 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		_, err = conn.POST_DeleteRouteTable(oapi.DeleteRouteTableRequest{
+		_, _, err = conn.RouteTableApi.DeleteRouteTable(context.Background(), &oscgo.DeleteRouteTableOpts{DeleteRouteTableRequest: optional.NewInterface(oscgo.DeleteRouteTableRequest{
 			RouteTableId: d.Id(),
-		})
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -210,15 +203,15 @@ func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface
 	return nil
 }
 
-func readOAPIRouteTable(conn *oapi.Client, routeTableID string, linkIds ...string) (interface{}, string, error) {
+func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...string) (interface{}, string, error) {
 	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableID, linkIds)
-	var resp *oapi.POST_ReadRouteTablesResponses
+	var resp oscgo.ReadRouteTablesResponse
 	var err error
-	routeTableRequest := &oapi.ReadRouteTablesRequest{}
-	routeTableRequest.Filters = oapi.FiltersRouteTable{RouteTableIds: []string{routeTableID}}
+	routeTableRequest := oscgo.ReadRouteTablesRequest{}
+	routeTableRequest.Filters = &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}}
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadRouteTables(*routeTableRequest)
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(routeTableRequest)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -230,51 +223,38 @@ func readOAPIRouteTable(conn *oapi.Client, routeTableID string, linkIds ...strin
 
 	var errString string
 	var requestID string
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			requestID = resp.Code401.ResponseContext.RequestId
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			requestID = resp.Code400.ResponseContext.RequestId
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			requestID = resp.Code500.ResponseContext.RequestId
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return nil, requestID, fmt.Errorf("Error getting route table: %s", errString)
 	}
 
-	result := resp.OK
-
-	if len(result.RouteTables) <= 0 {
-		return nil, resp.OK.ResponseContext.RequestId, err
+	if len(resp.GetRouteTables()) <= 0 {
+		return nil, resp.ResponseContext.GetRequestId(), err
 	}
 
 	//Fix for OAPI issue when passing routeTableIds and routeTableLinkIds
-	rts := result.RouteTables[0].LinkRouteTables
+	rts := resp.GetRouteTables()[0].GetLinkRouteTables()
 	if len(linkIds) > 0 {
 		for _, linkID := range linkIds {
-			i := sort.Search(len(rts), func(i int) bool { return rts[i].LinkRouteTableId == linkID })
-			if len(rts) > 0 && rts[i].LinkRouteTableId == linkID {
-				return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
+			i := sort.Search(len(rts), func(i int) bool { return rts[i].GetLinkRouteTableId() == linkID })
+			if len(rts) > 0 && rts[i].GetLinkRouteTableId() == linkID {
+				return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
 			}
 
 		}
-		return nil, resp.OK.ResponseContext.RequestId, fmt.Errorf("Error getting route table: LinkRouteTables didn't match with provided (%+v)", linkIds)
+		return nil, resp.ResponseContext.GetRequestId(), fmt.Errorf("Error getting route table: LinkRouteTables didn't match with provided (%+v)", linkIds)
 	}
-	return result.RouteTables[0], resp.OK.ResponseContext.RequestId, err
+	return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
 }
 
-func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oapi.Client, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
+func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		rtRaw, _, err := readOAPIRouteTable(conn, routeTableID, linkIds...)
 		if rtRaw == nil {
 			return nil, "", err
 		}
-		return rtRaw.(oapi.RouteTable), "ready", err
+		return rtRaw.(oscgo.RouteTable), "ready", err
 	}
 }
 
@@ -462,6 +442,88 @@ func setOAPIPropagatingVirtualGateways(vg []oapi.RoutePropagatingVirtualGateway)
 			m := make(map[string]interface{})
 			if vgw.VirtualGatewayId != "" {
 				m["virtual_gateway_id"] = vgw.VirtualGatewayId
+			}
+			propagatingVGWs[k] = m
+		}
+	}
+	return propagatingVGWs
+}
+
+func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
+	route := make([]map[string]interface{}, len(rt))
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+			if r.GetCreationMethod() != "" {
+				m["creation_method"] = r.GetCreationMethod()
+			}
+			if r.GetDestinationIpRange() != "" {
+				m["destination_ip_range"] = r.GetDestinationIpRange()
+			}
+			if r.GetDestinationServiceId() != "" {
+				m["destination_service_id"] = r.GetDestinationServiceId()
+			}
+			if r.GetGatewayId() != "" {
+				m["gateway_id"] = r.GetGatewayId()
+			}
+			if r.GetNetAccessPointId() != "" {
+				m["net_access_point_id"] = r.GetNetAccessPointId()
+			}
+			if r.GetNetPeeringId() != "" {
+				m["net_peering_id"] = r.GetNetPeeringId()
+			}
+			if r.GetVmId() != "" {
+				m["vm_id"] = r.GetVmId()
+			}
+			if r.GetNicId() != "" {
+				m["nic_id"] = r.GetNicId()
+			}
+			if r.GetState() != "" {
+				m["state"] = r.GetState()
+			}
+			if r.GetVmAccountId() != "" {
+				m["vm_account_id"] = r.GetVmAccountId()
+			}
+			route[k] = m
+		}
+	}
+
+	return route
+}
+
+func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+	linkRouteTables := make([]map[string]interface{}, len(rt))
+	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+			if r.GetMain() {
+				m["main"] = r.GetMain()
+			}
+			if r.GetRouteTableId() != "" {
+				m["route_table_id"] = r.GetRouteTableId()
+			}
+			if r.GetLinkRouteTableId() != "" {
+				m["link_route_table_id"] = r.GetLinkRouteTableId()
+			}
+			if r.GetSubnetId() != "" {
+				m["subnet_id"] = r.GetSubnetId()
+			}
+			linkRouteTables[k] = m
+		}
+	}
+
+	return linkRouteTables
+}
+
+func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+	propagatingVGWs = make([]map[string]interface{}, len(vg))
+
+	if len(vg) > 0 {
+		for k, vgw := range vg {
+			m := make(map[string]interface{})
+			if vgw.GetVirtualGatewayId() != "" {
+				m["virtual_gateway_id"] = vgw.GetVirtualGatewayId()
 			}
 			propagatingVGWs[k] = m
 		}

@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"testing"
@@ -9,11 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
-	var v oapi.RouteTable
+	var v oscgo.RouteTable
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -34,21 +36,21 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 }
 
 func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route_table_link" {
 			continue
 		}
-		params := &oapi.ReadRouteTablesRequest{
-			Filters: oapi.FiltersRouteTable{
-				RouteTableIds: []string{rs.Primary.Attributes["route_table_id"]},
+		params := oscgo.ReadRouteTablesRequest{
+			Filters: &oscgo.FiltersRouteTable{
+				RouteTableIds: &[]string{rs.Primary.Attributes["route_table_id"]},
 			},
 		}
-		var resp *oapi.POST_ReadRouteTablesResponses
+		var resp oscgo.ReadRouteTablesResponse
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadRouteTables(*params)
+			resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(params)})
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
@@ -68,15 +70,15 @@ func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 			return err
 		}
 
-		if len(resp.OK.RouteTables) > 0 {
+		if len(resp.GetRouteTables()) > 0 {
 			return fmt.Errorf(
-				"RouteTable: %s has LinkRouteTables", resp.OK.RouteTables[0].RouteTableId)
+				"RouteTable: %s has LinkRouteTables", resp.GetRouteTables()[0].GetRouteTableId())
 		}
 	}
 	return nil
 }
 
-func testAccCheckOAPILinkRouteTableExists(n string, v *oapi.RouteTable) resource.TestCheckFunc {
+func testAccCheckOAPILinkRouteTableExists(n string, v *oscgo.RouteTable) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -87,17 +89,17 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oapi.RouteTable) resource
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		params := &oapi.ReadRouteTablesRequest{
-			Filters: oapi.FiltersRouteTable{
-				RouteTableIds: []string{rs.Primary.Attributes["route_table_id"]},
+		params := oscgo.ReadRouteTablesRequest{
+			Filters: &oscgo.FiltersRouteTable{
+				RouteTableIds: &[]string{rs.Primary.Attributes["route_table_id"]},
 			},
 		}
-		var resp *oapi.POST_ReadRouteTablesResponses
+		var resp oscgo.ReadRouteTablesResponse
 		var err error
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadRouteTables(*params)
+			resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(params)})
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 					log.Printf("[DEBUG] Trying to create route again: %q", err)
@@ -111,13 +113,13 @@ func testAccCheckOAPILinkRouteTableExists(n string, v *oapi.RouteTable) resource
 		if err != nil {
 			return err
 		}
-		if len(resp.OK.RouteTables) == 0 {
+		if len(resp.GetRouteTables()) == 0 {
 			return fmt.Errorf("RouteTable not found")
 		}
 
-		*v = resp.OK.RouteTables[0]
-		if len(v.LinkRouteTables) == 0 {
-			return fmt.Errorf("RouteTable: %s has no LinkRouteTables", v.RouteTableId)
+		*v = resp.GetRouteTables()[0]
+		if len(v.GetLinkRouteTables()) == 0 {
+			return fmt.Errorf("RouteTable: %s has no LinkRouteTables", v.GetRouteTableId())
 		}
 
 		return nil

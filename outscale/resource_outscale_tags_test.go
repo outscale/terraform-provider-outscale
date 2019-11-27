@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -115,9 +117,23 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oapi.Vm, provide
 }
 
 func testAccCheckOAPITags(
-	ts []oapi.ResourceTag, key string, value string) resource.TestCheckFunc {
+	ts []oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
+	log.Printf("[DEBUG] testAccCheckOAPITags %+v", ts)
 	return func(s *terraform.State) error {
-		return checkOAPITags(ts, key, value)
+		m := tagsOSCAPIToMap(ts)
+		v, ok := m[0]["Key"]
+		if value != "" && !ok {
+			return fmt.Errorf("Missing tag: %s", key)
+		} else if value == "" && ok {
+			return fmt.Errorf("Extra tag: %s", key)
+		}
+		if value == "" {
+			return nil
+		}
+		if v != value {
+			return fmt.Errorf("%s: bad value: %s", key, v)
+		}
+		return nil
 	}
 }
 
