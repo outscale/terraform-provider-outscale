@@ -37,7 +37,7 @@ func init() {
 			"outscale_internet_service_link":         resourceOutscaleOAPIInternetServiceLink,
 			"outscale_nat_service":                   resourceOutscaleOAPINatService,
 			"outscale_subnet":                        resourceOutscaleOAPISubNet,
-			"outscale_client_endpoint":               resourceOutscaleCustomerGateway,
+			"outscale_client_endpoint":               resourceOutscaleOAPICustomerGateway,
 			"outscale_route":                         resourceOutscaleOAPIRoute,
 			"outscale_route_table":                   resourceOutscaleOAPIRouteTable,
 			"outscale_route_table_link":              resourceOutscaleOAPILinkRouteTable,
