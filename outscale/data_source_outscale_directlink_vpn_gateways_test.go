@@ -20,7 +20,7 @@ func TestAccOutscaleDSOAPIDLVPNGateways_basic(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCustomerGatewayDestroy,
+		CheckDestroy: testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIDLVPNGatewaysDSConfig(rInt, rBgpAsn),
