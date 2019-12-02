@@ -199,7 +199,11 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	}
 
 	stateConf := &resource.StateChangeConf{
+<<<<<<< HEAD:outscale/resource_outscale_subnet.go
 		Pending:    []string{"pending", "available"},
+=======
+		Pending:    []string{"pending", "ending/wait"},
+>>>>>>> test: subnet-rs - fix test checkers:outscale/resource_outscale_oapi_subnet.go
 		Target:     []string{"deleted"},
 		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
@@ -266,6 +270,7 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 
 		if err != nil {
 			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
+<<<<<<< HEAD:outscale/resource_outscale_subnet.go
 			return nil, "error", err
 		}
 
@@ -274,6 +279,18 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 		}
 
 		return resp.GetSubnets()[0], resp.GetSubnets()[0].GetState(), nil
+=======
+			return nil, "", err
+		}
+
+		if !resp.HasSubnets() || len(resp.GetSubnets()) == 0 {
+			return nil, "deleted", nil
+		}
+
+		subnet := resp.GetSubnets()[0]
+
+		return subnet, subnet.GetState(), nil
+>>>>>>> test: subnet-rs - fix test checkers:outscale/resource_outscale_oapi_subnet.go
 	}
 }
 
