@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
