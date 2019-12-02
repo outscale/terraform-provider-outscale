@@ -84,7 +84,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for instance (%s) to become created: %s", d.Id(), err)
+			"Error waiting for subnet (%s) to become created: %s", d.Id(), err)
 	}
 
 	d.SetId(result.GetSubnetId())
@@ -127,8 +127,6 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
-
-	log.Printf("[DEBUG] Setting Subnet (%s)", err)
 
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
@@ -183,7 +181,7 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
-		Target:     []string{"not available"},
+		Target:     []string{"deleted"},
 		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -208,7 +206,7 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error 
 		return err
 	}
 	if err := d.Set("ip_range", subnet.GetIpRange()); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscaleSubNet3 (%s)", err)
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet (%s)", err)
 
 		return err
 	}
@@ -243,17 +241,17 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 		})
 
 		if err != nil {
-			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)
+			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
 			return nil, "", err
 		}
 
 		if !resp.HasSubnets() || len(resp.GetSubnets()) == 0 {
-			return nil, "not available", nil
+			return nil, "deleted", nil
 		}
 
-		internetService := resp.GetSubnets()[0]
+		subnet := resp.GetSubnets()[0]
 
-		return internetService, "available", nil
+		return subnet, subnet.GetState(), nil
 	}
 }
 
