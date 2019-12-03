@@ -43,7 +43,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 
 	var resp oscgo.CreateSubnetResponse
 	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
+	err = resource.Retry(40*time.Second, func() *resource.RetryError {
 		r, _, err := conn.SubnetApi.CreateSubnet(context.Background(), &oscgo.CreateSubnetOpts{CreateSubnetRequest: optional.NewInterface(req)})
 
 		if err != nil {
@@ -72,19 +72,21 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
-		Target:     []string{"available"},
-		Refresh:    SubnetStateOApiRefreshFunc(conn, result.GetSubnetId()),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
+	if result.GetState() != "available" {
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending"},
+			Target:     []string{"available"},
+			Refresh:    SubnetStateOApiRefreshFunc(conn, result.GetSubnetId()),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      6 * time.Second,
+			MinTimeout: 1 * time.Second,
+		}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for subnet (%s) to become created: %s", d.Id(), err)
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for subnet (%s) to become created: %s", d.Id(), err)
+		}
 	}
 
 	d.SetId(result.GetSubnetId())
@@ -172,23 +174,29 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
+
 	if err != nil {
 		log.Printf("[DEBUG] Error deleting Subnet(%s)", err)
 		return err
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
+		Pending:    []string{"pending", "available"},
 		Target:     []string{"deleted"},
 		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Delay:      2 * time.Second,
+		MinTimeout: 1 * time.Second,
 	}
 
 	_, err = stateConf.WaitForState()
+	if err != nil {
+		return err
+	}
+
+	d.SetId("")
 
 	return nil
 }
@@ -242,16 +250,14 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 
 		if err != nil {
 			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
-			return nil, "", err
+			return nil, "error", err
 		}
 
-		if !resp.HasSubnets() || len(resp.GetSubnets()) == 0 {
-			return nil, "deleted", nil
+		if len(resp.GetSubnets()) == 0 {
+			return oscgo.Subnet{}, "deleted", nil
 		}
 
-		subnet := resp.GetSubnets()[0]
-
-		return subnet, subnet.GetState(), nil
+		return resp.GetSubnets()[0], resp.GetSubnets()[0].GetState(), nil
 	}
 }
 
