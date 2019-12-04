@@ -6,7 +6,7 @@ description: |-
   [Manages a VPN connection route.]
 ---
 
-# outscale_vpn_connection_route
+# outscale_vpn_connection_route Resource
 
 Manages a VPN connection route.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Routing+Configuration+for+VPN+Connections).

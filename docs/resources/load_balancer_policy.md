@@ -6,7 +6,7 @@ description: |-
   [Manages a load balancer policy.]
 ---
 
-# outscale_load_balancer_policy
+# outscale_load_balancer_policy Resource
 
 Manages a load balancer policy.
 For more information on this resource, see the [User Guide](?).

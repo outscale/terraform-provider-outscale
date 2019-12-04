@@ -6,7 +6,7 @@ description: |-
   [Manages a NIC.]
 ---
 
-# outscale_nic
+# outscale_nic Resource
 
 Manages a NIC.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs).

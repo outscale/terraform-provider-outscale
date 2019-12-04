@@ -6,7 +6,7 @@ description: |-
   [Manages a Net peering.]
 ---
 
-# outscale_net_peering
+# outscale_net_peering Resource
 
 Manages a Net peering.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPC+Peering+Connections).

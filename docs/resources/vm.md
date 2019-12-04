@@ -6,7 +6,7 @@ description: |-
   [Manages a virtual machine (VM).]
 ---
 
-# outscale_vm
+# outscale_vm Resource
 
 Manages a virtual machine (VM).
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instances).

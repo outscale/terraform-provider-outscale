@@ -6,7 +6,7 @@ description: |-
   [Manages an image.]
 ---
 
-# outscale_image
+# outscale_image Resource
 
 Manages an image.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+OMIs).
