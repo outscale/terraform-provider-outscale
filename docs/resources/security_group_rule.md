@@ -34,7 +34,7 @@ The following arguments are supported:
     * `account_id` - (Optional) The account ID of a user.
     * `security_group_id` - (Required) The ID of the security group.
     * `security_group_name` - (Optional) (Public Cloud only) The name of the security group.
-  * `service_ids` - (Optional) One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](#readnetaccesspointservices).
+  * `service_ids` - (Optional) One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs-beta.outscale.com/#readnetaccesspointservices).
   * `to_port_range` - (Optional) The end of the port range for the TCP and UDP protocols, or an ICMP type number.
 * `security_group_account_id_to_link` - (Optional) The account ID of the owner of the security group for which you want to create a rule.
 * `security_group_id` - (Required) The ID of the security group for which you want to create a rule.
@@ -56,7 +56,7 @@ The following attributes are exported:
       * `account_id` - The account ID of a user.
       * `security_group_id` - The ID of the security group.
       * `security_group_name` - (Public Cloud only) The name of the security group.
-    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](#readnetaccesspointservices).
+    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs-beta.outscale.com/#readnetaccesspointservices).
     * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `net_id` - The ID of the Net for the security group.
   * `outbound_rules` - The outbound rules associated with the security group.
@@ -67,7 +67,7 @@ The following attributes are exported:
       * `account_id` - The account ID of a user.
       * `security_group_id` - The ID of the security group.
       * `security_group_name` - (Public Cloud only) The name of the security group.
-    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](#readnetaccesspointservices).
+    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs-beta.outscale.com/#readnetaccesspointservices).
     * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `security_group_id` - The ID of the security group.
   * `security_group_name` - (Public Cloud only) The name of the security group.
