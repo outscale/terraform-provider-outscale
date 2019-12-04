@@ -174,21 +174,3 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 		}
 	`, region)
 }
-
-func testAccOutscaleOAPITagsUpdate(region, value string) string {
-	return fmt.Sprintf(`
-	resource "outscale_net" "net" {
-		ip_range = "10.0.0.0/16"
-	}
-	resource "outscale_subnet" "subnet" {
-		ip_range = "10.0.0.0/16"
-		subregion_name = "%sb"
-		net_id = "${outscale_net.net.id}"
-	
-		tags {
-			key = "name"
-			value = "%s"
-		 }
-	}
-		`, region, value)
-}
