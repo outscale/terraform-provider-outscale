@@ -1,14 +1,14 @@
 ---
 layout: "outscale"
-page_title: "Provider: OUTSCALE"
+page_title: "Provider: 3DS OUTSCALE"
 sidebar_current: "docs-outscale-index"
 description: |-
-  The Outscale Services provider is used to interact with the many resources supported by Outscale. The provider needs to be configured with the proper credentials before it can be used.
+  The 3DS OUTSCALE Services provider is used to interact with the many resources supported by 3DS OUTSCALE. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
-# Outscale Provider
+# 3DS OUTSCALE Provider
 
-The Outscale provider is used to interact with the
+The 3DS OUTSCALE provider is used to interact with the
 many resources supported by Outscale. The provider needs to be configured
 with the proper credentials before it can be used.
 
@@ -28,7 +28,7 @@ Available regions are: eu-west-2, us-east-2, us-west-1, cn-southeast-1
 
 ## Authentication
 
-The Outscale provider offers a flexible means of providing credentials for
+The 3DS OUTSCALE provider offers a flexible means of providing credentials for
 authentication. The following methods are supported, in this order, and
 explained below:
 
@@ -53,8 +53,8 @@ provider "outscale" {
 ### Environment variables
 
 You can provide your credentials via the `ACCESS_KEY_ID` and
-`SECRET_KEY_ID`, environment variables, representing your Outscale
-Access Key and Outscale Secret Key, respectively. 
+`SECRET_KEY_ID`, environment variables, representing your 3DS OUTSCALE
+Access Key and 3DS OUTSCALE Secret Key, respectively. 
 
 ```hcl
 provider "outscale" {}
@@ -71,7 +71,7 @@ $ terraform plan
 
 ### Shared Credentials file
 
-You can use an Outscale credentials file to specify your credentials.
+You can use an 3DS OUTSCALE credentials file to specify your credentials.
 
 Usage:
 
@@ -83,7 +83,7 @@ provider "outscale" {
 }
 ```
 
-### Outscale Role
+### 3DS OUTSCALE Role
 
 The default deadline for the FCU metadata API endpoint is 100 milliseconds,
 which can be overidden by setting the `OUTSCALE_METADATA_TIMEOUT` environment
