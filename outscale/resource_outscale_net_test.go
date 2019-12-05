@@ -169,9 +169,10 @@ func testAccOutscaleOAPILinConfigUpdateTags(value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" { 
 		ip_range = "10.0.0.0/16"
-		tags =[{ 
-		key = "name" 
-		value = "%s"  }] 
+		tags { 
+			key = "name" 
+			value = "%s"
+		}
 	   }
 `, value)
 }
