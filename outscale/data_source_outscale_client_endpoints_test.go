@@ -21,7 +21,7 @@ func TestAccOutscaleOAPIDSCustomerGateways_basic(t *testing.T) {
 		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckCustomerGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPICustomerGatewaysDSConfig(rInt, rBgpAsn),
