@@ -28,7 +28,7 @@ The following arguments are supported:
   * `connection_types` - (Optional) The types of the VPN connections (only `ipsec.1` is supported).
   * `route_destination_ip_ranges` - (Optional) The destination IP ranges.
   * `states` - (Optional) The states of the VPN connections (`pending` \| `available` \| `deleting` \| `deleted`).
-  * `static_routes_only` - (Optional) If `false`, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If `true`, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](#createvpnconnectionroute) and [DeleteVpnConnectionRoute](#deletevpnconnectionroute).
+  * `static_routes_only` - (Optional) If `false`, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If `true`, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs-beta.outscale.com/#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs-beta.outscale.com/#deletevpnconnectionroute).
   * `virtual_gateway_ids` - (Optional) The IDs of the virtual gateways.
   * `vpn_connection_ids` - (Optional) The IDs of the VPN connections.
 
@@ -45,7 +45,7 @@ The following attributes are exported:
     * `route_type` - The type of route (always `static`).
     * `state` - The current state of the static route (`pending` \| `available` \| `deleting` \| `deleted`).
   * `state` - The state of the VPN connection (`pending` \| `available` \| `deleting` \| `deleted`).
-  * `static_routes_only` - If `false`, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If `true`, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](#createvpnconnectionroute) and [DeleteVpnConnectionRoute](#deletevpnconnectionroute).
+  * `static_routes_only` - If `false`, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If `true`, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs-beta.outscale.com/#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs-beta.outscale.com/#deletevpnconnectionroute).
   * `tags` - One or more tags associated with the VPN connection.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
