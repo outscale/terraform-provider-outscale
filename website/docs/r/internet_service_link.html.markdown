@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_internet_service_link"
 sidebar_current: "docs-outscale-resource-internet-service-link"
 description: |-
-  [Manages an internet service link.]
+  [Manages an Internet service link.]
 ---
 
 # outscale_internet_service_link Resource
 
-Manages an internet service link.
+Manages an Internet service link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Internet+Gateways).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkinternetservice).
 

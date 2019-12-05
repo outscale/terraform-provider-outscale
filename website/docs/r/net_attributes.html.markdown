@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_net_attribute"
 sidebar_current: "docs-outscale-resource-net-attribute"
 description: |-
-  [Manages a net attribute.]
+  [Manages a Net attribute.]
 ---
 
 # outscale_net_attribute Resource
 
-Manages a net attribute.
+Manages a Net attribute.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#updatenet).
 
