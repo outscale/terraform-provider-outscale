@@ -6,7 +6,7 @@ description: |-
   [Manages a snapshot export task.]
 ---
 
-# outscale_snapshot_export_task
+# outscale_snapshot_export_task Resource
 
 Manages a snapshot export task.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).

@@ -6,7 +6,7 @@ description: |-
   [Manages a Net.]
 ---
 
-# outscale_net
+# outscale_net Resource
 
 Manages a Net.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).

@@ -6,7 +6,7 @@ description: |-
   [Manages a tag.]
 ---
 
-# outscale_tag
+# outscale_tag Resource
 
 Manages a tag.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Tags).

@@ -6,7 +6,7 @@ description: |-
   [Manages an internet service.]
 ---
 
-# outscale_internet_service
+# outscale_internet_service Resource
 
 Manages an internet service.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Internet+Gateways).

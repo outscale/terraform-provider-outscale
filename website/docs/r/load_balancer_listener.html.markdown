@@ -6,7 +6,7 @@ description: |-
   [Manages a load balancer listener.]
 ---
 
-# outscale_load_balancer_listener
+# outscale_load_balancer_listener Resource
 
 Manages a load balancer listener.
 For more information on this resource, see the [User Guide](?).

@@ -6,7 +6,7 @@ description: |-
   [Manages a volume.]
 ---
 
-# outscale_volume
+# outscale_volume Resource
 
 Manages a volume.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).

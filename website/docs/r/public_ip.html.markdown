@@ -6,7 +6,7 @@ description: |-
   [Manages a public IP.]
 ---
 
-# outscale_public_ip
+# outscale_public_ip Resource
 
 Manages a public IP.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs).

@@ -6,7 +6,7 @@ description: |-
   [Manages a VPN connection.]
 ---
 
-# outscale_vpn_connection
+# outscale_vpn_connection Resource
 
 Manages a VPN connection.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPN+Connections).

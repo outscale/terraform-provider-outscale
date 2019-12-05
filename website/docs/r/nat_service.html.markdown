@@ -6,7 +6,7 @@ description: |-
   [Manages a NAT service.]
 ---
 
-# outscale_nat_service
+# outscale_nat_service Resource
 
 Manages a NAT service.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Devices).

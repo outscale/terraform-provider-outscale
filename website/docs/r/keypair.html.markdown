@@ -6,7 +6,7 @@ description: |-
   [Manages a keypair.]
 ---
 
-# outscale_keypair
+# outscale_keypair Resource
 
 Manages a keypair.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Keypairs).

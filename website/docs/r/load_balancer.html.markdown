@@ -6,7 +6,7 @@ description: |-
   [Manages a load balancer.]
 ---
 
-# outscale_load_balancer
+# outscale_load_balancer Resource
 
 Manages a load balancer.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Load+Balancers).

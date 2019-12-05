@@ -6,7 +6,7 @@ description: |-
   [Manages a snapshot.]
 ---
 
-# outscale_snapshot
+# outscale_snapshot Resource
 
 Manages a snapshot.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).

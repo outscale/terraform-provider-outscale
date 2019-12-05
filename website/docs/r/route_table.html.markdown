@@ -6,7 +6,7 @@ description: |-
   [Manages a route table.]
 ---
 
-# outscale_route_table
+# outscale_route_table Resource
 
 Manages a route table.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).

@@ -6,7 +6,7 @@ description: |-
   [Manages a security group rule.]
 ---
 
-# outscale_security_group_rule
+# outscale_security_group_rule Resource
 
 Manages a security group rule.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Group+Rules).

@@ -6,7 +6,7 @@ description: |-
   [Manages a subnet.]
 ---
 
-# outscale_subnet
+# outscale_subnet Resource
 
 Manages a subnet.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
