@@ -18,6 +18,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 		Create: resourceOutscaleOAPILinPeeringAccepterCreate,
 		Read:   resourceOutscaleOAPILinPeeringRead,
 		Delete: resourceOutscaleOAPILinPeeringAccepterDelete,
+		Update: resourceOutscaleOAPILinPeeringAccepterUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -102,6 +103,21 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 
 	d.SetPartial("tags")
 
+	return resourceOutscaleOAPILinPeeringRead(d, meta)
+}
+
+func resourceOutscaleOAPILinPeeringAccepterUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
 	return resourceOutscaleOAPILinPeeringRead(d, meta)
 }
 
