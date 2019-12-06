@@ -2,16 +2,17 @@ package outscale
 
 import (
 	"context"
+
 	"fmt"
 	"log"
-	"strings"
 	"time"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/antihax/optional"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
@@ -41,7 +42,22 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": dataSourceTagsSchema(),
+			"tags": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -53,31 +69,44 @@ func resourceOutscaleOAPIInternetServiceLink() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	log.Println("[DEBUG] Creating Internet Service")
-	resp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background(), &oscgo.CreateInternetServiceOpts{
-		CreateInternetServiceRequest: optional.NewInterface(oscgo.CreateInternetServiceRequest{}),
-	})
+	internetServiceID := d.Get("internet_service_id").(string)
+	req := &oscgo.LinkInternetServiceOpts{
+		LinkInternetServiceRequest: optional.NewInterface(oscgo.LinkInternetServiceRequest{
+			InternetServiceId: internetServiceID,
+			NetId:             d.Get("net_id").(string),
+		}),
+	}
 
+	resp, _, err := conn.InternetServiceApi.LinkInternetService(context.Background(), req)
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", err)
+		return fmt.Errorf("Error Link Internet Service: %s", err.Error())
+	}
+
+	if !resp.HasResponseContext() {
+		return fmt.Errorf("Error there is not Link Internet Service (%s)", err)
+	}
+
+	filterReq := &oscgo.ReadInternetServicesOpts{
+		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
+		}),
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
+		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    InternetServiceStateOApiRefreshFunc(conn, resp.InternetService.GetInternetServiceId()),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		// Delay:      3 * time.Minute,
 	}
 
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for instance (%s) to become created: %s", d.Id(), err)
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", internetServiceID, err)
 	}
 
-	d.SetId(resp.InternetService.GetInternetServiceId())
+	d.SetId(internetServiceID)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return resourceOutscaleOAPIInternetServiceLinkRead(d, meta)
 }
@@ -85,94 +114,112 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	log.Printf("[DEBUG] Reading Internet Service id (%s)", d.Id())
-
-	req := oscgo.ReadInternetServicesRequest{
-		Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{d.Id()}},
+	internetServiceID := d.Get("internet_service_id").(string)
+	filterReq := &oscgo.ReadInternetServicesOpts{
+		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
+		}),
 	}
 
-	var resp oscgo.ReadInternetServicesResponse
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(req)})
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"deleted", "available"},
+		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		// Delay:      3 * time.Minute,
+	}
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		resp = r
-		return nil
-	})
-
+	value, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", err.Error())
-
-	}
-	if !resp.HasInternetServices() {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
-	// once filters work again. And use resp.OK.InternetServices[0]
-	err, result := getInternetServiceOSC(resp.GetInternetServices(), d.Id())
-
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("internet_service_id", result.GetInternetServiceId())
-
-	if err := d.Set("net_id", result.GetNetId()); err != nil {
-		return err
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
 
-	if err := d.Set("state", result.GetState()); err != nil {
-		return err
-	}
+	resp := value.(oscgo.ReadInternetServicesResponse)
+	internetService := resp.GetInternetServices()[0]
 
-	return d.Set("tags", tagsOSCAPIToMap(result.GetTags()))
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(internetService.GetInternetServiceId())
+
+		set("state", internetService.State)
+
+		if err := set("tags", getOapiTagSet(internetService.Tags)); err != nil {
+			return err
+		}
+		return d.Set("request_id", resp.ResponseContext.RequestId)
+	})
 }
 
 func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oscgo.UnlinkInternetServiceRequest{
-		InternetServiceId: d.Get("internet_service_id").(string),
-		NetId:             d.Get("net_id").(string),
-	}
-
-	var err error
-
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.InternetServiceApi.DeleteInternetService(context.Background(), &oscgo.DeleteInternetServiceOpts{
-			DeleteInternetServiceRequest: optional.NewInterface(req),
-		})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "DependencyProblem") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	var errString string
-
-	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("[DEBUG] Error deleting Internet Service id (%s)", errString)
+	internetServiceID := d.Get("internet_service_id").(string)
+	filterReq := &oscgo.ReadInternetServicesOpts{
+		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
+		}),
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "ending/wait"},
-		Target:     []string{"not available"},
-		Refresh:    InternetServiceStateOApiRefreshFunc(conn, d.Id()),
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
+		Pending:    []string{"pending"},
+		Target:     []string{"deleted", "available"},
+		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		// Delay:      3 * time.Minute,
 	}
 
-	_, err = stateConf.WaitForState()
+	value, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
+	}
+
+	resp := value.(oscgo.ReadInternetServicesResponse)
+	internetService := resp.GetInternetServices()[0]
+
+	req := &oscgo.UnlinkInternetServiceOpts{
+		UnlinkInternetServiceRequest: optional.NewInterface(oscgo.UnlinkInternetServiceRequest{
+			InternetServiceId: internetService.GetInternetServiceId(),
+			NetId:             internetService.GetNetId(),
+		}),
+	}
+
+	_, _, err = conn.InternetServiceApi.UnlinkInternetService(context.Background(), req)
+	if err != nil {
+		return fmt.Errorf("error unlink Internet Service (%s):  %s", d.Id(), err)
+	}
 
 	return nil
+}
+
+// LISOAPIStateRefreshFunction returns a resource.StateRefreshFunc that is used to watch
+// a Link Internet Service.
+func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req *oscgo.ReadInternetServicesOpts, failState string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		resp, _, err := client.InternetServiceApi.ReadInternetServices(context.Background(), req)
+		if err != nil {
+			return nil, "failed", err
+		}
+
+		log.Print("==================================\n\n")
+		log.Printf("LOOOG___ : %#+v\n\n", resp.GetInternetServices())
+		log.Print("==================================\n")
+
+		state := "deleted"
+
+		if resp.HasInternetServices() && len(resp.GetInternetServices()) > 0 {
+			natServices := resp.GetInternetServices()
+			state = natServices[0].GetState()
+
+			if state == failState {
+				return natServices[0], state, fmt.Errorf("Failed to reach target state. Reason: %v", state)
+			}
+
+			if state == "" {
+				return resp, "available", nil
+			}
+		}
+
+		return resp, state, nil
+	}
 }

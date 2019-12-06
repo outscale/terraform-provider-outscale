@@ -48,7 +48,6 @@ func init() {
 			"outscale_nic_link":                      resourceOutscaleOAPINetworkInterfaceAttachment,
 			"outscale_nic":                           resourceOutscaleOAPINic,
 			"outscale_image_tasks":                   resourceOutscaleOAPIImageTasks,
-			"outscale_reserved_vms_offer_purchase":   resourceOutscaleOAPIReservedVmsOfferPurchase,
 			"outscale_vpn_gateway":                   resourceOutscaleOAPIVpnGateway,
 			"outscale_vpn_gateway_route_propagation": resourceOutscaleOAPIVpnGatewayRoutePropagation,
 			"outscale_snapshot_export_tasks":         resourceOutscaleOAPIImageExportTasks,

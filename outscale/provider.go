@@ -74,7 +74,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_peering_acceptation":       resourceOutscaleOAPILinPeeringConnectionAccepter(),
 			"outscale_nic_link":                      resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                resourceOutscaleOAPINetworkInterfacePrivateIP(),
-			"outscale_reserved_vms_offer_purchase":   resourceOutscaleOAPIReservedVmsOfferPurchase(),
 			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes(),
 			"outscale_net_api_access":                resourceOutscaleOAPIVpcEndpoint(),
 			"outscale_snapshot_import":               resourcedOutscaleOAPISnapshotImport(),
