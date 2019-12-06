@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_net_attributes"
 sidebar_current: "docs-outscale-datasource-net-attributes"
 description: |-
-  [Provides information about net attributes.]
+  [Provides information about Net attributes.]
 ---
 
 # outscale_net_attributes Data Source
 
-Provides information about net attributes.
+Provides information about Net attributes.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#updatenet).
 

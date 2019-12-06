@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_subnet"
 sidebar_current: "docs-outscale-datasource-subnet"
 description: |-
-  [Provides information about subnets.]
+  [Provides information about Subnets.]
 ---
 
 # outscale_subnet Data Source
 
-Provides information about subnets.
+Provides information about Subnets.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-subnet).
 
