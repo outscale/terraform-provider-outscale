@@ -21,8 +21,59 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
-		Schema: getOAPINatServiceSchema(),
+		Schema: map[string]*schema.Schema{
+			// Arguments
+			"public_ip_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"token": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"subnet_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			// Attributes
+			"public_ips": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"public_ip_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"public_ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"nat_service_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsListOAPISchema(),
+		},
 	}
 }
 
@@ -152,9 +203,10 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 	}
-	if err := d.Set("tags", tagsOAPIToMap(ng.Tags)); err != nil {
-		fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
-	}
+
+	// if err := d.Set("tags", tagsOSCAPIToMap(ng.Tags)); err != nil {
+	// 	fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
+	// }
 
 	return nil
 }
