@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
-	//var conf oapi.InternetService
+	var conf oapi.InternetService
+
+	resourceName := "outscale_internet_service.gateway"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -26,14 +28,27 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW"),
-				Check:  resource.ComposeTestCheckFunc(
-				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIInternetServiceExists(resourceName, &conf),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW"),
 				),
 			},
 			{
 				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW2"),
-				Check:  resource.ComposeTestCheckFunc(
-				//testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW2"),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPIInternetServiceWithoutTags(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					resource.TestCheckNoResourceAttr(resourceName, "tags.#"),
 				),
 			},
 		},
@@ -151,10 +166,13 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 func testAccOutscaleOAPIInternetServiceConfig(value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_internet_service" "gateway" {
-		tags =
-		{       
-			key   = "name"     
+		tags {       
+			key   = "Name"     
 			value = "%s"       
 		}
 	}`, value)
+}
+
+func testAccOutscaleOAPIInternetServiceWithoutTags() string {
+	return `resource "outscale_internet_service" "gateway" {}`
 }
