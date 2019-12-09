@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"fmt"
-	"log"
 	"time"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
@@ -200,10 +199,6 @@ func LISOAPIStateRefreshFunction(client *oscgo.APIClient, req *oscgo.ReadInterne
 		if err != nil {
 			return nil, "failed", err
 		}
-
-		log.Print("==================================\n\n")
-		log.Printf("LOOOG___ : %#+v\n\n", resp.GetInternetServices())
-		log.Print("==================================\n")
 
 		state := "deleted"
 
