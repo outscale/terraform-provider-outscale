@@ -303,6 +303,8 @@ github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+W
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/outscale/osc-go v0.0.8 h1:DcPpHuRzchE26r6E1/vC0LCradP95Lx/f+A0gh3WcT8=
 github.com/outscale/osc-go v0.0.8/go.mod h1:SIe8mlyWE9XUYBUrsvaNjkrFxVuUB3rC4Naq3Uzh2O0=
+github.com/outscale/osc-go v0.0.9 h1:fphLDN7RCt3HJ1jsS1k3HVOaquUS8luTfqKjePDVDc0=
+github.com/outscale/osc-go v0.0.9/go.mod h1:SIe8mlyWE9XUYBUrsvaNjkrFxVuUB3rC4Naq3Uzh2O0=
 github.com/packer-community/winrmcp v0.0.0-20180102160824-81144009af58 h1:m3CEgv3ah1Rhy82L+c0QG/U3VyY1UsvsIdkh0/rU97Y=
 github.com/packer-community/winrmcp v0.0.0-20180102160824-81144009af58/go.mod h1:f6Izs6JvFTdnRbziASagjZ2vmf55NSIkC/weStxCHqk=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=

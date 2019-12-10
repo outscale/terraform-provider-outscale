@@ -17,6 +17,7 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 		Create: resourceOutscaleOAPIPublicIPCreate,
 		Read:   resourceOutscaleOAPIPublicIPRead,
 		Delete: resourceOutscaleOAPIPublicIPDelete,
+		Update: resourceOutscaleOAPIPublicIPUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -26,40 +27,7 @@ func resourceOutscaleOAPIPublicIP() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"public_ip_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"link_public_ip_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"vm_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"nic_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"nic_account_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"private_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"public_ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: getOAPIPublicIPSchema(),
 	}
 }
 
@@ -93,6 +61,14 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	// }
 
 	d.SetId(allocResp.PublicIp.PublicIp)
+
+	//SetTags
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), allocResp.PublicIp.PublicIpId, conn)
+		if err != nil {
+			return err
+		}
+	}
 
 	log.Printf("[INFO] EIP ID: %s (placement: %v)", d.Id(), allocResp.PublicIp)
 	return resourceOutscaleOAPIPublicIPUpdate(d, meta)
@@ -172,7 +148,9 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	// } else {
 	// 	d.SetId(address.PublicIp)
 	// }
-
+	if err := d.Set("tags", tagsOAPIToMap(address.Tags)); err != nil {
+		fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
+	}
 	d.SetId(address.PublicIp)
 
 	return d.Set("request_id", describeAddresses.ResponseContext.RequestId)
@@ -229,6 +207,16 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Failure associating EIP: %s", err)
 		}
 	}
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
 
 	return resourceOutscaleOAPIPublicIPRead(d, meta)
 }
@@ -314,4 +302,42 @@ func resourceOutscaleOAPIPublicIPDomain(d *schema.ResourceData) string {
 	}
 
 	return "standard"
+}
+
+func getOAPIPublicIPSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"public_ip_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"link_public_ip_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"vm_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"nic_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"nic_account_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"private_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"public_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsListOAPISchema(),
+	}
 }
