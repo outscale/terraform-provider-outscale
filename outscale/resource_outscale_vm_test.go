@@ -18,7 +18,7 @@ import (
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	var server oapi.Vm
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 	var server oapi.Vm
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -74,7 +74,7 @@ func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 	var server oapi.Vm
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -101,7 +101,7 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
-	omi := getOMIByRegion(region, "ubuntu").OMI
+	omi := getOMIByRegion(region, "centos").OMI
 	omi2 := getOMIByRegion(region, "centos").OMI
 
 	var before oapi.Vm
@@ -137,7 +137,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	var server oapi.Vm
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -165,7 +165,7 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	var server oapi.Vm
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 	vmType := "t2.micro"
 
@@ -193,7 +193,7 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -220,7 +220,7 @@ func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	//omi2 := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 

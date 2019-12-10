@@ -464,25 +464,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-					},
-				},
-			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
