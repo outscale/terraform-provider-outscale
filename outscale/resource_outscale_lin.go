@@ -19,6 +19,7 @@ func resourceOutscaleOAPINet() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPINetCreate,
 		Read:   resourceOutscaleOAPINetRead,
+		Update: resourceOutscaleOAPINetUpdate,
 		Delete: resourceOutscaleOAPINetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -76,17 +77,15 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	net := resp.OK.Net
 
-	d.SetId(net.NetId)
-
 	//SetTags
-	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), net.NetId, conn)
+		if err != nil {
 			return err
 		}
-		d.SetPartial("tags")
 	}
 
-	d.Partial(false)
+	d.SetId(net.NetId)
 
 	return resourceOutscaleOAPINetRead(d, meta)
 }
@@ -187,7 +186,21 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	d.Set("state", resp.Nets[0].State)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return d.Set("tags", tagsOAPIToMap(resp.Nets[0].Tags))
+}
 
+func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPINetRead(d, meta)
 }
 
 func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {

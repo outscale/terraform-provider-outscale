@@ -18,6 +18,7 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 		Create: resourceOutscaleOAPIInternetServiceCreate,
 		Read:   resourceOutscaleOAPIInternetServiceRead,
 		Delete: resourceOutscaleOAPIInternetServiceDelete,
+		Update: resourceOutscaleOAPIInternetServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -121,6 +122,21 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	}
 
 	return d.Set("tags", tagsOAPIToMap(result.Tags))
+}
+
+func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 
 func getInternetService(internetServices []oapi.InternetService, id string) (oapi.InternetService, error) {

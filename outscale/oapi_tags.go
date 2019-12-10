@@ -133,7 +133,6 @@ func tagsListOAPISchema() *schema.Schema {
 				},
 			},
 		},
-		Computed: true,
 		Optional: true,
 	}
 }
@@ -204,12 +203,12 @@ func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
 	return result
 }
 
-func oapiTagsDescToList(ts []oapi.Tag) []map[string]interface{} {
-	res := make([]map[string]interface{}, len(ts))
+func oapiTagsDescToList(ts []oapi.Tag) []map[string]string {
+	res := make([]map[string]string, len(ts))
 
 	for i, t := range ts {
 		if !oapiTagDescIgnored(&t) {
-			res[i] = map[string]interface{}{
+			res[i] = map[string]string{
 				"key":           t.Key,
 				"value":         t.Value,
 				"resource_id":   t.ResourceId,
@@ -236,6 +235,26 @@ func assignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) err
 	request.ResourceIds = []string{resourceID}
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.POST_CreateTags(request)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), ".NotFound") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func unAssignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) error {
+	request := oapi.DeleteTagsRequest{}
+	request.Tags = tagsOAPIFromSliceMap(tag)
+	request.ResourceIds = []string{resourceID}
+	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		_, err := conn.POST_DeleteTags(request)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), ".NotFound") {
 				return resource.RetryableError(err)

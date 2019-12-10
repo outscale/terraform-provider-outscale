@@ -19,6 +19,7 @@ func resourceOutscaleOAPISecurityGroup() *schema.Resource {
 		Create: resourceOutscaleOAPISecurityGroupCreate,
 		Read:   resourceOutscaleOAPISecurityGroupRead,
 		Delete: resourceOutscaleOAPISecurityGroupDelete,
+		Update: resourceOutscaleOAPISecurityGroupUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -410,4 +411,19 @@ func SGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 		group := resp.OK.SecurityGroups[0]
 		return group, "exists", nil
 	}
+}
+
+func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPISecurityGroupRead(d, meta)
 }

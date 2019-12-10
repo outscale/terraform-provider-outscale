@@ -6,9 +6,7 @@ import (
 	"time"
 
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -28,60 +26,7 @@ func resourceOutscaleOAPITags() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"resource_ids": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"tag": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"resource_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"resource_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: getOAPITagsSchema(),
 	}
 }
 
@@ -96,16 +41,19 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("One tag and resource id, must be assigned")
 	}
 
-	request.Tags = tagsOAPIFromMap(tag.(map[string]interface{}))
-
-	var rids []string
-	sgs := resourceIds.(*schema.Set).List()
-	for _, v := range sgs {
-		str := v.(string)
-		rids = append(rids, str)
+	if tagsOk {
+		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
 	}
+	if resourceIdsOk {
+		var rids []string
+		sgs := resourceIds.(*schema.Set).List()
+		for _, v := range sgs {
+			str := v.(string)
+			rids = append(rids, str)
+		}
 
-	request.ResourceIds = rids
+		request.ResourceIds = rids
+	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		_, err := conn.POST_CreateTags(request)
@@ -136,7 +84,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 
 	tag, tagsOk := d.GetOk("tag")
 	if tagsOk {
-		tgs := tagsOAPIFromMap(tag.(map[string]interface{}))
+		tgs := tagsOAPIFromSliceMap(tag.([]interface{}))
 		keys := make([]string, 0, len(tgs))
 		values := make([]string, 0, len(tgs))
 		for _, t := range tgs {
@@ -184,9 +132,9 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OAPI
 
-	request := &fcu.DeleteTagsInput{}
+	request := oapi.DeleteTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
 
@@ -197,21 +145,21 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromMap(tag.(map[string]interface{}))
+		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
 	}
 	if resourceIdsOk {
-		var rids []*string
+		var rids []string
 		sgs := resourceIds.(*schema.Set).List()
 		for _, v := range sgs {
 			str := v.(string)
-			rids = append(rids, aws.String(str))
+			rids = append(rids, str)
 		}
 
-		request.Resources = rids
+		request.ResourceIds = rids
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.VM.DeleteTags(request)
+		_, err := conn.POST_DeleteTags(request)
 		if err != nil {
 			ec2err, ok := err.(awserr.Error)
 			if ok && strings.Contains(ec2err.Code(), ".NotFound") {
@@ -226,4 +174,57 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	return nil
+}
+
+func getOAPITagsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"resource_ids": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			ForceNew: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"tag": {
+			Type:     schema.TypeList,
+			Optional: true,
+			ForceNew: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"tags": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"resource_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"resource_type": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+	}
 }

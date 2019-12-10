@@ -16,6 +16,8 @@ import (
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 	var conf oapi.InternetService
 
+	resourceName := "outscale_internet_service.gateway"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -24,10 +26,29 @@ func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIInternetServiceDestroyed,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOutscaleOAPIInternetServiceConfig,
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIInternetServiceExists(resourceName, &conf),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW"),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPIInternetServiceConfig("Terraform_IGW2"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", "Terraform_IGW2"),
+				),
+			},
+			{
+				Config: testAccOutscaleOAPIInternetServiceWithoutTags(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIInternetServiceExists("outscale_internet_service.gateway", &conf),
+					resource.TestCheckNoResourceAttr(resourceName, "tags.#"),
 				),
 			},
 		},
@@ -142,11 +163,16 @@ func testAccCheckOutscaleOAPIInternetServiceDestroyed(s *terraform.State) error 
 	return nil
 }
 
-const testAccOutscaleOAPIInternetServiceConfig = `
+func testAccOutscaleOAPIInternetServiceConfig(value string) string {
+	return fmt.Sprintf(`
 	resource "outscale_internet_service" "gateway" {
 		tags {       
-			key   = "name"     
-			value = "Terraform_IGW"       
+			key   = "Name"     
+			value = "%s"       
 		}
-	}
-`
+	}`, value)
+}
+
+func testAccOutscaleOAPIInternetServiceWithoutTags() string {
+	return `resource "outscale_internet_service" "gateway" {}`
+}
