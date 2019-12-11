@@ -9,7 +9,7 @@ description: |-
 # outscale_snapshot_attributes Resource
 
 Manages snapshot attributes.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots#AboutSnapshots-SnapshotPermissionsandCopy).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#updatesnapshot).
 
 ## Example Usage
