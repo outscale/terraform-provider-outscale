@@ -23,7 +23,10 @@ For more information on this resource actions, see the [API documentation](https
 The following arguments are supported:
 
 * `image_id` - (Required) The ID of the OMI you want to modify.
-* `permission` - (Optional) Information about the permissions for the resource.
+* `permission_additions` - (Optional) Information about the users you want to give permissions for the resource.
+  * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
+  * `accounts_ids` - (Optional) The account ID of one or more users who have permissions for the resource.
+* `permission_removals` - (Optional) Information about the users you want to remove permissions for the resource.
   * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
   * `accounts_ids` - (Optional) The account ID of one or more users who have permissions for the resource.
 

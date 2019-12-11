@@ -55,9 +55,8 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
 * `performance` - (Optional) The performance of the VM (`standard` \| `high` \|  `highest`).
-* `placement` - Information about the placement of the VM.
-  * `subregion_name` - (Optional) The name of the Subregion.
-  * `tenancy` - (Optional) The tenancy of the VM (`default` \| `dedicated`).
+* `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
+* `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_groups` - (Optional) One or more names of security groups for the VMs.
