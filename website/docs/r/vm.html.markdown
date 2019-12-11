@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_vm"
-sidebar_current: "docs-outscale-resource-vm"
+sidebar_current: "outscale-vm"
 description: |-
   [Manages a virtual machine (VM).]
 ---

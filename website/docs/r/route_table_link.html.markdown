@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_route_table_link"
-sidebar_current: "docs-outscale-resource-route-table-link"
+sidebar_current: "outscale-route-table-link"
 description: |-
   [Manages a route table link.]
 ---

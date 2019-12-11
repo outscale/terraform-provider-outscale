@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_tag"
-sidebar_current: "docs-outscale-datasource-tag"
+sidebar_current: "outscale-tag"
 description: |-
   [Provides information about a specific tag.]
 ---

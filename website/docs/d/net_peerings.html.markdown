@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_net_peering"
-sidebar_current: "docs-outscale-datasource-net-peering"
+sidebar_current: "outscale-net-peering"
 description: |-
   [Provides information about Net peerings.]
 ---

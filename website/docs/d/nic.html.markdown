@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_nic"
-sidebar_current: "docs-outscale-datasource-nic"
+sidebar_current: "outscale-nic"
 description: |-
   [Provides information about a specific NIC.]
 ---

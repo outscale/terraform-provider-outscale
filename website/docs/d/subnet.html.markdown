@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_subnet"
-sidebar_current: "docs-outscale-datasource-subnet"
+sidebar_current: "outscale-subnet"
 description: |-
   [Provides information about a specific Subnet.]
 ---

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_public_ip"
-sidebar_current: "docs-outscale-resource-public-ip"
+sidebar_current: "outscale-public-ip"
 description: |-
   [Manages a public IP.]
 ---

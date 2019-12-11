@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_image"
-sidebar_current: "docs-outscale-resource-image"
+sidebar_current: "outscale-image"
 description: |-
   [Manages an image.]
 ---

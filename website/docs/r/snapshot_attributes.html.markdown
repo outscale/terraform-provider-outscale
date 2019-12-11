@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_snapshot_attributes"
-sidebar_current: "docs-outscale-resource-snapshot-attributes"
+sidebar_current: "outscale-snapshot-attributes"
 description: |-
   [Manages snapshot attributes.]
 ---

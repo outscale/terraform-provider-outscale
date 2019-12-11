@@ -1,7 +1,8 @@
+
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_net_attributes"
-sidebar_current: "docs-outscale-datasource-net-attributes"
+sidebar_current: "outscale-net-attributes"
 description: |-
   [Provides information about Net attributes.]
 ---

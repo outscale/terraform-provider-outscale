@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_keypair"
-sidebar_current: "docs-outscale-datasource-keypair"
+sidebar_current: "outscale-keypair"
 description: |-
   [Provides information about keypairs.]
 ---

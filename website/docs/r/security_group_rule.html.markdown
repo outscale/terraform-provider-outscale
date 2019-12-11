@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_security_group_rule"
-sidebar_current: "docs-outscale-resource-security-group-rule"
+sidebar_current: "outscale-security-group-rule"
 description: |-
   [Manages a security group rule.]
 ---

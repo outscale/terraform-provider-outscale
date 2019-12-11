@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_internet_service"
-sidebar_current: "docs-outscale-resource-internet-service"
+sidebar_current: "outscale-internet-service"
 description: |-
   [Manages an Internet service.]
 ---

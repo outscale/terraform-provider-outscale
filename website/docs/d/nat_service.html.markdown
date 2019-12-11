@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_nat_service"
-sidebar_current: "docs-outscale-datasource-nat-service"
+sidebar_current: "outscale-nat-service"
 description: |-
   [Provides information about a specific NAT service.]
 ---

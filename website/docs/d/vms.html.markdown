@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_vm"
-sidebar_current: "docs-outscale-datasource-vm"
+sidebar_current: "outscale-vm"
 description: |-
   [Provides information about virtual machines (VMs).]
 ---

@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_volume_link"
-sidebar_current: "docs-outscale-resource-volume-link"
+sidebar_current: "outscale-volume-link"
 description: |-
   [Manages a volume link.]
 ---

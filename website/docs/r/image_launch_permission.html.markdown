@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_image_launch_permission"
-sidebar_current: "docs-outscale-resource-image-launch-permission"
+sidebar_current: "outscale-image-launch-permission"
 description: |-
   [Manages an image launch permission.]
 ---

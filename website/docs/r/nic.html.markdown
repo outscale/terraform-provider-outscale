@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_nic"
-sidebar_current: "docs-outscale-resource-nic"
+sidebar_current: "outscale-nic"
 description: |-
   [Manages a NIC.]
 ---
