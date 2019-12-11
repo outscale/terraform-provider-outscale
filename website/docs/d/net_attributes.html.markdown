@@ -1,4 +1,3 @@
-
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_net_attributes"
@@ -23,8 +22,8 @@ For more information on this resource actions, see the [API documentation](https
 
 The following arguments are supported:
 
-* `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
-* `net_id` - The ID of the Net.
+* `dhcp_options_set_id` - (Required) The ID of the DHCP options set (or `default` if you want to associate the default one).
+* `net_id` - (Required) The ID of the Net.
 
 ## Attribute Reference
 
