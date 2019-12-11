@@ -79,7 +79,7 @@ func getOMIByRegion(region, platform string) Item {
 	}
 	omis := make(map[string][]Item)
 	omis["eu-west-2"] = []Item{Item{Platform: "centos", OMI: "ami-4a7bf2b3"}}
-	omis["eu-west-2"] = append(omis["eu-west-2"], Item{Platform: "ubuntu", OMI: "ami-fbead1f5"})
+	omis["eu-west-2"] = append(omis["eu-west-2"], Item{Platform: "ubuntu", OMI: "ami-abe953fa"})
 
 	omis["us-east-2"] = []Item{Item{Platform: "centos", OMI: "ami-8ceca82d"}}
 	omis["us-east-2"] = append(omis["us-east-2"], Item{Platform: "ubuntu", OMI: "ami-f2ea59af"})
