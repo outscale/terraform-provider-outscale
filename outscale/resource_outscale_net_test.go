@@ -1,20 +1,21 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccOutscaleOAPILin_basic(t *testing.T) {
-	var conf1 oapi.Net
-	var conf2 oapi.Net
+	var conf1 oscgo.Net
+	var conf2 oscgo.Net
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -57,7 +58,7 @@ func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -67,14 +68,14 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestChe
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No internet gateway id is set")
 		}
-		var resp *oapi.POST_ReadNetsResponses
+		var resp oscgo.ReadNetsResponse
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.OAPI.POST_ReadNets(oapi.ReadNetsRequest{
-				Filters: oapi.FiltersNet{NetIds: []string{rs.Primary.ID}},
-			})
+			resp, _, err = conn.OSCAPI.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(oscgo.ReadNetsRequest{
+				Filters: &oscgo.FiltersNet{NetIds: &[]string{rs.Primary.ID}},
+			})})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -87,16 +88,12 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestChe
 			return err
 		}
 
-		if resp.OK == nil {
+		if len(resp.GetNets()) != 1 ||
+			resp.GetNets()[0].GetNetId() != rs.Primary.ID {
 			return fmt.Errorf("Net not found")
 		}
 
-		if len(resp.OK.Nets) != 1 ||
-			resp.OK.Nets[0].NetId != rs.Primary.ID {
-			return fmt.Errorf("Net not found")
-		}
-
-		*res = resp.OK.Nets[0]
+		*res = resp.GetNets()[0]
 
 		return nil
 	}
@@ -112,7 +109,7 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oapi.Net) resource.TestChe
 // 		}
 
 // 		// Try to find an internet gateway
-// 		var resp *oapi.ReadGate
+// 		var resp *oscgo.ReadGate
 // 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 // 			var err error
 // 			resp, err = conn.FCU.VM.DescribeInternetGateways(&fcu.DescribeInternetGatewaysInput{
