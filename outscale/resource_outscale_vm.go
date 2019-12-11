@@ -867,6 +867,10 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetKeypairName(v)
 	}
 
+	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok && v != "" {
+		request.SetVmInitiatedShutdownBehavior(v.(string))
+	}
+
 	return request, nil
 }
 
