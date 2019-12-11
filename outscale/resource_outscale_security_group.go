@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -9,9 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -109,16 +110,16 @@ func getOAPIIPPerms() *schema.Schema {
 }
 
 func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	securityGroupOpts := &oapi.CreateSecurityGroupRequest{}
+	securityGroupOpts := oscgo.CreateSecurityGroupRequest{}
 
 	if v, ok := d.GetOk("net_id"); ok {
-		securityGroupOpts.NetId = v.(string)
+		securityGroupOpts.SetNetId(v.(string))
 	}
 
 	if v := d.Get("description"); v != nil {
-		securityGroupOpts.Description = v.(string)
+		securityGroupOpts.SetDescription(v.(string))
 	} else {
 		return fmt.Errorf("please provide a group description, its a required argument")
 	}
@@ -129,15 +130,14 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	} else {
 		groupName = resource.UniqueId()
 	}
-	securityGroupOpts.SecurityGroupName = groupName
+	securityGroupOpts.SetSecurityGroupName(groupName)
 
 	log.Printf("[DEBUG] Security Group create configuration: %#v", securityGroupOpts)
 
-	var createResp *oapi.CreateSecurityGroupResponse
-	var resp *oapi.POST_CreateSecurityGroupResponses
+	var resp oscgo.CreateSecurityGroupResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_CreateSecurityGroup(*securityGroupOpts)
+		resp, _, err = conn.SecurityGroupApi.CreateSecurityGroup(context.Background(), &oscgo.CreateSecurityGroupOpts{CreateSecurityGroupRequest: optional.NewInterface(securityGroupOpts)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -151,23 +151,13 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("Error creating Security Group: %s", errString)
 	}
 
-	createResp = resp.OK
-
-	d.SetId(createResp.SecurityGroup.SecurityGroupId)
+	d.SetId(resp.SecurityGroup.GetSecurityGroupId())
 
 	log.Printf("[INFO] Security Group ID: %s", d.Id())
 
@@ -188,7 +178,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	}
 
 	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -198,7 +188,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 }
 
 func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	sgRaw, _, err := SGOAPIStateRefreshFunc(conn, d.Id())()
 	if err != nil {
@@ -209,14 +199,14 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return nil
 	}
 
-	group := sgRaw.(oapi.SecurityGroup)
+	group := sgRaw.(oscgo.SecurityGroup)
 
-	req := &oapi.ReadSecurityGroupsRequest{}
-	req.Filters = oapi.FiltersSecurityGroup{SecurityGroupIds: []string{group.SecurityGroupId}}
+	req := oscgo.ReadSecurityGroupsRequest{}
+	req.Filters = &oscgo.FiltersSecurityGroup{SecurityGroupIds: &[]string{group.GetSecurityGroupId()}}
 
-	var resp *oapi.POST_ReadSecurityGroupsResponses
+	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSecurityGroups(*req)
+		resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -230,87 +220,62 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
-				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-				resp = nil
-				err = nil
-			} else {
-				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-				errString = err.Error()
-			}
-
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+			strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+			err = nil
+		} else {
+			//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+			errString = err.Error()
 		}
-
 		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 	}
 
-	result := resp.OK
-
-	if result == nil || len(result.SecurityGroups) == 0 {
+	if len(resp.GetSecurityGroups()) == 0 {
 		return fmt.Errorf("Unable to find Security Group")
 	}
 
-	if len(result.SecurityGroups) > 1 {
+	if len(resp.GetSecurityGroups()) > 1 {
 		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
 	}
 
-	sg := result.SecurityGroups[0]
+	sg := resp.GetSecurityGroups()[0]
 
-	d.SetId(sg.SecurityGroupId)
-	d.Set("security_group_id", sg.SecurityGroupId)
-	d.Set("description", sg.Description)
-	if sg.SecurityGroupName != "" {
-		d.Set("security_group_name", sg.SecurityGroupName)
+	d.SetId(sg.GetSecurityGroupId())
+	d.Set("security_group_id", sg.GetSecurityGroupId())
+	d.Set("description", sg.GetDescription())
+	if sg.GetSecurityGroupName() != "" {
+		d.Set("security_group_name", sg.GetSecurityGroupName())
 	}
-	d.Set("net_id", sg.NetId)
-	d.Set("account_id", sg.AccountId)
-	d.Set("tags", tagsOAPIToMap(sg.Tags))
-	d.Set("request_id", result.ResponseContext.RequestId)
+	d.Set("net_id", sg.GetNetId())
+	d.Set("account_id", sg.GetAccountId())
+	d.Set("tags", tagsOSCAPIToMap(sg.GetTags()))
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.InboundRules)); err != nil {
+	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
 		return err
 	}
 
-	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.OutboundRules))
+	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
 func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
-
+	securityGroupId := d.Id()
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err := conn.POST_DeleteSecurityGroup(oapi.DeleteSecurityGroupRequest{
-			SecurityGroupId: d.Id(),
-		})
+		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background(), &oscgo.DeleteSecurityGroupOpts{DeleteSecurityGroupRequest: optional.NewInterface(oscgo.DeleteSecurityGroupRequest{
+			SecurityGroupId: &securityGroupId,
+		})})
 
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
-					return resource.RetryableError(err)
-				} else if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-					return nil
-				}
-				return resource.NonRetryableError(err)
-
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		if err != nil {
+			var errString string
+			if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
+				return resource.RetryableError(err)
+			} else if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+				return nil
 			}
-
 			return resource.NonRetryableError(fmt.Errorf("Error on SGStateRefresh: %s", errString))
 		}
 
@@ -357,18 +322,18 @@ func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*
 }
 
 // SGOAPIStateRefreshFunc ...
-func SGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
+func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		req := &oapi.ReadSecurityGroupsRequest{
-			Filters: oapi.FiltersSecurityGroup{
-				SecurityGroupIds: []string{id},
+		req := oscgo.ReadSecurityGroupsRequest{
+			Filters: &oscgo.FiltersSecurityGroup{
+				SecurityGroupIds: &[]string{id},
 			},
 		}
 
 		var err error
-		var resp *oapi.POST_ReadSecurityGroupsResponses
+		var resp oscgo.ReadSecurityGroupsResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadSecurityGroups(*req)
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -382,43 +347,34 @@ func SGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
-					strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-					resp = nil
-					err = nil
-				} else {
-					//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-					errString = err.Error()
-				}
-
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+				resp.SetSecurityGroups(nil)
+				err = nil
+			} else {
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
 			}
 
 			return nil, "", fmt.Errorf("Error on SGStateRefresh: %s", errString)
 		}
 
-		if resp == nil {
+		if resp.GetSecurityGroups() == nil {
 			return nil, "", nil
 		}
 
-		group := resp.OK.SecurityGroups[0]
+		group := resp.GetSecurityGroups()[0]
 		return group, "exists", nil
 	}
 }
 
 func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
