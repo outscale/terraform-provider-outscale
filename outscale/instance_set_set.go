@@ -198,7 +198,7 @@ func getOAPISecurityGroups(groups []oscgo.SecurityGroupLight) (SecurityGroup []m
 func getOAPILinkNicLight(l oscgo.LinkNicLight) map[string]interface{} {
 	return map[string]interface{}{
 		"delete_on_vm_deletion": strconv.FormatBool(l.GetDeleteOnVmDeletion()),
-		"device_number":         l.GetDeviceNumber(),
+		"device_number":         fmt.Sprintf("%d", l.GetDeviceNumber()),
 		"link_nic_id":           l.GetLinkNicId(),
 		"state":                 l.GetState(),
 	}
