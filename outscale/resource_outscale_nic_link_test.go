@@ -2,16 +2,16 @@ package outscale
 
 import (
 	"fmt"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
 	t.Skip()
-	var conf oapi.Nic
+	var conf oscgo.Nic
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
