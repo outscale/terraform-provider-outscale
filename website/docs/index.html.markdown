@@ -70,9 +70,9 @@ provider "outscale" {
 Usage:
 
 ```bash
-$ export OSC_ACCESS_KEY_ID="myaccesskey"
-$ export OSC_SECRET_ACCESS_KEY="mysecretkey"
-$ export OSC_DEFAULT_REGION="regionname"
+$ export OUTSCALE_ACCESSKEYID="myaccesskey"
+$ export OUTSCALE_SECRETKEYID="mysecretkey"
+$ export OUTSCALE_REGION="regionname"
 $ terraform plan
 ```
 
