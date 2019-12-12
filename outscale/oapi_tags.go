@@ -14,7 +14,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func tagsSchemaComputed() *schema.Schema {
@@ -305,22 +304,6 @@ func tagsToMapI(ts []*icu.Tag) []map[string]string {
 	return result
 }
 
-func tagsToMapL(ts []*lbu.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = *t.Key
-			tag["value"] = *t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
 func tagsDescToMap(ts []*fcu.TagDescription) map[string]string {
 	result := make(map[string]string)
 	for _, t := range ts {
@@ -496,19 +479,6 @@ func tagsFromMap(m map[string]interface{}) []*fcu.Tag {
 	result := make([]*fcu.Tag, 0, len(m))
 	for k, v := range m {
 		t := &fcu.Tag{
-			Key:   aws.String(k),
-			Value: aws.String(v.(string)),
-		}
-		result = append(result, t)
-	}
-
-	return result
-}
-
-func tagsFromMapLBU(m map[string]interface{}) []*lbu.Tag {
-	result := make([]*lbu.Tag, 0, len(m))
-	for k, v := range m {
-		t := &lbu.Tag{
 			Key:   aws.String(k),
 			Value: aws.String(v.(string)),
 		}
