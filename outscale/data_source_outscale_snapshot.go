@@ -1,13 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -84,7 +86,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -95,24 +97,28 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := oapi.ReadSnapshotsRequest{}
+	params := oscgo.ReadSnapshotsRequest{}
+	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		params.Filters.PermissionsToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
+		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		params.SetFilters(filter)
 	}
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
+		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
-		params.Filters.AccountIds = []string{owners.(string)}
+		filter.SetAccountIds([]string{owners.(string)})
+		params.SetFilters(filter)
 	}
 	if snapshotIdsOk {
-		params.Filters.SnapshotIds = []string{snapshotIds.(string)}
+		filter.SetSnapshotIds([]string{snapshotIds.(string)})
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadSnapshotsResponses
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSnapshots(params)
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(params)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -127,45 +133,44 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	var snapshot oapi.Snapshot
-	if len(resp.OK.Snapshots) < 1 {
+	if len(resp.GetSnapshots()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-	if len(resp.OK.Snapshots) > 1 {
+	if len(resp.GetSnapshots()) > 1 {
 		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
-	snapshot = resp.OK.Snapshots[0]
+	snapshot := resp.GetSnapshots()[0]
 
 	//Single Snapshot found so set to state
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oapi.Snapshot) error {
-	d.SetId(snapshot.SnapshotId)
-	d.Set("description", snapshot.Description)
-	d.Set("account_alias", snapshot.AccountAlias)
-	d.Set("account_id", snapshot.AccountId)
-	d.Set("progress", snapshot.Progress)
-	d.Set("snapshot_id", snapshot.SnapshotId)
-	d.Set("state", snapshot.State)
-	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("volume_size", snapshot.VolumeSize)
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
+	d.SetId(snapshot.GetSnapshotId())
+	d.Set("description", snapshot.GetDescription())
+	d.Set("account_alias", snapshot.GetAccountAlias())
+	d.Set("account_id", snapshot.GetAccountId())
+	d.Set("progress", snapshot.GetProgress())
+	d.Set("snapshot_id", snapshot.GetSnapshotId())
+	d.Set("state", snapshot.GetState())
+	d.Set("volume_id", snapshot.GetVolumeId())
+	d.Set("volume_size", snapshot.GetVolumeSize())
 
 	lp := make([]map[string]interface{}, 1)
 	lp[0] = make(map[string]interface{})
-	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GlobalPermission
-	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.AccountIds
+	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GetGlobalPermission()
+	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.GetAccountIds()
 
 	if err := d.Set("permissions_to_create_volume", lp); err != nil {
 		return err
 	}
 
-	return d.Set("tags", tagsOAPIToMap(snapshot.Tags))
+	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
 }
 
-func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.FiltersSnapshot) *oapi.FiltersSnapshot {
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
 
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
@@ -177,43 +182,44 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oapi.F
 
 		switch name := m["name"].(string); name {
 		case "account_aliases":
-			filter.AccountAliases = values
+			filter.SetAccountAliases(values)
 
 		case "account_ids":
-			filter.AccountIds = values
+			filter.SetAccountIds(values)
 
 		case "descriptions":
-			filter.Descriptions = values
+			filter.SetDescriptions(values)
 
 		case "permissions_to_create_volume_account_ids":
-			filter.PermissionsToCreateVolumeAccountIds = values
+			filter.SetPermissionsToCreateVolumeAccountIds(values)
 
 		case "permissions_to_create_volume_global_permission":
-			filter.PermissionsToCreateVolumeGlobalPermission, _ = strconv.ParseBool(values[0])
+			boolean, _ := strconv.ParseBool(values[0])
+			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
 
 		case "progresses":
-			filter.Progresses = utils.StringSliceToInt64Slice(values)
+			filter.SetProgresses(utils.StringSliceToInt32Slice(values))
 
 		case "snapshot_ids":
-			filter.SnapshotIds = values
+			filter.SetSnapshotIds(values)
 
 		case "states":
-			filter.States = values
+			filter.SetStates(values)
 
 		case "tag_keys":
-			filter.TagKeys = values
+			filter.SetTagKeys(values)
 
 		case "tag_values":
-			filter.TagValues = values
+			filter.SetTagValues(values)
 
 		case "tags":
-			filter.Tags = values
+			filter.SetTags(values)
 
 		case "volume_ids":
-			filter.VolumeIds = values
+			filter.SetVolumeIds(values)
 
 		case "volume_sizes":
-			filter.VolumeSizes = utils.StringSliceToInt64Slice(values)
+			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
 
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

@@ -1,13 +1,14 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -16,7 +17,7 @@ import (
 func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Snapshot
+	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -37,7 +38,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Snapshot
+	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -59,7 +60,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Snapshot
+	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -81,7 +82,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	//var v oapi.Snapshot
+	//var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -101,7 +102,7 @@ func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestCheckFunc {
+func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -112,17 +113,17 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestChe
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		request := oapi.ReadSnapshotsRequest{
-			Filters: oapi.FiltersSnapshot{SnapshotIds: []string{rs.Primary.ID}},
+		request := oscgo.ReadSnapshotsRequest{
+			Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
 		}
 
-		var resp *oapi.POST_ReadSnapshotsResponses
+		var resp oscgo.ReadSnapshotsResponse
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadSnapshots(request)
+			resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -132,8 +133,8 @@ func testAccCheckOAPISnapshotExists(n string, v *oapi.Snapshot) resource.TestChe
 			return nil
 		})
 		if err == nil {
-			if resp.OK.Snapshots != nil && len(resp.OK.Snapshots) > 0 {
-				*v = resp.OK.Snapshots[0]
+			if resp.GetSnapshots() != nil && len(resp.GetSnapshots()) > 0 {
+				*v = resp.GetSnapshots()[0]
 				return nil
 			}
 		}
