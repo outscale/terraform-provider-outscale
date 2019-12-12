@@ -163,7 +163,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_groups_for_user":         dataSourceOutscaleOAPIGroupUser(),
 			"outscale_policy":                  dataSourceOutscaleOAPIPolicy(),
 			"outscale_server_certificate":      datasourceOutscaleOAPIEIMServerCertificate(),
-			"outscale_server_certificates":     datasourceOutscaleOAPIEIMServerCertificates(),
 			"outscale_policy_group_link":       dataSourceOutscaleOAPIPolicyGroupLink(),
 			"outscale_user_api_keys":           dataSourceOutscaleOAPIUserAPIKeys(),
 			"outscale_catalog":                 dataSourceOutscaleOAPICatalog(),
