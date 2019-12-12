@@ -11,7 +11,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/eim"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 
 	"github.com/hashicorp/terraform/helper/logging"
 )
@@ -29,7 +28,6 @@ type Config struct {
 type OutscaleClient struct {
 	FCU  *fcu.Client
 	ICU  *icu.Client
-	LBU  *lbu.Client
 	EIM  *eim.Client
 	DL   *dl.Client
 	OAPI *oapi.Client
@@ -49,10 +47,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 		return nil, err
 	}
 	icu, err := icu.NewICUClient(config)
-	if err != nil {
-		return nil, err
-	}
-	lbu, err := lbu.NewLBUClient(config)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +80,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	client := &OutscaleClient{
 		FCU:  fcu,
 		ICU:  icu,
-		LBU:  lbu,
 		EIM:  eim,
 		DL:   dl,
 		OAPI: oapiClient,
