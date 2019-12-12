@@ -2,10 +2,10 @@ package outscale
 
 import (
 	"fmt"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"log"
 	"os"
 	"testing"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -43,7 +43,6 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 
 func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		log.Printf("\n\n----- This is never called")
 		if rs.Type != "outscale_volume_link" {
 			continue
 		}

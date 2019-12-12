@@ -114,7 +114,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		stateConf := &resource.StateChangeConf{
 			Pending:    []string{"pending"},
 			Target:     []string{"running"},
-			Refresh:    volumeOAPIAttachmentStateRefreshFunc(conn, iID, ""),
+			Refresh:    vmStateRefreshFunc(conn, iID, ""),
 			Timeout:    10 * time.Minute,
 			Delay:      10 * time.Second,
 			MinTimeout: 3 * time.Second,
@@ -123,7 +123,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 		_, err = stateConf.WaitForState()
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for volume link (%s) to become ready: %s",
+				"error waiting for the VM(%s) to become ready to be linked with the volume: %s",
 				iID, err)
 		}
 
