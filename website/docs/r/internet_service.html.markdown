@@ -20,8 +20,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Argument Reference
 
-The following arguments are supported:
-
+There is no argument for this resource.
 
 ## Attribute Reference
 
