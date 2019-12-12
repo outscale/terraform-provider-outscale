@@ -3,16 +3,15 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -281,44 +280,6 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 
 		return nil
 	})
-}
-
-func flattenOAPISecurityGroups(list []*fcu.UserIdGroupPair, ownerID *string) []*fcu.GroupIdentifier {
-	result := make([]*fcu.GroupIdentifier, 0, len(list))
-	for _, g := range list {
-		var userID *string
-		if g.UserId != nil && *g.UserId != "" && (ownerID == nil || *ownerID != *g.UserId) {
-			userID = g.UserId
-		}
-		// userid nil here for same vpc groups
-
-		vpc := g.GroupName == nil || *g.GroupName == ""
-		var id *string
-		if vpc {
-			id = g.GroupId
-		} else {
-			id = g.GroupName
-		}
-
-		// id is groupid for vpcs
-		// id is groupname for non vpc (classic)
-
-		if userID != nil {
-			id = aws.String(*userID + "/" + *id)
-		}
-
-		if vpc {
-			result = append(result, &fcu.GroupIdentifier{
-				GroupId: id,
-			})
-		} else {
-			result = append(result, &fcu.GroupIdentifier{
-				GroupId:   g.GroupId,
-				GroupName: id,
-			})
-		}
-	}
-	return result
 }
 
 // SGOAPIStateRefreshFunc ...
