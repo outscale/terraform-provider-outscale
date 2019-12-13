@@ -16,7 +16,6 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 		Create: resourceOutscaleOAPIPublicIPLinkCreate,
 		Read:   resourceOutscaleOAPIPublicIPLinkRead,
 		Delete: resourceOutscaleOAPIPublicIPLinkDelete,
-		Update: resourceOutscaleOAPIPublicIPLinkUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -83,13 +82,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 	} else {
 		d.SetId(request.PublicIp)
 	}
-	//SetTags
-	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), resp.LinkPublicIpId, conn)
-		if err != nil {
-			return err
-		}
-	}
+
 	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
 
@@ -140,23 +133,10 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
+	d.Set("tags", getOapiTagSet(response.PublicIps[0].Tags))
+
 	d.Set("request_id", response.ResponseContext.RequestId)
 	return readOutscaleOAPIPublicIPLink(d, &response.PublicIps[0])
-}
-
-func resourceOutscaleOAPIPublicIPLinkUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-
-	d.Partial(true)
-
-	if err := setOAPITags(conn, d); err != nil {
-		return err
-	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
-	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
 
 func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
@@ -294,6 +274,6 @@ func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tags": tagsListOAPISchema(),
+		"tags": tagsOAPIListSchemaComputed(),
 	}
 }
