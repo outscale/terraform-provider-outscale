@@ -15,15 +15,20 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_nat_service" "nat_service01" {
+  subnet_id    = outscale_subnet.subnet01.subnet_id
+  public_ip_id = outscale_public_ip.public_ip01.public_ip_id
+}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `public_ip_id` - (Required) The allocation ID of the EIP to associate with the NAT service.<br />
-If the EIP is already associated with another resource, you must first disassociate it.
+* `public_ip_id` - (Required) The allocation ID of the EIP to associate with the NAT service. If the EIP is already associated with another resource, you must first disassociate it.
 * `subnet_id` - (Required) The ID of the Subnet in which you want to create the NAT service.
 
 ## Attribute Reference

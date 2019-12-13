@@ -15,7 +15,26 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+# Add permissions
+
+resource "outscale_image_launch_permission" "image01a" {
+	image_id = "ami-a02936b2"
+	permission_additions  {
+		account_ids = ["012345678910"]
+	}
+}
+
+# Remove permissions
+
+resource "outscale_image_launch_permission" "image01b" {
+	image_id = "ami-a02936b2"
+	permission_removals  {
+		account_ids = ["012345678910"]
+	}
+}
+
+
 ```
 
 ## Argument Reference

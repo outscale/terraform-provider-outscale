@@ -15,7 +15,49 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+# Create a NIC
+
+#resource "outscale_net" "outscale_net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "outscale_subnet01" {
+#  subregion_name = "eu-west-2a"
+#  ip_range       = "10.0.0.0/16"
+#  net_id         = outscale_net.outscale_net01.net_id
+#}
+
+resource "outscale_nic" "outscale_nic01" {
+  subnet_id = outscale_subnet.outscale_subnet01.subnet_id
+}
+
+# Create a private VM with a NIC
+
+resource "outscale_net" "outscale_net02" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "outscale_subnet02" {
+  net_id              = outscale_net.outscale_net.net_id
+  ip_range            = "10.0.0.0/24"
+  subregion_name      = "eu-west-2a"
+}
+
+resource "outscale_nic" "outscale_nic02" {
+  subnet_id = outscale_subnet.outscale_subnet.subnet_id
+}
+
+resource "outscale_vm" "outscale_vm01" {
+  image_id            = var.image_id
+  vm_type             = "c4.large"
+  keypair_name        = var.keypair_name
+  nics     {
+    nic_id =outscale_nic.outscale_nic02.nic_id
+    device_number = "0"
+  }
+}
+
 ```
 
 ## Argument Reference
@@ -23,10 +65,9 @@ For more information on this resource actions, see the [API documentation](https
 The following arguments are supported:
 
 * `description` - (Optional) A description for the NIC.
-* `private_ips` - (Optional) The primary private IP address for the NIC.<br /><br />
-
-This IP address must be within the IP address range of the Subnet that you specify with the `SubnetId` attribute.<br />
-If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
+* `private_ips` - (Optional) The primary private IP address for the NIC.  
+  This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.  
+  If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
   * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
   * `private_ip` - (Optional) The private IP address of the NIC.
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.

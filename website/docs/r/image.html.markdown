@@ -15,7 +15,34 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+# Create an image
+
+resource "outscale_image" "image01" {
+  image_name = "terraform-OMI-create"
+  vm_id      = var.vm_id
+  no_reboot  = "true"
+}
+
+# Import an image
+## Make sure the manifest is still valide. You can find its location URL in Cockpit.
+
+resource "outscale_image" "image02" {
+  description   = "Terraform register OMI"
+  image_name    = "terraform-OMI-register"
+  file_location = "http://osu.eu-west-2.outscale.com/new-export-omi/omi-for-terraform/ami-b7d7f165/manifest?AWSAccessKeyId=XXXXXXXXXXX&Expires=XXXXXXXXX&Signature=XXXXXXXXXX"
+}
+
+# Copy an image
+
+resource "outscale_image" "image03" {
+  description        = "Terraform copy OMI"
+  image_name         = "terraform-OMI-copy"
+  source_image_id    = "ami-249bc1f9"
+  source_region_name = "eu-west-2"
+}
+
+
 ```
 
 ## Argument Reference

@@ -15,7 +15,13 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_keypair" "keypair01" {
+	keypair_name = "terraform-keypair-test"
+	public_key   = file("keypair_public_test.pub")
+}
+
+
 ```
 
 ## Argument Reference

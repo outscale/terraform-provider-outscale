@@ -15,7 +15,12 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_net_peering_acceptation" "outscale_net_peering_acceptation01" {
+  net_peering_id = outscale_net_peering.outscale_net_peering01.net_peering_id
+}
+
+
 ```
 
 ## Argument Reference
