@@ -7,8 +7,6 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
-	t.Skip()
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -19,7 +17,7 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 			{
 				Config: testAccCheckOutscaleOAPISnapshotsDataSourceConfig,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_snapshots.outscale_snapshots", "snapshot_set.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_snapshots.outscale_snapshots", "snapshots.#", "1"),
 				),
 			},
 		},
@@ -28,7 +26,7 @@ func TestAccOutscaleOAPISnapshotsDataSource_basic(t *testing.T) {
 
 const testAccCheckOutscaleOAPISnapshotsDataSourceConfig = `
 	resource "outscale_volume" "example" {
-		subregion_name = "in-west-2a"
+		subregion_name = "eu-west-2a"
 		size           = 1
 	}
 
