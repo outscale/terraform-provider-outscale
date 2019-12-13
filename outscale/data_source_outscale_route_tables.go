@@ -1,14 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
@@ -136,15 +137,15 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	rtbID, rtbOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 	if !filterOk && !rtbOk {
 		return fmt.Errorf("One of route_table_id or filters must be assigned")
 	}
 
-	params := &oapi.ReadRouteTablesRequest{
-		Filters: oapi.FiltersRouteTable{},
+	params := oscgo.ReadRouteTablesRequest{
+		Filters: &oscgo.FiltersRouteTable{},
 	}
 
 	if rtbOk {
@@ -153,17 +154,19 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 		for k, v := range i {
 			in[k] = v.(string)
 		}
-		params.Filters.RouteTableIds = in
+		filter := oscgo.FiltersRouteTable{}
+		filter.SetRouteTableIds(in)
+		params.SetFilters(filter)
 	}
 
 	if filterOk {
 		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
-	var resp *oapi.POST_ReadRouteTablesResponses
+	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadRouteTables(*params)
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -174,16 +177,8 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 	})
 
 	var errString string
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
 	}
 
@@ -191,8 +186,8 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	rt := resp.OK.RouteTables
-	if resp == nil || len(rt) == 0 {
+	rt := resp.GetRouteTables()
+	if len(rt) == 0 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
@@ -200,17 +195,17 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 	for k, v := range rt {
 		routeTable := make(map[string]interface{})
-		routeTable["route_propagating_virtual_gateways"] = setOAPIPropagatingVirtualGateways(v.RoutePropagatingVirtualGateways)
-		routeTable["route_table_id"] = v.RouteTableId
-		routeTable["net_id"] = v.NetId
-		routeTable["tags"] = tagsOAPIToMap(v.Tags)
-		routeTable["routes"] = setOAPIRoutes(v.Routes)
-		routeTable["link_route_tables"] = setOAPILinkRouteTables(v.LinkRouteTables)
+		routeTable["route_propagating_virtual_gateways"] = setOSCAPIPropagatingVirtualGateways(v.GetRoutePropagatingVirtualGateways())
+		routeTable["route_table_id"] = v.GetRouteTableId()
+		routeTable["net_id"] = v.GetNetId()
+		routeTable["tags"] = tagsOSCAPIToMap(v.GetTags())
+		routeTable["routes"] = setOSCAPIRoutes(v.GetRoutes())
+		routeTable["link_route_tables"] = setOSCAPILinkRouteTables(v.GetLinkRouteTables())
 		routeTables[k] = routeTable
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return d.Set("route_tables", routeTables)
 }

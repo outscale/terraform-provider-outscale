@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/outscale/osc-go/oapi"
 	"log"
 	"strings"
 	"time"
@@ -144,7 +143,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	}
 
 	if filterOk {
-		params.Filters = buildOutscaleOSCAPIDataSourceRouteTableFilters(filter.(*schema.Set))
+		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
 	var resp oscgo.ReadRouteTablesResponse
@@ -181,28 +180,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersRouteTable {
-	var filters oapi.FiltersRouteTable
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-		switch name := m["name"].(string); name {
-		case "route_table_ids":
-			filters.RouteTableIds = filterValues
-		case "link_route_table_ids":
-			filters.LinkRouteTableLinkRouteTableIds = filterValues
-
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return filters
-}
-
-func buildOutscaleOSCAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
+func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
 	var filters oscgo.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
