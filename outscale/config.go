@@ -61,7 +61,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	client := &OutscaleClient{
 		FCU:  fcu,
-		ICU:  icu,
 		OAPI: oapiClient,
 	}
 

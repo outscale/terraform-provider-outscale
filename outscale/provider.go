@@ -55,7 +55,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_attributes":                resourceOutscaleOAPILinAttributes(),
 			"outscale_nat_service":                   resourceOutscaleOAPINatService(),
 			"outscale_subnet":                        resourceOutscaleOAPISubNet(),
-			"outscale_api_key":                       resourceOutscaleOAPIIamAccessKey(),
 			"outscale_route":                         resourceOutscaleOAPIRoute(),
 			"outscale_route_table":                   resourceOutscaleOAPIRouteTable(),
 			"outscale_route_table_link":              resourceOutscaleOAPILinkRouteTable(),
@@ -116,7 +115,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_route_tables":            dataSourceOutscaleOAPIRouteTables(),
 			"outscale_vpn_gateway":             dataSourceOutscaleOAPIVpnGateway(),
 			"outscale_vpn_gateways":            dataSourceOutscaleOAPIVpnGateways(),
-			"outscale_api_key":                 dataSourceOutscaleOAPIIamAccessKey(),
 			"outscale_vpn_connection":          dataSourceOutscaleVpnConnection(), //TODO: OAPI
 			"outscale_sub_region":              dataSourceOutscaleOAPIAvailabilityZone(),
 			"outscale_prefix_list":             dataSourceOutscaleOAPIPrefixList(),
@@ -142,10 +140,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_api_access":          dataSourceOutscaleOAPIVpcEndpoint(),
 			"outscale_net_api_accesses":        dataSourceOutscaleOAPIVpcEndpoints(),
 			"outscale_net_api_access_services": dataSourceOutscaleOAPIVpcEndpointServices(),
-			"outscale_catalog":                 dataSourceOutscaleOAPICatalog(),
-			"outscale_public_catalog":          dataSourceOutscaleOAPIPublicCatalog(),
-			"outscale_account_consumption":     dataSourceOutscaleOAPIAccountConsumption(),
-			"outscale_account":                 dataSourceOutscaleOAPIAccount(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
