@@ -80,8 +80,8 @@ $ terraform plan
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the 3DS OUTSCALE provider block:
 
-- `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OSC_ACCESS_KEY_ID` [environment variable](#environment-variables).
+* `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OSC_ACCESS_KEY_ID` [environment variable](#environment-variables).
 
-- `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OSC_SECRET_ACCESS_KEY` [environment variable](#environment-variables).
+* `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OSC_SECRET_ACCESS_KEY` [environment variable](#environment-variables).
 
-- `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OSC_DEFAULT_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference
+* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OSC_DEFAULT_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference

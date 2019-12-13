@@ -34,9 +34,9 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 The following attributes are exported:
 
 * `volume` - Information about the volume.
-  * `iops` - The number of I/O operations per second (IOPS):<br />
-- For `io1` volumes, the number of provisioned IOPS<br />
-- For `gp2` volumes, the baseline performance of the volume
+  * `iops` - The number of I/O operations per second (IOPS):  
+    For `io1` volumes, the number of provisioned IOPS.  
+    For `gp2` volumes, the baseline performance of the volume.
   * `linked_volumes` - Information about your volume attachment.
     * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
     * `device_name` - The name of the device.

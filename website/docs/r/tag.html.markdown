@@ -29,5 +29,5 @@ The following arguments are supported:
 
 ## Attribute Reference
 
-The following attributes are exported:
+No attribute is exported.
 
