@@ -10,7 +10,7 @@ import (
 )
 
 func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 
 	keyPairName := fmt.Sprintf("acc-test-keypair-%d", acctest.RandIntRange(0, 400))
 

@@ -1,14 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIKeyPair() *schema.Resource {
@@ -31,7 +32,7 @@ func resourceOutscaleOAPIKeyPair() *schema.Resource {
 }
 
 func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	var keyName string
 	if v, ok := d.GetOk("keypair_name"); ok {
@@ -41,20 +42,19 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		d.Set("keypair_name", keyName)
 	}
 
-	req := &oapi.CreateKeypairRequest{
+	req := oscgo.CreateKeypairRequest{
 		KeypairName: keyName,
 	}
 
 	//Accept public key as argument
 	if v, ok := d.GetOk("public_key"); ok {
-		req.PublicKey = v.(string)
+		req.SetPublicKey(v.(string))
 	}
 
-	var result *oapi.CreateKeypairResponse
-	var resp *oapi.POST_CreateKeypairResponses
+	var resp oscgo.CreateKeypairResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_CreateKeypair(*req)
+		resp, _, err = conn.KeypairApi.CreateKeypair(context.Background(), &oscgo.CreateKeypairOpts{CreateKeypairRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -67,43 +67,32 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 		return fmt.Errorf("Error creating OAPIKeyPair: %s", errString)
 	}
 
-	result = resp.OK
-
-	d.SetId(result.Keypair.KeypairName)
-	d.Set("keypair_fingerprint", result.Keypair.KeypairFingerprint)
+	d.SetId(resp.Keypair.GetKeypairName())
+	d.Set("keypair_fingerprint", resp.Keypair.GetKeypairFingerprint())
 
 	//Set private key in creation
-	if result.Keypair.PrivateKey != "" {
-		d.Set("private_key", result.Keypair.PrivateKey)
+	if resp.Keypair.GetPrivateKey() != "" {
+		d.Set("private_key", resp.Keypair.GetPrivateKey())
 	}
 
 	return resourceOAPIKeyPairRead(d, meta)
 }
 
 func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	req := &oapi.ReadKeypairsRequest{
-		Filters: oapi.FiltersKeypair{KeypairNames: []string{d.Id()}},
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
 
-	var response *oapi.ReadKeypairsResponse
-	var resp *oapi.POST_ReadKeypairsResponses
+	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.POST_ReadKeypairs(*req)
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -116,51 +105,41 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
-				d.SetId("")
-				return nil
-			}
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+			d.SetId("")
+			return nil
 		}
+		errString = err.Error()
 
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	response = resp.OK
-
-	if err := d.Set("request_id", response.ResponseContext.RequestId); err != nil {
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 
-	for _, keyPair := range response.Keypairs {
-		if keyPair.KeypairName == d.Id() {
-			d.Set("keypair_name", keyPair.KeypairName)
-			d.Set("keypair_fingerprint", keyPair.KeypairFingerprint)
+	for _, keyPair := range resp.GetKeypairs() {
+		if keyPair.GetKeypairName() == d.Id() {
+			d.Set("keypair_name", keyPair.GetKeypairName())
+			d.Set("keypair_fingerprint", keyPair.GetKeypairFingerprint())
 			return nil
 		}
 	}
 
-	return fmt.Errorf("Unable to find key pair within: %#v", response.Keypairs)
+	return fmt.Errorf("Unable to find key pair within: %#v", resp.GetKeypairs())
 }
 
 func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		request := &oapi.DeleteKeypairRequest{
+		request := oscgo.DeleteKeypairRequest{
 			KeypairName: d.Id(),
 		}
 
 		var err error
-		_, err = conn.POST_DeleteKeypair(*request)
+		_, _, err = conn.KeypairApi.DeleteKeypair(context.Background(), &oscgo.DeleteKeypairOpts{DeleteKeypairRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

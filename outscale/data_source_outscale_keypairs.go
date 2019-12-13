@@ -1,21 +1,21 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	req := &oapi.ReadKeypairsRequest{
-		Filters: oapi.FiltersKeypair{},
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{},
 	}
 
 	//filters, filtersOk := d.GetOk("filter")
@@ -26,20 +26,21 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		for _, v := range KeyName.([]interface{}) {
 			names = append(names, v.(string))
 		}
-		req.Filters.KeypairNames = names
+		filter := oscgo.FiltersKeypair{}
+		filter.SetKeypairNames(names)
+		req.SetFilters(filter)
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set))
+		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var response *oapi.ReadKeypairsResponse
-	var resp *oapi.POST_ReadKeypairsResponses
+	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.POST_ReadKeypairs(*req)
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -52,44 +53,34 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
-				d.SetId("")
-				return nil
-			}
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+			d.SetId("")
+			return nil
 		}
+		errString = err.Error()
 
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	response = resp.OK
-
-	if len(response.Keypairs) < 1 {
+	if len(resp.GetKeypairs()) < 1 {
 		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
 	}
 
 	d.SetId(resource.UniqueId())
 
-	if response.ResponseContext.RequestId != "" {
-		d.Set("request_id", response.ResponseContext.RequestId)
+	if resp.ResponseContext.GetRequestId() != "" {
+		d.Set("request_id", resp.ResponseContext.GetRequestId())
 	}
 
-	keypairs := make([]map[string]interface{}, len(response.Keypairs))
-	for k, v := range response.Keypairs {
+	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
+	for k, v := range resp.GetKeypairs() {
 		keypair := make(map[string]interface{})
-		if v.KeypairName != "" {
-			keypair["keypair_name"] = v.KeypairName
+		if v.GetKeypairName() != "" {
+			keypair["keypair_name"] = v.GetKeypairName()
 		}
-		if v.KeypairFingerprint != "" {
-			keypair["keypair_fingerprint"] = v.KeypairFingerprint
+		if v.GetKeypairFingerprint() != "" {
+			keypair["keypair_fingerprint"] = v.GetKeypairFingerprint()
 		}
 		keypairs[k] = keypair
 	}
