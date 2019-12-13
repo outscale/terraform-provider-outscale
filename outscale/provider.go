@@ -80,8 +80,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_snapshot_attributes":           resourcedOutscaleOAPISnapshotAttributes(),
 			"outscale_net_api_access":                resourceOutscaleOAPIVpcEndpoint(),
 			"outscale_snapshot_import":               resourcedOutscaleOAPISnapshotImport(),
-			"outscale_directlink":                    resourceOutscaleOAPIDirectLink(),
-			"outscale_directlink_interface":          resourceOutscaleOAPIDirectLinkInterface(),
 			"outscale_client_endpoint":               resourceOutscaleOAPICustomerGateway(),
 			"outscale_dhcp_option":                   resourceOutscaleDHCPOption(),     //TODO: OAPI
 			"outscale_dhcp_option_link":              resourceOutscaleDHCPOptionLink(), //TODO: OAPI
@@ -147,12 +145,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_catalog":                 dataSourceOutscaleOAPICatalog(),
 			"outscale_public_catalog":          dataSourceOutscaleOAPIPublicCatalog(),
 			"outscale_account_consumption":     dataSourceOutscaleOAPIAccountConsumption(),
-			"outscale_directlink_interface":    dataSourceOutscaleOAPIDirectLinkInterface(),
-			"outscale_directlink_interfaces":   dataSourceOutscaleOAPIDirectLinkInterfaces(),
-			"outscale_sites":                   dataSourceOutscaleOAPISites(),
 			"outscale_account":                 dataSourceOutscaleOAPIAccount(),
-			"outscale_directlink_vpn_gateways": dataSourceOutscaleOAPIDLVPNGateways(),
-			"outscale_directlink":              dataSourceOutscaleOAPIDirectLink(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
