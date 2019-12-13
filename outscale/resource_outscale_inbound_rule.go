@@ -291,7 +291,7 @@ func oapiFindResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.Security
 		return nil, nil, oapiSecurityGroupNotFound{id, nil}
 	}
 	if len(resp.OK.SecurityGroups) != 1 {
-		return nil, nil, oapiSecurityGroupNotFound{id, resp.OK.SecurityGroups}
+		return nil, nil, nil // oapiSecurityGroupNotFound{id, resp.OK.SecurityGroups}
 	}
 
 	return &resp.OK.SecurityGroups[0], &resp.OK.ResponseContext.RequestId, nil
