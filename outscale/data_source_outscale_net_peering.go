@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"reflect"
 	"strings"
@@ -10,7 +13,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
@@ -51,22 +53,22 @@ func dataSourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Reading Net Peering Connections.")
 
-	req := oapi.ReadNetPeeringsRequest{}
+	req := oscgo.ReadNetPeeringsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	if !filtersOk {
 		return fmt.Errorf("filters must be assigned")
 	}
-	req.Filters = buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set))
+	req.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 
-	var resp *oapi.POST_ReadNetPeeringsResponses
+	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadNetPeerings(req)
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -77,22 +79,22 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 		return nil
 	})
 
-	if err != nil || resp.OK == nil {
+	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidNetPeeringConnectionID.NotFound") {
 			return fmt.Errorf("no matching Net Peering Connection found")
 		}
 		return fmt.Errorf("Error reading Net Peering Connection details: %s", err)
 	}
 
-	if len(resp.OK.NetPeerings) > 1 {
+	if len(resp.GetNetPeerings()) > 1 {
 		return fmt.Errorf("multiple Net Peering connections matched; use additional constraints to reduce matches to a single Net Peering Connection")
 	}
-	netPeering := resp.OK.NetPeerings[0]
+	netPeering := resp.GetNetPeerings()[0]
 
 	// The failed status is a status that we can assume just means the
 	// connection is gone. Destruction isn't allowed, and it eventually
 	// just "falls off" the console. See GH-2322
-	if !reflect.DeepEqual(netPeering.State, oapi.NetPeeringState{}) {
+	if !reflect.DeepEqual(netPeering.State, oscgo.NetPeeringState{}) {
 		status := map[string]bool{
 			"deleted":  true,
 			"deleting": true,
@@ -100,33 +102,33 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 			"failed":   true,
 			"rejected": true,
 		}
-		if _, ok := status[netPeering.State.Name]; ok {
+		if _, ok := status[netPeering.State.GetName()]; ok {
 			log.Printf("[DEBUG] Net Peering Connection (%s) in state (%s), removing.",
-				d.Id(), netPeering.State.Name)
+				d.Id(), netPeering.State.GetName())
 			return nil
 		}
 	}
 	log.Printf("[DEBUG] Net Peering Connection response: %#v", netPeering)
 
-	log.Printf("[DEBUG] Net Peering Connection Source %s, Accepter %s", netPeering.SourceNet.AccountId, netPeering.AccepterNet.AccountId)
+	log.Printf("[DEBUG] Net Peering Connection Source %s, Accepter %s", netPeering.SourceNet.GetAccountId(), netPeering.AccepterNet.GetAccountId())
 
 	accepter := make(map[string]interface{})
 	requester := make(map[string]interface{})
 	stat := make(map[string]interface{})
 
-	if !reflect.DeepEqual(netPeering.AccepterNet, oapi.AccepterNet{}) {
-		accepter["ip_range"] = netPeering.AccepterNet.IpRange
-		accepter["account_id"] = netPeering.AccepterNet.AccountId
-		accepter["net_id"] = netPeering.AccepterNet.NetId
+	if !reflect.DeepEqual(netPeering.GetAccepterNet(), oscgo.AccepterNet{}) {
+		accepter["ip_range"] = netPeering.AccepterNet.GetIpRange()
+		accepter["account_id"] = netPeering.AccepterNet.GetAccountId()
+		accepter["net_id"] = netPeering.AccepterNet.GetNetId()
 	}
-	if !reflect.DeepEqual(netPeering.SourceNet, oapi.SourceNet{}) {
-		requester["ip_range"] = netPeering.SourceNet.IpRange
-		requester["account_id"] = netPeering.SourceNet.AccountId
-		requester["net_id"] = netPeering.SourceNet.NetId
+	if !reflect.DeepEqual(netPeering.SourceNet, oscgo.SourceNet{}) {
+		requester["ip_range"] = netPeering.SourceNet.GetIpRange()
+		requester["account_id"] = netPeering.SourceNet.GetAccountId()
+		requester["net_id"] = netPeering.SourceNet.GetNetId()
 	}
-	if netPeering.State.Name != "" {
-		stat["name"] = netPeering.State.Name
-		stat["message"] = netPeering.State.Message
+	if netPeering.State.GetName() != "" {
+		stat["name"] = netPeering.State.GetName()
+		stat["message"] = netPeering.State.GetMessage()
 	}
 
 	if err := d.Set("accepter_net", accepter); err != nil {
@@ -138,23 +140,23 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if err := d.Set("state", stat); err != nil {
 		return err
 	}
-	if err := d.Set("net_peering_id", netPeering.NetPeeringId); err != nil {
+	if err := d.Set("net_peering_id", netPeering.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOAPIToMap(netPeering.Tags)); err != nil {
+	if err := d.Set("tags", tagsOSCAPIToMap(netPeering.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
-	if err := d.Set("request_id", resp.OK.ResponseContext.RequestId); err != nil {
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 
-	d.SetId(netPeering.NetPeeringId)
+	d.SetId(netPeering.GetNetPeeringId())
 
 	return nil
 }
 
-func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oapi.FiltersNetPeering {
-	var filters oapi.FiltersNetPeering
+func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oscgo.FiltersNetPeering {
+	var filters oscgo.FiltersNetPeering
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -164,29 +166,29 @@ func buildOutscaleOAPILinPeeringConnectionFilters(set *schema.Set) oapi.FiltersN
 
 		switch name := m["name"].(string); name {
 		case "accepter_net_account_ids":
-			filters.AccepterNetAccountIds = filterValues
+			filters.SetAccepterNetAccountIds(filterValues)
 		case "accepter_net_ip_ranges":
-			filters.AccepterNetIpRanges = filterValues
+			filters.SetAccepterNetIpRanges(filterValues)
 		case "accepter_net_net_ids":
-			filters.AccepterNetNetIds = filterValues
+			filters.SetAccepterNetNetIds(filterValues)
 		case "net_peering_ids":
-			filters.NetPeeringIds = filterValues
+			filters.SetNetPeeringIds(filterValues)
 		case "source_net_account_ids":
-			filters.SourceNetAccountIds = filterValues
+			filters.SetSourceNetAccountIds(filterValues)
 		case "source_net_ip_ranges":
-			filters.SourceNetIpRanges = filterValues
+			filters.SetSourceNetIpRanges(filterValues)
 		case "source_net_net_ids":
-			filters.SourceNetNetIds = filterValues
+			filters.SetSourceNetNetIds(filterValues)
 		case "state_messages":
-			filters.StateMessages = filterValues
+			filters.SetStateMessages(filterValues)
 		case "state_names":
-			filters.StateNames = filterValues
+			filters.SetStateNames(filterValues)
 		case "tag_keys":
-			filters.TagKeys = filterValues
+			filters.SetTagKeys(filterValues)
 		case "tag_values":
-			filters.TagValues = filterValues
+			filters.SetTagValues(filterValues)
 		case "tags":
-			filters.Tags = filterValues
+			filters.SetTags(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
