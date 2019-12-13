@@ -317,7 +317,7 @@ func tagsFromSliceMap(m []interface{}) []oscgo.ResourceTag {
 	return result
 }
 
-func oapiTagsDescToList(ts []oapi.Tag) []map[string]interface{} {
+func oapiTagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
 	res := make([]map[string]interface{}, len(ts))
 
 	for i, t := range ts {
@@ -333,10 +333,10 @@ func oapiTagsDescToList(ts []oapi.Tag) []map[string]interface{} {
 	return res
 }
 
-func oapiTagDescIgnored(t *oapi.Tag) bool {
+func oapiTagDescIgnored(t *oscgo.Tag) bool {
 	filter := []string{"^outscale:"}
 	for _, v := range filter {
-		if r, _ := regexp.MatchString(v, t.Key); r == true {
+		if r, _ := regexp.MatchString(v, t.GetKey()); r == true {
 			return true
 		}
 	}

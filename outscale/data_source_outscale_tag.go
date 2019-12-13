@@ -1,11 +1,12 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -37,22 +38,22 @@ func dataSourceOutscaleOAPITag() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
-	params := oapi.ReadTagsRequest{}
+	params := oscgo.ReadTagsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *oapi.POST_ReadTagsResponses
+	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadTags(params)
+		resp, _, err = conn.TagApi.ReadTags(context.Background(), &oscgo.ReadTagsOpts{ReadTagsRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -66,28 +67,28 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	if len(resp.OK.Tags) < 1 {
+	if len(resp.GetTags()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	if len(resp.OK.Tags) > 1 {
+	if len(resp.GetTags()) > 1 {
 		return fmt.Errorf("your query returned more than one result, Please try a more " +
 			"specific search criteria")
 	}
 
-	tag := resp.OK.Tags[0]
+	tag := resp.GetTags()[0]
 
-	d.Set("key", tag.Key)
-	d.Set("value", tag.Value)
-	d.Set("resource_id", tag.ResourceId)
-	d.Set("resource_type", tag.ResourceType)
+	d.Set("key", tag.GetKey())
+	d.Set("value", tag.GetValue())
+	d.Set("resource_id", tag.GetResourceId())
+	d.Set("resource_type", tag.GetResourceType())
 
 	d.SetId(resource.UniqueId())
 
 	return err
 }
 
-func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oapi.FiltersTag {
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
 	var filterKeys []string
 	var filterValues []string
 	for _, v := range set.List() {
@@ -100,9 +101,9 @@ func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oapi.FiltersTag {
 		filterKeys = append(filterKeys, m["name"].(string))
 	}
 
-	filters := oapi.FiltersTag{
-		Keys:   filterKeys,
-		Values: filterValues,
+	filters := oscgo.FiltersTag{
+		Keys:   &filterKeys,
+		Values: &filterValues,
 	}
 	return filters
 }

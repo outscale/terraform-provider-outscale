@@ -1,11 +1,12 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -31,9 +32,9 @@ func resourceOutscaleOAPITags() *schema.Resource {
 }
 
 func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	request := oapi.CreateTagsRequest{}
+	request := oscgo.CreateTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
@@ -42,7 +43,7 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
+		request.SetTags(tagsFromSliceMap(tag.([]interface{})))
 	}
 	if resourceIdsOk {
 		var rids []string
@@ -52,11 +53,11 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 			rids = append(rids, str)
 		}
 
-		request.ResourceIds = rids
+		request.SetResourceIds(rids)
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.POST_CreateTags(request)
+		_, _, err := conn.TagApi.CreateTags(context.Background(), &oscgo.CreateTagsOpts{CreateTagsRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), ".NotFound") {
 				return resource.RetryableError(err)
@@ -75,25 +76,26 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
-	params := oapi.ReadTagsRequest{
-		Filters: oapi.FiltersTag{},
+	params := oscgo.ReadTagsRequest{
+		Filters: &oscgo.FiltersTag{},
 	}
 
 	tag, tagsOk := d.GetOk("tag")
+	filter := oscgo.FiltersTag{}
 	if tagsOk {
-		tgs := tagsOAPIFromSliceMap(tag.([]interface{}))
+		tgs := tagsFromSliceMap(tag.([]interface{}))
 		keys := make([]string, 0, len(tgs))
 		values := make([]string, 0, len(tgs))
 		for _, t := range tgs {
 			keys = append(keys, t.Key)
 			values = append(values, t.Value)
 		}
-
-		params.Filters.Keys = keys
-		params.Filters.Values = values
+		filter.SetKeys(keys)
+		filter.SetValues(values)
+		params.SetFilters(filter)
 
 	}
 
@@ -106,14 +108,15 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 			rids = append(rids, str)
 		}
 
-		params.Filters.ResourceIds = rids
+		filter.SetResourceIds(rids)
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadTagsResponses
+	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadTags(params)
+		resp, _, err = conn.TagApi.ReadTags(context.Background(), &oscgo.ReadTagsOpts{ReadTagsRequest: optional.NewInterface(params)})
 		return resource.RetryableError(err)
 	})
 
@@ -121,11 +124,11 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
-	tg := oapiTagsDescToList(resp.OK.Tags)
+	d.Set("request_id", resp.GetResponseContext().RequestId)
+	tg := oapiTagsDescToList(resp.GetTags())
 	err = d.Set("tags", tg)
 
-	if err := d.Set("request_id", resp.OK.ResponseContext.RequestId); err != nil {
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 
@@ -133,9 +136,9 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 }
 
 func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	request := oapi.DeleteTagsRequest{}
+	request := oscgo.DeleteTagsRequest{}
 
 	tag, tagsOk := d.GetOk("tag")
 
@@ -146,7 +149,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsOAPIFromSliceMap(tag.([]interface{}))
+		request.Tags = tagsFromSliceMap(tag.([]interface{}))
 	}
 	if resourceIdsOk {
 		var rids []string
@@ -156,11 +159,11 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 			rids = append(rids, str)
 		}
 
-		request.ResourceIds = rids
+		request.SetResourceIds(rids)
 	}
 
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.POST_DeleteTags(request)
+		_, _, err := conn.TagApi.DeleteTags(context.Background(), &oscgo.DeleteTagsOpts{DeleteTagsRequest: optional.NewInterface(request)})
 		if err != nil {
 			ec2err, ok := err.(awserr.Error)
 			if ok && strings.Contains(ec2err.Code(), ".NotFound") {
