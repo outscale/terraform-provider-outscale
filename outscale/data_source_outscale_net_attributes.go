@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
@@ -34,21 +36,20 @@ func dataSourceOutscaleOAPIVpcAttr() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters := oapi.FiltersNet{
-		NetIds: []string{d.Get("net_id").(string)},
+	filters := oscgo.FiltersNet{
+		NetIds: &[]string{d.Get("net_id").(string)},
 	}
 
-	req := oapi.ReadNetsRequest{
-		Filters: filters,
+	req := oscgo.ReadNetsRequest{
+		Filters: &filters,
 	}
 
-	var rs *oapi.POST_ReadNetsResponses
-	var resp *oapi.ReadNetsResponse
+	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rs, err = conn.POST_ReadNets(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -62,18 +63,16 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 		log.Printf("[DEBUG] Error reading lin (%s)", err)
 	}
 
-	resp = rs.OK
-
-	if resp == nil || len(resp.Nets) == 0 {
+	if len(resp.GetNets()) == 0 {
 		d.SetId("")
 		return fmt.Errorf("oAPI Net not found")
 	}
 
-	d.SetId(resp.Nets[0].NetId)
+	d.SetId(resp.GetNets()[0].GetNetId())
 
-	d.Set("net_id", resp.Nets[0].NetId)
-	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
-	d.Set("request_id", resp.ResponseContext.RequestId)
+	d.Set("net_id", resp.GetNets()[0].GetNetId())
+	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }
