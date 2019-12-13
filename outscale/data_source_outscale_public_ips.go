@@ -1,13 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
@@ -65,9 +67,9 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 }
 
 func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.ReadPublicIpsRequest{}
+	req := oscgo.ReadPublicIpsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
@@ -75,10 +77,10 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	var describeAddresses *oapi.POST_ReadPublicIpsResponses
+	var resp oscgo.ReadPublicIpsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		describeAddresses, err = conn.POST_ReadPublicIps(req)
+		resp, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
 		return resource.RetryableError(err)
 	})
 
@@ -92,32 +94,31 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 	}
 
 	// Verify Outscale returned our EIP
-	if describeAddresses == nil || len(describeAddresses.OK.PublicIps) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.OK.PublicIps)
+	if len(resp.GetPublicIps()) == 0 {
+		return fmt.Errorf("Unable to find EIP: %#v", resp.GetPublicIps())
 	}
 
-	addresses := describeAddresses.OK.PublicIps
+	addresses := resp.GetPublicIps()
 
 	address := make([]map[string]interface{}, len(addresses))
 
 	for k, v := range addresses {
-
 		add := make(map[string]interface{})
 
-		add["link_public_ip_id"] = v.LinkPublicIpId
-		add["public_ip_id"] = v.PublicIpId
-		add["vm_id"] = v.VmId
-		add["nic_id"] = v.NicId
-		add["nic_account_id"] = v.NicAccountId
-		add["private_ip"] = v.PrivateIp
-		add["public_ip"] = v.PublicIp
+		add["link_public_ip_id"] = v.GetLinkPublicIpId()
+		add["public_ip_id"] = v.GetPublicIpId()
+		add["vm_id"] = v.GetVmId()
+		add["nic_id"] = v.GetNicId()
+		add["nic_account_id"] = v.GetNicAccountId()
+		add["private_ip"] = v.GetPrivateIp()
+		add["public_ip"] = v.GetPublicIp()
 
 		address[k] = add
 	}
 
 	d.SetId(resource.UniqueId())
 
-	d.Set("request_id", describeAddresses.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	err = d.Set("public_ips", address)
 

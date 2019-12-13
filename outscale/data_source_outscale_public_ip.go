@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/outscale/osc-go/oapi"
 	"log"
 	"strings"
 	"time"
@@ -70,7 +69,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOSCAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
 	if id := d.Get("public_ip_id"); id != "" {
@@ -157,40 +156,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	return d.Set("request_id", response.ResponseContext.GetRequestId())
 }
 
-func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) oapi.FiltersPublicIp {
-	var filters oapi.FiltersPublicIp
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		switch name := m["name"].(string); name {
-		case "public_ip_ids":
-			filters.PublicIpIds = filterValues
-		case "link_ids":
-			filters.LinkPublicIpIds = filterValues
-		case "placements":
-			filters.Placements = filterValues
-		case "vm_ids":
-			filters.VmIds = filterValues
-		case "nic_ids":
-			filters.NicIds = filterValues
-		case "nic_account_ids":
-			filters.NicAccountIds = filterValues
-		case "private_ips":
-			filters.PrivateIps = filterValues
-		case "public_ips":
-			filters.PublicIps = filterValues
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return filters
-}
-
-func buildOutscaleOSCAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
+func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {
 	var filters oscgo.FiltersPublicIp
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
