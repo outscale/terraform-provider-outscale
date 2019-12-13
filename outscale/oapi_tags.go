@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/icu"
 )
 
 func tagsSchemaComputed() *schema.Schema {
@@ -282,24 +280,6 @@ func tagsToMapC(ts []*common.Tag) []map[string]string {
 	} else {
 		result = make([]map[string]string, 0)
 	}
-
-	return result
-}
-
-func tagsToMapI(ts []*icu.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = *t.Key
-			tag["value"] = *t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	log.Printf("[DEBUG] TAG_SET %s", result)
 
 	return result
 }
