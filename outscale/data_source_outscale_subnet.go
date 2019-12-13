@@ -11,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPISubnet() *schema.Resource {
@@ -72,7 +71,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOSCAPISubnetDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
 	var resp oscgo.ReadSubnetsResponse
@@ -119,36 +118,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) oapi.FiltersSubnet {
-	var filters oapi.FiltersSubnet
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		switch name := m["name"].(string); name {
-		// case "available_ips_counts":
-		// 	filters.AvailableIpsCounts = filterValues
-		case "ip_ranges":
-			filters.IpRanges = filterValues
-		case "net_ids":
-			filters.NetIds = filterValues
-		case "states":
-			filters.States = filterValues
-		case "subnet_ids":
-			filters.SubnetIds = filterValues
-		case "subregion_names":
-			filters.SubregionNames = filterValues
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return filters
-}
-
-func buildOutscaleOSCAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
 	var filters oscgo.FiltersSubnet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})

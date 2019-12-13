@@ -1,14 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISubnets() *schema.Resource {
@@ -72,16 +73,16 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oapi.ReadSubnetsRequest{}
+	req := oscgo.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_ids"); id != "" {
 		var ids []string
 		for _, v := range id.([]interface{}) {
 			ids = append(ids, v.(string))
 		}
-		req.Filters = oapi.FiltersSubnet{SubnetIds: ids}
+		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
 	}
 
 	filters, filtersOk := d.GetOk("filter")
@@ -90,10 +91,10 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *oapi.POST_ReadSubnetsResponses
+	var resp oscgo.ReadSubnetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSubnets(*req)
+		resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -106,51 +107,41 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	response := resp.OK
-
-	if response == nil || len(response.Subnets) == 0 {
+	if len(resp.GetSubnets()) == 0 {
 		return fmt.Errorf("no matching subnet found")
 	}
 
-	subnets := make([]map[string]interface{}, len(response.Subnets))
+	subnets := make([]map[string]interface{}, len(resp.GetSubnets()))
 
-	for k, v := range response.Subnets {
+	for k, v := range resp.GetSubnets() {
 		subnet := make(map[string]interface{})
 
-		if v.SubregionName != "" {
-			subnet["subregion_name"] = v.SubregionName
+		if v.GetSubregionName() != "" {
+			subnet["subregion_name"] = v.GetSubregionName()
 		}
 		//if v.AvailableIpsCount != 0 {
-		subnet["available_ips_count"] = v.AvailableIpsCount
+		subnet["available_ips_count"] = v.GetAvailableIpsCount()
 		//}
-		if v.IpRange != "" {
-			subnet["ip_range"] = v.IpRange
+		if v.GetIpRange() != "" {
+			subnet["ip_range"] = v.GetIpRange()
 		}
-		if v.State != "" {
-			subnet["state"] = v.State
+		if v.GetState() != "" {
+			subnet["state"] = v.GetState()
 		}
-		if v.SubnetId != "" {
-			subnet["subnet_id"] = v.SubnetId
+		if v.GetSubnetId() != "" {
+			subnet["subnet_id"] = v.GetSubnetId()
 		}
-		if v.Tags != nil {
-			subnet["tags"] = tagsOAPIToMap(v.Tags)
+		if v.GetTags() != nil {
+			subnet["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
-		if v.NetId != "" {
-			subnet["net_id"] = v.NetId
+		if v.GetNetId() != "" {
+			subnet["net_id"] = v.GetNetId()
 		}
 
 		subnets[k] = subnet
@@ -160,7 +151,7 @@ func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", response.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }
