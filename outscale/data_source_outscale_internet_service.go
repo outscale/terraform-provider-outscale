@@ -3,12 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/outscale/osc-go/oapi"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -105,25 +105,6 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	d.SetId(result.GetInternetServiceId())
 
 	return d.Set("tags", tagsOSCAPIToMap(result.GetTags()))
-}
-
-func buildOutscaleOAPIDataSourceInternetServiceFilters(set *schema.Set) oapi.FiltersInternetService {
-	var filters oapi.FiltersInternetService
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		switch name := m["name"].(string); name {
-		case "internet_service_ids":
-			filters.InternetServiceIds = filterValues
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return filters
 }
 
 func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) *oscgo.FiltersInternetService {
