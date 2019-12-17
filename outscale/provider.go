@@ -44,7 +44,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net":                           resourceOutscaleOAPINet(),
 			"outscale_security_group":                resourceOutscaleOAPISecurityGroup(),
 			"outscale_outbound_rule":                 resourceOutscaleOAPIOutboundRule(),
-			"outscale_inbound_rule":                  resourceOutscaleOAPIInboundRule(),
 			"outscale_security_group_rule":           resourceOutscaleOAPIOutboundRule(),
 			"outscale_tag":                           resourceOutscaleOAPITags(),
 			"outscale_public_ip":                     resourceOutscaleOAPIPublicIP(),

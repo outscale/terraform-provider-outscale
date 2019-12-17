@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -35,6 +37,53 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error {
+	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "outscale_firewall_rules_set" {
+			continue
+		}
+
+		// Retrieve our group
+		req := oapi.ReadSecurityGroupsRequest{
+			Filters: oapi.FiltersSecurityGroup{
+				SecurityGroupIds: []string{rs.Primary.ID},
+			},
+		}
+		var resp *oapi.POST_ReadSecurityGroupsResponses
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, err = conn.POST_ReadSecurityGroups(req)
+
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded") {
+					fmt.Printf("\n\n[INFO] Request limit exceeded")
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+
+			return nil
+		})
+		if err == nil {
+			if len(resp.OK.SecurityGroups) > 0 && resp.OK.SecurityGroups[0].SecurityGroupId == rs.Primary.ID {
+				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
+			}
+
+			return nil
+		}
+
+		if strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup, p *oscgo.SecurityGroupRule, ruleType string) resource.TestCheckFunc {

@@ -524,8 +524,6 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-// #################################
-
 func findOAPIResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.SecurityGroup, *string, error) {
 	req := oapi.ReadSecurityGroupsRequest{
 		Filters: oapi.FiltersSecurityGroup{
