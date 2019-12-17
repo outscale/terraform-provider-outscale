@@ -19,7 +19,7 @@ For more information on this resource actions, see the [API documentation](https
 # Add permissions
 
 resource "outscale_image_launch_permission" "image01a" {
-	image_id = "ami-a02936b2"
+	image_id = "ami-12345678"
 	permission_additions  {
 		account_ids = ["012345678910"]
 	}
@@ -28,7 +28,7 @@ resource "outscale_image_launch_permission" "image01a" {
 # Remove permissions
 
 resource "outscale_image_launch_permission" "image01b" {
-	image_id = "ami-a02936b2"
+	image_id = "ami-12345678"
 	permission_removals  {
 		account_ids = ["012345678910"]
 	}
@@ -44,10 +44,10 @@ The following arguments are supported:
 * `image_id` - (Required) The ID of the OMI you want to modify.
 * `permission_additions` - (Optional) Information about the users you want to give permissions for the resource.
   * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
-  * `accounts_ids` - (Optional) The account ID of one or more users you want to give permissions to.
+  * `account_ids` - (Optional) The account ID of one or more users you want to give permissions to.
 * `permission_removals` - (Optional) Information about the users you want to remove permissions for the resource.
   * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
-  * `accounts_ids` - (Optional) The account ID of one or more users you want to remove permissions from.
+  * `account_ids` - (Optional) The account ID of one or more users you want to remove permissions from.
 
 ## Attribute Reference
 

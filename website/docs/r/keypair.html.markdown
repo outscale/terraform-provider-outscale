@@ -16,9 +16,17 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-resource "outscale_keypair" "keypair01" {
-	keypair_name = "terraform-keypair-test"
-	public_key   = file("keypair_public_test.pub")
+# Create a keypair
+
+resource "outscale_keypair" "outscale_keypair01" {
+keypair_name = "terraform-keypair-create"
+}
+
+# Import a keypair
+
+resource "outscale_keypair" "keypair02" {
+	keypair_name = "terraform-keypair-import"
+	public_key   = file("<PATH>")
 }
 
 
