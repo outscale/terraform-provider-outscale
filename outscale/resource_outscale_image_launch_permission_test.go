@@ -45,23 +45,23 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
-			}, /*
-				// Re-add everything so we can test when AMI disappears
-				r.TestStep{
-					Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
-					Check: r.ComposeTestCheckFunc(
-						//testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
-					),
-				},
-				// Here we delete the AMI to verify the follow-on refresh after this step
-				// should not error.
-				r.TestStep{
-					Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
-					Check: r.ComposeTestCheckFunc(
-						testAccOutscaleOAPIImageDisappears(&imageID),
-					),
-					ExpectNonEmptyPlan: true,
-				},*/
+			},
+			// Re-add everything so we can test when AMI disappears
+			r.TestStep{
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
+				Check: r.ComposeTestCheckFunc(
+					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+				),
+			},
+			// Here we delete the AMI to verify the follow-on refresh after this step
+			// should not error.
+			r.TestStep{
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
+				Check: r.ComposeTestCheckFunc(
+					testAccOutscaleOAPIImageDisappears(&imageID),
+				),
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }
@@ -209,8 +209,8 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 
 	return base + fmt.Sprintf(`
 		resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-				image_id    = "${outscale_image.outscale_image.image_id}"
-				permission_additions {
+			image_id    = "${outscale_image.outscale_image.image_id}"
+			permission_additions {
 				account_ids = ["%s"]
 			}
 		}

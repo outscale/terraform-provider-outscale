@@ -62,6 +62,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 			"architecture": {
 				Type:     schema.TypeString,
@@ -254,27 +255,22 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 
-	filterReq := &oscgo.ReadImagesOpts{
+	req := &oscgo.ReadImagesOpts{
 		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
 		}),
 	}
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "deregistered"),
-		Timeout:    5 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
-	}
-
-	value, err := stateConf.WaitForState()
+	resp, _, err := conn.ImageApi.ReadImages(context.Background(), req)
 	if err != nil {
 		return fmt.Errorf("Error reading for OMI (%s): %v", id, err)
 	}
 
-	resp := value.(oscgo.ReadImagesResponse)
+	if len(resp.GetImages()) == 0 {
+		d.SetId("")
+		return nil
+	}
+
 	image := resp.GetImages()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
@@ -323,20 +319,19 @@ func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interf
 }
 
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+	//	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
-	if d.Get("description").(string) != "" {
-		_, _, err := conn.ImageApi.DeleteImage(context.Background(), &oscgo.DeleteImageOpts{
-			DeleteImageRequest: optional.NewInterface(oscgo.DeleteImageRequest{
-				ImageId: d.Id(),
-			}),
-		})
-		if err != nil {
-			return err
-		}
-		d.SetPartial("description")
-	}
+	//TODO: add tags
+	// if d.Get("description").(string) != "" {
+	// 	_, _, err := conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{
+	// 		UpdateImageRequest: optional.NewInterface(oscgo.UpdateImageRequest{}),
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	d.SetPartial("description")
+	// }
 
 	d.Partial(false)
 
