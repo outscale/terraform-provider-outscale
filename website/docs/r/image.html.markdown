@@ -25,7 +25,7 @@ resource "outscale_image" "image01" {
 }
 
 # Import an image
-## Make sure the manifest is still valide. You can find its location URL in Cockpit.
+## Make sure the manifest is still valid. You can find its location URL in Cockpit.
 
 resource "outscale_image" "image02" {
   description   = "Terraform register OMI"

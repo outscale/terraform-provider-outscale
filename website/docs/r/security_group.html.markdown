@@ -15,7 +15,13 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_security_group" "security_group01" {
+  description         = "Terraform security group test"
+  security_group_name = "terraform-security-group-test-01"
+}
+
+
 ```
 
 ## Argument Reference

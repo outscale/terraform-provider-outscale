@@ -15,7 +15,24 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+#resource "outscale_volume" "volume01" {
+#	subregion_name = "${var.region}a"
+#	size           = 40
+#}
+
+#resource "outscale_snapshot" "snapshot01" {
+#	volume_id = outscale_volume.volume01.volume_id
+#}
+
+resource "outscale_snapshot_attributes" "snapshot_attributes01" {
+	snapshot_id = outscale_snapshot.snapshot01.snapshot_id
+	permissions_to_create_volume_additions {
+		account_ids = ["012345678910"]
+  }
+}
+
+
 ```
 
 ## Argument Reference
@@ -23,11 +40,11 @@ For more information on this resource actions, see the [API documentation](https
 The following arguments are supported:
 
 * `snapshot_id` - (Required) The ID of the snapshot.
-* `permissions_to_create_volume_additions` - (Optional) Information about the permissions for the resource.
-  * `account_ids` - (Optional) The account ID of one or more users who have permissions for the resource.
+* `permissions_to_create_volume_additions` - (Optional) Information about the users you want to give permissions for the resource.
+  * `account_ids` - (Optional) The account ID of one or more users you want to give permissions to.
   * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
-* `permissions_to_create_volume_removals` - (Optional)
-  * `account_ids` - (Optional) The account ID of one or more users who have permissions for the resource.
+* `permissions_to_create_volume_removals` - (Optional) Information about the users you want to remove permissions for the resource.
+  * `account_ids` - (Optional) The account ID of one or more users you want to remove permissions from.
   * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
 
 ## Attribute Reference

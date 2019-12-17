@@ -15,7 +15,17 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+#resource "outscale_volume" "volume01" {
+#  subregion_name = "${var.region}a"
+#  size           = 40
+#}
+
+resource "outscale_snapshot" "snapshot01" {
+  volume_id = outscale_volume.volume01.volume_id
+}
+
+
 ```
 
 ## Argument Reference

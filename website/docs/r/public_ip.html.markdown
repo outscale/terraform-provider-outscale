@@ -15,7 +15,11 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_public_ip" "public_ip01" {
+}
+
+
 ```
 
 ## Argument Reference

@@ -15,7 +15,18 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+#resource "outscale_subnet" "outscale_subnet01" {
+#	net_id   = outscale_net.outscale_net01.net_id
+#	ip_range = "10.0.0.0/18"
+#}
+
+resource "outscale_route_table_link" "outscale_route_table_link01" {
+	route_table_id = outscale_route_table.outscale_route_table01.route_table_id
+	subnet_id      = outscale_subnet.outscale_subnet01.subnet_id
+}
+
+
 ```
 
 ## Argument Reference
