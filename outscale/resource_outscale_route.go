@@ -55,6 +55,11 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"nat_service_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"nat_access_point": {
 				Type:     schema.TypeString,
 				Computed: true,
