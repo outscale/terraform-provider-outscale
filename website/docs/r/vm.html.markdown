@@ -206,7 +206,7 @@ The following attributes are exported:
       * `link_date` - The time and date of attachment of the volume to the VM.
       * `state` - The state of the volume.
       * `volume_id` - The ID of the volume.
-  * `device_name` - The name of the device.
+    * `device_name` - The name of the device.
   * `bsu_optimized` - If `true`, the VM is optimized for BSU I/O.
   * `client_token` - The idempotency token provided when launching the VM.
   * `deletion_protection` - If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
