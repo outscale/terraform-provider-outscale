@@ -12,7 +12,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -215,41 +214,6 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	}
 
 	return nil
-}
-
-func buildOutscaleOAPIDataSourceVolumesFilters(set *schema.Set) oapi.FiltersVolume {
-	var filters oapi.FiltersVolume
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, e.(string))
-		}
-
-		switch name := m["name"].(string); name {
-		case "creation_dates":
-			filters.CreationDates = filterValues
-		case "snapshot_ids":
-			filters.SnapshotIds = filterValues
-		case "subregion_names":
-			filters.SubregionNames = filterValues
-		case "tag_keys":
-			filters.TagKeys = filterValues
-		//TODO: case "tags":
-		// 	filters.Tags = filterValues
-		case "tag_values":
-			filters.TagValues = filterValues
-		case "volume_ids":
-			filters.VolumeIds = filterValues
-		case "volume_sizes":
-			filters.VolumeSizes = utils.StringSliceToInt64Slice(filterValues)
-		case "volume_types":
-			filters.VolumeTypes = filterValues
-		default:
-			log.Printf("[Debug] Unknown Filter Name: %s.", name)
-		}
-	}
-	return filters
 }
 
 func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersVolume {
