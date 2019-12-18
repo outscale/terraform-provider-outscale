@@ -3,10 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -89,21 +91,28 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 }
 
 func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
-	var filterKeys []string
-	var filterValues []string
+	filters := oscgo.FiltersTag{}
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
+		var filterValues []string
 
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
 		}
 
-		filterKeys = append(filterKeys, m["name"].(string))
+		switch name := m["name"].(string); name {
+		case "keys":
+			filters.SetKeys(filterValues)
+		case "resource_ids":
+			filters.SetResourceIds(filterValues)
+		case "resource_types":
+			filters.SetResourceTypes(filterValues)
+		case "values":
+			filters.SetValues(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
 	}
 
-	filters := oscgo.FiltersTag{
-		Keys:   &filterKeys,
-		Values: &filterValues,
-	}
 	return filters
 }
