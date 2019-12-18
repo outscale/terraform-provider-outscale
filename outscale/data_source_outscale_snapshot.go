@@ -97,7 +97,10 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := oscgo.ReadSnapshotsRequest{}
+	params := oscgo.ReadSnapshotsRequest{
+		Filters: &oscgo.FiltersSnapshot{},
+	}
+
 	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
 		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
