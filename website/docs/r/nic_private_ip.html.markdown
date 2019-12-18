@@ -22,8 +22,8 @@ For more information on this resource actions, see the [API documentation](https
 
 #resource "outscale_subnet" "outscale_subnet01" {
 #	subregion_name = "${var.region}a"
-#	ip_range = "10.0.0.0/16"
-#	net_id = outscale_net.outscale_net01.net_id
+#	ip_range       = "10.0.0.0/16"
+#	net_id         = outscale_net.outscale_net01.net_id
 #}
 
 #resource "outscale_nic" "outscale_nic01" {
@@ -31,11 +31,11 @@ For more information on this resource actions, see the [API documentation](https
 #}
 
 resource "outscale_nic_private_ip" "outscale_nic_private_ip01" {
-	nic_id = outscale_nic.outscale_nic01.nic_id
-	private_ips = ["10.0.45.67"]
+	nic_id      = outscale_nic.outscale_nic01.nic_id
+	private_ips = ["10.0.12.34"]
 }
 resource "outscale_nic_private_ip" "outscale_nic_private_ip02" {
-	nic_id = outscale_nic.outscale_nic01.nic_id
+	nic_id                     = outscale_nic.outscale_nic01.nic_id
 	secondary_private_ip_count = 2
 }
 

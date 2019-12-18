@@ -39,8 +39,8 @@ For more information on this resource actions, see the [API documentation](https
 
 resource "outscale_nic_link" "outscale_nic_link01" {
 	device_number = "1"
-	vm_id = outscale_vm.outscale_vm01.vm_id
-	nic_id = outscale_nic.outscale_nic01.nic_id
+	vm_id         = outscale_vm.outscale_vm01.vm_id
+	nic_id        = outscale_nic.outscale_nic01.nic_id
 }
 
 

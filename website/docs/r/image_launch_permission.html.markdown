@@ -18,7 +18,7 @@ For more information on this resource actions, see the [API documentation](https
 
 # Add permissions
 
-resource "outscale_image_launch_permission" "image01a" {
+resource "outscale_image_launch_permission" "image01" {
 	image_id = "ami-12345678"
 	permission_additions  {
 		account_ids = ["012345678910"]
@@ -27,7 +27,7 @@ resource "outscale_image_launch_permission" "image01a" {
 
 # Remove permissions
 
-resource "outscale_image_launch_permission" "image01b" {
+resource "outscale_image_launch_permission" "image02" {
 	image_id = "ami-12345678"
 	permission_removals  {
 		account_ids = ["012345678910"]

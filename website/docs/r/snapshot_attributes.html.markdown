@@ -16,19 +16,34 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-#resource "outscale_volume" "volume01" {
-#	subregion_name = "${var.region}a"
-#	size           = 40
+#resource "outscale_volume" "outscale_volume01" {
+#  subregion_name = "eu-west-2a"
+#  size           = 40
 #}
 
-#resource "outscale_snapshot" "snapshot01" {
-#	volume_id = outscale_volume.volume01.volume_id
+#resource "outscale_snapshot" "outscale_snapshot01" {
+#  volume_id = outscale_volume.outscale_volume01.volume_id
+#  tags {
+#    key   = "name"
+#    value = "terraform-snapshot-test"
+#  }
 #}
 
-resource "outscale_snapshot_attributes" "snapshot_attributes01" {
-	snapshot_id = outscale_snapshot.snapshot01.snapshot_id
-	permissions_to_create_volume_additions {
-		account_ids = ["012345678910"]
+# Add permissions
+
+resource "outscale_snapshot_attributes" "outscale_snapshot_attributes01" {
+  snapshot_id = outscale_snapshot.outscale_snapshot01.snapshot_id
+  permissions_to_create_volume_additions {
+    account_ids = ["012345678910"]
+  }
+}
+
+# Remove permissions
+
+resource "outscale_snapshot_attributes" "outscale_snapshot_attributes02" {
+  snapshot_id = outscale_snapshot.outscale_snapshot01.snapshot_id
+  permissions_to_create_volume_removals {
+    account_ids = ["012345678910"]
   }
 }
 

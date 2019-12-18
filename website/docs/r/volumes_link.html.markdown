@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_volume_link"
-sidebar_current: "outscale-volume-link"
+page_title: "3DS OUTSCALE: outscale_volumes_link"
+sidebar_current: "outscale-volumes-link"
 description: |-
   [Manages a volume link.]
 ---
 
-# outscale_volume_link Resource
+# outscale_volumes_link Resource
 
 Manages a volume link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).

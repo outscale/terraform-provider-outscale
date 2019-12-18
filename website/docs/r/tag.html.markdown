@@ -15,7 +15,16 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+resource "outscale_tag" "outscale_tag01" {
+	resource_ids = [var.vm_id]
+	tag {
+		key = "name"
+		value = "terraform-vm-with-tag"
+	}
+}
+
+
 ```
 
 ## Argument Reference
@@ -23,7 +32,7 @@ For more information on this resource actions, see the [API documentation](https
 The following arguments are supported:
 
 * `resource_ids` - (Required) One or more resource IDs.
-* `tags` - (Required) One or more tags to add to the specified resources.
+* `tag` - (Required) One or more tags to add to the specified resources.
   * `key` - (Optional) The key of the tag, with a minimum of 1 character.
   * `value` - (Optional) The value of the tag, between 0 and 255 characters.
 

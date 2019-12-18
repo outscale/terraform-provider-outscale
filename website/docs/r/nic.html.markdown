@@ -16,15 +16,13 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-# Create a NIC
-
 #resource "outscale_net" "outscale_net01" {
 #  ip_range = "10.0.0.0/16"
 #}
 
 #resource "outscale_subnet" "outscale_subnet01" {
 #  subregion_name = "eu-west-2a"
-#  ip_range       = "10.0.0.0/16"
+#  ip_range       = "10.0.0.0/18"
 #  net_id         = outscale_net.outscale_net01.net_id
 #}
 
@@ -32,31 +30,6 @@ resource "outscale_nic" "outscale_nic01" {
   subnet_id = outscale_subnet.outscale_subnet01.subnet_id
 }
 
-# Create a private VM with a NIC
-
-resource "outscale_net" "outscale_net02" {
-  ip_range = "10.0.0.0/16"
-}
-
-resource "outscale_subnet" "outscale_subnet02" {
-  net_id              = outscale_net.outscale_net.net_id
-  ip_range            = "10.0.0.0/24"
-  subregion_name      = "eu-west-2a"
-}
-
-resource "outscale_nic" "outscale_nic02" {
-  subnet_id = outscale_subnet.outscale_subnet.subnet_id
-}
-
-resource "outscale_vm" "outscale_vm01" {
-  image_id            = var.image_id
-  vm_type             = "c4.large"
-  keypair_name        = var.keypair_name
-  nics     {
-    nic_id =outscale_nic.outscale_nic02.nic_id
-    device_number = "0"
-  }
-}
 
 ```
 

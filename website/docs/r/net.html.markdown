@@ -19,7 +19,8 @@ For more information on this resource actions, see the [API documentation](https
 # Create a Net
 
 resource "outscale_net" "net01" {
-	ip_range = "10.0.0.0/16"
+	ip_range = "10.10.0.0/16"
+	tenancy  = "default"
 }
 
 # Create a Net with a network

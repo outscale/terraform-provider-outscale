@@ -16,6 +16,8 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
+# Create a snapshot
+
 #resource "outscale_volume" "volume01" {
 #  subregion_name = "${var.region}a"
 #  size           = 40
@@ -23,6 +25,14 @@ For more information on this resource actions, see the [API documentation](https
 
 resource "outscale_snapshot" "snapshot01" {
   volume_id = outscale_volume.volume01.volume_id
+}
+
+# Copy a snapshot
+
+resource "outscale_snapshot" "outscale_snapshot02" {
+  description        = "Terraform snapshot copy"
+  source_snapshot_id = "snap-12345678"
+  source_region_name = "eu-west-2"
 }
 
 
@@ -34,7 +44,7 @@ The following arguments are supported:
 
 * `description` - (Optional) A description for the snapshot.
 * `file_location` - (Optional) The pre-signed URL of the snapshot you want to import from the OSU bucket.
-* `snapshot_size` - (Optional) The size of the snapshot created in your account, in gibibytes (GiB). This size must be exactly the same as the source snapshot one. The maximum allowed size is 14,901 GiB.
+* `snapshot_size` - (Optional) The size of the snapshot created in your account, in bytes. This size must be exactly the same as the source snapshot one. The maximum allowed size is 14,901 bytes.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `source_snapshot_id` - (Optional) The ID of the snapshot you want to copy.
 * `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.

@@ -70,10 +70,9 @@ resource "outscale_subnet" "outscale_subnet01" {
     net_id         = outscale_net.outscale_net01.net_id
     ip_range       = "10.0.0.0/24"
     subregion_name = "eu-west-2b"
-
     tags {
         key   = "name"
-        value = "Terraform-Subnet-for-VM"
+        value = "terraform-subnet-for-vm"
       }
 }
 
@@ -83,14 +82,14 @@ resource "outscale_security_group" "outscale_security_01" {
   net_id              = outscale_net.outscale_net01.net_id
 }
 
-resource "outscale_internet_service01" "outscale_internet_service" {
+resource "outscale_internet_service" "outscale_internet_service01" {
 }
 
 resource "outscale_route_table" "outscale_route_table01" {
   net_id = outscale_net.outscale_net01.net_id
   tags {
     key   = "name"
-    value = "terraform-route-table-for-VM"
+    value = "terraform-route-table-for-vm"
   }
 }
 
@@ -201,13 +200,13 @@ The following attributes are exported:
 
 * `vms` - Information about one or more created VMs.
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
-  * `block_device_mappings` - The block device mapping of the VM.
+  * `block_device_mappings_created` - The block device mapping of the VM.
     * `bsu` - Information about the created BSU volume.
       * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
       * `link_date` - The time and date of attachment of the volume to the VM.
       * `state` - The state of the volume.
       * `volume_id` - The ID of the volume.
-    * `device_name` - The name of the device.
+  * `device_name` - The name of the device.
   * `bsu_optimized` - If `true`, the VM is optimized for BSU I/O.
   * `client_token` - The idempotency token provided when launching the VM.
   * `deletion_protection` - If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
