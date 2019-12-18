@@ -342,7 +342,7 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID := d.Get("route_table_id").(string)
 
-	findOpts := &oscgo.ReadRouteTablesRequest{
+	findOpts := oscgo.ReadRouteTablesRequest{
 		Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}},
 	}
 

@@ -178,7 +178,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 
 		var resp oscgo.ReadRouteTablesResponse
 		var err error
-		params := &oscgo.ReadRouteTablesRequest{
+		params := oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{
 				RouteTableIds: &[]string{rs.Primary.ID},
 			},
