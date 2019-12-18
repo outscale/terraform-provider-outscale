@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -116,6 +118,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	var t string
 	if value, ok := d.GetOk("volume_type"); ok {
 		request.SetVolumeType(value.(string))
+		t = value.(string)
 	}
 
 	iops := d.Get("iops").(int)
@@ -129,23 +132,19 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		r, _, err := conn.VolumeApi.CreateVolume(context.Background(), &oscgo.CreateVolumeOpts{CreateVolumeRequest: optional.NewInterface(request)})
+		resp, _, err = conn.VolumeApi.CreateVolume(context.Background(), &oscgo.CreateVolumeOpts{CreateVolumeRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		resp = r
+
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("Error creating Outscale BSU volume: %s", errString)
+		return fmt.Errorf("Error creating Outscale BSU volume: %s", utils.GetErrorResponse(err))
 	}
 
 	log.Println("[DEBUG] Waiting for Volume to become available")

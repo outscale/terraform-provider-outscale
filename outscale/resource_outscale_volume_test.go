@@ -67,8 +67,6 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
-	t.Skip()
-
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.Volume
@@ -166,7 +164,7 @@ func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
 			subregion_name = "%sa"
 			volume_type    = "io1"
 			size           = 10
-			iops           = 5
+			iops           = 100
 		}
 	`, region)
 }
