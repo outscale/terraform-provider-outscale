@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPINatService() *schema.Resource {
@@ -55,12 +56,13 @@ func dataSourceOutscaleOAPINatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
 
 func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
@@ -69,20 +71,22 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
-	params := &oapi.ReadNatServicesRequest{}
+	params := oscgo.ReadNatServicesRequest{}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK && natGatewayID.(string) != "" {
-		params.Filters.NatServiceIds = []string{natGatewayID.(string)}
+		filter := oscgo.FiltersNatService{}
+		filter.SetNatServiceIds([]string{natGatewayID.(string)})
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadNatServicesResponses
+	var resp oscgo.ReadNatServicesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		resp, err = conn.POST_ReadNatServices(*params)
+		resp, _, err = conn.NatServiceApi.ReadNatServices(context.Background(), &oscgo.ReadNatServicesOpts{ReadNatServicesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -94,60 +98,50 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
 
-	response := resp.OK
-
-	if len(response.NatServices) < 1 {
+	if len(resp.GetNatServices()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	if len(response.NatServices) > 1 {
+	if len(resp.GetNatServices()) > 1 {
 		return fmt.Errorf("your query returned more than one result, please try a more " +
 			"specific search criteria")
 	}
 
-	d.Set("request_id", response.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return ngOAPIDescriptionAttributes(d, response.NatServices[0])
+	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
 }
 
 // populate the numerous fields that the image description returns.
-func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oapi.NatService) error {
+func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
 
-	d.SetId(ng.NatServiceId)
-	d.Set("nat_service_id", ng.NatServiceId)
+	d.SetId(ng.GetNatServiceId())
+	d.Set("nat_service_id", ng.GetNatServiceId())
 
-	if ng.State != "" {
+	if ng.GetState() != "" {
 		d.Set("state", ng.State)
 	}
-	if ng.SubnetId != "" {
-		d.Set("subnet_id", ng.SubnetId)
+	if ng.GetSubnetId() != "" {
+		d.Set("subnet_id", ng.GetSubnetId())
 	}
-	if ng.NetId != "" {
-		d.Set("net_id", ng.NetId)
+	if ng.GetNetId() != "" {
+		d.Set("net_id", ng.GetNetId())
 	}
 
-	addresses := make([]map[string]interface{}, len(ng.PublicIps))
+	addresses := make([]map[string]interface{}, len(ng.GetPublicIps()))
 
-	for k, v := range ng.PublicIps {
+	for k, v := range ng.GetPublicIps() {
 		address := make(map[string]interface{})
-		if v.PublicIpId != "" {
+		if v.GetPublicIpId() != "" {
 			address["public_ip_id"] = v.PublicIpId
 		}
-		if v.PublicIp != "" {
+		if v.GetPublicIp() != "" {
 			address["public_ip"] = v.PublicIp
 		}
 		addresses[k] = address
@@ -155,12 +149,15 @@ func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oapi.NatService) err
 	if err := d.Set("public_ips", addresses); err != nil {
 		return err
 	}
+	if err := d.Set("tags", tagsOSCAPIToMap(ng.GetTags())); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oapi.FiltersNatService {
-	var filters oapi.FiltersNatService
+func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
+	var filters oscgo.FiltersNatService
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -170,13 +167,13 @@ func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oapi.FiltersN
 
 		switch name := m["name"].(string); name {
 		case "nat_service_ids":
-			filters.NatServiceIds = filterValues
+			filters.SetNatServiceIds(filterValues)
 		case "net_ids":
-			filters.NetIds = filterValues
+			filters.SetNetIds(filterValues)
 		case "states":
-			filters.States = filterValues
+			filters.SetStates(filterValues)
 		case "subnet_ids":
-			filters.SubnetIds = filterValues
+			filters.SetSubnetIds(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

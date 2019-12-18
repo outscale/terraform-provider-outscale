@@ -1,14 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPINatServices() *schema.Resource {
@@ -73,7 +74,7 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
@@ -82,9 +83,9 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
-	params := &oapi.ReadNatServicesRequest{}
+	params := oscgo.ReadNatServicesRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK {
 		ids := make([]string, len(natGatewayID.([]interface{})))
@@ -92,15 +93,16 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 		for k, v := range natGatewayID.([]interface{}) {
 			ids[k] = v.(string)
 		}
-
-		params.Filters.NatServiceIds = ids
+		filter := oscgo.FiltersNatService{}
+		filter.SetNatServiceIds(ids)
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadNatServicesResponses
+	var resp oscgo.ReadNatServicesResponse
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		resp, err = conn.POST_ReadNatServices(*params)
+		resp, _, err = conn.NatServiceApi.ReadNatServices(context.Background(), &oscgo.ReadNatServicesOpts{ReadNatServicesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -112,34 +114,23 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
 
-	response := resp.OK
-
-	if len(response.NatServices) < 1 {
+	if len(resp.GetNatServices()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	d.Set("request_id", response.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return ngsOAPIDescriptionAttributes(d, response.NatServices)
+	return ngsOAPIDescriptionAttributes(d, resp.GetNatServices())
 }
 
 // populate the numerous fields that the image description returns.
-func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oapi.NatService) error {
-
+func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
 	d.SetId(resource.UniqueId())
 
 	addngs := make([]map[string]interface{}, len(ngs))
@@ -147,31 +138,31 @@ func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oapi.NatService)
 	for k, v := range ngs {
 		addng := make(map[string]interface{})
 
-		ngas := make([]interface{}, len(v.PublicIps))
+		ngas := make([]interface{}, len(v.GetPublicIps()))
 
-		for i, w := range v.PublicIps {
+		for i, w := range v.GetPublicIps() {
 			nga := make(map[string]interface{})
-			if w.PublicIpId != "" {
-				nga["public_ip_id"] = w.PublicIpId
+			if w.GetPublicIpId() != "" {
+				nga["public_ip_id"] = w.GetPublicIpId()
 			}
-			if w.PublicIp != "" {
-				nga["public_ip"] = w.PublicIp
+			if w.GetPublicIp() != "" {
+				nga["public_ip"] = w.GetPublicIp()
 			}
 			ngas[i] = nga
 		}
 		addng["public_ips"] = ngas
 
-		if v.NatServiceId != "" {
-			addng["nat_service_id"] = v.NatServiceId
+		if v.GetNatServiceId() != "" {
+			addng["nat_service_id"] = v.GetNatServiceId()
 		}
-		if v.State != "" {
-			addng["state"] = v.State
+		if v.GetState() != "" {
+			addng["state"] = v.GetState()
 		}
-		if v.SubnetId != "" {
-			addng["subnet_id"] = v.SubnetId
+		if v.GetSubnetId() != "" {
+			addng["subnet_id"] = v.GetSubnetId()
 		}
-		if v.NetId != "" {
-			addng["net_id"] = v.NetId
+		if v.GetNetId() != "" {
+			addng["net_id"] = v.GetNetId()
 		}
 
 		addngs[k] = addng
