@@ -223,7 +223,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		set("snapshot_id", snapshot.GetSnapshotId())
 		set("state", snapshot.GetState())
 		set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
-		set("volume_size", snapshot.GetVolumeId())
+		set("volume_size", snapshot.GetVolumeSize())
 		return set("request_id", resp.ResponseContext.GetRequestId())
 	})
 }

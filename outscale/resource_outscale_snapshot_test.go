@@ -28,7 +28,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPISnapshotConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 		},
@@ -144,14 +144,19 @@ func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCh
 
 func testAccOutscaleOAPISnapshotConfig(region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_volume" "test" {
-			subregion_name = "%sa"
-			size = 1
-		}
-
-		resource "outscale_snapshot" "test" {
-			volume_id = "${outscale_volume.test.id}"
-		}
+		 resource "outscale_volume" "outscale_volume" {
+    subregion_name = "%sa"
+    size            = 40
+}
+resource "outscale_snapshot" "outscale_snapshot" {
+    volume_id = outscale_volume.outscale_volume.volume_id
+}
+resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
+    snapshot_id = outscale_snapshot.outscale_snapshot.snapshot_id
+    permissions_to_create_volume_additions  {
+                        account_ids = ["458594607190"]
+        }
+}
 	`, region)
 }
 
