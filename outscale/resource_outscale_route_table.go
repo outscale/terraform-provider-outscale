@@ -400,6 +400,10 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"nat_service_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 				},
 			},
 		},
@@ -454,6 +458,11 @@ func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
 	if len(rt) > 0 {
 		for k, r := range rt {
 			m := make(map[string]interface{})
+
+			if r.GetNatServiceId() != "" {
+				m["nat_service_id"] = r.GetNatServiceId()
+			}
+
 			if r.GetCreationMethod() != "" {
 				m["creation_method"] = r.GetCreationMethod()
 			}
