@@ -50,7 +50,7 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 						"security_groups_members": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
+							Elem:     &schema.Schema{Type: schema.TypeMap},
 							Set:      schema.HashString,
 						},
 						"to_port_range": {
