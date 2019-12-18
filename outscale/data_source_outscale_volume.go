@@ -162,7 +162,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		for k, g := range volume.GetLinkedVolumes() {
 			r := make(map[string]interface{})
 			if g.DeleteOnVmDeletion != nil {
-				r["delete_on_vm_termination"] = g.GetDeleteOnVmDeletion()
+				r["delete_on_vm_deletion"] = g.GetDeleteOnVmDeletion()
 			}
 			if g.GetDeviceName() != "" {
 				r["device"] = g.GetDeviceName()
@@ -187,11 +187,11 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	} else {
 		if err := d.Set("linked_volumes", []map[string]interface{}{
 			map[string]interface{}{
-				"delete_on_vm_termination": false,
-				"device":                   "none",
-				"vm_id":                    "none",
-				"state":                    "none",
-				"volume_id":                "none",
+				"delete_on_vm_deletion": false,
+				"device":                "none",
+				"vm_id":                 "none",
+				"state":                 "none",
+				"volume_id":             "none",
 			},
 		}); err != nil {
 			return err
