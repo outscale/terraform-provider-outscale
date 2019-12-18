@@ -111,6 +111,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
+		set("tags", getOscAPITagSet(vm.GetTags()))
 		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
@@ -155,7 +156,6 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	set("state", vm.GetState())
 	set("state_reason", vm.GetStateReason())
 	set("subnet_id", vm.GetSubnetId())
-	set("tags", getOscAPITagSet(vm.GetTags()))
 	set("user_data", vm.GetUserData())
 	set("vm_id", vm.GetVmId())
 	set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior())

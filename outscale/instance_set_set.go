@@ -284,13 +284,12 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 		for _, nic := range nics {
 			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
 
-			res = append(res, map[string]interface{}{
+			nicMap := map[string]interface{}{
 				"delete_on_vm_deletion":  *nic.GetLinkNic().DeleteOnVmDeletion, // Workaround.
 				"account_id":             nic.GetAccountId(),
 				"description":            nic.GetDescription(),
 				"is_source_dest_checked": nic.GetIsSourceDestChecked(),
 				"link_nic":               getOAPILinkNicLight(nic.GetLinkNic()),
-				"link_public_ip":         getOAPILinkPublicIPLight(nic.GetLinkPublicIp()),
 				"mac_address":            nic.GetMacAddress(),
 				"net_id":                 nic.GetNetId(),
 				"nic_id":                 nic.GetNicId(),
@@ -300,7 +299,13 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 				"security_group_ids":     securityGroupIds,
 				"state":                  nic.GetState(),
 				"subnet_id":              nic.GetSubnetId(),
-			})
+			}
+
+			if nic.HasLinkPublicIp() {
+				nicMap["link_public_ip"] = getOAPILinkPublicIPLight(nic.GetLinkPublicIp())
+			}
+
+			res = append(res, nicMap)
 		}
 	}
 	return

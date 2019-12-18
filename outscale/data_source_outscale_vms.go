@@ -140,6 +140,8 @@ func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
 		if err := oapiVMDescriptionAttributes(setterFunc, &v); err != nil {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
+
+		vm["tags"] = getOscAPITagSet(v.GetTags())
 		vms[index] = vm
 	}
 	return vms

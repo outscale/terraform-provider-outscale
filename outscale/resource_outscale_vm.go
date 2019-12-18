@@ -603,8 +603,8 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.Set("request_id", resp.ResponseContext.RequestId)
 		d.Set("admin_password", adminPassword)
 		d.SetId(vm.GetVmId())
 		return oapiVMDescriptionAttributes(set, &vm)
