@@ -16,7 +16,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-resource "outscale_tag" "outscale_tag01" {
+resource "outscale_tag" "tag01" {
 	resource_ids = [var.vm_id]
 	tag {
 		key = "name"

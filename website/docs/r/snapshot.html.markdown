@@ -29,7 +29,7 @@ resource "outscale_snapshot" "snapshot01" {
 
 # Copy a snapshot
 
-resource "outscale_snapshot" "outscale_snapshot02" {
+resource "outscale_snapshot" "snapshot02" {
   description        = "Terraform snapshot copy"
   source_snapshot_id = "snap-12345678"
   source_region_name = "eu-west-2"

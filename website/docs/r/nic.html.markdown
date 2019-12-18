@@ -16,18 +16,18 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-#resource "outscale_net" "outscale_net01" {
+#resource "outscale_net" "net01" {
 #  ip_range = "10.0.0.0/16"
 #}
 
-#resource "outscale_subnet" "outscale_subnet01" {
+#resource "outscale_subnet" "subnet01" {
 #  subregion_name = "eu-west-2a"
 #  ip_range       = "10.0.0.0/18"
-#  net_id         = outscale_net.outscale_net01.net_id
+#  net_id         = outscale_net.net01.net_id
 #}
 
-resource "outscale_nic" "outscale_nic01" {
-  subnet_id = outscale_subnet.outscale_subnet01.subnet_id
+resource "outscale_nic" "nic01" {
+  subnet_id = outscale_subnet.subnet01.subnet_id
 }
 
 

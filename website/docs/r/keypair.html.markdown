@@ -18,13 +18,13 @@ For more information on this resource actions, see the [API documentation](https
 
 # Create a keypair
 
-resource "outscale_keypair" "outscale_keypair01" {
+resource "outscale_keypair" "keypair01" {
 	keypair_name = "terraform-keypair-create"
 }
 
 # Import a keypair
 
-resource "outscale_keypair" "outscale_keypair02" {
+resource "outscale_keypair" "keypair02" {
 	keypair_name = "terraform-keypair-import"
 	public_key   = file("<PATH>")
 }

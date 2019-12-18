@@ -29,9 +29,9 @@ For more information on this resource actions, see the [API documentation](https
 #  net_id = outscale_net.net01.net_id
 #}
 
-resource "outscale_route_table_link" "outscale_route_table_link01" {
-	subnet_id      = outscale_subnet.outscale_subnet01.subnet_id
-	route_table_id = outscale_route_table.outscale_route_table01.route_table_id
+resource "outscale_route_table_link" "route_table_link01" {
+	subnet_id      = outscale_subnet.subnet01.subnet_id
+	route_table_id = outscale_route_table.route_table01.route_table_id
 }
 
 

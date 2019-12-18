@@ -16,31 +16,31 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-#resource "outscale_net" "outscale_net01" {
+#resource "outscale_net" "net01" {
 #	ip_range = "10.0.0.0/16"
 #}
 
-#resource "outscale_subnet" "outscale_subnet01" {
+#resource "outscale_subnet" "subnet01" {
 #	subregion_name = "${var.region}a"
 #	ip_range       = "10.0.0.0/16"
-#	net_id         = outscale_net.outscale_net01.net_id
+#	net_id         = outscale_net.net01.net_id
 #}
 
-#resource "outscale_vm" "outscale_vm01" {
+#resource "outscale_vm" "vm01" {
 #	image_id     = var.image_id
 #	vm_type      = var.vm_type
 #	keypair_name = var.keypair_name
-#	subnet_id    = outscale_subnet.outscale_subnet01.subnet_id
+#	subnet_id    = outscale_subnet.subnet01.subnet_id
 #}
 
-#resource "outscale_nic" "outscale_nic01" {
-#	subnet_id = outscale_subnet.outscale_subnet01.subnet_id
+#resource "outscale_nic" "nic01" {
+#	subnet_id = outscale_subnet.subnet01.subnet_id
 #}
 
-resource "outscale_nic_link" "outscale_nic_link01" {
+resource "outscale_nic_link" "nic_link01" {
 	device_number = "1"
-	vm_id         = outscale_vm.outscale_vm01.vm_id
-	nic_id        = outscale_nic.outscale_nic01.nic_id
+	vm_id         = outscale_vm.vm01.vm_id
+	nic_id        = outscale_nic.nic01.nic_id
 }
 
 
