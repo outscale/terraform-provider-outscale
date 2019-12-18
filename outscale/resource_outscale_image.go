@@ -200,20 +200,45 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oscgo.CreateImageOpts{
-		CreateImageRequest: optional.NewInterface(oscgo.CreateImageRequest{
-			ImageName:        pointy.String(cast.ToString(d.Get("image_name"))),
-			VmId:             pointy.String(cast.ToString(d.Get("vm_id"))),
-			Description:      pointy.String(cast.ToString(d.Get("description"))),
-			NoReboot:         pointy.Bool(cast.ToBool(d.Get("no_reboot"))),
-			Architecture:     pointy.String(cast.ToString(d.Get("architecture"))),
-			FileLocation:     pointy.String(cast.ToString(d.Get("file_location"))),
-			SourceImageId:    pointy.String(cast.ToString(d.Get("source_image_id"))),
-			SourceRegionName: pointy.String(cast.ToString(d.Get("source_region_name"))),
-			RootDeviceName:   pointy.String(cast.ToString(d.Get("root_device_name"))),
-		}),
+	imageRequest := oscgo.CreateImageRequest{
+		ImageName: pointy.String(cast.ToString(d.Get("image_name"))),
 	}
-	resp, _, err := conn.ImageApi.CreateImage(context.Background(), req)
+
+	if v := cast.ToString(d.Get("vm_id")); v != "" {
+		imageRequest.SetVmId(v)
+	}
+
+	if v := cast.ToString(d.Get("description")); v != "" {
+		imageRequest.SetDescription(v)
+	}
+
+	if v, ok := d.GetOk("no_reboot"); ok {
+		imageRequest.SetNoReboot(cast.ToBool(v))
+	}
+
+	if v := cast.ToString(d.Get("architecture")); v != "" {
+		imageRequest.SetArchitecture(v)
+	}
+
+	if v := cast.ToString(d.Get("file_location")); v != "" {
+		imageRequest.SetFileLocation(v)
+	}
+
+	if v := cast.ToString(d.Get("source_image_id")); v != "" {
+		imageRequest.SetSourceImageId(v)
+	}
+
+	if v := cast.ToString(d.Get("source_region_name")); v != "" {
+		imageRequest.SetSourceRegionName(v)
+	}
+
+	if v := cast.ToString(d.Get("root_device_name")); v != "" {
+		imageRequest.SetRootDeviceName(v)
+	}
+
+	resp, _, err := conn.ImageApi.CreateImage(context.Background(), &oscgo.CreateImageOpts{
+		CreateImageRequest: optional.NewInterface(imageRequest),
+	})
 	if err != nil {
 		return err
 	}
