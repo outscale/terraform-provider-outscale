@@ -38,6 +38,9 @@ The following arguments are supported:
 
 * `accepter_net_id` - (Required) The ID of the Net you want to connect with.
 * `source_net_id` - (Required) The ID of the Net you send the peering request from.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
 

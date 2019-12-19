@@ -37,7 +37,10 @@ The following arguments are supported:
 * `net_id` - (Optional) The ID of the Net for the security group.
 * `security_group_name` - (Required) (Public Cloud only) The name of the security group.<br />
 This name must be unique and contain between 1 and 255 ASCII characters. Accented letters are not allowed.
-
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:

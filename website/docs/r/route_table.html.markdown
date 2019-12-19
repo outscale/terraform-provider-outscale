@@ -32,7 +32,10 @@ resource "outscale_route_table" "route_table01" {
 The following arguments are supported:
 
 * `net_id` - (Required) The ID of the Net for which you want to create a route table.
-
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:

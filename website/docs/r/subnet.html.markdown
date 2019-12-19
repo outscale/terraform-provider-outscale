@@ -35,7 +35,10 @@ The following arguments are supported:
 * `ip_range` - (Required) The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
 * `net_id` - (Required) The ID of the Net for which you want to create a Subnet.
 * `subregion_name` - (Optional) The name of the Subregion in which you want to create the Subnet.
-
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:

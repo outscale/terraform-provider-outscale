@@ -48,7 +48,10 @@ The following arguments are supported:
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `source_snapshot_id` - (Optional) The ID of the snapshot you want to copy.
 * `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.
-
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:

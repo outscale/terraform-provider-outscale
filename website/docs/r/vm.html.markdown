@@ -193,7 +193,10 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
-
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:

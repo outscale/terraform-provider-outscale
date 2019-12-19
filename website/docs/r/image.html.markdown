@@ -71,6 +71,9 @@ Constraints: 3-128 alphanumeric characters, underscores (_), spaces ( ), parenth
 * `source_image_id` - (Optional) The ID of the OMI you want to copy.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `vm_id` - (Optional) The ID of the VM from which you want to create the OMI.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
 
