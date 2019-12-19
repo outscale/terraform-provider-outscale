@@ -11,7 +11,7 @@ The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources.
 Use the navigation to the left to read about the available resources.
 For more information on our resources, see the [User Guide](https://wiki.outscale.net/display/EN#).
 
-The provider is based on our 3DS OUTSCALE API. For more information on our APIs, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).
+The provider is based on our 3DS OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs-beta.outscale.com/#3ds-outscale-api).
 
 The provider needs to be configured with the proper credentials before it can be used.
 
@@ -55,15 +55,15 @@ provider "outscale" {
 
 ### Environment variables
 
-In the provider block of your configuration file, you can provide your credentials with the `OSC_ACCESS_KEY_ID`and `OSC_SECRET_ACCESS_KEY` environment variables:
+In the provider block of your configuration file, you can provide your credentials with the `OUTSCALE_ACCESSKEYID`and `OUTSCALE_SECRETKEYID` environment variables:
 
 Example:
 
 ```hcl
 provider "outscale" {
 	access_key_id   = "var.access_key_id"
-  secret_key_id = "var.secret_key_id"
-  region        = "var.region"
+  secret_key_id   = "var.secret_key_id"
+  region          = "var.region"
 }
 ```
 
@@ -80,8 +80,8 @@ $ terraform plan
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the 3DS OUTSCALE provider block:
 
-* `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OSC_ACCESS_KEY_ID` [environment variable](#environment-variables).
+* `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
 
-* `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OSC_SECRET_ACCESS_KEY` [environment variable](#environment-variables).
+* `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 
-* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OSC_DEFAULT_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference
+* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
