@@ -30,7 +30,7 @@ type FiltersImage struct {
 	// The IDs of the snapshots used to create the volumes.
 	BlockDeviceMappingSnapshotIds *[]string `json:"BlockDeviceMappingSnapshotIds,omitempty"`
 	// The sizes of the volumes, in gibibytes (GiB).
-	BlockDeviceMappingVolumeSizes *[]int32 `json:"BlockDeviceMappingVolumeSizes,omitempty"`
+	BlockDeviceMappingVolumeSizes *[]int64 `json:"BlockDeviceMappingVolumeSizes,omitempty"`
 	// The types of volumes (`standard` \\| `gp2` \\| `io1`).
 	BlockDeviceMappingVolumeTypes *[]string `json:"BlockDeviceMappingVolumeTypes,omitempty"`
 	// The descriptions of the OMIs, provided when they were created.
@@ -260,9 +260,9 @@ func (o *FiltersImage) SetBlockDeviceMappingSnapshotIds(v []string) {
 }
 
 // GetBlockDeviceMappingVolumeSizes returns the BlockDeviceMappingVolumeSizes field value if set, zero value otherwise.
-func (o *FiltersImage) GetBlockDeviceMappingVolumeSizes() []int32 {
+func (o *FiltersImage) GetBlockDeviceMappingVolumeSizes() []int64 {
 	if o == nil || o.BlockDeviceMappingVolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.BlockDeviceMappingVolumeSizes
@@ -270,9 +270,9 @@ func (o *FiltersImage) GetBlockDeviceMappingVolumeSizes() []int32 {
 
 // GetBlockDeviceMappingVolumeSizesOk returns a tuple with the BlockDeviceMappingVolumeSizes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersImage) GetBlockDeviceMappingVolumeSizesOk() ([]int32, bool) {
+func (o *FiltersImage) GetBlockDeviceMappingVolumeSizesOk() ([]int64, bool) {
 	if o == nil || o.BlockDeviceMappingVolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.BlockDeviceMappingVolumeSizes, true
@@ -287,8 +287,8 @@ func (o *FiltersImage) HasBlockDeviceMappingVolumeSizes() bool {
 	return false
 }
 
-// SetBlockDeviceMappingVolumeSizes gets a reference to the given []int32 and assigns it to the BlockDeviceMappingVolumeSizes field.
-func (o *FiltersImage) SetBlockDeviceMappingVolumeSizes(v []int32) {
+// SetBlockDeviceMappingVolumeSizes gets a reference to the given []int64 and assigns it to the BlockDeviceMappingVolumeSizes field.
+func (o *FiltersImage) SetBlockDeviceMappingVolumeSizes(v []int64) {
 	o.BlockDeviceMappingVolumeSizes = &v
 }
 

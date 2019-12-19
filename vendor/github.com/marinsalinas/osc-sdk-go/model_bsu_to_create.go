@@ -20,11 +20,11 @@ type BsuToCreate struct {
 	// Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
 	DeleteOnVmDeletion *bool `json:"DeleteOnVmDeletion,omitempty"`
 	// The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
-	Iops *int32 `json:"Iops,omitempty"`
+	Iops *int64 `json:"Iops,omitempty"`
 	// The ID of the snapshot used to create the volume.
 	SnapshotId *string `json:"SnapshotId,omitempty"`
 	// The size of the volume, in gibibytes (GiB).<br /> If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br /> If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
-	VolumeSize *int32 `json:"VolumeSize,omitempty"`
+	VolumeSize *int64 `json:"VolumeSize,omitempty"`
 	// The type of the volume (`standard` \\| `io1` \\| `gp2`). If not specified in the request, a `standard` volume is created.<br /> For more information about volume types, see [Volume Types and IOPS](https://wiki.outscale.net/display/EN/About+Volumes#AboutVolumes-VolumeTypesVolumeTypesandIOPS).
 	VolumeType *string `json:"VolumeType,omitempty"`
 }
@@ -63,9 +63,9 @@ func (o *BsuToCreate) SetDeleteOnVmDeletion(v bool) {
 }
 
 // GetIops returns the Iops field value if set, zero value otherwise.
-func (o *BsuToCreate) GetIops() int32 {
+func (o *BsuToCreate) GetIops() int64 {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Iops
@@ -73,9 +73,9 @@ func (o *BsuToCreate) GetIops() int32 {
 
 // GetIopsOk returns a tuple with the Iops field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *BsuToCreate) GetIopsOk() (int32, bool) {
+func (o *BsuToCreate) GetIopsOk() (int64, bool) {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Iops, true
@@ -90,8 +90,8 @@ func (o *BsuToCreate) HasIops() bool {
 	return false
 }
 
-// SetIops gets a reference to the given int32 and assigns it to the Iops field.
-func (o *BsuToCreate) SetIops(v int32) {
+// SetIops gets a reference to the given int64 and assigns it to the Iops field.
+func (o *BsuToCreate) SetIops(v int64) {
 	o.Iops = &v
 }
 
@@ -129,9 +129,9 @@ func (o *BsuToCreate) SetSnapshotId(v string) {
 }
 
 // GetVolumeSize returns the VolumeSize field value if set, zero value otherwise.
-func (o *BsuToCreate) GetVolumeSize() int32 {
+func (o *BsuToCreate) GetVolumeSize() int64 {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VolumeSize
@@ -139,9 +139,9 @@ func (o *BsuToCreate) GetVolumeSize() int32 {
 
 // GetVolumeSizeOk returns a tuple with the VolumeSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *BsuToCreate) GetVolumeSizeOk() (int32, bool) {
+func (o *BsuToCreate) GetVolumeSizeOk() (int64, bool) {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VolumeSize, true
@@ -156,8 +156,8 @@ func (o *BsuToCreate) HasVolumeSize() bool {
 	return false
 }
 
-// SetVolumeSize gets a reference to the given int32 and assigns it to the VolumeSize field.
-func (o *BsuToCreate) SetVolumeSize(v int32) {
+// SetVolumeSize gets a reference to the given int64 and assigns it to the VolumeSize field.
+func (o *BsuToCreate) SetVolumeSize(v int64) {
 	o.VolumeSize = &v
 }
 

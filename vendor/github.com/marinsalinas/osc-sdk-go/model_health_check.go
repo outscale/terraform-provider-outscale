@@ -18,25 +18,25 @@ import (
 // HealthCheck Information about the health check configuration.
 type HealthCheck struct {
 	// The number of seconds between two pings (between `5` and `600` both included).
-	CheckInterval int32 `json:"CheckInterval"`
+	CheckInterval int64 `json:"CheckInterval"`
 	// The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-	HealthyThreshold int32 `json:"HealthyThreshold"`
+	HealthyThreshold int64 `json:"HealthyThreshold"`
 	// The path for HTTP or HTTPS requests.
 	Path string `json:"Path"`
 	// The port number (between `1` and `65535`, both included).
-	Port int32 `json:"Port"`
+	Port int64 `json:"Port"`
 	// The protocol for the URL of the VM (`HTTP` \\| `HTTPS` \\| `TCP` \\| `SSL` \\| `UDP`).
 	Protocol string `json:"Protocol"`
 	// The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-	Timeout int32 `json:"Timeout"`
+	Timeout int64 `json:"Timeout"`
 	// The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
-	UnhealthyThreshold int32 `json:"UnhealthyThreshold"`
+	UnhealthyThreshold int64 `json:"UnhealthyThreshold"`
 }
 
 // GetCheckInterval returns the CheckInterval field value
-func (o *HealthCheck) GetCheckInterval() int32 {
+func (o *HealthCheck) GetCheckInterval() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -44,14 +44,14 @@ func (o *HealthCheck) GetCheckInterval() int32 {
 }
 
 // SetCheckInterval sets field value
-func (o *HealthCheck) SetCheckInterval(v int32) {
+func (o *HealthCheck) SetCheckInterval(v int64) {
 	o.CheckInterval = v
 }
 
 // GetHealthyThreshold returns the HealthyThreshold field value
-func (o *HealthCheck) GetHealthyThreshold() int32 {
+func (o *HealthCheck) GetHealthyThreshold() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -59,7 +59,7 @@ func (o *HealthCheck) GetHealthyThreshold() int32 {
 }
 
 // SetHealthyThreshold sets field value
-func (o *HealthCheck) SetHealthyThreshold(v int32) {
+func (o *HealthCheck) SetHealthyThreshold(v int64) {
 	o.HealthyThreshold = v
 }
 
@@ -79,9 +79,9 @@ func (o *HealthCheck) SetPath(v string) {
 }
 
 // GetPort returns the Port field value
-func (o *HealthCheck) GetPort() int32 {
+func (o *HealthCheck) GetPort() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -89,7 +89,7 @@ func (o *HealthCheck) GetPort() int32 {
 }
 
 // SetPort sets field value
-func (o *HealthCheck) SetPort(v int32) {
+func (o *HealthCheck) SetPort(v int64) {
 	o.Port = v
 }
 
@@ -109,9 +109,9 @@ func (o *HealthCheck) SetProtocol(v string) {
 }
 
 // GetTimeout returns the Timeout field value
-func (o *HealthCheck) GetTimeout() int32 {
+func (o *HealthCheck) GetTimeout() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -119,14 +119,14 @@ func (o *HealthCheck) GetTimeout() int32 {
 }
 
 // SetTimeout sets field value
-func (o *HealthCheck) SetTimeout(v int32) {
+func (o *HealthCheck) SetTimeout(v int64) {
 	o.Timeout = v
 }
 
 // GetUnhealthyThreshold returns the UnhealthyThreshold field value
-func (o *HealthCheck) GetUnhealthyThreshold() int32 {
+func (o *HealthCheck) GetUnhealthyThreshold() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -134,7 +134,7 @@ func (o *HealthCheck) GetUnhealthyThreshold() int32 {
 }
 
 // SetUnhealthyThreshold sets field value
-func (o *HealthCheck) SetUnhealthyThreshold(v int32) {
+func (o *HealthCheck) SetUnhealthyThreshold(v int64) {
 	o.UnhealthyThreshold = v
 }
 

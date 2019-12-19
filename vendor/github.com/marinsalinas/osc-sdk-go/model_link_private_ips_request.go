@@ -26,7 +26,7 @@ type LinkPrivateIpsRequest struct {
 	// The secondary private IP address or addresses you want to assign to the NIC within the IP address range of the Subnet.
 	PrivateIps *[]string `json:"PrivateIps,omitempty"`
 	// The number of secondary private IP addresses to assign to the NIC.
-	SecondaryPrivateIpCount *int32 `json:"SecondaryPrivateIpCount,omitempty"`
+	SecondaryPrivateIpCount *int64 `json:"SecondaryPrivateIpCount,omitempty"`
 }
 
 // GetAllowRelink returns the AllowRelink field value if set, zero value otherwise.
@@ -144,9 +144,9 @@ func (o *LinkPrivateIpsRequest) SetPrivateIps(v []string) {
 }
 
 // GetSecondaryPrivateIpCount returns the SecondaryPrivateIpCount field value if set, zero value otherwise.
-func (o *LinkPrivateIpsRequest) GetSecondaryPrivateIpCount() int32 {
+func (o *LinkPrivateIpsRequest) GetSecondaryPrivateIpCount() int64 {
 	if o == nil || o.SecondaryPrivateIpCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.SecondaryPrivateIpCount
@@ -154,9 +154,9 @@ func (o *LinkPrivateIpsRequest) GetSecondaryPrivateIpCount() int32 {
 
 // GetSecondaryPrivateIpCountOk returns a tuple with the SecondaryPrivateIpCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *LinkPrivateIpsRequest) GetSecondaryPrivateIpCountOk() (int32, bool) {
+func (o *LinkPrivateIpsRequest) GetSecondaryPrivateIpCountOk() (int64, bool) {
 	if o == nil || o.SecondaryPrivateIpCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.SecondaryPrivateIpCount, true
@@ -171,8 +171,8 @@ func (o *LinkPrivateIpsRequest) HasSecondaryPrivateIpCount() bool {
 	return false
 }
 
-// SetSecondaryPrivateIpCount gets a reference to the given int32 and assigns it to the SecondaryPrivateIpCount field.
-func (o *LinkPrivateIpsRequest) SetSecondaryPrivateIpCount(v int32) {
+// SetSecondaryPrivateIpCount gets a reference to the given int64 and assigns it to the SecondaryPrivateIpCount field.
+func (o *LinkPrivateIpsRequest) SetSecondaryPrivateIpCount(v int64) {
 	o.SecondaryPrivateIpCount = &v
 }
 

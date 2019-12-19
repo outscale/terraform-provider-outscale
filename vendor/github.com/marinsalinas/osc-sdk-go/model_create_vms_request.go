@@ -34,9 +34,9 @@ type CreateVmsRequest struct {
 	// The name of the keypair.
 	KeypairName *string `json:"KeypairName,omitempty"`
 	// The maximum number of VMs you want to create. If all the VMs cannot be created, the largest possible number of VMs above MinVmsCount is created.
-	MaxVmsCount *int32 `json:"MaxVmsCount,omitempty"`
+	MaxVmsCount *int64 `json:"MaxVmsCount,omitempty"`
 	// The minimum number of VMs you want to create. If this number of VMs cannot be created, no VMs are created.
-	MinVmsCount *int32 `json:"MinVmsCount,omitempty"`
+	MinVmsCount *int64 `json:"MinVmsCount,omitempty"`
 	// One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
 	Nics *[]NicForVmCreation `json:"Nics,omitempty"`
 	// The performance of the VM (`standard` \\| `high` \\|  `highest`).
@@ -305,9 +305,9 @@ func (o *CreateVmsRequest) SetKeypairName(v string) {
 }
 
 // GetMaxVmsCount returns the MaxVmsCount field value if set, zero value otherwise.
-func (o *CreateVmsRequest) GetMaxVmsCount() int32 {
+func (o *CreateVmsRequest) GetMaxVmsCount() int64 {
 	if o == nil || o.MaxVmsCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MaxVmsCount
@@ -315,9 +315,9 @@ func (o *CreateVmsRequest) GetMaxVmsCount() int32 {
 
 // GetMaxVmsCountOk returns a tuple with the MaxVmsCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateVmsRequest) GetMaxVmsCountOk() (int32, bool) {
+func (o *CreateVmsRequest) GetMaxVmsCountOk() (int64, bool) {
 	if o == nil || o.MaxVmsCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MaxVmsCount, true
@@ -332,15 +332,15 @@ func (o *CreateVmsRequest) HasMaxVmsCount() bool {
 	return false
 }
 
-// SetMaxVmsCount gets a reference to the given int32 and assigns it to the MaxVmsCount field.
-func (o *CreateVmsRequest) SetMaxVmsCount(v int32) {
+// SetMaxVmsCount gets a reference to the given int64 and assigns it to the MaxVmsCount field.
+func (o *CreateVmsRequest) SetMaxVmsCount(v int64) {
 	o.MaxVmsCount = &v
 }
 
 // GetMinVmsCount returns the MinVmsCount field value if set, zero value otherwise.
-func (o *CreateVmsRequest) GetMinVmsCount() int32 {
+func (o *CreateVmsRequest) GetMinVmsCount() int64 {
 	if o == nil || o.MinVmsCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MinVmsCount
@@ -348,9 +348,9 @@ func (o *CreateVmsRequest) GetMinVmsCount() int32 {
 
 // GetMinVmsCountOk returns a tuple with the MinVmsCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateVmsRequest) GetMinVmsCountOk() (int32, bool) {
+func (o *CreateVmsRequest) GetMinVmsCountOk() (int64, bool) {
 	if o == nil || o.MinVmsCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MinVmsCount, true
@@ -365,8 +365,8 @@ func (o *CreateVmsRequest) HasMinVmsCount() bool {
 	return false
 }
 
-// SetMinVmsCount gets a reference to the given int32 and assigns it to the MinVmsCount field.
-func (o *CreateVmsRequest) SetMinVmsCount(v int32) {
+// SetMinVmsCount gets a reference to the given int64 and assigns it to the MinVmsCount field.
+func (o *CreateVmsRequest) SetMinVmsCount(v int64) {
 	o.MinVmsCount = &v
 }
 

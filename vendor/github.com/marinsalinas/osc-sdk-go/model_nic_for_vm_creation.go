@@ -22,13 +22,13 @@ type NicForVmCreation struct {
 	// The description of the NIC, if you are creating a NIC when creating the VM.
 	Description *string `json:"Description,omitempty"`
 	// The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
-	DeviceNumber *int32 `json:"DeviceNumber,omitempty"`
+	DeviceNumber *int64 `json:"DeviceNumber,omitempty"`
 	// The ID of the NIC, if you are attaching an existing NIC when creating a VM.
 	NicId *string `json:"NicId,omitempty"`
 	// One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
 	PrivateIps *[]PrivateIpLight `json:"PrivateIps,omitempty"`
 	// The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `PrivateIps` parameter.
-	SecondaryPrivateIpCount *int32 `json:"SecondaryPrivateIpCount,omitempty"`
+	SecondaryPrivateIpCount *int64 `json:"SecondaryPrivateIpCount,omitempty"`
 	// One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
 	SecurityGroupIds *[]string `json:"SecurityGroupIds,omitempty"`
 	// The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
@@ -102,9 +102,9 @@ func (o *NicForVmCreation) SetDescription(v string) {
 }
 
 // GetDeviceNumber returns the DeviceNumber field value if set, zero value otherwise.
-func (o *NicForVmCreation) GetDeviceNumber() int32 {
+func (o *NicForVmCreation) GetDeviceNumber() int64 {
 	if o == nil || o.DeviceNumber == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.DeviceNumber
@@ -112,9 +112,9 @@ func (o *NicForVmCreation) GetDeviceNumber() int32 {
 
 // GetDeviceNumberOk returns a tuple with the DeviceNumber field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *NicForVmCreation) GetDeviceNumberOk() (int32, bool) {
+func (o *NicForVmCreation) GetDeviceNumberOk() (int64, bool) {
 	if o == nil || o.DeviceNumber == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.DeviceNumber, true
@@ -129,8 +129,8 @@ func (o *NicForVmCreation) HasDeviceNumber() bool {
 	return false
 }
 
-// SetDeviceNumber gets a reference to the given int32 and assigns it to the DeviceNumber field.
-func (o *NicForVmCreation) SetDeviceNumber(v int32) {
+// SetDeviceNumber gets a reference to the given int64 and assigns it to the DeviceNumber field.
+func (o *NicForVmCreation) SetDeviceNumber(v int64) {
 	o.DeviceNumber = &v
 }
 
@@ -201,9 +201,9 @@ func (o *NicForVmCreation) SetPrivateIps(v []PrivateIpLight) {
 }
 
 // GetSecondaryPrivateIpCount returns the SecondaryPrivateIpCount field value if set, zero value otherwise.
-func (o *NicForVmCreation) GetSecondaryPrivateIpCount() int32 {
+func (o *NicForVmCreation) GetSecondaryPrivateIpCount() int64 {
 	if o == nil || o.SecondaryPrivateIpCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.SecondaryPrivateIpCount
@@ -211,9 +211,9 @@ func (o *NicForVmCreation) GetSecondaryPrivateIpCount() int32 {
 
 // GetSecondaryPrivateIpCountOk returns a tuple with the SecondaryPrivateIpCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *NicForVmCreation) GetSecondaryPrivateIpCountOk() (int32, bool) {
+func (o *NicForVmCreation) GetSecondaryPrivateIpCountOk() (int64, bool) {
 	if o == nil || o.SecondaryPrivateIpCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.SecondaryPrivateIpCount, true
@@ -228,8 +228,8 @@ func (o *NicForVmCreation) HasSecondaryPrivateIpCount() bool {
 	return false
 }
 
-// SetSecondaryPrivateIpCount gets a reference to the given int32 and assigns it to the SecondaryPrivateIpCount field.
-func (o *NicForVmCreation) SetSecondaryPrivateIpCount(v int32) {
+// SetSecondaryPrivateIpCount gets a reference to the given int64 and assigns it to the SecondaryPrivateIpCount field.
+func (o *NicForVmCreation) SetSecondaryPrivateIpCount(v int64) {
 	o.SecondaryPrivateIpCount = &v
 }
 

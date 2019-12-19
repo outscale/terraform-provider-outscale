@@ -34,7 +34,7 @@ type FiltersApiLog struct {
 	// One or more request IDs.
 	RequestIds *[]string `json:"RequestIds,omitempty"`
 	// One or more HTTP codes provided by the responses.
-	ResponseStatusCodes *[]int32 `json:"ResponseStatusCodes,omitempty"`
+	ResponseStatusCodes *[]int64 `json:"ResponseStatusCodes,omitempty"`
 }
 
 // GetQueryAccessKeys returns the QueryAccessKeys field value if set, zero value otherwise.
@@ -302,9 +302,9 @@ func (o *FiltersApiLog) SetRequestIds(v []string) {
 }
 
 // GetResponseStatusCodes returns the ResponseStatusCodes field value if set, zero value otherwise.
-func (o *FiltersApiLog) GetResponseStatusCodes() []int32 {
+func (o *FiltersApiLog) GetResponseStatusCodes() []int64 {
 	if o == nil || o.ResponseStatusCodes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.ResponseStatusCodes
@@ -312,9 +312,9 @@ func (o *FiltersApiLog) GetResponseStatusCodes() []int32 {
 
 // GetResponseStatusCodesOk returns a tuple with the ResponseStatusCodes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersApiLog) GetResponseStatusCodesOk() ([]int32, bool) {
+func (o *FiltersApiLog) GetResponseStatusCodesOk() ([]int64, bool) {
 	if o == nil || o.ResponseStatusCodes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.ResponseStatusCodes, true
@@ -329,8 +329,8 @@ func (o *FiltersApiLog) HasResponseStatusCodes() bool {
 	return false
 }
 
-// SetResponseStatusCodes gets a reference to the given []int32 and assigns it to the ResponseStatusCodes field.
-func (o *FiltersApiLog) SetResponseStatusCodes(v []int32) {
+// SetResponseStatusCodes gets a reference to the given []int64 and assigns it to the ResponseStatusCodes field.
+func (o *FiltersApiLog) SetResponseStatusCodes(v []int64) {
 	o.ResponseStatusCodes = &v
 }
 

@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/antihax/optional v1.0.0
-	github.com/aws/aws-sdk-go v1.25.33
+	github.com/aws/aws-sdk-go v1.26.5
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/go-hclog v0.9.2 // indirect
@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.12.17
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
-	github.com/marinsalinas/osc-sdk-go v0.0.0-20191112221552-df1645cbd455
+	github.com/marinsalinas/osc-sdk-go v0.0.0-20191219184659-536ff9c4c254
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/openlyinc/pointy v1.1.2

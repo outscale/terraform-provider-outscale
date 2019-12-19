@@ -18,7 +18,7 @@ import (
 // Subnet Information about the Subnet.
 type Subnet struct {
 	// The number of available IP addresses in the Subnets.
-	AvailableIpsCount *int32 `json:"AvailableIpsCount,omitempty"`
+	AvailableIpsCount *int64 `json:"AvailableIpsCount,omitempty"`
 	// The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
 	IpRange *string `json:"IpRange,omitempty"`
 	// If `true`, a public IP address is assigned to the network interface cards (NICs) created in the specified Subnet.
@@ -36,9 +36,9 @@ type Subnet struct {
 }
 
 // GetAvailableIpsCount returns the AvailableIpsCount field value if set, zero value otherwise.
-func (o *Subnet) GetAvailableIpsCount() int32 {
+func (o *Subnet) GetAvailableIpsCount() int64 {
 	if o == nil || o.AvailableIpsCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.AvailableIpsCount
@@ -46,9 +46,9 @@ func (o *Subnet) GetAvailableIpsCount() int32 {
 
 // GetAvailableIpsCountOk returns a tuple with the AvailableIpsCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Subnet) GetAvailableIpsCountOk() (int32, bool) {
+func (o *Subnet) GetAvailableIpsCountOk() (int64, bool) {
 	if o == nil || o.AvailableIpsCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.AvailableIpsCount, true
@@ -63,8 +63,8 @@ func (o *Subnet) HasAvailableIpsCount() bool {
 	return false
 }
 
-// SetAvailableIpsCount gets a reference to the given int32 and assigns it to the AvailableIpsCount field.
-func (o *Subnet) SetAvailableIpsCount(v int32) {
+// SetAvailableIpsCount gets a reference to the given int64 and assigns it to the AvailableIpsCount field.
+func (o *Subnet) SetAvailableIpsCount(v int64) {
 	o.AvailableIpsCount = &v
 }
 

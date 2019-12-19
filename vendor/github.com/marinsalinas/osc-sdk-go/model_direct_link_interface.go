@@ -18,7 +18,7 @@ import (
 // DirectLinkInterface Information about the DirectLink interface.
 type DirectLinkInterface struct {
 	// The BGP (Border Gateway Protocol) ASN (Autonomous System Number) on the customer's side of the DirectLink interface.
-	BgpAsn int32 `json:"BgpAsn"`
+	BgpAsn int64 `json:"BgpAsn"`
 	// The BGP authentication key.
 	BgpKey *string `json:"BgpKey,omitempty"`
 	// The IP address on the customer's side of the DirectLink interface.
@@ -30,13 +30,13 @@ type DirectLinkInterface struct {
 	// The ID of the target virtual gateway.
 	VirtualGatewayId string `json:"VirtualGatewayId"`
 	// The VLAN number associated with the DirectLink interface.
-	Vlan int32 `json:"Vlan"`
+	Vlan int64 `json:"Vlan"`
 }
 
 // GetBgpAsn returns the BgpAsn field value
-func (o *DirectLinkInterface) GetBgpAsn() int32 {
+func (o *DirectLinkInterface) GetBgpAsn() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -44,7 +44,7 @@ func (o *DirectLinkInterface) GetBgpAsn() int32 {
 }
 
 // SetBgpAsn sets field value
-func (o *DirectLinkInterface) SetBgpAsn(v int32) {
+func (o *DirectLinkInterface) SetBgpAsn(v int64) {
 	o.BgpAsn = v
 }
 
@@ -178,9 +178,9 @@ func (o *DirectLinkInterface) SetVirtualGatewayId(v string) {
 }
 
 // GetVlan returns the Vlan field value
-func (o *DirectLinkInterface) GetVlan() int32 {
+func (o *DirectLinkInterface) GetVlan() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -188,7 +188,7 @@ func (o *DirectLinkInterface) GetVlan() int32 {
 }
 
 // SetVlan sets field value
-func (o *DirectLinkInterface) SetVlan(v int32) {
+func (o *DirectLinkInterface) SetVlan(v int64) {
 	o.Vlan = v
 }
 

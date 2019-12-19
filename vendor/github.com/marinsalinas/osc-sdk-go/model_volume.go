@@ -18,11 +18,11 @@ import (
 // Volume Information about the volume.
 type Volume struct {
 	// The number of I/O operations per second (IOPS):<br /> - For `io1` volumes, the number of provisioned IOPS<br /> - For `gp2` volumes, the baseline performance of the volume
-	Iops *int32 `json:"Iops,omitempty"`
+	Iops *int64 `json:"Iops,omitempty"`
 	// Information about your volume attachment.
 	LinkedVolumes *[]LinkedVolume `json:"LinkedVolumes,omitempty"`
 	// The size of the volume, in gibibytes (GiB).
-	Size *int32 `json:"Size,omitempty"`
+	Size *int64 `json:"Size,omitempty"`
 	// The snapshot from which the volume was created.
 	SnapshotId *string `json:"SnapshotId,omitempty"`
 	// The state of the volume (`creating` \\| `available` \\| `in-use` \\| `deleting` \\| `error`).
@@ -38,9 +38,9 @@ type Volume struct {
 }
 
 // GetIops returns the Iops field value if set, zero value otherwise.
-func (o *Volume) GetIops() int32 {
+func (o *Volume) GetIops() int64 {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Iops
@@ -48,9 +48,9 @@ func (o *Volume) GetIops() int32 {
 
 // GetIopsOk returns a tuple with the Iops field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Volume) GetIopsOk() (int32, bool) {
+func (o *Volume) GetIopsOk() (int64, bool) {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Iops, true
@@ -65,8 +65,8 @@ func (o *Volume) HasIops() bool {
 	return false
 }
 
-// SetIops gets a reference to the given int32 and assigns it to the Iops field.
-func (o *Volume) SetIops(v int32) {
+// SetIops gets a reference to the given int64 and assigns it to the Iops field.
+func (o *Volume) SetIops(v int64) {
 	o.Iops = &v
 }
 
@@ -104,9 +104,9 @@ func (o *Volume) SetLinkedVolumes(v []LinkedVolume) {
 }
 
 // GetSize returns the Size field value if set, zero value otherwise.
-func (o *Volume) GetSize() int32 {
+func (o *Volume) GetSize() int64 {
 	if o == nil || o.Size == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Size
@@ -114,9 +114,9 @@ func (o *Volume) GetSize() int32 {
 
 // GetSizeOk returns a tuple with the Size field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Volume) GetSizeOk() (int32, bool) {
+func (o *Volume) GetSizeOk() (int64, bool) {
 	if o == nil || o.Size == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Size, true
@@ -131,8 +131,8 @@ func (o *Volume) HasSize() bool {
 	return false
 }
 
-// SetSize gets a reference to the given int32 and assigns it to the Size field.
-func (o *Volume) SetSize(v int32) {
+// SetSize gets a reference to the given int64 and assigns it to the Size field.
+func (o *Volume) SetSize(v int64) {
 	o.Size = &v
 }
 

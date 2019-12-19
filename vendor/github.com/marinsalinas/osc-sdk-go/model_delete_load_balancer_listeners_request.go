@@ -22,7 +22,7 @@ type DeleteLoadBalancerListenersRequest struct {
 	// The name of the load balancer for which you want to delete listeners.
 	LoadBalancerName string `json:"LoadBalancerName"`
 	// One or more port numbers of the listeners you want to delete.
-	LoadBalancerPorts []int32 `json:"LoadBalancerPorts"`
+	LoadBalancerPorts []int64 `json:"LoadBalancerPorts"`
 }
 
 // GetDryRun returns the DryRun field value if set, zero value otherwise.
@@ -74,9 +74,9 @@ func (o *DeleteLoadBalancerListenersRequest) SetLoadBalancerName(v string) {
 }
 
 // GetLoadBalancerPorts returns the LoadBalancerPorts field value
-func (o *DeleteLoadBalancerListenersRequest) GetLoadBalancerPorts() []int32 {
+func (o *DeleteLoadBalancerListenersRequest) GetLoadBalancerPorts() []int64 {
 	if o == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 
@@ -84,7 +84,7 @@ func (o *DeleteLoadBalancerListenersRequest) GetLoadBalancerPorts() []int32 {
 }
 
 // SetLoadBalancerPorts sets field value
-func (o *DeleteLoadBalancerListenersRequest) SetLoadBalancerPorts(v []int32) {
+func (o *DeleteLoadBalancerListenersRequest) SetLoadBalancerPorts(v []int64) {
 	o.LoadBalancerPorts = v
 }
 

@@ -24,7 +24,7 @@ type UpdateLoadBalancerRequest struct {
 	// The name of the load balancer.
 	LoadBalancerName string `json:"LoadBalancerName"`
 	// The port on which the load balancer is listening (between `1` and `65535`, both included).
-	LoadBalancerPort *int32 `json:"LoadBalancerPort,omitempty"`
+	LoadBalancerPort *int64 `json:"LoadBalancerPort,omitempty"`
 	// The list of policy names (must contain all the policies to be enabled).
 	PolicyNames *[]string `json:"PolicyNames,omitempty"`
 	// The Outscale Resource Name (ORN) of the SSL certificate.
@@ -146,9 +146,9 @@ func (o *UpdateLoadBalancerRequest) SetLoadBalancerName(v string) {
 }
 
 // GetLoadBalancerPort returns the LoadBalancerPort field value if set, zero value otherwise.
-func (o *UpdateLoadBalancerRequest) GetLoadBalancerPort() int32 {
+func (o *UpdateLoadBalancerRequest) GetLoadBalancerPort() int64 {
 	if o == nil || o.LoadBalancerPort == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.LoadBalancerPort
@@ -156,9 +156,9 @@ func (o *UpdateLoadBalancerRequest) GetLoadBalancerPort() int32 {
 
 // GetLoadBalancerPortOk returns a tuple with the LoadBalancerPort field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *UpdateLoadBalancerRequest) GetLoadBalancerPortOk() (int32, bool) {
+func (o *UpdateLoadBalancerRequest) GetLoadBalancerPortOk() (int64, bool) {
 	if o == nil || o.LoadBalancerPort == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.LoadBalancerPort, true
@@ -173,8 +173,8 @@ func (o *UpdateLoadBalancerRequest) HasLoadBalancerPort() bool {
 	return false
 }
 
-// SetLoadBalancerPort gets a reference to the given int32 and assigns it to the LoadBalancerPort field.
-func (o *UpdateLoadBalancerRequest) SetLoadBalancerPort(v int32) {
+// SetLoadBalancerPort gets a reference to the given int64 and assigns it to the LoadBalancerPort field.
+func (o *UpdateLoadBalancerRequest) SetLoadBalancerPort(v int64) {
 	o.LoadBalancerPort = &v
 }
 

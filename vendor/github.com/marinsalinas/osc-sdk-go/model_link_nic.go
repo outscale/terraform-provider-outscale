@@ -20,7 +20,7 @@ type LinkNic struct {
 	// If `true`, the volume is deleted when the VM is terminated.
 	DeleteOnVmDeletion *bool `json:"DeleteOnVmDeletion,omitempty"`
 	// The device index for the NIC attachment (between 1 and 7, both included).
-	DeviceNumber *int32 `json:"DeviceNumber,omitempty"`
+	DeviceNumber *int64 `json:"DeviceNumber,omitempty"`
 	// The ID of the NIC to attach.
 	LinkNicId *string `json:"LinkNicId,omitempty"`
 	// The state of the attachment (`attaching` \\| `attached` \\| `detaching` \\| `detached`).
@@ -65,9 +65,9 @@ func (o *LinkNic) SetDeleteOnVmDeletion(v bool) {
 }
 
 // GetDeviceNumber returns the DeviceNumber field value if set, zero value otherwise.
-func (o *LinkNic) GetDeviceNumber() int32 {
+func (o *LinkNic) GetDeviceNumber() int64 {
 	if o == nil || o.DeviceNumber == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.DeviceNumber
@@ -75,9 +75,9 @@ func (o *LinkNic) GetDeviceNumber() int32 {
 
 // GetDeviceNumberOk returns a tuple with the DeviceNumber field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *LinkNic) GetDeviceNumberOk() (int32, bool) {
+func (o *LinkNic) GetDeviceNumberOk() (int64, bool) {
 	if o == nil || o.DeviceNumber == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.DeviceNumber, true
@@ -92,8 +92,8 @@ func (o *LinkNic) HasDeviceNumber() bool {
 	return false
 }
 
-// SetDeviceNumber gets a reference to the given int32 and assigns it to the DeviceNumber field.
-func (o *LinkNic) SetDeviceNumber(v int32) {
+// SetDeviceNumber gets a reference to the given int64 and assigns it to the DeviceNumber field.
+func (o *LinkNic) SetDeviceNumber(v int64) {
 	o.DeviceNumber = &v
 }
 

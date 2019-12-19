@@ -20,13 +20,13 @@ type FlexibleGpuCatalog struct {
 	// The generations of VMs that the fGPU is compatible with.
 	Generations *string `json:"Generations,omitempty"`
 	// The maximum number of VM vCores that the fGPU is compatible with.
-	MaxCpu *int32 `json:"MaxCpu,omitempty"`
+	MaxCpu *int64 `json:"MaxCpu,omitempty"`
 	// The maximum amount of VM memory that the fGPU is compatible with.
-	MaxRam *int32 `json:"MaxRam,omitempty"`
+	MaxRam *int64 `json:"MaxRam,omitempty"`
 	// The model of fGPU.
 	ModelName *string `json:"ModelName,omitempty"`
 	// The amount of video RAM (VRAM) of the fGPU.
-	VRam *int32 `json:"VRam,omitempty"`
+	VRam *int64 `json:"VRam,omitempty"`
 }
 
 // GetGenerations returns the Generations field value if set, zero value otherwise.
@@ -63,9 +63,9 @@ func (o *FlexibleGpuCatalog) SetGenerations(v string) {
 }
 
 // GetMaxCpu returns the MaxCpu field value if set, zero value otherwise.
-func (o *FlexibleGpuCatalog) GetMaxCpu() int32 {
+func (o *FlexibleGpuCatalog) GetMaxCpu() int64 {
 	if o == nil || o.MaxCpu == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MaxCpu
@@ -73,9 +73,9 @@ func (o *FlexibleGpuCatalog) GetMaxCpu() int32 {
 
 // GetMaxCpuOk returns a tuple with the MaxCpu field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FlexibleGpuCatalog) GetMaxCpuOk() (int32, bool) {
+func (o *FlexibleGpuCatalog) GetMaxCpuOk() (int64, bool) {
 	if o == nil || o.MaxCpu == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MaxCpu, true
@@ -90,15 +90,15 @@ func (o *FlexibleGpuCatalog) HasMaxCpu() bool {
 	return false
 }
 
-// SetMaxCpu gets a reference to the given int32 and assigns it to the MaxCpu field.
-func (o *FlexibleGpuCatalog) SetMaxCpu(v int32) {
+// SetMaxCpu gets a reference to the given int64 and assigns it to the MaxCpu field.
+func (o *FlexibleGpuCatalog) SetMaxCpu(v int64) {
 	o.MaxCpu = &v
 }
 
 // GetMaxRam returns the MaxRam field value if set, zero value otherwise.
-func (o *FlexibleGpuCatalog) GetMaxRam() int32 {
+func (o *FlexibleGpuCatalog) GetMaxRam() int64 {
 	if o == nil || o.MaxRam == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MaxRam
@@ -106,9 +106,9 @@ func (o *FlexibleGpuCatalog) GetMaxRam() int32 {
 
 // GetMaxRamOk returns a tuple with the MaxRam field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FlexibleGpuCatalog) GetMaxRamOk() (int32, bool) {
+func (o *FlexibleGpuCatalog) GetMaxRamOk() (int64, bool) {
 	if o == nil || o.MaxRam == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MaxRam, true
@@ -123,8 +123,8 @@ func (o *FlexibleGpuCatalog) HasMaxRam() bool {
 	return false
 }
 
-// SetMaxRam gets a reference to the given int32 and assigns it to the MaxRam field.
-func (o *FlexibleGpuCatalog) SetMaxRam(v int32) {
+// SetMaxRam gets a reference to the given int64 and assigns it to the MaxRam field.
+func (o *FlexibleGpuCatalog) SetMaxRam(v int64) {
 	o.MaxRam = &v
 }
 
@@ -162,9 +162,9 @@ func (o *FlexibleGpuCatalog) SetModelName(v string) {
 }
 
 // GetVRam returns the VRam field value if set, zero value otherwise.
-func (o *FlexibleGpuCatalog) GetVRam() int32 {
+func (o *FlexibleGpuCatalog) GetVRam() int64 {
 	if o == nil || o.VRam == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VRam
@@ -172,9 +172,9 @@ func (o *FlexibleGpuCatalog) GetVRam() int32 {
 
 // GetVRamOk returns a tuple with the VRam field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FlexibleGpuCatalog) GetVRamOk() (int32, bool) {
+func (o *FlexibleGpuCatalog) GetVRamOk() (int64, bool) {
 	if o == nil || o.VRam == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VRam, true
@@ -189,8 +189,8 @@ func (o *FlexibleGpuCatalog) HasVRam() bool {
 	return false
 }
 
-// SetVRam gets a reference to the given int32 and assigns it to the VRam field.
-func (o *FlexibleGpuCatalog) SetVRam(v int32) {
+// SetVRam gets a reference to the given int64 and assigns it to the VRam field.
+func (o *FlexibleGpuCatalog) SetVRam(v int64) {
 	o.VRam = &v
 }
 

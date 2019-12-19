@@ -20,17 +20,17 @@ type VmType struct {
 	// Indicates whether the VM is optimized for BSU I/O.
 	BsuOptimized *bool `json:"BsuOptimized,omitempty"`
 	// The maximum number of private IP addresses per network interface card (NIC).
-	MaxPrivateIps *int32 `json:"MaxPrivateIps,omitempty"`
+	MaxPrivateIps *int64 `json:"MaxPrivateIps,omitempty"`
 	// The amount of memory, in gibibytes.
 	MemorySize *float32 `json:"MemorySize,omitempty"`
 	// The number of vCores.
-	VcoreCount *int32 `json:"VcoreCount,omitempty"`
+	VcoreCount *int64 `json:"VcoreCount,omitempty"`
 	// The name of the VM type.
 	VmTypeName *string `json:"VmTypeName,omitempty"`
 	// The maximum number of ephemeral storage disks.
-	VolumeCount *int32 `json:"VolumeCount,omitempty"`
+	VolumeCount *int64 `json:"VolumeCount,omitempty"`
 	// The size of one ephemeral storage disk, in gibibytes (GiB).
-	VolumeSize *int32 `json:"VolumeSize,omitempty"`
+	VolumeSize *int64 `json:"VolumeSize,omitempty"`
 }
 
 // GetBsuOptimized returns the BsuOptimized field value if set, zero value otherwise.
@@ -67,9 +67,9 @@ func (o *VmType) SetBsuOptimized(v bool) {
 }
 
 // GetMaxPrivateIps returns the MaxPrivateIps field value if set, zero value otherwise.
-func (o *VmType) GetMaxPrivateIps() int32 {
+func (o *VmType) GetMaxPrivateIps() int64 {
 	if o == nil || o.MaxPrivateIps == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MaxPrivateIps
@@ -77,9 +77,9 @@ func (o *VmType) GetMaxPrivateIps() int32 {
 
 // GetMaxPrivateIpsOk returns a tuple with the MaxPrivateIps field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *VmType) GetMaxPrivateIpsOk() (int32, bool) {
+func (o *VmType) GetMaxPrivateIpsOk() (int64, bool) {
 	if o == nil || o.MaxPrivateIps == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MaxPrivateIps, true
@@ -94,8 +94,8 @@ func (o *VmType) HasMaxPrivateIps() bool {
 	return false
 }
 
-// SetMaxPrivateIps gets a reference to the given int32 and assigns it to the MaxPrivateIps field.
-func (o *VmType) SetMaxPrivateIps(v int32) {
+// SetMaxPrivateIps gets a reference to the given int64 and assigns it to the MaxPrivateIps field.
+func (o *VmType) SetMaxPrivateIps(v int64) {
 	o.MaxPrivateIps = &v
 }
 
@@ -133,9 +133,9 @@ func (o *VmType) SetMemorySize(v float32) {
 }
 
 // GetVcoreCount returns the VcoreCount field value if set, zero value otherwise.
-func (o *VmType) GetVcoreCount() int32 {
+func (o *VmType) GetVcoreCount() int64 {
 	if o == nil || o.VcoreCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VcoreCount
@@ -143,9 +143,9 @@ func (o *VmType) GetVcoreCount() int32 {
 
 // GetVcoreCountOk returns a tuple with the VcoreCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *VmType) GetVcoreCountOk() (int32, bool) {
+func (o *VmType) GetVcoreCountOk() (int64, bool) {
 	if o == nil || o.VcoreCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VcoreCount, true
@@ -160,8 +160,8 @@ func (o *VmType) HasVcoreCount() bool {
 	return false
 }
 
-// SetVcoreCount gets a reference to the given int32 and assigns it to the VcoreCount field.
-func (o *VmType) SetVcoreCount(v int32) {
+// SetVcoreCount gets a reference to the given int64 and assigns it to the VcoreCount field.
+func (o *VmType) SetVcoreCount(v int64) {
 	o.VcoreCount = &v
 }
 
@@ -199,9 +199,9 @@ func (o *VmType) SetVmTypeName(v string) {
 }
 
 // GetVolumeCount returns the VolumeCount field value if set, zero value otherwise.
-func (o *VmType) GetVolumeCount() int32 {
+func (o *VmType) GetVolumeCount() int64 {
 	if o == nil || o.VolumeCount == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VolumeCount
@@ -209,9 +209,9 @@ func (o *VmType) GetVolumeCount() int32 {
 
 // GetVolumeCountOk returns a tuple with the VolumeCount field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *VmType) GetVolumeCountOk() (int32, bool) {
+func (o *VmType) GetVolumeCountOk() (int64, bool) {
 	if o == nil || o.VolumeCount == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VolumeCount, true
@@ -226,15 +226,15 @@ func (o *VmType) HasVolumeCount() bool {
 	return false
 }
 
-// SetVolumeCount gets a reference to the given int32 and assigns it to the VolumeCount field.
-func (o *VmType) SetVolumeCount(v int32) {
+// SetVolumeCount gets a reference to the given int64 and assigns it to the VolumeCount field.
+func (o *VmType) SetVolumeCount(v int64) {
 	o.VolumeCount = &v
 }
 
 // GetVolumeSize returns the VolumeSize field value if set, zero value otherwise.
-func (o *VmType) GetVolumeSize() int32 {
+func (o *VmType) GetVolumeSize() int64 {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VolumeSize
@@ -242,9 +242,9 @@ func (o *VmType) GetVolumeSize() int32 {
 
 // GetVolumeSizeOk returns a tuple with the VolumeSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *VmType) GetVolumeSizeOk() (int32, bool) {
+func (o *VmType) GetVolumeSizeOk() (int64, bool) {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VolumeSize, true
@@ -259,8 +259,8 @@ func (o *VmType) HasVolumeSize() bool {
 	return false
 }
 
-// SetVolumeSize gets a reference to the given int32 and assigns it to the VolumeSize field.
-func (o *VmType) SetVolumeSize(v int32) {
+// SetVolumeSize gets a reference to the given int64 and assigns it to the VolumeSize field.
+func (o *VmType) SetVolumeSize(v int64) {
 	o.VolumeSize = &v
 }
 

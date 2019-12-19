@@ -21,7 +21,7 @@ type SnapshotExportTask struct {
 	Comment   *string    `json:"Comment,omitempty"`
 	OsuExport *OsuExport `json:"OsuExport,omitempty"`
 	// The progress of the snapshot export task, as a percentage.
-	Progress *int32 `json:"Progress,omitempty"`
+	Progress *int64 `json:"Progress,omitempty"`
 	// The ID of the snapshot to be exported.
 	SnapshotId *string `json:"SnapshotId,omitempty"`
 	// The state of the snapshot export task (`pending` \\| `active` \\| `completed` \\| `failed`).
@@ -99,9 +99,9 @@ func (o *SnapshotExportTask) SetOsuExport(v OsuExport) {
 }
 
 // GetProgress returns the Progress field value if set, zero value otherwise.
-func (o *SnapshotExportTask) GetProgress() int32 {
+func (o *SnapshotExportTask) GetProgress() int64 {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Progress
@@ -109,9 +109,9 @@ func (o *SnapshotExportTask) GetProgress() int32 {
 
 // GetProgressOk returns a tuple with the Progress field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *SnapshotExportTask) GetProgressOk() (int32, bool) {
+func (o *SnapshotExportTask) GetProgressOk() (int64, bool) {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Progress, true
@@ -126,8 +126,8 @@ func (o *SnapshotExportTask) HasProgress() bool {
 	return false
 }
 
-// SetProgress gets a reference to the given int32 and assigns it to the Progress field.
-func (o *SnapshotExportTask) SetProgress(v int32) {
+// SetProgress gets a reference to the given int64 and assigns it to the Progress field.
+func (o *SnapshotExportTask) SetProgress(v int64) {
 	o.Progress = &v
 }
 

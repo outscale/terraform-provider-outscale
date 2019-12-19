@@ -22,7 +22,7 @@ type Quota struct {
 	// The description of the quota.
 	Description *string `json:"Description,omitempty"`
 	// The maximum value of the quota for the 3DS OUTSCALE user account (if there is no limit, `0`).
-	MaxValue *int32 `json:"MaxValue,omitempty"`
+	MaxValue *int64 `json:"MaxValue,omitempty"`
 	// The unique name of the quota.
 	Name *string `json:"Name,omitempty"`
 	// The group name of the quota.
@@ -30,7 +30,7 @@ type Quota struct {
 	// The description of the quota.
 	ShortDescription *string `json:"ShortDescription,omitempty"`
 	// The limit value currently used by the 3DS OUTSCALE user account.
-	UsedValue *int32 `json:"UsedValue,omitempty"`
+	UsedValue *int64 `json:"UsedValue,omitempty"`
 }
 
 // GetAccountId returns the AccountId field value if set, zero value otherwise.
@@ -100,9 +100,9 @@ func (o *Quota) SetDescription(v string) {
 }
 
 // GetMaxValue returns the MaxValue field value if set, zero value otherwise.
-func (o *Quota) GetMaxValue() int32 {
+func (o *Quota) GetMaxValue() int64 {
 	if o == nil || o.MaxValue == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.MaxValue
@@ -110,9 +110,9 @@ func (o *Quota) GetMaxValue() int32 {
 
 // GetMaxValueOk returns a tuple with the MaxValue field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Quota) GetMaxValueOk() (int32, bool) {
+func (o *Quota) GetMaxValueOk() (int64, bool) {
 	if o == nil || o.MaxValue == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.MaxValue, true
@@ -127,8 +127,8 @@ func (o *Quota) HasMaxValue() bool {
 	return false
 }
 
-// SetMaxValue gets a reference to the given int32 and assigns it to the MaxValue field.
-func (o *Quota) SetMaxValue(v int32) {
+// SetMaxValue gets a reference to the given int64 and assigns it to the MaxValue field.
+func (o *Quota) SetMaxValue(v int64) {
 	o.MaxValue = &v
 }
 
@@ -232,9 +232,9 @@ func (o *Quota) SetShortDescription(v string) {
 }
 
 // GetUsedValue returns the UsedValue field value if set, zero value otherwise.
-func (o *Quota) GetUsedValue() int32 {
+func (o *Quota) GetUsedValue() int64 {
 	if o == nil || o.UsedValue == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.UsedValue
@@ -242,9 +242,9 @@ func (o *Quota) GetUsedValue() int32 {
 
 // GetUsedValueOk returns a tuple with the UsedValue field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Quota) GetUsedValueOk() (int32, bool) {
+func (o *Quota) GetUsedValueOk() (int64, bool) {
 	if o == nil || o.UsedValue == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.UsedValue, true
@@ -259,8 +259,8 @@ func (o *Quota) HasUsedValue() bool {
 	return false
 }
 
-// SetUsedValue gets a reference to the given int32 and assigns it to the UsedValue field.
-func (o *Quota) SetUsedValue(v int32) {
+// SetUsedValue gets a reference to the given int64 and assigns it to the UsedValue field.
+func (o *Quota) SetUsedValue(v int64) {
 	o.UsedValue = &v
 }
 

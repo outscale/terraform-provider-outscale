@@ -23,7 +23,7 @@ type ImageExportTask struct {
 	ImageId   *string    `json:"ImageId,omitempty"`
 	OsuExport *OsuExport `json:"OsuExport,omitempty"`
 	// The progress of the OMI export task, as a percentage.
-	Progress *int32 `json:"Progress,omitempty"`
+	Progress *int64 `json:"Progress,omitempty"`
 	// The state of the OMI export task (`pending/queued` \\| `pending` \\| `completed` \\| `failed` \\| `cancelled`).
 	State *string `json:"State,omitempty"`
 	// One or more tags associated with the image export task.
@@ -132,9 +132,9 @@ func (o *ImageExportTask) SetOsuExport(v OsuExport) {
 }
 
 // GetProgress returns the Progress field value if set, zero value otherwise.
-func (o *ImageExportTask) GetProgress() int32 {
+func (o *ImageExportTask) GetProgress() int64 {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Progress
@@ -142,9 +142,9 @@ func (o *ImageExportTask) GetProgress() int32 {
 
 // GetProgressOk returns a tuple with the Progress field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *ImageExportTask) GetProgressOk() (int32, bool) {
+func (o *ImageExportTask) GetProgressOk() (int64, bool) {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Progress, true
@@ -159,8 +159,8 @@ func (o *ImageExportTask) HasProgress() bool {
 	return false
 }
 
-// SetProgress gets a reference to the given int32 and assigns it to the Progress field.
-func (o *ImageExportTask) SetProgress(v int32) {
+// SetProgress gets a reference to the given int64 and assigns it to the Progress field.
+func (o *ImageExportTask) SetProgress(v int64) {
 	o.Progress = &v
 }
 

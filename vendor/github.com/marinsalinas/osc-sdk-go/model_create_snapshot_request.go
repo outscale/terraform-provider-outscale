@@ -24,7 +24,7 @@ type CreateSnapshotRequest struct {
 	// The pre-signed URL of the snapshot you want to import from the OSU bucket.
 	FileLocation *string `json:"FileLocation,omitempty"`
 	// The size of the snapshot created in your account, in gibibytes (GiB). This size must be exactly the same as the source snapshot one. The maximum allowed size is 14,901 GiB.
-	SnapshotSize *int32 `json:"SnapshotSize,omitempty"`
+	SnapshotSize *int64 `json:"SnapshotSize,omitempty"`
 	// The name of the source Region, which must be the same as the Region of your account.
 	SourceRegionName *string `json:"SourceRegionName,omitempty"`
 	// The ID of the snapshot you want to copy.
@@ -133,9 +133,9 @@ func (o *CreateSnapshotRequest) SetFileLocation(v string) {
 }
 
 // GetSnapshotSize returns the SnapshotSize field value if set, zero value otherwise.
-func (o *CreateSnapshotRequest) GetSnapshotSize() int32 {
+func (o *CreateSnapshotRequest) GetSnapshotSize() int64 {
 	if o == nil || o.SnapshotSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.SnapshotSize
@@ -143,9 +143,9 @@ func (o *CreateSnapshotRequest) GetSnapshotSize() int32 {
 
 // GetSnapshotSizeOk returns a tuple with the SnapshotSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateSnapshotRequest) GetSnapshotSizeOk() (int32, bool) {
+func (o *CreateSnapshotRequest) GetSnapshotSizeOk() (int64, bool) {
 	if o == nil || o.SnapshotSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.SnapshotSize, true
@@ -160,8 +160,8 @@ func (o *CreateSnapshotRequest) HasSnapshotSize() bool {
 	return false
 }
 
-// SetSnapshotSize gets a reference to the given int32 and assigns it to the SnapshotSize field.
-func (o *CreateSnapshotRequest) SetSnapshotSize(v int32) {
+// SetSnapshotSize gets a reference to the given int64 and assigns it to the SnapshotSize field.
+func (o *CreateSnapshotRequest) SetSnapshotSize(v int64) {
 	o.SnapshotSize = &v
 }
 

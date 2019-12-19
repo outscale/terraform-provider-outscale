@@ -18,7 +18,7 @@ import (
 // FiltersNic One or more filters.
 type FiltersNic struct {
 	// The device numbers the NICs are attached to.
-	LinkNicSortNumbers *[]int32 `json:"LinkNicSortNumbers,omitempty"`
+	LinkNicSortNumbers *[]int64 `json:"LinkNicSortNumbers,omitempty"`
 	// The IDs of the VMs the NICs are attached to.
 	LinkNicVmIds *[]string `json:"LinkNicVmIds,omitempty"`
 	// The IDs of the NICs.
@@ -30,9 +30,9 @@ type FiltersNic struct {
 }
 
 // GetLinkNicSortNumbers returns the LinkNicSortNumbers field value if set, zero value otherwise.
-func (o *FiltersNic) GetLinkNicSortNumbers() []int32 {
+func (o *FiltersNic) GetLinkNicSortNumbers() []int64 {
 	if o == nil || o.LinkNicSortNumbers == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.LinkNicSortNumbers
@@ -40,9 +40,9 @@ func (o *FiltersNic) GetLinkNicSortNumbers() []int32 {
 
 // GetLinkNicSortNumbersOk returns a tuple with the LinkNicSortNumbers field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersNic) GetLinkNicSortNumbersOk() ([]int32, bool) {
+func (o *FiltersNic) GetLinkNicSortNumbersOk() ([]int64, bool) {
 	if o == nil || o.LinkNicSortNumbers == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.LinkNicSortNumbers, true
@@ -57,8 +57,8 @@ func (o *FiltersNic) HasLinkNicSortNumbers() bool {
 	return false
 }
 
-// SetLinkNicSortNumbers gets a reference to the given []int32 and assigns it to the LinkNicSortNumbers field.
-func (o *FiltersNic) SetLinkNicSortNumbers(v []int32) {
+// SetLinkNicSortNumbers gets a reference to the given []int64 and assigns it to the LinkNicSortNumbers field.
+func (o *FiltersNic) SetLinkNicSortNumbers(v []int64) {
 	o.LinkNicSortNumbers = &v
 }
 

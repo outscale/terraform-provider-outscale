@@ -36,7 +36,7 @@ type Vm struct {
 	// The name of the keypair used when launching the VM.
 	KeypairName *string `json:"KeypairName,omitempty"`
 	// The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
-	LaunchNumber *int32 `json:"LaunchNumber,omitempty"`
+	LaunchNumber *int64 `json:"LaunchNumber,omitempty"`
 	// The ID of the Net in which the VM is running.
 	NetId *string `json:"NetId,omitempty"`
 	// The network interface cards (NICs) the VMs are attached to.
@@ -380,9 +380,9 @@ func (o *Vm) SetKeypairName(v string) {
 }
 
 // GetLaunchNumber returns the LaunchNumber field value if set, zero value otherwise.
-func (o *Vm) GetLaunchNumber() int32 {
+func (o *Vm) GetLaunchNumber() int64 {
 	if o == nil || o.LaunchNumber == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.LaunchNumber
@@ -390,9 +390,9 @@ func (o *Vm) GetLaunchNumber() int32 {
 
 // GetLaunchNumberOk returns a tuple with the LaunchNumber field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Vm) GetLaunchNumberOk() (int32, bool) {
+func (o *Vm) GetLaunchNumberOk() (int64, bool) {
 	if o == nil || o.LaunchNumber == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.LaunchNumber, true
@@ -407,8 +407,8 @@ func (o *Vm) HasLaunchNumber() bool {
 	return false
 }
 
-// SetLaunchNumber gets a reference to the given int32 and assigns it to the LaunchNumber field.
-func (o *Vm) SetLaunchNumber(v int32) {
+// SetLaunchNumber gets a reference to the given int64 and assigns it to the LaunchNumber field.
+func (o *Vm) SetLaunchNumber(v int64) {
 	o.LaunchNumber = &v
 }
 

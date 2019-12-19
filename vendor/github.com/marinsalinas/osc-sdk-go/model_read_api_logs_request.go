@@ -23,7 +23,7 @@ type ReadApiLogsRequest struct {
 	// The token to request the next page of results.
 	NextPageToken *string `json:"NextPageToken,omitempty"`
 	// The maximum number of items returned in a single page. By default, 100.
-	ResultsPerPage *int32 `json:"ResultsPerPage,omitempty"`
+	ResultsPerPage *int64 `json:"ResultsPerPage,omitempty"`
 	With           *With  `json:"With,omitempty"`
 }
 
@@ -127,9 +127,9 @@ func (o *ReadApiLogsRequest) SetNextPageToken(v string) {
 }
 
 // GetResultsPerPage returns the ResultsPerPage field value if set, zero value otherwise.
-func (o *ReadApiLogsRequest) GetResultsPerPage() int32 {
+func (o *ReadApiLogsRequest) GetResultsPerPage() int64 {
 	if o == nil || o.ResultsPerPage == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.ResultsPerPage
@@ -137,9 +137,9 @@ func (o *ReadApiLogsRequest) GetResultsPerPage() int32 {
 
 // GetResultsPerPageOk returns a tuple with the ResultsPerPage field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *ReadApiLogsRequest) GetResultsPerPageOk() (int32, bool) {
+func (o *ReadApiLogsRequest) GetResultsPerPageOk() (int64, bool) {
 	if o == nil || o.ResultsPerPage == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.ResultsPerPage, true
@@ -154,8 +154,8 @@ func (o *ReadApiLogsRequest) HasResultsPerPage() bool {
 	return false
 }
 
-// SetResultsPerPage gets a reference to the given int32 and assigns it to the ResultsPerPage field.
-func (o *ReadApiLogsRequest) SetResultsPerPage(v int32) {
+// SetResultsPerPage gets a reference to the given int64 and assigns it to the ResultsPerPage field.
+func (o *ReadApiLogsRequest) SetResultsPerPage(v int64) {
 	o.ResultsPerPage = &v
 }
 

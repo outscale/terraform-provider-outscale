@@ -24,7 +24,7 @@ type AccessLog struct {
 	// The path to the folder of the access logs in your Object Storage Unit (OSU) bucket (by default, the `root` level of your bucket).
 	OsuBucketPrefix *string `json:"OsuBucketPrefix,omitempty"`
 	// The time interval for the publication of access logs in the Object Storage Unit (OSU) bucket, in minutes. This value can be either 5 or 60 (by default, 60).
-	PublicationInterval *int32 `json:"PublicationInterval,omitempty"`
+	PublicationInterval *int64 `json:"PublicationInterval,omitempty"`
 }
 
 // GetIsEnabled returns the IsEnabled field value if set, zero value otherwise.
@@ -127,9 +127,9 @@ func (o *AccessLog) SetOsuBucketPrefix(v string) {
 }
 
 // GetPublicationInterval returns the PublicationInterval field value if set, zero value otherwise.
-func (o *AccessLog) GetPublicationInterval() int32 {
+func (o *AccessLog) GetPublicationInterval() int64 {
 	if o == nil || o.PublicationInterval == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.PublicationInterval
@@ -137,9 +137,9 @@ func (o *AccessLog) GetPublicationInterval() int32 {
 
 // GetPublicationIntervalOk returns a tuple with the PublicationInterval field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *AccessLog) GetPublicationIntervalOk() (int32, bool) {
+func (o *AccessLog) GetPublicationIntervalOk() (int64, bool) {
 	if o == nil || o.PublicationInterval == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.PublicationInterval, true
@@ -154,8 +154,8 @@ func (o *AccessLog) HasPublicationInterval() bool {
 	return false
 }
 
-// SetPublicationInterval gets a reference to the given int32 and assigns it to the PublicationInterval field.
-func (o *AccessLog) SetPublicationInterval(v int32) {
+// SetPublicationInterval gets a reference to the given int64 and assigns it to the PublicationInterval field.
+func (o *AccessLog) SetPublicationInterval(v int64) {
 	o.PublicationInterval = &v
 }
 

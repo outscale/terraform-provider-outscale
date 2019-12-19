@@ -20,15 +20,15 @@ type FiltersVmType struct {
 	// Indicates whether the VM is optimized for BSU I/O.
 	BsuOptimized *bool `json:"BsuOptimized,omitempty"`
 	// The amounts of memory, in bytes.
-	MemorySizes *[]int32 `json:"MemorySizes,omitempty"`
+	MemorySizes *[]int64 `json:"MemorySizes,omitempty"`
 	// The numbers of vCores.
-	VcoreCounts *[]int32 `json:"VcoreCounts,omitempty"`
+	VcoreCounts *[]int64 `json:"VcoreCounts,omitempty"`
 	// The names of the VM types. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
 	VmTypeNames *[]string `json:"VmTypeNames,omitempty"`
 	// The maximum number of ephemeral storage disks.
-	VolumeCounts *[]int32 `json:"VolumeCounts,omitempty"`
+	VolumeCounts *[]int64 `json:"VolumeCounts,omitempty"`
 	// The size of one ephemeral storage disk, in gibibytes (GiB).
-	VolumeSizes *[]int32 `json:"VolumeSizes,omitempty"`
+	VolumeSizes *[]int64 `json:"VolumeSizes,omitempty"`
 }
 
 // GetBsuOptimized returns the BsuOptimized field value if set, zero value otherwise.
@@ -65,9 +65,9 @@ func (o *FiltersVmType) SetBsuOptimized(v bool) {
 }
 
 // GetMemorySizes returns the MemorySizes field value if set, zero value otherwise.
-func (o *FiltersVmType) GetMemorySizes() []int32 {
+func (o *FiltersVmType) GetMemorySizes() []int64 {
 	if o == nil || o.MemorySizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.MemorySizes
@@ -75,9 +75,9 @@ func (o *FiltersVmType) GetMemorySizes() []int32 {
 
 // GetMemorySizesOk returns a tuple with the MemorySizes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVmType) GetMemorySizesOk() ([]int32, bool) {
+func (o *FiltersVmType) GetMemorySizesOk() ([]int64, bool) {
 	if o == nil || o.MemorySizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.MemorySizes, true
@@ -92,15 +92,15 @@ func (o *FiltersVmType) HasMemorySizes() bool {
 	return false
 }
 
-// SetMemorySizes gets a reference to the given []int32 and assigns it to the MemorySizes field.
-func (o *FiltersVmType) SetMemorySizes(v []int32) {
+// SetMemorySizes gets a reference to the given []int64 and assigns it to the MemorySizes field.
+func (o *FiltersVmType) SetMemorySizes(v []int64) {
 	o.MemorySizes = &v
 }
 
 // GetVcoreCounts returns the VcoreCounts field value if set, zero value otherwise.
-func (o *FiltersVmType) GetVcoreCounts() []int32 {
+func (o *FiltersVmType) GetVcoreCounts() []int64 {
 	if o == nil || o.VcoreCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.VcoreCounts
@@ -108,9 +108,9 @@ func (o *FiltersVmType) GetVcoreCounts() []int32 {
 
 // GetVcoreCountsOk returns a tuple with the VcoreCounts field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVmType) GetVcoreCountsOk() ([]int32, bool) {
+func (o *FiltersVmType) GetVcoreCountsOk() ([]int64, bool) {
 	if o == nil || o.VcoreCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.VcoreCounts, true
@@ -125,8 +125,8 @@ func (o *FiltersVmType) HasVcoreCounts() bool {
 	return false
 }
 
-// SetVcoreCounts gets a reference to the given []int32 and assigns it to the VcoreCounts field.
-func (o *FiltersVmType) SetVcoreCounts(v []int32) {
+// SetVcoreCounts gets a reference to the given []int64 and assigns it to the VcoreCounts field.
+func (o *FiltersVmType) SetVcoreCounts(v []int64) {
 	o.VcoreCounts = &v
 }
 
@@ -164,9 +164,9 @@ func (o *FiltersVmType) SetVmTypeNames(v []string) {
 }
 
 // GetVolumeCounts returns the VolumeCounts field value if set, zero value otherwise.
-func (o *FiltersVmType) GetVolumeCounts() []int32 {
+func (o *FiltersVmType) GetVolumeCounts() []int64 {
 	if o == nil || o.VolumeCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.VolumeCounts
@@ -174,9 +174,9 @@ func (o *FiltersVmType) GetVolumeCounts() []int32 {
 
 // GetVolumeCountsOk returns a tuple with the VolumeCounts field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVmType) GetVolumeCountsOk() ([]int32, bool) {
+func (o *FiltersVmType) GetVolumeCountsOk() ([]int64, bool) {
 	if o == nil || o.VolumeCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.VolumeCounts, true
@@ -191,15 +191,15 @@ func (o *FiltersVmType) HasVolumeCounts() bool {
 	return false
 }
 
-// SetVolumeCounts gets a reference to the given []int32 and assigns it to the VolumeCounts field.
-func (o *FiltersVmType) SetVolumeCounts(v []int32) {
+// SetVolumeCounts gets a reference to the given []int64 and assigns it to the VolumeCounts field.
+func (o *FiltersVmType) SetVolumeCounts(v []int64) {
 	o.VolumeCounts = &v
 }
 
 // GetVolumeSizes returns the VolumeSizes field value if set, zero value otherwise.
-func (o *FiltersVmType) GetVolumeSizes() []int32 {
+func (o *FiltersVmType) GetVolumeSizes() []int64 {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.VolumeSizes
@@ -207,9 +207,9 @@ func (o *FiltersVmType) GetVolumeSizes() []int32 {
 
 // GetVolumeSizesOk returns a tuple with the VolumeSizes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVmType) GetVolumeSizesOk() ([]int32, bool) {
+func (o *FiltersVmType) GetVolumeSizesOk() ([]int64, bool) {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.VolumeSizes, true
@@ -224,8 +224,8 @@ func (o *FiltersVmType) HasVolumeSizes() bool {
 	return false
 }
 
-// SetVolumeSizes gets a reference to the given []int32 and assigns it to the VolumeSizes field.
-func (o *FiltersVmType) SetVolumeSizes(v []int32) {
+// SetVolumeSizes gets a reference to the given []int64 and assigns it to the VolumeSizes field.
+func (o *FiltersVmType) SetVolumeSizes(v []int64) {
 	o.VolumeSizes = &v
 }
 

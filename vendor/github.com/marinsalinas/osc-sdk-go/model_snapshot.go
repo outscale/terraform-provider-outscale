@@ -25,7 +25,7 @@ type Snapshot struct {
 	Description               *string                `json:"Description,omitempty"`
 	PermissionsToCreateVolume *PermissionsOnResource `json:"PermissionsToCreateVolume,omitempty"`
 	// The progress of the snapshot, as a percentage.
-	Progress *int32 `json:"Progress,omitempty"`
+	Progress *int64 `json:"Progress,omitempty"`
 	// The ID of the snapshot.
 	SnapshotId *string `json:"SnapshotId,omitempty"`
 	// The state of the snapshot (`in-queue` \\| `pending` \\| `completed`).
@@ -35,7 +35,7 @@ type Snapshot struct {
 	// The ID of the volume used to create the snapshot.
 	VolumeId *string `json:"VolumeId,omitempty"`
 	// The size of the volume used to create the snapshot, in gibibytes (GiB).
-	VolumeSize *int32 `json:"VolumeSize,omitempty"`
+	VolumeSize *int64 `json:"VolumeSize,omitempty"`
 }
 
 // GetAccountAlias returns the AccountAlias field value if set, zero value otherwise.
@@ -171,9 +171,9 @@ func (o *Snapshot) SetPermissionsToCreateVolume(v PermissionsOnResource) {
 }
 
 // GetProgress returns the Progress field value if set, zero value otherwise.
-func (o *Snapshot) GetProgress() int32 {
+func (o *Snapshot) GetProgress() int64 {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Progress
@@ -181,9 +181,9 @@ func (o *Snapshot) GetProgress() int32 {
 
 // GetProgressOk returns a tuple with the Progress field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Snapshot) GetProgressOk() (int32, bool) {
+func (o *Snapshot) GetProgressOk() (int64, bool) {
 	if o == nil || o.Progress == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Progress, true
@@ -198,8 +198,8 @@ func (o *Snapshot) HasProgress() bool {
 	return false
 }
 
-// SetProgress gets a reference to the given int32 and assigns it to the Progress field.
-func (o *Snapshot) SetProgress(v int32) {
+// SetProgress gets a reference to the given int64 and assigns it to the Progress field.
+func (o *Snapshot) SetProgress(v int64) {
 	o.Progress = &v
 }
 
@@ -336,9 +336,9 @@ func (o *Snapshot) SetVolumeId(v string) {
 }
 
 // GetVolumeSize returns the VolumeSize field value if set, zero value otherwise.
-func (o *Snapshot) GetVolumeSize() int32 {
+func (o *Snapshot) GetVolumeSize() int64 {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.VolumeSize
@@ -346,9 +346,9 @@ func (o *Snapshot) GetVolumeSize() int32 {
 
 // GetVolumeSizeOk returns a tuple with the VolumeSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Snapshot) GetVolumeSizeOk() (int32, bool) {
+func (o *Snapshot) GetVolumeSizeOk() (int64, bool) {
 	if o == nil || o.VolumeSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.VolumeSize, true
@@ -363,8 +363,8 @@ func (o *Snapshot) HasVolumeSize() bool {
 	return false
 }
 
-// SetVolumeSize gets a reference to the given int32 and assigns it to the VolumeSize field.
-func (o *Snapshot) SetVolumeSize(v int32) {
+// SetVolumeSize gets a reference to the given int64 and assigns it to the VolumeSize field.
+func (o *Snapshot) SetVolumeSize(v int64) {
 	o.VolumeSize = &v
 }
 

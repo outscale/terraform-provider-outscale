@@ -42,7 +42,7 @@ type FiltersVolume struct {
 	// The IDs of the volumes.
 	VolumeIds *[]string `json:"VolumeIds,omitempty"`
 	// The sizes of the volumes, in gibibytes (GiB).
-	VolumeSizes *[]int32 `json:"VolumeSizes,omitempty"`
+	VolumeSizes *[]int64 `json:"VolumeSizes,omitempty"`
 	// The states of the volumes (`creating` \\| `available` \\| `in-use` \\| `deleting` \\| `error`).
 	VolumeStates *[]string `json:"VolumeStates,omitempty"`
 	// The types of the volumes (`standard` \\| `gp2` \\| `io1`).
@@ -446,9 +446,9 @@ func (o *FiltersVolume) SetVolumeIds(v []string) {
 }
 
 // GetVolumeSizes returns the VolumeSizes field value if set, zero value otherwise.
-func (o *FiltersVolume) GetVolumeSizes() []int32 {
+func (o *FiltersVolume) GetVolumeSizes() []int64 {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.VolumeSizes
@@ -456,9 +456,9 @@ func (o *FiltersVolume) GetVolumeSizes() []int32 {
 
 // GetVolumeSizesOk returns a tuple with the VolumeSizes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVolume) GetVolumeSizesOk() ([]int32, bool) {
+func (o *FiltersVolume) GetVolumeSizesOk() ([]int64, bool) {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.VolumeSizes, true
@@ -473,8 +473,8 @@ func (o *FiltersVolume) HasVolumeSizes() bool {
 	return false
 }
 
-// SetVolumeSizes gets a reference to the given []int32 and assigns it to the VolumeSizes field.
-func (o *FiltersVolume) SetVolumeSizes(v []int32) {
+// SetVolumeSizes gets a reference to the given []int64 and assigns it to the VolumeSizes field.
+func (o *FiltersVolume) SetVolumeSizes(v []int64) {
 	o.VolumeSizes = &v
 }
 

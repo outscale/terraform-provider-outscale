@@ -18,11 +18,11 @@ import (
 // ListenerForCreation Information about the listener to create.
 type ListenerForCreation struct {
 	// The port on which the back-end VM is listening (between `1` and `65535`, both included).
-	BackendPort int32 `json:"BackendPort"`
+	BackendPort int64 `json:"BackendPort"`
 	// The protocol for routing traffic to back-end VMs (`HTTP` \\| `HTTPS` \\| `TCP` \\| `SSL` \\| `UDP`).
 	BackendProtocol *string `json:"BackendProtocol,omitempty"`
 	// The port on which the load balancer is listening (between `1` and `65535`, both included).
-	LoadBalancerPort int32 `json:"LoadBalancerPort"`
+	LoadBalancerPort int64 `json:"LoadBalancerPort"`
 	// The routing protocol (`HTTP` \\| `HTTPS` \\| `TCP` \\| `SSL` \\| `UDP`).
 	LoadBalancerProtocol string `json:"LoadBalancerProtocol"`
 	// The ID of the server certificate.
@@ -30,9 +30,9 @@ type ListenerForCreation struct {
 }
 
 // GetBackendPort returns the BackendPort field value
-func (o *ListenerForCreation) GetBackendPort() int32 {
+func (o *ListenerForCreation) GetBackendPort() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -40,7 +40,7 @@ func (o *ListenerForCreation) GetBackendPort() int32 {
 }
 
 // SetBackendPort sets field value
-func (o *ListenerForCreation) SetBackendPort(v int32) {
+func (o *ListenerForCreation) SetBackendPort(v int64) {
 	o.BackendPort = v
 }
 
@@ -78,9 +78,9 @@ func (o *ListenerForCreation) SetBackendProtocol(v string) {
 }
 
 // GetLoadBalancerPort returns the LoadBalancerPort field value
-func (o *ListenerForCreation) GetLoadBalancerPort() int32 {
+func (o *ListenerForCreation) GetLoadBalancerPort() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -88,7 +88,7 @@ func (o *ListenerForCreation) GetLoadBalancerPort() int32 {
 }
 
 // SetLoadBalancerPort sets field value
-func (o *ListenerForCreation) SetLoadBalancerPort(v int32) {
+func (o *ListenerForCreation) SetLoadBalancerPort(v int64) {
 	o.LoadBalancerPort = v
 }
 

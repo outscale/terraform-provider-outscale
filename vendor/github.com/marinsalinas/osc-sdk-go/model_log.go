@@ -20,7 +20,7 @@ type Log struct {
 	// The account ID.
 	AccountId *string `json:"AccountId,omitempty"`
 	// The duration of the call (in milliseconds).
-	CallDuration *int32 `json:"CallDuration,omitempty"`
+	CallDuration *int64 `json:"CallDuration,omitempty"`
 	// The API key used for the query.
 	QueryAccessKey *string `json:"QueryAccessKey,omitempty"`
 	// The name of the API service used by the call.
@@ -34,21 +34,21 @@ type Log struct {
 	// The query header raw.
 	QueryHeaderRaw *string `json:"QueryHeaderRaw,omitempty"`
 	// The query header size.
-	QueryHeaderSize *int32 `json:"QueryHeaderSize,omitempty"`
+	QueryHeaderSize *int64 `json:"QueryHeaderSize,omitempty"`
 	// The IP address used for the query.
 	QueryIpAddress *string `json:"QueryIpAddress,omitempty"`
 	// The query payload raw.
 	QueryPayloadRaw *string `json:"QueryPayloadRaw,omitempty"`
 	// The query payload size.
-	QueryPayloadSize *int32 `json:"QueryPayloadSize,omitempty"`
+	QueryPayloadSize *int64 `json:"QueryPayloadSize,omitempty"`
 	// The user agent used for the HTTP request.
 	QueryUserAgent *string `json:"QueryUserAgent,omitempty"`
 	// The ID provided in the response.
 	RequestId *string `json:"RequestId,omitempty"`
 	// The size of the response (in bytes).
-	ResponseSize *int32 `json:"ResponseSize,omitempty"`
+	ResponseSize *int64 `json:"ResponseSize,omitempty"`
 	// The HTTP code provided in the response.
-	ResponseStatusCode *int32 `json:"ResponseStatusCode,omitempty"`
+	ResponseStatusCode *int64 `json:"ResponseStatusCode,omitempty"`
 }
 
 // GetAccountId returns the AccountId field value if set, zero value otherwise.
@@ -85,9 +85,9 @@ func (o *Log) SetAccountId(v string) {
 }
 
 // GetCallDuration returns the CallDuration field value if set, zero value otherwise.
-func (o *Log) GetCallDuration() int32 {
+func (o *Log) GetCallDuration() int64 {
 	if o == nil || o.CallDuration == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.CallDuration
@@ -95,9 +95,9 @@ func (o *Log) GetCallDuration() int32 {
 
 // GetCallDurationOk returns a tuple with the CallDuration field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Log) GetCallDurationOk() (int32, bool) {
+func (o *Log) GetCallDurationOk() (int64, bool) {
 	if o == nil || o.CallDuration == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.CallDuration, true
@@ -112,8 +112,8 @@ func (o *Log) HasCallDuration() bool {
 	return false
 }
 
-// SetCallDuration gets a reference to the given int32 and assigns it to the CallDuration field.
-func (o *Log) SetCallDuration(v int32) {
+// SetCallDuration gets a reference to the given int64 and assigns it to the CallDuration field.
+func (o *Log) SetCallDuration(v int64) {
 	o.CallDuration = &v
 }
 
@@ -316,9 +316,9 @@ func (o *Log) SetQueryHeaderRaw(v string) {
 }
 
 // GetQueryHeaderSize returns the QueryHeaderSize field value if set, zero value otherwise.
-func (o *Log) GetQueryHeaderSize() int32 {
+func (o *Log) GetQueryHeaderSize() int64 {
 	if o == nil || o.QueryHeaderSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.QueryHeaderSize
@@ -326,9 +326,9 @@ func (o *Log) GetQueryHeaderSize() int32 {
 
 // GetQueryHeaderSizeOk returns a tuple with the QueryHeaderSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Log) GetQueryHeaderSizeOk() (int32, bool) {
+func (o *Log) GetQueryHeaderSizeOk() (int64, bool) {
 	if o == nil || o.QueryHeaderSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.QueryHeaderSize, true
@@ -343,8 +343,8 @@ func (o *Log) HasQueryHeaderSize() bool {
 	return false
 }
 
-// SetQueryHeaderSize gets a reference to the given int32 and assigns it to the QueryHeaderSize field.
-func (o *Log) SetQueryHeaderSize(v int32) {
+// SetQueryHeaderSize gets a reference to the given int64 and assigns it to the QueryHeaderSize field.
+func (o *Log) SetQueryHeaderSize(v int64) {
 	o.QueryHeaderSize = &v
 }
 
@@ -415,9 +415,9 @@ func (o *Log) SetQueryPayloadRaw(v string) {
 }
 
 // GetQueryPayloadSize returns the QueryPayloadSize field value if set, zero value otherwise.
-func (o *Log) GetQueryPayloadSize() int32 {
+func (o *Log) GetQueryPayloadSize() int64 {
 	if o == nil || o.QueryPayloadSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.QueryPayloadSize
@@ -425,9 +425,9 @@ func (o *Log) GetQueryPayloadSize() int32 {
 
 // GetQueryPayloadSizeOk returns a tuple with the QueryPayloadSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Log) GetQueryPayloadSizeOk() (int32, bool) {
+func (o *Log) GetQueryPayloadSizeOk() (int64, bool) {
 	if o == nil || o.QueryPayloadSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.QueryPayloadSize, true
@@ -442,8 +442,8 @@ func (o *Log) HasQueryPayloadSize() bool {
 	return false
 }
 
-// SetQueryPayloadSize gets a reference to the given int32 and assigns it to the QueryPayloadSize field.
-func (o *Log) SetQueryPayloadSize(v int32) {
+// SetQueryPayloadSize gets a reference to the given int64 and assigns it to the QueryPayloadSize field.
+func (o *Log) SetQueryPayloadSize(v int64) {
 	o.QueryPayloadSize = &v
 }
 
@@ -514,9 +514,9 @@ func (o *Log) SetRequestId(v string) {
 }
 
 // GetResponseSize returns the ResponseSize field value if set, zero value otherwise.
-func (o *Log) GetResponseSize() int32 {
+func (o *Log) GetResponseSize() int64 {
 	if o == nil || o.ResponseSize == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.ResponseSize
@@ -524,9 +524,9 @@ func (o *Log) GetResponseSize() int32 {
 
 // GetResponseSizeOk returns a tuple with the ResponseSize field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Log) GetResponseSizeOk() (int32, bool) {
+func (o *Log) GetResponseSizeOk() (int64, bool) {
 	if o == nil || o.ResponseSize == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.ResponseSize, true
@@ -541,15 +541,15 @@ func (o *Log) HasResponseSize() bool {
 	return false
 }
 
-// SetResponseSize gets a reference to the given int32 and assigns it to the ResponseSize field.
-func (o *Log) SetResponseSize(v int32) {
+// SetResponseSize gets a reference to the given int64 and assigns it to the ResponseSize field.
+func (o *Log) SetResponseSize(v int64) {
 	o.ResponseSize = &v
 }
 
 // GetResponseStatusCode returns the ResponseStatusCode field value if set, zero value otherwise.
-func (o *Log) GetResponseStatusCode() int32 {
+func (o *Log) GetResponseStatusCode() int64 {
 	if o == nil || o.ResponseStatusCode == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.ResponseStatusCode
@@ -557,9 +557,9 @@ func (o *Log) GetResponseStatusCode() int32 {
 
 // GetResponseStatusCodeOk returns a tuple with the ResponseStatusCode field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Log) GetResponseStatusCodeOk() (int32, bool) {
+func (o *Log) GetResponseStatusCodeOk() (int64, bool) {
 	if o == nil || o.ResponseStatusCode == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.ResponseStatusCode, true
@@ -574,8 +574,8 @@ func (o *Log) HasResponseStatusCode() bool {
 	return false
 }
 
-// SetResponseStatusCode gets a reference to the given int32 and assigns it to the ResponseStatusCode field.
-func (o *Log) SetResponseStatusCode(v int32) {
+// SetResponseStatusCode gets a reference to the given int64 and assigns it to the ResponseStatusCode field.
+func (o *Log) SetResponseStatusCode(v int64) {
 	o.ResponseStatusCode = &v
 }
 

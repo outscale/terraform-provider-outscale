@@ -18,7 +18,7 @@ import (
 // ClientGateway Information about the client gateway.
 type ClientGateway struct {
 	// An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network.
-	BgpAsn *int32 `json:"BgpAsn,omitempty"`
+	BgpAsn *int64 `json:"BgpAsn,omitempty"`
 	// The ID of the client gateway.
 	ClientGatewayId *string `json:"ClientGatewayId,omitempty"`
 	// The type of communication tunnel used by the client gateway (only `ipsec.1` is supported).
@@ -32,9 +32,9 @@ type ClientGateway struct {
 }
 
 // GetBgpAsn returns the BgpAsn field value if set, zero value otherwise.
-func (o *ClientGateway) GetBgpAsn() int32 {
+func (o *ClientGateway) GetBgpAsn() int64 {
 	if o == nil || o.BgpAsn == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.BgpAsn
@@ -42,9 +42,9 @@ func (o *ClientGateway) GetBgpAsn() int32 {
 
 // GetBgpAsnOk returns a tuple with the BgpAsn field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *ClientGateway) GetBgpAsnOk() (int32, bool) {
+func (o *ClientGateway) GetBgpAsnOk() (int64, bool) {
 	if o == nil || o.BgpAsn == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.BgpAsn, true
@@ -59,8 +59,8 @@ func (o *ClientGateway) HasBgpAsn() bool {
 	return false
 }
 
-// SetBgpAsn gets a reference to the given int32 and assigns it to the BgpAsn field.
-func (o *ClientGateway) SetBgpAsn(v int32) {
+// SetBgpAsn gets a reference to the given int64 and assigns it to the BgpAsn field.
+func (o *ClientGateway) SetBgpAsn(v int64) {
 	o.BgpAsn = &v
 }
 

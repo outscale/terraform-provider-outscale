@@ -28,7 +28,7 @@ type FiltersSnapshot struct {
 	// If `true`, lists all public volumes. If `false`, lists all private volumes.
 	PermissionsToCreateVolumeGlobalPermission *bool `json:"PermissionsToCreateVolumeGlobalPermission,omitempty"`
 	// The progresses of the snapshots, as a percentage.
-	Progresses *[]int32 `json:"Progresses,omitempty"`
+	Progresses *[]int64 `json:"Progresses,omitempty"`
 	// The IDs of the snapshots.
 	SnapshotIds *[]string `json:"SnapshotIds,omitempty"`
 	// The states of the snapshots (`in-queue` \\| `pending` \\| `completed`).
@@ -42,7 +42,7 @@ type FiltersSnapshot struct {
 	// The IDs of the volumes used to create the snapshots.
 	VolumeIds *[]string `json:"VolumeIds,omitempty"`
 	// The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
-	VolumeSizes *[]int32 `json:"VolumeSizes,omitempty"`
+	VolumeSizes *[]int64 `json:"VolumeSizes,omitempty"`
 }
 
 // GetAccountAliases returns the AccountAliases field value if set, zero value otherwise.
@@ -211,9 +211,9 @@ func (o *FiltersSnapshot) SetPermissionsToCreateVolumeGlobalPermission(v bool) {
 }
 
 // GetProgresses returns the Progresses field value if set, zero value otherwise.
-func (o *FiltersSnapshot) GetProgresses() []int32 {
+func (o *FiltersSnapshot) GetProgresses() []int64 {
 	if o == nil || o.Progresses == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.Progresses
@@ -221,9 +221,9 @@ func (o *FiltersSnapshot) GetProgresses() []int32 {
 
 // GetProgressesOk returns a tuple with the Progresses field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersSnapshot) GetProgressesOk() ([]int32, bool) {
+func (o *FiltersSnapshot) GetProgressesOk() ([]int64, bool) {
 	if o == nil || o.Progresses == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.Progresses, true
@@ -238,8 +238,8 @@ func (o *FiltersSnapshot) HasProgresses() bool {
 	return false
 }
 
-// SetProgresses gets a reference to the given []int32 and assigns it to the Progresses field.
-func (o *FiltersSnapshot) SetProgresses(v []int32) {
+// SetProgresses gets a reference to the given []int64 and assigns it to the Progresses field.
+func (o *FiltersSnapshot) SetProgresses(v []int64) {
 	o.Progresses = &v
 }
 
@@ -442,9 +442,9 @@ func (o *FiltersSnapshot) SetVolumeIds(v []string) {
 }
 
 // GetVolumeSizes returns the VolumeSizes field value if set, zero value otherwise.
-func (o *FiltersSnapshot) GetVolumeSizes() []int32 {
+func (o *FiltersSnapshot) GetVolumeSizes() []int64 {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.VolumeSizes
@@ -452,9 +452,9 @@ func (o *FiltersSnapshot) GetVolumeSizes() []int32 {
 
 // GetVolumeSizesOk returns a tuple with the VolumeSizes field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersSnapshot) GetVolumeSizesOk() ([]int32, bool) {
+func (o *FiltersSnapshot) GetVolumeSizesOk() ([]int64, bool) {
 	if o == nil || o.VolumeSizes == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.VolumeSizes, true
@@ -469,8 +469,8 @@ func (o *FiltersSnapshot) HasVolumeSizes() bool {
 	return false
 }
 
-// SetVolumeSizes gets a reference to the given []int32 and assigns it to the VolumeSizes field.
-func (o *FiltersSnapshot) SetVolumeSizes(v []int32) {
+// SetVolumeSizes gets a reference to the given []int64 and assigns it to the VolumeSizes field.
+func (o *FiltersSnapshot) SetVolumeSizes(v []int64) {
 	o.VolumeSizes = &v
 }
 

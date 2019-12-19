@@ -22,7 +22,7 @@ type CreateSecurityGroupRuleRequest struct {
 	// The direction of the flow: `Inbound` or `Outbound`. You can specify `Outbound` for Nets only.
 	Flow string `json:"Flow"`
 	// The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-	FromPortRange *int32 `json:"FromPortRange,omitempty"`
+	FromPortRange *int64 `json:"FromPortRange,omitempty"`
 	// The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
 	IpProtocol *string `json:"IpProtocol,omitempty"`
 	// The IP range for the security group rule, in CIDR notation (for example, 10.0.0.0/16).
@@ -36,7 +36,7 @@ type CreateSecurityGroupRuleRequest struct {
 	// The ID of the source security group. If you are in the Public Cloud, you can also specify the name of the source security group.
 	SecurityGroupNameToLink *string `json:"SecurityGroupNameToLink,omitempty"`
 	// The end of the port range for the TCP and UDP protocols, or an ICMP type number.
-	ToPortRange *int32 `json:"ToPortRange,omitempty"`
+	ToPortRange *int64 `json:"ToPortRange,omitempty"`
 }
 
 // GetDryRun returns the DryRun field value if set, zero value otherwise.
@@ -88,9 +88,9 @@ func (o *CreateSecurityGroupRuleRequest) SetFlow(v string) {
 }
 
 // GetFromPortRange returns the FromPortRange field value if set, zero value otherwise.
-func (o *CreateSecurityGroupRuleRequest) GetFromPortRange() int32 {
+func (o *CreateSecurityGroupRuleRequest) GetFromPortRange() int64 {
 	if o == nil || o.FromPortRange == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.FromPortRange
@@ -98,9 +98,9 @@ func (o *CreateSecurityGroupRuleRequest) GetFromPortRange() int32 {
 
 // GetFromPortRangeOk returns a tuple with the FromPortRange field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateSecurityGroupRuleRequest) GetFromPortRangeOk() (int32, bool) {
+func (o *CreateSecurityGroupRuleRequest) GetFromPortRangeOk() (int64, bool) {
 	if o == nil || o.FromPortRange == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.FromPortRange, true
@@ -115,8 +115,8 @@ func (o *CreateSecurityGroupRuleRequest) HasFromPortRange() bool {
 	return false
 }
 
-// SetFromPortRange gets a reference to the given int32 and assigns it to the FromPortRange field.
-func (o *CreateSecurityGroupRuleRequest) SetFromPortRange(v int32) {
+// SetFromPortRange gets a reference to the given int64 and assigns it to the FromPortRange field.
+func (o *CreateSecurityGroupRuleRequest) SetFromPortRange(v int64) {
 	o.FromPortRange = &v
 }
 
@@ -301,9 +301,9 @@ func (o *CreateSecurityGroupRuleRequest) SetSecurityGroupNameToLink(v string) {
 }
 
 // GetToPortRange returns the ToPortRange field value if set, zero value otherwise.
-func (o *CreateSecurityGroupRuleRequest) GetToPortRange() int32 {
+func (o *CreateSecurityGroupRuleRequest) GetToPortRange() int64 {
 	if o == nil || o.ToPortRange == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.ToPortRange
@@ -311,9 +311,9 @@ func (o *CreateSecurityGroupRuleRequest) GetToPortRange() int32 {
 
 // GetToPortRangeOk returns a tuple with the ToPortRange field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateSecurityGroupRuleRequest) GetToPortRangeOk() (int32, bool) {
+func (o *CreateSecurityGroupRuleRequest) GetToPortRangeOk() (int64, bool) {
 	if o == nil || o.ToPortRange == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.ToPortRange, true
@@ -328,8 +328,8 @@ func (o *CreateSecurityGroupRuleRequest) HasToPortRange() bool {
 	return false
 }
 
-// SetToPortRange gets a reference to the given int32 and assigns it to the ToPortRange field.
-func (o *CreateSecurityGroupRuleRequest) SetToPortRange(v int32) {
+// SetToPortRange gets a reference to the given int64 and assigns it to the ToPortRange field.
+func (o *CreateSecurityGroupRuleRequest) SetToPortRange(v int64) {
 	o.ToPortRange = &v
 }
 

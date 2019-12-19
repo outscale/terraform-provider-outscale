@@ -18,11 +18,11 @@ import (
 // Listener Information about the listener.
 type Listener struct {
 	// The port on which the back-end VM is listening (between `1` and `65535`, both included).
-	BackendPort *int32 `json:"BackendPort,omitempty"`
+	BackendPort *int64 `json:"BackendPort,omitempty"`
 	// The protocol for routing traffic to back-end VMs (`HTTP` \\| `HTTPS` \\| `TCP` \\| `SSL` \\| `UDP`).
 	BackendProtocol *string `json:"BackendProtocol,omitempty"`
 	// The port on which the load balancer is listening (between 1 and `65535`, both included).
-	LoadBalancerPort *int32 `json:"LoadBalancerPort,omitempty"`
+	LoadBalancerPort *int64 `json:"LoadBalancerPort,omitempty"`
 	// The routing protocol (`HTTP` \\| `HTTPS` \\| `TCP` \\| `SSL` \\| `UDP`).
 	LoadBalancerProtocol *string `json:"LoadBalancerProtocol,omitempty"`
 	// The names of the policies. If there are no policies enabled, the list is empty.
@@ -32,9 +32,9 @@ type Listener struct {
 }
 
 // GetBackendPort returns the BackendPort field value if set, zero value otherwise.
-func (o *Listener) GetBackendPort() int32 {
+func (o *Listener) GetBackendPort() int64 {
 	if o == nil || o.BackendPort == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.BackendPort
@@ -42,9 +42,9 @@ func (o *Listener) GetBackendPort() int32 {
 
 // GetBackendPortOk returns a tuple with the BackendPort field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Listener) GetBackendPortOk() (int32, bool) {
+func (o *Listener) GetBackendPortOk() (int64, bool) {
 	if o == nil || o.BackendPort == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.BackendPort, true
@@ -59,8 +59,8 @@ func (o *Listener) HasBackendPort() bool {
 	return false
 }
 
-// SetBackendPort gets a reference to the given int32 and assigns it to the BackendPort field.
-func (o *Listener) SetBackendPort(v int32) {
+// SetBackendPort gets a reference to the given int64 and assigns it to the BackendPort field.
+func (o *Listener) SetBackendPort(v int64) {
 	o.BackendPort = &v
 }
 
@@ -98,9 +98,9 @@ func (o *Listener) SetBackendProtocol(v string) {
 }
 
 // GetLoadBalancerPort returns the LoadBalancerPort field value if set, zero value otherwise.
-func (o *Listener) GetLoadBalancerPort() int32 {
+func (o *Listener) GetLoadBalancerPort() int64 {
 	if o == nil || o.LoadBalancerPort == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.LoadBalancerPort
@@ -108,9 +108,9 @@ func (o *Listener) GetLoadBalancerPort() int32 {
 
 // GetLoadBalancerPortOk returns a tuple with the LoadBalancerPort field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *Listener) GetLoadBalancerPortOk() (int32, bool) {
+func (o *Listener) GetLoadBalancerPortOk() (int64, bool) {
 	if o == nil || o.LoadBalancerPort == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.LoadBalancerPort, true
@@ -125,8 +125,8 @@ func (o *Listener) HasLoadBalancerPort() bool {
 	return false
 }
 
-// SetLoadBalancerPort gets a reference to the given int32 and assigns it to the LoadBalancerPort field.
-func (o *Listener) SetLoadBalancerPort(v int32) {
+// SetLoadBalancerPort gets a reference to the given int64 and assigns it to the LoadBalancerPort field.
+func (o *Listener) SetLoadBalancerPort(v int64) {
 	o.LoadBalancerPort = &v
 }
 

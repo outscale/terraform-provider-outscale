@@ -18,7 +18,7 @@ import (
 // FiltersSubnet One or more filters.
 type FiltersSubnet struct {
 	// The number of available IPs.
-	AvailableIpsCounts *[]int32 `json:"AvailableIpsCounts,omitempty"`
+	AvailableIpsCounts *[]int64 `json:"AvailableIpsCounts,omitempty"`
 	// The IP ranges in the Subnets, in CIDR notation (for example, 10.0.0.0/16).
 	IpRanges *[]string `json:"IpRanges,omitempty"`
 	// The IDs of the Nets in which the Subnets are.
@@ -32,9 +32,9 @@ type FiltersSubnet struct {
 }
 
 // GetAvailableIpsCounts returns the AvailableIpsCounts field value if set, zero value otherwise.
-func (o *FiltersSubnet) GetAvailableIpsCounts() []int32 {
+func (o *FiltersSubnet) GetAvailableIpsCounts() []int64 {
 	if o == nil || o.AvailableIpsCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.AvailableIpsCounts
@@ -42,9 +42,9 @@ func (o *FiltersSubnet) GetAvailableIpsCounts() []int32 {
 
 // GetAvailableIpsCountsOk returns a tuple with the AvailableIpsCounts field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersSubnet) GetAvailableIpsCountsOk() ([]int32, bool) {
+func (o *FiltersSubnet) GetAvailableIpsCountsOk() ([]int64, bool) {
 	if o == nil || o.AvailableIpsCounts == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.AvailableIpsCounts, true
@@ -59,8 +59,8 @@ func (o *FiltersSubnet) HasAvailableIpsCounts() bool {
 	return false
 }
 
-// SetAvailableIpsCounts gets a reference to the given []int32 and assigns it to the AvailableIpsCounts field.
-func (o *FiltersSubnet) SetAvailableIpsCounts(v []int32) {
+// SetAvailableIpsCounts gets a reference to the given []int64 and assigns it to the AvailableIpsCounts field.
+func (o *FiltersSubnet) SetAvailableIpsCounts(v []int64) {
 	o.AvailableIpsCounts = &v
 }
 

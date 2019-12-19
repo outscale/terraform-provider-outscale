@@ -20,9 +20,9 @@ type CreateVolumeRequest struct {
 	// If `true`, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
-	Iops *int32 `json:"Iops,omitempty"`
+	Iops *int64 `json:"Iops,omitempty"`
 	// The size of the volume, in gibibytes (GiB). The maximum allowed size for a volume is 14,901 GiB.
-	Size *int32 `json:"Size,omitempty"`
+	Size *int64 `json:"Size,omitempty"`
 	// The ID of the snapshot from which you want to create the volume.
 	SnapshotId *string `json:"SnapshotId,omitempty"`
 	// The Subregion in which you want to create the volume.
@@ -65,9 +65,9 @@ func (o *CreateVolumeRequest) SetDryRun(v bool) {
 }
 
 // GetIops returns the Iops field value if set, zero value otherwise.
-func (o *CreateVolumeRequest) GetIops() int32 {
+func (o *CreateVolumeRequest) GetIops() int64 {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Iops
@@ -75,9 +75,9 @@ func (o *CreateVolumeRequest) GetIops() int32 {
 
 // GetIopsOk returns a tuple with the Iops field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateVolumeRequest) GetIopsOk() (int32, bool) {
+func (o *CreateVolumeRequest) GetIopsOk() (int64, bool) {
 	if o == nil || o.Iops == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Iops, true
@@ -92,15 +92,15 @@ func (o *CreateVolumeRequest) HasIops() bool {
 	return false
 }
 
-// SetIops gets a reference to the given int32 and assigns it to the Iops field.
-func (o *CreateVolumeRequest) SetIops(v int32) {
+// SetIops gets a reference to the given int64 and assigns it to the Iops field.
+func (o *CreateVolumeRequest) SetIops(v int64) {
 	o.Iops = &v
 }
 
 // GetSize returns the Size field value if set, zero value otherwise.
-func (o *CreateVolumeRequest) GetSize() int32 {
+func (o *CreateVolumeRequest) GetSize() int64 {
 	if o == nil || o.Size == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Size
@@ -108,9 +108,9 @@ func (o *CreateVolumeRequest) GetSize() int32 {
 
 // GetSizeOk returns a tuple with the Size field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *CreateVolumeRequest) GetSizeOk() (int32, bool) {
+func (o *CreateVolumeRequest) GetSizeOk() (int64, bool) {
 	if o == nil || o.Size == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Size, true
@@ -125,8 +125,8 @@ func (o *CreateVolumeRequest) HasSize() bool {
 	return false
 }
 
-// SetSize gets a reference to the given int32 and assigns it to the Size field.
-func (o *CreateVolumeRequest) SetSize(v int32) {
+// SetSize gets a reference to the given int64 and assigns it to the Size field.
+func (o *CreateVolumeRequest) SetSize(v int64) {
 	o.Size = &v
 }
 

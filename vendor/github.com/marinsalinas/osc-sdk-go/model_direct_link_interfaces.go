@@ -20,7 +20,7 @@ type DirectLinkInterfaces struct {
 	// The account ID of the owner of the DirectLink interface.
 	AccountId *string `json:"AccountId,omitempty"`
 	// The BGP (Border Gateway Protocol) ASN (Autonomous System Number) on the customer's side of the DirectLink interface.
-	BgpAsn *int32 `json:"BgpAsn,omitempty"`
+	BgpAsn *int64 `json:"BgpAsn,omitempty"`
 	// The BGP authentication key.
 	BgpKey *string `json:"BgpKey,omitempty"`
 	// The IP address on the customer's side of the DirectLink interface.
@@ -42,7 +42,7 @@ type DirectLinkInterfaces struct {
 	// The ID of the target virtual gateway.
 	VirtualGatewayId *string `json:"VirtualGatewayId,omitempty"`
 	// The VLAN number associated with the DirectLink interface.
-	Vlan *int32 `json:"Vlan,omitempty"`
+	Vlan *int64 `json:"Vlan,omitempty"`
 }
 
 // GetAccountId returns the AccountId field value if set, zero value otherwise.
@@ -79,9 +79,9 @@ func (o *DirectLinkInterfaces) SetAccountId(v string) {
 }
 
 // GetBgpAsn returns the BgpAsn field value if set, zero value otherwise.
-func (o *DirectLinkInterfaces) GetBgpAsn() int32 {
+func (o *DirectLinkInterfaces) GetBgpAsn() int64 {
 	if o == nil || o.BgpAsn == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.BgpAsn
@@ -89,9 +89,9 @@ func (o *DirectLinkInterfaces) GetBgpAsn() int32 {
 
 // GetBgpAsnOk returns a tuple with the BgpAsn field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *DirectLinkInterfaces) GetBgpAsnOk() (int32, bool) {
+func (o *DirectLinkInterfaces) GetBgpAsnOk() (int64, bool) {
 	if o == nil || o.BgpAsn == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.BgpAsn, true
@@ -106,8 +106,8 @@ func (o *DirectLinkInterfaces) HasBgpAsn() bool {
 	return false
 }
 
-// SetBgpAsn gets a reference to the given int32 and assigns it to the BgpAsn field.
-func (o *DirectLinkInterfaces) SetBgpAsn(v int32) {
+// SetBgpAsn gets a reference to the given int64 and assigns it to the BgpAsn field.
+func (o *DirectLinkInterfaces) SetBgpAsn(v int64) {
 	o.BgpAsn = &v
 }
 
@@ -442,9 +442,9 @@ func (o *DirectLinkInterfaces) SetVirtualGatewayId(v string) {
 }
 
 // GetVlan returns the Vlan field value if set, zero value otherwise.
-func (o *DirectLinkInterfaces) GetVlan() int32 {
+func (o *DirectLinkInterfaces) GetVlan() int64 {
 	if o == nil || o.Vlan == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Vlan
@@ -452,9 +452,9 @@ func (o *DirectLinkInterfaces) GetVlan() int32 {
 
 // GetVlanOk returns a tuple with the Vlan field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *DirectLinkInterfaces) GetVlanOk() (int32, bool) {
+func (o *DirectLinkInterfaces) GetVlanOk() (int64, bool) {
 	if o == nil || o.Vlan == nil {
-		var ret int32
+		var ret int64
 		return ret, false
 	}
 	return *o.Vlan, true
@@ -469,8 +469,8 @@ func (o *DirectLinkInterfaces) HasVlan() bool {
 	return false
 }
 
-// SetVlan gets a reference to the given int32 and assigns it to the Vlan field.
-func (o *DirectLinkInterfaces) SetVlan(v int32) {
+// SetVlan gets a reference to the given int64 and assigns it to the Vlan field.
+func (o *DirectLinkInterfaces) SetVlan(v int64) {
 	o.Vlan = &v
 }
 

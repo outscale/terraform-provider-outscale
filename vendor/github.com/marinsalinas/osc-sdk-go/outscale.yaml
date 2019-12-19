@@ -45,7 +45,7 @@ components:
           type: string
         PublicationInterval:
           description: The time interval for the publication of access logs in the Object Storage Unit (OSU) bucket, in minutes. This value can be either 5 or 60 (by default, 60).
-          type: integer
+          type: long
       type: object
     ApplicationStickyCookiePolicy:
       description: Information about the stickiness policy.
@@ -151,7 +151,7 @@ components:
           type: boolean
         Iops:
           description: The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
-          type: integer
+          type: long
         SnapshotId:
           description: The ID of the snapshot used to create the volume.
           type: string
@@ -161,7 +161,7 @@ components:
             If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
 
             If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.'
-          type: integer
+          type: long
         VolumeType:
           description: 'The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 
@@ -183,7 +183,7 @@ components:
       properties:
         BgpAsn:
           description: An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network.
-          type: integer
+          type: long
         ClientGatewayId:
           description: The ID of the client gateway.
           type: string
@@ -206,7 +206,7 @@ components:
       properties:
         BgpAsn:
           description: An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network. The integer must be within the [0;4294967295] range. By default, 65000.
-          type: integer
+          type: long
         ConnectionType:
           description: The communication protocol used to establish tunnel with your client gateway (only `ipsec.1` is supported).
           type: string
@@ -766,7 +766,7 @@ components:
           type: string
         FromPortRange:
           description: The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
         IpProtocol:
           description: The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
           type: string
@@ -789,7 +789,7 @@ components:
           type: string
         ToPortRange:
           description: The end of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
       required:
       - SecurityGroupId
       - Flow
@@ -835,7 +835,7 @@ components:
           type: string
         SnapshotSize:
           description: The size of the snapshot created in your account, in gibibytes (GiB). This size must be exactly the same as the source snapshot one. The maximum allowed size is 14,901 GiB.
-          type: integer
+          type: long
         SourceRegionName:
           description: The name of the source Region, which must be the same as the Region of your account.
           type: string
@@ -950,10 +950,10 @@ components:
           type: string
         MaxVmsCount:
           description: The maximum number of VMs you want to create. If all the VMs cannot be created, the largest possible number of VMs above MinVmsCount is created.
-          type: integer
+          type: long
         MinVmsCount:
           description: The minimum number of VMs you want to create. If this number of VMs cannot be created, no VMs are created.
-          type: integer
+          type: long
         Nics:
           description: One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
           items:
@@ -1018,10 +1018,10 @@ components:
           type: boolean
         Iops:
           description: The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
-          type: integer
+          type: long
         Size:
           description: The size of the volume, in gibibytes (GiB). The maximum allowed size for a volume is 14,901 GiB.
-          type: integer
+          type: long
         SnapshotId:
           description: The ID of the snapshot from which you want to create the volume.
           type: string
@@ -1247,7 +1247,7 @@ components:
         LoadBalancerPorts:
           description: One or more port numbers of the listeners you want to delete.
           items:
-            type: integer
+            type: long
           type: array
       required:
       - LoadBalancerName
@@ -1460,7 +1460,7 @@ components:
           type: string
         FromPortRange:
           description: The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
         IpProtocol:
           description: The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
           type: string
@@ -1483,7 +1483,7 @@ components:
           type: string
         ToPortRange:
           description: The end of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
       required:
       - SecurityGroupId
       - Flow
@@ -1735,7 +1735,7 @@ components:
       properties:
         BgpAsn:
           description: The BGP (Border Gateway Protocol) ASN (Autonomous System Number) on the customer's side of the DirectLink interface.
-          type: integer
+          type: long
         BgpKey:
           description: The BGP authentication key.
           type: string
@@ -1753,7 +1753,7 @@ components:
           type: string
         Vlan:
           description: The VLAN number associated with the DirectLink interface.
-          type: integer
+          type: long
       required:
       - BgpAsn
       - DirectLinkInterfaceName
@@ -1768,7 +1768,7 @@ components:
           type: string
         BgpAsn:
           description: The BGP (Border Gateway Protocol) ASN (Autonomous System Number) on the customer's side of the DirectLink interface.
-          type: integer
+          type: long
         BgpKey:
           description: The BGP authentication key.
           type: string
@@ -1801,7 +1801,7 @@ components:
           type: string
         Vlan:
           description: The VLAN number associated with the DirectLink interface.
-          type: integer
+          type: long
       type: object
     ErrorResponse:
       properties:
@@ -1869,7 +1869,7 @@ components:
         ResponseStatusCodes:
           description: One or more HTTP codes provided by the responses.
           items:
-            type: integer
+            type: long
           type: array
       type: object
     FiltersClientGateway:
@@ -1878,7 +1878,7 @@ components:
         BgpAsns:
           description: The Border Gateway Protocol (BGP) Autonomous System Numbers (ASNs) of the connections.
           items:
-            type: integer
+            type: long
           type: array
         ClientGatewayIds:
           description: The IDs of the client gateways.
@@ -2071,7 +2071,7 @@ components:
         BlockDeviceMappingVolumeSizes:
           description: The sizes of the volumes, in gibibytes (GiB).
           items:
-            type: integer
+            type: long
           type: array
         BlockDeviceMappingVolumeTypes:
           description: The types of volumes (`standard` \| `gp2` \| `io1`).
@@ -2376,7 +2376,7 @@ components:
         LinkNicSortNumbers:
           description: The device numbers the NICs are attached to.
           items:
-            type: integer
+            type: long
           type: array
         LinkNicVmIds:
           description: The IDs of the VMs the NICs are attached to.
@@ -2642,7 +2642,7 @@ components:
         Progresses:
           description: The progresses of the snapshots, as a percentage.
           items:
-            type: integer
+            type: long
           type: array
         SnapshotIds:
           description: The IDs of the snapshots.
@@ -2677,7 +2677,7 @@ components:
         VolumeSizes:
           description: The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
           items:
-            type: integer
+            type: long
           type: array
       type: object
     FiltersSubnet:
@@ -2686,7 +2686,7 @@ components:
         AvailableIpsCounts:
           description: The number of available IPs.
           items:
-            type: integer
+            type: long
           type: array
         IpRanges:
           description: The IP ranges in the Subnets, in CIDR notation (for example, 10.0.0.0/16).
@@ -2824,12 +2824,12 @@ components:
         MemorySizes:
           description: The amounts of memory, in bytes.
           items:
-            type: integer
+            type: long
           type: array
         VcoreCounts:
           description: The numbers of vCores.
           items:
-            type: integer
+            type: long
           type: array
         VmTypeNames:
           description: The names of the VM types. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
@@ -2839,12 +2839,12 @@ components:
         VolumeCounts:
           description: The maximum number of ephemeral storage disks.
           items:
-            type: integer
+            type: long
           type: array
         VolumeSizes:
           description: The size of one ephemeral storage disk, in gibibytes (GiB).
           items:
-            type: integer
+            type: long
           type: array
       type: object
     FiltersVmsState:
@@ -2932,7 +2932,7 @@ components:
         VolumeSizes:
           description: The sizes of the volumes, in gibibytes (GiB).
           items:
-            type: integer
+            type: long
           type: array
         VolumeStates:
           description: The states of the volumes (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
@@ -2951,7 +2951,7 @@ components:
         BgpAsns:
           description: The Border Gateway Protocol (BGP) Autonomous System Numbers (ASNs) of the connections.
           items:
-            type: integer
+            type: long
           type: array
         ClientGatewayIds:
           description: The IDs of the client gateways.
@@ -3017,41 +3017,41 @@ components:
           type: string
         MaxCpu:
           description: The maximum number of VM vCores that the fGPU is compatible with.
-          type: integer
+          type: long
         MaxRam:
           description: The maximum amount of VM memory that the fGPU is compatible with.
-          type: integer
+          type: long
         ModelName:
           description: The model of fGPU.
           type: string
         VRam:
           description: The amount of video RAM (VRAM) of the fGPU.
-          type: integer
+          type: long
       type: object
     HealthCheck:
       description: Information about the health check configuration.
       properties:
         CheckInterval:
           description: The number of seconds between two pings (between `5` and `600` both included).
-          type: integer
+          type: long
         HealthyThreshold:
           description: The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-          type: integer
+          type: long
         Path:
           description: The path for HTTP or HTTPS requests.
           type: string
         Port:
           description: The port number (between `1` and `65535`, both included).
-          type: integer
+          type: long
         Protocol:
           description: The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
           type: string
         Timeout:
           description: The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-          type: integer
+          type: long
         UnhealthyThreshold:
           description: The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
-          type: integer
+          type: long
       required:
       - CheckInterval
       - HealthyThreshold
@@ -3134,7 +3134,7 @@ components:
           $ref: '#/components/schemas/OsuExport'
         Progress:
           description: The progress of the OMI export task, as a percentage.
-          type: integer
+          type: long
         State:
           description: The state of the OMI export task (`pending/queued` \| `pending` \| `completed` \| `failed` \| `cancelled`).
           type: string
@@ -3240,7 +3240,7 @@ components:
           type: boolean
         DeviceNumber:
           description: The device index for the NIC attachment (between 1 and 7, both included).
-          type: integer
+          type: long
         LinkNicId:
           description: The ID of the NIC to attach.
           type: string
@@ -3262,7 +3262,7 @@ components:
           type: boolean
         DeviceNumber:
           description: The device index for the NIC attachment (between 1 and 7, both included).
-          type: integer
+          type: long
         LinkNicId:
           description: The ID of the NIC to attach.
           type: string
@@ -3274,7 +3274,7 @@ components:
       properties:
         DeviceNumber:
           description: The index of the VM device for the NIC attachment (between 1 and 7, both included).
-          type: integer
+          type: long
         DryRun:
           description: If `true`, checks whether you have the required permissions to perform the action.
           type: boolean
@@ -3325,7 +3325,7 @@ components:
           type: array
         SecondaryPrivateIpCount:
           description: The number of secondary private IP addresses to assign to the NIC.
-          type: integer
+          type: long
       required:
       - NicId
       type: object
@@ -3516,13 +3516,13 @@ components:
       properties:
         BackendPort:
           description: The port on which the back-end VM is listening (between `1` and `65535`, both included).
-          type: integer
+          type: long
         BackendProtocol:
           description: The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
           type: string
         LoadBalancerPort:
           description: The port on which the load balancer is listening (between 1 and `65535`, both included).
-          type: integer
+          type: long
         LoadBalancerProtocol:
           description: The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
           type: string
@@ -3540,13 +3540,13 @@ components:
       properties:
         BackendPort:
           description: The port on which the back-end VM is listening (between `1` and `65535`, both included).
-          type: integer
+          type: long
         BackendProtocol:
           description: The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
           type: string
         LoadBalancerPort:
           description: The port on which the load balancer is listening (between `1` and `65535`, both included).
-          type: integer
+          type: long
         LoadBalancerProtocol:
           description: The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
           type: string
@@ -3649,7 +3649,7 @@ components:
           type: string
         CallDuration:
           description: The duration of the call (in milliseconds).
-          type: integer
+          type: long
         QueryAccessKey:
           description: The API key used for the query.
           type: string
@@ -3671,7 +3671,7 @@ components:
           type: string
         QueryHeaderSize:
           description: The query header size.
-          type: integer
+          type: long
         QueryIpAddress:
           description: The IP address used for the query.
           type: string
@@ -3680,7 +3680,7 @@ components:
           type: string
         QueryPayloadSize:
           description: The query payload size.
-          type: integer
+          type: long
         QueryUserAgent:
           description: The user agent used for the HTTP request.
           type: string
@@ -3689,10 +3689,10 @@ components:
           type: string
         ResponseSize:
           description: The size of the response (in bytes).
-          type: integer
+          type: long
         ResponseStatusCode:
           description: The HTTP code provided in the response.
-          type: integer
+          type: long
       type: object
     MaintenanceEvent:
       description: Information about the maintenance event.
@@ -3890,7 +3890,7 @@ components:
           type: string
         DeviceNumber:
           description: The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
-          type: integer
+          type: long
         NicId:
           description: The ID of the NIC, if you are attaching an existing NIC when creating a VM.
           type: string
@@ -3901,7 +3901,7 @@ components:
           type: array
         SecondaryPrivateIpCount:
           description: The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `PrivateIps` parameter.
-          type: integer
+          type: long
         SecurityGroupIds:
           description: One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
           items:
@@ -4121,7 +4121,7 @@ components:
           type: string
         MaxValue:
           description: The maximum value of the quota for the 3DS OUTSCALE user account (if there is no limit, `0`).
-          type: integer
+          type: long
         Name:
           description: The unique name of the quota.
           type: string
@@ -4133,7 +4133,7 @@ components:
           type: string
         UsedValue:
           description: The limit value currently used by the 3DS OUTSCALE user account.
-          type: integer
+          type: long
       type: object
     QuotaTypes:
       description: One or more quotas.
@@ -4181,7 +4181,7 @@ components:
           type: string
         ResultsPerPage:
           description: The maximum number of items returned in a single page. By default, 100.
-          type: integer
+          type: long
         With:
           $ref: '#/components/schemas/With'
       type: object
@@ -5087,7 +5087,7 @@ components:
       properties:
         FromPortRange:
           description: The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
         IpProtocol:
           description: The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
           type: string
@@ -5108,7 +5108,7 @@ components:
           type: array
         ToPortRange:
           description: The end of the port range for the TCP and UDP protocols, or an ICMP type number.
-          type: integer
+          type: long
       type: object
     SecurityGroupsMember:
       description: Information about the member of a security group.
@@ -5154,7 +5154,7 @@ components:
           $ref: '#/components/schemas/PermissionsOnResource'
         Progress:
           description: The progress of the snapshot, as a percentage.
-          type: integer
+          type: long
         SnapshotId:
           description: The ID of the snapshot.
           type: string
@@ -5171,7 +5171,7 @@ components:
           type: string
         VolumeSize:
           description: The size of the volume used to create the snapshot, in gibibytes (GiB).
-          type: integer
+          type: long
       type: object
     SnapshotExportTask:
       description: Information about the snapshot export task.
@@ -5183,7 +5183,7 @@ components:
           $ref: '#/components/schemas/OsuExport'
         Progress:
           description: The progress of the snapshot export task, as a percentage.
-          type: integer
+          type: long
         SnapshotId:
           description: The ID of the snapshot to be exported.
           type: string
@@ -5288,7 +5288,7 @@ components:
       properties:
         AvailableIpsCount:
           description: The number of available IP addresses in the Subnets.
-          type: integer
+          type: long
         IpRange:
           description: The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
           type: string
@@ -5544,7 +5544,7 @@ components:
           type: string
         LoadBalancerPort:
           description: The port on which the load balancer is listening (between `1` and `65535`, both included).
-          type: integer
+          type: long
         PolicyNames:
           description: The list of policy names (must contain all the policies to be enabled).
           items:
@@ -5864,7 +5864,7 @@ components:
           type: string
         LaunchNumber:
           description: The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
-          type: integer
+          type: long
         NetId:
           description: The ID of the Net in which the VM is running.
           type: string
@@ -5978,23 +5978,23 @@ components:
           type: boolean
         MaxPrivateIps:
           description: The maximum number of private IP addresses per network interface card (NIC).
-          type: integer
+          type: long
         MemorySize:
           description: The amount of memory, in gibibytes.
           format: float
           type: number
         VcoreCount:
           description: The number of vCores.
-          type: integer
+          type: long
         VmTypeName:
           description: The name of the VM type.
           type: string
         VolumeCount:
           description: The maximum number of ephemeral storage disks.
-          type: integer
+          type: long
         VolumeSize:
           description: The size of one ephemeral storage disk, in gibibytes (GiB).
-          type: integer
+          type: long
       type: object
     Volume:
       description: Information about the volume.
@@ -6005,7 +6005,7 @@ components:
             - For `io1` volumes, the number of provisioned IOPS<br />
 
             - For `gp2` volumes, the baseline performance of the volume'
-          type: integer
+          type: long
         LinkedVolumes:
           description: Information about your volume attachment.
           items:
@@ -6013,7 +6013,7 @@ components:
           type: array
         Size:
           description: The size of the volume, in gibibytes (GiB).
-          type: integer
+          type: long
         SnapshotId:
           description: The snapshot from which the volume was created.
           type: string

@@ -18,7 +18,7 @@ import (
 // FiltersVpnConnection One or more filters.
 type FiltersVpnConnection struct {
 	// The Border Gateway Protocol (BGP) Autonomous System Numbers (ASNs) of the connections.
-	BgpAsns *[]int32 `json:"BgpAsns,omitempty"`
+	BgpAsns *[]int64 `json:"BgpAsns,omitempty"`
 	// The IDs of the client gateways.
 	ClientGatewayIds *[]string `json:"ClientGatewayIds,omitempty"`
 	// The types of the VPN connections (only `ipsec.1` is supported).
@@ -36,9 +36,9 @@ type FiltersVpnConnection struct {
 }
 
 // GetBgpAsns returns the BgpAsns field value if set, zero value otherwise.
-func (o *FiltersVpnConnection) GetBgpAsns() []int32 {
+func (o *FiltersVpnConnection) GetBgpAsns() []int64 {
 	if o == nil || o.BgpAsns == nil {
-		var ret []int32
+		var ret []int64
 		return ret
 	}
 	return *o.BgpAsns
@@ -46,9 +46,9 @@ func (o *FiltersVpnConnection) GetBgpAsns() []int32 {
 
 // GetBgpAsnsOk returns a tuple with the BgpAsns field value if set, zero value otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersVpnConnection) GetBgpAsnsOk() ([]int32, bool) {
+func (o *FiltersVpnConnection) GetBgpAsnsOk() ([]int64, bool) {
 	if o == nil || o.BgpAsns == nil {
-		var ret []int32
+		var ret []int64
 		return ret, false
 	}
 	return *o.BgpAsns, true
@@ -63,8 +63,8 @@ func (o *FiltersVpnConnection) HasBgpAsns() bool {
 	return false
 }
 
-// SetBgpAsns gets a reference to the given []int32 and assigns it to the BgpAsns field.
-func (o *FiltersVpnConnection) SetBgpAsns(v []int32) {
+// SetBgpAsns gets a reference to the given []int64 and assigns it to the BgpAsns field.
+func (o *FiltersVpnConnection) SetBgpAsns(v []int64) {
 	o.BgpAsns = &v
 }
 

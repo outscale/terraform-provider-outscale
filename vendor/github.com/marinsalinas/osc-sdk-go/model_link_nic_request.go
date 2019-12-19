@@ -18,7 +18,7 @@ import (
 // LinkNicRequest struct for LinkNicRequest
 type LinkNicRequest struct {
 	// The index of the VM device for the NIC attachment (between 1 and 7, both included).
-	DeviceNumber int32 `json:"DeviceNumber"`
+	DeviceNumber int64 `json:"DeviceNumber"`
 	// If `true`, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the NIC you want to attach.
@@ -28,9 +28,9 @@ type LinkNicRequest struct {
 }
 
 // GetDeviceNumber returns the DeviceNumber field value
-func (o *LinkNicRequest) GetDeviceNumber() int32 {
+func (o *LinkNicRequest) GetDeviceNumber() int64 {
 	if o == nil {
-		var ret int32
+		var ret int64
 		return ret
 	}
 
@@ -38,7 +38,7 @@ func (o *LinkNicRequest) GetDeviceNumber() int32 {
 }
 
 // SetDeviceNumber sets field value
-func (o *LinkNicRequest) SetDeviceNumber(v int32) {
+func (o *LinkNicRequest) SetDeviceNumber(v int64) {
 	o.DeviceNumber = v
 }
 
