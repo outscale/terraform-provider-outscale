@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_nics" "nics01" {
+  filter {
+    name   = "nic_ids"
+    values = ["eni-12345678", "eni-12345679"]
+  }    
+}
+
+
 ```
 
 ## Argument Reference

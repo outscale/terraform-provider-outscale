@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_security_group" "security_group01" {
+  filter {
+    name   = "security_group_ids"
+    values = ["sg-12345678"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

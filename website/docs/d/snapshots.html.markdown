@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_snapshots" "snapshots01" {
+  filter {
+    name   = "snapshot_ids"
+    values = ["snap-12345678", "snap-12345679"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

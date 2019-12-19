@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_vm" "vm_01" {
+  filter {
+    name   = "vm_ids"
+    values = ["i-12345678"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

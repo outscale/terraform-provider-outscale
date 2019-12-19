@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_keypairs" "keypairs01" {
+	filter {
+		name   = "keypair_names"
+		values = ["terraform-keypair-01", "terraform-keypair-02"]
+	}
+}
+
+
 ```
 
 ## Argument Reference

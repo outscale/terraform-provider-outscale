@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_images" "images01" {
+  filter {
+    name   = "image_ids"
+    values = ["ami-12345678", "ami-12345679"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

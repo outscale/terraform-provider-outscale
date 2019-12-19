@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_net" "net01" {
+  filter {
+    name   = "net_ids"
+    values = ["vpc-12345678"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

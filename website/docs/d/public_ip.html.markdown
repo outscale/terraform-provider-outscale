@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_public_ip" "public_ip01" {
+  filter {
+    name   = "public_ips"
+    values = ["111.11.111.1"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

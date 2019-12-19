@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_subnets" "subnets01" {
+  filter {
+    name   = "net_ids"
+    values = ["vpc-12345678", "vpc-12345679"]
+  }
+}
+
+
 ```
 
 ## Argument Reference

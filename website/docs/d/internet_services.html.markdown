@@ -15,7 +15,15 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_internet_services" "internet_services01" {
+  filter {
+    name   = "internet_service_ids"
+    values = ["igw-12345678", "igw-12345679"]
+  }
+}
+
+
 ```
 
 ## Argument Reference
