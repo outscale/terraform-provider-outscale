@@ -11,47 +11,6 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceInstancSetHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-
-	if m["ami_launch_index"] != nil {
-		buf.WriteString(fmt.Sprintf("%d-", m["ami_launch_index"].(int)))
-	}
-
-	if m["architecture"] != nil {
-		buf.WriteString(fmt.Sprintf("%s-", m["architecture"].(string)))
-	}
-	if m["ip_address"] != nil {
-		buf.WriteString(fmt.Sprintf("%s-", m["architecture"].(string)))
-	}
-
-	return hashcode.String(buf.String())
-
-}
-
-func getPrivateIPAddressSet(privateIPs []*fcu.InstancePrivateIpAddress) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	if privateIPs != nil {
-		for _, p := range privateIPs {
-			inter := make(map[string]interface{})
-			assoc := make(map[string]interface{})
-
-			if p.Association != nil {
-				assoc["ip_owner_id"] = *p.Association.IpOwnerId
-				assoc["public_dns_name"] = *p.Association.PublicDnsName
-				assoc["public_ip"] = *p.Association.PublicIp
-			}
-
-			inter["association"] = assoc
-			inter["private_dns_name"] = *p.Primary
-			inter["private_ip_address"] = *p.PrivateIpAddress
-
-		}
-	}
-	return res
-}
-
 func getPlacement(placement *fcu.Placement) map[string]interface{} {
 	res := map[string]interface{}{}
 

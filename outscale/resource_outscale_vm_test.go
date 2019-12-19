@@ -315,6 +315,12 @@ func testAccCheckOSCAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	return testAccCheckOSCAPIVMExistsWithProviders(n, i, &providers)
 }
 
+func getVMsFilterByVMID(vmID string) oapi.FiltersVm {
+	return oapi.FiltersVm{
+		VmIds: []string{vmID},
+	}
+}
+
 func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

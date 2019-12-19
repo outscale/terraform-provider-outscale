@@ -524,44 +524,6 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func findOAPIResourceSecurityGroup(conn *oapi.Client, id string) (*oapi.SecurityGroup, *string, error) {
-	req := oapi.ReadSecurityGroupsRequest{
-		Filters: oapi.FiltersSecurityGroup{
-			SecurityGroupIds: []string{id},
-		},
-	}
-
-	var err error
-	var resp *oapi.POST_ReadSecurityGroupsResponses
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSecurityGroups(req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if err, ok := err.(awserr.Error); ok && err.Code() == "InvalidGroup.NotFound" {
-		return nil, nil, oapiSecurityGroupNotFound{id, nil}
-	}
-	if err != nil {
-		return nil, nil, err
-	}
-	if resp == nil {
-		return nil, nil, oapiSecurityGroupNotFound{id, nil}
-	}
-	if len(resp.OK.SecurityGroups) != 1 {
-		return nil, nil, nil //oapiSecurityGroupNotFound{id, resp.OK.SecurityGroups}
-	}
-
-	return &resp.OK.SecurityGroups[0], &resp.OK.ResponseContext.RequestId, nil
-}
-
 func findOSCAPIResourceSecurityGroup(conn *oscgo.APIClient, id string) (*oscgo.SecurityGroup, *string, error) {
 	req := oscgo.ReadSecurityGroupsRequest{
 		Filters: &oscgo.FiltersSecurityGroup{
@@ -603,65 +565,6 @@ func expandOAPISecurityGroupRules(d *schema.ResourceData, sg *oscgo.SecurityGrou
 	perms := make([]oscgo.SecurityGroupRule, len(ippems))
 
 	return expandOSCAPIIPPerm(d, sg, perms, ippems)
-}
-
-func expandOAPIIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, perms []oapi.SecurityGroupRule, ippems []interface{}) ([]oapi.SecurityGroupRule, error) {
-
-	for k, ip := range ippems {
-		perm := oapi.SecurityGroupRule{}
-		v := ip.(map[string]interface{})
-
-		perm.FromPortRange = int64(v["from_port_range"].(int))
-		perm.ToPortRange = int64(v["to_port_range"].(int))
-		protocol := protocolForValue(v["ip_protocol"].(string))
-		perm.IpProtocol = protocol
-
-		members := v["security_groups_members"].([]interface{})
-
-		if len(members) > 0 {
-			perm.SecurityGroupsMembers = make([]oapi.SecurityGroupsMember, len(members))
-			for i, v := range members {
-				member := v.(map[string]interface{})
-
-				perm.SecurityGroupsMembers[i] = oapi.SecurityGroupsMember{
-					AccountId:         member["account_id"].(string),
-					SecurityGroupId:   member["security_group_id"].(string),
-					SecurityGroupName: member["security_group_name"].(string),
-				}
-			}
-		}
-
-		if raw, ok := v["ip_ranges"]; ok {
-			list := raw.([]interface{})
-			if len(list) > 0 {
-				perm.IpRanges = make([]string, len(list))
-				for i, v := range list {
-					cidrIP, ok := v.(string)
-					if !ok {
-						return nil, fmt.Errorf("empty element found in ip_ranges - consider using the compact function")
-					}
-					perm.IpRanges[i] = cidrIP
-				}
-			}
-		}
-
-		if raw, ok := v["service_ids"]; ok {
-			list := raw.([]interface{})
-			if len(list) > 0 {
-				perm.PrefixListIds = make([]string, len(list))
-				for i, v := range list {
-					prefixListID, ok := v.(string)
-					if !ok {
-						return nil, fmt.Errorf("empty element found in service_ids - consider using the compact function")
-					}
-					perm.PrefixListIds[i] = prefixListID
-				}
-			}
-		}
-
-		perms[k] = perm
-	}
-	return perms, nil
 }
 
 func expandOSCAPIIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, perms []oscgo.SecurityGroupRule, ippems []interface{}) ([]oscgo.SecurityGroupRule, error) {

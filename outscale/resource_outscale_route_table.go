@@ -3,16 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func resourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -258,73 +258,6 @@ func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, route
 	}
 }
 
-func setOAPIRoutes(rt []oapi.Route) []map[string]interface{} {
-	route := make([]map[string]interface{}, len(rt))
-	if len(rt) > 0 {
-		for k, r := range rt {
-			m := make(map[string]interface{})
-			if r.CreationMethod != "" {
-				m["creation_method"] = r.CreationMethod
-			}
-			if r.DestinationIpRange != "" {
-				m["destination_ip_range"] = r.DestinationIpRange
-			}
-			if r.DestinationServiceId != "" {
-				m["destination_service_id"] = r.DestinationServiceId
-			}
-			if r.GatewayId != "" {
-				m["gateway_id"] = r.GatewayId
-			}
-			if r.NetAccessPointId != "" {
-				m["net_access_point_id"] = r.NetAccessPointId
-			}
-			if r.NetPeeringId != "" {
-				m["net_peering_id"] = r.NetPeeringId
-			}
-			if r.VmId != "" {
-				m["vm_id"] = r.VmId
-			}
-			if r.NicId != "" {
-				m["nic_id"] = r.NicId
-			}
-			if r.State != "" {
-				m["state"] = r.State
-			}
-			if r.VmAccountId != "" {
-				m["vm_account_id"] = r.VmAccountId
-			}
-			route[k] = m
-		}
-	}
-
-	return route
-}
-
-func setOAPILinkRouteTables(rt []oapi.LinkRouteTable) []map[string]interface{} {
-	linkRouteTables := make([]map[string]interface{}, len(rt))
-	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
-	if len(rt) > 0 {
-		for k, r := range rt {
-			m := make(map[string]interface{})
-			if r.Main {
-				m["main"] = r.Main
-			}
-			if r.RouteTableId != "" {
-				m["route_table_id"] = r.RouteTableId
-			}
-			if r.LinkRouteTableId != "" {
-				m["link_route_table_id"] = r.LinkRouteTableId
-			}
-			if r.SubnetId != "" {
-				m["subnet_id"] = r.SubnetId
-			}
-			linkRouteTables[k] = m
-		}
-	}
-
-	return linkRouteTables
-}
-
 func getOAPIRouteTableSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"net_id": {
@@ -436,21 +369,6 @@ func getOAPIRouteTableSchema() map[string]*schema.Schema {
 			},
 		},
 	}
-}
-
-func setOAPIPropagatingVirtualGateways(vg []oapi.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
-	propagatingVGWs = make([]map[string]interface{}, len(vg))
-
-	if len(vg) > 0 {
-		for k, vgw := range vg {
-			m := make(map[string]interface{})
-			if vgw.VirtualGatewayId != "" {
-				m["virtual_gateway_id"] = vgw.VirtualGatewayId
-			}
-			propagatingVGWs[k] = m
-		}
-	}
-	return propagatingVGWs
 }
 
 func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {

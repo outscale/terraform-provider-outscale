@@ -3,18 +3,18 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
@@ -75,21 +75,6 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-
-		if conf.Attachment != nil {
-			return fmt.Errorf("expected attachment to be nil")
-		}
-
-		if *conf.AvailabilityZone != "eu-west-2a" {
-			return fmt.Errorf("expected availability_zone to be eu-west-2a, but was %s", *conf.AvailabilityZone)
-		}
-
-		return nil
-	}
 }
 
 func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {

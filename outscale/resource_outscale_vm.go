@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 
-	"github.com/outscale/osc-go/oapi"
 	"github.com/spf13/cast"
 
 	"github.com/antihax/optional"
@@ -1091,12 +1090,6 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 		return err
 	}
 	return nil
-}
-
-func getVMsFilterByVMID(vmID string) oapi.FiltersVm {
-	return oapi.FiltersVm{
-		VmIds: []string{vmID},
-	}
 }
 
 func getOSCVMsFilterByVMID(vmID string) *oscgo.FiltersVm {

@@ -11,7 +11,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -230,43 +229,6 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules()))
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
-}
-
-func flattenOAPIIPPermissions(p []*fcu.IpPermission) []map[string]interface{} {
-	ips := make([]map[string]interface{}, len(p))
-
-	for k, v := range p {
-		ip := make(map[string]interface{})
-		ip["from_port_range"] = v.FromPort
-		ip["ip_protocol"] = v.IpProtocol
-		ip["to_port_range"] = v.ToPort
-
-		ipr := make([]map[string]interface{}, len(v.IpRanges))
-		for i, v := range v.IpRanges {
-			ipr[i] = map[string]interface{}{"cidr_ip": v.CidrIp}
-		}
-		ip["ip_ranges"] = ipr
-
-		prx := make([]map[string]interface{}, len(v.PrefixListIds))
-		for i, v := range v.PrefixListIds {
-			prx[i] = map[string]interface{}{"prefix_list_id": v.PrefixListId}
-		}
-		ip["prefix_list_ids"] = prx
-
-		grp := make([]map[string]interface{}, len(v.UserIdGroupPairs))
-		for i, v := range v.UserIdGroupPairs {
-			grp[i] = map[string]interface{}{
-				"account_id":          v.UserId,
-				"security_group_name": v.GroupName,
-				"security_group_id":   v.GroupId,
-			}
-		}
-		ip["security_groups_members"] = grp
-
-		ips[k] = ip
-	}
-
-	return ips
 }
 
 func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oscgo.FiltersSecurityGroup {
