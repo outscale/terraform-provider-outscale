@@ -30,7 +30,7 @@ data "outscale_nat_services" "nat_services01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `nat_service_ids` - (Optional) The IDs of the NAT services.
   * `net_ids` - (Optional) The IDs of the Nets in which the NAT services are.
   * `states` - (Optional) The states of the NAT services (`pending` \| `available` \| `deleting` \| `deleted`).

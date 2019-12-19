@@ -30,7 +30,7 @@ data "outscale_nets" "nets01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `dhcp_options_set_ids` - (Optional) The IDs of the DHCP options sets.
   * `ip_ranges` - (Optional) The IP ranges for the Nets, in CIDR notation (for example, 10.0.0.0/16).
   * `net_ids` - (Optional) The IDs of the Nets.

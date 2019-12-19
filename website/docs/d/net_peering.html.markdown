@@ -30,7 +30,7 @@ data "outscale_net_peering" "net_peering01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `accepter_net_account_ids` - (Optional) The account IDs of the owners of the peer Nets.
   * `accepter_net_ip_ranges` - (Optional) The IP ranges of the peer Nets, in CIDR notation (for example, 10.0.0.0/24).
   * `accepter_net_net_ids` - (Optional) The IDs of the peer Nets.

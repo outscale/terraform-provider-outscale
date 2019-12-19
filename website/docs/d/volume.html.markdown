@@ -30,7 +30,7 @@ data "outscale_volume" "outscale_volume01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `creation_dates` - (Optional) The dates and times at which the volumes were created.
   * `link_volume_delete_on_vm_deletion` - (Optional) Indicates whether the volumes are deleted when terminating the VMs.
   * `link_volume_device_names` - (Optional) The VM device names.

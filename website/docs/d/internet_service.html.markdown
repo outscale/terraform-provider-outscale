@@ -30,7 +30,7 @@ data "outscale_internet_service" "internet_service01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `internet_service_ids` - (Optional) The IDs of the Internet services.
   * `tag_keys` - (Optional) The keys of the tags associated with the Internet services.
   * `tag_values` - (Optional) The values of the tags associated with the Internet services.

@@ -30,7 +30,7 @@ data "outscale_keypairs" "keypairs01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `keypair_fingerprints` - (Optional) The fingerprints of the keypairs.
   * `keypair_names` - (Optional) The names of the keypairs.
 

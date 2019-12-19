@@ -30,7 +30,7 @@ data "outscale_route_tables" "route_tables01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `link_route_table_link_route_table_ids` - (Optional) The IDs of the associations between the route tables and the Subnets.
   * `link_subnet_ids` - (Optional) The IDs of the Subnets involved in the associations.
   * `net_ids` - (Optional) The IDs of the Nets for the route tables.

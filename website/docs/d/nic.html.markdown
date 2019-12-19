@@ -30,7 +30,7 @@ data "outscale_nic" "nic01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `link_nic_sort_numbers` - (Optional) The device numbers the NICs are attached to.
   * `link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
   * `nic_ids` - (Optional) The IDs of the NICs.

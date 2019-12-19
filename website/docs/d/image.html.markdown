@@ -30,7 +30,7 @@ data "outscale_image" "image01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `account_aliases` - (Optional) The account aliases of the owners of the OMIs.
   * `account_ids` - (Optional) The account IDs of the owners of the OMIs. By default, all the OMIs for which you have launch permissions are described.
   * `architectures` - (Optional) The architectures of the OMIs (`i386` \| `x86_64`).

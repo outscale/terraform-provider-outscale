@@ -30,7 +30,7 @@ data "outscale_subnets" "subnets01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `available_ips_counts` - (Optional) The number of available IPs.
   * `ip_ranges` - (Optional) The IP ranges in the Subnets, in CIDR notation (for example, 10.0.0.0/16).
   * `net_ids` - (Optional) The IDs of the Nets in which the Subnets are.

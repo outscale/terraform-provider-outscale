@@ -30,7 +30,7 @@ data "outscale_public_ips" "public_ips01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `link_public_ip_ids` - (Optional) The IDs representing the associations of EIPs with VMs or NICs.
   * `nic_account_ids` - (Optional) The account IDs of the owners of the NICs.
   * `nic_ids` - (Optional) The IDs of the NICs.

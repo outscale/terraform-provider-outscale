@@ -30,7 +30,7 @@ data "outscale_security_group" "security_group01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `account_ids` - (Optional) The account IDs of the owners of the security groups.
   * `security_group_ids` - (Optional) The IDs of the security groups.
   * `security_group_names` - (Optional) The names of the security groups.

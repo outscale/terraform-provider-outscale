@@ -30,7 +30,7 @@ data "outscale_snapshots" "snapshots01" {
 
 The following arguments are supported:
 
-* `filters` - One or more filters.
+* `filter` - One or more filters.
   * `account_aliases` - (Optional) The account aliases of the owners of the snapshots.
   * `account_ids` - (Optional) The account IDs of the owners of the snapshots.
   * `descriptions` - (Optional) The descriptions of the snapshots.
