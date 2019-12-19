@@ -49,9 +49,23 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 						},
 						"security_groups_members": {
 							Type:     schema.TypeSet,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeMap},
-							Set:      schema.HashString,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"to_port_range": {
 							Type:     schema.TypeInt,
@@ -88,9 +102,23 @@ func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
 						},
 						"security_groups_members": {
 							Type:     schema.TypeSet,
-							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-							Set:      schema.HashString,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"security_group_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
 						},
 						"to_port_range": {
 							Type:     schema.TypeInt,
