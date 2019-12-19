@@ -98,7 +98,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"nat_services_id": {
+									"nat_service_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
