@@ -124,9 +124,8 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	sourceRegionName := d.Get("source_region_name").(string)
 
 	request := oscgo.CreateSnapshotRequest{
-		Description:      &description,
-		FileLocation:     &fileLocation,
-		SourceRegionName: &sourceRegionName,
+		Description:  &description,
+		FileLocation: &fileLocation,
 	}
 
 	if ok {
@@ -134,11 +133,16 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if sok && snp.(int) > 0 {
-		request.SetSnapshotSize(int32(snp.(int)))
+		log.Printf("[DEBUG] Snapshot Size %d", snp.(int))
+
+		request.SetSnapshotSize(int64(snp.(int)))
 	}
 
 	if sourceok {
 		request.SetSourceSnapshotId(source.(string))
+	}
+	if sourceRegionName != "" {
+		request.SetSourceRegionName(sourceRegionName)
 	}
 
 	var resp oscgo.CreateSnapshotResponse

@@ -109,7 +109,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		SubregionName: d.Get("subregion_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
-		request.SetSize(int32(value.(int)))
+		request.SetSize(int64(value.(int)))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
 		request.SetSnapshotId(value.(string))
@@ -125,7 +125,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if t != "io1" && iops > 0 {
 		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
-		request.SetIops(int32(iops))
+		request.SetIops(int64(iops))
 	}
 
 	var resp oscgo.CreateVolumeResponse

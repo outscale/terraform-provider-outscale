@@ -201,7 +201,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
 
 		case "progresses":
-			filter.SetProgresses(utils.StringSliceToInt32Slice(values))
+			filter.SetProgresses(utils.StringSliceToInt64Slice(values))
 
 		case "snapshot_ids":
 			filter.SetSnapshotIds(values)
@@ -222,7 +222,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			filter.SetVolumeIds(values)
 
 		case "volume_sizes":
-			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
+			filter.SetVolumeSizes(utils.StringSliceToInt64Slice(values))
 
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

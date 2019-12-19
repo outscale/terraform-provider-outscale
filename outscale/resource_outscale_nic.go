@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/openlyinc/pointy"
 )
 
 // Creates a network interface in the specified subnet
@@ -524,7 +525,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			na := na.([]interface{})[0].(map[string]interface{})
 			di := na["device_number"].(int)
 			ar := oscgo.LinkNicRequest{
-				DeviceNumber: int32(di),
+				DeviceNumber: int64(di),
 				VmId:         na["instance"].(string),
 				NicId:        d.Id(),
 			}
@@ -648,7 +649,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				dif := int32(diff)
 				input := oscgo.LinkPrivateIpsRequest{
 					NicId:                   d.Id(),
-					SecondaryPrivateIpCount: &dif,
+					SecondaryPrivateIpCount: pointy.Int64(int64(dif)),
 				}
 				// _, err := conn.VM.AssignPrivateIpAddresses(input)
 

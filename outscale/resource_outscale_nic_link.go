@@ -70,7 +70,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	nicID := d.Get("nic_id").(string)
 
 	opts := oscgo.LinkNicRequest{
-		DeviceNumber: int32(di),
+		DeviceNumber: int64(di),
 		VmId:         iID,
 		NicId:        nicID,
 	}

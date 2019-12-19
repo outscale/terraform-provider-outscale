@@ -211,8 +211,8 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	isOneRule := ipProtocol != ""
 	expandedRules := []oscgo.SecurityGroupRule{}
 	singleExpandedRule := []oscgo.SecurityGroupRule{}
-	fPortRange := int32(fromPortRange)
-	tPortRange := int32(toPortRange)
+	fPortRange := int64(fromPortRange)
+	tPortRange := int64(toPortRange)
 	if !isOneRule {
 		expandedRules, err = expandOAPISecurityGroupRules(d, sg)
 		if err != nil {
@@ -391,8 +391,8 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	} else {
-		fPortRange := int32(fromPortRange)
-		tPortRange := int32(toPortRange)
+		fPortRange := int64(fromPortRange)
+		tPortRange := int64(toPortRange)
 		singleExpandedRule = []oscgo.SecurityGroupRule{
 			{
 				IpRanges:      &[]string{ipRange},
@@ -486,8 +486,8 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	log.Printf("[DEBUG] Revoking security group %#v %s rule: %#v",
 		sgID, flow, expandedRules)
 
-	fPortRange := int32(fromPortRange)
-	tPortRange := int32(toPortRange)
+	fPortRange := int64(fromPortRange)
+	tPortRange := int64(toPortRange)
 	req := oscgo.DeleteSecurityGroupRuleRequest{
 		SecurityGroupId:                sg.GetSecurityGroupId(),
 		Rules:                          &expandedRules,
@@ -670,8 +670,8 @@ func expandOSCAPIIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, perms [
 		perm := oscgo.SecurityGroupRule{}
 		v := ip.(map[string]interface{})
 
-		perm.SetFromPortRange(int32(v["from_port_range"].(int)))
-		perm.SetToPortRange(int32(v["to_port_range"].(int)))
+		perm.SetFromPortRange(int64(v["from_port_range"].(int)))
+		perm.SetToPortRange(int64(v["to_port_range"].(int)))
 		protocol := protocolForValue(v["ip_protocol"].(string))
 		perm.SetIpProtocol(protocol)
 

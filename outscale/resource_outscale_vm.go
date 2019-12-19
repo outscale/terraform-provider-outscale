@@ -821,8 +821,8 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
 		BsuOptimized:       oscgo.PtrBool(d.Get("bsu_optimized").(bool)),
-		MaxVmsCount:        oscgo.PtrInt32(1),
-		MinVmsCount:        oscgo.PtrInt32(1),
+		MaxVmsCount:        oscgo.PtrInt64(1),
+		MinVmsCount:        oscgo.PtrInt64(1),
 		ImageId:            d.Get("image_id").(string),
 		Placement:          expandPlacement(d),
 	}
@@ -910,13 +910,13 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 	}
 
 	if iops, ok := bsu["iops"]; ok {
-		bsuToCreate.SetIops(cast.ToInt32(iops))
+		bsuToCreate.SetIops(cast.ToInt64(iops))
 	}
 	if snapshotID, ok := bsu["snapshot_id"]; ok {
 		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
 	}
 	if volumeSize, ok := bsu["volume_size"]; ok {
-		bsuToCreate.SetVolumeSize(cast.ToInt32(volumeSize))
+		bsuToCreate.SetVolumeSize(cast.ToInt64(volumeSize))
 	}
 	if volumeType, ok := bsu["volume_type"]; ok {
 		bsuToCreate.SetVolumeType(cast.ToString(volumeType))
@@ -935,7 +935,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		nic := v.(map[string]interface{})
 
 		ni := oscgo.NicForVmCreation{
-			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
+			DeviceNumber: oscgo.PtrInt64(int64(nic["device_number"].(int))),
 		}
 
 		if v := nic["nic_id"].(string); v != "" {
@@ -943,7 +943,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		}
 
 		if v := nic["secondary_private_ip_count"].(int); v > 0 {
-			ni.SetSecondaryPrivateIpCount(int32(v))
+			ni.SetSecondaryPrivateIpCount(int64(v))
 		}
 
 		if d, dOk := nic["delete_on_vm_deletion"]; dOk {

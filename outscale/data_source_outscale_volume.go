@@ -241,7 +241,7 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 		case "volume_ids":
 			filters.SetVolumeIds(filterValues)
 		case "volume_sizes":
-			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
+			filters.SetVolumeSizes(utils.StringSliceToInt64Slice(filterValues))
 		case "volume_types":
 			filters.SetVolumeTypes(filterValues)
 		default:

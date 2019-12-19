@@ -98,8 +98,8 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup
 		}
 
 		if p == nil {
-			fromPortRange := int32(443)
-			toPortRange := int32(443)
+			fromPortRange := int64(443)
+			toPortRange := int64(443)
 			ipProtocol := "tcp"
 			p = &oscgo.SecurityGroupRule{
 				FromPortRange: &fromPortRange,
