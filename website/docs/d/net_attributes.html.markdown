@@ -15,14 +15,18 @@ For more information on this resource actions, see the [API documentation](https
 ## Example Usage
 
 ```hcl
-[exemple de code]
+
+data "outscale_net_attributes" "net_attributes01" {
+  net_id = "vpc-12345678"
+}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `dhcp_options_set_id` - (Required) The ID of the DHCP options set (or `default` if you want to associate the default one).
 * `net_id` - (Required) The ID of the Net.
 
 ## Attribute Reference

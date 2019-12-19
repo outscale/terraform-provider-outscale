@@ -33,7 +33,6 @@ resource "outscale_net_attributes" "net_attributes01" {
 The following arguments are supported:
 
 * `dhcp_options_set_id` - (Required) The ID of the DHCP options set (or `default` if you want to associate the default one).  
--> 	**You need to retrieve the DHCP options set ID through one of 3DS OUTSCALE APIs or interfaces, they cannot be managed with the provider at the moment.**
 * `net_id` - (Required) The ID of the Net.
 
 ## Attribute Reference
