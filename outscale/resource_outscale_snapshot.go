@@ -72,13 +72,12 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
 						"global_permission": &schema.Schema{
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
