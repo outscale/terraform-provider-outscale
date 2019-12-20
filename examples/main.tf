@@ -626,20 +626,20 @@ resource "outscale_volume" "volume034" {
   size           = 40
 }
 
-resource "outscale_snapshot" "snapshot038" {
+resource "outscale_snapshot" "snapshot034" {
   volume_id = outscale_volume.volume034.volume_id
 }
 
-resource "outscale_snapshot_attributes" "snapshot_attributes038" {
-  snapshot_id = outscale_snapshot.snapshot038.snapshot_id
+resource "outscale_snapshot_attributes" "snapshot_attributes034" {
+  snapshot_id = outscale_snapshot.snapshot034.snapshot_id
   permissions_to_create_volume_additions {
     account_ids = ["<ACCOUNTNUMBER>"]
   }
 }
 
-data "outscale_snapshot" "snapshot038d" {
-  depends_on  = [outscale_snapshot_attributes.snapshot_attributes038]
-  snapshot_id = outscale_snapshot.snapshot038.snapshot_id
+data "outscale_snapshot" "snapshot034d" {
+  depends_on  = [outscale_snapshot_attributes.snapshot_attributes034]
+  snapshot_id = outscale_snapshot.snapshot034.snapshot_id
 }
 
 #------------------------------------------------------------------------
