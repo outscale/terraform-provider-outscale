@@ -42,7 +42,7 @@ The following attributes are exported:
 
 * `vms` - Information about one or more VMs.
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
-  * `block_device_mappings` - The block device mapping of the VM.
+  * `block_device_mappings_created` - The block device mapping of the VM.
     * `bsu` - Information about the created BSU volume.
       * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
       * `link_date` - The time and date of attachment of the volume to the VM.
