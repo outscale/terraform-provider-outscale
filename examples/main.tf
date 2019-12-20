@@ -660,13 +660,13 @@ resource "outscale_nic" "nic035" {
   subnet_id = outscale_subnet.subnet035.subnet_id
 }
 
-resource "outscale_nic_private_ip" "outscale_nic_private_ip35" {
-    nic_id      = outscale_nic.outscale_nic035.nic_id
+resource "outscale_nic_private_ip" "nic_private_ip35" {
+    nic_id      = outscale_nic.nic035.nic_id
     private_ips = ["10.0.0.67"]
 }
 
-resource "outscale_nic_private_ip" "outscale_nic_private_ip35-2" {
-    nic_id      = outscale_nic.outscale_nic035.nic_id
+resource "outscale_nic_private_ip" "nic_private_ip35-2" {
+    nic_id      = outscale_nic.nic035.nic_id
     secondary_private_ip_count = 2
  }
 
