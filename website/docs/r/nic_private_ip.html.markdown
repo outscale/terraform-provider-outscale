@@ -1,59 +1,56 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nic_private_ip"
-sidebar_current: "docs-outscale-resource-nic-private-ip"
+page_title: "3DS OUTSCALE: outscale_nic_private_ip"
+sidebar_current: "outscale-nic-private-ip"
 description: |-
-  Assigns one or more secondary private IP addresses to a specified network interface.
+  [Manages a NIC private IP.]
 ---
 
-# outscale_nic_private_ip
+# outscale_nic_private_ip Resource
 
-Assigns one or more secondary private IP addresses to a specified network interface.
-This action is only available in a VPC.
-The private IP addresses to be assigned can be added individually using the PrivateIpAddress.N parameter, or you can specify the number of private IP addresses to be automatically chosen within the subnet range using the SecondaryPrivateIpAddressCount parameter. You can specify only one of these two parameters. If none of these parameters are specified, a private IP address is chosen within the subnet range.
+Manages a NIC private IP.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs#AboutFNIs-FNIsAttributes).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkprivateips).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "outscale_instance" {
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+
+#resource "outscale_net" "net01" {
+#	ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "subnet01" {
+#	subregion_name = "${var.region}a"
+#	ip_range       = "10.0.0.0/16"
+#	net_id         = outscale_net.net01.net_id
+#}
+
+#resource "outscale_nic" "nic01" {
+#	subnet_id = outscale_subnet.subnet01.subnet_id
+#}
+
+resource "outscale_nic_private_ip" "nic_private_ip01" {
+	nic_id      = outscale_nic.nic01.nic_id
+	private_ips = ["10.0.12.34"]
+}
+resource "outscale_nic_private_ip" "nic_private_ip02" {
+	nic_id                     = outscale_nic.nic01.nic_id
+	secondary_private_ip_count = 2
 }
 
-resource "outscale_lin" "outscale_lin" {
-    cidr_block          = "10.0.0.0/16"
-}
 
-resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-    network_interface_id    = "${outscale_nic.outscale_nic.id}"
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `network_interface_id` - The ID of the network interface you want to attach.
-* `allow_reassignment` - (Optional) If set to true, allows an IP address that is already assigned   to another network interface in the same subnet to be assigned to the network interface you     specified.
-* `secondary_private_ip_address_count` - (Optional) The number of secondary private IP addresses to be automatically assigned to the network interface, chosen within the subnet range.
-* `private_ip_address.N` - The secondary private IP address you want to assign to the network interface.
+* `allow_relink` - (Optional) If `true`, allows an IP address that is already assigned to another NIC in the same Subnet to be assigned to the NIC you specified.
+* `nic_id` - (Required) The ID of the NIC.
+* `private_ips` - (Optional) The secondary private IP address or addresses you want to assign to the NIC within the IP address range of the Subnet.
+* `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses to assign to the NIC.
 
-## Attributes
+## Attribute Reference
 
-* `network_interface_id` - The ID of the network interface you want to attach.
-* `allow_reassignment` - (Optional) If set to true, allows an IP address that is already assigned   to another network interface in the same subnet to be assigned to the network interface you     specified.
-* `secondary_private_ip_address_count` - (Optional) The number of secondary private IP addresses to be automatically assigned to the network interface, chosen within the subnet range.
-* `private_ip_address.N` - The secondary private IP address you want to assign to the network interface.
-
-[See detailed information.](http://docs.outscale.com/api_fcu/operations/Action_AssignPrivateIpAddresses_get.html#_api_fcu-action_assignprivateipaddresses_get)
+No attribute is exported.

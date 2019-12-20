@@ -1,40 +1,50 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_keypair"
-sidebar_current: "docs-outscale-resource-keypair"
+page_title: "3DS OUTSCALE: outscale_keypair"
+sidebar_current: "outscale-keypair"
 description: |-
-  Provides an Outscale keypair resource. This allows keypairs to be created, deleted, described and imported.
+  [Manages a keypair.]
 ---
 
-# outscale_keypair
+# outscale_keypair Resource
 
-Provides an Outscale keypair resource. This allows keypairs to be created, deleted,
-described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
+Manages a keypair.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Keypairs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-keypair).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "tf-acc-key-pair"
+
+# Create a keypair
+
+resource "outscale_keypair" "keypair01" {
+	keypair_name = "terraform-keypair-create"
 }
+
+# Import a keypair
+
+resource "outscale_keypair" "keypair02" {
+	keypair_name = "terraform-keypair-import"
+	public_key   = file("<PATH>")
+}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `key_name` - (Required) A unique name for the keypair, with a maximum length of 255 ASCII characters.
+* `keypair_name` - (Required) A unique name for the keypair, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
+* `public_key` - (Optional) The public key. If you are not using command line tools, it must be encoded in Base64.
 
-See detailed information in [Outscale Keypair](http://docs.outscale.com/api_fcu/operations/Action_CreateKeyPair_get.html#_api_fcu-action_createkeypair_get).
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `key_fingerprint` - The SHA-1 digest of the DER encoded private key.
-* `key_material` - The private key.
-* `key_name` - A unique name for the keypair.
-* `request_id` - The ID of the request.
-
-See detailed information in [Describe KeyPair](http://docs.outscale.com/api_fcu/definitions/KeyPairInfo.html#_api_fcu-keypairinfo).
+* `keypair` - Information about the created keypair.
+  * `keypair_fingerprint` - If you create a keypair, the SHA-1 digest of the DER encoded private key.<br />
+If you import a keypair, the MD5 public key fingerprint as specified in section 4 of RFC 4716.
+  * `keypair_name` - The name of the keypair.
+  * `private_key` - The private key.

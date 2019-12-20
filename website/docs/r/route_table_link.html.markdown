@@ -1,51 +1,54 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_route_table_link"
-sidebar_current: "docs-outscale-resource-route-table-link"
+page_title: "3DS OUTSCALE: outscale_route_table_link"
+sidebar_current: "outscale-route-table-link"
 description: |-
-	Associates a subnet with a route table
+  [Manages a route table link.]
 ---
 
-# outscale_route_table_link
+# outscale_route_table_link Resource
 
-Associates a subnet with a route table
+Manages a route table link.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkroutetable).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
+
+#resource "outscale_net" "net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "subnet01" {
+#  net_id   = outscale_net.net01.net_id
+#  ip_range = "10.0.0.0/18"
+#}
+
+#resource "outscale_route_table" "route_table01" {
+#  net_id = outscale_net.net01.net_id
+#}
+
+resource "outscale_route_table_link" "route_table_link01" {
+	subnet_id      = outscale_subnet.subnet01.subnet_id
+	route_table_id = outscale_route_table.route_table01.route_table_id
 }
 
-resource "outscale_subnet" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-	cidr_block = "10.1.1.0/24"
-}
 
-resource "outscale_route_table" "foo" {
-	vpc_id = "${outscale_lin.foo.id}"
-}
-
-resource "outscale_route_table_link" "foo" {
-	route_table_id = "${outscale_route_table.foo.id}"
-	subnet_id = "${outscale_subnet.foo.id}"
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `route_table_id` -	(Required)	The ID of the route table.
-* `subnet_id` -	(Required)	The ID of the subnet.
+* `route_table_id` - (Required) The ID of the route table.
+* `subnet_id` - (Required) The ID of the Subnet.
 
-## Attributes
+## Attribute Reference
 
-* `route_table_id` - The ID of the route table.	true	string
-* `subnet_id` -	The ID of the subnet.	true	string
-* `association_id` -	The ID of the route table association.	false	string
-* `request_id` -	The ID of the request	false	string
+The following attributes are exported:
 
-
-
-See detailed information in [Associates Route Table Link](http://docs.outscale.com/api_fcu/operations/Action_AssociateRouteTable_get.html#_api_fcu-action_associateroutetable_get).
+* `link_route_table_id` - The ID of the route table association.
+* `main` - If true, the route table is the main one.
+* `route_table_id` - The ID of the route table.
+* `subnet_id` - The ID of the subnet.

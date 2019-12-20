@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_vm_state"
 sidebar_current: "outscale-vm-state"
 description: |-
-  [Provides information about a specific VM state.]
+  [Provides information about VM states.]
 ---
 
 # outscale_vm_state Data Source
 
-Provides information about a specific VM state.
+Provides information about VM states.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instance+Lifecycle).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#readvmsstate).
 
@@ -16,10 +16,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-data "outscale_vm_state" "vm_state01" {
+data "outscale_vm_states" "vm_states01" {
   filter {
     name   = "vm_ids"
-    values = ["i-12345678"]
+    values = ["i-12345678", "i-12345679"]
   }
 }
 

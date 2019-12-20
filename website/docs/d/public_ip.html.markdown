@@ -1,65 +1,60 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_public_ip"
-sidebar_current: "docs-outscale-datasource-public-ip"
+page_title: "3DS OUTSCALE: outscale_public_ip"
+sidebar_current: "outscale-public-ip"
 description: |-
-  Describes one External IP address allocated to your account.
+  [Provides information about a specific public IP.]
 ---
 
-# outscale_public_ip
+# outscale_public_ip Data Source
 
-By default, this action returns information about your EIP: available, associated with an instance or network interface, or used for a NAT gateway.
+Provides information about a specific public IP.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-publicip).
+
 ## Example Usage
 
 ```hcl
 
-data "outscale_public_ip" "by_allocation_id" {
-  allocation_id = "${outscale_public_ip.test.allocation_id}"
+data "outscale_public_ip" "public_ip01" {
+  filter {
+    name   = "public_ips"
+    values = ["111.11.111.1"]
+  }
 }
-data "outscale_public_ip" "by_public_ip" {
-  public_ip = "${outscale_public_ip.test.public_ip}"
-}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `allocation_id` - (Optional) One allocation IDs.
-* `filter` - (Optional) One or more filters.
-* `public_ip` - (Optional) One External IP address.
+* `filter` - One or more filters.
+  * `link_public_ip_ids` - (Optional) The IDs representing the associations of EIPs with VMs or NICs.
+  * `nic_account_ids` - (Optional) The account IDs of the owners of the NICs.
+  * `nic_ids` - (Optional) The IDs of the NICs.
+  * `placements` - (Optional) Whether the EIPs are for use in the public Cloud or in a Net.
+  * `private_ips` - (Optional) The private IP addresses associated with the EIPs.
+  * `public_ip_ids` - (Optional) The IDs of the External IP addresses (EIPs).
+  * `public_ips` - (Optional) The External IP addresses (EIPs).
+  * `tag_keys` - (Optional) The keys of the tags associated with the EIPs.
+  * `tag_values` - (Optional) The values of the tags associated with the EIPs.
+  * `tags` - (Optional) The key/value combination of the tags associated with the EIPs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `vm_ids` - (Optional) The IDs of the VMs.
 
-
-See detailed information in [Outscale datasource Public IP](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `domain` Whether the EIP is for use in the public Cloud or in a VPC.
-* `instance-id` The ID of the instance the address is associated with (if any).
-* `public-ip` The EIP.
-* `allocation-id` The allocation ID for the EIP.
-* `association-id` The association ID for the EIP.
-* `network-interface-id` The ID of the network interface the address is associated with (if any).
-* `network-interface-owner-id` The account ID of the owner.
-* `private-ip-address` The private IP address associated with the EIP.
-
-
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `allocation_id` - The ID of the allocation.
-* `association_id` - The association ID for the EIP.
-* `domain` - Whether the EIP is for use in the public Cloud or in a VPC.
-* `instance_id` - The ID of the instance the address is associated with (if any).
-* `network_interface_id` - The ID of the network interface the address is associated with (if any).
-* `network_interface_owner_id` - The account ID of the owner.
-* `private_ip_address` - The private IP address associated with the EIP.
-* `public_ip` - The EIP.
-* `request_id` - The ID of the request.
-
-See detailed information in [Describe datasources Public IP](http://docs.outscale.com/api_fcu/operations/Action_DescribeAddresses_get.html#_api_fcu-action_describeaddresses_get).
+* `public_ips` - Information about one or more EIPs.
+  * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+  * `nic_account_id` - The account ID of the owner of the NIC.
+  * `nic_id` - The ID of the NIC the EIP is associated with (if any).
+  * `private_ip` - The private IP address associated with the EIP.
+  * `public_ip` - The External IP address (EIP) associated with the NAT service.
+  * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+  * `tags` - One or more tags associated with the EIP.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `vm_id` - The ID of the VM the External IP (EIP) is associated with (if any).

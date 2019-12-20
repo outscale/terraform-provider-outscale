@@ -1,69 +1,95 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nic"
-sidebar_current: "docs-outscale-resource-nic"
+page_title: "3DS OUTSCALE: outscale_nic"
+sidebar_current: "outscale-nic"
 description: |-
-  Creates a network interface in the specified subnet.
+  [Manages a NIC.]
 ---
 
-# outscale_nic
+# outscale_nic Resource
 
-Creates a network interface in the specified subnet.
+Manages a NIC.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-nic).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_lin" "outscale_lin" {
-    count = 1
 
-    cidr_block = "10.0.0.0/16"
+#resource "outscale_net" "net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "subnet01" {
+#  subregion_name = "eu-west-2a"
+#  ip_range       = "10.0.0.0/18"
+#  net_id         = outscale_net.net01.net_id
+#}
+
+resource "outscale_nic" "nic01" {
+  subnet_id = outscale_subnet.subnet01.subnet_id
 }
 
-resource "outscale_subnet" "outscale_subnet" {
-    count = 1
 
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    count = 1
-
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `subnet_id` - The ID of the subnet
-* `description` - (Optional) A description of the network interface.
-* `private_ip_adress` - (Optional) The private IP address of the network interface.
-    This IP address must be in the CIDR of the subnet you specify with the SubnetId attribute.
-    If you do not specify a private IP address, Outscale selects one in the CIDR of the subnet.
-* `security_group_id.N` - One or more security group IDs for the network interface.
+* `description` - (Optional) A description for the NIC.
+* `private_ips` - (Optional) The primary private IP address for the NIC.  
+  This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.  
+  If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
+  * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
+  * `private_ip` - (Optional) The private IP address of the NIC.
+* `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
+* `subnet_id` - (Required) The ID of the Subnet in which you want to create the NIC.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
-## Attributes
+## Attribute Reference
 
-* `association` - The association information for an External IP associated with the network interface.
-* `attachment` - The network interface attachment.
-* `availability_zone` - The Availability Zone in which the network interface is located.
-* `description` - A description of the network interface.
-* `group_set` - One or more security groups for the network interface.
-* `mac_address` - The MAC address.
-* `network_interface_id` - The ID of the network interface.
-* `owner_id` - The account ID of the owner of the network interface.
-* `private_dns_name` - The name of the private DNS.
-* `private_ip_address` - The private IP addresses assigned to the network interface, in the CIDR of its subnet.
-* `private_ip_addresses_set.N` - Information about one or more private IP addresses assigned to the network interface.
-* `requester_id` - The ID of the requester that launched the instances on your behalf.
-* `requester_managed` - If true, the network interface is being managed by Outscale.
-* `source_dest_check` - If true, the traffic to or from the instance is validated.
-* `status` - The state of the network interface (available | attaching | in-use | detaching).
-* `subnet_id` - The ID of the subnet.
-* `tag_set.N` - One or more tags associated with the network interface.
-* `vpc_id` - The ID of the VPC.
+The following attributes are exported:
 
-[See detailed information](http://docs.outscale.com/api_fcu/operations/Action_CreateNetworkInterface_get.html#_api_fcu-action_createnetworkinterface_get).
+* `nic` - Information about the NIC.
+  * `account_id` - The account ID of the owner of the NIC.
+  * `description` - The description of the NIC.
+  * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+  * `link_nic` - Information about the NIC attachment.
+    * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+    * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+    * `link_nic_id` - The ID of the NIC to attach.
+    * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
+    * `vm_account_id` - The account ID of the owner of the VM.
+    * `vm_id` - The ID of the VM.
+  * `link_public_ip` - Information about the EIP association.
+    * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+    * `public_dns_name` - The name of the public DNS.
+    * `public_ip` - The External IP address (EIP) associated with the NIC.
+    * `public_ip_account_id` - The account ID of the owner of the EIP.
+    * `public_ip_id` - The allocation ID of the EIP.
+  * `mac_address` - The Media Access Control (MAC) address of the NIC.
+  * `net_id` - The ID of the Net for the NIC.
+  * `nic_id` - The ID of the NIC.
+  * `private_dns_name` - The name of the private DNS.
+  * `private_ips` - The private IP addresses of the NIC.
+    * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+    * `link_public_ip` - Information about the EIP association.
+      * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+      * `public_dns_name` - The name of the public DNS.
+      * `public_ip` - The External IP address (EIP) associated with the NIC.
+      * `public_ip_account_id` - The account ID of the owner of the EIP.
+      * `public_ip_id` - The allocation ID of the EIP.
+    * `private_dns_name` - The name of the private DNS.
+    * `private_ip` - The private IP address of the NIC.
+  * `security_groups` - One or more IDs of security groups for the NIC.
+    * `security_group_id` - The ID of the security group.
+    * `security_group_name` - (Public Cloud only) The name of the security group.
+  * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
+  * `subnet_id` - The ID of the Subnet.
+  * `subregion_name` - The Subregion in which the NIC is located.
+  * `tags` - One or more tags associated with the NIC.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

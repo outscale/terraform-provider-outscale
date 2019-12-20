@@ -1,53 +1,65 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_volume"
-sidebar_current: "docs-outscale-resource-volume"
+page_title: "3DS OUTSCALE: outscale_volume"
+sidebar_current: "outscale-volume"
 description: |-
-  Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported.
+  [Manages a volume.]
 ---
 
-# outscale_vm
+# outscale_volume Resource
 
-  Provides an Outscale Volume resource. This allows volumes to be created, deleted, described and imported. Instances also support [provisioning](/docs/provisioners/index.html).
+Manages a volume.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-volume).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_volume" "test" {
-  availability_zone = "eu-west-2a"
-  volume_type = "gp2"
-  size = 1
-  tags {
-    Name = "tf-acc-test-ebs-volume-test"
-  }
+
+resource "outscale_volume" "volume01" {
+  subregion_name = "${var.region}a"
+  size           = 10
+  iops           = 100
+  volume_type    = "io1"
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `availability_zone` - (Required) The Availability Zone in which you want to create the volume.
-* `iops` - (Optional) The number of I/O operations per second, with a maximum ratio of 30 IOPS/GiB (only for io1 volumes).
-* `size` - (Optional) The size of the volume, in Gibibytes (GiB). The maximum allowed size for a volume is 14,901 GiB.
+* `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
+* `size` - (Optional) The size of the volume, in gibibytes (GiB). The maximum allowed size for a volume is 14,901 GiB.
 * `snapshot_id` - (Optional) The ID of the snapshot from which you want to create the volume.
-* `volume_type` - (Optional) The type of volume you want to create (io1 | gp2 | standard | sc1 | st1).
-
-See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
-
-## Attributes Reference
+* `subregion_name` - (Required) The Subregion in which you want to create the volume.
+* `volume_type` - (Optional) The type of volume you want to create (`io1` \| `gp2` \| `standard`). If not specified, a `standard` volume is created.<br />
+For more information about volume types, see [Volume Types and IOPS](https://wiki.outscale.net/display/EN/About+Volumes#AboutVolumes-VolumeTypesVolumeTypesandIOPS).
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
+## Attribute Reference
 
 The following attributes are exported:
 
-* `attachment_set` - Information about your volume attachment.
-* `availability_zone` - The Availability Zone where the volume is.
-* `iops` - The number of I/O operations per second (only for io1 and gp2 volumes).
-* `size` - The size of the volume, in Gibibytes (GiB).
-* `snapshot_id` - The ID of the snapshot from which the volume was created.
-* `status` - The state of the volume (creating| available| in-use| deleting| error).
-* `tag_set` - One or more tags associated with the volume.
-* `volume_id` - The ID of the volume.
-* `volume_type` - The type of the volume (standard | gp2 | io1 | sc1 | st1).
-
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/definitions/Volume.html#_api_fcu-volume).
+* `volume` - Information about the volume.
+  * `iops` - The number of I/O operations per second (IOPS):  
+    For `io1` volumes, the number of provisioned IOPS.  
+    For `gp2` volumes, the baseline performance of the volume.
+  * `linked_volumes` - Information about your volume attachment.
+    * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+    * `device_name` - The name of the device.
+    * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
+    * `vm_id` - The ID of the VM.
+    * `volume_id` - The ID of the volume.
+  * `size` - The size of the volume, in gibibytes (GiB).
+  * `snapshot_id` - The snapshot from which the volume was created.
+  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `subregion_name` - The Subregion in which the volume was created.
+  * `tags` - One or more tags associated with the volume.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `volume_id` - The ID of the volume.
+  * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).

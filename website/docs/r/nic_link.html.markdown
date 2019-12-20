@@ -1,59 +1,61 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nic_link"
-sidebar_current: "docs-outscale-resource-nic-link"
+page_title: "3DS OUTSCALE: outscale_nic_link"
+sidebar_current: "outscale-nic-link"
 description: |-
-  Attaches a network interface to an instance.
+  [Manages a NIC link.]
 ---
 
-# outscale_nic_link
+# outscale_nic_link Resource
 
-Attaches a network interface to an instance.
-The interface and the instance must be in the same Availability Zone (AZ). The instance can be either running or stopped. The network interface must be in the available state.
+Manages a NIC link.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs#AboutFNIs-FNIAttachmentFNIsAttachmenttoInstances).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linknic).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "outscale_instance" {
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+
+#resource "outscale_net" "net01" {
+#	ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "subnet01" {
+#	subregion_name = "${var.region}a"
+#	ip_range       = "10.0.0.0/16"
+#	net_id         = outscale_net.net01.net_id
+#}
+
+#resource "outscale_vm" "vm01" {
+#	image_id     = var.image_id
+#	vm_type      = var.vm_type
+#	keypair_name = var.keypair_name
+#	subnet_id    = outscale_subnet.subnet01.subnet_id
+#}
+
+#resource "outscale_nic" "nic01" {
+#	subnet_id = outscale_subnet.subnet01.subnet_id
+#}
+
+resource "outscale_nic_link" "nic_link01" {
+	device_number = "1"
+	vm_id         = outscale_vm.vm01.vm_id
+	nic_id        = outscale_nic.nic01.nic_id
 }
 
-resource "outscale_lin" "outscale_lin" {
-    cidr_block          = "10.0.0.0/16"
-}
 
-resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_nic_link" "outscale_nic_link" {
-    device_index            = "1"
-    instance_id             = "${outscale_vm.outscale_instance.id}"
-    network_interface_id    = "${outscale_nic.outscale_nic.id}"
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `device_index` - The index of the instance device for the network interface (between 1 and 7, both included).
-* `instance_id` - The ID of the instance to which you want to attach the network interface.
-* `network_interface_id` - (Optional) The ID of the network interface you want to attach.
+* `device_number` - (Required) The index of the VM device for the NIC attachment (between 1 and 7, both included).
+* `nic_id` - (Required) The ID of the NIC you want to attach.
+* `vm_id` - (Required) The ID of the VM to which you want to attach the NIC.
 
-## Attributes
+## Attribute Reference
 
-* `nic_sort_number` - The instance device index of the network interface attachment.
-* `vm_id` - The ID of the instance.
-* `nic_id` - The ID of the network interface.
-* `request_id` - The ID of tue request.
+The following attributes are exported:
 
-[See detailed information](http://docs.outscale.com/api_fcu/operations/Action_AttachNetworkInterface_get.html#_api_fcu-action_attachnetworkinterface_get).
+* `link_nic_id` - The ID of the NIC attachment.

@@ -1,24 +1,28 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_subnet"
-sidebar_current: "docs-outscale-resource-subnet"
+page_title: "3DS OUTSCALE: outscale_subnet"
+sidebar_current: "outscale-subnet"
 description: |-
-To create a subnet in a VPC, you have to provide the ID of the VPC and the CIDR block for the subnet (its network range). Once the subnet is created, you cannot modify its CIDR block.
-
+  [Manages a Subnet.]
 ---
 
-# outscale_subnet
+# outscale_subnet Resource
 
-NOTE: The CIDR block of the subnet can be either the same as the VPC one if you create only a single subnet in this VPC, or a subset of the VPC one. In case of several subnets in a VPC, their CIDR blocks must no overlap. The smallest subnet you can create uses a /30 netmask (four IP addresses).
+Manages a Subnet.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-subnet).
 
 ## Example Usage
 
 ```hcl
 
-resource "outscale_subnet" "basic" {
-    cidr_block = "10.0.0.0/16"
-    vpc_id = "vpc-2f09a348"
-    availability_zone = "eu-west-1"
+#resource "outscale_net" "net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+resource "outscale_subnet" "subnet01" {
+  net_id   = outscale_net.net01.net_id
+  ip_range = "10.0.0.0/18"
 }
 
 
@@ -28,22 +32,25 @@ resource "outscale_subnet" "basic" {
 
 The following arguments are supported:
 
-* `availability_zone` - (Optional) The name of the Availability Zone in which you want to create the subnet.
-* `cidr_block` - (Required) The CIDR block for the subnet (for example, 10.0.0.0/24).
-* `vpc_id` - (Required) The ID of the VPC..
+* `ip_range` - (Required) The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
+* `net_id` - (Required) The ID of the Net for which you want to create a Subnet.
+* `subregion_name` - (Optional) The name of the Subregion in which you want to create the Subnet.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
+## Attribute Reference
 
-.
+The following attributes are exported:
 
-## Attributes Reference
-
-* `availability_zone` - (Optional) The name of the Availability Zone in which the subnet is located.	.
-* `available_ip_address_count` - (Optional) The number of unused IP addresses in the subnet	.
-* `cidr_block` - (Optional) The CIDR block of the subnet (for example, 10.84.7.0/24).
-* `state` - (Optional) The state of the subnet (pending | available).
-* `subnet_id` - (Optional) The ID of the subnet.
-* `tag_set.N` - (Optional) One or more tags associated with the VPC.
-* `vpc_id` - (Optional) The ID of the VPC where the subnet is.
-* `request_id`- (Optional) The ID of the request.
-
-See detailed information in [FCU DescribeSubNet](http://docs.outscale.com/api_fcu/operations/Action_DescribeSubnets_get.html#_api_fcu-action_describesubnets_get).
-See detailed information in [FCU CreateSubNet](http://docs.outscale.com/api_fcu/operations/Action_CreateSubnet_get.html#_api_fcu-action_createsubnet_get).
+* `subnet` - Information about the Subnet.
+  * `available_ips_count` - The number of available IP addresses in the Subnets.
+  * `ip_range` - The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
+  * `map_public_ip_on_launch` - If `true`, a public IP address is assigned to the network interface cards (NICs) created in the specified Subnet.
+  * `net_id` - The ID of the Net in which the Subnet is.
+  * `state` - The state of the Subnet (`pending` \| `available`).
+  * `subnet_id` - The ID of the Subnet.
+  * `subregion_name` - The name of the Subregion in which the Subnet is located.
+  * `tags` - One or more tags associated with the Subnet.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

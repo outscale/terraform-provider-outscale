@@ -1,50 +1,60 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_image_launch_permission"
-sidebar_current: "docs-outscale-resource-image-launch-permission"
+page_title: "3DS OUTSCALE: outscale_image_launch_permission"
+sidebar_current: "outscale-image-launch-permission"
 description: |-
-  Modifies the specified attribute of an Outscale machine image (OMI).
+  [Manages an image launch permission.]
 ---
 
-# outscale_image_launch_permission
+# outscale_image_launch_permission Resource
 
-Modifies the specified attribute of an Outscale machine image (OMI).
-You can specify only one attribute at a time. You can modify the permissions to access the OMI by adding or removing user IDs or groups. You can share an OMI with a user that is in the same Region. The user can create a copy of the OMI you shared, obtaining all the rights for the copy of the OMI
+Manages an image launch permission.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+OMIs#AboutOMIs-OMIsPermissions,CopiesandExportstoOSU).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#updateimage).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "outscale_instance" {
-    count = 1
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
+
+# Add permissions
+
+resource "outscale_image_launch_permission" "image01" {
+	image_id = "ami-12345678"
+	permission_additions  {
+		account_ids = ["012345678910"]
+	}
 }
 
-resource "outscale_image" "outscale_image" {
-    name        = "terraform test-123"
-    instance_id = "${outscale_vm.outscale_instance.id}"
-    no_reboot   = "true"
+# Remove permissions
+
+resource "outscale_image_launch_permission" "image02" {
+	image_id = "ami-12345678"
+	permission_removals  {
+		account_ids = ["012345678910"]
+	}
 }
 
-resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-    image_id    = "${outscale_image.outscale_image.image_id}"
-    launch_permission_add = [{
-        user_id = "account_id"
-    }]
-}
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `image_id` - The ID of the OMI.
-* `launch_permission_add` - The account ID you want to add to the list of launch permissions for the OMI.
-  * `group` - The name of the group (all if public).
-  * `user_id` - The account ID of the user.
+* `image_id` - (Required) The ID of the OMI you want to modify.
+* `permission_additions` - (Optional) Information about the users you want to give permissions for the resource.
+  * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
+  * `account_ids` - (Optional) The account ID of one or more users you want to give permissions to.
+* `permission_removals` - (Optional) Information about the users you want to remove permissions for the resource.
+  * `global_permission` - (Optional) If `true`, the resource is public. If `false`, the resource is private.
+  * `account_ids` - (Optional) The account ID of one or more users you want to remove permissions from.
 
-## Attributes
+## Attribute Reference
 
-* `request_id` - The ID of tue request.
+The following attributes are exported:
 
-[See detailed information](http://docs.outscale.com/api_fcu/operations/Action_ModifyImageAttribute_get.html#_api_fcu-action_modifyimageattribute_get).
+* `description` - A description of the OMI.
+* `image_id` - The ID of the OMI you want to modify.
+* `permission` - Information about the permissions for the resource.
+  * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+  * `accounts_ids` - The account ID of one or more users who have permissions for the resource.

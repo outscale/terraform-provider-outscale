@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_security_group"
 sidebar_current: "outscale-security-group"
 description: |-
-  [Provides information about security groups.]
+  [Manages a security group.]
 ---
 
-# outscale_security_group Data Source
+# outscale_security_group Resource
 
-Provides information about security groups.
+Manages a security group.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Groups).
 For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-securitygroup).
 
@@ -16,11 +16,14 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-data "outscale_security_groups" "security_groups01" {
-  filter {
-    name   = "security_group_ids"
-    values = ["sg-12345678", "sg-12345679"]
-  }
+#resource "outscale_net" "net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+resource "outscale_security_group" "security_group01" {
+  description         = "Terraform security group test"
+  security_group_name = "terraform-security-group"
+  net_id              = outscale_net.net01.net_id
 }
 
 
@@ -30,19 +33,19 @@ data "outscale_security_groups" "security_groups01" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
-  * `account_ids` - (Optional) The account IDs of the owners of the security groups.
-  * `security_group_ids` - (Optional) The IDs of the security groups.
-  * `security_group_names` - (Optional) The names of the security groups.
-  * `tag_keys` - (Optional) The keys of the tags associated with the security groups.
-  * `tag_values` - (Optional) The values of the tags associated with the security groups.
-  * `tags` - (Optional) The key/value combination of the tags associated with the security groups, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
-
+* `description` - (Required) A description for the security group, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
+* `net_id` - (Optional) The ID of the Net for the security group.
+* `security_group_name` - (Required) (Public Cloud only) The name of the security group.<br />
+This name must be unique and contain between 1 and 255 ASCII characters. Accented letters are not allowed.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `security_groups` - Information about one or more security groups.
+* `security_group` - Information about the security group.
   * `account_id` - The account ID of a user that has been granted permission.
   * `description` - The description of the security group.
   * `inbound_rules` - The inbound rules associated with the security group.
