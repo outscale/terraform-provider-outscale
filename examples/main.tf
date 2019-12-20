@@ -6,6 +6,10 @@ resource "outscale_vm" "vm001" {
   security_group_ids       = [var.security_group_id]
   placement_subregion_name = "${var.region}a"
   placement_tenancy        = "default"
+  tags {
+    key = "name"
+    value = "Vm001"
+    }
 }
 
 #------------------------------------------------------------------------
@@ -68,6 +72,10 @@ data "outscale_vm" "outscale_vm_004_1d" {
 #---005------------------------------------------------------------------
 resource "outscale_net" "net005" {
   ip_range = "10.0.0.0/16"
+  tags {
+    key = "name"
+    value = "Net005"
+    }
 }
 
 resource "outscale_subnet" "subnet005" {
@@ -126,6 +134,10 @@ data "outscale_vm_state" "vm_state006d" {
 
 #---007------------------------------------------------------------------
 resource "outscale_public_ip" "public_ip007" {
+tags {
+    key = "name"
+    value = "public_ip007"
+    }
 }
 
 #------------------------------------------------------------------------
@@ -184,6 +196,10 @@ resource "outscale_volume" "volume012" {
   subregion_name = "${var.region}a"
   size           = 10
   snapshot_id    = var.snapshot_id
+  tags {
+    key = "name"
+    value = "Volume012"
+    }
 }
 
 #------------------------------------------------------------------------
@@ -194,6 +210,10 @@ resource "outscale_volume" "volume013" {
   size           = 10
   iops           = 100
   volume_type    = "io1"
+  tags {
+    key = "type"
+    value = "io1"
+    }
 }
 
 data "outscale_volume" "outscale_volume014d" {
@@ -228,6 +248,10 @@ resource "outscale_volumes_link" "volumes_link015" {
 
 #---016------------------------------------------------------------------
 resource "outscale_internet_service" "internet_service016" {
+ tags {
+    key = "name"
+    value = "internet_service016"
+    }
 }
 
 #------------------------------------------------------------------------
@@ -277,6 +301,11 @@ resource "outscale_nat_service" "nat_service019" {
   depends_on   = [outscale_route.route019]
   subnet_id    = outscale_subnet.subnet019.subnet_id
   public_ip_id = outscale_public_ip.public_ip019.public_ip_id
+  tags {
+    key = "Natservice"
+    value = "019"
+    }
+  
 }
 
 resource "outscale_route_table" "route_table019" {
@@ -331,6 +360,10 @@ resource "outscale_net" "outscale_net50" {
 
 resource "outscale_route_table" "outscale_route_table51" {
   net_id = outscale_net.outscale_net50.net_id
+  tags {
+    key = "name"
+    value = "outscale_route_table51"
+    }
 }
 
 data "outscale_route_table" "outscale_route_table51" {
@@ -425,6 +458,10 @@ resource "outscale_net" "outscale_net57" {
 resource "outscale_net_peering" "outscale_net_peering58" {
   accepter_net_id = outscale_net.outscale_net56.net_id
   source_net_id   = outscale_net.outscale_net57.net_id
+  tags {
+    key = "name"
+    value = "outscale_net_peering58"
+    }
 }
 
 #---027------------------------------------------------------------------
@@ -561,6 +598,7 @@ resource "outscale_nic" "nic032" {
   subnet_id = outscale_subnet.subnet032.subnet_id
 }
 
+       
 #------------------------------------------------------------------------
 
 #---033------------------------------------------------------------------
@@ -605,3 +643,63 @@ data "outscale_snapshot" "snapshot038d" {
 }
 
 #------------------------------------------------------------------------
+
+#---035------------------------------------------------------------------
+
+resource "outscale_net" "net035" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet035" {
+  subregion_name = "${var.region}a"
+  ip_range       = "10.0.0.0/24"
+  net_id         = outscale_net.net035.net_id
+}
+
+resource "outscale_nic" "nic035" {
+  subnet_id = outscale_subnet.subnet035.subnet_id
+}
+
+resource "outscale_nic_private_ip" "outscale_nic_private_ip35" {
+    nic_id      = outscale_nic.outscale_nic035.nic_id
+    private_ips = ["10.0.0.67"]
+}
+
+resource "outscale_nic_private_ip" "outscale_nic_private_ip35-2" {
+    nic_id      = outscale_nic.outscale_nic035.nic_id
+    secondary_private_ip_count = 2
+ }
+
+#------------------------------------------------------------------------
+
+#---036------------------------------------------------------------------
+
+resource "outscale_net" "net036" {
+  ip_range = "10.0.0.0/16"
+}
+
+resource "outscale_subnet" "subnet036" {
+  subregion_name = "${var.region}a"
+  ip_range       = "10.0.0.0/24"
+  net_id         = outscale_net.net036.net_id
+}
+
+resource "outscale_nic" "nic036" {
+  subnet_id = outscale_subnet.subnet036.subnet_id
+}
+resource "outscale_vm" "vm036" {
+    image_id                 = var.image_id
+    vm_type                  = var.vm_type
+    keypair_name             = var.keypair_name
+    subnet_id                = outscale_subnet.subnet036.subnet_id
+}
+
+
+resource "outscale_nic_link" "nic_link036" {
+    device_number = "1"
+    vm_id         = outscale_vm.vm036.vm_id
+    nic_id        = outscale_nic.nic036.nic_id
+}
+
+
+#-------------------------
