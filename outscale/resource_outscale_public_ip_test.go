@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -30,75 +29,6 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
-				),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
-	var conf oapi.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
-	region := os.Getenv("OUTSCALE_REGION")
-
-	//rInt := acctest.RandInt()
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		IDRefreshName: "outscale_public_ip.bar",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
-				),
-			},
-
-			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
-				),
-			},
-		},
-	})
-}
-
-// // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
-// // associated Private PublicIPs of two instances
-func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
-	var one oapi.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
-	region := os.Getenv("OUTSCALE_REGION")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		IDRefreshName: "outscale_public_ip.bar",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
-				),
-			},
-
-			resource.TestStep{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 		},
@@ -196,29 +126,9 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIp) resour
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		//Missing on Swagger Spec
-		// if strings.Contains(rs.Primary.ID, "link") {
-		// 	req := oapi.ReadPublicIpsRequest{
-		// 		Filters: oapi.FiltersPublicIp{
-		// 			ReservationIds: []string{rs.Primary.ID},
-		// 		},
-		// 	}
-		// 	describe, err := conn.OAPI.POST_ReadPublicIps(req)
-
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	if len(describe.OK.PublicIps) != 1 ||
-		// 		describe.OK.PublicIps[0].ReservationId != rs.Primary.ID {
-		// 		return fmt.Errorf("PublicIP not found")
-		// 	}
-		// 	*res = describe.OK.PublicIps[0]
-
-		// } else {
 		req := oapi.ReadPublicIpsRequest{
 			Filters: oapi.FiltersPublicIp{
-				PublicIps: []string{rs.Primary.ID},
+				PublicIpIds: []string{rs.Primary.ID},
 			},
 		}
 
@@ -259,7 +169,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIp) resour
 		}
 
 		if len(describe.PublicIps) != 1 ||
-			describe.PublicIps[0].PublicIp != rs.Primary.ID {
+			describe.PublicIps[0].PublicIpId != rs.Primary.ID {
 			return fmt.Errorf("PublicIP not found")
 		}
 		*res = describe.PublicIps[0]
@@ -270,77 +180,10 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oapi.PublicIp) resour
 }
 
 const testAccOutscaleOAPIPublicIPConfig = `
-resource "outscale_public_ip" "bar" {}
+resource "outscale_public_ip" "bar" {
+	tags {
+		key = "Name"
+		value = "public_ip_test"
+	}
+}
 `
-
-func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
-		}
-
-		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
-}
-
-func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
-		}
-
-		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
-}
-
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id           = "%[1]s"
-			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%[3]sb"
-		}
-
-		resource "outscale_vm" "basic2" {
-			image_id           = "%[1]s"
-			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%[3]sb"
-		}
-
-		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
-}
-
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region string) string {
-	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id           = "%[1]s"
-			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%[3]sb"
-		}
-
-		resource "outscale_vm" "basic2" {
-			image_id           = "%[1]s"
-			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%[3]sb"
-		}
-
-		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
-}

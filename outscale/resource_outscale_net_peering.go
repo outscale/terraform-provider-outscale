@@ -19,58 +19,13 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILinPeeringCreate,
 		Read:   resourceOutscaleOAPILinPeeringRead,
+		Update: resourceOutscaleOAPINetPeeringUpdate,
 		Delete: resourceOutscaleOAPILinPeeringDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"source_net_account_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-			},
-			"accepter_net_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"source_net_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"net_peering_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"state": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-						},
-						"message": {
-							Type:     schema.TypeString,
-							Computed: true,
-							Optional: true,
-						},
-					},
-				},
-			},
-			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
-			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tags":         tagsSchemaComputed(),
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: getOAPINetPeeringSchema(),
 	}
 }
 
@@ -118,11 +73,13 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	rt := resp.OK
 	d.SetId(rt.NetPeering.NetPeeringId)
 
-	if err := setOAPITags(conn, d); err != nil {
-		return err
+	//SetTags
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), rt.NetPeering.NetPeeringId, conn)
+		if err != nil {
+			return err
+		}
 	}
-
-	d.SetPartial("tags")
 
 	log.Printf("[INFO] Net Peering ID: %s", d.Id())
 
@@ -256,6 +213,21 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
+func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPILinPeeringRead(d, meta)
+}
+
 func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OAPI
 
@@ -368,6 +340,56 @@ func vpcOAPIPeeringConnectionOptionsSchema() *schema.Schema {
 					Computed: true,
 				},
 			},
+		},
+	}
+}
+
+func getOAPINetPeeringSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"source_net_account_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ForceNew: true,
+			Computed: true,
+		},
+		"accepter_net_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"source_net_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"net_peering_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+					},
+					"message": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
+		"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
+		"tags":         tagsListOAPISchema(),
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }

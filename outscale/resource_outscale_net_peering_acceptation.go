@@ -18,7 +18,6 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 		Create: resourceOutscaleOAPILinPeeringAccepterCreate,
 		Read:   resourceOutscaleOAPILinPeeringRead,
 		Delete: resourceOutscaleOAPILinPeeringAccepterDelete,
-		Update: resourceOutscaleOAPILinPeeringAccepterUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -49,7 +48,7 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 			},
 			"accepter_net": vpcOAPIPeeringConnectionOptionsSchema(),
 			"source_net":   vpcOAPIPeeringConnectionOptionsSchema(),
-			"tags":         tagsListOAPISchema(),
+			"tags":         tagsOAPIListSchemaComputed(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -97,27 +96,6 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 		return fmt.Errorf("Error creating Net Peering accepter. Details: %s", errString)
 	}
 
-	if err := setOAPITags(conn, d); err != nil {
-		return err
-	}
-
-	d.SetPartial("tags")
-
-	return resourceOutscaleOAPILinPeeringRead(d, meta)
-}
-
-func resourceOutscaleOAPILinPeeringAccepterUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-
-	d.Partial(true)
-
-	if err := setOAPITags(conn, d); err != nil {
-		return err
-	}
-
-	d.SetPartial("tags")
-
-	d.Partial(false)
 	return resourceOutscaleOAPILinPeeringRead(d, meta)
 }
 

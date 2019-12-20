@@ -25,56 +25,7 @@ func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: map[string]*schema.Schema{
-			"public_ip_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"allow_relink": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
-			},
-			"vm_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"nic_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"private_ip": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"public_ip": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"link_public_ip_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-				ForceNew: true,
-			},
-			"request_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"nic_account_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: getOAPIPublicIPLinkSchema(),
 	}
 }
 
@@ -182,6 +133,8 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
+	d.Set("tags", getOapiTagSet(response.PublicIps[0].Tags))
+
 	d.Set("request_id", response.ResponseContext.RequestId)
 	return readOutscaleOAPIPublicIPLink(d, &response.PublicIps[0])
 }
@@ -264,5 +217,63 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oapi.PublicIp
 		return err
 	}
 
+	if err := d.Set("tags", tagsOAPIToMap(address.Tags)); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink TAGS PROBLEME (%s)", err)
+	}
+
 	return nil
+}
+
+func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"public_ip_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"allow_relink": &schema.Schema{
+			Type:     schema.TypeBool,
+			Optional: true,
+			ForceNew: true,
+		},
+		"vm_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"nic_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"private_ip": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"public_ip": &schema.Schema{
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"link_public_ip_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+			ForceNew: true,
+		},
+		"request_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"nic_account_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsOAPIListSchemaComputed(),
+	}
 }

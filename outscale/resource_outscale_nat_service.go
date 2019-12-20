@@ -17,61 +17,12 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 		Create: resourceOAPINatServiceCreate,
 		Read:   resourceOAPINatServiceRead,
 		Delete: resourceOAPINatServiceDelete,
+		Update: resourceOutscaleOAPINatServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-		Schema: map[string]*schema.Schema{
-			// Arguments
-			"public_ip_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"token": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"subnet_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			// Attributes
-			"public_ips": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"public_ip_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"public_ip": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"nat_service_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"state": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"net_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+
+		Schema: getOAPINatServiceSchema(),
 	}
 }
 
@@ -134,6 +85,13 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	if _, err := stateConf.WaitForState(); err != nil {
 		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
 	}
+	//SetTags
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignOapiTags(tags.([]interface{}), response.NatService.NatServiceId, conn)
+		if err != nil {
+			return err
+		}
+	}
 
 	d.Set("request_id", resp.OK.ResponseContext.RequestId)
 	// Update our attributes and return
@@ -194,8 +152,26 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			return err
 		}
 	}
+	if err := d.Set("tags", tagsOAPIToMap(ng.Tags)); err != nil {
+		fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
+	}
 
 	return nil
+}
+
+func resourceOutscaleOAPINatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
+
+	d.Partial(true)
+
+	if err := setOAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOAPINatServiceRead(d, meta)
 }
 
 func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
@@ -297,5 +273,61 @@ func NGOAPIStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshF
 
 		ng := response.NatServices[0]
 		return ng, ng.State, nil
+	}
+}
+
+func getOAPINatServiceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		// Arguments
+		"public_ip_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"token": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ForceNew: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"subnet_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		// Attributes
+		"public_ips": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"public_ip_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"public_ip": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"nat_service_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsListOAPISchema(),
 	}
 }
