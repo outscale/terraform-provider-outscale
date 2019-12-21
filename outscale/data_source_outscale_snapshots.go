@@ -1,13 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPISnapshots() *schema.Resource {
@@ -100,7 +102,7 @@ func dataSourceOutscaleOAPISnapshots() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
@@ -111,24 +113,30 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := oapi.ReadSnapshotsRequest{}
+	params := oscgo.ReadSnapshotsRequest{
+		Filters: &oscgo.FiltersSnapshot{},
+	}
+	filter := oscgo.FiltersSnapshot{}
 	if restorableUsersOk {
-		params.Filters.PermissionsToCreateVolumeAccountIds = oapiExpandStringList(restorableUsers.([]interface{}))
+		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		params.SetFilters(filter)
 	}
 	if filtersOk {
-		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), &params.Filters)
+		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
 	}
 	if ownersOk {
-		params.Filters.AccountIds = oapiExpandStringList(owners.([]interface{}))
+		filter.SetAccountIds(oapiExpandStringList(owners.([]interface{})))
+		params.SetFilters(filter)
 	}
 	if snapshotIdsOk {
-		params.Filters.SnapshotIds = oapiExpandStringList(snapshotIds.([]interface{}))
+		filter.SetSnapshotIds(oapiExpandStringList(snapshotIds.([]interface{})))
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadSnapshotsResponses
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadSnapshots(params)
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(params)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -143,28 +151,28 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if len(resp.OK.Snapshots) < 1 {
+	if len(resp.GetSnapshots()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	snapshots := make([]map[string]interface{}, len(resp.OK.Snapshots))
-	for k, v := range resp.OK.Snapshots {
+	snapshots := make([]map[string]interface{}, len(resp.GetSnapshots()))
+	for k, v := range resp.GetSnapshots() {
 		snapshot := make(map[string]interface{})
 
-		snapshot["description"] = v.Description
-		snapshot["account_alias"] = v.AccountAlias
-		snapshot["account_id"] = v.AccountId
-		snapshot["progress"] = v.Progress
-		snapshot["snapshot_id"] = v.SnapshotId
-		snapshot["state"] = v.State
-		snapshot["volume_id"] = v.VolumeId
-		snapshot["volume_size"] = v.VolumeSize
-		snapshot["tags"] = tagsOAPIToMap(v.Tags)
+		snapshot["description"] = v.GetDescription()
+		snapshot["account_alias"] = v.GetAccountAlias()
+		snapshot["account_id"] = v.GetAccountId()
+		snapshot["progress"] = v.GetProgress()
+		snapshot["snapshot_id"] = v.GetSnapshotId()
+		snapshot["state"] = v.GetState()
+		snapshot["volume_id"] = v.GetVolumeId()
+		snapshot["volume_size"] = v.GetVolumeSize()
+		snapshot["tags"] = tagsOSCAPIToMap(v.GetTags())
 
 		lp := make([]map[string]interface{}, 1)
 		lp[0] = make(map[string]interface{})
-		lp[0]["global_permission"] = v.PermissionsToCreateVolume.GlobalPermission
-		lp[0]["account_ids"] = v.PermissionsToCreateVolume.AccountIds
+		lp[0]["global_permission"] = v.PermissionsToCreateVolume.GetGlobalPermission()
+		lp[0]["account_ids"] = v.PermissionsToCreateVolume.GetAccountIds()
 
 		snapshot["permissions_to_create_volume"] = lp
 
@@ -172,7 +180,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	//Single Snapshot found so set to state
 	return d.Set("snapshots", snapshots)
 }

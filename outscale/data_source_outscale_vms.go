@@ -1,14 +1,17 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func datasourceOutscaleOApiVMS() *schema.Resource {
@@ -61,7 +64,7 @@ func datasourceOutscaleOApiVMSSchema() map[string]*schema.Schema {
 }
 
 func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OAPI
+	client := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	vmID, vmIDOk := d.GetOk("vm_id")
@@ -71,66 +74,66 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// Build up search parameters
-	params := oapi.ReadVmsRequest{}
+	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if vmIDOk {
-		params.Filters.VmIds = []string{vmID.(string)}
+		params.Filters.VmIds = &[]string{vmID.(string)}
 	}
 
-	var resp *oapi.POST_ReadVmsResponses
-	var err error
+	var resp oscgo.ReadVmsResponse
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+		r, _, err := client.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
+			ReadVmsRequest: optional.NewInterface(params),
+		})
 
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = client.POST_ReadVms(params)
-		return resource.RetryableError(err)
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		resp = r
+		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error reading the VM %s", err)
-	}
-
-	if resp.OK.Vms == nil {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+		return fmt.Errorf("error reading the VMs %s", err)
 	}
 
 	// If no instances were returned, return
-	if len(resp.OK.Vms) == 0 {
+	if !resp.HasVms() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	var filteredInstances []oapi.Vm
+	var filteredVms []oscgo.Vm
 
-	// loop through reservations, and remove terminated instances, populate instance slice
-	for _, res := range resp.OK.Vms {
-		if res.State != "terminated" {
-			filteredInstances = append(filteredInstances, res)
+	// loop through reservations, and remove terminated instances, populate vm slice
+	for _, res := range resp.GetVms() {
+		if res.GetState() != "terminated" {
+			filteredVms = append(filteredVms, res)
 		}
 	}
 
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.GetResponseContext().RequestId)
 
-	if len(filteredInstances) < 1 {
+	if len(filteredVms) < 1 {
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
 	d.SetId(resource.UniqueId())
-	return vmsOAPIDescriptionAttributes(d, filteredInstances, client)
+	return d.Set("vms", dataSourceOAPIVMS(filteredVms))
 }
 
-// Populate instance attribute fields with the returned instance
-func vmsOAPIDescriptionAttributes(d *schema.ResourceData, instances []oapi.Vm, conn *oapi.Client) error {
-	return d.Set("vms", dataSourceOAPIVMS(instances))
-}
-
-func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(i))
+func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
+	vms := make([]map[string]interface{}, len(i))
 	for index, v := range i {
-		instance := make(map[string]interface{})
+		vm := make(map[string]interface{})
 
 		setterFunc := func(key string, value interface{}) error {
-			instance[key] = value
+			vm[key] = value
 			return nil
 		}
 
@@ -138,9 +141,10 @@ func dataSourceOAPIVMS(i []oapi.Vm) []map[string]interface{} {
 			log.Fatalf("[DEBUG] oapiVMDescriptionAttributes ERROR %+v", err)
 		}
 
-		s[index] = instance
+		vm["tags"] = getOscAPITagSet(v.GetTags())
+		vms[index] = vm
 	}
-	return s
+	return vms
 }
 
 func dataSourceFiltersOApiSchema() *schema.Schema {

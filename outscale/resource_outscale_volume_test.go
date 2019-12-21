@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
@@ -9,13 +12,12 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Volume
+	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -37,7 +39,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Volume
+	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -65,11 +67,9 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
-	t.Skip()
-
 	region := os.Getenv("OUTSCALE_REGION")
 
-	var v oapi.Volume
+	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -88,28 +88,7 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVolume_updateTags(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
-
-	if region == "" {
-		region = "dv-west-1"
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPIVolumeConfigUpdateTags(region, "Terraform-Volume"),
-			},
-			{
-				Config: testAccOutscaleOAPIVolumeConfigUpdateTags(region, "Terraform-Volume2"),
-			},
-		},
-	})
-}
-
-func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFunc {
+func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -120,17 +99,16 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFu
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		request := &oapi.ReadVolumesRequest{
-			Filters: oapi.FiltersVolume{VolumeIds: []string{rs.Primary.ID}},
+		request := oscgo.ReadVolumesRequest{
+			Filters: &oscgo.FiltersVolume{VolumeIds: &[]string{rs.Primary.ID}},
 		}
 
-		var response *oapi.ReadVolumesResponse
-		var resp *oapi.POST_ReadVolumesResponses
+		var response oscgo.ReadVolumesResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadVolumes(*request)
+			response, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -140,15 +118,13 @@ func testAccCheckOAPIVolumeExists(n string, v *oapi.Volume) resource.TestCheckFu
 			return resource.NonRetryableError(err)
 		})
 
-		response = resp.OK
-
 		if err == nil {
-			if response.Volumes != nil && len(response.Volumes) > 0 {
-				*v = response.Volumes[0]
+			if response.Volumes != nil && len(response.GetVolumes()) > 0 {
+				*v = response.GetVolumes()[0]
 				return nil
 			}
 		}
-		return fmt.Errorf("Error finding EC2 volume %s", rs.Primary.ID)
+		return fmt.Errorf("Error finding volume %s", rs.Primary.ID)
 	}
 }
 
@@ -188,7 +164,7 @@ func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
 			subregion_name = "%sa"
 			volume_type    = "io1"
 			size           = 10
-			iops           = 5
+			iops           = 100
 		}
 	`, region)
 }

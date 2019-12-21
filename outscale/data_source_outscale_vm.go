@@ -1,16 +1,19 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
@@ -37,7 +40,7 @@ func dataSourceOutscaleOAPIVM() *schema.Resource {
 	}
 }
 func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OAPI
+	client := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
@@ -47,139 +50,142 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	// Build up search parameters
-	params := oapi.ReadVmsRequest{}
+	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
 		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
 	}
 	if instanceIDOk {
-		params.Filters.VmIds = []string{instanceID.(string)}
+		params.Filters.VmIds = &[]string{instanceID.(string)}
 	}
 
-	var resp *oapi.POST_ReadVmsResponses
-	var err error
+	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
 
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = client.POST_ReadVms(params)
-		return resource.RetryableError(err)
+	var resp oscgo.ReadVmsResponse
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+		r, _, err := client.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
+			ReadVmsRequest: optional.NewInterface(params),
+		})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		resp = r
+		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error reading the VM %s", err)
+		return fmt.Errorf("error reading the VM %s", err)
 	}
 
-	if resp.OK.Vms == nil {
+	if !resp.HasVms() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	// If no instances were returned, return
-	if len(resp.OK.Vms) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
+	var filteredVms []oscgo.Vm
 
-	var filteredInstances []oapi.Vm
-
-	// loop through reservations, and remove terminated instances, populate instance slice
-	for _, res := range resp.OK.Vms {
-		if res.State != "terminated" {
-			filteredInstances = append(filteredInstances, res)
+	// loop through reservations, and remove terminated instances, populate vm slice
+	for _, res := range resp.GetVms() {
+		if res.GetState() != "terminated" {
+			filteredVms = append(filteredVms, res)
 		}
 	}
 
-	var instance oapi.Vm
-	if len(filteredInstances) < 1 {
+	var vm oscgo.Vm
+	if len(filteredVms) < 1 {
 		return errors.New("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	// (TODO: Support a list of instances to be returned)
-	// Possibly with a different data source that returns a list of individual instance data sources
-	if len(filteredInstances) > 1 {
+	if len(filteredVms) > 1 {
 		return errors.New("Your query returned more than one result. Please try a more " +
 			"specific search criteria")
 	}
 
-	instance = filteredInstances[0]
+	vm = filteredVms[0]
 
-	log.Printf("[DEBUG] outscale_vm - Single VM ID found: %s", instance.VmId)
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.GetResponseContext().RequestId)
 
-	// Populate instance attribute fields with the returned instance
+	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		d.SetId(instance.VmId)
-		return oapiVMDescriptionAttributes(set, &instance)
+		d.SetId(vm.GetVmId())
+		set("tags", getOscAPITagSet(vm.GetTags()))
+		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
 
 // Populate instance attribute fields with the returned instance
-func oapiVMDescriptionAttributes(set AttributeSetter, instance *oapi.Vm) error {
+func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 
-	set("architecture", instance.Architecture)
-	if err := set("block_device_mappings_created", getOAPIVMBlockDeviceMapping(instance.BlockDeviceMappings)); err != nil {
+	set("architecture", vm.GetArchitecture())
+	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
-	set("bsu_optimized", instance.BsuOptimized)
-	set("client_token", instance.ClientToken)
-	set("deletion_protection", instance.DeletionProtection)
-	set("hypervisor", instance.Hypervisor)
-	set("image_id", instance.ImageId)
-	set("is_source_dest_checked", instance.IsSourceDestChecked)
-	set("keypair_name", instance.KeypairName)
-	set("launch_number", instance.LaunchNumber)
-	set("net_id", instance.NetId)
+	set("bsu_optimized", vm.GetBsuOptimized())
+	set("client_token", vm.GetClientToken())
+	set("deletion_protection", vm.GetDeletionProtection())
+	set("hypervisor", vm.GetHypervisor())
+	set("image_id", vm.GetImageId())
+	set("is_source_dest_checked", vm.GetIsSourceDestChecked())
+	set("keypair_name", vm.GetKeypairName())
+	set("launch_number", vm.GetLaunchNumber())
+	set("net_id", vm.GetNetId())
 
-	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(instance.Nics)); err != nil {
+	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
 		log.Printf("[DEBUG] NICS ERR %+v", err)
 		return err
 	}
-	set("os_family", instance.OsFamily)
-	set("placement_subregion_name", instance.Placement.SubregionName)
-	set("placement_tenancy", instance.Placement.Tenancy)
-	set("private_dns_name", instance.PrivateDnsName)
-	set("private_ip", instance.PrivateIp)
-	set("product_codes", instance.ProductCodes)
-	set("public_dns_name", instance.PublicDnsName)
-	set("public_ip", instance.PublicIp)
-	set("reservation_id", instance.ReservationId)
-	set("root_device_name", instance.RootDeviceName)
-	set("root_device_type", instance.RootDeviceType)
-	if err := set("security_groups", getOAPIVMSecurityGroups(instance.SecurityGroups)); err != nil {
+	set("os_family", vm.GetOsFamily())
+	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
+	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
+	set("private_dns_name", vm.GetPrivateDnsName())
+	set("private_ip", vm.GetPrivateIp())
+	set("product_codes", vm.GetProductCodes())
+	set("public_dns_name", vm.GetPublicDnsName())
+	set("public_ip", vm.GetPublicIp())
+	set("reservation_id", vm.GetReservationId())
+	set("root_device_name", vm.GetRootDeviceName())
+	set("root_device_type", vm.GetRootDeviceType())
+	if err := set("security_groups", getOAPIVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
 		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
 		return err
 	}
-	set("state", instance.State)
-	set("state_reason", instance.StateReason)
-	set("subnet_id", instance.SubnetId)
-	set("tags", getOapiTagSet(instance.Tags))
-	set("user_data", instance.UserData)
-	set("vm_id", instance.VmId)
-	set("vm_initiated_shutdown_behavior", instance.VmInitiatedShutdownBehavior)
+	set("state", vm.GetState())
+	set("state_reason", vm.GetStateReason())
+	set("subnet_id", vm.GetSubnetId())
+	set("user_data", vm.GetUserData())
+	set("vm_id", vm.GetVmId())
+	set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior())
 
-	return set("vm_type", instance.VmType)
+	return set("vm_type", vm.GetVmType())
 }
 
-func getOAPIVMBlockDeviceMapping(blockDeviceMappings []oapi.BlockDeviceMappingCreated) []map[string]interface{} {
+func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
 	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
 
 	for k, v := range blockDeviceMappings {
 		blockDeviceMapping[k] = map[string]interface{}{
-			"device_name": v.DeviceName,
+			"device_name": aws.StringValue(v.DeviceName),
 			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", aws.BoolValue(v.Bsu.DeleteOnVmDeletion)),
-				"volume_id":             v.Bsu.VolumeId,
-				"state":                 v.Bsu.State,
-				"link_date":             v.Bsu.LinkDate,
+				"delete_on_vm_deletion": fmt.Sprintf("%t", aws.BoolValue(v.GetBsu().DeleteOnVmDeletion)),
+				"volume_id":             aws.StringValue(v.GetBsu().VolumeId),
+				"state":                 aws.StringValue(v.GetBsu().State),
+				"link_date":             aws.StringValue(v.GetBsu().LinkDate),
 			},
 		}
 	}
 	return blockDeviceMapping
 }
 
-func getOAPIVMSecurityGroups(groupSet []oapi.SecurityGroupLight) []map[string]interface{} {
+func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, g := range groupSet {
 		r := map[string]interface{}{
-			"security_group_id":   g.SecurityGroupId,
-			"security_group_name": g.SecurityGroupName,
+			"security_group_id":   g.GetSecurityGroupId(),
+			"security_group_name": g.GetSecurityGroupName(),
 		}
 		res = append(res, r)
 	}
@@ -206,164 +212,25 @@ func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) oapi.FiltersVm {
-	var filters oapi.FiltersVm
+func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
+	filters := new(oscgo.FiltersVm)
+
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
-		var filterValues []string
+		filterValues := make([]string, 0)
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
 		}
 
 		switch name := m["name"].(string); name {
-		case "account_ids":
-			filters.AccountIds = filterValues
-		case "activated_check":
-			filters.ActivatedCheck, _ = strconv.ParseBool(filterValues[0])
-		case "architectures":
-			filters.Architectures = filterValues
-		case "block_device_mapping_delete_on_vm_deletion":
-			filterDeleteOnVmDeletion, _ := strconv.ParseBool(filterValues[0])
-			filters.BlockDeviceMappingDeleteOnVmDeletion = aws.Bool(filterDeleteOnVmDeletion)
-		case "block_device_mapping_device_names":
-			filters.BlockDeviceMappingDeviceNames = filterValues
-		case "block_device_mapping_link_dates":
-			filters.BlockDeviceMappingLinkDates = filterValues
-		case "block_device_mapping_states":
-			filters.BlockDeviceMappingStates = filterValues
-		case "block_device_mapping_volume_ids":
-			filters.BlockDeviceMappingVolumeIds = filterValues
-		case "comments":
-			filters.Comments = filterValues
-		case "creation_dates":
-			filters.CreationDates = filterValues
-		case "dns_names":
-			filters.DnsNames = filterValues
-		case "hypervisors":
-			filters.Hypervisors = filterValues
-		case "image_ids":
-			filters.ImageIds = filterValues
-		case "kernel_ids":
-			filters.KernelIds = filterValues
-		case "keypair_names":
-			filters.KeypairNames = filterValues
-		case "launch_sort_numbers":
-			filters.LaunchSortNumbers, _ = sliceAtoi(filterValues)
-		case "link_nic_delete_on_vm_deletion":
-			filters.LinkNicDeleteOnVmDeletion, _ = strconv.ParseBool(filterValues[0])
-		case "link_nic_link_dates":
-			filters.LinkNicLinkDates = filterValues
-		case "link_nic_link_nic_ids":
-			filters.LinkNicLinkNicIds = filterValues
-		case "link_nic_link_public_ip_ids":
-			filters.LinkNicLinkPublicIpIds = filterValues
-		case "link_nic_nic_ids":
-			filters.LinkNicNicIds = filterValues
-		case "link_nic_nic_sort_numbers":
-			filters.LinkNicNicSortNumbers, _ = sliceAtoi(filterValues)
-		case "link_nic_public_ip_account_ids":
-			filters.LinkNicPublicIpAccountIds = filterValues
-		case "link_nic_public_ip_ids":
-			filters.LinkNicPublicIpIds = filterValues
-		case "link_nic_public_ips":
-			filters.LinkNicPublicIps = filterValues
-		case "link_nic_states":
-			filters.LinkNicStates = filterValues
-		case "link_nic_vm_account_ids":
-			filters.LinkNicVmAccountIds = filterValues
-		case "link_nic_vm_ids":
-			filters.LinkNicVmIds = filterValues
-		case "monitoring_states":
-			filters.MonitoringStates = filterValues
-		case "net_ids":
-			filters.NetIds = filterValues
-		case "nic_account_ids":
-			filters.NicAccountIds = filterValues
-		case "nic_activated_check":
-			filters.NicActivatedCheck, _ = strconv.ParseBool(filterValues[0])
-		case "nic_descriptions":
-			filters.NicDescriptions = filterValues
-		case "nic_mac_addresses":
-			filters.NicMacAddresses = filterValues
-		case "nic_net_ids":
-			filters.NicNetIds = filterValues
-		case "nic_nic_ids":
-			filters.NicNicIds = filterValues
-		case "nic_private_dns_names":
-			filters.NicPrivateDnsNames = filterValues
-		case "nic_security_group_ids":
-			filters.NicSecurityGroupIds = filterValues
-		case "nic_security_group_names":
-			filters.NicSecurityGroupNames = filterValues
-		case "nic_states":
-			filters.NicStates = filterValues
-		case "nic_subnet_ids":
-			filters.NicSubnetIds = filterValues
-		case "nic_subregion_names":
-			filters.NicSubregionNames = filterValues
-		case "placement_groups":
-			filters.PlacementGroups = filterValues
-		case "private_dns_names":
-			filters.PrivateDnsNames = filterValues
-		case "private_ip_link_private_ip_account_ids":
-			filters.PrivateIpLinkPrivateIpAccountIds = filterValues
-		case "private_ip_link_public_ips":
-			filters.PrivateIpLinkPublicIps = filterValues
-		case "private_ip_primary_ips":
-			filters.PrivateIpPrimaryIps = filterValues
-		case "private_ip_private_ips":
-			filters.PrivateIpPrivateIps = filterValues
-		case "private_ips":
-			filters.PrivateIps = filterValues
-		case "product_codes":
-			filters.ProductCodes = filterValues
-		case "public_ips":
-			filters.PublicIps = filterValues
-		case "ram_disk_ids":
-			filters.RamDiskIds = filterValues
-		case "root_device_names":
-			filters.RootDeviceNames = filterValues
-		case "root_device_types":
-			filters.RootDeviceTypes = filterValues
-		case "security_group_ids":
-			filters.SecurityGroupIds = filterValues
-		case "security_group_names":
-			filters.SecurityGroupNames = filterValues
-		case "spot_vm_request_ids":
-			filters.SpotVmRequestIds = filterValues
-		case "spot_vms":
-			filters.SpotVms = filterValues
-		case "state_comments":
-			filters.StateComments = filterValues
-		case "subnet_ids":
-			filters.SubnetIds = filterValues
-		case "subregion_names":
-			filters.SubregionNames = filterValues
-		case "systems":
-			filters.Systems = filterValues
 		case "tag_keys":
-			filters.TagKeys = filterValues
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.TagValues = filterValues
+			filters.TagValues = &filterValues
 		case "tags":
-			filters.Tags = filterValues
-		case "tenancies":
-			filters.Tenancies = filterValues
-		case "tokens":
-			filters.Tokens = filterValues
-		case "virtualization_types":
-			filters.VirtualizationTypes = filterValues
+			filters.Tags = &filterValues
 		case "vm_ids":
-			filters.VmIds = filterValues
-		case "vm_states":
-			filters.VmStates = filterValues
-		case "vm_types":
-			filters.VmTypes = filterValues
-		case "vms_security_group_ids":
-			filters.VmsSecurityGroupIds = filterValues
-		case "vms_security_group_names":
-			filters.VmsSecurityGroupNames = filterValues
-
+			filters.VmIds = &filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
@@ -381,23 +248,6 @@ func sliceAtoi(sa []string) ([]int64, error) {
 		si = append(si, int64(i))
 	}
 	return si, nil
-}
-
-func getOapiTagSet(tags []oapi.ResourceTag) []map[string]interface{} {
-	res := []map[string]interface{}{}
-
-	if tags != nil {
-		for _, t := range tags {
-			tag := map[string]interface{}{}
-
-			tag["key"] = t.Key
-			tag["value"] = t.Value
-
-			res = append(res, tag)
-		}
-	}
-
-	return res
 }
 
 func getOApiVMAttributesSchema() map[string]*schema.Schema {

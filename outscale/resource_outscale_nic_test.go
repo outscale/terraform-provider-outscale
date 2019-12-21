@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"reflect"
 	"strings"
@@ -10,12 +13,10 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIENI_basic(t *testing.T) {
-	var conf oapi.Nic
+	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -47,7 +48,7 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIENIExists(n string, res *oapi.Nic) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIENIExists(n string, res *oscgo.Nic) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -58,16 +59,15 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *oapi.Nic) resource.TestChe
 			return fmt.Errorf("No ENI ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		dnir := &oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
 
-		var describeResp *oapi.POST_ReadNicsResponses
+		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.POST_ReadNics(*dnir)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -77,43 +77,32 @@ func testAccCheckOutscaleOAPIENIExists(n string, res *oapi.Nic) resource.TestChe
 			return nil
 		})
 
-		var errString string
-
-		if err != nil || describeResp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if describeResp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
-			} else if describeResp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
-			} else if describeResp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
-			}
+		if err != nil {
+			errString := err.Error()
 			return fmt.Errorf("Could not find network interface: %s", errString)
 
 		}
 
-		result := describeResp.OK
-		if len(result.Nics) != 1 ||
-			result.Nics[0].NicId != rs.Primary.ID {
+		if len(resp.GetNics()) != 1 ||
+			resp.GetNics()[0].GetNicId() != rs.Primary.ID {
 			return fmt.Errorf("ENI not found")
 		}
 
-		*res = result.Nics[0]
+		*res = resp.GetNics()[0]
 
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIENIAttributes(conf *oapi.Nic, suregion string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIENIAttributes(conf *oscgo.Nic, suregion string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if !reflect.DeepEqual(conf.LinkNic, oapi.LinkNic{}) {
+		if !reflect.DeepEqual(conf.GetLinkNic(), oscgo.LinkNic{}) {
 			return fmt.Errorf("expected attachment to be nil")
 		}
 
-		if conf.SubregionName != fmt.Sprintf("%sa", suregion) {
-			return fmt.Errorf("expected subregion_name to be %sa, but was %s", suregion, conf.SubregionName)
+		if conf.GetSubregionName() != fmt.Sprintf("%sa", suregion) {
+			return fmt.Errorf("expected subregion_name to be %sa, but was %s", suregion, conf.GetSubregionName())
 		}
 
 		return nil

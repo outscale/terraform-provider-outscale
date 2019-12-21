@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -11,7 +14,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func datasourceOutscaleOAPIVolumes() *schema.Resource {
@@ -98,31 +100,33 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 }
 
 func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-	params := &oapi.ReadVolumesRequest{
-		Filters: oapi.FiltersVolume{},
+	params := oscgo.ReadVolumesRequest{
+		Filters: &oscgo.FiltersVolume{},
 	}
 
 	if volumeIdsOk {
 		volIDs := expandStringValueList(volumeIds.([]interface{}))
-		params.Filters.VolumeIds = volIDs
+		filter := oscgo.FiltersVolume{}
+		filter.SetVolumeIds(volIDs)
+		params.SetFilters(filter)
 	}
 	log.Printf("LOOOGGG___ filtersOk \n %+v \n", filtersOk)
 
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVolumesFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
 	log.Printf("LOOOGGG___ Filters \n %+v \n", params.Filters)
 
-	var rs *oapi.POST_ReadVolumesResponses
+	var resp oscgo.ReadVolumesResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		rs, err = conn.POST_ReadVolumes(*params)
+		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -135,9 +139,9 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	log.Printf("Found These Volumes %s", spew.Sdump(rs.OK.Volumes))
+	log.Printf("Found These Volumes %s", spew.Sdump(resp.GetVolumes()))
 
-	volumes := rs.OK.Volumes
+	volumes := resp.GetVolumes()
 
 	if len(volumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
@@ -149,14 +153,14 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.Set("request_id", rs.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	d.SetId(resource.UniqueId())
 
 	return nil
 }
 
-func getOAPIVolumes(volumes []oapi.Volume) (res []map[string]interface{}) {
+func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
 			"iops":           v.Iops,
@@ -165,7 +169,7 @@ func getOAPIVolumes(volumes []oapi.Volume) (res []map[string]interface{}) {
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
 			"subregion_name": v.SubregionName,
-			"tags":           tagsOAPIToMap(v.Tags),
+			"tags":           tagsOSCAPIToMap(v.GetTags()),
 			"volume_id":      v.VolumeId,
 			"volume_type":    v.VolumeType,
 		})
@@ -173,7 +177,7 @@ func getOAPIVolumes(volumes []oapi.Volume) (res []map[string]interface{}) {
 	return
 }
 
-func getOAPILinkedVolumes(linkedVolumes []oapi.LinkedVolume) (res []map[string]interface{}) {
+func getOAPILinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
 	for _, l := range linkedVolumes {
 		res = append(res, map[string]interface{}{
 			"delete_on_vm_deletion": cast.ToString(l.DeleteOnVmDeletion),

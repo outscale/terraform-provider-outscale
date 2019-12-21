@@ -1,21 +1,22 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/outscale/osc-go/oapi"
-
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
-	var conf oapi.Keypair
+	var conf oscgo.Keypair
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -38,7 +39,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
-	var conf oapi.Keypair
+	var conf oscgo.Keypair
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -63,7 +64,7 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 	})
 }
 func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
-	var conf oapi.Keypair
+	var conf oscgo.Keypair
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -79,11 +80,11 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
 					testAccCheckOutscaleOAPIKeyPairFingerprint("8a:47:95:bb:b1:45:66:ef:99:f5:80:91:cc:be:94:48", &conf),
 					func(s *terraform.State) error {
-						if conf.KeypairName == "" {
+						if conf.GetKeypairName() == "" {
 							return fmt.Errorf("bad: No SG name")
 						}
-						if !strings.HasPrefix(conf.KeypairName, "terraform-") {
-							return fmt.Errorf("No terraform- prefix: %s", conf.KeypairName)
+						if !strings.HasPrefix(conf.GetKeypairName(), "terraform-") {
+							return fmt.Errorf("No terraform- prefix: %s", conf.GetKeypairName())
 						}
 						return nil
 					},
@@ -102,13 +103,12 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		}
 
 		// Try to find key pair
-		var response *oapi.POST_ReadKeypairsResponses
-		var resp *oapi.ReadKeypairsResponse
+		var resp oscgo.ReadKeypairsResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			response, err = conn.OAPI.POST_ReadKeypairs(oapi.ReadKeypairsRequest{
-				Filters: oapi.FiltersKeypair{KeypairNames: []string{rs.Primary.ID}},
-			})
+			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(oscgo.ReadKeypairsRequest{
+				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -120,14 +120,8 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 			return resource.RetryableError(err)
 		})
 
-		if response == nil {
-			return nil
-		}
-
-		resp = response.OK
-
 		if err == nil {
-			if len(resp.Keypairs) > 0 {
+			if len(resp.GetKeypairs()) > 0 {
 				return fmt.Errorf("still exist")
 			}
 			return nil
@@ -146,16 +140,16 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *oapi.Keypair) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairFingerprint(expectedFingerprint string, conf *oscgo.Keypair) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if conf.KeypairFingerprint != expectedFingerprint {
-			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, conf.KeypairFingerprint)
+		if conf.GetKeypairFingerprint() != expectedFingerprint {
+			return fmt.Errorf("incorrect fingerprint. expected %s, got %s", expectedFingerprint, conf.GetKeypairFingerprint())
 		}
 		return nil
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oapi.Keypair) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -165,14 +159,14 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oapi.Keypair) resource
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No OAPIKeyPair name is set")
 		}
-		var resp *oapi.POST_ReadKeypairsResponses
+		var resp oscgo.ReadKeypairsResponse
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, err = conn.OAPI.POST_ReadKeypairs(oapi.ReadKeypairsRequest{
-				Filters: oapi.FiltersKeypair{KeypairNames: []string{rs.Primary.ID}},
-			})
+			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(oscgo.ReadKeypairsRequest{
+				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -185,19 +179,19 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oapi.Keypair) resource
 		if err != nil {
 			return err
 		}
-		if len(resp.OK.Keypairs) != 1 ||
-			resp.OK.Keypairs[0].KeypairName != rs.Primary.ID {
+		if len(resp.GetKeypairs()) != 1 ||
+			resp.GetKeypairs()[0].GetKeypairName() != rs.Primary.ID {
 			return fmt.Errorf("OAPIKeyPair not found")
 		}
 
-		*res = resp.OK.Keypairs[0]
+		*res = resp.GetKeypairs()[0]
 
 		return nil
 	}
 }
 
 func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
-	var conf oapi.Keypair
+	var conf oscgo.Keypair
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{

@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
@@ -11,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	r "github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
@@ -115,7 +117,7 @@ func testCheckResourceOAPILPIGetAttr(name, key string, value *string) r.TestChec
 
 func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if !has {
@@ -127,7 +129,7 @@ func testAccOutscaleOAPIImageLaunchPermissionExists(accountID string, imageID *s
 
 func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		if has, err := hasOAPILaunchPermission(conn, *imageID); err != nil {
 			return err
 		} else if has {
@@ -142,14 +144,14 @@ func testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID string, imageID
 // so we can test that Terraform will react properly
 func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		req := &oapi.DeleteImageRequest{
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		req := oscgo.DeleteImageRequest{
 			ImageId: aws.StringValue(imageID),
 		}
 
 		err := r.Retry(5*time.Minute, func() *r.RetryError {
 			var err error
-			_, err = conn.POST_DeleteImage(*req)
+			_, _, err = conn.ImageApi.DeleteImage(context.Background(), &oscgo.DeleteImageOpts{DeleteImageRequest: optional.NewInterface(req)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return r.RetryableError(err)
@@ -207,8 +209,8 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 
 	return base + fmt.Sprintf(`
 		resource "outscale_image_launch_permission" "outscale_image_launch_permission" {
-				image_id    = "${outscale_image.outscale_image.image_id}"
-				permission_additions {
+			image_id    = "${outscale_image.outscale_image.image_id}"
+			permission_additions {
 				account_ids = ["%s"]
 			}
 		}

@@ -2,15 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIImage() *schema.Resource {
@@ -83,7 +83,6 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// Complex computed values
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -156,134 +155,99 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	executableUsers, executableUsersOk := d.GetOk("permission")
 	filters, filtersOk := d.GetOk("filter")
+	executableUsers, executableUsersOk := d.GetOk("permission")
 	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
-
 	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
 		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
-	params := &oapi.ReadImagesRequest{
-		Filters: oapi.FiltersImage{},
-	}
-
-	if executableUsersOk {
-		params.Filters.PermissionsToLaunchAccountIds = expandStringValueList(executableUsers.([]interface{}))
-	}
+	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if imageIDOk {
-		params.Filters.ImageIds = []string{imageID.(string)}
+		filtersReq.SetImageIds([]string{imageID.(string)})
 	}
 	if aisOk {
-		params.Filters.AccountIds = []string{ai.(string)}
+		filtersReq.SetAccountIds([]string{ai.(string)})
+	}
+	if executableUsersOk {
+		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
 	}
 
-	var result *oapi.ReadImagesResponse
-	var resp *oapi.POST_ReadImagesResponses
-	var err error
-	err = resource.Retry(20*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadImages(*params)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("Error retrieving Outscale Images: %s", errString)
+	req := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: filtersReq,
+		}),
 	}
 
-	result = resp.OK
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available", "destroyed"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "deregistered"),
+		Timeout:    5 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
 
-	if len(result.Images) < 1 {
+	value, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error retrieving Outscale Images (%s): %v", imageID, err)
+	}
+
+	resp := value.(oscgo.ReadImagesResponse)
+	images := resp.GetImages()
+
+	if len(images) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-
-	if len(result.Images) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+	if len(images) > 1 {
+		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
-	d.Set("request_id", result.ResponseContext.RequestId)
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		image := images[0]
+		d.SetId(*image.ImageId)
 
-	return omiOAPIDescriptionAttributes(d, &result.Images[0])
+		set("architecture", image.Architecture)
+		set("creation_date", image.CreationDate)
+		set("description", image.Description)
+		set("image_id", image.ImageId)
+		set("file_location", image.FileLocation)
+		set("account_alias", image.AccountAlias)
+		set("account_id", image.AccountId)
+		set("image_type", image.ImageType)
+		set("image_name", image.ImageName)
+		set("root_device_name", image.RootDeviceName)
+		set("root_device_type", image.RootDeviceType)
+		set("state", image.State)
+
+		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+			return err
+		}
+		if err := set("product_codes", image.ProductCodes); err != nil {
+			return err
+		}
+		if err := set("state_comment", omiOAPIStateReason(image.StateComment)); err != nil {
+			return err
+		}
+		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
+			return err
+		}
+		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
+			return err
+		}
+
+		return d.Set("request_id", resp.ResponseContext.RequestId)
+	})
 }
 
-// populate the numerous fields that the image description returns.
-func omiOAPIDescriptionAttributes(d *schema.ResourceData, image *oapi.Image) error {
-
-	d.SetId(image.ImageId)
-	d.Set("architecture", image.Architecture)
-	d.Set("creation_date", image.CreationDate)
-	d.Set("description", image.Description)
-	//Missing on swager spec
-	//d.Set("hypervisor", image.Hypervisor)
-	d.Set("image_id", image.ImageId)
-	d.Set("file_location", image.FileLocation)
-	if image.AccountAlias != "" {
-		d.Set("account_alias", image.AccountAlias)
-	} else {
-		d.Set("account_alias", "")
-	}
-	d.Set("account_id", image.AccountId)
-	d.Set("image_type", image.ImageType)
-	d.Set("image_name", image.ImageName)
-	//Missing on swager spec
-	//d.Set("is_public", image.Public)
-	if image.RootDeviceName != "" {
-		d.Set("root_device_name", image.RootDeviceName)
-	} else {
-		d.Set("root_device_name", "")
-	}
-	d.Set("root_device_type", image.RootDeviceType)
-	d.Set("state", image.State)
-	//Missing on swager spec
-	//d.Set("virtualization_type", image.VirtualizationType)
-	// Complex types get their own functions
-	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
-		return err
-	}
-	if err := d.Set("product_codes", image.ProductCodes); err != nil {
-		return err
-	}
-	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
-		return err
-	}
-	if err := d.Set("tags", getOapiTagSet(image.Tags)); err != nil {
-		return err
-	}
-
-	d.Set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch))
-
-	return nil
-}
-
-func omiOAPIPermissionToLuch(p oapi.PermissionsOnResource) (res []map[string]interface{}) {
-	for _, v := range p.AccountIds {
+func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
+	for _, v := range *p.AccountIds {
 		res = append(res, map[string]interface{}{
 			"account_id":        v,
 			"global_permission": cast.ToString(p.GlobalPermission),

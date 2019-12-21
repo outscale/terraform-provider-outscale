@@ -9,7 +9,7 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
@@ -51,7 +51,7 @@ func testAccOutscaleOAPISnapshotAttributesAdditionsConfig(includeCreateVolumePer
 		resource "outscale_snapshot_attributes" "self-test" {
 			snapshot_id = "${outscale_snapshot.test.id}"
 		
-			permissions_to_create_volume_additions = {
+			permissions_to_create_volume_additions {
 				account_ids = ["%s"]
 			}
 		}
@@ -73,7 +73,7 @@ func testAccOutscaleOAPISnapshotAttributesRemovalsConfig(includeCreateVolumePerm
 		resource "outscale_snapshot_attributes" "self-test" {
 			snapshot_id = "${outscale_snapshot.test.id}"
 		
-			permissions_to_create_volume_removals = {
+			permissions_to_create_volume_removals {
 				account_ids = ["%s"]
 			}
 		}

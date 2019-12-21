@@ -1,19 +1,20 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"math"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/openlyinc/pointy"
 )
 
 // Creates a network interface in the specified subnet
@@ -99,7 +100,7 @@ func getOAPINicSchema() map[string]*schema.Schema {
 						Computed: true,
 					},
 					"device_number": {
-						Type:     schema.TypeString,
+						Type:     schema.TypeInt,
 						Computed: true,
 					},
 					"vm_id": {
@@ -234,14 +235,14 @@ func getOAPINicSchema() map[string]*schema.Schema {
 //Create OAPINic
 func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	request := oapi.CreateNicRequest{
+	request := oscgo.CreateNicRequest{
 		SubnetId: d.Get("subnet_id").(string),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		request.Description = v.(string)
+		request.SetDescription(v.(string))
 	}
 
 	if v, ok := d.GetOk("security_group_ids"); ok {
@@ -250,21 +251,20 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		for k, v := range m {
 			a[k] = v.(string)
 		}
-		request.SecurityGroupIds = a
+		request.SetSecurityGroupIds(a)
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
-		request.PrivateIps = expandPrivateIPLight(v.(*schema.Set).List())
+		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
 	}
 
 	log.Printf("[DEBUG] Creating network interface")
 
-	var resp *oapi.POST_CreateNicResponses
+	var resp oscgo.CreateNicResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-		resp, err = conn.POST_CreateNic(request)
+		resp, _, err = conn.NicApi.CreateNic(context.Background(), &oscgo.CreateNicOpts{CreateNicRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -278,10 +278,10 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		return fmt.Errorf("Error creating NIC: %s", err)
 	}
 
-	d.SetId(resp.OK.Nic.NicId)
+	d.SetId(resp.Nic.GetNicId())
 
 	if d.IsNewResource() {
-		if err := setOAPITags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
 		d.SetPartial("tags")
@@ -299,18 +299,18 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 //Read OAPINic
 func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OAPI
-	dnir := oapi.ReadNicsRequest{
-		Filters: oapi.FiltersNic{
-			NicIds: []string{d.Id()},
+	conn := meta.(*OutscaleClient).OSCAPI
+	dnir := oscgo.ReadNicsRequest{
+		Filters: &oscgo.FiltersNic{
+			NicIds: &[]string{d.Id()},
 		},
 	}
 
-	var describeResp *oapi.POST_ReadNicsResponses
+	var resp oscgo.ReadNicsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.POST_ReadNics(dnir)
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -334,22 +334,22 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(describeResp.OK.Nics) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", describeResp.OK.Nics)
+	if len(resp.GetNics()) != 1 {
+		return fmt.Errorf("Unable to find ENI: %#v", resp.GetNics())
 	}
 
-	eni := describeResp.OK.Nics[0]
-	d.Set("description", eni.Description)
+	eni := resp.GetNics()[0]
+	d.Set("description", eni.GetDescription())
 
-	d.Set("subnet_id", eni.SubnetId)
+	d.Set("subnet_id", eni.GetSubnetId())
 
 	b := make(map[string]interface{})
-	link := eni.LinkPublicIp
-	b["public_ip_id"] = link.PublicIpId
-	b["link_public_ip_id"] = link.LinkPublicIpId
-	b["public_ip_account_id"] = link.PublicIpAccountId
-	b["public_dns_name"] = link.PublicDnsName
-	b["public_ip"] = link.PublicIp
+	link := eni.GetLinkPublicIp()
+	b["public_ip_id"] = link.GetPublicIpId()
+	b["link_public_ip_id"] = link.GetLinkPublicIpId()
+	b["public_ip_account_id"] = link.GetPublicIpAccountId()
+	b["public_dns_name"] = link.GetPublicDnsName()
+	b["public_ip"] = link.GetPublicIp()
 
 	if err := d.Set("link_public_ip", b); err != nil {
 		return err
@@ -357,13 +357,13 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 	//aa := make([]map[string]interface{}, 1)
 	bb := make(map[string]interface{})
-	att := eni.LinkNic
-	bb["link_nic_id"] = att.LinkNicId
-	bb["delete_on_vm_deletion"] = strconv.FormatBool(aws.BoolValue(att.DeleteOnVmDeletion))
-	bb["device_number"] = strconv.FormatInt(att.DeviceNumber, 10)
-	bb["vm_id"] = att.VmAccountId
-	bb["vm_account_id"] = att.VmAccountId
-	bb["state"] = att.State
+	att := eni.GetLinkNic()
+	bb["link_nic_id"] = att.GetLinkNicId()
+	bb["delete_on_vm_deletion"] = strconv.FormatBool(att.GetDeleteOnVmDeletion())
+	bb["device_number"] = fmt.Sprintf("%d", att.GetDeviceNumber())
+	bb["vm_id"] = att.GetVmId()
+	bb["vm_account_id"] = att.GetVmAccountId()
+	bb["state"] = att.GetState()
 
 	//aa[0] = bb
 	// if err := d.Set("link_nic", aa); err != nil {
@@ -374,42 +374,42 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("subregion_name", eni.SubregionName)
+	d.Set("subregion_name", eni.GetSubregionName())
 
-	x := make([]map[string]interface{}, len(eni.SecurityGroups))
-	for k, v := range eni.SecurityGroups {
+	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
+	for k, v := range eni.GetSecurityGroups() {
 		b := make(map[string]interface{})
-		b["security_group_id"] = v.SecurityGroupId
-		b["security_group_name"] = v.SecurityGroupName
+		b["security_group_id"] = v.GetSecurityGroupId()
+		b["security_group_name"] = v.GetSecurityGroupName()
 		x[k] = b
 	}
 	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
-	d.Set("mac_address", eni.MacAddress)
-	d.Set("nic_id", eni.NicId)
-	d.Set("account_id", eni.AccountId)
-	d.Set("private_dns_name", eni.PrivateDnsName)
+	d.Set("mac_address", eni.GetMacAddress())
+	d.Set("nic_id", eni.GetNicId())
+	d.Set("account_id", eni.GetAccountId())
+	d.Set("private_dns_name", eni.GetPrivateDnsName())
 	//d.Set("private_ip", eni.)
 
-	y := make([]map[string]interface{}, len(eni.PrivateIps))
+	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
 	if eni.PrivateIps != nil {
-		for k, v := range eni.PrivateIps {
+		for k, v := range eni.GetPrivateIps() {
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			assoc := v.LinkPublicIp
-			d["public_ip_id"] = assoc.PublicIpId
-			d["link_public_ip_id"] = assoc.LinkPublicIpId
-			d["public_ip_account_id"] = assoc.PublicIpAccountId
-			d["public_dns_name"] = assoc.PublicDnsName
-			d["public_ip"] = assoc.PublicIp
+			assoc := v.GetLinkPublicIp()
+			d["public_ip_id"] = assoc.GetPublicIpId()
+			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+			d["public_dns_name"] = assoc.GetPublicDnsName()
+			d["public_ip"] = assoc.GetPublicIp()
 
 			b["link_public_ip"] = d
-			b["private_dns_name"] = v.PrivateDnsName
-			b["private_ip"] = v.PrivateIp
-			b["is_primary"] = v.IsPrimary
+			b["private_dns_name"] = v.GetPrivateDnsName()
+			b["private_ip"] = v.GetPrivateIp()
+			b["is_primary"] = v.GetIsPrimary()
 
 			y[k] = b
 		}
@@ -418,11 +418,11 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("request_id", describeResp.OK.ResponseContext.RequestId)
-	d.Set("is_source_dest_checked", eni.IsSourceDestChecked)
-	d.Set("state", eni.State)
-	d.Set("tags", tagsOAPIToMap(eni.Tags))
-	d.Set("net_id", eni.NetId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked())
+	d.Set("state", eni.GetState())
+	d.Set("tags", tagsOSCAPIToMap(eni.GetTags()))
+	d.Set("net_id", eni.GetNetId())
 
 	return nil
 }
@@ -430,7 +430,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 //Delete OAPINic
 func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
@@ -439,12 +439,12 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	deleteEniOpts := oapi.DeleteNicRequest{
+	deleteEniOpts := oscgo.DeleteNicRequest{
 		NicId: d.Id(),
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.POST_DeleteNic(deleteEniOpts)
+		_, _, err = conn.NicApi.DeleteNic(context.Background(), &oscgo.DeleteNicOpts{DeleteNicRequest: optional.NewInterface(deleteEniOpts)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -466,16 +466,15 @@ func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID strin
 	// if there was an old nic_link, remove it
 	if oa != nil {
 		oa := oa.(map[string]interface{})
-		dr := oapi.UnlinkNicRequest{
+		dr := oscgo.UnlinkNicRequest{
 			LinkNicId: oa["link_nic_id"].(string),
 		}
 
-		conn := meta.(*OutscaleClient).OAPI
+		conn := meta.(*OutscaleClient).OSCAPI
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.POST_UnlinkNic(dr)
+			_, _, err = conn.NicApi.UnlinkNic(context.Background(), &oscgo.UnlinkNicOpts{UnlinkNicRequest: optional.NewInterface(dr)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -509,9 +508,9 @@ func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID strin
 
 //Update OAPINic
 func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	d.Partial(true)
+	var err error
 
 	if d.HasChange("link_nic") {
 		oa, na := d.GetChange("link_nic")
@@ -525,15 +524,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		if na != nil && len(na.([]interface{})) > 0 {
 			na := na.([]interface{})[0].(map[string]interface{})
 			di := na["device_number"].(int)
-			ar := oapi.LinkNicRequest{
+			ar := oscgo.LinkNicRequest{
 				DeviceNumber: int64(di),
 				VmId:         na["instance"].(string),
 				NicId:        d.Id(),
 			}
 
-			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, err = conn.POST_LinkNic(ar)
+				_, _, err = conn.NicApi.LinkNic(context.Background(), &oscgo.LinkNicOpts{LinkNicRequest: optional.NewInterface(ar)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -557,15 +555,13 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 
 		// Unassign old IP addresses
 		if len(o.(*schema.Set).List()) != 0 {
-			input := oapi.UnlinkPrivateIpsRequest{
+			input := oscgo.UnlinkPrivateIpsRequest{
 				NicId:      d.Id(),
 				PrivateIps: flattenPrivateIPLightToStringSlice(o.(*schema.Set).List()),
 			}
 
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-				_, err = conn.POST_UnlinkPrivateIps(input)
+			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -582,15 +578,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 
 		// Assign new IP addresses
 		if len(n.(*schema.Set).List()) != 0 {
-			input := oapi.LinkPrivateIpsRequest{
+			stringSlice := flattenPrivateIPLightToStringSlice(n.(*schema.Set).List())
+			input := oscgo.LinkPrivateIpsRequest{
 				NicId:      d.Id(),
-				PrivateIps: flattenPrivateIPLightToStringSlice(n.(*schema.Set).List()),
+				PrivateIps: &stringSlice,
 			}
 
-			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-				_, err = conn.POST_LinkPrivateIps(input)
+				_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -609,7 +604,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	// Missing Sourcedestcheck
-	// request := oapi.UpdateNicRequest{
+	// request := oscgo.UpdateNicRequest{
 	// 	NicId:           d.Id(),
 	// 	SourceDestCheck: &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("is_source_dest_checked").(bool))},
 	// }
@@ -647,20 +642,20 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 
 		if o != nil && o != 0 && n != nil && n != len(prips) {
-
 			diff := n.(int) - o.(int)
 
 			// Surplus of IPs, add the diff
 			if diff > 0 {
-				input := oapi.LinkPrivateIpsRequest{
+				dif := int32(diff)
+				input := oscgo.LinkPrivateIpsRequest{
 					NicId:                   d.Id(),
-					SecondaryPrivateIpCount: int64(diff),
+					SecondaryPrivateIpCount: pointy.Int64(int64(dif)),
 				}
 				// _, err := conn.VM.AssignPrivateIpAddresses(input)
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					var err error
-					_, err = conn.POST_LinkPrivateIps(input)
+					_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -675,14 +670,13 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 
 			if diff < 0 {
-				input := oapi.UnlinkPrivateIpsRequest{
+				input := oscgo.UnlinkPrivateIpsRequest{
 					NicId:      d.Id(),
 					PrivateIps: expandStringValueList(prips[0:int(math.Abs(float64(diff)))]),
 				}
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					var err error
-					_, err = conn.POST_UnlinkPrivateIps(input)
+					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -702,14 +696,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if d.HasChange("security_group_ids") {
-		request := oapi.UpdateNicRequest{
+		stringValueList := expandStringValueList(d.Get("security_group_ids").([]interface{}))
+		request := oscgo.UpdateNicRequest{
 			NicId:            d.Id(),
-			SecurityGroupIds: expandStringValueList(d.Get("security_group_ids").([]interface{})),
+			SecurityGroupIds: &stringValueList,
 		}
 
-		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err = conn.POST_UpdateNic(request)
+			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -727,15 +721,14 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	}
 
 	if d.HasChange("description") {
-		request := oapi.UpdateNicRequest{
+		request := oscgo.UpdateNicRequest{
 			NicId:       d.Id(),
-			Description: d.Get("description").(string),
+			Description: d.Get("description").(*string),
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.POST_UpdateNic(request)
+			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -752,7 +745,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("description")
 	}
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -763,18 +756,17 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	return resourceOutscaleOAPINicRead(d, meta)
 }
 
-func nicLinkRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
+func nicLinkRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
-		dnir := &oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{NicIds: []string{id}},
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{id}},
 		}
 
-		var describeResp *oapi.POST_ReadNicsResponses
+		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.POST_ReadNics(*dnir)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -784,45 +776,34 @@ func nicLinkRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc 
 			return nil
 		})
 
-		var errString string
-
-		if err != nil || describeResp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if describeResp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
-			} else if describeResp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
-			} else if describeResp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
-			}
+		if err != nil {
+			errString := err.Error()
 			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
 			return nil, "", fmt.Errorf("Could not find network interface: %s", errString)
 
 		}
 
-		eni := describeResp.OK.Nics[0]
-		//hasLink := strconv.FormatBool(&eni.LinkNic != nil || !reflect.DeepEqual(eni.LinkNic, oapi.LinkNic{}))
-		hasLink := strconv.FormatBool(eni.LinkNic.LinkNicId != "")
+		eni := resp.GetNics()[0]
+		//hasLink := strconv.FormatBool(&eni.LinkNic != nil || !reflect.DeepEqual(eni.LinkNic, oscgo.LinkNic{}))
+		hasLink := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
 		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasLink)
 		return eni, hasLink, nil
 	}
 }
 
-func networkInterfaceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
+func networkInterfaceOAPIAttachmentRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		dnir := oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{
-				NicIds: []string{id},
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{
+				NicIds: &[]string{id},
 			},
 		}
 
-		var describeResp *oapi.POST_ReadNicsResponses
+		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.POST_ReadNics(dnir)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -837,20 +818,22 @@ func networkInterfaceOAPIAttachmentRefreshFunc(conn *oapi.Client, id string) res
 			return nil, "", err
 		}
 
-		eni := describeResp.OK.Nics[0]
-		hasAttachment := strconv.FormatBool(eni.LinkNic.LinkNicId != "")
+		eni := resp.GetNics()[0]
+		hasAttachment := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
 		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
 		return eni, hasAttachment, nil
 	}
 }
 
-func expandPrivateIPLight(pIPs []interface{}) []oapi.PrivateIpLight {
-	privateIPs := make([]oapi.PrivateIpLight, 0)
+func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {
+	privateIPs := make([]oscgo.PrivateIpLight, 0)
 	for _, v := range pIPs {
 		privateIPMap := v.(map[string]interface{})
-		privateIP := oapi.PrivateIpLight{
-			IsPrimary: privateIPMap["is_primary"].(bool),
-			PrivateIp: privateIPMap["private_ip"].(string),
+		isPrimary := privateIPMap["is_primary"].(bool)
+		private := privateIPMap["private_ip"].(string)
+		privateIP := oscgo.PrivateIpLight{
+			IsPrimary: &isPrimary,
+			PrivateIp: &private,
 		}
 		privateIPs = append(privateIPs, privateIP)
 	}

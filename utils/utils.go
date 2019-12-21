@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/spf13/cast"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,6 +20,10 @@ func PrintToJSON(v interface{}, msg string) {
 func ToJSONString(v interface{}) string {
 	pretty, _ := json.MarshalIndent(v, "", "  ")
 	return string(pretty)
+}
+
+func GetErrorResponse(err error) error {
+	return fmt.Errorf("%s %s", err, ToJSONString(err.(oscgo.GenericOpenAPIError).Model().(oscgo.ErrorResponse)))
 }
 
 // StringSliceToPtrInt64Slice ...
@@ -38,6 +43,14 @@ func StringSliceToPtrInt64Slice(src []*string) []*int64 {
 func StringSliceToInt64Slice(src []string) (res []int64) {
 	for _, str := range src {
 		res = append(res, cast.ToInt64(str))
+	}
+	return
+}
+
+// StringSliceToInt32Slice converts []string to []int32 ...
+func StringSliceToInt32Slice(src []string) (res []int32) {
+	for _, str := range src {
+		res = append(res, cast.ToInt32(str))
 	}
 	return
 }

@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOAPIInternetServices() *schema.Resource {
@@ -54,7 +55,7 @@ func datasourceOutscaleOAPIInternetServices() *schema.Resource {
 }
 
 func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
@@ -64,27 +65,28 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	}
 
 	// Build up search parameters
-	params := &oapi.ReadInternetServicesRequest{
-		Filters: oapi.FiltersInternetService{},
+	params := oscgo.ReadInternetServicesRequest{
+		Filters: &oscgo.FiltersInternetService{},
 	}
-
+	filter := oscgo.FiltersInternetService{}
 	if internetIDOk {
 		i := internetID.([]string)
 		in := make([]string, len(i))
 		for k, v := range i {
 			in[k] = v
 		}
-		params.Filters.InternetServiceIds = in
+		filter.SetInternetServiceIds(in)
+		params.SetFilters(filter)
 	}
 
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
+		params.Filters = buildOutscaleOSCAPIDataSourceInternetServiceFilters(filters.(*schema.Set))
 	}
 
-	var resp *oapi.POST_ReadInternetServicesResponses
+	var resp oscgo.ReadInternetServicesResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadInternetServices(*params)
+		resp, _, err = conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(params)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -97,47 +99,38 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("[DEBUG] Error reading Internet Services (%s)", errString)
 	}
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
 
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	d.SetId(resource.UniqueId())
 
-	result := resp.OK.InternetServices
+	result := resp.GetInternetServices()
 	return internetServicesOAPIDescriptionAttributes(d, result)
 }
 
-func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oapi.InternetService) error {
+func internetServicesOAPIDescriptionAttributes(d *schema.ResourceData, internetServices []oscgo.InternetService) error {
 
 	i := make([]map[string]interface{}, len(internetServices))
 	for k, v := range internetServices {
 		im := make(map[string]interface{})
-		if v.State != "" {
-			im["state"] = v.State
+		if v.GetState() != "" {
+			im["state"] = v.GetState()
 		}
 
-		if v.NetId != "" {
-			im["net_id"] = v.NetId
+		if v.GetNetId() != "" {
+			im["net_id"] = v.GetNetId()
 		}
-		if v.InternetServiceId != "" {
-			im["internet_service_id"] = v.InternetServiceId
+		if v.GetInternetServiceId() != "" {
+			im["internet_service_id"] = v.GetInternetServiceId()
 		}
 		if v.Tags != nil {
-			im["tags"] = tagsOAPIToMap(v.Tags)
+			im["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
 		i[k] = im
 	}

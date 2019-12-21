@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"testing"
@@ -9,12 +12,10 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
-	var connection oapi.NetPeering
+	var connection oscgo.NetPeering
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -38,15 +39,15 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
-	var connection oapi.NetPeering
+	var connection oscgo.NetPeering
 
 	// reach out and DELETE the VPC Peering connection outside of Terraform
 	testDestroy := func(*terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		log.Printf("[DEBUG] Test deleting the Net Peering.")
-		_, err := conn.POST_DeleteNetPeering(oapi.DeleteNetPeeringRequest{
-			NetPeeringId: connection.NetPeeringId,
-		})
+		_, _, err := conn.NetPeeringApi.DeleteNetPeering(context.Background(), &oscgo.DeleteNetPeeringOpts{DeleteNetPeeringRequest: optional.NewInterface(oscgo.DeleteNetPeeringRequest{
+			NetPeeringId: connection.GetNetPeeringId(),
+		})})
 		if err != nil {
 			return err
 		}
@@ -76,19 +77,19 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_net_peering" {
 			continue
 		}
 
-		var resp *oapi.POST_ReadNetPeeringsResponses
+		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
-				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{rs.Primary.ID}},
-			})
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -101,24 +102,14 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-			}
+		if err != nil {
+			errString = err.Error()
 			return fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		result := resp.OK
-
-		pc := &oapi.NetPeering{}
-		for _, c := range result.NetPeerings {
-			if rs.Primary.ID == c.NetPeeringId {
+		pc := &oscgo.NetPeering{}
+		for _, c := range resp.GetNetPeerings() {
+			if rs.Primary.ID == c.GetNetPeeringId() {
 				pc = &c
 			}
 		}
@@ -128,8 +119,8 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 			return nil
 		}
 
-		if pc.State.Name != "" {
-			if pc.State.Name == "deleted" {
+		if pc.State.GetName() != "" {
+			if pc.State.GetName() == "deleted" {
 				return nil
 			}
 			return fmt.Errorf("Found the Net Peering in an unexpected state: %v", pc)
@@ -142,7 +133,7 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 	return nil
 }
 
-func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oapi.NetPeering) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oscgo.NetPeering) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -153,14 +144,14 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oa
 			return fmt.Errorf("No Net Peering ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		var resp *oapi.POST_ReadNetPeeringsResponses
+		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
-				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{rs.Primary.ID}},
-			})
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -173,26 +164,16 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *oa
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-			}
+		if err != nil {
+			errString = err.Error()
 			return fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		result := resp.OK
-
-		if len(result.NetPeerings) == 0 {
+		if len(resp.GetNetPeerings()) == 0 {
 			return fmt.Errorf("Net Peering could not be found")
 		}
 
-		*connection = result.NetPeerings[0]
+		*connection = resp.GetNetPeerings()[0]
 
 		return nil
 	}
@@ -219,7 +200,7 @@ const testAccOAPIVpcPeeringConfig = `
 `
 
 //FIXME: check where is used.
-// func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, options *oapi.NetPeeringOptionsDescription) resource.TestCheckFunc {
+// func testAccCheckOutscaleOAPILinPeeringConnectionOptions(n, block string, options *oscgo.NetPeeringOptionsDescription) resource.TestCheckFunc {
 // 	return func(s *terraform.State) error {
 // 		rs, ok := s.RootModule().Resources[n]
 // 		if !ok {
@@ -230,13 +211,13 @@ const testAccOAPIVpcPeeringConfig = `
 // 			return fmt.Errorf("No Net Peering ID is set")
 // 		}
 
-// 		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+// 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-// 		var resp *oapi.ReadNetPeeringsOutput
+// 		var resp *oscgo.ReadNetPeeringsOutput
 // 		var err error
 // 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 // 			resp, err = conn.VM.ReadNetPeerings(
-// 				&oapi.ReadNetPeeringsRequest{
+// 				&oscgo.ReadNetPeeringsRequest{
 // 					NetPeeringIds: []*string{aws.String(rs.Primary.ID)},
 // 				})
 

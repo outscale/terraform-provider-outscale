@@ -1,39 +1,41 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	req := &oapi.ReadKeypairsRequest{
-		Filters: oapi.FiltersKeypair{KeypairNames: []string{d.Id()}},
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
 
 	KeyName, KeyNameisOk := d.GetOk("keypair_name")
 	if KeyNameisOk {
-		req.Filters.KeypairNames = []string{KeyName.(string)}
+		filter := oscgo.FiltersKeypair{}
+		filter.SetKeypairNames([]string{KeyName.(string)})
+		req.SetFilters(filter)
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set))
+		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var response *oapi.ReadKeypairsResponse
-	var resp *oapi.POST_ReadKeypairsResponses
+	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.POST_ReadKeypairs(*req)
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -46,42 +48,32 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
-				d.SetId("")
-				return nil
-			}
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+			d.SetId("")
+			return nil
 		}
+		errString = err.Error()
 
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	response = resp.OK
-
-	if len(response.Keypairs) < 1 {
+	if len(resp.GetKeypairs()) < 1 {
 		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
 	}
-	if len(response.Keypairs) > 1 {
+	if len(resp.GetKeypairs()) > 1 {
 
 		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
 	}
 
-	if response.ResponseContext.RequestId != "" {
-		d.Set("request_id", response.ResponseContext.RequestId)
+	if resp.ResponseContext.GetRequestId() != "" {
+		d.Set("request_id", resp.ResponseContext.GetRequestId())
 	}
 
-	keypair := response.Keypairs[0]
-	d.Set("keypair_name", keypair.KeypairName)
-	d.Set("keypair_fingerprint", keypair.KeypairFingerprint)
-	d.SetId(keypair.KeypairName)
+	keypair := resp.GetKeypairs()[0]
+	d.Set("keypair_name", keypair.GetKeypairName())
+	d.Set("keypair_fingerprint", keypair.GetKeypairFingerprint())
+	d.SetId(keypair.GetKeypairName())
 	return nil
 }
 
@@ -109,8 +101,8 @@ func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 	}
 }
 
-func buildOutscaleOAPIKeyPairsDataSourceFilters(set *schema.Set) oapi.FiltersKeypair {
-	var filters oapi.FiltersKeypair
+func buildOutscaleOAPIKeyPairsDataSourceFilters(set *schema.Set) oscgo.FiltersKeypair {
+	var filters oscgo.FiltersKeypair
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -120,9 +112,9 @@ func buildOutscaleOAPIKeyPairsDataSourceFilters(set *schema.Set) oapi.FiltersKey
 
 		switch name := m["name"].(string); name {
 		case "keypair_fingerprints":
-			filters.KeypairFingerprints = filterValues
+			filters.SetKeypairFingerprints(filterValues)
 		case "keypair_names":
-			filters.KeypairNames = filterValues
+			filters.SetKeypairNames(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

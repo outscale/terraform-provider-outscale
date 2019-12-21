@@ -1,11 +1,12 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -57,7 +58,7 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Reading VPC Peering Connections.")
 
@@ -66,14 +67,13 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 		return fmt.Errorf("One of filters must be assigned")
 	}
 
-	params := oapi.ReadNetPeeringsRequest{
-		Filters: buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)),
-	}
+	params := oscgo.ReadNetPeeringsRequest{}
+	params.SetFilters(buildOutscaleOAPILinPeeringConnectionFilters(filters.(*schema.Set)))
 
-	var resp *oapi.POST_ReadNetPeeringsResponses
+	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadNetPeerings(params)
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(params)})
 		return resource.RetryableError(err)
 	})
 
@@ -81,11 +81,11 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 		return fmt.Errorf("Error reading the Net Peerings %s", err)
 	}
 
-	if resp.OK.NetPeerings == nil || len(resp.OK.NetPeerings) == 0 {
+	if resp.GetNetPeerings() == nil || len(resp.GetNetPeerings()) == 0 {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	peerings := resp.OK.NetPeerings
+	peerings := resp.GetNetPeerings()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())
@@ -94,40 +94,42 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 			log.Printf("[DEBUG] Net Peerings ERR %+v", err)
 			return err
 		}
-		return d.Set("request_id", resp.OK.ResponseContext.RequestId)
+		return d.Set("request_id", resp.ResponseContext.GetRequestId())
 	})
 }
 
-func getOAPINetPeerings(peerings []oapi.NetPeering) (res []map[string]interface{}) {
-	for _, p := range peerings {
-		res = append(res, map[string]interface{}{
-			"accepter_net":   getOAPINetPeeringAccepterNet(p.AccepterNet),
-			"net_peering_id": p.NetPeeringId,
-			"source_net":     getOAPINetPeeringSourceNet(p.SourceNet),
-			"state":          getOAPINetPeeringState(p.State),
-			"tags":           getOapiTagSet(p.Tags),
-		})
+func getOAPINetPeerings(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
+	if peerings != nil {
+		for _, p := range peerings {
+			res = append(res, map[string]interface{}{
+				"accepter_net":   getOAPINetPeeringAccepterNet(p.GetAccepterNet()),
+				"net_peering_id": p.GetNetPeeringId(),
+				"source_net":     getOAPINetPeeringSourceNet(p.GetSourceNet()),
+				"state":          getOAPINetPeeringState(p.GetState()),
+				//"tags":           getOapiTagSet(p.Tags),
+			})
+		}
 	}
 	return res
 }
 
-func getOAPINetPeeringAccepterNet(a oapi.AccepterNet) map[string]interface{} {
+func getOAPINetPeeringAccepterNet(a oscgo.AccepterNet) map[string]interface{} {
 	return map[string]interface{}{
-		"ip_range":   a.IpRange,
-		"account_id": a.AccountId,
-		"net_id":     a.NetId,
+		"ip_range":   a.GetIpRange(),
+		"account_id": a.GetAccountId(),
+		"net_id":     a.GetNetId(),
 	}
 }
 
-func getOAPINetPeeringSourceNet(a oapi.SourceNet) map[string]interface{} {
+func getOAPINetPeeringSourceNet(a oscgo.SourceNet) map[string]interface{} {
 	return map[string]interface{}{
-		"ip_range":   a.IpRange,
-		"account_id": a.AccountId,
-		"net_id":     a.NetId,
+		"ip_range":   a.GetIpRange(),
+		"account_id": a.GetAccountId(),
+		"net_id":     a.GetNetId(),
 	}
 }
 
-func getOAPINetPeeringState(a oapi.NetPeeringState) map[string]interface{} {
+func getOAPINetPeeringState(a oscgo.NetPeeringState) map[string]interface{} {
 	return map[string]interface{}{
 		"name":    a.Name,
 		"message": a.Message,

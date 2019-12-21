@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
@@ -81,22 +83,21 @@ func expandAccountIds(param interface{}) []string {
 }
 
 func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	snapshotID := d.Get("snapshot_id").(string)
 
-	req := oapi.UpdateSnapshotRequest{
+	req := oscgo.UpdateSnapshotRequest{
 		SnapshotId: snapshotID,
 	}
 
-	perms := oapi.PermissionsOnResourceCreation{}
+	perms := oscgo.PermissionsOnResourceCreation{}
 
 	if addPermsParam, ok := d.GetOk("permissions_to_create_volume_additions"); ok {
 		AddPerms := addPermsParam.([]interface{})
-
+		addition := oscgo.PermissionsOnResource{}
 		if len(AddPerms) > 0 {
-
-			perms.Additions = oapi.PermissionsOnResource{}
+			perms.SetAdditions(addition)
 
 			addMap := AddPerms[0].(map[string]interface{})
 			if addMap["account_ids"] != nil {
@@ -105,11 +106,13 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 				for i, v := range paramIds {
 					accountIds[i] = v.(string)
 				}
-				perms.Additions.AccountIds = accountIds
+				addition.SetAccountIds(accountIds)
+				perms.SetAdditions(addition)
 			}
 			if addMap["global_permission"] != nil {
 				globalPermission := addMap["global_permission"].(bool)
-				perms.Additions.GlobalPermission = globalPermission
+				addition.SetGlobalPermission(globalPermission)
+				perms.SetAdditions(addition)
 			}
 		}
 	}
@@ -118,8 +121,8 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 		removalPerms := removalPermsParam.([]interface{})
 
 		if len(removalPerms) > 0 {
-
-			perms.Removals = oapi.PermissionsOnResource{}
+			removal := oscgo.PermissionsOnResource{}
+			perms.SetRemovals(removal)
 
 			removalMap := removalPerms[0].(map[string]interface{})
 			if removalMap["account_ids"] != nil {
@@ -128,20 +131,22 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 				for i, v := range paramIds {
 					accountIds[i] = v.(string)
 				}
-				perms.Removals.AccountIds = accountIds
+				removal.SetAccountIds(accountIds)
+				perms.SetRemovals(removal)
 			}
 			if removalMap["global_permission"] != nil {
 				globalPermission := removalMap["global_permission"].(bool)
-				perms.Additions.GlobalPermission = globalPermission
+				removal.SetGlobalPermission(globalPermission)
+				perms.SetRemovals(removal)
 			}
 		}
 	}
 
-	req.PermissionsToCreateVolume = perms
+	req.SetPermissionsToCreateVolume(perms)
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, err = conn.POST_UpdateSnapshot(req)
+		_, _, err = conn.SnapshotApi.UpdateSnapshot(context.Background(), &oscgo.UpdateSnapshotOpts{UpdateSnapshotRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -164,16 +169,16 @@ func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta 
 }
 
 func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var attrs *oapi.POST_ReadSnapshotsResponses
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		attrs, err = conn.POST_ReadSnapshots(oapi.ReadSnapshotsRequest{
-			Filters: oapi.FiltersSnapshot{
-				SnapshotIds: []string{d.Id()},
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(oscgo.ReadSnapshotsRequest{
+			Filters: &oscgo.FiltersSnapshot{
+				SnapshotIds: &[]string{d.Id()},
 			},
-		})
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -192,16 +197,16 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 
 	lp := make([]map[string]interface{}, 1)
 	lp[0] = make(map[string]interface{})
-	lp[0]["global_permission"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.GlobalPermission
-	lp[0]["account_ids"] = attrs.OK.Snapshots[0].PermissionsToCreateVolume.AccountIds
+	lp[0]["global_permission"] = resp.GetSnapshots()[0].PermissionsToCreateVolume.GetGlobalPermission()
+	lp[0]["account_ids"] = resp.GetSnapshots()[0].PermissionsToCreateVolume.GetAccountIds()
 
 	if err := d.Set("permissions_to_create_volume_additions", lp); err != nil {
 		return err
 	}
-	if err := d.Set("account_id", attrs.OK.Snapshots[0].AccountId); err != nil {
+	if err := d.Set("account_id", resp.GetSnapshots()[0].GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", attrs.OK.ResponseContext.RequestId); err != nil {
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 

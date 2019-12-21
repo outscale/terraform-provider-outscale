@@ -2,15 +2,15 @@ package outscale
 
 import (
 	"fmt"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
-	var route oapi.Route
+	var route oscgo.Route
 
 	testCheck := func(s *terraform.State) error {
 		return nil
@@ -46,7 +46,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIRouteExists(n string, res *oapi.Route) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -57,7 +57,7 @@ func testAccCheckOutscaleOAPIRouteExists(n string, res *oapi.Route) resource.Tes
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		r, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
@@ -84,7 +84,7 @@ func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		route, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],

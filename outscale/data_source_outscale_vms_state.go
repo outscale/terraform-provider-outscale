@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIVMSState() *schema.Resource {
@@ -43,7 +45,7 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 }
 
 func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	instanceIds, instanceIdsOk := d.GetOk("vm_ids")
@@ -52,19 +54,21 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		return errors.New("vm_id or filter must be set")
 	}
 
-	params := oapi.ReadVmsStateRequest{}
+	params := oscgo.ReadVmsStateRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
 	}
 	if instanceIdsOk {
-		params.Filters.VmIds = oapiExpandStringList(instanceIds.([]interface{}))
+		filter := oscgo.FiltersVmsState{}
+		filter.SetVmIds(oapiExpandStringList(instanceIds.([]interface{})))
+		params.SetFilters(filter)
 	}
 
-	var resp *oapi.POST_ReadVmsStateResponses
+	var resp oscgo.ReadVmsStateResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadVmsState(params)
+		resp, _, err = conn.VmApi.ReadVmsState(context.Background(), &oscgo.ReadVmsStateOpts{ReadVmsStateRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -78,17 +82,16 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	filteredStates := resp.OK.VmStates[:]
+	filteredStates := resp.GetVmStates()[:]
 
 	if len(filteredStates) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
 }
 
-func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oapi.VmStates) error {
-
+func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
 	d.SetId(resource.UniqueId())
 
 	states := make([]map[string]interface{}, len(status))

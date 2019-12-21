@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIVpc() *schema.Resource {
@@ -53,24 +55,22 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.ReadNetsRequest{}
+	req := oscgo.ReadNetsRequest{}
 
 	if v, ok := d.GetOk("filter"); ok {
-		req.Filters = buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set))
+		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set)))
 	}
 
 	if id := d.Get("net_id"); id != "" {
-		req.Filters.NetIds = []string{id.(string)}
+		req.Filters.SetNetIds([]string{id.(string)})
 	}
 
 	var err error
-	var resp *oapi.POST_ReadNetsResponses
+	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-
-		resp, err = conn.POST_ReadNets(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -83,28 +83,28 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.OK.Nets) == 0 {
+	if len(resp.GetNets()) == 0 {
 		return fmt.Errorf("No matching Net found")
 	}
-	if len(resp.OK.Nets) > 1 {
+	if len(resp.GetNets()) > 1 {
 		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
 	}
 
-	net := resp.OK.Nets[0]
+	net := resp.GetNets()[0]
 
-	d.SetId(net.NetId)
-	d.Set("net_id", net.NetId)
-	d.Set("ip_range", net.IpRange)
-	d.Set("dhcp_options_set_id", net.DhcpOptionsSetId)
-	d.Set("tenancy", net.Tenancy)
-	d.Set("state", net.State)
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.SetId(net.GetNetId())
+	d.Set("net_id", net.GetNetId())
+	d.Set("ip_range", net.GetIpRange())
+	d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId())
+	d.Set("tenancy", net.GetTenancy())
+	d.Set("state", net.GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return d.Set("tags", tagsOAPIToMap(net.Tags))
+	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }
 
-func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.FiltersNet {
-	var filters oapi.FiltersNet
+func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
+	var filters oscgo.FiltersNet
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -114,20 +114,20 @@ func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oapi.FiltersNet {
 
 		switch name := m["name"].(string); name {
 		case "net_ids":
-			filters.NetIds = filterValues
+			filters.SetNetIds(filterValues)
 		case "ip_range":
-			filters.IpRanges = filterValues
+			filters.SetIpRanges(filterValues)
 		case "dhcp_options_set_id":
-			filters.DhcpOptionsSetIds = filterValues
+			filters.SetDhcpOptionsSetIds(filterValues)
 		case "is_default":
 			//bool
 			//filters.IsDefault = filterValues
 		case "state":
-			filters.States = filterValues
+			filters.SetStates(filterValues)
 		case "tag_key":
-			filters.TagKeys = filterValues
+			filters.SetTagKeys(filterValues)
 		case "tag_value":
-			filters.TagValues = filterValues
+			filters.SetTagValues(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

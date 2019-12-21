@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"os"
 	"strings"
@@ -10,12 +13,11 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
-	var a oapi.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	var a oscgo.PublicIp
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +41,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -52,12 +54,12 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp)
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		request := oapi.ReadPublicIpsRequest{
-			Filters: oapi.FiltersPublicIp{
-				LinkPublicIpIds: []string{res.LinkPublicIpId},
+		request := oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				LinkPublicIpIds: &[]string{res.GetLinkPublicIpId()},
 			},
 		}
-		describe, err := conn.OAPI.POST_ReadPublicIps(request)
+		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
 
 		if err != nil {
 			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
@@ -65,12 +67,12 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oapi.PublicIp)
 		}
 
 		//Missing on Swagger Spec
-		if len(describe.OK.PublicIps) != 1 ||
-			describe.OK.PublicIps[0].LinkPublicIpId != res.LinkPublicIpId {
+		if len(response.GetPublicIps()) != 1 ||
+			response.GetPublicIps()[0].GetLinkPublicIpId() != res.GetLinkPublicIpId() {
 			return fmt.Errorf("Public IP Link not found")
 		}
 
-		if len(describe.OK.PublicIps) != 1 {
+		if len(response.GetPublicIps()) != 1 {
 			return fmt.Errorf("Public IP Link not found")
 		}
 
@@ -92,12 +94,12 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		request := oapi.ReadPublicIpsRequest{
-			Filters: oapi.FiltersPublicIp{
-				LinkPublicIpIds: []string{id},
+		request := oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				LinkPublicIpIds: &[]string{id},
 			},
 		}
-		describe, err := conn.OAPI.POST_ReadPublicIps(request)
+		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
 
 		log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
 
@@ -105,14 +107,14 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 			return err
 		}
 
-		if len(describe.OK.PublicIps) > 0 {
+		if len(response.GetPublicIps()) > 0 {
 			return fmt.Errorf("Public IP Link still exists")
 		}
 	}
 	return nil
 }
 
-func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -127,36 +129,34 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resou
 
 		// Missing on Swagger Spec
 		if strings.Contains(rs.Primary.ID, "reservation") {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.FiltersPublicIp{
-					LinkPublicIpIds: []string{rs.Primary.ID},
+			req := oscgo.ReadPublicIpsRequest{
+				Filters: &oscgo.FiltersPublicIp{
+					LinkPublicIpIds: &[]string{rs.Primary.ID},
 				},
 			}
-			resp, err := conn.OAPI.POST_ReadPublicIps(req)
+			resp, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				return err
 			}
 
-			describe := resp.OK
-
-			if len(describe.PublicIps) != 1 ||
-				describe.PublicIps[0].LinkPublicIpId != rs.Primary.ID {
+			if len(resp.GetPublicIps()) != 1 ||
+				resp.GetPublicIps()[0].GetLinkPublicIpId() != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = describe.PublicIps[0]
+			*res = resp.GetPublicIps()[0]
 
 		} else {
-			req := oapi.ReadPublicIpsRequest{
-				Filters: oapi.FiltersPublicIp{
-					PublicIps: []string{rs.Primary.ID},
+			req := oscgo.ReadPublicIpsRequest{
+				Filters: &oscgo.FiltersPublicIp{
+					PublicIps: &[]string{rs.Primary.ID},
 				},
 			}
 
-			var describe *oapi.ReadPublicIpsResponse
+			var response oscgo.ReadPublicIpsResponse
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				resp, err := conn.OAPI.POST_ReadPublicIps(req)
+				response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
 
 				if err != nil {
 					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
@@ -165,7 +165,6 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resou
 
 					return resource.NonRetryableError(err)
 				}
-				describe = resp.OK
 				return nil
 			})
 
@@ -187,11 +186,11 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oapi.PublicIp) resou
 				return err
 			}
 
-			if len(describe.PublicIps) != 1 ||
-				describe.PublicIps[0].PublicIp != rs.Primary.ID {
+			if len(response.GetPublicIps()) != 1 ||
+				response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
-			*res = describe.PublicIps[0]
+			*res = response.GetPublicIps()[0]
 		}
 
 		return nil

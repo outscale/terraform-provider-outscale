@@ -1,17 +1,20 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
+	"github.com/antihax/optional"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/openlyinc/pointy"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 const (
@@ -59,6 +62,7 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 			"architecture": {
 				Type:     schema.TypeString,
@@ -194,233 +198,165 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 }
 
 func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oapi.CreateImageRequest{
-		ImageName:        d.Get("image_name").(string),
-		VmId:             d.Get("vm_id").(string),
-		Description:      d.Get("description").(string),
-		NoReboot:         d.Get("no_reboot").(bool),
-		Architecture:     d.Get("architecture").(string),
-		FileLocation:     d.Get("file_location").(string),
-		SourceImageId:    d.Get("source_image_id").(string),
-		SourceRegionName: d.Get("source_region_name").(string),
-		RootDeviceName:   d.Get("root_device_name").(string),
+	imageRequest := oscgo.CreateImageRequest{
+		ImageName: pointy.String(cast.ToString(d.Get("image_name"))),
 	}
 
-	var result *oapi.CreateImageResponse
-	var resp *oapi.POST_CreateImageResponses
-	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_CreateImage(*req)
+	if v := cast.ToString(d.Get("vm_id")); v != "" {
+		imageRequest.SetVmId(v)
+	}
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
+	if v := cast.ToString(d.Get("description")); v != "" {
+		imageRequest.SetDescription(v)
+	}
 
-		return nil
+	if v, ok := d.GetOk("no_reboot"); ok {
+		imageRequest.SetNoReboot(cast.ToBool(v))
+	}
+
+	if v := cast.ToString(d.Get("architecture")); v != "" {
+		imageRequest.SetArchitecture(v)
+	}
+
+	if v := cast.ToString(d.Get("file_location")); v != "" {
+		imageRequest.SetFileLocation(v)
+	}
+
+	if v := cast.ToString(d.Get("source_image_id")); v != "" {
+		imageRequest.SetSourceImageId(v)
+	}
+
+	if v := cast.ToString(d.Get("source_region_name")); v != "" {
+		imageRequest.SetSourceRegionName(v)
+	}
+
+	if v := cast.ToString(d.Get("root_device_name")); v != "" {
+		imageRequest.SetRootDeviceName(v)
+	}
+
+	resp, _, err := conn.ImageApi.CreateImage(context.Background(), &oscgo.CreateImageOpts{
+		CreateImageRequest: optional.NewInterface(imageRequest),
 	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("Error creating Outscale Image: %s", errString)
-	}
-
-	result = resp.OK
-
-	id := result.Image.ImageId
-	d.SetId(id)
-	d.Set("image_id", id)
-	d.Partial(true) // make sure we record the id even if the rest of this gets interrupted
-	d.Set("id", id)
-	d.SetPartial("id")
-	d.Partial(false)
-
-	_, err = resourceOutscaleOAPIImageWaitForAvailable(id, conn, 1)
 	if err != nil {
 		return err
 	}
 
-	d.Set("description", result.Image.Description)
-	d.Set("creation_date", result.Image.CreationDate)
+	if !resp.HasImage() {
+		return nil
+	}
+
+	image := resp.GetImage()
+
+	fmt.Printf("Waiting for OMI %s to become available...", *image.ImageId)
+
+	filterReq := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{*image.ImageId}},
+		}),
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Errorrr waiting for OMI (%s) to be ready: %v", *image.ImageId, err)
+	}
+
+	d.SetId(*image.ImageId)
 
 	return resourceOAPIImageRead(d, meta)
-
 }
 
 func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 
-	req := &oapi.ReadImagesRequest{
-		Filters: oapi.FiltersImage{ImageIds: []string{id}},
+	req := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
+		}),
 	}
 
-	var resp *oapi.POST_ReadImagesResponses
-	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		resp, err = client.POST_ReadImages(*req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(err.Error(), "InvalidAMIID.NotFound") {
-				log.Printf("[DEBUG] %s no longer exists, so we'll drop it from the state", id)
-				d.SetId("")
-				return nil
-			}
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("Error creating Outscale VM volume: %s", errString)
+	resp, _, err := conn.ImageApi.ReadImages(context.Background(), req)
+	if err != nil {
+		return fmt.Errorf("Error reading for OMI (%s): %v", id, err)
 	}
 
-	result := resp.OK
-
-	if len(result.Images) != 1 {
+	if len(resp.GetImages()) == 0 {
 		d.SetId("")
 		return nil
 	}
 
-	image := result.Images[0]
-	state := image.State
+	image := resp.GetImages()[0]
 
-	if state == "pending" {
-		var img *oapi.Image
-		img, err = resourceOutscaleOAPIImageWaitForAvailable(id, client, 2)
-		if err != nil {
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(*image.ImageId)
+
+		set("architecture", image.Architecture)
+		set("creation_date", image.CreationDate)
+		set("description", image.Description)
+		set("image_id", image.ImageId)
+		set("file_location", image.FileLocation)
+		set("account_alias", image.AccountAlias)
+		set("account_id", image.AccountId)
+		set("image_type", image.ImageType)
+		set("image_name", image.ImageName)
+		set("root_device_name", image.RootDeviceName)
+		set("root_device_type", image.RootDeviceType)
+		set("state", image.State)
+
+		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+			return err
+		}
+		if err := set("product_codes", image.ProductCodes); err != nil {
+			return err
+		}
+		if err := set("state_comment", omiOAPIStateReason(image.StateComment)); err != nil {
+			return err
+		}
+		if err := set("permissions_to_launch", setResourcePermissions(*image.PermissionsToLaunch)); err != nil {
+			return err
+		}
+		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
 			return err
 		}
 
-		image = *img
-
-		state = image.State
-	}
-
-	if state == "deregistered" {
-		d.SetId("")
-		return nil
-	}
-
-	if state != "available" {
-		return fmt.Errorf("OMI has become %s", state)
-	}
-
-	d.SetId(image.ImageId)
-	d.Set("architecture", image.Architecture)
-	if image.CreationDate != "" {
-		d.Set("creation_date", image.CreationDate)
-	}
-	if image.Description != "" {
-		d.Set("description", image.Description)
-	}
-	//Missing on swager spec
-	//d.Set("hypervisor", image.Hypervisor)
-	d.Set("image_id", image.ImageId)
-	d.Set("file_location", image.FileLocation)
-	if image.AccountAlias != "nil" {
-		d.Set("account_alias", image.AccountAlias)
-	}
-	d.Set("account_id", image.AccountId)
-	d.Set("image_type", image.ImageType)
-	d.Set("image_name", image.ImageName)
-	//Missing on swager spec
-	// d.Set("is_public", image.Public)
-	if image.RootDeviceName != "" {
-		d.Set("root_device_name", image.RootDeviceName)
-	}
-	d.Set("root_device_type", image.RootDeviceType)
-	d.Set("state", image.State)
-
-	if err := d.Set("block_device_mappings", omiOAPIBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
-		return err
-	}
-	if err := d.Set("product_codes", image.ProductCodes); err != nil {
-		return err
-	}
-	if err := d.Set("state_comment", omiOAPIStateReason(&image.StateComment)); err != nil {
-		return err
-	}
-
-	if err := d.Set("permissions_to_launch", setResourcePermissions(image.PermissionsToLaunch)); err != nil {
-		return err
-	}
-	if err := d.Set("tags", getOapiTagSet(image.Tags)); err != nil {
-		return err
-	}
-
-	d.Set("request_id", result.ResponseContext.RequestId)
-
-	return nil
+		return d.Set("request_id", resp.ResponseContext.RequestId)
+	})
 }
 
-func setResourcePermissions(por oapi.PermissionsOnResource) []map[string]interface{} {
-	lp := make([]map[string]interface{}, 1)
-	l := make(map[string]interface{})
-	l["global_permission"] = por.GlobalPermission
-	l["account_ids"] = por.AccountIds
-
-	lp[0] = l
-
-	return lp
+func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interface{} {
+	return []map[string]interface{}{
+		map[string]interface{}{
+			"global_permission": por.GetGlobalPermission(),
+			"account_ids":       por.GetAccountIds(),
+		},
+	}
 }
 
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	//	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
-
-	// if err := setOAPITags(conn, d); err != nil {
-	// 	return err
+	//TODO: add tags
+	// if d.Get("description").(string) != "" {
+	// 	_, _, err := conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{
+	// 		UpdateImageRequest: optional.NewInterface(oscgo.UpdateImageRequest{}),
+	// 	})
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	d.SetPartial("description")
 	// }
-
-	// d.SetPartial("tags")
-
-	if d.Get("description").(string) != "" {
-		_, err := conn.POST_UpdateImage(oapi.UpdateImageRequest{
-			ImageId: d.Id(),
-			// Description: &oapi.AttributeValue{
-			// 	Value: aws.String(d.Get("description").(string)),
-			// },
-		})
-		if err != nil {
-			return err
-		}
-		d.SetPartial("description")
-	}
 
 	d.Partial(false)
 
@@ -428,32 +364,19 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oapi.DeleteImageRequest{
-		ImageId: d.Id(),
-	}
-
-	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		_, err := client.POST_DeleteImage(*req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
+	_, _, err := conn.ImageApi.DeleteImage(context.Background(), &oscgo.DeleteImageOpts{
+		DeleteImageRequest: optional.NewInterface(oscgo.DeleteImageRequest{
+			ImageId: d.Id(),
+		}),
 	})
 
 	if err != nil {
 		return fmt.Errorf("Error deleting the image")
 	}
 
-	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), client); err != nil {
+	if err := resourceOutscaleOAPIImageWaitForDestroy(d.Id(), conn); err != nil {
 		return err
 	}
 
@@ -461,128 +384,70 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleOAPIImageWaitForAvailable(id string, client *oapi.Client, i int) (*oapi.Image, error) {
-	log.Printf("[INFO] Waiting for OMI %s to become available...", id)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available"},
-		Refresh:    ImageOAPIStateRefreshFunc(client, id),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
-	}
-
-	info, err := stateConf.WaitForState()
-	if err != nil {
-		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", id, err)
-	}
-
-	img := info.(oapi.Image)
-
-	return &img, nil
-}
-
-// ImageOAPIStateRefreshFunc ...
-func ImageOAPIStateRefreshFunc(client *oapi.Client, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		emptyResp := &oapi.ReadImagesResponse{}
-		var result *oapi.ReadImagesResponse
-		var resp *oapi.POST_ReadImagesResponses
-		var err error
-		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			request := &oapi.ReadImagesRequest{
-				Filters: oapi.FiltersImage{
-					ImageIds: []string{id},
-				},
-			}
-			resp, err = client.POST_ReadImages(*request)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					log.Printf("[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-
-			}
-
-			return nil
-		})
-
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAMIID.NotFound") {
-					log.Printf("[INFO] OMI %s state %s", id, "destroyed")
-					return emptyResp, "destroyed", nil
-				}
-
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return emptyResp, "", fmt.Errorf("Error refreshing image state: %s", errString)
-		}
-
-		result = resp.OK
-
-		if result != nil && len(result.Images) == 0 {
-			log.Printf("[INFO] OMI %s state %s", id, "destroyed")
-			return emptyResp, "destroyed", nil
-		}
-
-		if result == nil || result.Images == nil || len(result.Images) == 0 {
-			return emptyResp, "destroyed", nil
-		}
-
-		log.Printf("[INFO] OMI %s state %s", result.Images[0].ImageId, result.Images[0].State)
-
-		// OMI is valid, so return it's state
-		return result.Images[0], result.Images[0].State, nil
-	}
-}
-
-func resourceOutscaleOAPIImageWaitForDestroy(id string, client *oapi.Client) error {
+func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
 	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"available", "pending", "failed"},
-		Target:     []string{"destroyed"},
-		Refresh:    ImageOAPIStateRefreshFunc(client, id),
-		Timeout:    OutscaleImageDeleteRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryTimeout,
+	filterReq := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
+		}),
 	}
 
-	_, err := stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for OMI (%s) to be deleted: %v", id, err)
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"available", "pending"},
+		Target:     []string{"destroyed", "failed"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("error waiting for OMI (%s) to be deleted: %v", id, err)
 	}
 
 	return nil
 }
 
+// ImageOAPIStateRefreshFunc ...
+func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req *oscgo.ReadImagesOpts, failState string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		resp, _, err := client.ImageApi.ReadImages(context.Background(), req)
+		if err != nil {
+			return nil, "failed", err
+		}
+
+		state := "destroyed"
+
+		if resp.HasImages() && len(resp.GetImages()) > 0 {
+			images := resp.GetImages()
+			state = images[0].GetState()
+
+			if state == failState {
+				return images[0], state, fmt.Errorf("Failed to reach target state. Reason: %v", state)
+			}
+		}
+
+		log.Printf("[INFO] OMI state %s", state)
+
+		return resp, state, nil
+	}
+}
+
 // Returns a set of block device mappings.
-func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]interface{} {
+func omiOAPIBlockDeviceMappings(m []oscgo.BlockDeviceMappingImage) []map[string]interface{} {
 	blockDeviceMapping := make([]map[string]interface{}, len(m))
 
 	for k, v := range m {
 		blockDeviceMapping[k] = map[string]interface{}{
-			"device_name":         v.DeviceName,
-			"virtual_device_name": v.VirtualDeviceName,
+			"device_name":         v.GetDeviceName(),
+			"virtual_device_name": v.GetVirtualDeviceName(),
 			"bsu": map[string]interface{}{
-				"delete_on_vm_deletion": fmt.Sprintf("%t", *v.Bsu.DeleteOnVmDeletion),
-				"iops":                  cast.ToString(v.Bsu.Iops),
-				"snapshot_id":           v.Bsu.SnapshotId,
-				"volume_size":           cast.ToString(v.Bsu.VolumeSize),
-				"volume_type":           v.Bsu.VolumeType,
+				"delete_on_vm_deletion": cast.ToString(v.Bsu.GetDeleteOnVmDeletion()),
+				"iops":                  cast.ToString(v.Bsu.GetIops()),
+				"snapshot_id":           v.Bsu.GetSnapshotId(),
+				"volume_size":           cast.ToString(v.Bsu.GetVolumeSize()),
+				"volume_type":           v.Bsu.GetVolumeType(),
 			},
 		}
 	}
@@ -590,11 +455,11 @@ func omiOAPIBlockDeviceMappings(m []oapi.BlockDeviceMappingImage) []map[string]i
 }
 
 // Returns the state reason.
-func omiOAPIStateReason(m *oapi.StateComment) map[string]interface{} {
+func omiOAPIStateReason(m *oscgo.StateComment) map[string]interface{} {
 	s := make(map[string]interface{})
 	if m != nil {
-		s["state_code"] = m.StateCode
-		s["state_message"] = m.StateMessage
+		s["state_code"] = m.GetStateCode()
+		s["state_message"] = m.GetStateMessage()
 	} else {
 		s["state_code"] = "UNSET"
 		s["state_message"] = "UNSET"

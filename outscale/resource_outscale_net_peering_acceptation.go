@@ -1,13 +1,13 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -58,19 +58,18 @@ func resourceOutscaleOAPILinPeeringConnectionAccepter() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Get("net_peering_id").(string)
 	d.SetId(id)
 
-	req := &oapi.AcceptNetPeeringRequest{
+	req := oscgo.AcceptNetPeeringRequest{
 		NetPeeringId: id,
 	}
 
 	var err error
-	var resp *oapi.POST_AcceptNetPeeringResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_AcceptNetPeering(*req)
+		_, _, err = conn.NetPeeringApi.AcceptNetPeering(context.Background(), &oscgo.AcceptNetPeeringOpts{AcceptNetPeeringRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -83,16 +82,8 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 		return fmt.Errorf("Error creating Net Peering accepter. Details: %s", errString)
 	}
 

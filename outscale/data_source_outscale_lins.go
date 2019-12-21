@@ -1,13 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIVpcs() *schema.Resource {
@@ -63,9 +65,9 @@ func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.ReadNetsRequest{}
+	req := oscgo.ReadNetsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 	netIds, netIdsOk := d.GetOk("net_id")
@@ -75,7 +77,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if filtersOk {
-		req.Filters = buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set))
+		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set)))
 	}
 
 	if netIdsOk {
@@ -84,16 +86,16 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 		for k, v := range netIds.([]interface{}) {
 			ids[k] = v.(string)
 		}
+		var filters oscgo.FiltersNet
+		filters.SetNetIds(ids)
+		req.SetFilters(filters)
 
-		req.Filters.NetIds = ids
 	}
 
 	var err error
-	var resp *oapi.POST_ReadNetsResponses
+	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-
-		resp, err = conn.POST_ReadNets(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -106,31 +108,31 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.OK.Nets) == 0 {
+	if len(resp.GetNets()) == 0 {
 		return fmt.Errorf("no matching VPC found")
 	}
 
 	d.SetId(resource.UniqueId())
 
-	nets := make([]map[string]interface{}, len(resp.OK.Nets))
+	nets := make([]map[string]interface{}, len(resp.GetNets()))
 
-	for i, v := range resp.OK.Nets {
+	for i, v := range resp.GetNets() {
 		net := make(map[string]interface{})
 
-		net["net_id"] = v.NetId
-		net["ip_range"] = v.IpRange
-		net["dhcp_options_set_id"] = v.DhcpOptionsSetId
-		net["tenancy"] = v.Tenancy
-		net["state"] = v.State
+		net["net_id"] = v.GetNetId()
+		net["ip_range"] = v.GetIpRange()
+		net["dhcp_options_set_id"] = v.GetDhcpOptionsSetId()
+		net["tenancy"] = v.GetTenancy()
+		net["state"] = v.GetState()
 		if v.Tags != nil {
-			net["tags"] = tagsOAPIToMap(v.Tags)
+			net["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
 
 		nets[i] = net
 	}
 
 	d.Set("nets", nets)
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }

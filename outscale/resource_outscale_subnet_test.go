@@ -1,21 +1,21 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
-	var conf oapi.Subnet
+	var conf oscgo.Subnet
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -23,8 +23,8 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
-		Providers: testAccProviders,
-		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOutscaleOAPISubnetConfig(region),
@@ -36,35 +36,7 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPISubNetTagsUpdate(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-	region := os.Getenv("OUTSCALE_REGION")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
-		t.Skip()
-	}
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleOAPITagsUpdate(region, "terraform-subnet"),
-			},
-			{
-				Config: testAccOutscaleOAPITagsUpdate(region, "terraform-subnet2"),
-			},
-		},
-	})
-}
-
-func testAccCheckOutscaleOAPISubNetExists(n string, res *oapi.Subnet) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -74,14 +46,19 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oapi.Subnet) resource.T
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Subnet id is set")
 		}
-		var resp *oapi.POST_ReadSubnetsResponses
-		conn := testAccProvider.Meta().(*OutscaleClient)
+		var resp oscgo.ReadSubnetsResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
-			resp, err = conn.OAPI.POST_ReadSubnets(oapi.ReadSubnetsRequest{
-				Filters: oapi.FiltersSubnet{SubnetIds: []string{rs.Primary.ID}},
+			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
+				ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
+					Filters: &oscgo.FiltersSubnet{
+						SubnetIds: &[]string{rs.Primary.ID},
+					},
+				}),
 			})
+
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -91,49 +68,38 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oapi.Subnet) resource.T
 			return nil
 		})
 
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", err)
 		}
 
-		response := resp.OK
-
-		if len(response.Subnets) != 1 ||
-			response.Subnets[0].SubnetId != rs.Primary.ID {
+		if len(resp.GetSubnets()) != 1 ||
+			resp.GetSubnets()[0].GetSubnetId() != rs.Primary.ID {
 			return fmt.Errorf("Subnet not found")
 		}
 
-		*res = response.Subnets[0]
+		*res = resp.GetSubnets()[0]
 
 		return nil
 	}
 }
 
 func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_subnet" {
 			continue
 		}
 
-		// Try to find an internet gateway
-		var resp *oapi.POST_ReadSubnetsResponses
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		// Try to find a subnet
+		var resp oscgo.ReadSubnetsResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
-			resp, err = conn.OAPI.POST_ReadSubnets(oapi.ReadSubnetsRequest{
-				Filters: oapi.FiltersSubnet{SubnetIds: []string{rs.Primary.ID}},
+			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
+				ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
+					Filters: &oscgo.FiltersSubnet{
+						SubnetIds: &[]string{rs.Primary.ID},
+					},
+				}),
 			})
 
 			if err != nil {
@@ -146,12 +112,8 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 			return nil
 		})
 
-		if resp.OK == nil {
-			return nil
-		}
-
 		if err == nil {
-			if len(resp.OK.Subnets) > 0 {
+			if len(resp.GetSubnets()) > 0 {
 				return fmt.Errorf("still exist")
 			}
 			return nil
@@ -182,22 +144,4 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 			}
 		}
 	`, region)
-}
-
-func testAccOutscaleOAPITagsUpdate(region, value string) string {
-	return fmt.Sprintf(`
-	resource "outscale_net" "net" {
-		ip_range = "10.0.0.0/16"
-	}
-	resource "outscale_subnet" "subnet" {
-		ip_range = "10.0.0.0/16"
-		subregion_name = "%sb"
-		net_id = "${outscale_net.net.id}"
-	
-		tags = {
-			key = "name"
-			value = "%s"
-		 }
-	}
-		`, region, value)
 }

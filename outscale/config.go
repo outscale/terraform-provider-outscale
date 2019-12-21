@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	"github.com/outscale/osc-go/oapi"
@@ -10,6 +11,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/hashicorp/terraform/helper/logging"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 // Config ...
@@ -23,8 +26,9 @@ type Config struct {
 
 //OutscaleClient client
 type OutscaleClient struct {
-	FCU  *fcu.Client
-	OAPI *oapi.Client
+	FCU    *fcu.Client
+	OAPI   *oapi.Client
+	OSCAPI *oscgo.APIClient
 }
 
 // Client ...
@@ -57,11 +61,23 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	skipClient.Transport = logging.NewTransport("Outscale", skipClient.Transport)
 
+	skipClient.Transport = oscgo.NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
+
+	oscConfig := &oscgo.Configuration{
+		BasePath:      fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region),
+		DefaultHeader: make(map[string]string),
+		UserAgent:     "terraform-provider-outscale-dev",
+		HTTPClient:    skipClient,
+	}
+
+	oscClient := oscgo.NewAPIClient(oscConfig)
+
 	oapiClient := oapi.NewClient(oapicfg, skipClient)
 
 	client := &OutscaleClient{
-		FCU:  fcu,
-		OAPI: oapiClient,
+		FCU:    fcu,
+		OAPI:   oapiClient,
+		OSCAPI: oscClient,
 	}
 
 	return client, nil

@@ -1,20 +1,23 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
 	"log"
 	"os"
 	"testing"
 	"time"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
-	v := &oapi.Vm{}
+	v := &oscgo.Vm{}
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -27,7 +30,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region, "keyOriginal", "valueOriginal"),
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "t2.micro", region, "keyOriginal", "valueOriginal"),
 				Check: resource.ComposeTestCheckFunc(
 					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 					testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
@@ -37,7 +40,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "c4.large", region, "keyUpdated", "valueUpdated"),
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "t2.micro", region, "keyUpdated", "valueUpdated"),
 				Check: resource.ComposeTestCheckFunc(
 					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 					testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),
@@ -50,19 +53,19 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	})
 }
 
-func testAccCheckOAPIVMTags(vm *oapi.Vm, key, value string) resource.TestCheckFunc {
+func testAccCheckOAPIVMTags(vm *oscgo.Vm, key, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		tags := vm.Tags
+		tags := vm.GetTags()
 		return checkOAPITags(tags, key, value)
 	}
 }
 
-func oapiTestAccCheckOutscaleVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
+func oapiTestAccCheckOutscaleVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return oapiTestAccCheckOutscaleVMExistsWithProviders(n, i, &providers)
 }
 
-func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
+func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -79,15 +82,15 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oapi.Vm, provide
 			}
 
 			conn := provider.Meta().(*OutscaleClient)
-			var resp *oapi.POST_ReadVmsResponses
+			var resp oscgo.ReadVmsResponse
 			var err error
 
 			for {
-				resp, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
-					Filters: oapi.FiltersVm{
-						VmIds: []string{rs.Primary.ID},
+				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+					Filters: &oscgo.FiltersVm{
+						VmIds: &[]string{rs.Primary.ID},
 					},
-				})
+				})})
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -99,12 +102,12 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oapi.Vm, provide
 				return err
 			}
 
-			if len(resp.OK.Vms) == 0 {
+			if len(resp.GetVms()) == 0 {
 				return fmt.Errorf("VM not found")
 			}
 
-			if len(resp.OK.Vms) > 0 {
-				*i = resp.OK.Vms[0]
+			if len(resp.GetVms()) > 0 {
+				*i = resp.GetVms()[0]
 				log.Printf("[DEBUG] VMS READ %+v", i)
 				return nil
 			}
@@ -115,14 +118,28 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oapi.Vm, provide
 }
 
 func testAccCheckOAPITags(
-	ts []oapi.ResourceTag, key string, value string) resource.TestCheckFunc {
+	ts []oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
+	log.Printf("[DEBUG] testAccCheckOAPITags %+v", ts)
 	return func(s *terraform.State) error {
-		return checkOAPITags(ts, key, value)
+		m := tagsOSCAPIToMap(ts)
+		v, ok := m[0]["Key"]
+		if value != "" && !ok {
+			return fmt.Errorf("Missing tag: %s", key)
+		} else if value == "" && ok {
+			return fmt.Errorf("Extra tag: %s", key)
+		}
+		if value == "" {
+			return nil
+		}
+		if v != value {
+			return fmt.Errorf("%s: bad value: %s", key, v)
+		}
+		return nil
 	}
 }
 
-func checkOAPITags(ts []oapi.ResourceTag, key, value string) error {
-	m := tagsOAPIToMap(ts)
+func checkOAPITags(ts []oscgo.ResourceTag, key, value string) error {
+	m := tagsOSCAPIToMap(ts)
 	log.Printf("[DEBUG], tagsOAPIToMap=%+v", m)
 	tag := m[0]
 
@@ -147,7 +164,7 @@ func testAccCheckOAPIInstanceConfigTags(omi, vmType, region, key, value string) 
 			image_id                 = "%s"
 			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			placement_subregion_name = "%sb"
+			placement_subregion_name = "%sa"
 			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
 			private_ips              =  ["10.0.0.12"]
 		}

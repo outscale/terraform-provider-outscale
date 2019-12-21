@@ -2,16 +2,16 @@ package outscale
 
 import (
 	"fmt"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
-	var conf oapi.Nic
+	var conf oscgo.Nic
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

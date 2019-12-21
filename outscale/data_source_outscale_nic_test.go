@@ -1,23 +1,24 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
-	var conf oapi.Nic
+	var conf oscgo.Nic
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
@@ -41,7 +42,7 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
-	var conf oapi.Nic
+	var conf oscgo.Nic
 
 	o := os.Getenv("OUTSCALE_OAPI")
 
@@ -76,39 +77,21 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPIENIDataSourceAttributes(conf *fcu.NetworkInterface) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-
-		if conf.Attachment != nil {
-			return fmt.Errorf("expected attachment to be nil")
-		}
-
-		if *conf.AvailabilityZone != "eu-west-2a" {
-			return fmt.Errorf("expected availability_zone to be eu-west-2a, but was %s", *conf.AvailabilityZone)
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nic" {
 			continue
 		}
 
-		var resp *oapi.ReadNicsResponse
-		var r *oapi.POST_ReadNicsResponses
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		req := &oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
+		var resp oscgo.ReadNicsResponse
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		req := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			r, err = conn.POST_ReadNics(*req)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -118,13 +101,11 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		resp = r.OK
-
 		if err != nil {
 			return err
 		}
 
-		if len(resp.Nics) != 0 {
+		if len(resp.GetNics()) != 0 {
 			return fmt.Errorf("Nic is not destroyed yet")
 		}
 	}
@@ -137,16 +118,15 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		dnir := &oapi.ReadNicsRequest{
-			Filters: oapi.FiltersNic{NicIds: []string{rs.Primary.ID}},
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{rs.Primary.ID}},
 		}
 
-		var describeResp *oapi.POST_ReadNicsResponses
+		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			describeResp, err = conn.POST_ReadNics(*dnir)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -156,26 +136,16 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 			return nil
 		})
 
-		var errString string
-
-		if err != nil || describeResp.OK == nil {
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-					return nil
-				}
-				errString = err.Error()
-			} else if describeResp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(describeResp.Code401))
-			} else if describeResp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(describeResp.Code400))
-			} else if describeResp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(describeResp.Code500))
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+				return nil
 			}
+			errString := err.Error()
 			return fmt.Errorf("Could not find network interface: %s", errString)
 
 		}
 
-		if len(describeResp.OK.Nics) > 0 {
+		if len(resp.GetNics()) > 0 {
 			return fmt.Errorf("Nic with id %s is not destroyed yet", rs.Primary.ID)
 		}
 	}

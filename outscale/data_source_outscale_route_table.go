@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -72,8 +74,11 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-
 						"nic_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"nat_service_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -125,7 +130,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID, routeTableIDOk := d.GetOk("route_table_id")
 	filter, filterOk := d.GetOk("filter")
 
@@ -133,10 +138,10 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("One of route_table_id or filters must be assigned")
 	}
 
-	params := &oapi.ReadRouteTablesRequest{}
+	params := oscgo.ReadRouteTablesRequest{}
 	if routeTableIDOk {
-		params.Filters = oapi.FiltersRouteTable{
-			RouteTableIds: []string{routeTableID.(string)},
+		params.Filters = &oscgo.FiltersRouteTable{
+			RouteTableIds: &[]string{routeTableID.(string)},
 		}
 	}
 
@@ -144,17 +149,17 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 		params.Filters = buildOutscaleOAPIDataSourceRouteTableFilters(filter.(*schema.Set))
 	}
 
-	var resp *oapi.POST_ReadRouteTablesResponses
+	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadRouteTables(*params)
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(params)})
 		if err != nil && strings.Contains(err.Error(), "RequestLimitExceeded") {
 			return resource.RetryableError(err)
 		}
 		return resource.NonRetryableError(err)
 	})
 
-	numRouteTables := len(resp.OK.RouteTables)
+	numRouteTables := len(resp.GetRouteTables())
 	if numRouteTables <= 0 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
@@ -162,24 +167,24 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Multiple Route Table matched; use additional constraints to reduce matches to a single Route Table")
 	}
 
-	rt := resp.OK.RouteTables[0]
+	rt := resp.GetRouteTables()[0]
 
-	d.Set("route_propagating_virtual_gateways", setOAPIPropagatingVirtualGateways(rt.RoutePropagatingVirtualGateways))
-	d.SetId(rt.RouteTableId)
-	d.Set("route_table_id", rt.RouteTableId)
-	d.Set("net_id", rt.NetId)
-	d.Set("tags", tagsOAPIToMap(rt.Tags))
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
+	d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways()))
+	d.SetId(rt.GetRouteTableId())
+	d.Set("route_table_id", rt.GetRouteTableId())
+	d.Set("net_id", rt.GetNetId())
+	d.Set("tags", tagsOSCAPIToMap(rt.GetTags()))
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	if err := d.Set("routes", setOAPIRoutes(rt.Routes)); err != nil {
+	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
 		return err
 	}
 
-	return d.Set("link_route_tables", setOAPILinkRouteTables(rt.LinkRouteTables))
+	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }
 
-func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersRouteTable {
-	var filters oapi.FiltersRouteTable
+func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.FiltersRouteTable {
+	var filters oscgo.FiltersRouteTable
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -188,13 +193,13 @@ func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) oapi.FiltersR
 		}
 		switch name := m["name"].(string); name {
 		case "route_table_ids":
-			filters.RouteTableIds = filterValues
+			filters.SetRouteTableIds(filterValues)
 		case "link_route_table_ids":
-			filters.LinkRouteTableLinkRouteTableIds = filterValues
+			filters.SetLinkRouteTableLinkRouteTableIds(filterValues)
 
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return filters
+	return &filters
 }

@@ -1,13 +1,13 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
-	var group oapi.SecurityGroup
+	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -39,7 +39,7 @@ func TestAccOutscaleOAPISecurityGroup(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_security_group" {
@@ -47,16 +47,16 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 		}
 
 		// Retrieve our group
-		req := &oapi.ReadSecurityGroupsRequest{
-			Filters: oapi.FiltersSecurityGroup{
-				SecurityGroupIds: []string{rs.Primary.ID},
+		req := oscgo.ReadSecurityGroupsRequest{
+			Filters: &oscgo.FiltersSecurityGroup{
+				SecurityGroupIds: &[]string{rs.Primary.ID},
 			},
 		}
 
-		var resp *oapi.POST_ReadSecurityGroupsResponses
+		var resp oscgo.ReadSecurityGroupsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadSecurityGroups(*req)
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -70,36 +70,24 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-					return err
-				}
-				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-				errString = err.Error()
-
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		if err != nil {
+			if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+				return err
 			}
+			//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+			errString = err.Error()
 
 			return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 		}
-
-		result := resp.OK
-
 		if err == nil {
-			if len(result.SecurityGroups) > 0 && result.SecurityGroups[0].SecurityGroupId == rs.Primary.ID {
+			if len(resp.GetSecurityGroups()) > 0 && resp.GetSecurityGroups()[0].GetSecurityGroupId() == rs.Primary.ID {
 				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
 			}
 
 			return nil
 		}
 
-		if result == nil {
+		if resp.GetSecurityGroups() == nil {
 			return nil
 		}
 
@@ -109,7 +97,7 @@ func testAccCheckOutscaleOAPISGRuleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oapi.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -120,17 +108,17 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oapi.Secur
 			return fmt.Errorf("No Security Group is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
-		req := &oapi.ReadSecurityGroupsRequest{
-			Filters: oapi.FiltersSecurityGroup{
-				SecurityGroupIds: []string{rs.Primary.ID},
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		req := oscgo.ReadSecurityGroupsRequest{
+			Filters: &oscgo.FiltersSecurityGroup{
+				SecurityGroupIds: &[]string{rs.Primary.ID},
 			},
 		}
 
-		var resp *oapi.POST_ReadSecurityGroupsResponses
+		var resp oscgo.ReadSecurityGroupsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadSecurityGroups(*req)
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -148,32 +136,20 @@ func testAccCheckOutscaleOAPISecurityGroupRuleExists(n string, group *oapi.Secur
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
-					strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-					resp = nil
-					err = nil
-				} else {
-					//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-					errString = err.Error()
-				}
-
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
+				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+				err = nil
+			} else {
+				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
+				errString = err.Error()
 			}
 
 			return fmt.Errorf("Error on SGStateRefresh: %s", errString)
 		}
 
-		result := resp.OK
-
-		if len(result.SecurityGroups) > 0 && result.SecurityGroups[0].SecurityGroupId == rs.Primary.ID {
-			*group = result.SecurityGroups[0]
+		if len(resp.GetSecurityGroups()) > 0 && resp.GetSecurityGroups()[0].GetSecurityGroupId() == rs.Primary.ID {
+			*group = resp.GetSecurityGroups()[0]
 			return nil
 		}
 

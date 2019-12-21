@@ -1812,11 +1812,12 @@ type LinkPrivateIpsResponse struct {
 
 // implements the service definition of LinkPublicIp
 type LinkPublicIp struct {
-	LinkPublicIpId    string `json:"LinkPublicIpId,omitempty"`
-	PublicDnsName     string `json:"PublicDnsName,omitempty"`
-	PublicIp          string `json:"PublicIp,omitempty"`
-	PublicIpAccountId string `json:"PublicIpAccountId,omitempty"`
-	PublicIpId        string `json:"PublicIpId,omitempty"`
+	LinkPublicIpId    string        `json:"LinkPublicIpId,omitempty"`
+	PublicDnsName     string        `json:"PublicDnsName,omitempty"`
+	PublicIp          string        `json:"PublicIp,omitempty"`
+	PublicIpAccountId string        `json:"PublicIpAccountId,omitempty"`
+	PublicIpId        string        `json:"PublicIpId,omitempty"`
+	Tags              []ResourceTag `json:"Tags,omitempty"`
 }
 
 // implements the service definition of LinkPublicIpLightForVm
@@ -2003,6 +2004,7 @@ type NatService struct {
 	PublicIps    []PublicIpLight `json:"PublicIps,omitempty"`
 	State        string          `json:"State,omitempty"`
 	SubnetId     string          `json:"SubnetId,omitempty"`
+	Tags         []ResourceTag   `json:"Tags,omitempty"`
 }
 
 // implements the service definition of Net
@@ -2180,13 +2182,14 @@ type ProductType struct {
 
 // implements the service definition of PublicIp
 type PublicIp struct {
-	LinkPublicIpId string `json:"LinkPublicIpId,omitempty"`
-	NicAccountId   string `json:"NicAccountId,omitempty"`
-	NicId          string `json:"NicId,omitempty"`
-	PrivateIp      string `json:"PrivateIp,omitempty"`
-	PublicIp       string `json:"PublicIp,omitempty"`
-	PublicIpId     string `json:"PublicIpId,omitempty"`
-	VmId           string `json:"VmId,omitempty"`
+	LinkPublicIpId string        `json:"LinkPublicIpId,omitempty"`
+	NicAccountId   string        `json:"NicAccountId,omitempty"`
+	NicId          string        `json:"NicId,omitempty"`
+	PrivateIp      string        `json:"PrivateIp,omitempty"`
+	PublicIp       string        `json:"PublicIp,omitempty"`
+	PublicIpId     string        `json:"PublicIpId,omitempty"`
+	VmId           string        `json:"VmId,omitempty"`
+	Tags           []ResourceTag `json:"Tags,omitempty"`
 }
 
 // implements the service definition of PublicIpLight

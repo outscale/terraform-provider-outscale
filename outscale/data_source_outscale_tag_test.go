@@ -8,7 +8,7 @@ import (
 )
 
 func TestAccOutscaleOAPITagDataSource(t *testing.T) {
-	t.Skip()
+	//t.Skip()
 	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
 	resource.Test(t, resource.TestCase{
@@ -19,12 +19,12 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPITagDataSourceConfig(omi, "c4.large"),
+				Config: testAccOAPITagDataSourceConfig(omi, "t2.micro"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "key", "foo"),
+						"data.outscale_tag.web", "key", "Name"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "value", "bar"),
+						"data.outscale_tag.web", "value", "test-vm"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "resource_type", "instance"),
 				),
@@ -40,11 +40,16 @@ func testAccOAPITagDataSourceConfig(omi, vmType string) string {
 			image_id            = "%s"
 			vm_type             = "%s"
 			keypair_name        = "terraform-basic"
+
+			tags {
+				key = "Name"
+				value = "test-vm"
+			}
 		}
 
 		data "outscale_tag" "web" {
 			filter {
-				name = "resource_id"
+				name = "resource_ids"
 				values = ["${outscale_vm.basic.id}"]
 			}
 		}

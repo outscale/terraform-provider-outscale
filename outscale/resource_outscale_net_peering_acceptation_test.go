@@ -63,15 +63,15 @@ const testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig = `
 	resource "outscale_net_peering" "foo" {
 		source_net_id   = "${outscale_net.foo.id}"
 		accepter_net_id = "${outscale_net.bar.id}"
-	}
-
-	// Accepter's side of the connection.
-	resource "outscale_net_peering_acceptation" "peer" {
-		net_peering_id = "${outscale_net_peering.foo.id}"
 
 		tags {
 			key   = "Side"
 			value = "Accepter"
 		}
+	}
+
+	// Accepter's side of the connection.
+	resource "outscale_net_peering_acceptation" "peer" {
+		net_peering_id = "${outscale_net_peering.foo.id}"
 	}
 `

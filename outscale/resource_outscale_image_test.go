@@ -1,23 +1,23 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"log"
-	"strings"
+	"github.com/antihax/optional"
+	"github.com/marinsalinas/osc-sdk-go"
+	"os"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPIImage_basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
-	var ami oapi.Image
+	var ami oscgo.Image
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIImageConfigBasic(omi, "c4.large", rInt),
+				Config: testAccOAPIImageConfigBasic(omi, "t2.micro", region, rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIImageExists("outscale_image.foo", &ami),
 					resource.TestCheckResourceAttr(
@@ -46,101 +46,29 @@ func TestAccOutscaleOAPIImage_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIImageRegisterConfig_basic(t *testing.T) {
-	t.Skip()
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIImageDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOAPIImageRegisterConfig,
-				Check:  resource.ComposeTestCheckFunc(),
-			},
-		},
-	})
-}
-
-func TestAccOutscaleOAPIImageCopyConfig_basic(t *testing.T) {
-	t.Skip()
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOAPIImageDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccOAPIImageCopyConfig,
-				Check:  resource.ComposeTestCheckFunc(),
-			},
-		},
-	})
-}
-
 func testAccCheckOAPIImageDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_image" {
 			continue
 		}
 
-		// Try to find the OMI
-		log.Printf("OMI-ID: %s", rs.Primary.ID)
-		DescribeAmiOpts := &oapi.ReadImagesRequest{
-			Filters: oapi.FiltersImage{ImageIds: []string{rs.Primary.ID}},
+		filterReq := &oscgo.ReadImagesOpts{
+			ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+				Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
+			}),
 		}
 
-		var result *oapi.ReadImagesResponse
-		var resp *oapi.POST_ReadImagesResponses
-		var err error
-
-		err = resource.Retry(10*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadImages(*DescribeAmiOpts)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return fmt.Errorf("Error retrieving Outscale Images: %s", errString)
-		}
-
-		result = resp.OK
-
-		if len(result.Images) > 0 {
-			state := result.Images[0].State
-			return fmt.Errorf("OMI %s still exists in the state: %s", result.Images[0].ImageId, state)
+		resp, _, err := conn.ImageApi.ReadImages(context.Background(), filterReq)
+		if err != nil || len(resp.GetImages()) > 0 {
+			return fmt.Errorf("Image still exists (%s)", rs.Primary.ID)
 		}
 	}
 	return nil
 }
 
-func testAccCheckOAPIImageExists(n string, ami *oapi.Image) resource.TestCheckFunc {
+func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -151,62 +79,32 @@ func testAccCheckOAPIImageExists(n string, ami *oapi.Image) resource.TestCheckFu
 			return fmt.Errorf("No OMI ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		DescribeAmiOpts := &oapi.ReadImagesRequest{
-			Filters: oapi.FiltersImage{ImageIds: []string{rs.Primary.ID}},
+		filterReq := &oscgo.ReadImagesOpts{
+			ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+				Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
+			}),
 		}
 
-		var result *oapi.ReadImagesResponse
-		var resp *oapi.POST_ReadImagesResponses
-		var err error
-
-		err = resource.Retry(10*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadImages(*DescribeAmiOpts)
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return fmt.Errorf("Error retrieving Outscale Images: %s", errString)
+		resp, _, err := conn.ImageApi.ReadImages(context.Background(), filterReq)
+		if err != nil || len(resp.GetImages()) < 1 {
+			return fmt.Errorf("Image not found (%s)", rs.Primary.ID)
 		}
 
-		result = resp.OK
+		ami = &resp.GetImages()[0]
 
-		if len(result.Images) == 0 {
-			return fmt.Errorf("OMI not found")
-		}
-		*ami = result.Images[0]
 		return nil
 	}
 }
 
-func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
+func testAccOAPIImageConfigBasic(omi, vmType, region string, rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id			      = "%s"
 			vm_type             = "%s"
 			keypair_name		    = "terraform-basic"
+			placement_subregion_name = "%sa"
 		}
 
 		resource "outscale_image" "foo" {
@@ -215,23 +113,5 @@ func testAccOAPIImageConfigBasic(omi, vmType string, rInt int) string {
 			no_reboot   = "true"
 			description = "terraform testing"
 		}
-	`, omi, vmType, rInt)
+	`, omi, vmType, region, rInt)
 }
-
-const testAccOAPIImageRegisterConfig = `
-resource "outscale_image" "outscale_image_register"
-{ description = "Terraform-register-OMI"
-image_name = "terraform-OMI-register"
-file_location ="http://osu.eu-west-2.outscale.com/new-export-omi/omi-for-terraform/ami-b7d7f165/manifest?AWSAccessKeyId=S6AZO8TT4DOY9GOUOQ3U&Expires=1571754478&Signature=eOvObi6%2BFDW0AHEqafg5hZsLeJ4%3D"
-# root_device_name= "/dev/sda1" (should not be used for register image)
-}
-`
-
-const testAccOAPIImageCopyConfig = `
-resource "outscale_image" "outscale_image_copy" {
-	description = "Terraform-copy-OMI"
-	image_name = "terraform-OMI-copy"
-	source_image_id= "ami-3aa9428e"
-	source_region_name= "eu-west-2"
-	}
-	`

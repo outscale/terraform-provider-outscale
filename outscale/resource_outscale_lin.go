@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -9,10 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPINet() *schema.Resource {
@@ -30,25 +30,25 @@ func resourceOutscaleOAPINet() *schema.Resource {
 }
 
 func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oapi.CreateNetRequest{
+	req := oscgo.CreateNetRequest{
 		IpRange: d.Get("ip_range").(string),
 	}
 
 	if c, ok := d.GetOk("tenancy"); ok {
 		tenancy := c.(string)
 		if tenancy == "default" || tenancy == "dedicated" {
-			req.Tenancy = tenancy
+			req.SetTenancy(tenancy)
 		} else {
 			return fmt.Errorf("tenancy option not supported: %s", tenancy)
 		}
 	}
 
-	var resp *oapi.POST_CreateNetResponses
+	var resp oscgo.CreateNetResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_CreateNet(*req)
+		resp, _, err = conn.NetApi.CreateNet(context.Background(), &oscgo.CreateNetOpts{CreateNetRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -61,31 +61,21 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 
 		return fmt.Errorf("Error creating Outscale Net: %s", errString)
 	}
 
-	net := resp.OK.Net
-
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), net.NetId, conn)
+		err := assignTags(tags.([]interface{}), resp.Net.GetNetId(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(net.NetId)
+	d.SetId(resp.Net.GetNetId())
 
 	return resourceOutscaleOAPINetRead(d, meta)
 }
@@ -137,23 +127,22 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
-	filters := oapi.FiltersNet{
-		NetIds: []string{id},
+	filters := oscgo.FiltersNet{
+		NetIds: &[]string{id},
 	}
 
-	req := oapi.ReadNetsRequest{
-		Filters: filters,
+	req := oscgo.ReadNetsRequest{
+		Filters: &filters,
 	}
 
-	var rs *oapi.POST_ReadNetsResponses
-	var resp *oapi.ReadNetsResponse
+	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		rs, err = conn.POST_ReadNets(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -167,33 +156,26 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
 	}
 
-	resp = rs.OK
-
-	if resp == nil {
+	if len(resp.GetNets()) == 0 {
 		d.SetId("")
 		return fmt.Errorf("oAPI network not found")
 	}
 
-	if len(resp.Nets) == 0 {
-		d.SetId("")
-		return fmt.Errorf("oAPI network not found")
-	}
-
-	d.Set("ip_range", resp.Nets[0].IpRange)
-	d.Set("tenancy", resp.Nets[0].Tenancy)
-	d.Set("dhcp_options_set_id", resp.Nets[0].DhcpOptionsSetId)
-	d.Set("net_id", resp.Nets[0].NetId)
-	d.Set("state", resp.Nets[0].State)
-	d.Set("request_id", resp.ResponseContext.RequestId)
-	return d.Set("tags", tagsOAPIToMap(resp.Nets[0].Tags))
+	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
+	d.Set("tenancy", resp.GetNets()[0].Tenancy)
+	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	d.Set("net_id", resp.GetNets()[0].GetNetId())
+	d.Set("state", resp.GetNets()[0].GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 
 func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -204,17 +186,17 @@ func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
-	req := oapi.DeleteNetRequest{
+	req := oscgo.DeleteNetRequest{
 		NetId: id,
 	}
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.POST_DeleteNet(req)
+		_, _, err = conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

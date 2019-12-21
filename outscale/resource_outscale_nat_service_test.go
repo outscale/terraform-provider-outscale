@@ -1,19 +1,18 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"github.com/antihax/optional"
+	"github.com/marinsalinas/osc-sdk-go"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func TestAccOutscaleOAPINatService_basic(t *testing.T) {
-	var natGateway oapi.NatService
+	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -26,7 +25,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOAPINatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natGateway),
+					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
 				),
 			},
 		},
@@ -34,7 +33,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
-	var natGateway oapi.NatService
+	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -47,7 +46,7 @@ func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
 			resource.TestStep{
 				Config: testAccOAPINatGatewayConfigWithDataSource,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natGateway),
+					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
 				),
 			},
 		},
@@ -55,73 +54,28 @@ func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
 }
 
 func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_nat_service" {
 			continue
 		}
-		// Try to find the resource
-		var resp *oapi.POST_ReadNatServicesResponses
 
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			resp, err = conn.POST_ReadNatServices(oapi.ReadNatServicesRequest{
-				Filters: oapi.FiltersNatService{NatServiceIds: []string{rs.Primary.ID}},
-			})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(err.Error(), "NatGatewayNotFound:") {
-					return nil
-				}
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return fmt.Errorf("[DEBUG] Error reading Nat Service (%s)", errString)
+		filterReq := &oscgo.ReadNatServicesOpts{
+			ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
+				Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
+			}),
 		}
 
-		response := resp.OK
-
-		if err == nil {
-			status := map[string]bool{
-				"deleted":  true,
-				"deleting": true,
-				"failed":   true,
-			}
-
-			if len(response.NatServices) == 0 {
-				return nil
-			}
-
-			if _, ok := status[strings.ToLower(response.NatServices[0].State)]; len(response.NatServices) > 0 && !ok {
-				return fmt.Errorf("still exists")
-			}
-			return nil
+		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background(), filterReq)
+		if err != nil || len(resp.GetNatServices()) > 0 {
+			return fmt.Errorf("Nat Services still exists (%s)", rs.Primary.ID)
 		}
-
 	}
-
 	return nil
 }
 
-func testAccCheckOAPINatGatewayExists(n string, ng *oapi.NatService) resource.TestCheckFunc {
+func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -132,47 +86,20 @@ func testAccCheckOAPINatGatewayExists(n string, ng *oapi.NatService) resource.Te
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		var resp *oapi.POST_ReadNatServicesResponses
-
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-			resp, err = conn.POST_ReadNatServices(oapi.ReadNatServicesRequest{
-				Filters: oapi.FiltersNatService{NatServiceIds: []string{rs.Primary.ID}},
-			})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		var errString string
-
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-			}
-
-			return fmt.Errorf("[DEBUG] Error reading Nat Service (%s)", errString)
+		filterReq := &oscgo.ReadNatServicesOpts{
+			ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
+				Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
+			}),
 		}
 
-		response := resp.OK
-
-		if len(response.NatServices) == 0 {
-			return fmt.Errorf("NatGateway not found")
+		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background(), filterReq)
+		if err != nil || len(resp.GetNatServices()) < 1 {
+			return fmt.Errorf("Nat Services not found (%s)", rs.Primary.ID)
 		}
 
-		*ng = response.NatServices[0]
+		ns = &resp.GetNatServices()[0]
 
 		return nil
 	}
@@ -202,7 +129,7 @@ const testAccOAPINatGatewayConfig = `
 
 	resource "outscale_route" "outscale_route" {
 		destination_ip_range = "0.0.0.0/0"
-		gateway_id           = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
+		gateway_id           = "${outscale_internet_service_link.outscale_internet_service_link.internet_service_id}"
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
 	}
 
@@ -218,18 +145,18 @@ const testAccOAPINatGatewayConfig = `
 		internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
 	}
 `
+
 const testAccOAPINatGatewayConfigWithDataSource = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
-		net_id     = "${outscale_net.outscale_net.net_id}"
+		net_id   = "${outscale_net.outscale_net.net_id}"
 		ip_range = "10.0.0.0/18"
 	}
 
-	resource "outscale_public_ip" "outscale_public_ip" {
-	}
+	resource "outscale_public_ip" "outscale_public_ip" {}
 
 	resource "outscale_nat_service" "outscale_nat_service" {
 		depends_on   = ["outscale_route.outscale_route"]
@@ -243,7 +170,7 @@ const testAccOAPINatGatewayConfigWithDataSource = `
 
 	resource "outscale_route" "outscale_route" {
 		destination_ip_range = "0.0.0.0/0"
-		gateway_id           = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
+		gateway_id           = "${outscale_internet_service_link.outscale_internet_service_link.internet_service_id}"
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
 	}
 
@@ -252,8 +179,7 @@ const testAccOAPINatGatewayConfigWithDataSource = `
 		route_table_id = "${outscale_route_table.outscale_route_table.id}"
 	}
 
-	resource "outscale_internet_service" "outscale_internet_service" {
-	}
+	resource "outscale_internet_service" "outscale_internet_service" {}
 
 	resource "outscale_internet_service_link" "outscale_internet_service_link" {
 		net_id              = "${outscale_net.outscale_net.net_id}"
@@ -262,8 +188,8 @@ const testAccOAPINatGatewayConfigWithDataSource = `
 
 	data "outscale_nat_service" "outscale_nat_service" {
 		filter {
-				name   = "nat_service_ids"
-				values = ["${outscale_nat_service.outscale_nat_service.nat_service_id}"]
-		}    
+			name   = "nat_service_ids"
+			values = ["${outscale_nat_service.outscale_nat_service.nat_service_id}"]
+		}
 	}
 `

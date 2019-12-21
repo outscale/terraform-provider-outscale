@@ -1,8 +1,11 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"reflect"
 	"strings"
@@ -11,8 +14,6 @@ import (
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
@@ -30,20 +31,20 @@ func resourceOutscaleOAPILinPeeringConnection() *schema.Resource {
 }
 
 func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Create the vpc peering connection
-	createOpts := &oapi.CreateNetPeeringRequest{
+	createOpts := oscgo.CreateNetPeeringRequest{
 		AccepterNetId: d.Get("accepter_net_id").(string),
 		SourceNetId:   d.Get("source_net_id").(string),
 	}
 
 	log.Printf("[DEBUG] VPC Peering Create options: %#v", createOpts)
 
-	var resp *oapi.POST_CreateNetPeeringResponses
+	var resp oscgo.CreateNetPeeringResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_CreateNetPeering(*createOpts)
+		resp, _, err = conn.NetPeeringApi.CreateNetPeering(context.Background(), &oscgo.CreateNetPeeringOpts{CreateNetPeeringRequest: optional.NewInterface(createOpts)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -56,26 +57,17 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 		return fmt.Errorf("Error creating Net Peering. Details: %s", errString)
 	}
 
 	// Get the ID and store it
-	rt := resp.OK
-	d.SetId(rt.NetPeering.NetPeeringId)
+	d.SetId(resp.NetPeering.GetNetPeeringId())
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), rt.NetPeering.NetPeeringId, conn)
+		err := assignTags(tags.([]interface{}), d.Id(), conn)
 		if err != nil {
 			return err
 		}
@@ -101,13 +93,13 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
-	var resp *oapi.POST_ReadNetPeeringsResponses
+	conn := meta.(*OutscaleClient).OSCAPI
+	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
-			Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{d.Id()}},
-		})
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+			Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{d.Id()}},
+		})})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -120,41 +112,21 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
-				d.SetId("")
-				return nil
-			}
-
-			// Allow a failed Net Peering to fallthrough,
-			// to allow rest of the logic below to do its work.
-			//TODO: improve logic
-			//FIXME: check if it is Name or Message
-			if resp.OK != nil {
-				if err != nil && resp.OK.NetPeerings[0].State.Name != "failed" {
-					return err
-				}
-			}
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
+			d.SetId("")
+			return nil
 		}
+		errString = err.Error()
 		return fmt.Errorf("Error reading Net Peering details: %s", errString)
 	}
 
-	result := resp.OK
-
-	pc := result.NetPeerings[0]
+	pc := resp.GetNetPeerings()[0]
 
 	// The failed status is a status that we can assume just means the
 	// connection is gone. Destruction isn't allowed, and it eventually
 	// just "falls off" the console. See GH-2322
-	if !reflect.DeepEqual(pc.State, oapi.NetPeeringState{}) {
+	if !reflect.DeepEqual(pc.State, oscgo.NetPeeringState{}) {
 		status := map[string]bool{
 			"deleted":  true,
 			"deleting": true,
@@ -162,34 +134,34 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 			"failed":   true,
 			"rejected": true,
 		}
-		if _, ok := status[pc.State.Name]; ok {
+		if _, ok := status[pc.State.GetName()]; ok {
 			log.Printf("[DEBUG] Net Peering (%s) in state (%s), removing.",
-				d.Id(), pc.State.Name)
+				d.Id(), pc.State.GetName())
 			d.SetId("")
 			return nil
 		}
 	}
 	log.Printf("[DEBUG] Net Peering response: %#v", pc)
 
-	log.Printf("[DEBUG] VPC PeerConn Source %s, Accepter %s", pc.SourceNet.AccountId, pc.AccepterNet.AccountId)
+	log.Printf("[DEBUG] VPC PeerConn Source %s, Accepter %s", pc.SourceNet.GetAccountId(), pc.AccepterNet.GetAccountId())
 
 	accepter := make(map[string]interface{})
 	requester := make(map[string]interface{})
 	stat := make(map[string]interface{})
 
-	if !reflect.DeepEqual(pc.AccepterNet, oapi.AccepterNet{}) {
-		accepter["ip_range"] = pc.AccepterNet.IpRange
-		accepter["account_id"] = pc.AccepterNet.AccountId
-		accepter["net_id"] = pc.AccepterNet.NetId
+	if !reflect.DeepEqual(pc.GetAccepterNet(), oscgo.AccepterNet{}) {
+		accepter["ip_range"] = pc.AccepterNet.GetIpRange()
+		accepter["account_id"] = pc.AccepterNet.GetAccountId()
+		accepter["net_id"] = pc.AccepterNet.GetNetId()
 	}
-	if !reflect.DeepEqual(pc.SourceNet, oapi.SourceNet{}) {
-		requester["ip_range"] = pc.SourceNet.IpRange
-		requester["account_id"] = pc.SourceNet.AccountId
-		requester["net_id"] = pc.SourceNet.NetId
+	if !reflect.DeepEqual(pc.GetSourceNet(), oscgo.SourceNet{}) {
+		requester["ip_range"] = pc.SourceNet.GetIpRange()
+		requester["account_id"] = pc.SourceNet.GetAccountId()
+		requester["net_id"] = pc.SourceNet.GetNetId()
 	}
-	if pc.State.Name != "" {
-		stat["name"] = pc.State.Name
-		stat["message"] = pc.State.Message
+	if pc.State.GetName() != "" {
+		stat["name"] = pc.State.GetName()
+		stat["message"] = pc.State.GetMessage()
 	}
 
 	if err := d.Set("accepter_net", accepter); err != nil {
@@ -201,24 +173,24 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("state", stat); err != nil {
 		return err
 	}
-	if err := d.Set("net_peering_id", pc.NetPeeringId); err != nil {
+	if err := d.Set("net_peering_id", pc.GetNetPeeringId()); err != nil {
 		return err
 	}
-	if err := d.Set("tags", tagsOAPIToMap(pc.Tags)); err != nil {
+	if err := d.Set("tags", tagsOSCAPIToMap(pc.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
 
-	d.Set("request_id", result.ResponseContext.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }
 
 func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -229,14 +201,13 @@ func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	var err error
-	var resp *oapi.POST_DeleteNetPeeringResponses
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_DeleteNetPeering(oapi.DeleteNetPeeringRequest{
+		_, _, err = conn.NetPeeringApi.DeleteNetPeering(context.Background(), &oscgo.DeleteNetPeeringOpts{DeleteNetPeeringRequest: optional.NewInterface(oscgo.DeleteNetPeeringRequest{
 			NetPeeringId: d.Id(),
-		})
+		})})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -249,16 +220,8 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 
 	var errString string
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
-		}
+	if err != nil {
+		errString = err.Error()
 		return fmt.Errorf("Error deleteting Net Peering. Details: %s", errString)
 	}
 
@@ -267,15 +230,14 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 
 // resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
 // a VPCPeeringConnection.
-func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oapi.Client, id string) resource.StateRefreshFunc {
+func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
-		var resp *oapi.POST_ReadNetPeeringsResponses
+		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadNetPeerings(oapi.ReadNetPeeringsRequest{
-				Filters: oapi.FiltersNetPeering{NetPeeringIds: []string{id}},
-			})
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{id}},
+			})})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -288,36 +250,26 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oapi.Client,
 
 		var errString string
 
-		if err != nil || resp.OK == nil {
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
-					// Sometimes AWS just has consistency issues and doesn't see
-					// our instance yet. Return an empty state.
-					return nil, "", nil
-				}
-				errString = err.Error()
-			} else if resp.Code401 != nil {
-				errString = fmt.Sprintf("Status Code: 401, %s", utils.ToJSONString(resp.Code401))
-			} else if resp.Code400 != nil {
-				errString = fmt.Sprintf("Status Code: 400, %s", utils.ToJSONString(resp.Code400))
-			} else if resp.Code500 != nil {
-				errString = fmt.Sprintf("Status: 500, %s", utils.ToJSONString(resp.Code500))
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpcPeeringConnectionID.NotFound") {
+				// Sometimes AWS just has consistency issues and doesn't see
+				// our instance yet. Return an empty state.
+				return nil, "", nil
 			}
+			errString = err.Error()
 			return nil, "error", fmt.Errorf("Error reading Net Peering details: %s", errString)
 		}
 
-		result := resp.OK
-
-		pc := result.NetPeerings[0]
+		pc := resp.GetNetPeerings()[0]
 
 		// A Net Peering can exist in a failed state due to
 		// incorrect VPC ID, account ID, or overlapping IP address range,
 		// thus we short circuit before the time out would occur.
-		if pc.State.Name == "failed" {
-			return nil, "failed", errors.New(pc.State.Message)
+		if pc.State.GetName() == "failed" {
+			return nil, "failed", errors.New(pc.State.GetMessage())
 		}
 
-		return pc, pc.State.Name, nil
+		return pc, pc.State.GetName(), nil
 	}
 }
 

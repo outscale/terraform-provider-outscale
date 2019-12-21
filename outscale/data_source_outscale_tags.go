@@ -1,12 +1,14 @@
 package outscale
 
 import (
+	"context"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func dataSourceOutscaleOAPITags() *schema.Resource {
@@ -43,21 +45,21 @@ func dataSourceOutscaleOAPITags() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
-	params := oapi.ReadTagsRequest{}
+	params := oscgo.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *oapi.POST_ReadTagsResponses
+	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadTags(params)
+		resp, _, err = conn.TagApi.ReadTags(context.Background(), &oscgo.ReadTagsOpts{ReadTagsRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -71,7 +73,7 @@ func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	d.Set("tags", oapiTagsDescToList(resp.OK.Tags))
+	d.Set("tags", oapiTagsDescToList(resp.GetTags()))
 	d.SetId(resource.UniqueId())
 
 	return err

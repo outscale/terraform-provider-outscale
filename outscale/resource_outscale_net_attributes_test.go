@@ -7,6 +7,7 @@ import (
 )
 
 func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			skipIfNoOAPI(t)
@@ -16,6 +17,10 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccOutscaleOAPILinAttrConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("outscale_net_attributes.outscale_net_attributes", "dhcp_options_set_id"),
+					resource.TestCheckResourceAttrSet("outscale_net_attributes.outscale_net_attributes", "net_id"),
+				),
 			},
 		},
 	})

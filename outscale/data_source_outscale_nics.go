@@ -1,11 +1,12 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -222,23 +223,23 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 
 //Read Nic
 func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk == false {
 		return fmt.Errorf("filters, or owner must be assigned, or nic_id must be provided")
 	}
 
-	params := oapi.ReadNicsRequest{}
+	params := oscgo.ReadNicsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
-	var resp *oapi.POST_ReadNicsResponses
+	var resp oscgo.ReadNicsResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.POST_ReadNics(params)
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(params)})
 		return resource.RetryableError(err)
 	})
 
@@ -246,15 +247,15 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error reading Network Interface Cards : %s", err)
 	}
 
-	if resp.OK.Nics == nil {
+	if resp.GetNics() == nil {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	if len(resp.OK.Nics) == 0 {
+	if len(resp.GetNics()) == 0 {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	nics := resp.OK.Nics
+	nics := resp.GetNics()
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(resource.UniqueId())
@@ -264,6 +265,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		return d.Set("request_id", resp.OK.ResponseContext.RequestId)
+		return d.Set("request_id", resp.ResponseContext.GetRequestId())
 	})
 }

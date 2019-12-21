@@ -1,16 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/outscale/osc-go/oapi"
-
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -89,7 +88,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 							Computed: true,
 						},
 						"device_number": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
 						"vm_id": {
@@ -216,7 +215,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 
 //Read Nic
 func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	nicID, okID := d.GetOk("nic_id")
 	filters, okFilters := d.GetOk("filter")
@@ -225,23 +224,22 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return errors.New("nic_id and filter set")
 	}
 
-	dnri := oapi.ReadNicsRequest{}
+	dnri := oscgo.ReadNicsRequest{}
 
 	if okID {
-		dnri.Filters = oapi.FiltersNic{
-			NicIds: []string{nicID.(string)},
+		dnri.Filters = &oscgo.FiltersNic{
+			NicIds: &[]string{nicID.(string)},
 		}
 	}
 
 	if okFilters {
-		dnri.Filters = buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set))
+		dnri.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
-	var describeResp *oapi.POST_ReadNicsResponses
+	var resp oscgo.ReadNicsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-		describeResp, err = conn.POST_ReadNics(dnri)
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnri)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -265,25 +263,25 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(describeResp.OK.Nics) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", describeResp.OK.Nics)
+	if len(resp.GetNics()) != 1 {
+		return fmt.Errorf("Unable to find ENI: %#v", resp.GetNics())
 	}
 
-	eni := describeResp.OK.Nics[0]
+	eni := resp.GetNics()[0]
 
-	d.Set("description", eni.Description)
-	d.Set("nic_id", eni.SubnetId)
-	d.Set("subregion_name", eni.SubregionName)
-	d.Set("subnet_id", eni.SubnetId)
+	d.Set("description", eni.GetDescription())
+	d.Set("nic_id", eni.GetNicId())
+	d.Set("subregion_name", eni.GetSubregionName())
+	d.Set("subnet_id", eni.GetSubnetId())
 
 	b := make(map[string]interface{})
 
-	link := eni.LinkPublicIp
-	b["public_ip_id"] = link.PublicIpId
-	b["link_public_ip_id"] = link.LinkPublicIpId
-	b["public_ip_account_id"] = link.PublicIpAccountId
-	b["public_dns_name"] = link.PublicDnsName
-	b["public_ip"] = link.PublicIp
+	link := eni.GetLinkPublicIp()
+	b["public_ip_id"] = link.GetPublicIpId()
+	b["link_public_ip_id"] = link.GetLinkPublicIpId()
+	b["public_ip_account_id"] = link.GetPublicIpAccountId()
+	b["public_dns_name"] = link.GetPublicDnsName()
+	b["public_ip"] = link.GetPublicIp()
 
 	if err := d.Set("link_public_ip", b); err != nil {
 		return err
@@ -291,56 +289,56 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 	bb := make(map[string]interface{})
 
-	linkNic := eni.LinkNic
+	linkNic := eni.GetLinkNic()
 
-	bb["link_nic_id"] = linkNic.LinkNicId
-	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", aws.BoolValue(linkNic.DeleteOnVmDeletion))
-	bb["device_number"] = strconv.FormatInt(linkNic.DeviceNumber, 10)
-	bb["vm_id"] = linkNic.VmId
-	bb["vm_account_id"] = linkNic.VmAccountId
-	bb["state"] = linkNic.State
+	bb["link_nic_id"] = linkNic.GetLinkNicId()
+	bb["delete_on_vm_deletion"] = fmt.Sprintf("%t", linkNic.GetDeleteOnVmDeletion())
+	bb["device_number"] = fmt.Sprintf("%d", linkNic.GetDeviceNumber())
+	bb["vm_id"] = linkNic.GetVmId()
+	bb["vm_account_id"] = linkNic.GetVmAccountId()
+	bb["state"] = linkNic.GetState()
 
 	if err := d.Set("link_nic", bb); err != nil {
 		return err
 	}
 
-	d.Set("sub_region_name", eni.SubregionName)
+	d.Set("sub_region_name", eni.GetSubregionName())
 
-	x := make([]map[string]interface{}, len(eni.SecurityGroups))
-	for k, v := range eni.SecurityGroups {
+	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
+	for k, v := range eni.GetSecurityGroups() {
 		b := make(map[string]interface{})
-		b["security_group_id"] = v.SecurityGroupId
-		b["security_group_name"] = v.SecurityGroupName
+		b["security_group_id"] = v.GetSecurityGroupId()
+		b["security_group_name"] = v.GetSecurityGroupName()
 		x[k] = b
 	}
 	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
-	d.Set("mac_address", eni.MacAddress)
-	d.Set("nic_id", eni.NicId)
-	d.Set("account_id", eni.AccountId)
-	d.Set("private_dns_name", eni.PrivateDnsName)
+	d.Set("mac_address", eni.GetMacAddress())
+	d.Set("nic_id", eni.GetNicId())
+	d.Set("account_id", eni.GetAccountId())
+	d.Set("private_dns_name", eni.GetPrivateDnsName())
 	// Check this one later
-	d.Set("private_ip_address", eni.NetId)
+	d.Set("private_ip_address", eni.GetNetId())
 
-	y := make([]map[string]interface{}, len(eni.PrivateIps))
+	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
 	if eni.PrivateIps != nil {
-		for k, v := range eni.PrivateIps {
+		for k, v := range eni.GetPrivateIps() {
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			assoc := v.LinkPublicIp
-			d["public_ip_id"] = assoc.PublicIpId
-			d["link_public_ip_id"] = assoc.LinkPublicIpId
-			d["public_ip_account_id"] = assoc.PublicIpAccountId
-			d["public_dns_name"] = assoc.PublicDnsName
-			d["public_ip"] = assoc.PublicIp
+			assoc := v.GetLinkPublicIp()
+			d["public_ip_id"] = assoc.GetPublicIpId()
+			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+			d["public_dns_name"] = assoc.GetPublicDnsName()
+			d["public_ip"] = assoc.GetPublicIp()
 
 			b["link_public_ip"] = d
-			b["private_dns_name"] = v.PrivateDnsName
-			b["private_ip"] = v.PrivateIp
-			b["is_primary"] = v.IsPrimary
+			b["private_dns_name"] = v.GetPrivateDnsName()
+			b["private_ip"] = v.GetPrivateIp()
+			b["is_primary"] = v.GetIsPrimary()
 
 			y[k] = b
 		}
@@ -349,18 +347,18 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	d.Set("request_id", describeResp.OK.ResponseContext.RequestId)
-	d.Set("is_source_dest_checked", eni.IsSourceDestChecked)
-	d.Set("state", eni.State)
-	d.Set("tags", tagsOAPIToMap(eni.Tags))
-	d.Set("net_id", eni.NetId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked())
+	d.Set("state", eni.GetState())
+	d.Set("tags", tagsOSCAPIToMap(eni.GetTags()))
+	d.Set("net_id", eni.GetNetId())
 
-	d.SetId(eni.NicId)
+	d.SetId(eni.GetNicId())
 	return nil
 }
 
-func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oapi.FiltersNic {
-	var filters oapi.FiltersNic
+func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
+	var filters oscgo.FiltersNic
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
@@ -370,27 +368,27 @@ func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oapi.FiltersNic {
 
 		switch name := m["name"].(string); name {
 		case "net_ids":
-			filters.NetIds = filterValues
+			//filters.NetIds =
 		case "nic_ids":
-			filters.NicIds = filterValues
+			filters.SetNicIds(filterValues)
 		case "private_dns_names":
-			filters.PrivateDnsNames = filterValues
+			//filters.PrivateDnsNames = filterValues
 		case "private_ips_link_public_ip_account_ids":
-			filters.PrivateIpsLinkPublicIpAccountIds = filterValues
+			//filters.PrivateIpsLinkPublicIpAccountIds = filterValues
 		case "private_ips_link_public_ip_public_ips":
-			filters.PrivateIpsLinkPublicIpPublicIps = filterValues
+			//filters.PrivateIpsLinkPublicIpPublicIps = filterValues
 		case "private_ips_private_ips":
-			filters.PrivateIpsPrivateIps = filterValues
+			filters.SetPrivateIpsPrivateIps(filterValues)
 		case "security_group_ids":
-			filters.SecurityGroupIds = filterValues
+			//filters.SecurityGroupIds = filterValues
 		case "security_group_names":
-			filters.SecurityGroupNames = filterValues
+			//filters.SecurityGroupNames = filterValues
 		case "states":
-			filters.States = filterValues
+			//filters.States = filterValues
 		case "subnet_ids":
-			filters.SubnetIds = filterValues
+			filters.SetSubnetIds(filterValues)
 		case "subregion_names":
-			filters.SubregionNames = filterValues
+			//filters.SubregionNames = filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

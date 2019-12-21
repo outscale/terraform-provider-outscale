@@ -1,12 +1,13 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
-
-	"github.com/outscale/osc-go/oapi"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -71,13 +72,12 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
 						"global_permission": &schema.Schema{
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": &schema.Schema{
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -109,7 +109,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 }
 
 func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	v, ok := d.GetOk("volume_id")
 	snp, sok := d.GetOk("snapshot_size")
@@ -119,28 +119,36 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("please provide the source_snapshot_id, volume_id or snapshot_size argument")
 	}
 
-	request := oapi.CreateSnapshotRequest{
-		Description:      d.Get("description").(string),
-		FileLocation:     d.Get("file_location").(string),
-		SourceRegionName: d.Get("source_region_name").(string),
+	description := d.Get("description").(string)
+	fileLocation := d.Get("file_location").(string)
+	sourceRegionName := d.Get("source_region_name").(string)
+
+	request := oscgo.CreateSnapshotRequest{
+		Description:  &description,
+		FileLocation: &fileLocation,
 	}
 
 	if ok {
-		request.VolumeId = v.(string)
+		request.SetVolumeId(v.(string))
 	}
 
 	if sok && snp.(int) > 0 {
-		request.SnapshotSize = int64(snp.(int))
+		log.Printf("[DEBUG] Snapshot Size %d", snp.(int))
+
+		request.SetSnapshotSize(int64(snp.(int)))
 	}
 
 	if sourceok {
-		request.SourceSnapshotId = source.(string)
+		request.SetSourceSnapshotId(source.(string))
+	}
+	if sourceRegionName != "" {
+		request.SetSourceRegionName(sourceRegionName)
 	}
 
-	var res *oapi.POST_CreateSnapshotResponses
+	var resp oscgo.CreateSnapshotResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, err = conn.POST_CreateSnapshot(request)
+		resp, _, err = conn.SnapshotApi.CreateSnapshot(context.Background(), &oscgo.CreateSnapshotOpts{CreateSnapshotRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -153,12 +161,12 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	log.Printf("Waiting for Snapshot %s to become available...", res.OK.Snapshot.SnapshotId)
+	log.Printf("Waiting for Snapshot %s to become available...", resp.Snapshot.GetSnapshotId())
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
+		Pending:    []string{"pending", "pending/queued", "queued", "importing"},
 		Target:     []string{"completed"},
-		Refresh:    SnapshotOAPIStateRefreshFunc(conn, res.OK.Snapshot.SnapshotId),
+		Refresh:    SnapshotOAPIStateRefreshFunc(conn, resp.Snapshot.GetSnapshotId()),
 		Timeout:    OutscaleImageRetryTimeout,
 		Delay:      OutscaleImageRetryDelay,
 		MinTimeout: OutscaleImageRetryMinTimeout,
@@ -166,33 +174,32 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", res.OK.Snapshot.SnapshotId, err)
+		return fmt.Errorf("Error waiting for Snapshot (%s) to be ready: %s", resp.Snapshot.GetSnapshotId(), err)
 	}
-	result := res.OK
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), result.Snapshot.SnapshotId, conn)
+		err := assignTags(tags.([]interface{}), resp.Snapshot.GetSnapshotId(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(res.OK.Snapshot.SnapshotId)
+	d.SetId(resp.Snapshot.GetSnapshotId())
 
 	return resourceOutscaleOAPISnapshotRead(d, meta)
 }
 
 func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.ReadSnapshotsRequest{
-		Filters: oapi.FiltersSnapshot{SnapshotIds: []string{d.Id()}},
+	req := oscgo.ReadSnapshotsRequest{
+		Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{d.Id()}},
 	}
 
-	var res *oapi.POST_ReadSnapshotsResponses
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, err = conn.POST_ReadSnapshots(req)
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -203,33 +210,33 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error reading the snapshot %s", err)
+		return fmt.Errorf("Error reading the snapshot %snapshot", err)
 	}
 
-	s := res.OK.Snapshots[0]
+	snapshot := resp.GetSnapshots()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-
-		set("description", s.Description)
-		set("volume_id", s.VolumeId)
-		set("account_alias", s.AccountAlias)
-		set("account_id", s.AccountId)
-		set("permissions_to_create_volume", omiOAPIPermissionToLuch(s.PermissionsToCreateVolume))
-		set("progress", s.Progress)
-		set("snapshot_id", s.SnapshotId)
-		set("state", s.State)
-		set("tags", tagsOAPIToMap(s.Tags))
-		set("volume_size", s.VolumeSize)
-		return set("request_id", res.OK.ResponseContext.RequestId)
+		permisions := snapshot.GetPermissionsToCreateVolume()
+		set("description", snapshot.GetDescription())
+		set("volume_id", snapshot.GetVolumeId())
+		set("account_alias", snapshot.GetAccountAlias())
+		set("account_id", snapshot.GetAccountId())
+		set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions))
+		set("progress", snapshot.GetProgress())
+		set("snapshot_id", snapshot.GetSnapshotId())
+		set("state", snapshot.GetState())
+		set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
+		set("volume_size", snapshot.GetVolumeSize())
+		return set("request_id", resp.ResponseContext.GetRequestId())
 	})
 }
 
 func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -240,15 +247,15 @@ func resourceOutscaleOAPISnapshotUpdate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		request := oapi.DeleteSnapshotRequest{
+		request := oscgo.DeleteSnapshotRequest{
 			SnapshotId: d.Id(),
 		}
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err := conn.POST_DeleteSnapshot(request)
+			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background(), &oscgo.DeleteSnapshotOpts{DeleteSnapshotRequest: optional.NewInterface(request)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -277,17 +284,17 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 }
 
 // SnapshotOAPIStateRefreshFunc ...
-func SnapshotOAPIStateRefreshFunc(client *oapi.Client, id string) resource.StateRefreshFunc {
+func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		emptyResp := &oapi.ReadSnapshotsResponse{}
+		emptyResp := oscgo.ReadSnapshotsResponse{}
 
-		var resp *oapi.POST_ReadSnapshotsResponses
+		var resp oscgo.ReadSnapshotsResponse
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = client.POST_ReadSnapshots(oapi.ReadSnapshotsRequest{
-				Filters: oapi.FiltersSnapshot{SnapshotIds: []string{id}},
-			})
+			resp, _, err = client.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(oscgo.ReadSnapshotsRequest{
+				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
+			})})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -302,7 +309,7 @@ func SnapshotOAPIStateRefreshFunc(client *oapi.Client, id string) resource.State
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 
-			} else if resp != nil && len(resp.OK.Snapshots) == 0 {
+			} else if len(resp.GetSnapshots()) == 0 {
 				log.Printf("[INFO] OMI %s state %s", id, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
@@ -310,11 +317,11 @@ func SnapshotOAPIStateRefreshFunc(client *oapi.Client, id string) resource.State
 			}
 		}
 
-		if resp == nil || resp.OK.Snapshots == nil || len(resp.OK.Snapshots) == 0 {
+		if resp.GetSnapshots() == nil || len(resp.GetSnapshots()) == 0 {
 			return emptyResp, "destroyed", nil
 		}
 
 		// OMI is valid, so return it's state
-		return resp.OK.Snapshots[0], resp.OK.Snapshots[0].State, nil
+		return resp.GetSnapshots()[0], resp.GetSnapshots()[0].GetState(), nil
 	}
 }

@@ -1,84 +1,88 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/antihax/optional"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func resourceOutscaleOAPIInternetService() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPIInternetServiceCreate,
 		Read:   resourceOutscaleOAPIInternetServiceRead,
-		Delete: resourceOutscaleOAPIInternetServiceDelete,
 		Update: resourceOutscaleOAPIInternetServiceUpdate,
+		Delete: resourceOutscaleOAPIInternetServiceDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: getOAPIInternetServiceSchema(),
+		Schema: map[string]*schema.Schema{
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"internet_service_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsListOAPISchema(),
+		},
 	}
 }
 
 func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	log.Println("[DEBUG] Creating Internet Service")
-	r, err := conn.POST_CreateInternetService(oapi.CreateInternetServiceRequest{})
-
-	var errString string
-
-	if err != nil || r.OK == nil {
-		if err != nil {
-			errString = err.Error()
-
-		} else if r.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(r.Code401))
-		} else if r.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(r.Code400))
-		} else if r.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(r.Code500))
-		}
-
-		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", errString)
+	resp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background(), &oscgo.CreateInternetServiceOpts{
+		CreateInternetServiceRequest: optional.NewInterface(oscgo.CreateInternetServiceRequest{}),
+	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", err)
 	}
 
-	result := r.OK
-
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignOapiTags(tags.([]interface{}), result.InternetService.InternetServiceId, conn)
+		err := assignTags(tags.([]interface{}), resp.InternetService.GetInternetServiceId(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(result.InternetService.InternetServiceId)
+	d.SetId(resp.InternetService.GetInternetServiceId())
 
 	return resourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 
 func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
 	log.Printf("[DEBUG] Reading Internet Service id (%s)", id)
 
-	req := &oapi.ReadInternetServicesRequest{
-		Filters: oapi.FiltersInternetService{InternetServiceIds: []string{id}},
+	req := oscgo.ReadInternetServicesRequest{
+		Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{id}},
 	}
 
-	var resp *oapi.POST_ReadInternetServicesResponses
+	var resp oscgo.ReadInternetServicesResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_ReadInternetServices(*req)
+		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -86,50 +90,38 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 			}
 			return resource.NonRetryableError(err)
 		}
+		resp = r
 		return nil
 	})
 
-	var errString string
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", err.Error())
 
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", errString)
+	}
+	if !resp.HasInternetServices() {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	// Workaround to get the desired internet_service instance. TODO: Remove getInternetService
-	// once filters work again. And use resp.OK.InternetServices[0]
-	result, err := getInternetService(resp.OK.InternetServices, id)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	d.Set("internet_service_id", resp.GetInternetServices()[0].GetInternetServiceId())
 
-	d.Set("request_id", resp.OK.ResponseContext.RequestId)
-	d.Set("internet_service_id", result.InternetServiceId)
-
-	if err := d.Set("net_id", result.NetId); err != nil {
+	if err := d.Set("net_id", resp.GetInternetServices()[0].GetNetId()); err != nil {
 		return err
 	}
 
-	if err := d.Set("state", result.State); err != nil {
+	if err := d.Set("state", resp.GetInternetServices()[0].GetState()); err != nil {
 		return err
 	}
 
-	return d.Set("tags", tagsOAPIToMap(result.Tags))
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetInternetServices()[0].GetTags()))
 }
 
 func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
@@ -139,79 +131,19 @@ func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta inte
 	return resourceOutscaleOAPIInternetServiceRead(d, meta)
 }
 
-func getInternetService(internetServices []oapi.InternetService, id string) (oapi.InternetService, error) {
-	for _, element := range internetServices {
-		if element.InternetServiceId == id {
-			return element, nil
-		}
-	}
-	return oapi.InternetService{}, fmt.Errorf("InternetService %+s not found", id)
-}
-
 func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	id := d.Id()
-	log.Printf("[DEBUG] Deleting Internet Service id (%s)", id)
-
-	req := &oapi.DeleteInternetServiceRequest{
-		InternetServiceId: id,
+	req := oscgo.DeleteInternetServiceRequest{
+		InternetServiceId: d.Id(),
 	}
 
-	var err error
-	var resp *oapi.POST_DeleteInternetServiceResponses
-
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.POST_DeleteInternetService(*req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
+	_, _, err := conn.InternetServiceApi.DeleteInternetService(context.Background(), &oscgo.DeleteInternetServiceOpts{
+		DeleteInternetServiceRequest: optional.NewInterface(req),
 	})
-
-	var errString string
-
-	if err != nil || resp.OK == nil {
-		if err != nil {
-			errString = err.Error()
-
-		} else if resp.Code401 != nil {
-			errString = fmt.Sprintf("ErrorCode: 401, %s", utils.ToJSONString(resp.Code401))
-		} else if resp.Code400 != nil {
-			errString = fmt.Sprintf("ErrorCode: 400, %s", utils.ToJSONString(resp.Code400))
-		} else if resp.Code500 != nil {
-			errString = fmt.Sprintf("ErrorCode: 500, %s", utils.ToJSONString(resp.Code500))
-		}
-
-		return fmt.Errorf("[DEBUG] Error deleting Internet Service id (%s)", errString)
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error deleting Internet Service id (%s)", err)
 	}
 
 	return nil
-}
-
-func getOAPIInternetServiceSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Attributes
-		"state": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"net_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"internet_service_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"tags": tagsListOAPISchema(),
-	}
 }

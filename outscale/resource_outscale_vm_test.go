@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -8,16 +9,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/outscale/osc-go/oapi"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
-	var server oapi.Vm
+	var server oscgo.Vm
 	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -45,7 +47,7 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
-	var server oapi.Vm
+	var server oscgo.Vm
 	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -73,7 +75,7 @@ func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
-	var server oapi.Vm
+	var server oscgo.Vm
 	omi := getOMIByRegion("eu-west-2", "centos").OMI
 
 	resource.Test(t, resource.TestCase{
@@ -104,8 +106,8 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	omi := getOMIByRegion(region, "centos").OMI
 	omi2 := getOMIByRegion(region, "centos").OMI
 
-	var before oapi.Vm
-	var after oapi.Vm
+	var before oscgo.Vm
+	var after oscgo.Vm
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -136,7 +138,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
-	var server oapi.Vm
+	var server oscgo.Vm
 	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
@@ -164,7 +166,7 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
-	var server oapi.Vm
+	var server oscgo.Vm
 	omi := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 	vmType := "t2.micro"
@@ -224,8 +226,8 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	//omi2 := getOMIByRegion("eu-west-2", "centos").OMI
 	region := os.Getenv("OUTSCALE_REGION")
 
-	//var before oapi.Vm
-	//var after oapi.Vm
+	//var before oscgo.Vm
+	//var after oscgo.Vm
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -247,6 +249,35 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
+	var server oscgo.Vm
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+	vmType := "t2.micro"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.outscale_vmnet", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.outscale_vmnet", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.outscale_vmnet", "vm_type", vmType),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
@@ -258,13 +289,13 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection s
 	`, omi, deletionProtection)
 }
 
-func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.SecurityGroups, after.SecurityGroups)
-		if len(after.SecurityGroups) > 0 && len(before.SecurityGroups) > 0 {
-			expectedSecurityGroup := after.SecurityGroups[0].SecurityGroupId
-			for i := range before.SecurityGroups {
-				assertNotEqual(t, before.SecurityGroups[i].SecurityGroupId, expectedSecurityGroup,
+		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
+		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
+			expectedSecurityGroup := after.GetSecurityGroups()[0].GetSecurityGroupId()
+			for i := range before.GetSecurityGroups() {
+				assertNotEqual(t, before.GetSecurityGroups()[i].GetSecurityGroupId(), expectedSecurityGroup,
 					"Outscale VM SecurityGroupId Either not found or are the same.")
 			}
 		}
@@ -272,12 +303,23 @@ func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oapi.V
 	}
 }
 
-func testAccCheckOAPIVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOSCAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
+	providers := []*schema.Provider{testAccProvider}
+	return testAccCheckOSCAPIVMExistsWithProviders(n, i, &providers)
+}
+
+func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
+	return &oscgo.FiltersVm{
+		VmIds: &[]string{vmID},
+	}
+}
+
+func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -295,14 +337,12 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*s
 
 			client := provider.Meta().(*OutscaleClient)
 
-			var resp *oapi.ReadVmsResponse
-			var r *oapi.POST_ReadVmsResponses
+			var resp oscgo.ReadVmsResponse
 			var err error
 			for {
-				r, err = client.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})
-				resp = r.OK
+				})})
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -311,8 +351,8 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*s
 
 			}
 
-			if len(resp.Vms) > 0 {
-				*i = resp.Vms[0]
+			if len(resp.GetVms()) > 0 {
+				*i = resp.GetVms()[0]
 				return nil
 			}
 		}
@@ -321,7 +361,49 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*s
 	}
 }
 
-func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOSCAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No ID is set")
+		}
+		for _, provider := range *providers {
+			// Ignore if Meta is empty, this can happen for validation providers
+			if provider.Meta() == nil {
+				continue
+			}
+
+			client := provider.Meta().(*OutscaleClient)
+
+			var resp oscgo.ReadVmsResponse
+			var err error
+			for {
+				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+					Filters: getOSCVMsFilterByVMID(rs.Primary.ID),
+				})})
+				if err != nil {
+					time.Sleep(10 * time.Second)
+				} else {
+					break
+				}
+
+			}
+
+			if len(resp.GetVms()) > 0 {
+				*i = resp.GetVms()[0]
+				return nil
+			}
+		}
+
+		return fmt.Errorf("Vms not found")
+	}
+}
+
+func testAccCheckOAPIVMNotRecreated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertNotEqual(t, before.VmId, after.VmId, "Outscale VM IDs have changed.")
 		return nil
@@ -354,15 +436,13 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 			continue
 		}
 
-		var resp *oapi.ReadVmsResponse
-		var r *oapi.POST_ReadVmsResponses
+		var resp oscgo.ReadVmsResponse
 		var err error
 		for {
 			// Try to find the resource
-			r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+			resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
-			})
-			resp = r.OK
+			})})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
 					time.Sleep(10 * time.Second)
@@ -375,9 +455,9 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		}
 
 		if err == nil {
-			for _, i := range resp.Vms {
-				if i.State != "" && i.State != "terminated" {
-					return fmt.Errorf("Found unterminated instance: %s", i.VmId)
+			for _, i := range resp.GetVms() {
+				if i.GetState() != "" && i.GetState() != "terminated" {
+					return fmt.Errorf("Found unterminated instance: %s", i.GetVmId())
 				}
 			}
 		}
@@ -392,12 +472,12 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 	return nil
 }
 
-func testAccCheckOutscaleOAPIVMExists(n string, i *oapi.Vm) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
 	return testAccCheckOutscaleOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -414,15 +494,13 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 			}
 
 			conn := provider.Meta().(*OutscaleClient)
-			var resp *oapi.ReadVmsResponse
-			var r *oapi.POST_ReadVmsResponses
+			var resp oscgo.ReadVmsResponse
 			var err error
 
 			for {
-				r, err = conn.OAPI.POST_ReadVms(oapi.ReadVmsRequest{
+				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})
-				resp = r.OK
+				})})
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -441,8 +519,8 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 				return fmt.Errorf("Vms not found")
 			}
 
-			if len(resp.Vms) > 0 {
-				*i = resp.Vms[0]
+			if len(resp.GetVms()) > 0 {
+				*i = resp.GetVms()[0]
 				return nil
 			}
 		}
@@ -451,7 +529,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oapi.Vm, provide
 	}
 }
 
-func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oapi.Vm, omi string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assertEqual(t, omi, server.ImageId, "Bad image_id.")
 		return nil
@@ -638,6 +716,76 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 		  }
 		}
 	  }
+	`, omi, vmType, region)
+}
+
+func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+	resource "outscale_net" "outscale_net" {
+		ip_range = "10.0.0.0/16"
+		
+		tags  {                               
+			key   = "name"
+			value = "Terraform_net"
+		}
+	}
+	resource "outscale_subnet" "outscale_subnet" {
+		net_id         = "${outscale_net.outscale_net.net_id}"
+		ip_range       = "10.0.0.0/24"
+		subregion_name = "%[3]sb"    
+		
+		tags {                               
+			key   = "name"
+			value = "Terraform_subnet"
+		}
+	}
+
+	resource "outscale_security_group" "outscale_sg" {
+		description         = "sg for terraform tests"
+		security_group_name = "terraform-sg"
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	}
+	
+	resource "outscale_internet_service" "outscale_internet_service" {}
+
+	resource "outscale_route_table" "outscale_route_table" {
+		net_id = "${outscale_net.outscale_net.net_id}"
+		
+		tags {                               
+			key   = "name"
+			value = "Terraform_RT"
+		}
+	}
+
+	resource "outscale_route_table_link" "outscale_route_table_link" {
+		route_table_id  = "${outscale_route_table.outscale_route_table.route_table_id}"
+		subnet_id       = "${outscale_subnet.outscale_subnet.subnet_id}"
+	}
+
+	resource "outscale_internet_service_link" "outscale_internet_service_link" {
+		internet_service_id = "${outscale_internet_service.outscale_internet_service.internet_service_id}" 
+		net_id              = "${outscale_net.outscale_net.net_id}"
+	}
+
+	resource "outscale_route" "outscale_route" {
+		gateway_id           = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
+		destination_ip_range = "0.0.0.0/0"
+		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
+	} 
+	resource "outscale_vm" "outscale_vmnet" {
+		image_id           = "%[1]s"
+		vm_type            = "%[2]s"
+		keypair_name       = "terraform-basic"
+		security_group_ids = ["${outscale_security_group.outscale_sg.security_group_id}"]
+		subnet_id          ="${outscale_subnet.outscale_subnet.subnet_id}"
+	}
+
+	resource "outscale_public_ip" "outscale_public_ip" {}
+
+	resource "outscale_public_ip_link" "outscale_public_ip_link" {
+		vm_id     = "${outscale_vm.outscale_vmnet.vm_id}"
+		public_ip = "${outscale_public_ip.outscale_public_ip.public_ip}"
+	}
 	`, omi, vmType, region)
 }
 
