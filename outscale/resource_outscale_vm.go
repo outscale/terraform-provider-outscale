@@ -625,7 +625,6 @@ func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) 
 
 func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	oapiConn := meta.(*OutscaleClient).OAPI
 
 	d.Partial(true)
 
@@ -752,7 +751,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if err := setOAPITags(oapiConn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 

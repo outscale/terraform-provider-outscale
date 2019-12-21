@@ -186,11 +186,11 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 }
 
 func resourceOutscaleOAPINetPeeringUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
 
-	if err := setOAPITags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 

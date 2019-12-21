@@ -33,56 +33,6 @@ func tagsOAPISchemaComputed() *schema.Schema {
 	}
 }
 
-func setOAPITags(conn *oapi.Client, d *schema.ResourceData) error {
-
-	if d.HasChange("tags") {
-		oraw, nraw := d.GetChange("tags")
-		o := oraw.([]interface{})
-		n := nraw.([]interface{})
-		create, remove := diffOAPITags(tagsOAPIFromSliceMap(o), tagsOAPIFromSliceMap(n))
-
-		// Set tag
-		if len(remove) > 0 {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, err := conn.POST_DeleteTags(oapi.DeleteTagsRequest{
-					ResourceIds: []string{d.Id()},
-					Tags:        remove,
-				})
-				if err != nil {
-					if strings.Contains(fmt.Sprint(err), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-		if len(create) > 0 {
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, err := conn.POST_CreateTags(oapi.CreateTagsRequest{
-					ResourceIds: []string{d.Id()},
-					Tags:        create,
-				})
-				if err != nil {
-					if strings.Contains(fmt.Sprint(err), ".NotFound") {
-						return resource.RetryableError(err) // retry
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
 func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
