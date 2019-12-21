@@ -10,18 +10,18 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleImageCopy() *schema.Resource {
+func resourceOutscaleOAPIImageCopy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceImageCopyCreate,
-		Read:   resourceImageRead,
+		Create: resourceOAPIImageCopyCreate,
+		Read:   resourceOAPIImageRead,
 
-		Delete: resourceImageDelete,
+		Delete: resourceOAPIImageDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": {
+			"vm_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -43,23 +43,23 @@ func resourceOutscaleImageCopy() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_location": {
+			"osu_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_alias": {
+			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_id": {
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_state": {
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -80,7 +80,7 @@ func resourceOutscaleImageCopy() *schema.Resource {
 				Computed: true,
 			},
 			// Complex computed values
-			"block_device_mapping": {
+			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -93,11 +93,11 @@ func resourceOutscaleImageCopy() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"virtual_name": {
+						"virtual_device_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"ebs": {
+						"bsu": {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
@@ -121,14 +121,14 @@ func resourceOutscaleImageCopy() *schema.Resource {
 					},
 				},
 			},
-			"state_reason": {
+			"state_comment": {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
-			"tag_set": dataSourceTagsSchema(),
+			"tag": dataSourceTagsSchema(),
 
 			//Argument
-			"client_token": {
+			"token": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -146,7 +146,7 @@ func resourceOutscaleImageCopy() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"source_region": {
+			"source_region_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -156,7 +156,7 @@ func resourceOutscaleImageCopy() *schema.Resource {
 	}
 }
 
-func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*OutscaleClient).FCU
 	req := &fcu.CopyImageInput{}
 	if v, ok := d.GetOk("name"); ok {
@@ -168,10 +168,10 @@ func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("source_image_id"); ok {
 		req.SourceImageId = aws.String(v.(string))
 	}
-	if v, ok := d.GetOk("source_region"); ok {
+	if v, ok := d.GetOk("source_region_name"); ok {
 		req.SourceRegion = aws.String(v.(string))
 	}
-	if v, ok := d.GetOk("client_token"); ok {
+	if v, ok := d.GetOk("token"); ok {
 		req.ClientToken = aws.String(v.(string))
 	}
 
@@ -200,11 +200,11 @@ func resourceImageCopyCreate(d *schema.ResourceData, meta interface{}) error {
 	d.Set("image_id", id)
 	d.SetPartial("image_id")
 	d.Partial(false)
+	//TODO
+	//_, err = resourceOutscaleOAPIImageWaitForAvailable(id, client, 1)
+	// if err != nil {
+	// 	return err
+	// }
 
-	_, err = resourceOutscaleImageWaitForAvailable(id, client, 1)
-	if err != nil {
-		return err
-	}
-
-	return resourceImageUpdate(d, meta)
+	return resourceOAPIImageUpdate(d, meta)
 }

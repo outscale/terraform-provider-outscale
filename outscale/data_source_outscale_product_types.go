@@ -10,13 +10,13 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleProductTypes() *schema.Resource {
+func dataSourceOutscaleOAPIProductTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleProductTypesRead,
+		Read: dataSourceOutscaleOAPIProductTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"product_type_set": &schema.Schema{
+			"product_type": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -29,7 +29,7 @@ func dataSourceOutscaleProductTypes() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vendor": {
+						"product_type_vendor": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -44,7 +44,7 @@ func dataSourceOutscaleProductTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIProductTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -83,14 +83,14 @@ func dataSourceOutscaleProductTypesRead(d *schema.ResourceData, meta interface{}
 		vc["description"] = *v.Description
 		vc["product_type_id"] = *v.ProductTypeId
 		if v.Vendor != nil {
-			vc["vendor"] = *v.Vendor
+			vc["product_type_vendor"] = *v.Vendor
 		} else {
-			vc["vendor"] = ""
+			vc["product_type_vendor"] = ""
 		}
 		vcs[k] = vc
 	}
 
-	if err := d.Set("product_type_set", vcs); err != nil {
+	if err := d.Set("product_type", vcs); err != nil {
 		return err
 	}
 	d.Set("request_id", resp.RequestId)

@@ -1,44 +1,63 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nat_service"
-sidebar_current: "docs-outscale-resource-nat-service"
+page_title: "3DS OUTSCALE: outscale_nat_service"
+sidebar_current: "outscale-nat-service"
 description: |-
-  Provides an Outscale Nat Gateway resource. This allows instances to be created, described, and deleted. Nat Gateway also support provisioning.
+  [Manages a NAT service.]
 ---
 
-# outscale_nat_service
+# outscale_nat_service Resource
 
-  Provides an Outscale Nat Gateway resource. This allows instances to be created, described, and deleted. Nat Gateway also support [provisioning](/docs/provisioners/index.html).
+Manages a NAT service.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Devices).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-natservice).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_nat_service" "gateway" {
-    reservation_id = "eipalloc-32e506e8"
-    subnet_id = "subnet-861fbecc"
+
+#resource "outscale_net" "net01" {
+#  ip_range = "10.0.0.0/16"
+#}
+
+#resource "outscale_subnet" "subnet01" {
+#  net_id   = outscale_net.net01.net_id
+#  ip_range = "10.0.0.0/18"
+#}
+
+#resource "outscale_public_ip" "public_ip01" {
+#}
+
+resource "outscale_nat_service" "nat_service01" {
+  subnet_id    = outscale_subnet.subnet01.subnet_id
+  public_ip_id = outscale_public_ip.public_ip01.public_ip_id
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `allocation_id` - (Requiered) The allocation ID of the EIP to associate with the NAT gateway. 
-* `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
-* `subnet_id` - (Requiered) The public subnet where you want to create the NAT gateway..
+* `public_ip_id` - (Required) The allocation ID of the EIP to associate with the NAT service. If the EIP is already associated with another resource, you must first disassociate it.
+* `subnet_id` - (Required) The ID of the Subnet in which you want to create the NAT service.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
-
-See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `nat_gateway_address` - A unique identifier which enables you to manage the idempotency.
-* `nat_gateway_id` - Information about the newly created NAT gateway.
-* `state` - The ID of the request.
-* `subnet_id` - Information about the newly created NAT gateway.
-* `vpc_id` - The ID of the request.
-
-See detailed information in [Tags](http://docs.outscale.com/api_fcu/definitions/NatGateway.html#_api_fcu-natgateway.
+* `nat_service` - Information about the NAT service.
+  * `nat_service_id` - The ID of the NAT service.
+  * `net_id` - The ID of the Net in which the NAT service is.
+  * `public_ips` - Information about the External IP address or addresses (EIPs) associated with the NAT service.
+    * `public_ip` - The External IP address (EIP) associated with the NAT service.
+    * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+  * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
+  * `subnet_id` - The ID of the Subnet in which the NAT service is.
+  * `tags` - One or more tags associated with the NAT service.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

@@ -13,13 +13,13 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceOutscaleCustomerGateways() *schema.Resource {
+func dataSourceOutscaleOAPICustomerGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleCustomerGatewaysRead,
+		Read: dataSourceOutscaleOAPICustomerGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"customer_gateway_id": {
+			"client_endpoint_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -28,7 +28,7 @@ func dataSourceOutscaleCustomerGateways() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"customer_gateway_set": {
+			"client_endpoint": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -38,7 +38,7 @@ func dataSourceOutscaleCustomerGateways() *schema.Resource {
 							Computed: true,
 						},
 
-						"ip_address": {
+						"public_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -48,7 +48,7 @@ func dataSourceOutscaleCustomerGateways() *schema.Resource {
 							Computed: true,
 						},
 
-						"customer_gateway_id": {
+						"client_endpoint_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -65,17 +65,13 @@ func dataSourceOutscaleCustomerGateways() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleCustomerGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPICustomerGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.DescribeCustomerGatewaysInput{}
 
 	filters, filtersOk := d.GetOk("filter")
-	v, vOk := d.GetOk("customer_gateway_id")
-
-	if filtersOk == false && vOk == false {
-		return fmt.Errorf("One of filters, or customer_gateway_id(s) must be assigned")
-	}
+	v, vOk := d.GetOk("client_endpoint_id")
 
 	if filtersOk {
 		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
@@ -120,11 +116,10 @@ func dataSourceOutscaleCustomerGatewaysRead(d *schema.ResourceData, meta interfa
 	for k, v := range resp.CustomerGateways {
 		customerGateway := make(map[string]interface{})
 
-		customerGateway["customer_gateway_id"] = *v.CustomerGatewayId
-		customerGateway["ip_address"] = *v.IpAddress
+		customerGateway["client_endpoint_id"] = *v.CustomerGatewayId
+		customerGateway["public_ip"] = *v.IpAddress
 		customerGateway["type"] = *v.Type
 		customerGateway["tag_set"] = tagsToMap(v.Tags)
-		customerGateway["state"] = *v.State
 
 		if *v.BgpAsn != "" {
 			val, err := strconv.ParseInt(*v.BgpAsn, 0, 0)
@@ -137,7 +132,7 @@ func dataSourceOutscaleCustomerGatewaysRead(d *schema.ResourceData, meta interfa
 		customerGateways[k] = customerGateway
 	}
 
-	d.Set("customer_gateway_set", customerGateways)
+	d.Set("client_endpoint", customerGateways)
 	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 

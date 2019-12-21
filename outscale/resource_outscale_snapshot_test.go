@@ -1,65 +1,55 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleSnapshot_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-	var v fcu.Snapshot
+	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSnapshotConfig,
+				Config: testAccOutscaleOAPISnapshotConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-	var v fcu.Snapshot
+	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleSnapshotConfigWithDescription,
+				Config: testAccOutscaleOAPISnapshotConfigWithDescription(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSnapshotExists("outscale_snapshot.test", &v),
+					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
 					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Snapshot Acceptance Test"),
 				),
 			},
@@ -67,7 +57,52 @@ func TestAccOutscaleSnapshot_withDescription(t *testing.T) {
 	})
 }
 
-func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFunc {
+func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	var v oscgo.Snapshot
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISnapshotConfigCopySnapshot(region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOAPISnapshotExists("outscale_snapshot.test", &v),
+					resource.TestCheckResourceAttr("outscale_snapshot.test", "description", "Target Snapshot Acceptance Test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	//var v oscgo.Snapshot
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+			{
+				Config: testAccOutscaleOAPISnapshotConfigUpdateTags(region, "Terraform-Snapshot-2"),
+				Check:  resource.ComposeTestCheckFunc(),
+			},
+		},
+	})
+}
+
+func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -78,17 +113,17 @@ func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFun
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		request := &fcu.DescribeSnapshotsInput{
-			SnapshotIds: []*string{aws.String(rs.Primary.ID)},
+		request := oscgo.ReadSnapshotsRequest{
+			Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{rs.Primary.ID}},
 		}
 
-		var resp *fcu.DescribeSnapshotsOutput
+		var resp oscgo.ReadSnapshotsResponse
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSnapshots(request)
+			resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -98,8 +133,8 @@ func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFun
 			return nil
 		})
 		if err == nil {
-			if resp.Snapshots != nil && len(resp.Snapshots) > 0 {
-				*v = *resp.Snapshots[0]
+			if resp.GetSnapshots() != nil && len(resp.GetSnapshots()) > 0 {
+				*v = resp.GetSnapshots()[0]
 				return nil
 			}
 		}
@@ -107,25 +142,67 @@ func testAccCheckSnapshotExists(n string, v *fcu.Snapshot) resource.TestCheckFun
 	}
 }
 
-const testAccOutscaleSnapshotConfig = `
-resource "outscale_volume" "test" {
-	availability_zone = "eu-west-2a"
-	size = 1
+func testAccOutscaleOAPISnapshotConfig(region string) string {
+	return fmt.Sprintf(`
+		 resource "outscale_volume" "outscale_volume" {
+    subregion_name = "%sa"
+    size            = 40
+}
+resource "outscale_snapshot" "outscale_snapshot" {
+    volume_id = outscale_volume.outscale_volume.volume_id
+}
+resource "outscale_snapshot_attributes" "outscale_snapshot_attributes" {
+    snapshot_id = outscale_snapshot.outscale_snapshot.snapshot_id
+    permissions_to_create_volume_additions  {
+                        account_ids = ["458594607190"]
+        }
+}
+	`, region)
 }
 
-resource "outscale_snapshot" "test" {
-	volume_id = "${outscale_volume.test.id}"
-}
-`
+func testAccOutscaleOAPISnapshotConfigWithDescription(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "%sa"
+			size = 1
+		}
 
-const testAccOutscaleSnapshotConfigWithDescription = `
-resource "outscale_volume" "description_test" {
-	availability_zone = "eu-west-2a"
-	size = 1
+		resource "outscale_snapshot" "test" {
+			volume_id = "${outscale_volume.description_test.id}"
+			description = "Snapshot Acceptance Test"
+		}
+	`, region)
 }
 
-resource "outscale_snapshot" "test" {
-	volume_id = "${outscale_volume.description_test.id}"
-	description = "Snapshot Acceptance Test"
+func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "%[1]sb"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "source" {
+			volume_id   = "${outscale_volume.description_test.id}"
+			description = "Source Snapshot Acceptance Test"
+		}
+
+		resource "outscale_snapshot" "test" {
+			source_region_name = "%[1]s"
+			source_snapshot_id = "${outscale_snapshot.source.id}"
+			description        = "Target Snapshot Acceptance Test"
+		}
+	`, region)
 }
-`
+
+func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
+	return fmt.Sprintf(`
+	resource "outscale_volume" "outscale_volume" {
+		subregion_name = "%sa" size = 10 
+	   }
+	   resource "outscale_snapshot" "outscale_snapshot" {
+	   volume_id = "${outscale_volume.outscale_volume.volume_id}" 
+	   tags = {
+		key = "Name" 
+	   value = "%s" }
+		}	`, region, value)
+}

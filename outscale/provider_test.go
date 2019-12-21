@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -28,8 +26,8 @@ func init() {
 }
 
 func TestGetOMIByRegion(t *testing.T) {
-	if omi := getOMIByRegion("eu-west-2", "ubuntu"); omi.OMI != "ami-7eb39d40" {
-		t.Fatalf("expected %s, but got %s", "ami-7eb39d40", omi.OMI)
+	if omi := getOMIByRegion("eu-west-2", "ubuntu"); omi.OMI != "ami-abe953fa" {
+		t.Fatalf("expected %s, but got %s", "ami-abe953fa", omi.OMI)
 	}
 	if omi := getOMIByRegion("eu-west-2", "centos"); omi.OMI != "ami-4a7bf2b3" {
 		t.Fatalf("expected %s, but got %s", "ami-4a7bf2b3", omi.OMI)
@@ -54,14 +52,8 @@ func TestProvider_impl(t *testing.T) {
 }
 
 func skipIfNoOAPI(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	isOAPI, err := strconv.ParseBool(o)
-	if err != nil {
-		isOAPI = false
-	}
-
-	if !isOAPI {
+	isOAPI, err := strconv.ParseBool(os.Getenv("OUTSCALE_OAPI"))
+	if err != nil || !isOAPI {
 		t.Skip()
 	}
 }
@@ -69,19 +61,6 @@ func skipIfNoOAPI(t *testing.T) {
 func testAccPreCheck(t *testing.T) {
 }
 
-func testAccCheckState(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-
-		if !ok {
-			return fmt.Errorf("Can't find this `%s` resource", n)
-		}
-
-		utils.PrintToJSON(rs, "[Debug] State: \n")
-
-		return nil
-	}
-}
 func testAccWait(n time.Duration) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		time.Sleep(n)
@@ -100,7 +79,7 @@ func getOMIByRegion(region, platform string) Item {
 	}
 	omis := make(map[string][]Item)
 	omis["eu-west-2"] = []Item{Item{Platform: "centos", OMI: "ami-4a7bf2b3"}}
-	omis["eu-west-2"] = append(omis["eu-west-2"], Item{Platform: "ubuntu", OMI: "ami-fbead1f5"})
+	omis["eu-west-2"] = append(omis["eu-west-2"], Item{Platform: "ubuntu", OMI: "ami-abe953fa"})
 
 	omis["us-east-2"] = []Item{Item{Platform: "centos", OMI: "ami-8ceca82d"}}
 	omis["us-east-2"] = append(omis["us-east-2"], Item{Platform: "ubuntu", OMI: "ami-f2ea59af"})

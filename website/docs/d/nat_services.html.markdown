@@ -1,56 +1,56 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_nat_services"
-sidebar_current: "docs-outscale-datasource-nat-services"
+page_title: "3DS OUTSCALE: outscale_nat_service"
+sidebar_current: "outscale-nat-service"
 description: |-
-    Describes one or more network address translation (NAT) gateways.
-
-
+  [Provides information about NAT services.]
 ---
 
-# outscale_nat_services
+# outscale_nat_service Data Source
 
-Describes one or more network address translation (NAT) gateways.
-
+Provides information about NAT services.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Devices).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-natservice).
 
 ## Example Usage
 
 ```hcl
-data "outscale_nat_services" "nat" {
-	nat_gateway_id = ["${outscale_nat_service.gateway.id}"]
+
+data "outscale_nat_services" "nat_services01" {
+  filter {
+    name   = "nat_service_ids"
+    values = ["nat-12345678", "nat-12345679"]
+  }
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `nat_gateway_id` - (Optional) One or more IDs of NAT gateways.
-* `filter.N` - (Optional) One or more filters.
-* `request_id` - (Optional) The ID of the request.
+* `filter` - One or more filters.
+  * `nat_service_ids` - (Optional) The IDs of the NAT services.
+  * `net_ids` - (Optional) The IDs of the Nets in which the NAT services are.
+  * `states` - (Optional) The states of the NAT services (`pending` \| `available` \| `deleting` \| `deleted`).
+  * `subnet_ids` - (Optional) The IDs of the Subnets in which the NAT services are.
+  * `tag_keys` - (Optional) The keys of the tags associated with the NAT services.
+  * `tag_values` - (Optional) The values of the tags associated with the NAT services.
+  * `tags` - (Optional) The key/value combination of the tags associated with the NAT services, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
 
-
-See detailed information in [Outscale NatService](http://docs.outscale.com/api_fcu/operations/Action_CreateNatGateway_get.html#_api_fcu-action_createnatgateway_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `nat-gateway-id` - The ID of the NAT gateway.
-* `state` The state of the NAT gateway (pending | available | deleting | deleted).
-* `subnet-id` The ID of the subnet in which the NAT gateway is.
-* `vpc-id` The ID of the VPC in which the NAT gateway is.
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `nat_gateway_address ` - Information about the External IP address (EIP) associated with the NAT gateway.
-* `nat_gateway_id` - The ID of the NAT gateway.
-* `state` - The state of the NAT gateway (pending | available| deleting | deleted).
-* `subnet-id` - The ID of the subnet in which the NAT gateway is.
-* `vpc_id` - The ID of the VPC in which the NAT gateway is.
-* `request_id` - The ID of the request.
-
-See detailed information in [Describe NatService](http://docs.outscale.com/api_fcu/operations/Action_DescribeNatGateways_get.html#_api_fcu-action_describenatgateways_get).
+* `nat_services` - Information about one or more NAT services.
+  * `nat_service_id` - The ID of the NAT service.
+  * `net_id` - The ID of the Net in which the NAT service is.
+  * `public_ips` - Information about the External IP address or addresses (EIPs) associated with the NAT service.
+    * `public_ip` - The External IP address (EIP) associated with the NAT service.
+    * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+  * `state` - The state of the NAT service (`pending` \| `available` \| `deleting` \| `deleted`).
+  * `subnet_id` - The ID of the Subnet in which the NAT service is.
+  * `tags` - One or more tags associated with the NAT service.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

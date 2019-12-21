@@ -1,72 +1,80 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleNetworkInterfacePrivateIP() *schema.Resource {
+func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleNetworkInterfacePrivateIPCreate,
-		Read:   resourceOutscaleNetworkInterfacePrivateIPRead,
-		Delete: resourceOutscaleNetworkInterfacePrivateIPDelete,
+		Create: resourceOutscaleOAPINetworkInterfacePrivateIPCreate,
+		Read:   resourceOutscaleOAPINetworkInterfacePrivateIPRead,
+		Delete: resourceOutscaleOAPINetworkInterfacePrivateIPDelete,
 
 		Schema: map[string]*schema.Schema{
-			"allow_reassignment": {
+			"allow_relink": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				ForceNew: true,
 			},
-			"secondary_private_ip_address_count": {
+			"secondary_private_ip_count": {
 				Type:     schema.TypeInt,
+				Computed: true,
 				Optional: true,
 				ForceNew: true,
 			},
-			"network_interface_id": {
+			"nic_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"private_ip_address": {
+			"private_ips": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
+			"primary_private_ip": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func resourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	input := &fcu.AssignPrivateIpAddressesInput{
-		NetworkInterfaceId: aws.String(d.Get("network_interface_id").(string)),
+	input := oscgo.LinkPrivateIpsRequest{
+		NicId: d.Get("nic_id").(string),
 	}
 
-	if v, ok := d.GetOk("allow_reassignment"); ok {
-		input.AllowReassignment = aws.Bool(v.(bool))
+	if v, ok := d.GetOk("allow_relink"); ok {
+		input.SetAllowRelink(v.(bool))
 	}
-	if v, ok := d.GetOk("secondary_private_ip_address_count"); ok {
-		input.SecondaryPrivateIpAddressCount = aws.Int64(int64(v.(int)))
+
+	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
+		input.SetSecondaryPrivateIpCount(int64(v.(int) - 1))
 	}
-	if v, ok := d.GetOk("private_ip_address"); ok {
-		input.PrivateIpAddresses = expandStringList(v.([]interface{}))
+
+	if v, ok := d.GetOk("private_ips"); ok {
+		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.AssignPrivateIpAddresses(input)
+		_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -77,28 +85,29 @@ func resourceOutscaleNetworkInterfacePrivateIPCreate(d *schema.ResourceData, met
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failure to assign Private IPs: %s", err)
+		errString := err.Error()
+		return fmt.Errorf("Failure to assign Private IPs: %s", errString)
+
 	}
 
-	d.SetId(*input.NetworkInterfaceId)
+	d.SetId(input.NicId)
 
-	return resourceOutscaleNetworkInterfacePrivateIPRead(d, meta)
+	return resourceOutscaleOAPINetworkInterfacePrivateIPRead(d, meta)
 }
 
-func resourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	interfaceID := d.Get("network_interface_id").(string)
+	interfaceID := d.Get("nic_id").(string)
 
-	req := &fcu.DescribeNetworkInterfacesInput{
-		NetworkInterfaceIds: []*string{aws.String(interfaceID)},
+	req := oscgo.ReadNicsRequest{
+		Filters: &oscgo.FiltersNic{NicIds: &[]string{interfaceID}},
 	}
 
-	var resp *fcu.DescribeNetworkInterfacesOutput
+	var resp oscgo.ReadNicsResponse
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeNetworkInterfaces(req)
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -110,53 +119,65 @@ func resourceOutscaleNetworkInterfacePrivateIPRead(d *schema.ResourceData, meta 
 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
+			// The ENI is gone now, so just remove the attachment from the state
 			d.SetId("")
 			return nil
 		}
+		errString := err.Error()
+		return fmt.Errorf("Could not find network interface: %s", errString)
 
-		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(resp.NetworkInterfaces) != 1 {
-		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, resp.NetworkInterfaces)
+	if len(resp.GetNics()) != 1 {
+		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, resp.GetNics())
 	}
 
-	eni := resp.NetworkInterfaces[0]
+	eni := resp.GetNics()[0]
 
-	if eni.NetworkInterfaceId == nil {
+	if eni.GetNicId() == "" {
+		// Interface is no longer attached, remove from state
 		d.SetId("")
 		return nil
 	}
 
 	var ips []string
-	for _, v := range eni.PrivateIpAddresses {
-		ips = append(ips, *v.PrivateIpAddress)
+
+	// We need to avoid to store inside private_ips when private IP is the primary IP
+	//because the primary can't remove.
+	var primaryPrivateID string
+	for _, v := range eni.GetPrivateIps() {
+		if v.GetIsPrimary() {
+			primaryPrivateID = v.GetPrivateIp()
+		} else {
+			ips = append(ips, v.GetPrivateIp())
+		}
 	}
 
-	_, ok := d.GetOk("allow_reassignment")
+	_, ok := d.GetOk("allow_relink")
 
-	d.Set("allow_reassignment", ok)
-	d.Set("private_ip_address", ips)
-	d.Set("secondary_private_ip_address_count", len(eni.PrivateIpAddresses))
-	d.Set("network_interface_id", eni.NetworkInterfaceId)
-	d.Set("request_id", resp.RequestId)
+	d.Set("allow_relink", ok)
+	d.Set("private_ips", ips)
+	d.Set("secondary_private_ip_count", len(eni.GetPrivateIps()))
+	d.Set("nic_id", eni.GetNicId())
+	d.Set("primary_private_ip", primaryPrivateID)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }
 
-func resourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	input := &fcu.UnassignPrivateIpAddressesInput{
-		NetworkInterfaceId: aws.String(d.Id()),
+	input := oscgo.UnlinkPrivateIpsRequest{
+		NicId: d.Id(),
 	}
 
-	if v, ok := d.GetOk("private_ip_address"); ok {
-		input.PrivateIpAddresses = expandStringList(v.([]interface{})[1:])
+	if v, ok := d.GetOk("private_ips"); ok {
+		input.SetPrivateIps(expandStringValueList(v.([]interface{})))
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.UnassignPrivateIpAddresses(input)
+		_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -165,10 +186,13 @@ func resourceOutscaleNetworkInterfacePrivateIPDelete(d *schema.ResourceData, met
 		}
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("Failure to unassign Private IPs: %s", err)
+		errString := err.Error()
+		return fmt.Errorf("Failure to unassign Private IPs: %s", errString)
+
 	}
+
+	d.SetId("")
 
 	return nil
 }

@@ -1,132 +1,46 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleRouteTable() *schema.Resource {
+func resourceOutscaleOAPIRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleRouteTableCreate,
-		Read:   resourceOutscaleRouteTableRead,
-		Delete: resourceOutscaleRouteTableDelete,
+		Create: resourceOutscaleOAPIRouteTableCreate,
+		Read:   resourceOutscaleOAPIRouteTableRead,
+		Update: resourceOutscaleOAPIRouteTableUpdate,
+		Delete: resourceOutscaleOAPIRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: resourceOutscaleRouteTableImportState,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"vpc_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"route_table_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"tag":     tagsSchema(),
-			"tag_set": tagsSchemaComputed(),
-
-			"propagating_vgw_set": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-
-			"route_set": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"destination_cidr_block": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"destination_prefix_list_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"gateway_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"instance_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"instance_owner_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"network_interface_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"origin": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"vpc_peering_connection_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"association_set": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"main": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"route_table_association_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"route_table_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"subnet_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-		},
+		Schema: getOAPIRouteTableSchema(),
 	}
 }
 
-func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	createOpts := &fcu.CreateRouteTableInput{
-		VpcId: aws.String(d.Get("vpc_id").(string)),
+	createOpts := oscgo.CreateRouteTableRequest{
+		NetId: d.Get("net_id").(string),
 	}
+	log.Printf("[DEBUG] RouteTable create config: %#v", createOpts)
 
-	var resp *fcu.CreateRouteTableOutput
+	var resp oscgo.CreateRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.CreateRouteTable(createOpts)
+		resp, _, err = conn.RouteTableApi.CreateRouteTable(context.Background(), &oscgo.CreateRouteTableOpts{CreateRouteTableRequest: optional.NewInterface(createOpts)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -135,18 +49,21 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 		}
 		return nil
 	})
-
+	var errString string
 	if err != nil {
-		return fmt.Errorf("Error creating route table: %s", err)
+		errString = err.Error()
+
+		return fmt.Errorf("Error creating route table: %s", errString)
 	}
 
-	rt := resp.RouteTable
-	d.SetId(*rt.RouteTableId)
+	d.SetId(resp.RouteTable.GetRouteTableId())
+	log.Printf("[INFO] Route Table ID: %s", d.Id())
 
+	log.Printf("[DEBUG] Waiting for route table (%s) to become available", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"ready"},
-		Refresh: resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
@@ -156,110 +73,104 @@ func resourceOutscaleRouteTableCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tags")
 	}
 
-	d.Set("tag_set", make([]interface{}, 0))
-	d.Set("route_set", make([]interface{}, 0))
-	d.Set("association_set", make([]interface{}, 0))
+	a := make([]interface{}, 0)
 
-	return resourceOutscaleRouteTableRead(d, meta)
+	//d.Set("tags", a)
+	d.Set("routes", a)
+	d.Set("link_route_tables", a)
+
+	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
 
-func resourceOutscaleRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	var resp *fcu.DescribeRouteTablesOutput
-	var err error
-	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-			RouteTableIds: []*string{aws.String(d.Id())},
-		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+	rtRaw, requestID, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			resp = nil
-		} else {
-			return err
-		}
+		return err
 	}
-
-	if resp == nil {
+	if rtRaw == nil {
 		d.SetId("")
 		return nil
 	}
 
-	rt := resp.RouteTables[0]
+	rt := rtRaw.(oscgo.RouteTable)
+	d.Set("request_id", requestID)
+	d.Set("route_table_id", rt.GetRouteTableId())
+	d.Set("net_id", rt.GetNetId())
+	d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways()))
+	d.Set("routes", setOSCAPIRoutes(rt.GetRoutes()))
+	d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
+	d.Set("tags", tagsOSCAPIToMap(rt.GetTags()))
 
-	propagatingVGWs := make([]string, 0, len(rt.PropagatingVgws))
-	for _, vgw := range rt.PropagatingVgws {
-		propagatingVGWs = append(propagatingVGWs, *vgw.GatewayId)
-	}
+	return nil
+}
 
-	d.Set("propagating_vgw_set", propagatingVGWs)
-	d.Set("tag_set", tagsToMap(rt.Tags))
-	d.Set("request_id", resp.RequestId)
-	d.Set("route_table_id", rt.RouteTableId)
-	d.Set("vpc_id", rt.VpcId)
+func resourceOutscaleOAPIRouteTableUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	if err := d.Set("route_set", setRouteSet(rt.Routes)); err != nil {
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	return d.Set("association_set", setAssociactionSet(rt.Associations))
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
 
-func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	rtRaw, _, err := resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id())()
+	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
 	if rtRaw == nil {
 		return nil
 	}
-	rt := rtRaw.(*fcu.RouteTable)
+	rt := rtRaw.(oscgo.RouteTable)
 
-	for _, a := range rt.Associations {
+	for _, a := range rt.GetLinkRouteTables() {
+		if !a.GetMain() {
+			log.Printf("[INFO] Unlinking LinkRouteTable: %s", a.GetLinkRouteTableId())
 
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err := conn.VM.DisassociateRouteTable(&fcu.DisassociateRouteTableInput{
-				AssociationId: a.RouteTableAssociationId,
-			})
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+
+				_, _, err := conn.RouteTableApi.UnlinkRouteTable(context.Background(), &oscgo.UnlinkRouteTableOpts{UnlinkRouteTableRequest: optional.NewInterface(oscgo.UnlinkRouteTableRequest{
+					LinkRouteTableId: a.GetLinkRouteTableId(),
+				})})
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
 				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
+				return nil
+			})
 
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
-				err = nil
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
+					err = nil
+				}
+				return err
 			}
-			return err
 		}
 	}
 
+	log.Printf("[INFO] Deleting Route Table: %s", d.Id())
+
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DeleteRouteTable(&fcu.DeleteRouteTableInput{
-			RouteTableId: aws.String(d.Id()),
-		})
+		_, _, err = conn.RouteTableApi.DeleteRouteTable(context.Background(), &oscgo.DeleteRouteTableOpts{DeleteRouteTableRequest: optional.NewInterface(oscgo.DeleteRouteTableRequest{
+			RouteTableId: d.Id(),
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -277,91 +188,272 @@ func resourceOutscaleRouteTableDelete(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error deleting route table: %s", err)
 	}
 
+	log.Printf("[DEBUG] Waiting for route table (%s) to become destroyed", d.Id())
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"ready"},
 		Target:  []string{},
-		Refresh: resourceOutscaleRouteTableStateRefreshFunc(conn, d.Id()),
+		Refresh: resourceOutscaleOAPIRouteTableStateRefreshFunc(conn, d.Id()),
 		Timeout: 5 * time.Minute,
 	}
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf(
-			"Error waiting for route table (%s) to become destroyed: %s",
-			d.Id(), err)
+		return fmt.Errorf("Error waiting for route table (%s) to become destroyed: %s", d.Id(), err)
 	}
 
 	return nil
 }
 
-func resourceOutscaleRouteTableStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...string) (interface{}, string, error) {
+	log.Printf("[DEBUG] Looking for RouteTable with: id %v and link_ids %v", routeTableID, linkIds)
+	var resp oscgo.ReadRouteTablesResponse
+	var err error
+	routeTableRequest := oscgo.ReadRouteTablesRequest{}
+	routeTableRequest.Filters = &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}}
 
-		var resp *fcu.DescribeRouteTablesOutput
-		var err error
-		err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-				RouteTableIds: []*string{aws.String(id)},
-			})
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(routeTableRequest)})
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-				resp = nil
-			} else {
-				return nil, "", err
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
+		return nil
+	})
 
-		if resp == nil {
-			return nil, "", nil
+	var errString string
+	var requestID string
+	if err != nil {
+		errString = err.Error()
+
+		return nil, requestID, fmt.Errorf("Error getting route table: %s", errString)
+	}
+
+	if len(resp.GetRouteTables()) <= 0 {
+		return nil, resp.ResponseContext.GetRequestId(), err
+	}
+
+	//Fix for OAPI issue when passing routeTableIds and routeTableLinkIds
+	rts := resp.GetRouteTables()[0].GetLinkRouteTables()
+	if len(linkIds) > 0 {
+		for _, linkID := range linkIds {
+			i := sort.Search(len(rts), func(i int) bool { return rts[i].GetLinkRouteTableId() == linkID })
+			if len(rts) > 0 && rts[i].GetLinkRouteTableId() == linkID {
+				return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
+			}
+
 		}
+		return nil, resp.ResponseContext.GetRequestId(), fmt.Errorf("Error getting route table: LinkRouteTables didn't match with provided (%+v)", linkIds)
+	}
+	return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
+}
 
-		rt := resp.RouteTables[0]
-		return rt, "ready", nil
+func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, routeTableID string, linkIds ...string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		rtRaw, _, err := readOAPIRouteTable(conn, routeTableID, linkIds...)
+		if rtRaw == nil {
+			return nil, "", err
+		}
+		return rtRaw.(oscgo.RouteTable), "ready", err
 	}
 }
 
-func setRouteSet(rt []*fcu.Route) []map[string]interface{} {
+func getOAPIRouteTableSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"net_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"route_table_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 
+		"tags": tagsListOAPISchema(),
+
+		"route_propagating_virtual_gateways": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"virtual_gateway_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"routes": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"destination_ip_range": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"destination_service_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"gateway_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"vm_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"vm_account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"creation_method": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"state": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_access_point_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"net_peering_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"nat_service_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"link_route_tables": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"main": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+					"route_table_to_subnet_link_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"link_route_table_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"route_table_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+	}
+}
+
+func setOSCAPIRoutes(rt []oscgo.Route) []map[string]interface{} {
 	route := make([]map[string]interface{}, len(rt))
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
 
-	for k, r := range rt {
-		m := make(map[string]interface{})
+			if r.GetNatServiceId() != "" {
+				m["nat_service_id"] = r.GetNatServiceId()
+			}
 
-		m["destination_cidr_block"] = aws.StringValue(r.DestinationCidrBlock)
-		m["destination_prefix_list_id"] = aws.StringValue(r.DestinationPrefixListId)
-		m["gateway_id"] = aws.StringValue(r.GatewayId)
-		m["instance_id"] = aws.StringValue(r.InstanceId)
-		m["instance_owner_id"] = aws.StringValue(r.InstanceOwnerId)
-		m["vpc_peering_connection_id"] = aws.StringValue(r.VpcPeeringConnectionId)
-		m["network_interface_id"] = aws.StringValue(r.NetworkInterfaceId)
-		m["origin"] = aws.StringValue(r.Origin)
-		m["state"] = aws.StringValue(r.State)
-
-		route[k] = m
+			if r.GetCreationMethod() != "" {
+				m["creation_method"] = r.GetCreationMethod()
+			}
+			if r.GetDestinationIpRange() != "" {
+				m["destination_ip_range"] = r.GetDestinationIpRange()
+			}
+			if r.GetDestinationServiceId() != "" {
+				m["destination_service_id"] = r.GetDestinationServiceId()
+			}
+			if r.GetGatewayId() != "" {
+				m["gateway_id"] = r.GetGatewayId()
+			}
+			if r.GetNetAccessPointId() != "" {
+				m["net_access_point_id"] = r.GetNetAccessPointId()
+			}
+			if r.GetNetPeeringId() != "" {
+				m["net_peering_id"] = r.GetNetPeeringId()
+			}
+			if r.GetVmId() != "" {
+				m["vm_id"] = r.GetVmId()
+			}
+			if r.GetNicId() != "" {
+				m["nic_id"] = r.GetNicId()
+			}
+			if r.GetState() != "" {
+				m["state"] = r.GetState()
+			}
+			if r.GetVmAccountId() != "" {
+				m["vm_account_id"] = r.GetVmAccountId()
+			}
+			route[k] = m
+		}
 	}
 
 	return route
 }
 
-func setAssociactionSet(rt []*fcu.RouteTableAssociation) []map[string]interface{} {
-	association := make([]map[string]interface{}, len(rt))
-
-	for k, r := range rt {
-		m := make(map[string]interface{})
-		m["main"] = aws.BoolValue(r.Main)
-		m["route_table_association_id"] = aws.StringValue(r.RouteTableAssociationId)
-		m["route_table_id"] = aws.StringValue(r.RouteTableId)
-		m["subnet_id"] = aws.StringValue(r.SubnetId)
-
-		association[k] = m
+func setOSCAPILinkRouteTables(rt []oscgo.LinkRouteTable) []map[string]interface{} {
+	linkRouteTables := make([]map[string]interface{}, len(rt))
+	log.Printf("[DEBUG] LinkRouteTable: %#v", rt)
+	if len(rt) > 0 {
+		for k, r := range rt {
+			m := make(map[string]interface{})
+			if r.GetMain() {
+				m["main"] = r.GetMain()
+			}
+			if r.GetRouteTableId() != "" {
+				m["route_table_id"] = r.GetRouteTableId()
+			}
+			if r.GetLinkRouteTableId() != "" {
+				m["link_route_table_id"] = r.GetLinkRouteTableId()
+			}
+			if r.GetSubnetId() != "" {
+				m["subnet_id"] = r.GetSubnetId()
+			}
+			linkRouteTables[k] = m
+		}
 	}
 
-	return association
+	return linkRouteTables
+}
+
+func setOSCAPIPropagatingVirtualGateways(vg []oscgo.RoutePropagatingVirtualGateway) (propagatingVGWs []map[string]interface{}) {
+	propagatingVGWs = make([]map[string]interface{}, len(vg))
+
+	if len(vg) > 0 {
+		for k, vgw := range vg {
+			m := make(map[string]interface{})
+			if vgw.GetVirtualGatewayId() != "" {
+				m["virtual_gateway_id"] = vgw.GetVirtualGatewayId()
+			}
+			propagatingVGWs[k] = m
+		}
+	}
+	return propagatingVGWs
 }

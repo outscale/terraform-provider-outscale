@@ -1,75 +1,55 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outcale_subnet"
-sidebar_current: "docs-outscale-datasource-subnet"
+page_title: "3DS OUTSCALE: outscale_subnet"
+sidebar_current: "outscale-subnet"
 description: |-
-    Describes one or more subnet
-
+  [Provides information about a specific Subnet.]
 ---
 
-# outscale_subnet
+# outscale_subnet Data Source
 
-Describes one or more of your subnets.
-If you do not specify any subnet ID, this action describes all of your subnets.
-You can use the Filter.N parameter to filter the subnets on the following properties:
+Provides information about a specific Subnet.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-subnet).
 
 ## Example Usage
 
 ```hcl
-data "outscale_subnet" "by_id" {
-  subnet_id = "${outscale_subnet.test.id}"
+
+data "outscale_subnet" "subnet01" {
+  filter {
+    name   = "net_ids"
+    values = ["vpc-12345678"]
+  }
 }
 
-data "outscale_subnet" "by_filter" {
-  filter {
-    name = "subnet-id"
-    values = ["${outscale_subnet.test.id}"]
-  }
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `subnet_id.N` - (Optional) (Only is provided here).
-* `filter.N` - (Optional) One or more filters.
+* `filter` - One or more filters.
+  * `available_ips_counts` - (Optional) The number of available IPs.
+  * `ip_ranges` - (Optional) The IP ranges in the Subnets, in CIDR notation (for example, 10.0.0.0/16).
+  * `net_ids` - (Optional) The IDs of the Nets in which the Subnets are.
+  * `states` - (Optional) The states of the Subnets (`pending` \| `available`).
+  * `subnet_ids` - (Optional) The IDs of the Subnets.
+  * `subregion_names` - (Optional) The names of the Subregions in which the Subnets are located.
 
-
-
-
-
-See detailed information in [Outscale subnet](http://docs.outscale.com/api_fcu/operations/Action_DescribeSubnets_get.html#_api_fcu-action_describesubnets_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `subnet-id` - (Optional) The ID of the Subnet.
-* `vpc-id` - (Optional) The ID of the VPC in which the subnet is.
-* `state` - (Optional) The state of the subnet (pending | available).
-* `cidr` - (Optional) The exact CIDR block of the subnet.
-* `cidr-block` - (Optional) The exact CIDR block of the subnet (similar to cidr and cidrBlock).
-* `cidrBlock` - (Optional) The exact CIDR block of the VPC (similar to cidr and cidr-block).
-* `available-ip-address-count` - (Optional) The number of available IP adresses in the subnet.
-* `availability-zone` - (Optional) The Availability Zone in which the subnets are located.
-* `availabilityZone` - (Optional) Alias for availability-zone.
-
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `subnet_id` - (Optional) The ID of the Subnet.
-* `vpc_id` - (Optional) The ID of the VPC in which the subnet is.
-* `state` - (Optional) The state of the subnet (pending | available).
-* `cidr_block` - (Optional) The exact CIDR block of the subnet (similar to cidr and cidrBlock).
-* `available_ip_address_count` - (Optional) The number of available IP adresses in the subnet.
-* `availability_zone` - (Optional) The Availability Zone in which the subnets are located.
-* `tag_set.N` - (Optional) One or more tags associated with the VPC.
-* `requester_id` - (Optional) The iD of the request.
-
-
-
-
-See detailed information in [Describe subnet](http://docs.outscale.com/api_fcu/operations/Action_DescribeSubnets_get.html#_api_fcu-action_describesubnets_get).
+* `subnets` - Information about one or more Subnets.
+  * `available_ips_count` - The number of available IP addresses in the Subnets.
+  * `ip_range` - The IP range in the Subnet, in CIDR notation (for example, 10.0.0.0/16).
+  * `map_public_ip_on_launch` - If `true`, a public IP address is assigned to the network interface cards (NICs) created in the specified Subnet.
+  * `net_id` - The ID of the Net in which the Subnet is.
+  * `state` - The state of the Subnet (`pending` \| `available`).
+  * `subnet_id` - The ID of the Subnet.
+  * `subregion_name` - The name of the Subregion in which the Subnet is located.
+  * `tags` - One or more tags associated with the Subnet.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

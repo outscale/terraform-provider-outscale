@@ -9,22 +9,27 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscalePrefixList(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIPrefixList(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscalePrefixListConfig,
+				Config: testAccDataSourceOutscaleOAPIPrefixListConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscalePrefixListCheck("data.outscale_prefix_list.s3_by_id"),
+					testAccDataSourceOutscaleOAPIPrefixListCheck("data.outscale_prefix_list.s3_by_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscalePrefixListCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPIPrefixListCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -56,8 +61,8 @@ func testAccDataSourceOutscalePrefixListCheck(name string) resource.TestCheckFun
 	}
 }
 
-const testAccDataSourceOutscalePrefixListConfig = `
-data "outscale_prefix_list" "s3_by_id" {
-  prefix_list_id = "pl-a14a8cdc"
-}
+const testAccDataSourceOutscaleOAPIPrefixListConfig = `
+	data "outscale_prefix_list" "s3_by_id" {
+		prefix_list_id = "pl-a14a8cdc"
+	}
 `

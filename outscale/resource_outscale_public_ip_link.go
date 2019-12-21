@@ -1,22 +1,23 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscalePublicIPLink() *schema.Resource {
+func resourceOutscaleOAPIPublicIPLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscalePublicIPLinkCreate,
-		Read:   resourceOutscalePublicIPLinkRead,
-		Delete: resourceOutscalePublicIPLinkDelete,
+		Create: resourceOutscaleOAPIPublicIPLinkCreate,
+		Read:   resourceOutscaleOAPIPublicIPLinkRead,
+		Delete: resourceOutscaleOAPIPublicIPLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -26,256 +27,240 @@ func resourceOutscalePublicIPLink() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getPublicIPLinkSchema(),
+		Schema: getOAPIPublicIPLinkSchema(),
 	}
 }
 
-func resourceOutscalePublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	request := &fcu.AssociateAddressInput{}
+	request := oscgo.LinkPublicIpRequest{}
 
-	if v, ok := d.GetOk("allocation_id"); ok {
+	if v, ok := d.GetOk("public_ip_id"); ok {
 		fmt.Println(v.(string))
-		request.AllocationId = aws.String(v.(string))
+		request.SetPublicIpId(v.(string))
 	}
-	if v, ok := d.GetOk("allow_reassociation"); ok {
-		request.AllowReassociation = aws.Bool(v.(bool))
+	if v, ok := d.GetOk("allow_relink"); ok {
+		request.SetAllowRelink(v.(bool))
 	}
-	if v, ok := d.GetOk("instance_id"); ok {
-		request.InstanceId = aws.String(v.(string))
+	if v, ok := d.GetOk("vm_id"); ok {
+		request.SetVmId(v.(string))
 	}
-	if v, ok := d.GetOk("network_interface_id"); ok {
-		request.NetworkInterfaceId = aws.String(v.(string))
+	if v, ok := d.GetOk("nic_id"); ok {
+		request.SetNicId(v.(string))
 	}
-	if v, ok := d.GetOk("private_ip_address"); ok {
-		request.PrivateIpAddress = aws.String(v.(string))
+	if v, ok := d.GetOk("private_ip"); ok {
+		request.SetPrivateIp(v.(string))
 	}
 	if v, ok := d.GetOk("public_ip"); ok {
-		request.PublicIp = aws.String(v.(string))
+		request.SetPublicIp(v.(string))
 	}
 
 	log.Printf("[DEBUG] EIP association configuration: %#v", request)
 
-	var resp *fcu.AssociateAddressOutput
+	var resp oscgo.LinkPublicIpResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		resp, err = conn.VM.AssociateAddress(request)
+		resp, _, err = conn.PublicIpApi.LinkPublicIp(context.Background(), &oscgo.LinkPublicIpOpts{LinkPublicIpRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
+
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
 
 	if err != nil {
-		fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkCreate (%s)", err)
+		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkCreate (%s)", err)
 		return err
 	}
-
-	if resp != nil && resp.AssociationId != nil && len(*resp.AssociationId) > 0 {
-		d.SetId(*resp.AssociationId)
+	//Using validation with request.
+	if resp.GetLinkPublicIpId() != "" && len(resp.GetLinkPublicIpId()) > 0 {
+		d.SetId(resp.GetLinkPublicIpId())
 	} else {
-		d.SetId(*request.PublicIp)
+		d.SetId(request.GetPublicIp())
 	}
 
-	return resourceOutscalePublicIPLinkRead(d, meta)
+	return resourceOutscaleOAPIPublicIPLinkRead(d, meta)
 }
 
-func resourceOutscalePublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
-	var request *fcu.DescribeAddressesInput
+	var request oscgo.ReadPublicIpsRequest
 
 	if strings.Contains(id, "eipassoc") {
-		request = &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
-					Name:   aws.String("association-id"),
-					Values: []*string{aws.String(id)},
-				},
+		request = oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				LinkPublicIpIds: &[]string{id},
 			},
 		}
 	} else {
-		request = &fcu.DescribeAddressesInput{
-			Filters: []*fcu.Filter{
-				&fcu.Filter{
-					Name:   aws.String("public-ip"),
-					Values: []*string{aws.String(id)},
-				},
+		request = oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				PublicIps: &[]string{id},
 			},
 		}
 	}
 
-	var response *fcu.DescribeAddressesOutput
+	var response oscgo.ReadPublicIpsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		response, err = conn.VM.DescribeAddressesRequest(request)
+		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
 
-	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkRead (%s)", err)
-
 	if err != nil {
-		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("allocation_id").(string), err)
+		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkRead (%s)", err)
+		return fmt.Errorf("Error reading Outscale VM Public IP %s: %#v", d.Get("public_ip_id").(string), err)
 	}
 
-	if response.Addresses == nil || len(response.Addresses) == 0 {
+	if response.GetPublicIps() == nil || len(response.GetPublicIps()) == 0 {
 		log.Printf("[INFO] EIP Association ID Not Found. Refreshing from state")
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("request_id", *response.RequestId)
-
-	return readOutscalePublicIPLink(d, response.Addresses[0])
+	d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags))
+	d.Set("request_id", response.ResponseContext.GetRequestId())
+	return readOutscaleOAPIPublicIPLink(d, &response.GetPublicIps()[0])
 }
 
-func resourceOutscalePublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	assocID := d.Get("association_id")
+	linkID := d.Get("link_public_ip_id")
 
-	opts := &fcu.DisassociateAddressInput{
-		AssociationId: aws.String(assocID.(string)),
-	}
+	opts := oscgo.UnlinkPublicIpRequest{}
+	opts.SetLinkPublicIpId(linkID.(string))
 
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		_, err = conn.VM.DisassociateAddress(opts)
+		_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(opts)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
-
 		}
 
 		return nil
 	})
 
-	fmt.Printf("[WARN] ERROR resourceOutscalePublicIPLinkDelete (%s)", err)
-
 	if err != nil {
+		log.Printf("[WARN] ERROR resourceOutscaleOAPIPublicIPLinkDelete (%s)", err)
 		return fmt.Errorf("Error deleting Elastic IP association: %s", err)
 	}
 
 	return nil
 }
 
-func readOutscalePublicIPLink(d *schema.ResourceData, address *fcu.Address) error {
-	if err := d.Set("allocation_id", address.AllocationId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
+func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oscgo.PublicIp) error {
+	// if err := d.Set("public_ip_id", address.ReservationId); err != nil {
+	// 	log.Printf("[WARN] ERROR readOutscalePublicIPLink1 (%s)", err)
 
-		return err
-	}
-	if err := d.Set("instance_id", address.InstanceId); err != nil {
+	// 	return err
+	// }
+	if err := d.Set("vm_id", address.GetVmId()); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink2 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("network_interface_id", address.NetworkInterfaceId); err != nil {
+	if err := d.Set("nic_id", address.GetNicId()); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink3 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("private_ip_address", address.PrivateIpAddress); err != nil {
+	if err := d.Set("private_ip", address.GetPrivateIp()); err != nil {
 		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink4 (%s)", err)
 
 		return err
 	}
-	if err := d.Set("public_ip", address.PublicIp); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+	if err := d.Set("public_ip", address.GetPublicIp()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}
 
-	if err := d.Set("association_id", address.AssociationId); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+	if err := d.Set("link_public_ip_id", address.GetLinkPublicIpId()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
 	}
 
-	if err := d.Set("allow_reassociation", address.AllowReassociation); err != nil {
-		fmt.Printf("[WARN] ERROR readOutscalePublicIPLink (%s)", err)
+	if err := d.Set("nic_account_id", address.GetNicAccountId()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
 
 		return err
+	}
+
+	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink (%s)", err)
+
+		return err
+	}
+
+	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleOAPIPublicIPLink TAGS PROBLEME (%s)", err)
 	}
 
 	return nil
 }
 
-func getPublicIPLinkSchema() map[string]*schema.Schema {
+func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"allocation_id": &schema.Schema{
+		"public_ip_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-
-		"association_id": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-			ForceNew: true,
-		},
-		"domain": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-			ForceNew: true,
-		},
-		"allow_reassociation": &schema.Schema{
+		"allow_relink": &schema.Schema{
 			Type:     schema.TypeBool,
 			Optional: true,
 			ForceNew: true,
 		},
-		"instance_id": &schema.Schema{
+		"vm_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-
-		"network_interface_id": &schema.Schema{
+		"nic_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-
-		"network_interface_owner_id": &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-			ForceNew: true,
-		},
-
-		"private_ip_address": &schema.Schema{
+		"private_ip": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-
 		"public_ip": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
+			ForceNew: true,
+		},
+		"link_public_ip_id": &schema.Schema{
+			Type:     schema.TypeString,
 			Computed: true,
 			ForceNew: true,
 		},
@@ -283,5 +268,10 @@ func getPublicIPLinkSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"nic_account_id": &schema.Schema{
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsOAPIListSchemaComputed(),
 	}
 }

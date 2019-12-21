@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleImageExportTasks() *schema.Resource {
+func resourceOutscaleOAPIImageExportTasks() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceImageExportTasksCreate,
-		Read:   resourceImageExportTasksRead,
-		Delete: resourceImageExportTasksDelete,
+		Create: resourceOAPIImageExportTasksCreate,
+		Read:   resourceOAPIImageExportTasksRead,
+		Delete: resourceOAPIImageExportTasksDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,39 +27,46 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"export_to_osu_disk_image_format": {
-				Type:     schema.TypeString,
-				ForceNew: true,
+			"osu_export": {
+				Type:     schema.TypeList,
 				Required: true,
-			},
-			"export_to_osu_bucket": {
-				Type:     schema.TypeString,
 				ForceNew: true,
-				Required: true,
-			},
-			"export_to_osu_key": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"export_to_osu_prefix": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"export_to_osu_aksk": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_key": {
+						"disk_image_format": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"secret_key": {
+						"osu_bucket": {
 							Type:     schema.TypeString,
 							Required: true,
+						},
+						"osu_key": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"osu_prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"osu_api_key": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"api_key_id": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"secret_key": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -74,10 +81,10 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 				Computed: true,
 			},
 			"completion": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"snapshot_export": {
+			"snapshot_description": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -89,7 +96,7 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 					},
 				},
 			},
-			"snapshot_export_task_id": {
+			"task_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -97,7 +104,7 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status_message": {
+			"comment": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -105,41 +112,49 @@ func resourceOutscaleImageExportTasks() *schema.Resource {
 	}
 }
 
-func resourceImageExportTasksCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	dif := d.Get("export_to_osu_disk_image_format")
-	ob := d.Get("export_to_osu_bucket")
-	sID := d.Get("snapshot_id")
-
+	eto, etoOk := d.GetOk("osu_export")
+	v, ok := d.GetOk("snapshot_id")
 	request := &fcu.CreateSnapshotExportTaskInput{}
 
-	request.SnapshotId = aws.String(sID.(string))
-
-	et := &fcu.ExportToOsuTaskSpecification{}
-
-	et.DiskImageFormat = aws.String(dif.(string))
-	et.OsuBucket = aws.String(ob.(string))
-
-	if v, ok := d.GetOk("export_to_osu_key"); ok {
-		et.OsuKey = aws.String(v.(string))
+	if !etoOk && !ok {
+		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
 	}
 
-	if v, ok := d.GetOk("export_to_osu_prefix"); ok {
-		et.OsuPrefix = aws.String(v.(string))
-	}
+	request.SnapshotId = aws.String(v.(string))
 
-	if v, ok := d.GetOk("export_to_osu_aksk"); ok {
-		a := v.([]interface{})
-		if len(a) > 0 {
-			w := a[0].(map[string]interface{})
-			et.AkSk = &fcu.ExportToOsuAccessKeySpecification{
-				AccessKey: aws.String(w["access_key"].(string)),
-				SecretKey: aws.String(w["secret_key"].(string)),
+	if etoOk {
+		exp := eto.([]interface{})
+		e := exp[0].(map[string]interface{})
+
+		et := &fcu.ExportToOsuTaskSpecification{}
+
+		if v, ok := e["disk_image_format"]; ok {
+			et.DiskImageFormat = aws.String(v.(string))
+		}
+		if v, ok := e["osu_key"]; ok {
+			et.OsuKey = aws.String(v.(string))
+		}
+		if v, ok := e["osu_bucket"]; ok {
+			et.OsuBucket = aws.String(v.(string))
+		}
+		if v, ok := e["osu_prefix"]; ok {
+			et.OsuPrefix = aws.String(v.(string))
+		}
+		if v, ok := e["osu_api_key"]; ok {
+			a := v.([]interface{})
+			if len(a) > 0 {
+				w := a[0].(map[string]interface{})
+				et.AkSk = &fcu.ExportToOsuAccessKeySpecification{
+					AccessKey: aws.String(w["api_key_id"].(string)),
+					SecretKey: aws.String(w["secret_key"].(string)),
+				}
 			}
 		}
+		request.ExportToOsu = et
 	}
-	request.ExportToOsu = et
 
 	var resp *fcu.CreateSnapshotExportTaskOutput
 	var err error
@@ -159,16 +174,18 @@ func resourceImageExportTasksCreate(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("[DEBUG] Error image task %s", err)
 	}
 
-	d.SetId(*resp.SnapshotExportTask.SnapshotExportTaskId)
+	id := *resp.SnapshotExportTask.SnapshotExportTaskId
+	d.SetId(id)
 
-	if _, err := resourceOutscaleSnapshotTaskWaitForAvailable(*resp.SnapshotExportTask.SnapshotExportTaskId, conn, 1); err != nil {
+	_, err = resourceOutscaleSnapshotTaskWaitForAvailable(id, conn, 1)
+	if err != nil {
 		return err
 	}
 
-	return resourceImageExportTasksRead(d, meta)
+	return resourceOAPIImageExportTasksRead(d, meta)
 }
 
-func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var resp *fcu.DescribeSnapshotExportTasksOutput
@@ -193,38 +210,48 @@ func resourceImageExportTasksRead(d *schema.ResourceData, meta interface{}) erro
 
 	v := resp.SnapshotExportTask[0]
 
-	d.Set("snapshot_export_task_id", aws.StringValue(v.SnapshotExportTaskId))
-	d.Set("state", aws.StringValue(v.State))
-	d.Set("completion", aws.Int64Value(v.Completion))
-	d.Set("status_message", aws.StringValue(v.StatusMessage))
-	d.Set("export_to_osu_key", aws.StringValue(v.ExportToOsu.OsuKey))
-	d.Set("export_to_osu_prefix", aws.StringValue(v.ExportToOsu.OsuPrefix))
+	d.Set("completion", v.Completion)
+	d.Set("task_id", v.SnapshotExportTaskId)
+	d.Set("state", v.State)
+	d.Set("completion", v.Completion)
+	if v.StatusMessage != nil {
+		d.Set("comment", v.StatusMessage)
+	} else {
+		d.Set("comment", "")
+	}
 
+	exp := make([]map[string]interface{}, 1)
+	exportToOsu := make(map[string]interface{})
+	exportToOsu["disk_image_format"] = *v.ExportToOsu.DiskImageFormat
+	exportToOsu["osu_bucket"] = *v.ExportToOsu.OsuBucket
+	exportToOsu["osu_key"] = *v.ExportToOsu.OsuKey
+	if v.ExportToOsu.OsuPrefix != nil {
+		exportToOsu["osu_prefix"] = *v.ExportToOsu.OsuPrefix
+	} else {
+		exportToOsu["osu_prefix"] = ""
+	}
+
+	apk := make([]map[string]interface{}, 1)
 	osuAkSk := make(map[string]interface{})
 	if v.ExportToOsu.AkSk != nil {
-		osuAkSk["access_key"] = aws.StringValue(v.ExportToOsu.AkSk.AccessKey)
-		osuAkSk["secret_key"] = aws.StringValue(v.ExportToOsu.AkSk.SecretKey)
+		osuAkSk["api_key_id"] = *v.ExportToOsu.AkSk.AccessKey
+		osuAkSk["secret_key"] = *v.ExportToOsu.AkSk.SecretKey
+	} else {
+		osuAkSk["api_key_id"] = ""
+		osuAkSk["secret_key"] = ""
 	}
+	apk[0] = osuAkSk
+	exportToOsu["osu_api_key"] = apk
 
 	snapExp := make(map[string]interface{})
-	snapExp["snapshot_id"] = aws.StringValue(v.SnapshotExport.SnapshotId)
+	snapExp["snapshot_id"] = *v.SnapshotExport.SnapshotId
 
-	if err := d.Set("snapshot_export", snapExp); err != nil {
+	d.Set("snapshot_description", snapExp)
+	exp[0] = exportToOsu
+	if err := d.Set("osu_export", exp); err != nil {
 		return err
 	}
-	if err := d.Set("export_to_osu_aksk", osuAkSk); err != nil {
-		return err
-	}
-
-	return d.Set("request_id", resp.RequestId)
-}
-
-func resourceImageExportTasksDelete(d *schema.ResourceData, meta interface{}) error {
-
-	d.SetId("")
-	d.Set("snapshot_export", nil)
-	//d.Set("export_to_osu", nil)
-	d.Set("request_id", nil)
+	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
@@ -246,6 +273,16 @@ func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *fcu.Client,
 		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %s", id, err)
 	}
 	return info.(*fcu.SnapshotExportTask), nil
+}
+
+func resourceOAPIImageExportTasksDelete(d *schema.ResourceData, meta interface{}) error {
+
+	d.SetId("")
+	d.Set("snapshot_description", nil)
+	d.Set("osu_export", nil)
+	d.Set("request_id", nil)
+
+	return nil
 }
 
 // SnapshotTaskStateRefreshFunc ...

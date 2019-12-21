@@ -1,55 +1,56 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_public_ip_link"
-sidebar_current: "docs-outscale-resource-public_ip_link"
+page_title: "3DS OUTSCALE: outscale_public_ip_link"
+sidebar_current: "outscale-public-ip_link"
 description: |-
-  Associates an External IP address (EIP) with an instance or a network interface.
+  [Manages a public IP link.]
 ---
 
-# outscale_public_ip_link
+# outscale_public_ip_link Resource
 
-An EIP address is a static IP address designed for dynamic Cloud computing. It can be used for instances in the public Cloud (standard) or in a Virtual Private Cloud (VPC).
-If you want to associate a new EIP to an instance that is already associated with another EIP, this action disassociates the old EIP and associates the new one. If you do not specify any network interface to associate the EIP with, it is associated with the primary network interface.
-
-NOTE: You can associate an EIP with a NAT gateway only when creating the NAT gateway. To modify its EIP, you need to delete the NAT gateway and create a new one. For more information, see the CreateNatGateway method.
+Manages a public IP link.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs#AboutEIPs-EipAssocationEIPAssociation).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkpublicip).
 
 ## Example Usage
 
 ```hcl
 
-resource "outscale_public_ip_link" "oip_assoc" {
-  instance_id   = "${outscale_vm.web.id}"
-  allocation_id = "${outscale_public_ip.example.id}"
+#resource "outscale_public_ip" "public_ip01" {
+#}
+
+#resource "outscale_vm" "vm01" {
+#	image_id           = var.image_id
+#	vm_type            = var.vm_type
+#	keypair_name       = var.keypair_name
+#	security_group_ids = [var.security_group_id]
+#}
+
+resource "outscale_public_ip_link" "public_ip_link01" {
+	vm_id     = outscale_vm.vm01.vm_id
+	public_ip = outscale_public_ip.public_ip01.public_ip
 }
 
-resource "outscale_vm" "web" {
- image_id = "ami-8a6a0120"
- instance_type = "t2.micro"
 
-}
-
-resource "outscale_public_ip" "example" {}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `allocation_id` - (Optional) The allocation ID, required for instances in a VPC.
-* `allow_reassociation` - (VPC only) If set to true, allows an EIP that is already associated with an instance or a network interface to be reassociated with the instance or network interface you specify.
-* `instance_id` - (Optional) The ID of the instance or of the network interface.
-* `network_interface_id` - (Optional) The ID of the network interface, required if the instance has more than one network interface.
-* `private_ip_address` - (Optional) The primary or secondary private IP address to associate with the External IP address.
-* `public_ip` - (Optional) The External IP address.
+* `allow_relink` - (Optional) (By default, `true` in the public Cloud, `false` in a Net.)  
+  If `true`, allows the EIP to be associated with the VM or NIC that you specify even if it is already associated with another VM or NIC.  
+  If `false`, prevents the EIP from being associated with the VM or NIC that you specify if it is already associated with another VM or NIC.
+* `nic_id` - (Optional) (Net only) The ID of the NIC. This parameter is required if the VM has more than one NIC attached. Otherwise, you need to specify the `vm_id` parameter instead. You cannot specify both parameters at the same time.
+* `private_ip` - (Optional) (Net only) The primary or secondary private IP address of the specified NIC. By default, the primary private IP address.
+* `public_ip` - (Optional) The EIP. In the public Cloud, this parameter is required.
+* `public_ip_id` - (Optional) The allocation ID of the EIP. In a Net, this parameter is required.
+* `vm_id` - (Optional) The ID of the VM.  
+  In the public Cloud, this parameter is required.  
+  In a Net, this parameter is required if the VM has only one NIC. Otherwise, you need to specify the `nic_id` parameter instead. You cannot specify both parameters at the same time.
 
-## Attributes Reference
+## Attribute Reference
 
-* `association_id` - The ID that represents the association of the EIP with an instance or a network interface.
-* `allocation_id` - The allocation ID, required for instances in a VPC.
-* `instance_id` - (VPC only) If set to true, allows an EIP that is already associated with an instance or a network interface to be reassociated with the instance or network interface you specify.
-* `network_interface_id` - The ID of the instance or of the network interface.
-* `private_ip_address` - The primary or secondary private IP address to associate with the External IP address.
-* `public_ip` - The External IP address.
-* `request_id` - The ID of the request.
+The following attributes are exported:
 
-See detailed information in [Associate Address](http://docs.outscale.com/api_fcu/operations/Action_AssociateAddress_get.html#_api_fcu-action_associateaddress_get).
+* `link_public_ip_id` - (Net only) The ID representing the association of the EIP with the VM or the NIC.

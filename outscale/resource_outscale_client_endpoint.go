@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -13,11 +14,11 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceOutscaleCustomerGateway() *schema.Resource {
+func resourceOutscaleOAPICustomerGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleCustomerGatewayCreate,
-		Read:   resourceOutscaleCustomerGatewayRead,
-		Delete: resourceOutscaleCustomerGatewayDelete,
+		Create: resourceOutscaleOAPICustomerGatewayCreate,
+		Read:   resourceOutscaleOAPICustomerGatewayRead,
+		Delete: resourceOutscaleOAPICustomerGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,7 +30,7 @@ func resourceOutscaleCustomerGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"ip_address": {
+			"public_ip": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -41,7 +42,7 @@ func resourceOutscaleCustomerGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"customer_gateway_id": {
+			"client_endpoint_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -56,20 +57,20 @@ func resourceOutscaleCustomerGateway() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag_set": tagsSchemaComputed(),
-			"tag":     tagsSchema(),
+			"tags": tagsSchemaComputed(),
+			"tag":  tagsSchema(),
 		},
 	}
 }
 
-func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPICustomerGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	ipAddress := d.Get("ip_address").(string)
+	ipAddress := d.Get("public_ip").(string)
 	vpnType := d.Get("type").(string)
 	bgpAsn := d.Get("bgp_asn").(int)
 
-	alreadyExists, err := resourceOutscaleCustomerGatewayExists(vpnType, ipAddress, bgpAsn, conn)
+	alreadyExists, err := resourceOutscaleOAPICustomerGatewayExists(vpnType, ipAddress, bgpAsn, conn)
 	if err != nil {
 		return err
 	}
@@ -85,7 +86,7 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 	}
 
 	// Create the Customer Gateway.
-	fmt.Printf("[DEBUG] Creating customer gateway")
+	log.Printf("[DEBUG] Creating customer gateway")
 
 	var resp *fcu.CreateCustomerGatewayOutput
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -112,7 +113,7 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    customerGatewayRefreshFunc(conn, *customerGateway.CustomerGatewayId),
+		Refresh:    customerOAPIGatewayRefreshFunc(conn, *customerGateway.CustomerGatewayId),
 		Timeout:    10 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 3 * time.Second,
@@ -132,12 +133,12 @@ func resourceOutscaleCustomerGatewayCreate(d *schema.ResourceData, meta interfac
 
 	t := make([]map[string]interface{}, 0)
 
-	d.Set("tag_set", t)
+	d.Set("tags", t)
 
-	return resourceOutscaleCustomerGatewayRead(d, meta)
+	return nil
 }
 
-func customerGatewayRefreshFunc(conn *fcu.Client, gatewayID string) resource.StateRefreshFunc {
+func customerOAPIGatewayRefreshFunc(conn *fcu.Client, gatewayID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		gatewayFilter := &fcu.Filter{
 			Name:   aws.String("customer-gateway-id"),
@@ -179,7 +180,7 @@ func customerGatewayRefreshFunc(conn *fcu.Client, gatewayID string) resource.Sta
 	}
 }
 
-func resourceOutscaleCustomerGatewayExists(vpnType, ipAddress string, bgpAsn int, conn *fcu.Client) (bool, error) {
+func resourceOutscaleOAPICustomerGatewayExists(vpnType, ipAddress string, bgpAsn int, conn *fcu.Client) (bool, error) {
 	ipAddressFilter := &fcu.Filter{
 		Name:   aws.String("ip-address"),
 		Values: []*string{aws.String(ipAddress)},
@@ -223,7 +224,7 @@ func resourceOutscaleCustomerGatewayExists(vpnType, ipAddress string, bgpAsn int
 	return false, nil
 }
 
-func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPICustomerGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	gatewayFilter := &fcu.Filter{
@@ -267,11 +268,9 @@ func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{
 	}
 
 	customerGateway := resp.CustomerGateways[0]
-	d.Set("ip_address", customerGateway.IpAddress)
-	d.Set("customer_gateway_id", customerGateway.CustomerGatewayId)
-	d.Set("state", customerGateway.State)
+	d.Set("public_ip", customerGateway.IpAddress)
 	d.Set("type", customerGateway.Type)
-	d.Set("tag_set", tagsToMap(customerGateway.Tags))
+	d.Set("tags", tagsToMap(customerGateway.Tags))
 
 	if *customerGateway.BgpAsn != "" {
 		val, err := strconv.ParseInt(*customerGateway.BgpAsn, 0, 0)
@@ -282,17 +281,15 @@ func resourceOutscaleCustomerGatewayRead(d *schema.ResourceData, meta interface{
 		d.Set("bgp_asn", int(val))
 	}
 
-	d.Set("request_id", resp.RequestId)
-
 	return nil
 }
 
-func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPICustomerGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var err error
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DeleteCustomerGateway(&fcu.DeleteCustomerGatewayInput{
+		_, err := conn.VM.DeleteCustomerGateway(&fcu.DeleteCustomerGatewayInput{
 			CustomerGatewayId: aws.String(d.Id()),
 		})
 
@@ -320,14 +317,9 @@ func resourceOutscaleCustomerGatewayDelete(d *schema.ResourceData, meta interfac
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var resp *fcu.DescribeCustomerGatewaysOutput
-		resp, err = conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
+		resp, err := conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
 			Filters: []*fcu.Filter{gatewayFilter},
 		})
-
-		if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
-			return resource.RetryableError(err)
-		}
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {

@@ -2,66 +2,74 @@ package outscale
 
 import (
 	"fmt"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleNetworkInterfaceAttachment_basic(t *testing.T) {
-	var conf fcu.NetworkInterface
-	rInt := acctest.RandInt()
+func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
+	//t.Skip()
+	var conf oscgo.Nic
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleENIDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNetworkInterfaceAttachmentConfigBasic(rInt),
+				Config: testAccOutscaleOAPINetworkInterfaceAttachmentConfigBasic(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
-						"outscale_nic_link.outscale_nic_link", "device_index", "1"),
+						"outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet(
-						"outscale_nic_link.outscale_nic_link", "instance_id"),
+						"outscale_nic_link.outscale_nic_link", "vm_id"),
 					resource.TestCheckResourceAttrSet(
-						"outscale_nic_link.outscale_nic_link", "network_interface_id"),
+						"outscale_nic_link.outscale_nic_link", "nic_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccOutscaleNetworkInterfaceAttachmentConfigBasic(rInt int) string {
+func testAccOutscaleOAPINetworkInterfaceAttachmentConfigBasic(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_instance" {                 
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_lin" "outscale_lin" {
-    cidr_block          = "10.0.0.0/16"
-}
-
-resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_nic_link" "outscale_nic_link" {
-		device_index            = "1"	
-		instance_id             = "${outscale_vm.outscale_instance.id}"
-    network_interface_id    = "${outscale_nic.outscale_nic.id}"
-}
-
-`)
+		resource "outscale_security_group" "outscale_security_group" {
+			description         = "test group"
+			security_group_name = "sg1-test-group_test"
+			net_id              = "${outscale_net.outscale_net.net_id}"
+		}
+		resource "outscale_vm" "vm" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["${outscale_security_group.outscale_security_group.id}"]
+			placement_subregion_name = "%[3]sa"
+			subnet_id                = "${outscale_subnet.outscale_subnet.id}"
+		}
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}
+		resource "outscale_subnet" "outscale_subnet" {
+			subregion_name = "%[3]sa"
+			ip_range       = "10.0.0.0/16"
+			net_id         = "${outscale_net.outscale_net.id}"
+		}
+		resource "outscale_nic" "outscale_nic" {
+			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+		}
+		resource "outscale_nic_link" "outscale_nic_link" {
+			device_number = 1
+			vm_id         = "${outscale_vm.vm.id}"
+			nic_id        = "${outscale_nic.outscale_nic.id}"
+		}
+	`, omi, vmType, region)
 }

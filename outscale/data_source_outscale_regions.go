@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleRegions() *schema.Resource {
+func dataSourceOutscaleOAPIRegions() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleRegionsRead,
+		Read: dataSourceOutscaleOAPIRegionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -23,7 +23,7 @@ func dataSourceOutscaleRegions() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"region_info": &schema.Schema{
+			"region": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -47,7 +47,7 @@ func dataSourceOutscaleRegions() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIRegionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	rtbID, rtbOk := d.GetOk("region_name")
@@ -105,7 +105,7 @@ func dataSourceOutscaleRegionsRead(d *schema.ResourceData, meta interface{}) err
 		ri[k] = r
 	}
 
-	d.Set("region_info", ri)
+	d.Set("region", ri)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

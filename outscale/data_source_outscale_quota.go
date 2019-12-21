@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleQuota() *schema.Resource {
+func dataSourceOutscaleOAPIQuota() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleQuotaRead,
+		Read: dataSourceOutscaleOAPIQuotaRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -23,7 +23,7 @@ func dataSourceOutscaleQuota() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"quota_set": &schema.Schema{
+			"quota": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -32,15 +32,15 @@ func dataSourceOutscaleQuota() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"display_name": &schema.Schema{
+						"short_description": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"group_name": &schema.Schema{
+						"firewall_rules_set_name": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"max_quota_value": &schema.Schema{
+						"max_value": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -48,11 +48,11 @@ func dataSourceOutscaleQuota() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"owner_id": &schema.Schema{
+						"account_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"used_quota_value": &schema.Schema{
+						"used_value": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -71,7 +71,7 @@ func dataSourceOutscaleQuota() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -124,23 +124,23 @@ func dataSourceOutscaleQuotaRead(d *schema.ResourceData, meta interface{}) error
 		quota := make(map[string]interface{})
 		quota["description"] = aws.StringValue(v.Description)
 		quota["display_name"] = aws.StringValue(v.DisplayName)
-		quota["group_name"] = aws.StringValue(v.GroupName)
+		quota["firewall_rules_set_name"] = aws.StringValue(v.GroupName)
 		i, err := strconv.Atoi(*v.MaxQuotaValue)
 		if err != nil {
 			return err
 		}
-		quota["max_quota_value"] = i
+		quota["max_value"] = i
 		quota["name"] = aws.StringValue(v.Name)
-		quota["owner_id"] = aws.StringValue(v.OwnerId)
+		quota["account_id"] = aws.StringValue(v.OwnerId)
 		i2, err := strconv.Atoi(*v.MaxQuotaValue)
 		if err != nil {
 			return err
 		}
-		quota["used_quota_value"] = i2
+		quota["used_value"] = i2
 		quotas[k] = quota
 	}
 
-	if err := d.Set("quota_set", quotas); err != nil {
+	if err := d.Set("quota", quotas); err != nil {
 		return err
 	}
 	d.Set("reference", pl.Reference)

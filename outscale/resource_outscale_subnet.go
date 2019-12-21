@@ -1,22 +1,24 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
-func resourceOutscaleSubNet() *schema.Resource {
+func resourceOutscaleOAPISubNet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleSubNetCreate,
-		Read:   resourceOutscaleSubNetRead,
-		Delete: resourceOutscaleSubNetDelete,
+		Create: resourceOutscaleOAPISubNetCreate,
+		Read:   resourceOutscaleOAPISubNetRead,
+		Update: resourceOutscaleOAPISubNetUpdate,
+		Delete: resourceOutscaleOAPISubNetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -24,126 +26,117 @@ func resourceOutscaleSubNet() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: getSubNetSchema(),
+		Schema: getOAPISubNetSchema(),
 	}
 }
 
-func resourceOutscaleSubNetCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	createOpts := &fcu.CreateSubnetInput{
-		AvailabilityZone: aws.String(d.Get("availability_zone").(string)),
-		CidrBlock:        aws.String(d.Get("cidr_block").(string)),
-		VpcId:            aws.String(d.Get("vpc_id").(string)),
+//Create SubNet
+func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.CreateSubnetRequest{
+		IpRange: d.Get("ip_range").(string),
+		NetId:   d.Get("net_id").(string),
 	}
-
-	var res *fcu.CreateSubnetOutput
+	if a, aok := d.GetOk("subregion_name"); aok {
+		req.SetSubregionName(a.(string))
+	}
+	var resp oscgo.CreateSubnetResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.CreateSubNet(createOpts)
-
+	err = resource.Retry(40*time.Second, func() *resource.RetryError {
+		r, _, err := conn.SubnetApi.CreateSubnet(context.Background(), &oscgo.CreateSubnetOpts{CreateSubnetRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				fmt.Printf("[INFO] Request limit exceeded")
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-
+		resp = r
 		return nil
 	})
-
 	if err != nil {
-		return fmt.Errorf("Error creating subnet: %s", err)
+		errString := err.Error()
+		return fmt.Errorf("[DEBUG] Error creating Subnet (%s)", errString)
 	}
-
-	subnet := res.Subnet
-	d.SetId(*subnet.SubnetId)
-	log.Printf("[INFO] Subnet ID: %s", *subnet.SubnetId)
-
-	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
+	result := resp.GetSubnet()
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignTags(tags.([]interface{}), result.GetSubnetId(), conn)
+		if err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
 	}
-
-	log.Printf("[DEBUG] Waiting for subnet (%s) to become available", *subnet.SubnetId)
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pending"},
-		Target:  []string{"available"},
-		Refresh: SubnetStateRefreshFunc(conn, *subnet.SubnetId),
-		Timeout: 10 * time.Minute,
+	if result.GetState() != "available" {
+		stateConf := &resource.StateChangeConf{
+			Pending:    []string{"pending"},
+			Target:     []string{"available"},
+			Refresh:    SubnetStateOApiRefreshFunc(conn, result.GetSubnetId()),
+			Timeout:    d.Timeout(schema.TimeoutCreate),
+			Delay:      6 * time.Second,
+			MinTimeout: 1 * time.Second,
+		}
+		_, err = stateConf.WaitForState()
+		if err != nil {
+			return fmt.Errorf(
+				"Error waiting for subnet (%s) to become created: %s", d.Id(), err)
+		}
 	}
-
-	_, err = stateConf.WaitForState()
-
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for subnet (%s) to become ready: %s",
-			d.Id(), err)
-	}
-
-	return resourceOutscaleSubNetRead(d, meta)
+	d.SetId(result.GetSubnetId())
+	return resourceOutscaleOAPISubNetRead(d, meta)
 }
 
-func resourceOutscaleSubNetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	var resp *fcu.DescribeSubnetsOutput
+//Read SubNet
+func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	id := d.Id()
+	log.Printf("[DEBUG] Reading Subnet(%s)", id)
+	req := oscgo.ReadSubnetsRequest{
+		Filters: &oscgo.FiltersSubnet{
+			SubnetIds: &[]string{id},
+		},
+	}
+	var resp oscgo.ReadSubnetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSubNet(&fcu.DescribeSubnetsInput{
-			SubnetIds: []*string{aws.String(d.Id())},
-		})
-
+		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
+		resp = r
 		return nil
 	})
-
 	if err != nil {
-		if strings.Contains(err.Error(), "InvalidSubnetID.NotFound") {
-			d.SetId("")
-			return nil
-		}
+		errString := err.Error()
+		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
+	}
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if len(resp.GetSubnets()) > 0 {
+		return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
+	}
+	return fmt.Errorf("No subnet (%s) found", d.Id())
+}
+func resourceOutscaleOAPISubNetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	d.Partial(true)
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	if resp == nil {
-		return nil
-	}
-
-	subnet := resp.Subnets[0]
-
-	d.Set("subnet_id", aws.StringValue(subnet.SubnetId))
-	d.Set("availability_zone", aws.StringValue(subnet.AvailabilityZone))
-	d.Set("cidr_block", aws.StringValue(subnet.CidrBlock))
-	d.Set("vpc_id", aws.StringValue(subnet.VpcId))
-	d.Set("state", aws.StringValue(subnet.State))
-	d.Set("available_ip_address_count", aws.Int64Value(subnet.AvailableIpAddressCount))
-
-	d.Set("request_id", resp.RequestId)
-
-	return d.Set("tag_set", tagsToMap(subnet.Tags))
+	d.SetPartial("tags")
+	d.Partial(false)
+	return resourceOutscaleOAPISubNetRead(d, meta)
 }
-
-func resourceOutscaleSubNetDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
+func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 	log.Printf("[DEBUG] Deleting Subnet (%s)", id)
-
-	req := &fcu.DeleteSubnetInput{
-		SubnetId: &id,
+	req := oscgo.DeleteSubnetRequest{
+		SubnetId: id,
 	}
-
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DeleteSubNet(req)
-
+		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background(), &oscgo.DeleteSubnetOpts{DeleteSubnetRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -156,67 +149,88 @@ func resourceOutscaleSubNetDelete(d *schema.ResourceData, meta interface{}) erro
 		log.Printf("[DEBUG] Error deleting Subnet(%s)", err)
 		return err
 	}
-
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "available"},
+		Target:     []string{"deleted"},
+		Refresh:    SubnetStateOApiRefreshFunc(conn, id),
+		Timeout:    d.Timeout(schema.TimeoutCreate),
+		Delay:      2 * time.Second,
+		MinTimeout: 1 * time.Second,
+	}
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return err
+	}
+	d.SetId("")
 	return nil
 }
-
-// SubnetStateRefreshFunc ...
-func SubnetStateRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error {
+	if err := d.Set("subregion_name", subnet.GetSubregionName()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet1 (%s)", err)
+		return err
+	}
+	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet2 (%s)", err)
+		return err
+	}
+	if err := d.Set("ip_range", subnet.GetIpRange()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet (%s)", err)
+		return err
+	}
+	if err := d.Set("state", subnet.GetState()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet4 (%s)", err)
+		return err
+	}
+	if err := d.Set("subnet_id", subnet.GetSubnetId()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet5 (%s)", err)
+		return err
+	}
+	if err := d.Set("net_id", subnet.GetNetId()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
+		return err
+	}
+	return d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
+}
+func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
-		var resp *fcu.DescribeSubnetsOutput
-		var err error
-		err = resource.Retry(120*time.Second, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSubNet(&fcu.DescribeSubnetsInput{
-				SubnetIds: []*string{aws.String(id)},
-			})
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
+		resp, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
+			ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
+				Filters: &oscgo.FiltersSubnet{
+					SubnetIds: &[]string{subnetID},
+				},
+			}),
 		})
-
 		if err != nil {
-			if strings.Contains(err.Error(), "InvalidSubnetID.NotFound") {
-				resp = nil
-			} else {
-				log.Printf("Error on SubnetStateRefresh: %s", err)
-				return nil, "", err
-			}
+			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
+			return nil, "error", err
 		}
-
-		if resp == nil {
-			return nil, "", nil
+		if len(resp.GetSubnets()) == 0 {
+			return oscgo.Subnet{}, "deleted", nil
 		}
-
-		subnet := resp.Subnets[0]
-		return subnet, *subnet.State, nil
+		return resp.GetSubnets()[0], resp.GetSubnets()[0].GetState(), nil
 	}
 }
-
-func getSubNetSchema() map[string]*schema.Schema {
+func getOAPISubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"vpc_id": &schema.Schema{
+		//This is attribute part for schema SubNet
+		"net_id": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"cidr_block": &schema.Schema{
+		"ip_range": &schema.Schema{
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"availability_zone": &schema.Schema{
+		"subregion_name": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"available_ip_address_count": &schema.Schema{
+		//This is arguments part for schema SubNet
+		"available_ips_count": &schema.Schema{
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
@@ -232,7 +246,6 @@ func getSubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": tagsSchemaComputed(),
-		"tag":     tagsSchema(),
+		"tags": tagsListOAPISchema(),
 	}
 }

@@ -2,9 +2,7 @@ package outscale
 
 import (
 	"fmt"
-	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,109 +15,91 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleCustomerGateway_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPICustomerGateway_basic(t *testing.T) {
+	t.Skip()
 
 	var gateway fcu.CustomerGateway
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckCustomerGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomerGatewayConfig(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfig(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
+					testAccOAPICheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
 				),
 			},
 			{
-				Config: testAccCustomerGatewayConfigUpdateTags(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfigUpdateTags(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
+					testAccOAPICheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
 				),
 			},
 			{
-				Config: testAccCustomerGatewayConfigForceReplace(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfigForceReplace(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
+					testAccOAPICheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleCustomerGateway_similarAlreadyExists(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPICustomerGateway_similarAlreadyExists(t *testing.T) {
+	t.Skip()
 
 	var gateway fcu.CustomerGateway
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckCustomerGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomerGatewayConfig(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfig(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
+					testAccOAPICheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
 				),
 			},
 			{
-				Config:      testAccCustomerGatewayConfigIdentical(rInt, rBgpAsn),
+				Config:      testAccOAPICustomerGatewayConfigIdentical(rInt, rBgpAsn),
 				ExpectError: regexp.MustCompile("An existing customer gateway"),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleCustomerGateway_disappears(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPICustomerGateway_disappears(t *testing.T) {
+	t.Skip()
 
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var gateway fcu.CustomerGateway
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCustomerGatewayDestroy,
+		CheckDestroy: testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomerGatewayConfig(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfig(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
-					testAccAWSCustomerGatewayDisappears(&gateway),
+					testAccOAPICheckCustomerGateway("outscale_client_endpoint.foo", &gateway),
+					testAccOutscaleOAPICustomerGatewayDisappears(&gateway),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -127,7 +107,7 @@ func TestAccOutscaleCustomerGateway_disappears(t *testing.T) {
 	})
 }
 
-func testAccAWSCustomerGatewayDisappears(gateway *fcu.CustomerGateway) resource.TestCheckFunc {
+func testAccOutscaleOAPICustomerGatewayDisappears(gateway *fcu.CustomerGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
@@ -173,7 +153,7 @@ func testAccAWSCustomerGatewayDisappears(gateway *fcu.CustomerGateway) resource.
 	}
 }
 
-func testAccCheckCustomerGatewayDestroy(s *terraform.State) error {
+func testAccCheckOAPICustomerGatewayDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -186,20 +166,8 @@ func testAccCheckCustomerGatewayDestroy(s *terraform.State) error {
 			Values: []*string{aws.String(rs.Primary.ID)},
 		}
 
-		var resp *fcu.DescribeCustomerGatewaysOutput
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
-				Filters: []*fcu.Filter{gatewayFilter},
-			})
-
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
+		resp, err := conn.VM.DescribeCustomerGateways(&fcu.DescribeCustomerGatewaysInput{
+			Filters: []*fcu.Filter{gatewayFilter},
 		})
 
 		if strings.Contains(fmt.Sprint(err), "InvalidCustomerGatewayID.NotFound") {
@@ -222,7 +190,7 @@ func testAccCheckCustomerGatewayDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckCustomerGateway(gatewayResource string, cgw *fcu.CustomerGateway) resource.TestCheckFunc {
+func testAccOAPICheckCustomerGateway(gatewayResource string, cgw *fcu.CustomerGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[gatewayResource]
 		if !ok {
@@ -271,66 +239,67 @@ func testAccCheckCustomerGateway(gatewayResource string, cgw *fcu.CustomerGatewa
 	}
 }
 
-func testAccCustomerGatewayConfig(rInt, rBgpAsn int) string {
+func testAccOAPICustomerGatewayConfig(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_endpoint" "foo" {
 			bgp_asn = %d
-			ip_address = "172.0.0.1"
+			public_ip = "172.0.0.1"
 			type = "ipsec.1"
 			tag {
 				Name = "foo-gateway-%d"
 			}
 		}
-		`, rBgpAsn, rInt)
+	`, rBgpAsn, rInt)
 }
 
-func testAccCustomerGatewayConfigIdentical(randInt, rBgpAsn int) string {
+func testAccOAPICustomerGatewayConfigIdentical(randInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_endpoint" "foo" {
 			bgp_asn = %d
-			ip_address = "172.0.0.1"
+			public_ip = "172.0.0.1"
 			type = "ipsec.1"
 			tag {
 				Name = "foo-gateway-%d"
 			}
 		}
+
 		resource "outscale_client_endpoint" "identical" {
 			bgp_asn = %d
-			ip_address = "172.0.0.1"
+			public_ip = "172.0.0.1"
 			type = "ipsec.1"
 			tag {
 				Name = "foo-gateway-identical-%d"
 			}
 		}
-		`, rBgpAsn, randInt, rBgpAsn, randInt)
+	`, rBgpAsn, randInt, rBgpAsn, randInt)
 }
 
 // Add the Another: "tag" tag.
-func testAccCustomerGatewayConfigUpdateTags(rInt, rBgpAsn int) string {
-	return fmt.Sprintf(`
-	resource "outscale_client_endpoint" "foo" {
-		bgp_asn = %d
-		ip_address = "172.0.0.1"
-		type = "ipsec.1"
-		tag {
-			Name = "foo-gateway-%d"
-			Another = "tag"
-		}
-	}
-	`, rBgpAsn, rInt)
-}
-
-// Change the ip_address.
-func testAccCustomerGatewayConfigForceReplace(rInt, rBgpAsn int) string {
+func testAccOAPICustomerGatewayConfigUpdateTags(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_endpoint" "foo" {
 			bgp_asn = %d
-			ip_address = "172.10.10.1"
+			public_ip = "172.0.0.1"
 			type = "ipsec.1"
 			tag {
 				Name = "foo-gateway-%d"
 				Another = "tag"
 			}
 		}
-		`, rBgpAsn, rInt)
+	`, rBgpAsn, rInt)
+}
+
+// Change the public_ip.
+func testAccOAPICustomerGatewayConfigForceReplace(rInt, rBgpAsn int) string {
+	return fmt.Sprintf(`
+		resource "outscale_client_endpoint" "foo" {
+			bgp_asn = %d
+			public_ip = "172.10.10.1"
+			type = "ipsec.1"
+			tag {
+				Name = "foo-gateway-%d"
+				Another = "tag"
+			}
+		}
+	`, rBgpAsn, rInt)
 }

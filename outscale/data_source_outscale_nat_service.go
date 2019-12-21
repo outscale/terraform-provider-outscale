@@ -1,24 +1,25 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleNatService() *schema.Resource {
+func dataSourceOutscaleOAPINatService() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleNatServiceRead,
+		Read: dataSourceOutscaleOAPINatServiceRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"nat_gateway_id": {
+			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -27,12 +28,12 @@ func dataSourceOutscaleNatService() *schema.Resource {
 				Computed: true,
 			},
 			// Attributes
-			"nat_gateway_address": {
+			"public_ips": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"allocation_id": {
+						"public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -47,7 +48,7 @@ func dataSourceOutscaleNatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vpc_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -55,34 +56,37 @@ func dataSourceOutscaleNatService() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
 
-func dataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	natGatewayID, natGatewayIDOK := d.GetOk("nat_gateway_id")
+	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
 
 	if filtersOk == false && natGatewayIDOK == false {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_gateway_id must be provided")
+		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
-	params := &fcu.DescribeNatGatewaysInput{}
+	params := oscgo.ReadNatServicesRequest{}
+
 	if filtersOk {
-		params.Filter = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
-	if natGatewayIDOK {
-		params.NatGatewayIds = []*string{aws.String(natGatewayID.(string))}
+	if natGatewayIDOK && natGatewayID.(string) != "" {
+		filter := oscgo.FiltersNatService{}
+		filter.SetNatServiceIds([]string{natGatewayID.(string)})
+		params.SetFilters(filter)
 	}
 
-	var err error
-	var res *fcu.DescribeNatGatewaysOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	var resp oscgo.ReadNatServicesResponse
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		res, err = conn.VM.DescribeNatGateways(params)
+		resp, _, err = conn.NatServiceApi.ReadNatServices(context.Background(), &oscgo.ReadNatServicesOpts{ReadNatServicesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -92,46 +96,87 @@ func dataSourceOutscaleNatServiceRead(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return err
+		errString = err.Error()
+
+		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
 
-	if len(res.NatGateways) < 1 {
+	if len(resp.GetNatServices()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	if len(res.NatGateways) > 1 {
+	if len(resp.GetNatServices()) > 1 {
 		return fmt.Errorf("your query returned more than one result, please try a more " +
 			"specific search criteria")
 	}
 
-	d.Set("request_id", res.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return ngDescriptionAttributes(d, res.NatGateways[0])
+	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
 }
 
 // populate the numerous fields that the image description returns.
-func ngDescriptionAttributes(d *schema.ResourceData, ng *fcu.NatGateway) error {
+func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
 
-	d.SetId(*ng.NatGatewayId)
-	d.Set("nat_gateway_id", *ng.NatGatewayId)
-	d.Set("state", aws.StringValue(ng.State))
-	d.Set("subnet_id", aws.StringValue(ng.SubnetId))
-	d.Set("vpc_id", aws.StringValue(ng.VpcId))
+	d.SetId(ng.GetNatServiceId())
+	d.Set("nat_service_id", ng.GetNatServiceId())
 
-	addresses := make([]map[string]interface{}, len(ng.NatGatewayAddresses))
-	if ng.NatGatewayAddresses != nil {
-		for k, v := range ng.NatGatewayAddresses {
-			address := make(map[string]interface{})
-			if v.AllocationId != nil {
-				address["allocation_id"] = *v.AllocationId
-			}
-			if v.PublicIp != nil {
-				address["public_ip"] = *v.PublicIp
-			}
-			addresses[k] = address
-		}
+	if ng.GetState() != "" {
+		d.Set("state", ng.State)
+	}
+	if ng.GetSubnetId() != "" {
+		d.Set("subnet_id", ng.GetSubnetId())
+	}
+	if ng.GetNetId() != "" {
+		d.Set("net_id", ng.GetNetId())
 	}
 
-	return d.Set("nat_gateway_address", addresses)
+	addresses := make([]map[string]interface{}, len(ng.GetPublicIps()))
+
+	for k, v := range ng.GetPublicIps() {
+		address := make(map[string]interface{})
+		if v.GetPublicIpId() != "" {
+			address["public_ip_id"] = v.PublicIpId
+		}
+		if v.GetPublicIp() != "" {
+			address["public_ip"] = v.PublicIp
+		}
+		addresses[k] = address
+	}
+	if err := d.Set("public_ips", addresses); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(ng.GetTags())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func buildOutscaleOAPINatServiceDataSourceFilters(set *schema.Set) oscgo.FiltersNatService {
+	var filters oscgo.FiltersNatService
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "nat_service_ids":
+			filters.SetNatServiceIds(filterValues)
+		case "net_ids":
+			filters.SetNetIds(filterValues)
+		case "states":
+			filters.SetStates(filterValues)
+		case "subnet_ids":
+			filters.SetSubnetIds(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

@@ -1,18 +1,22 @@
 package outscale
 
 import (
-	"errors"
+	"context"
+	"fmt"
+	"log"
+	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceOutscaleTag() *schema.Resource {
+func dataSourceOutscaleOAPITag() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleTagRead,
+		Read: dataSourceOutscaleOAPITagRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"key": {
@@ -31,52 +35,84 @@ func dataSourceOutscaleTag() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 }
 
-func dataSourceOutscaleTagRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
-	params := &fcu.DescribeTagsInput{}
+	params := oscgo.ReadTagsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *fcu.DescribeTagsOutput
+	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeTags(params)
-		return resource.RetryableError(err)
+		resp, _, err = conn.TagApi.ReadTags(context.Background(), &oscgo.ReadTagsOpts{ReadTagsRequest: optional.NewInterface(params)})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+		}
+
+		return resource.NonRetryableError(err)
 	})
 
 	if err != nil {
 		return err
 	}
 
-	if len(resp.Tags) > 1 {
-		return errors.New("Your query returned more than one result. Please try a more " +
+	if len(resp.GetTags()) < 1 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
+	}
+
+	if len(resp.GetTags()) > 1 {
+		return fmt.Errorf("your query returned more than one result, Please try a more " +
 			"specific search criteria")
 	}
 
-	tag := resp.Tags[0]
+	tag := resp.GetTags()[0]
 
-	d.Set("key", *tag.Key)
-	d.Set("value", *tag.Value)
-	d.Set("resource_id", *tag.ResourceId)
-	d.Set("resource_type", *tag.ResourceType)
-	d.Set("request_id", resp.RequestId)
+	d.Set("key", tag.GetKey())
+	d.Set("value", tag.GetValue())
+	d.Set("resource_id", tag.GetResourceId())
+	d.Set("resource_type", tag.GetResourceType())
 
 	d.SetId(resource.UniqueId())
 
 	return err
+}
+
+func oapiBuildOutscaleDataSourceFilters(set *schema.Set) oscgo.FiltersTag {
+	filters := oscgo.FiltersTag{}
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "keys":
+			filters.SetKeys(filterValues)
+		case "resource_ids":
+			filters.SetResourceIds(filterValues)
+		case "resource_types":
+			filters.SetResourceTypes(filterValues)
+		case "values":
+			filters.SetValues(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+
+	return filters
 }

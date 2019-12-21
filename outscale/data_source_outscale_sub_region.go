@@ -12,13 +12,13 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleAvailabilityZone() *schema.Resource {
+func dataSourceOutscaleOAPIAvailabilityZone() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleAvailabilityZoneRead,
+		Read: dataSourceOutscaleOAPIAvailabilityZoneRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"zone_name": &schema.Schema{
+			"sub_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -34,7 +34,7 @@ func dataSourceOutscaleAvailabilityZone() *schema.Resource {
 				Computed: true,
 			},
 
-			"zone_state": &schema.Schema{
+			"state": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -42,14 +42,14 @@ func dataSourceOutscaleAvailabilityZone() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIAvailabilityZoneRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
-	zone, zoneOk := d.GetOk("zone_name")
+	zone, zoneOk := d.GetOk("sub_region_name")
 
 	if !filtersOk && !zoneOk {
-		return fmt.Errorf("One of zone_name or filters must be assigned")
+		return fmt.Errorf("One of sub_region_name or filters must be assigned")
 	}
 
 	req := &fcu.DescribeAvailabilityZonesInput{}
@@ -87,9 +87,9 @@ func dataSourceOutscaleAvailabilityZoneRead(d *schema.ResourceData, meta interfa
 	az := resp.AvailabilityZones[0]
 
 	d.SetId(*az.ZoneName)
-	d.Set("zone_name", az.ZoneName)
+	d.Set("sub_region_name", az.ZoneName)
 	d.Set("region_name", az.RegionName)
-	d.Set("zone_state", az.State)
+	d.Set("state", az.State)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

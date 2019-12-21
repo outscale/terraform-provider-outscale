@@ -1,27 +1,29 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"math"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/openlyinc/pointy"
 )
 
 // Creates a network interface in the specified subnet
-func resourceOutscaleNic() *schema.Resource {
+func resourceOutscaleOAPINic() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleNicCreate,
-		Read:   resourceOutscaleNicRead,
-		Delete: resourceOutscaleNicDelete,
-		Update: resourceOutscaleNicUpdate,
+		Create: resourceOutscaleOAPINicCreate,
+		Read:   resourceOutscaleOAPINicRead,
+		Update: resourceOutscaleOAPINicUpdate,
+		Delete: resourceOutscaleOAPINicDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -29,24 +31,24 @@ func resourceOutscaleNic() *schema.Resource {
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
-		Schema: getNicSchema(),
+		Schema: getOAPINicSchema(),
 	}
 }
 
-func getNicSchema() map[string]*schema.Schema {
+func getOAPINicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		//  This is attribute part for schema Nic
+		//  This is attribute part for schema OAPINic
 		"description": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"private_ip_address": &schema.Schema{
+		"private_ip": &schema.Schema{
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_id": &schema.Schema{
+		"security_group_ids": &schema.Schema{
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -56,20 +58,20 @@ func getNicSchema() map[string]*schema.Schema {
 			Required: true,
 		},
 		// Attributes
-		"association": {
+		"link_public_ip": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"allocation_id": {
+					"public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"association_id": {
+					"link_public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"ip_owner_id": {
+					"public_ip_account_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -84,54 +86,52 @@ func getNicSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-
-		"attachment": {
+		"link_nic": {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"attachment_id": {
+					"link_nic_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"delete_on_termination": {
+					"delete_on_vm_deletion": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"device_index": {
+					"device_number": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"vm_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_id": {
+					"vm_account_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_owner_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"status": {
+					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-
-		"availability_zone": {
+		"subregion_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"group_set": {
+		"security_groups": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": {
+					"security_group_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"group_name": {
+					"security_group_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -143,11 +143,11 @@ func getNicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"network_interface_id": {
+		"nic_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"owner_id": {
+		"account_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -156,25 +156,27 @@ func getNicSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 
-		"private_ip_addresses_set": {
-			Type:     schema.TypeList,
+		"private_ips": {
+			Type:     schema.TypeSet,
 			Computed: true,
+			Optional: true,
+			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"association": {
+					"link_public_ip": {
 						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"allocation_id": {
+								"public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"association_id": {
+								"link_public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ip_owner_id": {
+								"public_ip_account_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -189,17 +191,19 @@ func getNicSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"primary": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
 					"private_dns_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"private_ip_address": {
+					"private_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
+						Optional: true,
+					},
+					"is_primary": {
+						Type:     schema.TypeBool,
+						Computed: true,
+						Optional: true,
 					},
 				},
 			},
@@ -208,64 +212,59 @@ func getNicSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"requester_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
 		"requester_managed": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"source_dest_check": {
+		"is_source_dest_checked": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"status": {
+		"state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": tagsSchemaComputed(),
-		"vpc_id": {
+		"tags": tagsListOAPISchema(),
+		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}
 }
 
-//Create Nic
-func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
+//Create OAPINic
+func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	request := &fcu.CreateNetworkInterfaceInput{
-		SubnetId: aws.String(d.Get("subnet_id").(string)),
+	request := oscgo.CreateNicRequest{
+		SubnetId: d.Get("subnet_id").(string),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		request.Description = aws.String(v.(string))
+		request.SetDescription(v.(string))
 	}
 
-	if v, ok := d.GetOk("security_group_id"); ok {
+	if v, ok := d.GetOk("security_group_ids"); ok {
 		m := v.([]interface{})
-		a := make([]*string, len(m))
+		a := make([]string, len(m))
 		for k, v := range m {
-			a[k] = aws.String(v.(string))
+			a[k] = v.(string)
 		}
-		request.Groups = a
+		request.SetSecurityGroupIds(a)
 	}
 
-	if v, ok := d.GetOk("private_ip_address"); ok {
-		request.PrivateIpAddress = aws.String(v.(string))
+	if v, ok := d.GetOk("private_ips"); ok {
+		request.SetPrivateIps(expandPrivateIPLight(v.(*schema.Set).List()))
 	}
 
 	log.Printf("[DEBUG] Creating network interface")
 
-	var resp *fcu.CreateNetworkInterfaceOutput
+	var resp oscgo.CreateNicResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-		resp, err = conn.VM.CreateNetworkInterface(request)
+		resp, _, err = conn.NicApi.CreateNic(context.Background(), &oscgo.CreateNicOpts{CreateNicRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -276,40 +275,42 @@ func resourceOutscaleNicCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error creating ENI: %s", err)
+		return fmt.Errorf("Error creating NIC: %s", err)
 	}
 
-	d.SetId(*resp.NetworkInterface.NetworkInterfaceId)
+	d.SetId(resp.Nic.GetNicId())
 
 	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
+		if err := setOSCAPITags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tags")
 	}
 
-	d.Set("tag_set", make([]map[string]interface{}, 0))
-	d.Set("private_ip_addresses_set", make([]map[string]interface{}, 0))
+	d.Set("tags", make([]map[string]interface{}, 0))
+	d.Set("private_ip", make([]map[string]interface{}, 0))
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
-	return resourceOutscaleNicRead(d, meta)
+	return resourceOutscaleOAPINicRead(d, meta)
 
 }
 
-//Read Nic
-func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
+//Read OAPINic
+func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
-	dnir := &fcu.DescribeNetworkInterfacesInput{
-		NetworkInterfaceIds: []*string{aws.String(d.Id())},
+	conn := meta.(*OutscaleClient).OSCAPI
+	dnir := oscgo.ReadNicsRequest{
+		Filters: &oscgo.FiltersNic{
+			NicIds: &[]string{d.Id()},
+		},
 	}
 
-	var describeResp *fcu.DescribeNetworkInterfacesOutput
+	var resp oscgo.ReadNicsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -333,118 +334,117 @@ func resourceOutscaleNicRead(d *schema.ResourceData, meta interface{}) error {
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(describeResp.NetworkInterfaces) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", describeResp.NetworkInterfaces)
+	if len(resp.GetNics()) != 1 {
+		return fmt.Errorf("Unable to find ENI: %#v", resp.GetNics())
 	}
 
-	eni := describeResp.NetworkInterfaces[0]
-	if eni.Description != nil {
-		d.Set("description", eni.Description)
-	}
-	d.Set("subnet_id", eni.SubnetId)
+	eni := resp.GetNics()[0]
+	d.Set("description", eni.GetDescription())
+
+	d.Set("subnet_id", eni.GetSubnetId())
 
 	b := make(map[string]interface{})
-	if eni.Association != nil {
-		b["allocation_id"] = aws.StringValue(eni.Association.AllocationId)
-		b["association_id"] = aws.StringValue(eni.Association.AssociationId)
-		b["ip_owner_id"] = aws.StringValue(eni.Association.IpOwnerId)
-		b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
-		b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
-	}
-	if err := d.Set("association", b); err != nil {
+	link := eni.GetLinkPublicIp()
+	b["public_ip_id"] = link.GetPublicIpId()
+	b["link_public_ip_id"] = link.GetLinkPublicIpId()
+	b["public_ip_account_id"] = link.GetPublicIpAccountId()
+	b["public_dns_name"] = link.GetPublicDnsName()
+	b["public_ip"] = link.GetPublicIp()
+
+	if err := d.Set("link_public_ip", b); err != nil {
 		return err
 	}
 
-	attach := make(map[string]interface{})
-	if eni.Attachment != nil {
-		attach["delete_on_termination"] = strconv.FormatBool(aws.BoolValue(eni.Attachment.DeleteOnTermination))
-		attach["device_index"] = strconv.FormatInt(aws.Int64Value(eni.Attachment.DeviceIndex), 10)
-		attach["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-		attach["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		attach["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-		attach["status"] = aws.StringValue(eni.Attachment.Status)
-	}
-	if err := d.Set("attachment", attach); err != nil {
+	//aa := make([]map[string]interface{}, 1)
+	bb := make(map[string]interface{})
+	att := eni.GetLinkNic()
+	bb["link_nic_id"] = att.GetLinkNicId()
+	bb["delete_on_vm_deletion"] = strconv.FormatBool(att.GetDeleteOnVmDeletion())
+	bb["device_number"] = fmt.Sprintf("%d", att.GetDeviceNumber())
+	bb["vm_id"] = att.GetVmId()
+	bb["vm_account_id"] = att.GetVmAccountId()
+	bb["state"] = att.GetState()
+
+	//aa[0] = bb
+	// if err := d.Set("link_nic", aa); err != nil {
+	// 	return err
+	// }
+
+	if err := d.Set("link_nic", bb); err != nil {
 		return err
 	}
 
-	d.Set("availability_zone", aws.StringValue(eni.AvailabilityZone))
+	d.Set("subregion_name", eni.GetSubregionName())
 
-	x := make([]map[string]interface{}, len(eni.Groups))
-	for k, v := range eni.Groups {
+	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
+	for k, v := range eni.GetSecurityGroups() {
 		b := make(map[string]interface{})
-		b["group_id"] = aws.StringValue(v.GroupId)
-		b["group_name"] = aws.StringValue(v.GroupName)
+		b["security_group_id"] = v.GetSecurityGroupId()
+		b["security_group_name"] = v.GetSecurityGroupName()
 		x[k] = b
 	}
-	if err := d.Set("group_set", x); err != nil {
+	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
-	d.Set("mac_address", aws.StringValue(eni.MacAddress))
-	d.Set("network_interface_id", aws.StringValue(eni.NetworkInterfaceId))
-	d.Set("owner_id", aws.StringValue(eni.OwnerId))
-	d.Set("private_dns_name", aws.StringValue(eni.PrivateDnsName))
-	d.Set("private_ip_address", aws.StringValue(eni.PrivateIpAddress))
+	d.Set("mac_address", eni.GetMacAddress())
+	d.Set("nic_id", eni.GetNicId())
+	d.Set("account_id", eni.GetAccountId())
+	d.Set("private_dns_name", eni.GetPrivateDnsName())
+	//d.Set("private_ip", eni.)
 
-	y := make([]map[string]interface{}, len(eni.PrivateIpAddresses))
-	if eni.PrivateIpAddresses != nil {
-		for k, v := range eni.PrivateIpAddresses {
+	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
+	if eni.PrivateIps != nil {
+		for k, v := range eni.GetPrivateIps() {
 			b := make(map[string]interface{})
 
 			d := make(map[string]interface{})
-			if v.Association != nil {
-				d["allocation_id"] = aws.StringValue(v.Association.AllocationId)
-				d["association_id"] = aws.StringValue(v.Association.AssociationId)
-				d["ip_owner_id"] = aws.StringValue(v.Association.IpOwnerId)
-				d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
-				d["public_ip"] = aws.StringValue(v.Association.PublicIp)
-			}
-			b["association"] = d
-			b["primary"] = aws.BoolValue(v.Primary)
-			b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
-			b["private_ip_address"] = aws.StringValue(v.PrivateIpAddress)
+			assoc := v.GetLinkPublicIp()
+			d["public_ip_id"] = assoc.GetPublicIpId()
+			d["link_public_ip_id"] = assoc.GetLinkPublicIpId()
+			d["public_ip_account_id"] = assoc.GetPublicIpAccountId()
+			d["public_dns_name"] = assoc.GetPublicDnsName()
+			d["public_ip"] = assoc.GetPublicIp()
+
+			b["link_public_ip"] = d
+			b["private_dns_name"] = v.GetPrivateDnsName()
+			b["private_ip"] = v.GetPrivateIp()
+			b["is_primary"] = v.GetIsPrimary()
 
 			y[k] = b
 		}
 	}
-	if err := d.Set("private_ip_addresses_set", y); err != nil {
+	if err := d.Set("private_ips", y); err != nil {
 		return err
 	}
 
-	d.Set("request_id", describeResp.RequestId)
-
-	d.Set("requester_id", eni.RequesterId)
-	d.Set("requester_managed", aws.BoolValue(eni.RequesterManaged))
-
-	d.Set("source_dest_check", aws.BoolValue(eni.SourceDestCheck))
-	d.Set("status", aws.StringValue(eni.Status))
-	// Tags
-	d.Set("tags", tagsToMap(eni.TagSet))
-	d.Set("vpc_id", aws.StringValue(eni.VpcId))
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked())
+	d.Set("state", eni.GetState())
+	d.Set("tags", tagsOSCAPIToMap(eni.GetTags()))
+	d.Set("net_id", eni.GetNetId())
 
 	return nil
 }
 
-//Delete Nic
-func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
+//Delete OAPINic
+func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) error {
 
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleNicDetachMap(d.Get("attachment").(map[string]interface{}), meta, d.Id())
-
+	err := resourceOutscaleOAPINicDetach(d.Get("link_nic").(interface{}), meta, d.Id())
 	if err != nil {
 		return err
 	}
 
-	deleteEniOpts := fcu.DeleteNetworkInterfaceInput{
-		NetworkInterfaceId: aws.String(d.Id()),
+	deleteEniOpts := oscgo.DeleteNicRequest{
+		NicId: d.Id(),
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DeleteNetworkInterface(&deleteEniOpts)
+		_, _, err = conn.NicApi.DeleteNic(context.Background(), &oscgo.DeleteNicOpts{DeleteNicRequest: optional.NewInterface(deleteEniOpts)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -462,19 +462,19 @@ func resourceOutscaleNicDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceOutscaleNicDetachMap(oa map[string]interface{}, meta interface{}, eniID string) error {
-	// if there was an old attachment, remove it
-	if oa != nil && len(oa) != 0 {
-		dr := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(oa["attachment_id"].(string)),
-			Force:        aws.Bool(true),
+func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID string) error {
+	// if there was an old nic_link, remove it
+	if oa != nil {
+		oa := oa.(map[string]interface{})
+		dr := oscgo.UnlinkNicRequest{
+			LinkNicId: oa["link_nic_id"].(string),
 		}
-		conn := meta.(*OutscaleClient).FCU
+
+		conn := meta.(*OutscaleClient).OSCAPI
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.VM.DetachNetworkInterface(dr)
+			_, _, err = conn.NicApi.UnlinkNic(context.Background(), &oscgo.UnlinkNicOpts{UnlinkNicRequest: optional.NewInterface(dr)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -494,7 +494,7 @@ func resourceOutscaleNicDetachMap(oa map[string]interface{}, meta interface{}, e
 		stateConf := &resource.StateChangeConf{
 			Pending: []string{"true"},
 			Target:  []string{"false"},
-			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniID),
+			Refresh: nicLinkRefreshFunc(conn, eniID),
 			Timeout: 10 * time.Minute,
 		}
 		if _, err := stateConf.WaitForState(); err != nil {
@@ -506,78 +506,32 @@ func resourceOutscaleNicDetachMap(oa map[string]interface{}, meta interface{}, e
 	return nil
 }
 
-func resourceOutscaleNicDetach(oa []interface{}, meta interface{}, eniID string) error {
-	// if there was an old attachment, remove it
-	if oa != nil && len(oa) > 0 && oa[0] != nil {
-		oa := oa[0].(map[string]interface{})
-		dr := &fcu.DetachNetworkInterfaceInput{
-			AttachmentId: aws.String(oa["attachment_id"].(string)),
-			Force:        aws.Bool(true),
-		}
-		conn := meta.(*OutscaleClient).FCU
-
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.VM.DetachNetworkInterface(dr)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-				return fmt.Errorf("Error detaching ENI: %s", err)
-			}
-		}
-
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniID)
-		stateConf := &resource.StateChangeConf{
-			Pending: []string{"true"},
-			Target:  []string{"false"},
-			Refresh: networkInterfaceAttachmentRefreshFunc(conn, eniID),
-			Timeout: 10 * time.Minute,
-		}
-		if _, err := stateConf.WaitForState(); err != nil {
-			return fmt.Errorf(
-				"Error waiting for ENI (%s) to become dettached: %s", eniID, err)
-		}
-	}
-
-	return nil
-}
-
-//Update Nic
-func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
-
-	conn := meta.(*OutscaleClient).FCU
+//Update OAPINic
+func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 	d.Partial(true)
+	var err error
 
-	if d.HasChange("attachment") {
-		oa, na := d.GetChange("attachment")
+	if d.HasChange("link_nic") {
+		oa, na := d.GetChange("link_nic")
 
-		err := resourceOutscaleNicDetachMap(oa.(map[string]interface{}), meta, d.Id())
+		err := resourceOutscaleOAPINicDetach(oa.([]interface{}), meta, d.Id())
 		if err != nil {
 			return err
 		}
 
-		// if there is a new attachment, attach it
+		// if there is a new nic_link, attach it
 		if na != nil && len(na.([]interface{})) > 0 {
 			na := na.([]interface{})[0].(map[string]interface{})
-			di := na["device_index"].(int)
-			ar := &fcu.AttachNetworkInterfaceInput{
-				DeviceIndex:        aws.Int64(int64(di)),
-				InstanceId:         aws.String(na["instance"].(string)),
-				NetworkInterfaceId: aws.String(d.Id()),
+			di := na["device_number"].(int)
+			ar := oscgo.LinkNicRequest{
+				DeviceNumber: int64(di),
+				VmId:         na["instance"].(string),
+				NicId:        d.Id(),
 			}
 
-			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, err = conn.VM.AttachNetworkInterface(ar)
+				_, _, err = conn.NicApi.LinkNic(context.Background(), &oscgo.LinkNicOpts{LinkNicRequest: optional.NewInterface(ar)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -593,29 +547,21 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("attachment")
+		d.SetPartial("link_nic")
 	}
 
-	if d.HasChange("private_ip_addresses_set") {
-		o, n := d.GetChange("private_ip_addresses_set")
-		if o == nil {
-			o = new([]interface{})
-		}
-		if n == nil {
-			n = new([]interface{})
-		}
+	if d.HasChange("private_ips") {
+		o, n := d.GetChange("private_ips")
 
 		// Unassign old IP addresses
-		if len(o.([]interface{})) != 0 {
-			input := &fcu.UnassignPrivateIpAddressesInput{
-				NetworkInterfaceId: aws.String(d.Id()),
-				PrivateIpAddresses: expandStringList(o.([]interface{})),
+		if len(o.(*schema.Set).List()) != 0 {
+			input := oscgo.UnlinkPrivateIpsRequest{
+				NicId:      d.Id(),
+				PrivateIps: flattenPrivateIPLightToStringSlice(o.(*schema.Set).List()),
 			}
 
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-				_, err = conn.VM.UnassignPrivateIpAddresses(input)
+			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -631,16 +577,15 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		// Assign new IP addresses
-		if len(n.([]interface{})) != 0 {
-			input := &fcu.AssignPrivateIpAddressesInput{
-				NetworkInterfaceId: aws.String(d.Id()),
-				PrivateIpAddresses: expandStringList(n.([]interface{})),
+		if len(n.(*schema.Set).List()) != 0 {
+			stringSlice := flattenPrivateIPLightToStringSlice(n.(*schema.Set).List())
+			input := oscgo.LinkPrivateIpsRequest{
+				NicId:      d.Id(),
+				PrivateIps: &stringSlice,
 			}
 
-			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-				_, err = conn.VM.AssignPrivateIpAddresses(input)
+				_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -655,37 +600,38 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 		}
 
-		d.SetPartial("private_ip_addresses_set")
+		d.SetPartial("private_ip")
 	}
 
-	request := &fcu.ModifyNetworkInterfaceAttributeInput{
-		NetworkInterfaceId: aws.String(d.Id()),
-		SourceDestCheck:    &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("source_dest_check").(bool))},
-	}
+	// Missing Sourcedestcheck
+	// request := oscgo.UpdateNicRequest{
+	// 	NicId:           d.Id(),
+	// 	SourceDestCheck: &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("is_source_dest_checked").(bool))},
+	// }
 
 	// _, err := conn.VM.ModifyNetworkInterfaceAttribute(request)
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		_, err = conn.VM.ModifyNetworkInterfaceAttribute(request)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	// err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// 	var err error
+	// 	_, err = conn.POST_UpdateNic(request)
+	// 	if err != nil {
+	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+	// 			return resource.RetryableError(err)
+	// 		}
+	// 		return resource.NonRetryableError(err)
+	// 	}
+	// 	return nil
+	// })
 
-	if err != nil {
-		return fmt.Errorf("Failure updating ENI: %s", err)
-	}
+	// if err != nil {
+	// 	return fmt.Errorf("Failure updating ENI: %s", err)
+	// }
 
-	d.SetPartial("source_dest_check")
+	// d.SetPartial("is_source_dest_checked")
 
 	if d.HasChange("private_ips_count") {
 		o, n := d.GetChange("private_ips_count")
-		pips := d.Get("private_ips").(*schema.Set).List()
+		pips := d.Get("pips").(*schema.Set).List()
 		prips := pips[:0]
 		pip := d.Get("private_ip")
 
@@ -696,20 +642,20 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if o != nil && o != 0 && n != nil && n != len(prips) {
-
 			diff := n.(int) - o.(int)
 
 			// Surplus of IPs, add the diff
 			if diff > 0 {
-				input := &fcu.AssignPrivateIpAddressesInput{
-					NetworkInterfaceId:             aws.String(d.Id()),
-					SecondaryPrivateIpAddressCount: aws.Int64(int64(diff)),
+				dif := int32(diff)
+				input := oscgo.LinkPrivateIpsRequest{
+					NicId:                   d.Id(),
+					SecondaryPrivateIpCount: pointy.Int64(int64(dif)),
 				}
 				// _, err := conn.VM.AssignPrivateIpAddresses(input)
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					var err error
-					_, err = conn.VM.AssignPrivateIpAddresses(input)
+					_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -724,14 +670,13 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 			}
 
 			if diff < 0 {
-				input := &fcu.UnassignPrivateIpAddressesInput{
-					NetworkInterfaceId: aws.String(d.Id()),
-					PrivateIpAddresses: expandStringList(prips[0:int(math.Abs(float64(diff)))]),
+				input := oscgo.UnlinkPrivateIpsRequest{
+					NicId:      d.Id(),
+					PrivateIps: expandStringValueList(prips[0:int(math.Abs(float64(diff)))]),
 				}
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					var err error
-					_, err = conn.VM.UnassignPrivateIpAddresses(input)
+					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -750,15 +695,15 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if d.HasChange("security_groups") {
-		request := &fcu.ModifyNetworkInterfaceAttributeInput{
-			NetworkInterfaceId: aws.String(d.Id()),
-			Groups:             expandStringList(d.Get("security_groups").(*schema.Set).List()),
+	if d.HasChange("security_group_ids") {
+		stringValueList := expandStringValueList(d.Get("security_group_ids").([]interface{}))
+		request := oscgo.UpdateNicRequest{
+			NicId:            d.Id(),
+			SecurityGroupIds: &stringValueList,
 		}
 
-		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err = conn.VM.ModifyNetworkInterfaceAttribute(request)
+			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -776,15 +721,14 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("description") {
-		request := &fcu.ModifyNetworkInterfaceAttributeInput{
-			NetworkInterfaceId: aws.String(d.Id()),
-			Description:        &fcu.AttributeValue{Value: aws.String(d.Get("description").(string))},
+		request := oscgo.UpdateNicRequest{
+			NicId:       d.Id(),
+			Description: d.Get("description").(*string),
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			_, err = conn.VM.ModifyNetworkInterfaceAttribute(request)
+			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -801,28 +745,65 @@ func resourceOutscaleNicUpdate(d *schema.ResourceData, meta interface{}) error {
 		d.SetPartial("description")
 	}
 
-	if err := setTags(conn, d); err != nil {
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
-	d.SetPartial("tag_set")
+
+	d.SetPartial("tags")
 
 	d.Partial(false)
 
-	return resourceOutscaleNicRead(d, meta)
+	return resourceOutscaleOAPINicRead(d, meta)
 }
 
-func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource.StateRefreshFunc {
+func nicLinkRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-
-		dnir := &fcu.DescribeNetworkInterfacesInput{
-			NetworkInterfaceIds: []*string{aws.String(id)},
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{NicIds: &[]string{id}},
 		}
 
-		var describeResp *fcu.DescribeNetworkInterfacesOutput
+		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-			describeResp, err = conn.VM.DescribeNetworkInterfaces(dnir)
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			errString := err.Error()
+			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
+			return nil, "", fmt.Errorf("Could not find network interface: %s", errString)
+
+		}
+
+		eni := resp.GetNics()[0]
+		//hasLink := strconv.FormatBool(&eni.LinkNic != nil || !reflect.DeepEqual(eni.LinkNic, oscgo.LinkNic{}))
+		hasLink := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
+		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasLink)
+		return eni, hasLink, nil
+	}
+}
+
+func networkInterfaceOAPIAttachmentRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+
+		dnir := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{
+				NicIds: &[]string{id},
+			},
+		}
+
+		var resp oscgo.ReadNicsResponse
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -837,9 +818,33 @@ func networkInterfaceAttachmentRefreshFunc(conn *fcu.Client, id string) resource
 			return nil, "", err
 		}
 
-		eni := describeResp.NetworkInterfaces[0]
-		hasAttachment := strconv.FormatBool(eni.Attachment != nil)
+		eni := resp.GetNics()[0]
+		hasAttachment := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
 		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
 		return eni, hasAttachment, nil
 	}
+}
+
+func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {
+	privateIPs := make([]oscgo.PrivateIpLight, 0)
+	for _, v := range pIPs {
+		privateIPMap := v.(map[string]interface{})
+		isPrimary := privateIPMap["is_primary"].(bool)
+		private := privateIPMap["private_ip"].(string)
+		privateIP := oscgo.PrivateIpLight{
+			IsPrimary: &isPrimary,
+			PrivateIp: &private,
+		}
+		privateIPs = append(privateIPs, privateIP)
+	}
+	return privateIPs
+}
+
+func flattenPrivateIPLightToStringSlice(pIPs []interface{}) []string {
+	privateIPs := make([]string, 0)
+	for _, v := range pIPs {
+		privateIPMap := v.(map[string]interface{})
+		privateIPs = append(privateIPs, privateIPMap["private_ip"].(string))
+	}
+	return privateIPs
 }

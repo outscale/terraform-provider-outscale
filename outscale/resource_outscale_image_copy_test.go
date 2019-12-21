@@ -3,8 +3,6 @@ package outscale
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,27 +14,21 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleImageCopy(t *testing.T) {
+func TestAccOutscaleOAPIImageCopy(t *testing.T) {
+	t.Skip()
 	var amiID string
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 
 	snapshots := []string{}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleImageCopyConfig,
+				Config: testAccOutscaleOAPIImageCopyConfig,
 				Check: func(state *terraform.State) error {
 					rs, ok := state.RootModule().Resources["outscale_image_copy.test"]
 					if !ok {
@@ -199,23 +191,22 @@ func TestAccOutscaleImageCopy(t *testing.T) {
 	})
 }
 
-var testAccOutscaleImageCopyConfig = `
-resource "outscale_vm" "outscale_vm" {
-    count = 1
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
+var testAccOutscaleOAPIImageCopyConfig = `
+	resource "outscale_vm" "outscale_vm" {
+		count    = 1
+		image_id = "ami-880caa66"
+		type     = "c4.large"
+	}
 
-}
+	resource "outscale_image" "outscale_image" {
+		name  = "image_${outscale_vm.outscale_vm.id}"
+		vm_id = "${outscale_vm.outscale_vm.id}"
+	}
 
-resource "outscale_image" "outscale_image" {
-    name        = "image_${outscale_vm.outscale_vm.id}"
-    instance_id = "${outscale_vm.outscale_vm.id}"
-}
+	resource "outscale_image_copy" "test" {
+		count = 1
 
-resource "outscale_image_copy" "test" {
-    count = 1
-		
-		source_image_id = "${outscale_image.outscale_image.image_id}"
-		source_region= "eu-west-2"
-}
+		source_image_id    = "${outscale_image.outscale_image.image_id}"
+		source_region_name = "eu-west-2"
+	}
 `

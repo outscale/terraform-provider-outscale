@@ -2,41 +2,33 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscaleVmState(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleVMStateConfig,
+				Config: testAccDataSourceOutscaleOAPIVmStateConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleVMStateCheck("data.outscale_vm_state.state"),
-					// testAccDataSourceOutscaleVMStateCheck("data.outscale_public_ip.by_public_ip"),
+					testAccDataSourceOutscaleOAPIVMStateCheck("data.outscale_vm_state.state"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPIVMStateCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 
@@ -51,30 +43,27 @@ func testAccDataSourceOutscaleVMStateCheck(name string) resource.TestCheckFunc {
 
 		state := rs.Primary.Attributes
 
-		if state["instance_id"] != vm.Primary.Attributes["instance_id"] {
+		if state["vm_id"] != vm.Primary.Attributes["vm_id"] {
 			return fmt.Errorf(
-				"instance_id is %s; want %s",
-				state["instance_id"],
-				vm.Primary.Attributes["instance_id"],
+				"vm_id is %s; want %s",
+				state["vm_id"],
+				vm.Primary.Attributes["vm_id"],
 			)
 		}
-
 		return nil
 	}
 }
 
-const testAccDataSourceOutscaleVMStateConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
+func testAccDataSourceOutscaleOAPIVmStateConfig(omi, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id     = "%s"
+			vm_type      = "%s"
+			keypair_name = "terraform-basic"
+		}
 
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
+		data "outscale_vm_state" "state" {
+			vm_id = "${outscale_vm.basic.id}"
+		}
+	`, omi, vmType)
 }
-
-data "outscale_vm_state" "state" {
-  instance_id = "${outscale_vm.basic.id}"
-}
-`

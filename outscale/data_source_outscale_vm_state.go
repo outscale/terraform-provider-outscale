@@ -1,161 +1,50 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVMState() *schema.Resource {
+func dataSourceOutscaleOAPIVMState() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleVMStateRead,
-		Schema: getVMStateDataSourceSchema(),
+		Read:   dataSourceOutscaleOAPIVMStateRead,
+		Schema: getOAPIVMStateDataSourceSchema(),
 	}
 }
 
-func dataSourceOutscaleVMStateRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	filters, filtersOk := d.GetOk("filter")
-	instanceIds, instanceIdsOk := d.GetOk("instance_id")
-
-	if !instanceIdsOk && !filtersOk {
-		return errors.New("instance_id or filter must be set")
-	}
-
-	params := &fcu.DescribeInstanceStatusInput{}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if instanceIdsOk {
-		params.InstanceIds = []*string{aws.String(instanceIds.(string))}
-	}
-
-	params.IncludeAllInstances = aws.Bool(false)
-
-	var resp *fcu.DescribeInstanceStatusOutput
-	var err error
-
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeInstanceStatus(params)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	filteredStates := resp.InstanceStatuses[:]
-
-	var state *fcu.InstanceStatus
-	if len(filteredStates) < 1 {
-		return fmt.Errorf("our query returned no results, please change your search criteria and try again")
-	}
-
-	if len(filteredStates) > 1 {
-		return fmt.Errorf("our query returned more than one result, please try a more " +
-			"specific search criteria")
-	}
-
-	state = filteredStates[0]
-
-	d.Set("request_id", *resp.RequestId)
-
-	return statusDescriptionAttributes(d, state)
-}
-
-func statusDescriptionAttributes(d *schema.ResourceData, status *fcu.InstanceStatus) error {
-
-	d.SetId(*status.InstanceId)
-
-	d.Set("availability_zone", aws.StringValue(status.AvailabilityZone))
-
-	if err := d.Set("events_set", eventsSet(status.Events)); err != nil {
-		return err
-	}
-
-	if err := d.Set("instance_state", flattenedState(status.InstanceState)); err != nil {
-		return err
-	}
-
-	if err := d.Set("instance_details", detailsSet(status.InstanceStatus.Details)); err != nil {
-		return err
-	}
-
-	d.Set("instance_status", aws.StringValue(status.InstanceStatus.Status))
-	d.Set("system_status", aws.StringValue(status.SystemStatus.Status))
-
-	return d.Set("system_details", detailsSet(status.SystemStatus.Details))
-}
-
-func detailsSet(details []*fcu.InstanceStatusDetails) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(details))
-
-	for k, v := range details {
-		status := map[string]interface{}{
-			"name":           aws.StringValue(v.Name),
-			"status":         aws.StringValue(v.Status),
-			"impaired_since": aws.TimeValue(v.ImpairedSince).String(),
-		}
-		s[k] = status
-	}
-
-	return s
-}
-
-func flattenedState(state *fcu.InstanceState) map[string]interface{} {
-	return map[string]interface{}{
-		"code": fmt.Sprintf("%d", aws.Int64Value(state.Code)),
-		"name": aws.StringValue(state.Name),
-	}
-}
-
-func eventsSet(events []*fcu.InstanceStatusEvent) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(events))
-
-	for k, v := range events {
-		status := map[string]interface{}{
-			"code":        aws.StringValue(v.Code),
-			"description": aws.StringValue(v.Description),
-			"not_before":  v.NotBefore.Format(time.RFC3339),
-			"not_after":   v.NotAfter.Format(time.RFC3339),
-		}
-		s[k] = status
-	}
-	return s
-}
-
-func getVMStateDataSourceSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Arguments
+func getOAPIVMStateDataSourceSchema() map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
-		"instance_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-		},
-		"include_all_instances": {
-			Type:     schema.TypeBool,
-			Optional: true,
-		},
+	}
 
-		// Attributes
-		"availability_zone": {
+	for k, v := range getVMStateAttrsSchema() {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
+}
+
+func getVMStateAttrsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"subregion_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"events_set": {
+		"maintenance_events": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
@@ -168,85 +57,147 @@ func getVMStateDataSourceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"not_before": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
 					"not_after": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-				},
-			},
-		},
-		"instance_state": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"code": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"name": {
+					"not_before": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-
-		"instance_status": {
+		"vm_id": {
 			Type:     schema.TypeString,
-			Computed: true,
+			Optional: true,
 		},
-		"instance_details": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"impaired_since": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"status": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"system_details": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"impaired_since": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"status": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"system_status": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"request_id": {
+		"vm_state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 	}
+}
+
+func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	filters, filtersOk := d.GetOk("filter")
+	instanceID, instanceIDOk := d.GetOk("vm_id")
+
+	if !instanceIDOk && !filtersOk {
+		return errors.New("vm_id or filter must be set")
+	}
+
+	params := oscgo.ReadVmsStateRequest{}
+	if filtersOk {
+		params.SetFilters(buildOutscaleOAPIDataSourceVMStateFilters(filters.(*schema.Set)))
+	}
+	if instanceIDOk {
+		filter := oscgo.FiltersVmsState{}
+		filter.SetVmIds([]string{instanceID.(string)})
+		params.SetFilters(filter)
+	}
+
+	params.SetAllVms(false)
+
+	var resp oscgo.ReadVmsStateResponse
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.VmApi.ReadVmsState(context.Background(), &oscgo.ReadVmsStateOpts{ReadVmsStateRequest: optional.NewInterface(params)})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.NonRetryableError(err)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	filteredStates := resp.GetVmStates()[:]
+
+	var state oscgo.VmStates
+	if len(filteredStates) < 1 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	if len(filteredStates) > 1 {
+		return fmt.Errorf("Your query returned more than one result. Please try a more " +
+			"specific search criteria.")
+	}
+
+	state = filteredStates[0]
+
+	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	return vmStateDataAttrSetter(d, &state)
+}
+
+func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error {
+	setterFunc := func(key string, value interface{}) error {
+		return d.Set(key, value)
+	}
+	d.SetId(status.GetVmId())
+	return statusDescriptionOAPIVMStateAttributes(setterFunc, status)
+}
+
+func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
+
+	set("subregion_name", status.GetSubregionName())
+	set("maintenance_events", statusSetOAPIVMState(status.GetMaintenanceEvents()))
+	set("vm_state", status.GetVmState())
+	set("vm_id", status.GetVmId())
+
+	return nil
+}
+
+func statusSetOAPIVMState(status []oscgo.MaintenanceEvent) []map[string]interface{} {
+	s := make([]map[string]interface{}, len(status))
+	for k, v := range status {
+		s[k] = map[string]interface{}{
+			"code":        v.GetCode(),
+			"description": v.GetDescription(),
+			"not_after":   v.GetNotAfter(),
+			"not_before":  v.GetNotBefore(),
+		}
+	}
+
+	return s
+}
+
+func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVmsState {
+	var filters oscgo.FiltersVmsState
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "maintenance_event_codes":
+			//filters.MaintenanceEventCodes = filterValues
+		case "maintenance_event_descriptions":
+			//filters.MaintenanceEventDescriptions = filterValues
+		case "maintenance_events_not_after":
+			//filters.MaintenanceEventsNotAfter = filterValues
+		case "maintenance_events_not_before":
+			//filters.MaintenanceEventsNotBefore = filterValues
+		case "subregion_names":
+			filters.SetSubregionNames(filterValues)
+		case "vm_ids":
+			filters.SetVmIds(filterValues)
+		case "vm_states":
+			filters.SetVmStates(filterValues)
+
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

@@ -1,67 +1,54 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscalePublicIPS() *schema.Resource {
+func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscalePublicIPSRead,
-		Schema: getPublicIPSDataSourceSchema(),
+		Read:   oapiDataSourceOutscalePublicIPSRead,
+		Schema: oapiGetPublicIPSDataSourceSchema(),
 	}
 }
 
-func getPublicIPSDataSourceSchema() map[string]*schema.Schema {
+func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		// Attributes
 		"filter": dataSourceFiltersSchema(),
-		"allocation_ids": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
 		"public_ips": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"addresses_set": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"allocation_id": {
+					"link_public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"association_id": {
+					"public_ip_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"domain": {
+					"vm_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"instance_id": {
+					"nic_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"network_interface_id": {
+					"nic_account_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"network_interface_owner_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"private_ip_address": {
+					"private_ip": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -79,38 +66,21 @@ func getPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.DescribeAddressesInput{}
+	req := oscgo.ReadPublicIpsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	if id := d.Get("allocation_id"); id != nil {
-		var allocs []*string
-		for _, v := range id.([]interface{}) {
-			allocs = append(allocs, aws.String(v.(string)))
-		}
-		req.AllocationIds = allocs
-	}
-	if id := d.Get("public_ip"); id != nil {
-		var ips []*string
-		for _, v := range id.([]interface{}) {
-			ips = append(ips, aws.String(v.(string)))
-		}
-
-		req.PublicIps = ips
-	}
-
-	var describeAddresses *fcu.DescribeAddressesOutput
+	var resp oscgo.ReadPublicIpsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		describeAddresses, err = conn.VM.DescribeAddressesRequest(req)
-
+		resp, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
 		return resource.RetryableError(err)
 	})
 
@@ -124,56 +94,33 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	// Verify Outscale returned our EIP
-	if describeAddresses == nil || len(describeAddresses.Addresses) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", describeAddresses.Addresses)
+	if len(resp.GetPublicIps()) == 0 {
+		return fmt.Errorf("Unable to find EIP: %#v", resp.GetPublicIps())
 	}
 
-	addresses := describeAddresses.Addresses
+	addresses := resp.GetPublicIps()
 
 	address := make([]map[string]interface{}, len(addresses))
 
 	for k, v := range addresses {
-
 		add := make(map[string]interface{})
 
-		if v.AssociationId != nil {
-			add["association_id"] = *v.AssociationId
-		} else {
-			add["association_id"] = ""
-		}
-		if v.InstanceId != nil {
-			add["instance_id"] = *v.InstanceId
-		} else {
-			add["instance_id"] = ""
-		}
-		if v.NetworkInterfaceId != nil {
-			add["network_interface_id"] = *v.NetworkInterfaceId
-		} else {
-			add["network_interface_id"] = ""
-		}
-		if v.NetworkInterfaceOwnerId != nil {
-			add["network_interface_owner_id"] = *v.NetworkInterfaceOwnerId
-		} else {
-			add["network_interface_owner_id"] = ""
-		}
-		if v.PrivateIpAddress != nil {
-			add["private_ip_address"] = *v.PrivateIpAddress
-		} else {
-			add["private_ip_address"] = ""
-		}
-
-		add["domain"] = *v.Domain
-		add["allocation_id"] = *v.AllocationId
-		add["public_ip"] = *v.PublicIp
+		add["link_public_ip_id"] = v.GetLinkPublicIpId()
+		add["public_ip_id"] = v.GetPublicIpId()
+		add["vm_id"] = v.GetVmId()
+		add["nic_id"] = v.GetNicId()
+		add["nic_account_id"] = v.GetNicAccountId()
+		add["private_ip"] = v.GetPrivateIp()
+		add["public_ip"] = v.GetPublicIp()
 
 		address[k] = add
 	}
 
 	d.SetId(resource.UniqueId())
 
-	d.Set("request_id", *describeAddresses.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	err = d.Set("addresses_set", address)
+	err = d.Set("public_ips", address)
 
 	return err
 }

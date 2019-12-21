@@ -11,9 +11,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVpnGateways() *schema.Resource {
+func dataSourceOutscaleOAPIVpnGateways() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVpnGatewaysRead,
+		Read: dataSourceOutscaleOAPIVpnGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -22,7 +22,7 @@ func dataSourceOutscaleVpnGateways() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"vpn_gateway_set": {
+			"vpn_gateway": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -39,7 +39,7 @@ func dataSourceOutscaleVpnGateways() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"attachments": &schema.Schema{
+						"lin_to_vpn_gateway_link": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -48,14 +48,14 @@ func dataSourceOutscaleVpnGateways() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"vpc_id": &schema.Schema{
+									"lin_id": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"tag_set": tagsSchemaComputed(),
+						"tag": tagsSchemaComputed(),
 					},
 				},
 			},
@@ -67,7 +67,7 @@ func dataSourceOutscaleVpnGateways() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVpnGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -117,20 +117,20 @@ func dataSourceOutscaleVpnGatewaysRead(d *schema.ResourceData, meta interface{})
 		for k, v1 := range v.VpcAttachments {
 			vp := make(map[string]interface{})
 			vp["state"] = aws.StringValue(v1.State)
-			vp["vpc_id"] = aws.StringValue(v1.VpcId)
+			vp["lin_id"] = aws.StringValue(v1.VpcId)
 
 			vs[k] = vp
 		}
 
-		vpn["attachments"] = vs
+		vpn["lin_to_vpn_gateway_link"] = vs
 		vpn["state"] = aws.StringValue(v.State)
 		vpn["vpn_gateway_id"] = aws.StringValue(v.VpnGatewayId)
-		vpn["tag_set"] = tagsToMap(v.Tags)
+		vpn["tag"] = tagsToMap(v.Tags)
 
 		vpns[k] = vpn
 	}
 
-	d.Set("vpn_gateway_set", vpns)
+	d.Set("vpn_gateway", vpns)
 	d.Set("request_id", resp.RequestId)
 	d.SetId(resource.UniqueId())
 

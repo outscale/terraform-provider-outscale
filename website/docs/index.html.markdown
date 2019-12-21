@@ -1,94 +1,87 @@
 ---
 layout: "outscale"
-page_title: "Provider: OUTSCALE"
-sidebar_current: "docs-outscale-index"
+page_title: "Provider: 3DS OUTSCALE"
 description: |-
-  The Outscale Services provider is used to interact with the many resources supported by Outscale. The provider needs to be configured with the proper credentials before it can be used.
+  The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
-# Outscale Provider
+# 3DS OUTSCALE Provider
 
-The Outscale provider is used to interact with the
-many resources supported by Outscale. The provider needs to be configured
-with the proper credentials before it can be used.
-
+The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources.
 Use the navigation to the left to read about the available resources.
+For more information on our resources, see the [User Guide](https://wiki.outscale.net/display/EN#).
 
-## Example Usage
+The provider is based on our 3DS OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs-beta.outscale.com/#3ds-outscale-api).
+
+The provider needs to be configured with the proper credentials before it can be used.
+
+## Example
 
 ```hcl
 provider "outscale" {
-  region     = "eu-west-2"
-  access_key_id = "anaccesskey"
-  secret_key_id = "asecretkey"
+  access_key_id = "AZERTY123456QSDF7890"
+  secret_key_id = "123456AZERTY7890QSDFAZERTY123456QSDF7890"
+  region        = "eu-west-2"
 }
 ```
-Available regions are: eu-west-2, us-east-2, us-west-1, cn-southeast-1
-
 
 ## Authentication
 
-The Outscale provider offers a flexible means of providing credentials for
-authentication. The following methods are supported, in this order, and
-explained below:
+3DS OUTSCALE authentication is based on access keys composed of an **access key ID** and a **secret key**.
+For more information on access keys, see [About Access Keys](https://wiki.outscale.net/display/EN/About+Access+Keys).
+To retrieve your access keys, see [Getting Information About Your Access Keys](https://wiki.outscale.net/display/EN/Getting+Information+About+Your+Access+Keys).
 
-- access_key_id
-- secret_key_id
+To provide your credentials to Terraform, you need to specify the `access_key_id` and `secret_key_id` attributes in your configuration file.
+The 3DS OUTSCALE provider offers several ways to specify these attributes. The following methods are supported:
 
-### Static credentials ###
+1. [Static credentials](#static-credentials)
+2. [Environment variables](#environment-variables)
 
-Static credentials can be provided by adding an `access_key_id` and `secret_key_id` in-line in the
-Outscale provider block:
+### Static credentials
 
-Usage:
+!> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
+
+In the provider block of your configuration file, you can provide your credentials with raw values:
+
+Example:
 
 ```hcl
 provider "outscale" {
-  region     = "eu-west-2"
-  access_key_id = "anaccesskey"
-  secret_key_id = "asecretkey"
+  access_key_id   = "myaccesskey"
+  secret_key_id   = "mysecretkey"
+  region          = "regionname"
 }
 ```
 
 ### Environment variables
 
-You can provide your credentials via the `ACCESS_KEY_ID` and
-`SECRET_KEY_ID`, environment variables, representing your Outscale
-Access Key and Outscale Secret Key, respectively. 
+In the provider block of your configuration file, you can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
 
-```hcl
-provider "outscale" {}
-```
-
-Usage:
-
-```hcl
-$ export ACCESS_KEY_ID="anaccesskey"
-$ export SECRET_ACCESS_KEY="asecretkey"
-$ export DEFAULT_REGION="eu-west-2"
-$ terraform plan
-```
-
-### Shared Credentials file
-
-You can use an Outscale credentials file to specify your credentials.
-
-Usage:
+Example:
 
 ```hcl
 provider "outscale" {
-  region                  = "eu-west-2"
-  shared_credentials_file = "/Users/tf_user/.outscale/creds"
-  profile                 = "customprofile"
+  access_key_id   = "var.access_key_id"
+  secret_key_id   = "var.secret_key_id"
+  region          = "var.region"
 }
 ```
 
-### Outscale Role
+Usage:
 
-The default deadline for the FCU metadata API endpoint is 100 milliseconds,
-which can be overidden by setting the `OUTSCALE_METADATA_TIMEOUT` environment
-variable. The variable expects a positive golang Time.Duration string, which is
-a sequence of decimal numbers and a unit suffix; valid suffixes are `ns`
-(nanoseconds), `us` (microseconds), `ms` (milliseconds), `s` (seconds), `m`
-(minutes), and `h` (hours). Examples of valid inputs: `100ms`, `250ms`, `1s`,
-`2.5s`, `2.5m`, `1m30s`.
+```bash
+$ export OUTSCALE_ACCESSKEYID="myaccesskey"
+$ export OUTSCALE_SECRETKEYID="mysecretkey"
+$ export OUTSCALE_REGION="regionname"
+$ terraform plan
+```
+
+## Arguments Reference
+
+In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the 3DS OUTSCALE provider block:
+
+* `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
+
+* `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
+
+* `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).

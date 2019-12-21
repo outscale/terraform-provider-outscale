@@ -3,70 +3,52 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleNicsDataSource(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPINicsDataSource(t *testing.T) {
+	subregion := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi != false {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleNicsDataSourceConfig,
+				Config: testAccCheckOutscaleOAPINicsDataSourceConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleNicsDataSourceID("data.outscale_nics.outscale_nics"),
-					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "network_interface_set.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_nics.outscale_nics", "nics.#", "1"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleNicsDataSourceID(n string) resource.TestCheckFunc {
-	// Wait for IAM role
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Can't find NICS data source: %s", n)
+func testAccCheckOutscaleOAPINicsDataSourceConfig(subregion string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
 		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("NICS data source ID not set")
+		
+		resource "outscale_subnet" "outscale_subnet" {
+			subregion_name = "%sa"
+			ip_range       = "10.0.0.0/16"
+			net_id         = "${outscale_net.outscale_net.net_id}"
 		}
-		return nil
-	}
+		
+		resource "outscale_nic" "outscale_nic" {
+			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+		}
+		
+		data "outscale_nics" "outscale_nics" {
+			filter {
+				name   = "nic_ids"
+				values = ["${outscale_nic.outscale_nic.id}"]
+			}
+		}
+	`, subregion)
 }
-
-const testAccCheckOutscaleNicsDataSourceConfig = `
-resource "outscale_lin" "outscale_lin" {
-    cidr_block = "10.0.0.0/16"
-}
-
-resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.vpc_id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-data "outscale_nics" "outscale_nics" {
-	network_interface_id = ["${outscale_nic.outscale_nic.id}"]
-}
-`

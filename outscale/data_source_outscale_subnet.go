@@ -1,28 +1,30 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleSubnet() *schema.Resource {
+func dataSourceOutscaleOAPISubnet() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleSubnetRead,
+		Read: dataSourceOutscaleOAPISubnetRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"availability_zone": {
+			"subregion_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"cidr_block": {
+			"ip_range": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -38,9 +40,9 @@ func dataSourceOutscaleSubnet() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag_set": dataSourceTagsSchema(),
+			"tags": dataSourceTagsSchema(),
 
-			"vpc_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -49,7 +51,7 @@ func dataSourceOutscaleSubnet() *schema.Resource {
 				Computed: true,
 			},
 
-			"available_ip_address_count": {
+			"available_ips_count": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -57,57 +59,90 @@ func dataSourceOutscaleSubnet() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleSubnetRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.DescribeSubnetsInput{}
+	req := oscgo.ReadSubnetsRequest{}
 
 	if id := d.Get("subnet_id"); id != "" {
-		req.SubnetIds = []*string{aws.String(id.(string))}
+		req.Filters = &oscgo.FiltersSubnet{SubnetIds: &[]string{id.(string)}}
 	}
 
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeSubnetsOutput
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		var err error
-		resp, err = conn.VM.DescribeSubNet(req)
+	var resp oscgo.ReadSubnetsResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
+
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
-
-		return resource.NonRetryableError(err)
+		resp = r
+		return nil
 	})
 
 	if err != nil {
-		return err
+		errString := err.Error()
+
+		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	if resp == nil || len(resp.Subnets) == 0 {
+	if len(resp.GetSubnets()) == 0 {
 		return fmt.Errorf("no matching subnet found")
 	}
 
-	if len(resp.Subnets) > 1 {
+	if len(resp.GetSubnets()) > 1 {
 		return fmt.Errorf("multiple subnets matched; use additional constraints to reduce matches to a single subnet")
 	}
 
-	subnet := resp.Subnets[0]
+	subnet := resp.GetSubnets()[0]
 
-	d.SetId(*subnet.SubnetId)
-	d.Set("subnet_id", subnet.SubnetId)
-	d.Set("vpc_id", subnet.VpcId)
-	d.Set("availability_zone", subnet.AvailabilityZone)
-	d.Set("cidr_block", subnet.CidrBlock)
-	d.Set("state", subnet.State)
-	d.Set("tag_set", tagsToMap(subnet.Tags))
-	d.Set("available_ip_address_count", subnet.AvailableIpAddressCount)
-	d.Set("request_id", resp.RequestId)
+	d.SetId(subnet.GetSubnetId())
+	d.Set("subnet_id", subnet.GetSubnetId())
+	d.Set("net_id", subnet.GetNetId())
+	d.Set("subregion_name", subnet.GetSubregionName())
+	d.Set("ip_range", subnet.GetIpRange())
+	d.Set("state", subnet.GetState())
+	d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
+	d.Set("available_ips_count", subnet.GetAvailableIpsCount())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
+}
+
+func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSubnet {
+	var filters oscgo.FiltersSubnet
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		// case "available_ips_counts":
+		// 	filters.AvailableIpsCounts = filterValues
+		case "ip_ranges":
+			filters.IpRanges = &filterValues
+		case "net_ids":
+			filters.NetIds = &filterValues
+		case "states":
+			filters.States = &filterValues
+		case "subnet_ids":
+			filters.SubnetIds = &filterValues
+		case "subregion_names":
+			filters.SubregionNames = &filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return &filters
 }

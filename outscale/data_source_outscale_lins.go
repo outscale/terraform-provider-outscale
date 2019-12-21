@@ -1,48 +1,49 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVpcs() *schema.Resource {
+func dataSourceOutscaleOAPIVpcs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVpcsRead,
+		Read: dataSourceOutscaleOAPIVpcsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"vpc_id": {
+			"net_id": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"vpc_set": {
+			"nets": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"cidr_block": {
+						"ip_range": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"dhcp_options_id": {
+						"dhcp_options_set_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"vpc_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"instance_tenancy": {
+						"tenancy": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -51,7 +52,7 @@ func dataSourceOutscaleVpcs() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tag_set": tagsSchemaComputed(),
+						"tags": tagsOAPIListSchemaComputed(),
 					},
 				},
 			},
@@ -63,37 +64,38 @@ func dataSourceOutscaleVpcs() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.DescribeVpcsInput{}
+	req := oscgo.ReadNetsRequest{}
 
 	filters, filtersOk := d.GetOk("filter")
-	v, vpcOk := d.GetOk("vpc_id")
+	netIds, netIdsOk := d.GetOk("net_id")
 
-	if filtersOk == false && vpcOk == false {
-		return fmt.Errorf("filters, or owner must be assigned, or vpc_id(s) must be provided")
+	if filtersOk == false && netIdsOk == false {
+		return fmt.Errorf("filters or net_id(s) must be provided")
 	}
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(filters.(*schema.Set)))
 	}
-	if vpcOk {
-		ids := make([]*string, len(v.([]interface{})))
 
-		for k, v := range v.([]interface{}) {
-			ids[k] = aws.String(v.(string))
+	if netIdsOk {
+		ids := make([]string, len(netIds.([]interface{})))
+
+		for k, v := range netIds.([]interface{}) {
+			ids[k] = v.(string)
 		}
+		var filters oscgo.FiltersNet
+		filters.SetNetIds(ids)
+		req.SetFilters(filters)
 
-		req.VpcIds = ids
 	}
 
 	var err error
-	var resp *fcu.DescribeVpcsOutput
+	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-
-		resp, err = conn.VM.DescribeVpcs(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -106,29 +108,31 @@ func dataSourceOutscaleVpcsRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.Vpcs) == 0 {
+	if len(resp.GetNets()) == 0 {
 		return fmt.Errorf("no matching VPC found")
 	}
 
 	d.SetId(resource.UniqueId())
 
-	vpcSet := make([]map[string]interface{}, len(resp.Vpcs))
+	nets := make([]map[string]interface{}, len(resp.GetNets()))
 
-	for i, v := range resp.Vpcs {
-		vpc := make(map[string]interface{})
+	for i, v := range resp.GetNets() {
+		net := make(map[string]interface{})
 
-		vpc["vpc_id"] = *v.VpcId
-		vpc["cidr_block"] = *v.CidrBlock
-		vpc["dhcp_options_id"] = *v.DhcpOptionsId
-		vpc["instance_tenancy"] = *v.InstanceTenancy
-		vpc["state"] = *v.State
-		vpc["tag_set"] = tagsToMap(v.Tags)
+		net["net_id"] = v.GetNetId()
+		net["ip_range"] = v.GetIpRange()
+		net["dhcp_options_set_id"] = v.GetDhcpOptionsSetId()
+		net["tenancy"] = v.GetTenancy()
+		net["state"] = v.GetState()
+		if v.Tags != nil {
+			net["tags"] = tagsOSCAPIToMap(v.GetTags())
+		}
 
-		vpcSet[i] = vpc
+		nets[i] = net
 	}
 
-	d.Set("vpc_set", vpcSet)
-	d.Set("request_id", resp.RequestId)
+	d.Set("nets", nets)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }

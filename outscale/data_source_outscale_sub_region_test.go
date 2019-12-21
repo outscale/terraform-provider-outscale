@@ -8,22 +8,27 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscaleAvailabilityZone(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIAvailabilityZone(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleAvailabilityZoneConfig,
+				Config: testAccDataSourceOutscaleOAPIAvailabilityZoneConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleAvailabilityZoneCheck("data.outscale_sub_region.by_name"),
+					testAccDataSourceOutscaleOAPIAvailabilityZoneCheck("data.outscale_sub_region.by_name"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleAvailabilityZoneCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPIAvailabilityZoneCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -32,8 +37,8 @@ func testAccDataSourceOutscaleAvailabilityZoneCheck(name string) resource.TestCh
 
 		attr := rs.Primary.Attributes
 
-		if attr["zone_name"] != "eu-west-2a" {
-			return fmt.Errorf("bad name %s", attr["zone_name"])
+		if attr["sub_region_name"] != "eu-west-2a" {
+			return fmt.Errorf("bad name %s", attr["sub_region_name"])
 		}
 		if attr["region_name"] != "eu-west-2" {
 			return fmt.Errorf("bad region %s", attr["region_name"])
@@ -43,8 +48,8 @@ func testAccDataSourceOutscaleAvailabilityZoneCheck(name string) resource.TestCh
 	}
 }
 
-const testAccDataSourceOutscaleAvailabilityZoneConfig = `
+const testAccDataSourceOutscaleOAPIAvailabilityZoneConfig = `
 data "outscale_sub_region" "by_name" {
-  zone_name = "eu-west-2a"
+  sub_region_name = "eu-west-2a"
 }
 `

@@ -3,9 +3,14 @@ package outscale
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
+
+func routeIDHash(d *schema.ResourceData, r *fcu.Route) string {
+	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(*r.DestinationCidrBlock))
+}
 
 // Route table import also imports all the rules
 func resourceOutscaleRouteTableImportState(
@@ -33,7 +38,7 @@ func resourceOutscaleRouteTableImportState(
 
 	{
 		// Construct the routes
-		subResource := resourceOutscaleRoute()
+		subResource := resourceOutscaleOAPIRoute()
 		for _, route := range table.Routes {
 			// Ignore the local/default route
 			if route.GatewayId != nil && *route.GatewayId == "local" {
@@ -58,7 +63,7 @@ func resourceOutscaleRouteTableImportState(
 
 	{
 		// Construct the associations
-		subResource := resourceOutscaleRouteTableAssociation()
+		subResource := resourceOutscaleOAPILinkRouteTable()
 		for _, assoc := range table.Associations {
 			if *assoc.Main {
 				// Ignore

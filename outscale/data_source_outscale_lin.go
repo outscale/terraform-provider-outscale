@@ -1,39 +1,41 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVpc() *schema.Resource {
+func dataSourceOutscaleOAPIVpc() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVpcRead,
+		Read: dataSourceOutscaleOAPIVpcRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"cidr_block": {
+			"ip_range": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"dhcp_options_id": {
+			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 
-			"vpc_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
 
-			"instance_tenancy": {
+			"tenancy": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -47,36 +49,28 @@ func dataSourceOutscaleVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tag_set": tagsSchemaComputed(),
+			"tags": tagsOAPIListSchemaComputed(),
 		},
 	}
 }
 
-func dataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.DescribeVpcsInput{}
+	req := oscgo.ReadNetsRequest{}
 
-	id, ok1 := d.GetOk("vpc_id")
-	v, ok2 := d.GetOk("filter")
-
-	if ok1 == false && ok2 == false {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
+	if v, ok := d.GetOk("filter"); ok {
+		req.SetFilters(buildOutscaleOAPIDataSourceNetFilters(v.(*schema.Set)))
 	}
 
-	if ok1 {
-		req.VpcIds = []*string{aws.String(id.(string))}
+	if id := d.Get("net_id"); id != "" {
+		req.Filters.SetNetIds([]string{id.(string)})
 	}
 
-	if ok2 {
-		req.Filters = buildOutscaleDataSourceFilters(v.(*schema.Set))
-	}
 	var err error
-	var resp *fcu.DescribeVpcsOutput
+	var resp oscgo.ReadNetsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-
-		resp, err = conn.VM.DescribeVpcs(req)
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -89,23 +83,54 @@ func dataSourceOutscaleVpcRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	if resp == nil || len(resp.Vpcs) == 0 {
-		return fmt.Errorf("no matching VPC found")
+	if len(resp.GetNets()) == 0 {
+		return fmt.Errorf("No matching Net found")
 	}
-	if len(resp.Vpcs) > 1 {
-		return fmt.Errorf("multiple VPCs matched; use additional constraints to reduce matches to a single VPC")
+	if len(resp.GetNets()) > 1 {
+		return fmt.Errorf("Multiple Nets matched; use additional constraints to reduce matches to a single Net")
 	}
 
-	vpc := resp.Vpcs[0]
+	net := resp.GetNets()[0]
 
-	d.SetId(*vpc.VpcId)
-	d.Set("vpc_id", vpc.VpcId)
-	d.Set("cidr_block", vpc.CidrBlock)
-	d.Set("dhcp_options_id", vpc.DhcpOptionsId)
-	d.Set("instance_tenancy", vpc.InstanceTenancy)
-	d.Set("state", vpc.State)
-	d.Set("tag_set", tagsToMap(vpc.Tags))
-	d.Set("request_id", resp.RequestId)
+	d.SetId(net.GetNetId())
+	d.Set("net_id", net.GetNetId())
+	d.Set("ip_range", net.GetIpRange())
+	d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId())
+	d.Set("tenancy", net.GetTenancy())
+	d.Set("state", net.GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return nil
+	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
+}
+
+func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
+	var filters oscgo.FiltersNet
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "net_ids":
+			filters.SetNetIds(filterValues)
+		case "ip_range":
+			filters.SetIpRanges(filterValues)
+		case "dhcp_options_set_id":
+			filters.SetDhcpOptionsSetIds(filterValues)
+		case "is_default":
+			//bool
+			//filters.IsDefault = filterValues
+		case "state":
+			filters.SetStates(filterValues)
+		case "tag_key":
+			filters.SetTagKeys(filterValues)
+		case "tag_value":
+			filters.SetTagValues(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

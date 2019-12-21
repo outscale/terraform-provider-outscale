@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,32 +15,26 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleVpnConnection_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPIVpnConnection_basic(t *testing.T) {
+	t.Skip()
 
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVpnConnectionDestroy,
+		CheckDestroy:  testAccOutscaleOAPIVpnConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVpnConnectionConfig(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnConnection(
-						"outscale_lin.vpc",
+					testAccOutscaleOAPIVpnConnection(
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",
@@ -54,31 +46,26 @@ func TestAccOutscaleVpnConnection_basic(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVpnConnection_withoutStaticRoutes(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIVpnConnection_withoutStaticRoutes(t *testing.T) {
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	rInt := acctest.RandInt()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		IDRefreshName: "outscale_vpn_connection.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccOutscaleVpnConnectionDestroy,
+		CheckDestroy:  testAccOutscaleOAPIVpnConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVpnConnectionConfigUpdate(rInt, rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionConfigUpdate(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnConnection(
-						"outscale_lin.vpc",
+					testAccOutscaleOAPIVpnConnection(
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",
@@ -91,36 +78,31 @@ func TestAccOutscaleVpnConnection_withoutStaticRoutes(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleVpnConnection_disappears(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIVpnConnection_disappears(t *testing.T) {
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	var vpn fcu.VpnConnection
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleVpnConnectionDestroy,
+		CheckDestroy: testAccOutscaleOAPIVpnConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVpnConnectionConfig(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnConnection(
-						"outscale_lin.vpc",
+					testAccOutscaleOAPIVpnConnection(
+						"outscale_net.vpc",
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.foo",
 						&vpn,
 					),
-					testAccOutscaleVpnConnectionDisappears(&vpn),
+					testAccOutscaleOAPIVpnConnectionDisappears(&vpn),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -128,7 +110,7 @@ func TestAccOutscaleVpnConnection_disappears(t *testing.T) {
 	})
 }
 
-func testAccOutscaleVpnConnectionDisappears(connection *fcu.VpnConnection) resource.TestCheckFunc {
+func testAccOutscaleOAPIVpnConnectionDisappears(connection *fcu.VpnConnection) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
 
@@ -196,7 +178,7 @@ func testAccOutscaleVpnConnectionDisappears(connection *fcu.VpnConnection) resou
 	}
 }
 
-func testAccOutscaleVpnConnectionDestroy(s *terraform.State) error {
+func testAccOutscaleOAPIVpnConnectionDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection" {
@@ -248,7 +230,7 @@ func testAccOutscaleVpnConnectionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVpnConnection(
+func testAccOutscaleOAPIVpnConnection(
 	vpcResource string,
 	vpnGatewayResource string,
 	customerGatewayResource string,
@@ -296,7 +278,7 @@ func testAccOutscaleVpnConnection(
 	}
 }
 
-func testAccOutscaleVpnConnectionConfig(rBgpAsn int) string {
+func testAccOutscaleOAPIVpnConnectionConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_vpn_gateway" "vpn_gateway" {
 		  tag {
@@ -305,48 +287,48 @@ func testAccOutscaleVpnConnectionConfig(rBgpAsn int) string {
 		}
 
 		resource "outscale_client_endpoint" "customer_gateway" {
-		  bgp_asn = %d
+		  bgp_asn    = %d
 		  ip_address = "178.0.0.1"
-		  type = "ipsec.1"
+		  type       = "ipsec.1"
 			tag {
 				Name = "main-customer-gateway"
 			}
 		}
 
 		resource "outscale_vpn_connection" "foo" {
-		  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
+		  vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
 		  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-		  type = "ipsec.1"
-		 
+		  type                = "ipsec.1"
+		  options {
+				static_routes_only = true
+			}
 		}
-		`, rBgpAsn)
+	`, rBgpAsn)
 }
 
 // Change static_routes_only to be false, forcing a refresh.
-func testAccOutscaleVpnConnectionConfigUpdate(rInt, rBgpAsn int) string {
+func testAccOutscaleOAPIVpnConnectionConfigUpdate(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
-	resource "outscale_vpn_gateway" "vpn_gateway" {
-	  tag {
-	    Name = "vpn_gateway"
-	  }
-	}
-
-	resource "outscale_client_endpoint" "customer_gateway" {
-	  bgp_asn = %d
-	  ip_address = "178.0.0.1"
-	  type = "ipsec.1"
-		tag {
-	    Name = "main-customer-gateway-%d"
-	  }
-	}
-
-	resource "outscale_vpn_connection" "foo" {
-	  vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
-	  customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-	  type = "ipsec.1"
-	  options {
-			static_routes_only = "false"
+		resource "outscale_vpn_gateway" "vpn_gateway" {
+			tag {
+				Name = "vpn_gateway"
+			}
 		}
-	}
+
+		resource "outscale_client_endpoint" "customer_gateway" {
+			bgp_asn    = %d
+			ip_address = "178.0.0.1"
+			type       = "ipsec.1"
+			tag {
+				Name = "main-customer-gateway-%d"
+			}
+		}
+
+		resource "outscale_vpn_connection" "foo" {
+			vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
+			customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
+			type                = "ipsec.1"
+			static_routes_only  = false
+		}
 	`, rBgpAsn, rInt)
 }

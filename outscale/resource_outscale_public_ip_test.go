@@ -1,85 +1,70 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscalePublicIP_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi != false {
-		t.Skip()
-	}
-	var conf fcu.Address
+func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
+	var conf oscgo.PublicIp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPConfig,
+				Config: testAccOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscalePublicIP_instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
+	var conf oscgo.PublicIp
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi != false {
-		t.Skip()
-	}
-	var conf fcu.Address
-
-	rInt := acctest.RandInt()
-
+	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfig2(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &conf),
-					testAccCheckOutscalePublicIPAttributes(&conf),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
 				),
 			},
 		},
@@ -88,112 +73,109 @@ func TestAccOutscalePublicIP_instance(t *testing.T) {
 
 // // This test is an expansion of TestAccOutscalePublicIP_instance, by testing the
 // // associated Private PublicIPs of two instances
-func TestAccOutscalePublicIP_associated_user_private_ip(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-	var one fcu.Address
-	rInt := acctest.RandInt()
+func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
+	var one oscgo.PublicIp
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscalePublicIPDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfigAssociated(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccOutscalePublicIPInstanceConfigAssociatedSwitch(rInt),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscalePublicIPExists("outscale_public_ip.bar", &one),
-					testAccCheckOutscalePublicIPAttributes(&one),
+					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
+					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscalePublicIPDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient)
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_public_ip" {
 			continue
 		}
+		//Missing on Swagger Spec
+		// if strings.Contains(rs.Primary.ID, "reservation") {
+		// 	req := oscgo.ReadPublicIpsRequest{
+		// 		Filters: oscgo.FiltersPublicIpcIp{
+		// 			ReservationIds: []string{rs.Primary.ID},
+		// 		},
+		// 	}
 
-		if strings.Contains(rs.Primary.ID, "allocation") {
-			req := &fcu.DescribeAddressesInput{
-				AllocationIds: []*string{aws.String(rs.Primary.ID)},
-			}
+		// 	var response *oscgo.ReadPublicIpsResponse
+		// 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
+		// 		var err error
+		// 		resp, err := conn.oscgo.POST_ReadPublicIps(req)
+		// 		response = resp.OK
+		// 		return resource.RetryableError(err)
+		// 	})
 
-			var describe *fcu.DescribeAddressesOutput
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
+		// 	if err != nil {
+		// 		// Verify the error is what we want
+		// 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+		// 			return nil
+		// 		}
 
-				return resource.RetryableError(err)
-			})
+		// 		return err
+		// 	}
 
-			if err != nil {
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if len(describe.Addresses) > 0 {
-				return fmt.Errorf("still exists")
-			}
-		} else {
-			req := &fcu.DescribeAddressesInput{
-				PublicIps: []*string{aws.String(rs.Primary.ID)},
-			}
-
-			var describe *fcu.DescribeAddressesOutput
-			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
-
-				return resource.RetryableError(err)
-			})
-
-			if err != nil {
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if len(describe.Addresses) > 0 {
-				return fmt.Errorf("still exists")
-			}
+		// 	if len(response.PublicIps) > 0 {
+		// 		return fmt.Errorf("still exists")
+		// 	}
+		// } else {
+		req := oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				PublicIps: &[]string{rs.Primary.ID},
+			},
 		}
+
+		var response oscgo.ReadPublicIpsResponse
+		err := resource.Retry(60*time.Second, func() *resource.RetryError {
+			var err error
+			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+			return resource.RetryableError(err)
+		})
+
+		if err != nil {
+			// Verify the error is what we want
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if len(response.GetPublicIps()) > 0 {
+			return fmt.Errorf("still exists")
+		}
+		//}
 	}
 
 	return nil
 }
 
-func testAccCheckOutscalePublicIPAttributes(conf *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPAttributes(conf *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *conf.PublicIp == "" {
+		if conf.GetPublicIp() == "" {
 			return fmt.Errorf("empty public_ip")
 		}
 
@@ -201,7 +183,7 @@ func testAccCheckOutscalePublicIPAttributes(conf *fcu.Address) resource.TestChec
 	}
 }
 
-func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -214,166 +196,154 @@ func testAccCheckOutscalePublicIPExists(n string, res *fcu.Address) resource.Tes
 
 		conn := testAccProvider.Meta().(*OutscaleClient)
 
-		if strings.Contains(rs.Primary.ID, "allocation") {
-			req := &fcu.DescribeAddressesInput{
-				AllocationIds: []*string{aws.String(rs.Primary.ID)},
-			}
-			describe, err := conn.FCU.VM.DescribeAddressesRequest(req)
+		//Missing on Swagger Spec
+		// if strings.Contains(rs.Primary.ID, "link") {
+		// 	req := oscgo.ReadPublicIpsRequest{
+		// 		Filters: oscgo.FiltersPublicIp{
+		// 			ReservationIds: []string{rs.Primary.ID},
+		// 		},
+		// 	}
+		// 	response, err := conn.oscgo.POST_ReadPublicIps(req)
 
-			if err != nil {
-				return err
-			}
+		// 	if err != nil {
+		// 		return err
+		// 	}
 
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].AllocationId != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
-			}
-			*res = *describe.Addresses[0]
+		// 	if len(response.OK.PublicIps) != 1 ||
+		// 		response.OK.PublicIps[0].ReservationId != rs.Primary.ID {
+		// 		return fmt.Errorf("PublicIP not found")
+		// 	}
+		// 	*res = response.OK.PublicIps[0]
 
-		} else {
-			req := &fcu.DescribeAddressesInput{
-				PublicIps: []*string{aws.String(rs.Primary.ID)},
-			}
-
-			var describe *fcu.DescribeAddressesOutput
-			err := resource.Retry(120*time.Second, func() *resource.RetryError {
-				var err error
-				describe, err = conn.FCU.VM.DescribeAddressesRequest(req)
-
-				if err != nil {
-					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-						return resource.RetryableError(err)
-					}
-
-					return resource.NonRetryableError(err)
-				}
-
-				return nil
-			})
-
-			if err != nil {
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if err != nil {
-
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
-			if len(describe.Addresses) != 1 ||
-				*describe.Addresses[0].PublicIp != rs.Primary.ID {
-				return fmt.Errorf("PublicIP not found")
-			}
-			*res = *describe.Addresses[0]
+		// } else {
+		req := oscgo.ReadPublicIpsRequest{
+			Filters: &oscgo.FiltersPublicIp{
+				PublicIps: &[]string{rs.Primary.ID},
+			},
 		}
+
+		var response oscgo.ReadPublicIpsResponse
+		err := resource.Retry(120*time.Second, func() *resource.RetryError {
+			var err error
+			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+
+			if err != nil {
+				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+					return resource.RetryableError(err)
+				}
+
+				return resource.NonRetryableError(err)
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if err != nil {
+
+			// Verify the error is what we want
+			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
+				return nil
+			}
+
+			return err
+		}
+
+		if len(response.GetPublicIps()) != 1 ||
+			response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
+			return fmt.Errorf("PublicIP not found")
+		}
+		*res = response.GetPublicIps()[0]
+		//}
 
 		return nil
 	}
 }
 
-const testAccOutscalePublicIPConfig = `
-resource "outscale_public_ip" "bar" {}
+const testAccOutscaleOAPIPublicIPConfig = `
+resource "outscale_public_ip" "bar" {
+	tags {
+		key = "Name"
+		value = "public_ip_test"
+	}
+}
 `
 
-func testAccOutscalePublicIPInstanceConfig(r int) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+		resource "outscale_vm" "basic" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
+
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
 
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}
-resource "outscale_public_ip" "bar" {}
-`, r)
-}
-
-func testAccOutscalePublicIPInstanceConfig2(r int) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+		resource "outscale_vm" "basic" {
+			image_id                 = "%s"
+			vm_type                  = "%s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
+		}
+
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
 
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}
-resource "outscale_public_ip" "bar" {}
-`, r)
-}
-
-func testAccOutscalePublicIPInstanceConfigAssociated(r int) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+		resource "outscale_vm" "basic" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_vm" "basic2" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
+
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }
 
-resource "outscale_lin" "vpc" {
-	cidr_block = "10.0.0.0/16"
-}
-resource "outscale_subnet" "subnet" {
-	cidr_block = "10.0.0.0/16"
-	vpc_id = "${outscale_lin.vpc.id}"
-}
-
-resource "outscale_vm" "foo" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-  private_ip_address = "10.0.0.12"
-  subnet_id  = "${outscale_subnet.subnet.id}"
-}
-resource "outscale_vm" "bar" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-  private_ip_address = "10.0.0.19"
-  subnet_id  = "${outscale_subnet.subnet.id}"
-}
-resource "outscale_public_ip" "bar" {}
-`, r)
-}
-
-func testAccOutscalePublicIPInstanceConfigAssociatedSwitch(r int) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
+		resource "outscale_vm" "basic" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
 
-resource "outscale_lin" "vpc" {
-	cidr_block = "10.0.0.0/16"
-}
-resource "outscale_subnet" "subnet" {
-	cidr_block = "10.0.0.0/16"
-	vpc_id = "${outscale_lin.vpc.id}"
-}
+		resource "outscale_vm" "basic2" {
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "terraform-basic"
+			security_group_ids = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%[3]sb"
+		}
 
-resource "outscale_vm" "foo" {
- image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-  private_ip_address = "10.0.0.12"
-  subnet_id  = "${outscale_subnet.subnet.id}"
-}
-resource "outscale_vm" "bar" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-  private_ip_address = "10.0.0.19"
-  subnet_id  = "${outscale_subnet.subnet.id}"
-}
-resource "outscale_public_ip" "bar" {}
-`, r)
+		resource "outscale_public_ip" "bar" {}
+	`, omi, vmType, region)
 }

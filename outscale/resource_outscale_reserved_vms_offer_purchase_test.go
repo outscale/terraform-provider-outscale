@@ -3,8 +3,6 @@ package outscale
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,35 +13,27 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleReservedVmsOfferPurchase_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
+func TestAccOutscaleOAPIReservedVmsOfferPurchase_basic(t *testing.T) {
 	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleReservedVmsOfferPurchaseEgressConfig,
+				Config: testAccOutscaleOAPIReservedVmsOfferPurchaseEgressConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleReservedVmsOfferPurchaseExists("outscale_reserved_vms_offer_purchase.test"),
+					testAccCheckOutscaleOAPIReservedVmsOfferPurchaseExists("outscale_reserved_vms_offer_purchase.test"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleReservedVmsOfferPurchaseExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIReservedVmsOfferPurchaseExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -88,9 +78,9 @@ func testAccCheckOutscaleReservedVmsOfferPurchaseExists(n string) resource.TestC
 	}
 }
 
-const testAccOutscaleReservedVmsOfferPurchaseEgressConfig = `
+const testAccOutscaleOAPIReservedVmsOfferPurchaseEgressConfig = `
 		resource "outscale_reserved_vms_offer_purchase" "test" {
 			instance_count = 1
-			reserved_instances_offering_id = ""
+			reserved_vm_offering_id = ""
 		}
 	`

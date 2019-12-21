@@ -1,30 +1,23 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccDataSourceOutscaleProductTypes(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccDataSourceOutscaleOAPIProductTypes(t *testing.T) {
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleProductTypesConfig,
+				Config: testAccDataSourceOutscaleOAPIProductTypesConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_product_types.test", "product_type_set.#", "3"),
 				),
@@ -33,6 +26,6 @@ func TestAccDataSourceOutscaleProductTypes(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscaleProductTypesConfig = `
+const testAccDataSourceOutscaleOAPIProductTypesConfig = `
 data "outscale_product_types" "test" {}
 `

@@ -1,76 +1,72 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_volume"
-sidebar_current: "docs-outscale-datasource-volume"
+page_title: "3DS OUTSCALE: outscale_volume"
+sidebar_current: "outscale-volume"
 description: |-
-  Describes one or more specified Block Storage Unit (BSU) volume..
+  [Provides information about a specific volume.]
 ---
 
-# outscale_volume
+# outscale_volume Data Source
 
-  Describes one or more specified Block Storage Unit (BSU) volume.
+Provides information about a specific volume.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-volume).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_volume" "example" {
-    availability_zone = "eu-west-2a"
-    volume_type = "gp2"
-    size = 40
-    tags {
-        Name = "External Volume"
-    }
+
+data "outscale_volume" "outscale_volume01" {
+  filter {
+    name   = "volume_ids"
+    values = ["vol-12345678"]
+  }
 }
-data "outscale_volume" "ebs_volume" {
-    filter {
-		name = "volume-id"
-		values = ["${outscale_volume.example.id}"]
-    }
-}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `volume_id` - The ID of the volume.
+* `filter` - One or more filters.
+  * `creation_dates` - (Optional) The dates and times at which the volumes were created.
+  * `link_volume_delete_on_vm_deletion` - (Optional) Indicates whether the volumes are deleted when terminating the VMs.
+  * `link_volume_device_names` - (Optional) The VM device names.
+  * `link_volume_link_dates` - (Optional) The dates and times at which the volumes were created.
+  * `link_volume_link_states` - (Optional) The attachment states of the volumes (`attaching` \| `detaching` \| `attached` \| `detached`).
+  * `link_volume_vm_ids` - (Optional) One or more IDs of VMs.
+  * `snapshot_ids` - (Optional) The snapshots from which the volumes were created.
+  * `subregion_names` - (Optional) The names of the Subregions in which the volumes were created.
+  * `tag_keys` - (Optional) The keys of the tags associated with the volumes.
+  * `tag_values` - (Optional) The values of the tags associated with the volumes.
+  * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `volume_ids` - (Optional) The IDs of the volumes.
+  * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
+  * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
 
-See detailed information in [Outscale Volume](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
-## Filters
-
-Use the Filter.N parameter to filter the described volume on the following properties:
-
-* `attachment.attach-time`: - The time at which the attachment was initiated.
-* `attachment.delete-on-termination`: - Whether the volume is deleted when terminating the instance.
-* `attachment.device`: - The device to which the volume is plugged in.
-* `attachment.instance-id`: - The ID of the instance the volume is attached to.
-* `attachment.status`: - The attachment state (attaching | attached | detaching | detached).
-* `availability-zone`: - The Availability Zone in which the volume was created.
-* `create-time`: - The time at which the volume was created.
-* `tag`: - The key/value combination of a tag that is assigned to the resource, in the following format`: - key=value.
-* `tag-key`: - The key of a tag associated with the resource.
-* `tag-value`: - The value of a tag associated with the resource.
-* `volume-id`: - The ID of the volume.
-* `volume-type`: - The type of the volume (standard | gp2 | io1 | sc1| st1).
-* `snapshot-id`: - The snapshot from which the volume was created.
-* `size`: - The size of the volume, in Gibibytes (GiB).
-* `status`: - The status of the volume (creating | available | in-use | deleting | error).
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `attachment_set` - Information about your volume attachment.
-* `availability_zone` - The Availability Zone where the volume is.
-* `iops` - The number of I/O operations per second (only for io1 and gp2 volumes).
-* `size` - The size of the volume, in Gibibytes (GiB).
-* `snapshot_id` - The ID of the snapshot from which the volume was created.
-* `status` - The state of the volume (creating| available| in-use| deleting| error).
-* `tag_set` - One or more tags associated with the volume.
-* `volume_id` - The ID of the volume.
-* `volume_type` - The type of the volume (standard | gp2 | io1 | sc1 | st1).
-* `request_id` - The ID of the request.
-
-See detailed information in [Describe Volume]http://docs.outscale.com/api_fcu/operations/Action_DescribeVolumes_get.html#_api_fcu-action_describevolumes_get.
+* `volumes` - Information about one or more volumes.
+  * `iops` - The number of I/O operations per second (IOPS):  
+    For `io1` volumes, the number of provisioned IOPS.  
+    For `gp2` volumes, the baseline performance of the volume.
+  * `linked_volumes` - Information about your volume attachment.
+    * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+    * `device_name` - The name of the device.
+    * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
+    * `vm_id` - The ID of the VM.
+    * `volume_id` - The ID of the volume.
+  * `size` - The size of the volume, in gibibytes (GiB).
+  * `snapshot_id` - The snapshot from which the volume was created.
+  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `subregion_name` - The Subregion in which the volume was created.
+  * `tags` - One or more tags associated with the volume.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `volume_id` - The ID of the volume.
+  * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).

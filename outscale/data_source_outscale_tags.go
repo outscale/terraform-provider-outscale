@@ -1,21 +1,22 @@
 package outscale
 
 import (
+	"context"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
-
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func dataSourceOutscaleTags() *schema.Resource {
+func dataSourceOutscaleOAPITags() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleTagsRead,
+		Read: dataSourceOutscaleOAPITagsRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"tag_set": {
+			"tags": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -39,31 +40,26 @@ func dataSourceOutscaleTags() *schema.Resource {
 					},
 				},
 			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 	}
 }
 
-func dataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// Build up search parameters
-	params := &fcu.DescribeTagsInput{}
-
+	params := oscgo.ReadTagsRequest{}
 	filters, filtersOk := d.GetOk("filter")
 
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(oapiBuildOutscaleDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *fcu.DescribeTagsOutput
+	var resp oscgo.ReadTagsResponse
 	var err error
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeTags(params)
+		resp, _, err = conn.TagApi.ReadTags(context.Background(), &oscgo.ReadTagsOpts{ReadTagsRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -77,8 +73,7 @@ func dataSourceOutscaleTagsRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	d.Set("tag_set", tagSetDescToList(resp.Tags))
-	d.Set("request_id", resp.RequestId)
+	d.Set("tags", oapiTagsDescToList(resp.GetTags()))
 	d.SetId(resource.UniqueId())
 
 	return err

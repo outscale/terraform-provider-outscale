@@ -1,38 +1,46 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func datasourceOutscaleKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeKeyPairsInput{}
+func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{},
+	}
+
+	//filters, filtersOk := d.GetOk("filter")
+	KeyName, KeyNameisOk := d.GetOk("keypair_names")
+
+	if KeyNameisOk {
+		var names []string
+		for _, v := range KeyName.([]interface{}) {
+			names = append(names, v.(string))
+		}
+		filter := oscgo.FiltersKeypair{}
+		filter.SetKeypairNames(names)
+		req.SetFilters(filter)
+	}
 
 	filters, filtersOk := d.GetOk("filter")
-	KeyName, KeyNameisOk := d.GetOk("key_name")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if KeyNameisOk {
-		var names []*string
-		for _, v := range KeyName.([]interface{}) {
-			names = append(names, aws.String(v.(string)))
-		}
-		req.KeyNames = names
+		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *fcu.DescribeKeyPairsOutput
+	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.VM.DescribeKeyPairs(req)
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -40,58 +48,70 @@ func datasourceOutscaleKeyPairsRead(d *schema.ResourceData, meta interface{}) er
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return err
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+			d.SetId("")
+			return nil
+		}
+		errString = err.Error()
+
+		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.KeyPairs) < 1 {
+	if len(resp.GetKeypairs()) < 1 {
 		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
 	}
 
 	d.SetId(resource.UniqueId())
-	keypairs := make([]map[string]interface{}, len(resp.KeyPairs))
-	for k, v := range resp.KeyPairs {
+
+	if resp.ResponseContext.GetRequestId() != "" {
+		d.Set("request_id", resp.ResponseContext.GetRequestId())
+	}
+
+	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
+	for k, v := range resp.GetKeypairs() {
 		keypair := make(map[string]interface{})
-		if v.KeyName != nil {
-			keypair["key_name"] = *v.KeyName
+		if v.GetKeypairName() != "" {
+			keypair["keypair_name"] = v.GetKeypairName()
 		}
-		if v.KeyFingerprint != nil {
-			keypair["key_fingerprint"] = *v.KeyFingerprint
+		if v.GetKeypairFingerprint() != "" {
+			keypair["keypair_fingerprint"] = v.GetKeypairFingerprint()
 		}
 		keypairs[k] = keypair
 	}
-	d.Set("key_set", keypairs)
-	d.Set("request_id", resp.RequestId)
+	d.Set("keypairs", keypairs)
 	return nil
 }
 
-func datasourceOutscaleKeyPairs() *schema.Resource {
+func datasourceOutscaleOAPIKeyPairs() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleKeyPairsRead,
+		Read: datasourceOutscaleOAPiKeyPairsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			// Attributes
-			"key_name": {
+			"keypair_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"key_set": {
+			"keypairs": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key_fingerprint": {
+						"keypair_fingerprint": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"key_name": {
+						"keypair_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},

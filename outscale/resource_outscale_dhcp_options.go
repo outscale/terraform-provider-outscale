@@ -143,7 +143,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 
 	if v := setDHCPOption("dhcp-configuration"); v != nil {
 
-		fmt.Printf("[DEBUG] INPUT %s", v)
+		log.Printf("[DEBUG] INPUT %s", v)
 
 		createOpts = &fcu.CreateDhcpOptionsInput{
 			DhcpConfigurations: []*fcu.NewDhcpConfiguration{
@@ -160,7 +160,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	fmt.Printf("[DEBUG] VALUE => %s", createOpts)
+	log.Printf("[DEBUG] VALUE => %s", createOpts)
 
 	var resp *fcu.CreateDhcpOptionsOutput
 

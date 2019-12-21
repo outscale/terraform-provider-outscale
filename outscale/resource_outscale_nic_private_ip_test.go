@@ -2,59 +2,57 @@ package outscale
 
 import (
 	"fmt"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleNetworkInterfacePrivateIPBasic(t *testing.T) {
-	var conf fcu.NetworkInterface
-	rInt := acctest.RandInt()
+func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+	var conf oscgo.Nic
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleENIDestroy,
+		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNetworkInterfacePrivateIPConfigBasic(rInt),
+				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleENIExists("outscale_nic.outscale_nic", &conf),
-					resource.TestCheckResourceAttrSet(
-						"outscale_nic_private_ip.outscale_nic_private_ip", "network_interface_id"),
-				),
+					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
+					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.#", "1"),
+					resource.TestCheckResourceAttr("outscale_nic_private_ip.outscale_nic_private_ip", "private_ips.0", "10.0.45.67"),
+					resource.TestCheckResourceAttrSet("outscale_nic_private_ip.outscale_nic_private_ip", "primary_private_ip")),
 			},
 		},
 	})
 }
 
-func testAccOutscaleNetworkInterfacePrivateIPConfigBasic(rInt int) string {
+func testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region string) string {
 	return fmt.Sprintf(`
-resource "outscale_vm" "outscale_instance" {                 
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_lin" "outscale_lin" {
-    cidr_block          = "10.0.0.0/16"
-}
-
-resource "outscale_subnet" "outscale_subnet" {
-    availability_zone   = "eu-west-2a"
-    cidr_block          = "10.0.0.0/16"
-    vpc_id              = "${outscale_lin.outscale_lin.id}"
-}
-
-resource "outscale_nic" "outscale_nic" {
-    subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-}
-
-resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
-    	network_interface_id    = "${outscale_nic.outscale_nic.id}"
-}
-`)
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}
+		
+		resource "outscale_subnet" "outscale_subnet" {
+			subregion_name = "%sa"
+			ip_range       = "10.0.0.0/16"
+			net_id         = "${outscale_net.outscale_net.net_id}"
+		}
+		
+		resource "outscale_nic" "outscale_nic" {
+			subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
+		}
+		
+		resource "outscale_nic_private_ip" "outscale_nic_private_ip" {
+			nic_id      = "${outscale_nic.outscale_nic.nic_id}"
+			private_ips = ["10.0.45.67"]
+		}
+	`, region)
 }

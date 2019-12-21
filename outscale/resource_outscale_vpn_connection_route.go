@@ -13,14 +13,14 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceOutscaleVpnConnectionRoute() *schema.Resource {
+func resourceOutscaleOAPIVpnConnectionRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVpnConnectionRouteCreate,
-		Read:   resourceOutscaleVpnConnectionRouteRead,
-		Delete: resourceOutscaleVpnConnectionRouteDelete,
+		Create: resourceOutscaleOAPIVpnConnectionRouteCreate,
+		Read:   resourceOutscaleOAPIVpnConnectionRouteRead,
+		Delete: resourceOutscaleOAPIVpnConnectionRouteDelete,
 
 		Schema: map[string]*schema.Schema{
-			"destination_cidr_block": &schema.Schema{
+			"destination_ip_range": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -39,11 +39,11 @@ func resourceOutscaleVpnConnectionRoute() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVpnConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	createOpts := &fcu.CreateVpnConnectionRouteInput{
-		DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
+		DestinationCidrBlock: aws.String(d.Get("destination_ip_range").(string)),
 		VpnConnectionId:      aws.String(d.Get("vpn_connection_id").(string)),
 	}
 
@@ -70,13 +70,13 @@ func resourceOutscaleVpnConnectionRouteCreate(d *schema.ResourceData, meta inter
 	// Store the ID by the only two data we have available to us.
 	d.SetId(fmt.Sprintf("%s:%s", *createOpts.DestinationCidrBlock, *createOpts.VpnConnectionId))
 
-	return resourceOutscaleVpnConnectionRouteRead(d, meta)
+	return resourceOutscaleOAPIVpnConnectionRouteRead(d, meta)
 }
 
-func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(d.Id())
+	cidrBlock, vpnConnectionID := resourceOutscaleOAPIVpnConnectionRouteParseID(d.Id())
 
 	routeFilters := []*fcu.Filter{
 		&fcu.Filter{
@@ -84,7 +84,7 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 			Values: []*string{aws.String(cidrBlock)},
 		},
 		&fcu.Filter{
-			Name:   aws.String("vpn-connection-id"),
+			Name:   aws.String("vpn-connection-ID"),
 			Values: []*string{aws.String(vpnConnectionID)},
 		},
 	}
@@ -122,7 +122,7 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 	var found bool
 	for _, r := range vpnConnection.Routes {
 		if *r.DestinationCidrBlock == cidrBlock {
-			d.Set("destination_cidr_block", *r.DestinationCidrBlock)
+			d.Set("destination_ip_range", *r.DestinationCidrBlock)
 			d.Set("vpn_connection_id", *vpnConnection.VpnConnectionId)
 			found = true
 		}
@@ -137,14 +137,14 @@ func resourceOutscaleVpnConnectionRouteRead(d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceOutscaleVpnConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionRouteDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, err = conn.VM.DeleteVpnConnectionRoute(&fcu.DeleteVpnConnectionRouteInput{
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
+			DestinationCidrBlock: aws.String(d.Get("destination_ip_range").(string)),
 			VpnConnectionId:      aws.String(d.Get("vpn_connection_id").(string)),
 		})
 		if err != nil {
@@ -168,7 +168,7 @@ func resourceOutscaleVpnConnectionRouteDelete(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceOutscaleVpnConnectionRouteParseID(ID string) (string, string) {
+func resourceOutscaleOAPIVpnConnectionRouteParseID(ID string) (string, string) {
 	parts := strings.SplitN(ID, ":", 2)
 	return parts[0], parts[1]
 }

@@ -11,18 +11,18 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleReservedVMS() *schema.Resource {
+func dataSourceOutscaleOAPIReservedVMS() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleReservedVMSRead,
+		Read: dataSourceOutscaleOAPIReservedVMSRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"reserved_instances_id": &schema.Schema{
+			"reserved_vms_id": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"availability_zone": &schema.Schema{
+			"sub_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -32,12 +32,12 @@ func dataSourceOutscaleReservedVMS() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"reserved_instances_set": &schema.Schema{
+			"reserved_vm": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"availability_zone": &schema.Schema{
+						"sub_region_name": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -45,15 +45,15 @@ func dataSourceOutscaleReservedVMS() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_count": &schema.Schema{
+						"vm_count": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_tenancy": &schema.Schema{
+						"tenancy": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_type": &schema.Schema{
+						"type": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -61,11 +61,11 @@ func dataSourceOutscaleReservedVMS() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"product_description": &schema.Schema{
+						"product_type": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"recurring_charges": &schema.Schema{
+						"recurring_charge": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -77,7 +77,7 @@ func dataSourceOutscaleReservedVMS() *schema.Resource {
 								},
 							},
 						},
-						"reserved_instances_id": &schema.Schema{
+						"reserved_vms_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -96,12 +96,12 @@ func dataSourceOutscaleReservedVMS() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleReservedVMSRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIReservedVMSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	az, azok := d.GetOk("availability_zone")
+	az, azok := d.GetOk("sub_region_name")
 	ot, otok := d.GetOk("offering_type")
-	ri, riok := d.GetOk("reserved_instances_id")
+	ri, riok := d.GetOk("reserved_vms_id")
 	filter, filterOk := d.GetOk("filter")
 
 	req := &fcu.DescribeReservedInstancesInput{}
@@ -149,13 +149,13 @@ func dataSourceOutscaleReservedVMSRead(d *schema.ResourceData, meta interface{})
 
 	for k, v := range resp.ReservedInstances {
 		r := make(map[string]interface{})
-		r["availability_zone"] = *v.AvailabilityZone
+		r["sub_region_name"] = *v.AvailabilityZone
 		r["currency_code"] = *v.CurrencyCode
-		r["instance_count"] = *v.InstanceCount
-		r["instance_tenancy"] = *v.InstanceTenancy
-		r["instance_type"] = *v.InstanceType
+		r["vm_count"] = *v.InstanceCount
+		r["tenancy"] = *v.InstanceTenancy
+		r["type"] = *v.InstanceType
 		r["offering_type"] = *v.OfferingType
-		r["product_description"] = *v.ProductDescription
+		r["product_type"] = *v.ProductDescription
 
 		rcs := make([]map[string]interface{}, len(v.RecurringCharges))
 		for k1, v1 := range v.RecurringCharges {
@@ -164,13 +164,13 @@ func dataSourceOutscaleReservedVMSRead(d *schema.ResourceData, meta interface{})
 			rcs[k1] = rc
 		}
 
-		r["recurring_charges"] = rcs
-		r["reserved_instances_id"] = *v.ReservedInstancesId
+		r["recurring_charge"] = rcs
+		r["reserved_vms_id"] = *v.ReservedInstancesId
 		r["state"] = *v.State
 		rsi[k] = r
 	}
 
-	d.Set("reserved_instances_set", rsi)
+	d.Set("reserved_vm", rsi)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

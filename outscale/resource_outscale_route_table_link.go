@@ -1,22 +1,23 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleRouteTableAssociation() *schema.Resource {
+func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleRouteTableAssociationCreate,
-		Read:   resourceOutscaleRouteTableAssociationRead,
-		Update: resourceOutscaleRouteTableAssociationUpdate,
-		Delete: resourceOutscaleRouteTableAssociationDelete,
+		Create: resourceOutscaleOAPILinkRouteTableCreate,
+		Read:   resourceOutscaleOAPILinkRouteTableRead,
+		Delete: resourceOutscaleOAPILinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -31,13 +32,18 @@ func resourceOutscaleRouteTableAssociation() *schema.Resource {
 			"route_table_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
-			"association_id": &schema.Schema{
+			"link_route_table_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": &schema.Schema{
+			"main": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -45,18 +51,20 @@ func resourceOutscaleRouteTableAssociation() *schema.Resource {
 	}
 }
 
-func resourceOutscaleRouteTableAssociationCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	associationOpts := fcu.AssociateRouteTableInput{
-		RouteTableId: aws.String(d.Get("route_table_id").(string)),
-		SubnetId:     aws.String(d.Get("subnet_id").(string)),
+func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	subnetID := d.Get("subnet_id").(string)
+	routeTableID := d.Get("route_table_id").(string)
+	log.Printf("[INFO] Creating route table link: %s => %s", subnetID, routeTableID)
+	linkRouteTableOpts := oscgo.LinkRouteTableRequest{
+		RouteTableId: routeTableID,
+		SubnetId:     subnetID,
 	}
 
-	var resp *fcu.AssociateRouteTableOutput
+	var resp oscgo.LinkRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.AssociateRouteTable(&associationOpts)
+		resp, _, err = conn.RouteTableApi.LinkRouteTable(context.Background(), &oscgo.LinkRouteTableOpts{LinkRouteTableRequest: optional.NewInterface(linkRouteTableOpts)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 				return resource.RetryableError(err)
@@ -69,50 +77,42 @@ func resourceOutscaleRouteTableAssociationCreate(d *schema.ResourceData, meta in
 		return err
 	}
 
-	d.SetId(*resp.AssociationId)
-	d.Set("association_id", d.Id())
-
-	return resourceOutscaleRouteTableAssociationRead(d, meta)
-}
-
-func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	var rtRaw *fcu.DescribeRouteTablesOutput
-	var err error
-	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		rtRaw, err = conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-			RouteTableIds: []*string{aws.String(d.Get("route_table_id").(string))},
-		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	// Set the ID and return
+	var errString string
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
-			rtRaw = nil
-		} else {
-			return err
-		}
+		errString = err.Error()
+
+		return fmt.Errorf("Error creating route table link: %s", errString)
 	}
 
+	d.SetId(resp.GetLinkRouteTableId())
+	d.Set("link_route_table_id", d.Id())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
+
+	return nil
+}
+
+func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(
+		conn, d.Get("route_table_id").(string), d.Get("link_route_table_id").(string))()
+	if err != nil {
+		return err
+	}
 	if rtRaw == nil {
 		return nil
 	}
-	rt := rtRaw.RouteTables[0]
-
-	d.Set("request_id", rtRaw.RequestId)
+	rt := rtRaw.(oscgo.RouteTable)
+	log.Printf("[DEBUG] LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_route_table_id"))
 
 	found := false
-	for _, a := range rt.Associations {
-		if *a.RouteTableAssociationId == d.Id() {
+	for _, a := range rt.GetLinkRouteTables() {
+		if a.GetLinkRouteTableId() == d.Id() {
 			found = true
-			d.Set("subnet_id", *a.SubnetId)
+			d.Set("subnet_id", a.GetSubnetId())
+			d.Set("main", a.GetMain())
 			break
 		}
 	}
@@ -124,47 +124,16 @@ func resourceOutscaleRouteTableAssociationRead(d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceOutscaleRouteTableAssociationUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.ReplaceRouteTableAssociationInput{
-		AssociationId: aws.String(d.Id()),
-		RouteTableId:  aws.String(d.Get("route_table_id").(string)),
-	}
-
-	var resp *fcu.ReplaceRouteTableAssociationOutput
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.ReplaceRouteTableAssociation(req)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
-			return resourceOutscaleRouteTableAssociationCreate(d, meta)
-		}
-		return err
-	}
-
-	d.SetId(*resp.NewAssociationId)
-
-	return nil
-}
-
-func resourceOutscaleRouteTableAssociationDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	log.Printf("[INFO] Deleting link route table: %s", d.Id())
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DisassociateRouteTable(&fcu.DisassociateRouteTableInput{
-			AssociationId: aws.String(d.Id()),
-		})
+		_, _, err = conn.RouteTableApi.UnlinkRouteTable(context.Background(), &oscgo.UnlinkRouteTableOpts{UnlinkRouteTableRequest: optional.NewInterface(oscgo.UnlinkRouteTableRequest{
+			LinkRouteTableId: d.Id(),
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -178,7 +147,7 @@ func resourceOutscaleRouteTableAssociationDelete(d *schema.ResourceData, meta in
 		if strings.Contains(fmt.Sprint(err), "InvalidAssociationID.NotFound") {
 			return nil
 		}
-		return fmt.Errorf("Error deleting route table association: %s", err)
+		return fmt.Errorf("Error deleting link route table: %s", err)
 	}
 
 	return nil

@@ -2,29 +2,15 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleRoute_noopdiff(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	var route fcu.Route
-	var routeTable fcu.RouteTable
+func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
+	var route oscgo.Route
 
 	testCheck := func(s *terraform.State) error {
 		return nil
@@ -37,22 +23,22 @@ func TestAccOutscaleRoute_noopdiff(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
+			skipIfNoOAPI(t)
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleRouteDestroy,
+		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleRouteNoopChange,
+				Config: testAccOutscaleOAPIRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
+					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
 					testCheck,
 				),
 			},
 			{
-				Config: testAccOutscaleRouteNoopChange,
+				Config: testAccOutscaleOAPIRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleRouteExists("outscale_route.test", &route),
-					testAccCheckRouteTableExists("outscale_route_table.test", &routeTable),
+					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
 					testCheckChange,
 				),
 			},
@@ -60,40 +46,22 @@ func TestAccOutscaleRoute_noopdiff(t *testing.T) {
 	})
 }
 
-// func TestAccOutscaleRoute_doesNotCrashWithVPCEndpoint(t *testing.T) {
-// 	var route fcu.Route
-
-// 	resource.Test(t, resource.TestCase{
-// 		PreCheck:     func() { testAccPreCheck(t) },
-// 		Providers:    testAccProviders,
-// 		CheckDestroy: testAccCheckOutscaleRouteDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: testAccOutscaleRouteWithVPCEndpoint,
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckOutscaleRouteExists("outscale_route.bar", &route),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
-
-func testAccCheckOutscaleRouteExists(n string, res *fcu.Route) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		r, err := findResourceRoute(
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		r, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_cidr_block"],
+			rs.Primary.Attributes["destination_ip_range"],
 		)
 
 		if err != nil {
@@ -110,17 +78,17 @@ func testAccCheckOutscaleRouteExists(n string, res *fcu.Route) resource.TestChec
 	}
 }
 
-func testAccCheckOutscaleRouteDestroy(s *terraform.State) error {
+func testAccCheckOAPIOutscaleRouteDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_route" {
 			continue
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		route, err := findResourceRoute(
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		route, _, err := findResourceOAPIRoute(
 			conn,
 			rs.Primary.Attributes["route_table_id"],
-			rs.Primary.Attributes["destination_cidr_block"],
+			rs.Primary.Attributes["destination_ip_range"],
 		)
 
 		if route == nil && err == nil {
@@ -131,59 +99,25 @@ func testAccCheckOutscaleRouteDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccOutscaleRouteNoopChange = fmt.Sprint(`
-resource "outscale_lin" "test" {
-  cidr_block = "10.10.0.0/16"
-}
+var testAccOutscaleOAPIRouteNoopChange = fmt.Sprint(`
+	resource "outscale_net" "test" {
+		ip_range = "10.0.0.0/24"
+	}
 
-resource "outscale_route_table" "test" {
-  vpc_id = "${outscale_lin.test.id}"
-}
+	resource "outscale_route_table" "test" {
+		net_id = "${outscale_net.test.net_id}"
+	}
 
-resource "outscale_subnet" "test" {
-  vpc_id = "${outscale_lin.test.id}"
-  cidr_block = "10.10.10.0/24"
-}
+	resource "outscale_internet_service" "outscale_internet_service" {}
 
-resource "outscale_route" "test" {
-  route_table_id = "${outscale_route_table.test.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  instance_id = "${outscale_vm.nat.id}"
-}
+	resource "outscale_internet_service_link" "outscale_internet_service_link" {
+		internet_service_id = "${outscale_internet_service.outscale_internet_service.id}"
+		net_id              = "${outscale_net.test.net_id}"
+	}
 
-resource "outscale_vm" "nat" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-  subnet_id = "${outscale_subnet.test.id}"
-}
+	resource "outscale_route" "test" {
+		gateway_id           = "${outscale_internet_service.outscale_internet_service.id}"
+		destination_ip_range = "10.0.0.0/16"
+		route_table_id       = "${outscale_route_table.test.route_table_id}"
+	}
 `)
-
-// TODO: missing resource vpc_endpoint to make this test
-// var testAccOutscaleRouteWithVPCEndpoint = fmt.Sprint(`
-// resource "outscale_lin" "foo" {
-//   cidr_block = "10.1.0.0/16"
-// }
-
-// resource "outscale_lin_internet_gateway" "foo" {
-//   vpc_id = "${outscale_lin.foo.id}"
-// }
-
-// resource "outscale_route_table" "foo" {
-//   vpc_id = "${outscale_lin.foo.id}"
-// }
-
-// resource "outscale_route" "bar" {
-//   route_table_id         = "${outscale_route_table.foo.id}"
-//   destination_cidr_block = "10.3.0.0/16"
-//   gateway_id             = "${outscale_lin_internet_gateway.foo.id}"
-
-//   # Forcing endpoint to create before route - without this the crash is a race.
-//   depends_on = ["aws_vpc_endpoint.baz"]
-// }
-
-// resource "aws_vpc_endpoint" "baz" {
-//   vpc_id          = "${outscale_lin.foo.id}"
-//   service_name    = "com.amazonaws.us-west-2.s3"
-//   route_table_ids = ["${outscale_route_table.foo.id}"]
-// }
-// `)

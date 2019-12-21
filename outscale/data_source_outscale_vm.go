@@ -1,182 +1,21 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
-
-func dataSourceOutscaleVM() *schema.Resource {
-	return &schema.Resource{
-		Read:   dataSourceOutscaleVMRead,
-		Schema: getDataSourceVMSchemas(),
-	}
-}
-func dataSourceOutscaleVMRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*OutscaleClient).FCU.VM
-
-	filters, filtersOk := d.GetOk("filter")
-	instanceID, instanceIDOk := d.GetOk("instance_id")
-
-	if filtersOk == false && instanceIDOk == false {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
-	}
-
-	// Build up search parameters
-	params := &fcu.DescribeInstancesInput{}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if instanceIDOk {
-		params.InstanceIds = []*string{aws.String(instanceID.(string))}
-	}
-
-	var resp *fcu.DescribeInstancesOutput
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		resp, err = client.DescribeInstances(params)
-		return resource.RetryableError(err)
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if resp.Reservations == nil {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-
-	// If no instances were returned, return
-	if len(resp.Reservations) == 0 {
-		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
-	}
-
-	var filteredInstances []*fcu.Instance
-
-	// loop through reservations, and remove terminated instances, populate instance slice
-	for _, res := range resp.Reservations {
-		for _, instance := range res.Instances {
-			if instance.State != nil && *instance.State.Name != "terminated" {
-				filteredInstances = append(filteredInstances, instance)
-			}
-		}
-	}
-
-	var instance *fcu.Instance
-	if len(filteredInstances) < 1 {
-		return errors.New("Your query returned no results. Please change your search criteria and try again")
-	}
-
-	// (TODO: Support a list of instances to be returned)
-	// Possibly with a different data source that returns a list of individual instance data sources
-	if len(filteredInstances) > 1 {
-		return errors.New("Your query returned more than one result. Please try a more " +
-			"specific search criteria")
-	}
-
-	instance = filteredInstances[0]
-
-	d.Set("owner_id", resp.Reservations[0].OwnerId)
-
-	d.Set("request_id", resp.RequestId)
-
-	d.Set("reservation_id", resp.Reservations[0].ReservationId)
-
-	return instanceDescriptionAttributes(d, instance, client)
-}
-
-// Populate instance attribute fields with the returned instance
-func instanceDescriptionAttributes(d *schema.ResourceData, instance *fcu.Instance, conn fcu.VMService) error {
-	d.SetId(*instance.InstanceId)
-	// Set the easy attributes
-	d.Set("instance_state", instance.State.Name)
-	if instance.Placement != nil {
-		d.Set("availability_zone", instance.Placement.AvailabilityZone)
-	}
-	if instance.Placement.Tenancy != nil {
-		d.Set("tenancy", instance.Placement.Tenancy)
-	}
-	d.Set("image_id", instance.ImageId)
-	d.Set("instance_type", instance.InstanceType)
-	d.Set("key_name", instance.KeyName)
-	d.Set("private_dns", instance.PrivateDnsName)
-	d.Set("private_ip", instance.PrivateIpAddress)
-	d.Set("iam_instance_profile", iamInstanceProfileArnToName(instance.IamInstanceProfile))
-
-	err := d.Set("group_set", getGroupSet(instance.GroupSet))
-	if err != nil {
-		return err
-	}
-
-	// iterate through network interfaces, and set subnet, network_interface, public_addr
-	if len(instance.NetworkInterfaces) > 0 {
-		for _, ni := range instance.NetworkInterfaces {
-			if *ni.Attachment.DeviceIndex == 0 {
-				d.Set("subnet_id", ni.SubnetId)
-				d.Set("network_interface_id", ni.NetworkInterfaceId)
-				d.Set("associate_public_ip_address", ni.Association != nil)
-			}
-		}
-	} else {
-		d.Set("subnet_id", instance.SubnetId)
-		d.Set("network_interface_id", "")
-	}
-
-	d.Set("ebs_optimized", instance.EbsOptimized)
-	if instance.SubnetId != nil && *instance.SubnetId != "" {
-		d.Set("source_dest_check", instance.SourceDestCheck)
-	}
-
-	if instance.Monitoring != nil && instance.Monitoring.State != nil {
-		monitoringState := *instance.Monitoring.State
-		d.Set("monitoring", monitoringState == "enabled" || monitoringState == "pending")
-	}
-
-	err = d.Set("instances_set", flattenedInstanceSet([]*fcu.Instance{instance}))
-	if err != nil {
-		return err
-	}
-
-	if instance.Platform != nil && *instance.Platform == "windows" && len(*instance.KeyName) > 0 {
-		var passRes *fcu.GetPasswordDataOutput
-		err = resource.Retry(1200*time.Second, func() *resource.RetryError {
-			passRes, err = conn.GetPasswordData(&fcu.GetPasswordDataInput{
-				InstanceId: instance.InstanceId,
-			})
-
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
-				}
-			}
-
-			if passRes.PasswordData == nil || *passRes.PasswordData == "" {
-				return resource.RetryableError(fmt.Errorf("Got empty password for instance (%s)", d.Id()))
-			}
-
-			return resource.NonRetryableError(err)
-		})
-
-		if passRes == nil {
-			return fmt.Errorf("Error reading source instance: (%s)", d.Id())
-		}
-
-		if err != nil {
-			return err
-		}
-
-		d.Set("password_data", passRes.PasswordData)
-	}
-
-	return nil
-}
 
 func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
 	var filters []*fcu.Filter
@@ -194,202 +33,363 @@ func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
 	return filters
 }
 
-func getDataSourceVMSchemas() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		//Attributes
+func dataSourceOutscaleOAPIVM() *schema.Resource {
+	return &schema.Resource{
+		Read:   dataSourceOutscaleOAPIVMRead,
+		Schema: getDataSourceOAPIVMSchemas(),
+	}
+}
+func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*OutscaleClient).OSCAPI
+
+	filters, filtersOk := d.GetOk("filter")
+	instanceID, instanceIDOk := d.GetOk("vm_id")
+
+	if filtersOk == false && instanceIDOk == false {
+		return fmt.Errorf("One of filters, or instance_id must be assigned")
+	}
+
+	// Build up search parameters
+	params := oscgo.ReadVmsRequest{}
+	if filtersOk {
+		params.Filters = buildOutscaleOAPIDataSourceVMFilters(filters.(*schema.Set))
+	}
+	if instanceIDOk {
+		params.Filters.VmIds = &[]string{instanceID.(string)}
+	}
+
+	log.Printf("[DEBUG] ReadVmsRequest -> %+v\n", params)
+
+	var resp oscgo.ReadVmsResponse
+	err := resource.Retry(30*time.Second, func() *resource.RetryError {
+		r, _, err := client.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
+			ReadVmsRequest: optional.NewInterface(params),
+		})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+
+		resp = r
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("error reading the VM %s", err)
+	}
+
+	if !resp.HasVms() {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	var filteredVms []oscgo.Vm
+
+	// loop through reservations, and remove terminated instances, populate vm slice
+	for _, res := range resp.GetVms() {
+		if res.GetState() != "terminated" {
+			filteredVms = append(filteredVms, res)
+		}
+	}
+
+	var vm oscgo.Vm
+	if len(filteredVms) < 1 {
+		return errors.New("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	if len(filteredVms) > 1 {
+		return errors.New("Your query returned more than one result. Please try a more " +
+			"specific search criteria")
+	}
+
+	vm = filteredVms[0]
+
+	d.Set("request_id", resp.GetResponseContext().RequestId)
+
+	// Populate vm attribute fields with the returned vm
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(vm.GetVmId())
+		set("tags", getOscAPITagSet(vm.GetTags()))
+		return oapiVMDescriptionAttributes(set, &vm)
+	})
+}
+
+// Populate instance attribute fields with the returned instance
+func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
+
+	set("architecture", vm.GetArchitecture())
+	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
+		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
+		return err
+	}
+	set("bsu_optimized", vm.GetBsuOptimized())
+	set("client_token", vm.GetClientToken())
+	set("deletion_protection", vm.GetDeletionProtection())
+	set("hypervisor", vm.GetHypervisor())
+	set("image_id", vm.GetImageId())
+	set("is_source_dest_checked", vm.GetIsSourceDestChecked())
+	set("keypair_name", vm.GetKeypairName())
+	set("launch_number", vm.GetLaunchNumber())
+	set("net_id", vm.GetNetId())
+
+	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
+		log.Printf("[DEBUG] NICS ERR %+v", err)
+		return err
+	}
+	set("os_family", vm.GetOsFamily())
+	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
+	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
+	set("private_dns_name", vm.GetPrivateDnsName())
+	set("private_ip", vm.GetPrivateIp())
+	set("product_codes", vm.GetProductCodes())
+	set("public_dns_name", vm.GetPublicDnsName())
+	set("public_ip", vm.GetPublicIp())
+	set("reservation_id", vm.GetReservationId())
+	set("root_device_name", vm.GetRootDeviceName())
+	set("root_device_type", vm.GetRootDeviceType())
+	if err := set("security_groups", getOAPIVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
+		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
+		return err
+	}
+	set("state", vm.GetState())
+	set("state_reason", vm.GetStateReason())
+	set("subnet_id", vm.GetSubnetId())
+	set("user_data", vm.GetUserData())
+	set("vm_id", vm.GetVmId())
+	set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior())
+
+	return set("vm_type", vm.GetVmType())
+}
+
+func getOscAPIVMBlockDeviceMapping(blockDeviceMappings []oscgo.BlockDeviceMappingCreated) []map[string]interface{} {
+	blockDeviceMapping := make([]map[string]interface{}, len(blockDeviceMappings))
+
+	for k, v := range blockDeviceMappings {
+		blockDeviceMapping[k] = map[string]interface{}{
+			"device_name": aws.StringValue(v.DeviceName),
+			"bsu": map[string]interface{}{
+				"delete_on_vm_deletion": fmt.Sprintf("%t", aws.BoolValue(v.GetBsu().DeleteOnVmDeletion)),
+				"volume_id":             aws.StringValue(v.GetBsu().VolumeId),
+				"state":                 aws.StringValue(v.GetBsu().State),
+				"link_date":             aws.StringValue(v.GetBsu().LinkDate),
+			},
+		}
+	}
+	return blockDeviceMapping
+}
+
+func getOAPIVMSecurityGroups(groupSet []oscgo.SecurityGroupLight) []map[string]interface{} {
+	res := []map[string]interface{}{}
+	for _, g := range groupSet {
+		r := map[string]interface{}{
+			"security_group_id":   g.GetSecurityGroupId(),
+			"security_group_name": g.GetSecurityGroupName(),
+		}
+		res = append(res, r)
+	}
+
+	return res
+}
+
+func getDataSourceOAPIVMSchemas() map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
-		"instance_id": {
+	}
+
+	attrsSchema := getOApiVMAttributesSchema()
+
+	for k, v := range attrsSchema {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
+}
+
+func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
+	filters := new(oscgo.FiltersVm)
+
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		filterValues := make([]string, 0)
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "tag_keys":
+			filters.TagKeys = &filterValues
+		case "tag_values":
+			filters.TagValues = &filterValues
+		case "tags":
+			filters.Tags = &filterValues
+		case "vm_ids":
+			filters.VmIds = &filterValues
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
+}
+
+func sliceAtoi(sa []string) ([]int64, error) {
+	si := make([]int64, 0, len(sa))
+	for _, a := range sa {
+		i, err := strconv.Atoi(a)
+		if err != nil {
+			return si, err
+		}
+		si = append(si, int64(i))
+	}
+	return si, nil
+}
+
+func getOApiVMAttributesSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		// Attributes
+		"architecture": {
 			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"block_device_mappings_created": {
+			Type:     schema.TypeList,
 			Optional: true,
-		},
-		"image_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"instance_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"group_set": {
-			Type:     schema.TypeSet,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"group_id": {
-						Type:     schema.TypeString,
+					"bsu": {
+						Type:     schema.TypeMap,
+						Optional: true,
 						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_date": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"state": {
+									Type:     schema.TypeInt,
+									Computed: true,
+								},
+								"volume_id": {
+									Type:     schema.TypeFloat,
+									Computed: true,
+								},
+							},
+						},
 					},
-					"group_name": {
+					"device_name": {
 						Type:     schema.TypeString,
-						Computed: true,
+						Optional: true,
 					},
 				},
 			},
 		},
-		"instances_set": {
-			Type:     schema.TypeSet,
+		"bsu_optimized": {
+			Type:     schema.TypeBool,
+			Optional: true,
 			Computed: true,
-			// Set:      resourceInstancSetHash,
+		},
+		"client_token": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"deletion_protection": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Computed: true,
+		},
+		"hypervisor": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"image_id": {
+			Type:     schema.TypeString,
+			ForceNew: true,
+			Optional: true,
+			Computed: true,
+		},
+		"is_source_dest_checked": {
+			Type:     schema.TypeBool,
+			Optional: true,
+			Computed: true,
+		},
+		"keypair_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"security_group_ids": &schema.Schema{
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"security_group_names": &schema.Schema{
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"launch_number": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"nics": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"ami_launch_index": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"architecture": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"block_device_mapping": {
-						Type: schema.TypeList,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"device_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"ebs": {
-									Type: schema.TypeMap,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"delete_on_termination": {
-												Type:     schema.TypeBool,
-												Computed: true,
-											},
-											"status": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"volume_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"client_token": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"dns_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"ebs_optimized": {
+					"delete_on_vm_deletion": {
 						Type:     schema.TypeBool,
 						Computed: true,
+						Optional: true,
 					},
-					"group_set": {
-						Type:     schema.TypeList,
+					"description": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+					},
+					"device_number": {
+						Type:     schema.TypeInt,
+						Computed: true,
+						Optional: true,
+					},
+					"nic_id": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+					},
+					"private_ips": {
+						Type:     schema.TypeSet,
+						Optional: true,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"group_id": {
-									Type:     schema.TypeString,
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Optional: true,
 									Computed: true,
 								},
-								"group_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"hypervisor": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"iam_instance_profile": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"arn": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"image_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"instance_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"instance_lifecycle": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"instance_state": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"code": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"instance_type": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"ip_address": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"kernel_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"key_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"monitoring": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"state": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"network_interface_set": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"association": {
+								"link_public_ip": {
 									Type:     schema.TypeSet,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"ip_owner_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
 											"public_dns_name": {
 												Type:     schema.TypeString,
 												Computed: true,
@@ -398,264 +398,169 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
-										},
-									},
-								},
-								"attachment": {
-									Type:     schema.TypeSet,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"attachement_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"delete_on_termination": {
-												Type:     schema.TypeBool,
-												Computed: true,
-											},
-											"device_index": {
-												Type:     schema.TypeInt,
-												Computed: true,
-											},
-											"status": {
+											"public_ip_account_id": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
 										},
 									},
-								},
-								"description": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"group_set": {
-									Type:     schema.TypeSet,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"group_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"group_name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"mac_address": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"network_interface_id": {
-									Type:     schema.TypeString,
-									Computed: true,
 								},
 								"private_dns_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"private_ip_address": {
+								"private_ip": {
 									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"private_ip_addresses_set": {
-									Type:     schema.TypeSet,
-									Computed: true,
-									Elem: &schema.Resource{
-										Schema: map[string]*schema.Schema{
-											"association": {
-												Type:     schema.TypeSet,
-												Computed: true,
-												Elem: &schema.Resource{
-													Schema: map[string]*schema.Schema{
-														"ip_owner_id": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-														"public_dns_name": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-														"public_ip": {
-															Type:     schema.TypeString,
-															Computed: true,
-														},
-													},
-												},
-											},
-											"primary": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"private_dns_name": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"private_ip_address": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-										},
-									},
-								},
-								"source_dest_check": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"status": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"subnet_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"vpc_id": {
-									Type:     schema.TypeString,
+									Optional: true,
 									Computed: true,
 								},
 							},
 						},
 					},
-					"placement": {
+					"secondary_private_ip_count": {
+						Type:     schema.TypeInt,
+						Optional: true,
+						Computed: true,
+					},
+					"security_group_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+					},
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
+					"is_source_dest_checked": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+
+					"subnet_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+						Optional: true,
+					},
+					"link_nic": {
 						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"affinity": {
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"device_number": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"availability_zone": {
+								"link_nic_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"group_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"host_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"tenancy": {
+								"state": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
 					},
-					"platform": {
+					"link_public_ip": {
+						Type:     schema.TypeSet,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"public_dns_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"public_ip_account_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"mac_address": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"net_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+
 					"private_dns_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"private_ip_address": {
-						Type:     schema.TypeString,
+					"security_groups_names": {
+						Type:     schema.TypeList,
+						Optional: true,
 						Computed: true,
+						Elem:     &schema.Schema{Type: schema.TypeString},
 					},
-					"product_codes": {
+					"security_groups": {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"product_code": {
+								"security_group_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"type": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-					"ramdisk_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"reason": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"root_device_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"root_device_type": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"source_dest_check": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"spot_instance_request_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"sriov_net_support": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"state_reason": {
-						Type: schema.TypeMap,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"code": {
-									Type:     schema.TypeInt,
-									Computed: true,
-								},
-								"message": {
+								"security_group_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
-						Computed: true,
 					},
-					"subnet_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"tag_set": {
-						Type: schema.TypeList,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"key": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"value": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-						Computed: true,
-					},
-					"virtualization_type": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"vpc_id": {
+					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
 				},
 			},
 		},
-		"owner_id": {
+		"os_family": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"request_id": {
+		"placement_subregion_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"placement_tenancy": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"private_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"private_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"product_codes": &schema.Schema{
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"public_dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"public_ip": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -663,18 +568,88 @@ func getDataSourceVMSchemas() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"password_data": {
+		"root_device_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		//End of Attributes
+		"root_device_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"security_groups": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"security_group_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"security_group_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state_reason": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"subnet_id": {
+			Type:     schema.TypeString,
+			ForceNew: true,
+			Optional: true,
+			Computed: true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"value": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+			Computed: true,
+		},
+		"user_data": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"vm_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"vm_initiated_shutdown_behavior": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"vm_type": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"private_ips": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
 	}
-}
-
-func iamInstanceProfileArnToName(ip *fcu.IamInstanceProfile) string {
-	if ip == nil || ip.Arn == nil {
-		return ""
-	}
-	parts := strings.Split(*ip.Arn, "/")
-	return parts[len(parts)-1]
 }

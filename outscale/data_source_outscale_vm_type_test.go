@@ -8,15 +8,20 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccDataSourceOutscaleVMType_basic(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIVMType_basic(t *testing.T) {
+	t.Skip()
+
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleVMType(rInt),
+				Config: testAccDataSourceOutscaleOAPIVMType(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_vm_type.test_by_id", "name", "t2.micro"),
@@ -26,13 +31,13 @@ func TestAccDataSourceOutscaleVMType_basic(t *testing.T) {
 	})
 }
 
-func testAccDataSourceOutscaleVMType(rInt int) string {
+func testAccDataSourceOutscaleOAPIVMType(rInt int) string {
 	return fmt.Sprintf(`
-data "outscale_vm_type" "test_by_id" {
-	filter {
-		name = "name"
-		values = ["t2.micro"]
-	}
-}
-`)
+		data "outscale_vm_type" "test_by_id" {
+			filter {
+				name = "name"
+				values = ["t2.micro"]
+			}
+		}
+	`)
 }

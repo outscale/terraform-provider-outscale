@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -15,54 +13,40 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleVpnGateway_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPIVpnGateway_basic(t *testing.T) {
+	t.Skip()
 	var v, v2 fcu.VpnGateway
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckVpnGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPIVpnGatewayDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccVpnGatewayConfig,
+				Config: testAccOAPIVpnGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVpnGatewayExists(
+					testAccCheckOAPIVpnGatewayExists(
 						"outscale_vpn_gateway.foo", &v),
 				),
 			},
 
 			resource.TestStep{
-				Config: testAccVpnGatewayConfigChangeVPC,
+				Config: testAccOAPIVpnGatewayConfigChangeVPC,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVpnGatewayExists(
+					testAccCheckOAPIVpnGatewayExists(
 						"outscale_vpn_gateway.foo", &v2),
 				),
 			},
 		},
 	})
 }
-func TestAccOutscaleVpnGateway_delete(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIVpnGateway_delete(t *testing.T) {
+	t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	var vpnGateway fcu.VpnGateway
 
 	testDeleted := func(r string) resource.TestCheckFunc {
@@ -76,25 +60,28 @@ func TestAccOutscaleVpnGateway_delete(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_vpn_gateway.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckVpnGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPIVpnGatewayDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccVpnGatewayConfig,
+				Config: testAccOAPIVpnGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVpnGatewayExists("outscale_vpn_gateway.foo", &vpnGateway)),
+					testAccCheckOAPIVpnGatewayExists("outscale_vpn_gateway.foo", &vpnGateway)),
 			},
 			resource.TestStep{
-				Config: testAccNoVpnGatewayConfig,
+				Config: testAccOAPINoVpnGatewayConfig,
 				Check:  resource.ComposeTestCheckFunc(testDeleted("outscale_vpn_gateway.foo")),
 			},
 		},
 	})
 }
 
-func testAccOutscaleVpnGatewayDisappears(gateway *fcu.VpnGateway) resource.TestCheckFunc {
+func testAccOutscaleOAPIVpnGatewayDisappears(gateway *fcu.VpnGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).FCU
 		var err error
@@ -157,7 +144,7 @@ func testAccOutscaleVpnGatewayDisappears(gateway *fcu.VpnGateway) resource.TestC
 	}
 }
 
-func testAccCheckVpnGatewayDestroy(s *terraform.State) error {
+func testAccCheckOAPIVpnGatewayDestroy(s *terraform.State) error {
 	FCU := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -212,7 +199,7 @@ func testAccCheckVpnGatewayDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckVpnGatewayExists(n string, ig *fcu.VpnGateway) resource.TestCheckFunc {
+func testAccCheckOAPIVpnGatewayExists(n string, ig *fcu.VpnGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -253,82 +240,24 @@ func testAccCheckVpnGatewayExists(n string, ig *fcu.VpnGateway) resource.TestChe
 	}
 }
 
-const testAccNoVpnGatewayConfig = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-`
-
-const testAccVpnGatewayConfig = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-}
-`
-
-const testAccVpnGatewayConfigChangeVPC = `
-resource "outscale_lin" "bar" {
-	cidr_block = "10.2.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-}
-`
-
-const testAccCheckVpnGatewayConfigTags = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-	tag {
-		foo = "bar"
+const testAccOAPINoVpnGatewayConfig = `
+	resource "outscale_net" "foo" {
+		ip_range = "10.1.0.0/16"
 	}
-}
 `
 
-const testAccCheckVpnGatewayConfigTagsUpdate = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-	tag {
-		bar = "baz"
+const testAccOAPIVpnGatewayConfig = `
+	resource "outscale_net" "foo" {
+		ip_range = "10.1.0.0/16"
 	}
-}
+
+	resource "outscale_vpn_gateway" "foo" {}
 `
 
-const testAccCheckVpnGatewayConfigReattach = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
+const testAccOAPIVpnGatewayConfigChangeVPC = `
+	resource "outscale_net" "bar" {
+		ip_range = "10.2.0.0/16"
+	}
 
-resource "outscale_lin" "bar" {
-	cidr_block = "10.2.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-}
-
-resource "outscale_vpn_gateway" "bar" {
-}
-`
-
-const testAccCheckVpnGatewayConfigReattachChange = `
-resource "outscale_lin" "foo" {
-	cidr_block = "10.1.0.0/16"
-}
-
-resource "outscale_lin" "bar" {
-	cidr_block = "10.2.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "foo" {
-}
-
-resource "outscale_vpn_gateway" "bar" {
-}
+	resource "outscale_vpn_gateway" "foo" {}
 `

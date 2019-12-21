@@ -4,28 +4,31 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSnapshotExportTask_basic(t *testing.T) {
-	rInt := acctest.RandIntRange(64512, 65534)
+func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleSnapshotExportTaskConfig(rInt),
+				Config: testAccOutscaleOAPISnapshotExportTaskConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotExportTaskExists("outscale_snapshot_export_tasks.outscale_snapshot_export_tasks"),
+					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -40,23 +43,23 @@ func testAccCheckOutscaleSnapshotExportTaskExists(n string) resource.TestCheckFu
 	}
 }
 
-func testAccOutscaleSnapshotExportTaskConfig(rInt int) string {
-	return fmt.Sprintf(`
-resource "outscale_volume" "test" { 
-  availability_zone = "eu-west-2a" 
-  size = 1 
+var testAccOutscaleOAPISnapshotExportTaskConfig = `
+resource "outscale_volume" "test" {
+	sub_region = "eu-west-2a"
+	size = 1
 }
 
-resource "outscale_snapshot" "test" { 
-  volume_id = "${outscale_volume.test.id}" 
+resource "outscale_snapshot" "test" {
+	volume_id = "${outscale_volume.test.id}"
 }
 
-resource "outscale_snapshot_export_tasks" "outscale_snapshot_export_tasks" {
-  snapshot_id = "${outscale_snapshot.test.id}"
+resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
+    count = 1
 
-	export_to_osu_disk_image_format = "raw"
-  export_to_osu_bucket = "customer_tooling_%d"
- 
+		osu_export {
+			disk_image_format = "raw"
+			osu_bucket = "test"
+		}
+    snapshot_id = "${outscale_snapshot.test.id}"
 }
-`, rInt)
-}
+`

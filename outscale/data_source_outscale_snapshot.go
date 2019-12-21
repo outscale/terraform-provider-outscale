@@ -1,36 +1,49 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleSnapshot() *schema.Resource {
+func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleSnapshotRead,
+		Read: dataSourceOutscaleOAPISnapshotRead,
 
 		Schema: map[string]*schema.Schema{
 			//selection criteria
 			"filter": dataSourceFiltersSchema(),
-			"owner": {
+			"permissions_to_create_volume": &schema.Schema{
 				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
 			},
-			"restorable_by": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
+
 			//Computed values returned
 			"progress": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"snapshot_id": {
@@ -42,19 +55,16 @@ func dataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status": {
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status_message": {
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
-			"owner_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"owner_alias": {
+			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -62,53 +72,56 @@ func dataSourceOutscaleSnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"start_time": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"volume_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tag_set": tagsSchemaComputed(),
+			"tags": tagsOAPIListSchemaComputed(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func dataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	restorableUsers, restorableUsersOk := d.GetOk("restorable_by")
+	restorableUsers, restorableUsersOk := d.GetOk("permission_to_create_volume")
 	filters, filtersOk := d.GetOk("filter")
 	snapshotIds, snapshotIdsOk := d.GetOk("snapshot_id")
-	owners, ownersOk := d.GetOk("owner")
+	owners, ownersOk := d.GetOk("account_id")
 
 	if restorableUsers == false && filtersOk == false && snapshotIds == false && ownersOk == false {
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 
-	params := &fcu.DescribeSnapshotsInput{}
-	if restorableUsersOk {
-		params.RestorableByUserIds = expandStringList(restorableUsers.([]interface{}))
-	}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if ownersOk {
-		params.OwnerIds = expandStringList(owners.([]interface{}))
-	}
-	if snapshotIdsOk {
-		params.SnapshotIds = []*string{aws.String(snapshotIds.(string))}
+	params := oscgo.ReadSnapshotsRequest{
+		Filters: &oscgo.FiltersSnapshot{},
 	}
 
-	var resp *fcu.DescribeSnapshotsOutput
+	filter := oscgo.FiltersSnapshot{}
+	if restorableUsersOk {
+		filter.SetPermissionsToCreateVolumeAccountIds(oapiExpandStringList(restorableUsers.([]interface{})))
+		params.SetFilters(filter)
+	}
+	if filtersOk {
+		buildOutscaleOapiSnapshootDataSourceFilters(filters.(*schema.Set), params.Filters)
+	}
+	if ownersOk {
+		filter.SetAccountIds([]string{owners.(string)})
+		params.SetFilters(filter)
+	}
+	if snapshotIdsOk {
+		filter.SetSnapshotIds([]string{snapshotIds.(string)})
+		params.SetFilters(filter)
+	}
+
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSnapshots(params)
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(params)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -123,33 +136,108 @@ func dataSourceOutscaleSnapshotRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	var snapshot *fcu.Snapshot
-	if len(resp.Snapshots) < 1 {
-		return fmt.Errorf("our query returned no results, please change your search criteria and try again")
+	if len(resp.GetSnapshots()) < 1 {
+		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-	if len(resp.Snapshots) > 1 {
-		return fmt.Errorf("our query returned more than one result, please try a more specific search criteria")
+	if len(resp.GetSnapshots()) > 1 {
+		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
-	snapshot = resp.Snapshots[0]
-	d.Set("request_id", resp.RequestId)
+	snapshot := resp.GetSnapshots()[0]
 
 	//Single Snapshot found so set to state
-	return snapshotDescriptionAttributes(d, snapshot)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
-func snapshotDescriptionAttributes(d *schema.ResourceData, snapshot *fcu.Snapshot) error {
-	d.SetId(*snapshot.SnapshotId)
-	d.Set("description", snapshot.Description)
-	d.Set("owner_alias", snapshot.OwnerAlias)
-	d.Set("owner_id", snapshot.OwnerId)
-	d.Set("progress", snapshot.Progress)
-	d.Set("snapshot_id", snapshot.SnapshotId)
-	d.Set("status", snapshot.State)
-	d.Set("status_message", snapshot.StateMessage)
-	d.Set("volume_id", snapshot.VolumeId)
-	d.Set("volume_size", snapshot.VolumeSize)
-	d.Set("start_time", snapshot.StartTime.String())
+func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
+	d.SetId(snapshot.GetSnapshotId())
+	d.Set("description", snapshot.GetDescription())
+	d.Set("account_alias", snapshot.GetAccountAlias())
+	d.Set("account_id", snapshot.GetAccountId())
+	d.Set("progress", snapshot.GetProgress())
+	d.Set("snapshot_id", snapshot.GetSnapshotId())
+	d.Set("state", snapshot.GetState())
+	d.Set("volume_id", snapshot.GetVolumeId())
+	d.Set("volume_size", snapshot.GetVolumeSize())
 
-	return d.Set("tag_set", tagsToMap(snapshot.Tags))
+	lp := make([]map[string]interface{}, 1)
+	lp[0] = make(map[string]interface{})
+	lp[0]["global_permission"] = snapshot.PermissionsToCreateVolume.GetGlobalPermission()
+	lp[0]["account_ids"] = snapshot.PermissionsToCreateVolume.GetAccountIds()
+
+	if err := d.Set("permissions_to_create_volume", lp); err != nil {
+		return err
+	}
+
+	return d.Set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
+}
+
+func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.FiltersSnapshot) *oscgo.FiltersSnapshot {
+
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var values []string
+
+		for _, e := range m["values"].([]interface{}) {
+			values = append(values, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "account_aliases":
+			filter.SetAccountAliases(values)
+
+		case "account_ids":
+			filter.SetAccountIds(values)
+
+		case "descriptions":
+			filter.SetDescriptions(values)
+
+		case "permissions_to_create_volume_account_ids":
+			filter.SetPermissionsToCreateVolumeAccountIds(values)
+
+		case "permissions_to_create_volume_global_permission":
+			boolean, _ := strconv.ParseBool(values[0])
+			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
+
+		case "progresses":
+			filter.SetProgresses(utils.StringSliceToInt64Slice(values))
+
+		case "snapshot_ids":
+			filter.SetSnapshotIds(values)
+
+		case "states":
+			filter.SetStates(values)
+
+		case "tag_keys":
+			filter.SetTagKeys(values)
+
+		case "tag_values":
+			filter.SetTagValues(values)
+
+		case "tags":
+			filter.SetTags(values)
+
+		case "volume_ids":
+			filter.SetVolumeIds(values)
+
+		case "volume_sizes":
+			filter.SetVolumeSizes(utils.StringSliceToInt64Slice(values))
+
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filter
+}
+
+func oapiExpandStringList(configured []interface{}) []string {
+	vs := make([]string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, v.(string))
+		}
+	}
+	return vs
 }

@@ -1,136 +1,116 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_vms"
-sidebar_current: "docs-outscale-datasource-vms"
+page_title: "3DS OUTSCALE: outscale_vm"
+sidebar_current: "outscale-vm"
 description: |-
-  Provides Outscale instances resource attributes. It can be used to recover attributes of instances not managed in the current configuration file.
+  [Provides information about virtual machines (VMs).]
 ---
 
-# outscale_vms
+# outscale_vm Data Source
 
-  Provides Outscale instances resource attributes. It can be used to recover attributes of instances not managed in the current configuration file.
+Provides information about virtual machines (VMs).
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instances).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-vm).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
+
+data "outscale_vms" "vms_01" {
+  filter {
+    name   = "vm_ids"
+    values = ["i-12345678", "i-12345679"]
+  }
 }
 
-resource "outscale_vm" "web" {
-  image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	key_name = "terraform-basic"
-	security_group = ["sg-6ed31f3e"]
-}
 
-data "outscale_vms" "basic_web" {
-	instance_id = ["${outscale_vm.basic.id}", "${outscale_vm.web.id}"]
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `filter` - (Optional) One or more filters.
-* `instance_id` - (Optional) One or more instance IDs.
+* `filter` - One or more filters.
+  * `tag_keys` - (Optional) The keys of the tags associated with the VMs.
+  * `tag_values` - (Optional) The values of the tags associated with the VMs.
+  * `tags` - (Optional) The key/value combination of the tags associated with the VMs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `vm_ids` - (Optional) One or more IDs of VMs.
 
-See detailed information in [Outscale Instances](https://wiki.outscale.net/display/DOCU/Getting+Information+About+Your+Instances).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `architecture` - The architecture of the instance (i386 | x86_64).
-* `availability-zone` - The Availability Zone of the instance.
-* `block-device-mapping.attach-time` - The attach time for a BSU volume mapped to the instance (for example, 2016-01-23T18` -45` -30.000Z).
-* `block-device-mapping.delete-on-termination` - Indicates whether the BSU volume is deleted when terminating the instance.
-* `block-device-mapping.device-name` - The device name for a BSU volume (for example, /dev/sdh or xvdh).
-* `block-device-mapping.status` - The status for the BSU volume (attaching | attached| detaching | detached).
-* `block-device-mapping.volume-id` - The volume ID of a BSU volume.
-* `client-token` - The idempotency token provided when launching the instance.
-* `dns-name` - The public DNS name of the instance.
-* `group-id` - The ID of the security group for the instance (only in the public Cloud).
-* `group-name` - The name of the security group for the instance (only in the public Cloud).
-* `hypervisor` - The hypervisor type of the instance (ovm | xen).
-* `image-id` - The ID of the image used to launch the instance.
-* `instance-id` - The ID of the instance.
-* `instance-lifecycle` - Indicates whether the instance is a Spot Instance (spot).
-* `instance-state-code` - The state of the instance (a 16-bit unsigned integer). The high byte is an opaque internal value you should ignore. The low byte is set based on the state represented. The valid values are 0 (pending), 16 (running), 32 (shutting-down), 48 (terminated), 64 (stopping), and 80 (stopped).
-* `instance-state-name` - The state of the instance (pending | running | shutting-down | terminated | stopping | stopped).
-* `instance-type` - The instance type (for example, t2.micro).
-* `instance.group-id` - The ID of the security group for the instance.
-* `instance.group-name` - The name of the security group for the instance.
-* `ip-address` - The public IP address of the instance.
-* `kernel-id` - The ID of the kernel.
-* `key-name` - The name of the keypair used when launching the instance.
-* `launch-index` - The index for the instance when launching a group of several instances (for example, 0, 1, 2, and so on).
-* `launch-time` - The time when the instance was launched.
-* `monitoring-state` - Indicates whether monitoring is enabled for the instance (disabled | enabled).
-* `owner-id` - The Outscale account ID of the instance owner.
-* `placement-group-name` - The name of the placement group for the instance.
-* `platform` - The platform. Use windows if you have Windows instances. Otherwise, leave this filter blank.
-* `private-dns-name` - The private DNS name of the instance.
-* `private-ip-address` - The private IP address of the instance.
-* `product-code` - The product code associated with the OMI used to launch the instance.
-* `ramdisk-id` - The ID of the RAM disk.
-* `reason` - The reason explaining the current state of the instance. This filter is like the state-reason-code one.
-* `requester-id` - The ID of the entity that launched the instance (for example, Cockpit or Auto Scaling).
-* `reservation-id` - The ID of the reservation of the instance, created every time you launch an instance. This reservation ID can can be associated with several instances when you lauch a group of instances using the same launch request.
-* `root-device-name` - The name of the root device for the instance (for example, /dev/vda1).
-* `root-device-type` - The root device type used by the instance (always ebs).
-* `source-dest-check` - If true, the source/destination checking is enabled. If false, it is disabled. This value must be false for a NAT instance to perform NAT (network address translation) in a VPC.
-* `spot-instance-request-id` - The ID of the Spot Instance request.
-* `state-reason-code` - The reason code for the state change.
-* `state-reason-message` - A message describing the state change.
-* `subnet-id` - The ID of the subnet for the instance.
-* `tag` -key=value` - The key/value combination of a tag that is assigned to the resource.
-* `tag-key` - The key of a tag that is assigned to the resource. You can use this filter alongside the tag-value filter. In that case, you filter the resources corresponding to each tag, regardless of the other filter.
-* `tag-value` - The value of a tag that is assigned to the resource. You can use this filter alongside the tag-key filter. In that case, you filter the resources corresponding to each tag, regardless of the other filter.
-* `tenancy` - The tenancy of an instance (dedicated | default | host).
-* `virtualization-type` - The virtualization type of the instance (always hvm).
-* `vpc-id` - The ID of the VPC in which the instance is running.
-* `network-interface.description` - The description of the network interface.
-* `network-interface.subnet-id` - The ID of the subnet for the network interface.
-* `network-interface.vpc-id` - The ID of the VPC for the network interface.
-* `network-interface.network-interface-id` - The ID of the network interface.
-* `network-interface.owner-id` - The ID of the owner of the network interface.
-* `network-interface.availability-zone` - The Availability Zone for the network interface.
-* `network-interface.requester-id` - The requester ID for the network interface.
-* `network-interface.requester-managed` - Indicates whether the network interface is managed by Outscale.
-* `network-interface.status` - The status of the network interface (available | in-use).
-* `network-interface.mac-address` - The MAC address of the network interface.
-* `network-interface.private-dns-name` - The private DNS name of the network interface.
-* `network-interface.source-dest-check` - If true, the source/destination checking of the network interface is enabled. If false, it is disabled. The value must be false for the network interface to perform NAT (network address translation) in a VPC.
-* `network-interface.group-id` - The ID of a security group associated with the network interface.
-* `network-interface.group-name` - The name of a security group associated with the network interface.
-* `network-interface.attachment.attachment-id` - The ID of the interface attachment.
-* `network-interface.attachment.instance-id` - The ID of the instance the network interface is attached to.
-* `network-interface.attachment.instance-owner-id` - The account ID of the ID of the instance the network interface is attached to.
-* `network-interface.addresses.private-ip-address` - The private IP address associated with the network interface.
-* `network-interface.attachment.device-index` - The device index the network interface is attached to.
-* `network-interface.attachment.status` - The status of the attachment (attaching | attached | detaching | detached).
-* `network-interface.attachment.attach-time` - The time when the network interface was attached to an instance.
-* `network-interface.attachment.delete-on-termination` - Indicates whether the attachment is deleted when terminating an instance.
-* `network-interface.addresses.primary` - Indicates whether the IP address of the network interface is the primary private IP address.
-* `network-interface.addresses.association.public-ip` - The ID of the association of an External IP address with a network interface.
-* `network-interface.addresses.association.ip-owner-id` - The account ID of the owner of the private IP address associated with the network interface.
-* `network-interface.association.public-ip` - The External IP address associated with the network interface.
-* `network-interface.association.ip-owner-id` - The account ID of the owner of the External IP address associated with the network interface.
-* `network-interface.association.allocation-id` - The allocation ID. This ID is returned when you allocate the External IP address for your network interface.
-* `network-interface.association.association-id` - The association ID. This ID is returned when the network interface is associated with an IP address.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `reservation_set` - Zero or more reservations.
-* `request_id`- The ID of the request.
-
-
-
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstances_get.html#_api_fcu-action_describeinstances_get).
+* `vms` - Information about one or more VMs.
+  * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
+  * `block_device_mappings_created` - The block device mapping of the VM.
+    * `bsu` - Information about the created BSU volume.
+      * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+      * `link_date` - The time and date of attachment of the volume to the VM.
+      * `state` - The state of the volume.
+      * `volume_id` - The ID of the volume.
+    * `device_name` - The name of the device.
+  * `bsu_optimized` - If `true`, the VM is optimized for BSU I/O.
+  * `client_token` - The idempotency token provided when launching the VM.
+  * `deletion_protection` - If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
+  * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
+  * `image_id` - The ID of the OMI used to create the VM.
+  * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+  * `keypair_name` - The name of the keypair used when launching the VM.
+  * `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
+  * `net_id` - The ID of the Net in which the VM is running.
+  * `nics` - The network interface cards (NICs) the VMs are attached to.
+    * `account_id` - The account ID of the owner of the NIC.
+    * `description` - The description of the NIC.
+    * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+    * `link_nic` - Information about the network interface card (NIC).
+      * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+      * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+      * `link_nic_id` - The ID of the NIC to attach.
+      * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
+    * `link_public_ip` - Information about the EIP associated with the NIC.
+      * `public_dns_name` - The name of the public DNS.
+      * `public_ip` - The External IP address (EIP) associated with the NIC.
+      * `public_ip_account_id` - The account ID of the owner of the EIP.
+    * `mac_address` - The Media Access Control (MAC) address of the NIC.
+    * `net_id` - The ID of the Net for the NIC.
+    * `nic_id` - The ID of the NIC.
+    * `private_dns_name` - The name of the private DNS.
+    * `private_ips` - The private IP address or addresses of the NIC.
+      * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+      * `link_public_ip` - Information about the EIP associated with the NIC.
+        * `public_dns_name` - The name of the public DNS.
+        * `public_ip` - The External IP address (EIP) associated with the NIC.
+        * `public_ip_account_id` - The account ID of the owner of the EIP.
+      * `private_dns_name` - The name of the private DNS.
+      * `private_ip` - The private IP address.
+    * `security_groups` - One or more IDs of security groups for the NIC.
+      * `security_group_id` - The ID of the security group.
+      * `security_group_name` - (Public Cloud only) The name of the security group.
+    * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
+    * `subnet_id` - The ID of the Subnet for the NIC.
+  * `os_family` - Indicates the operating system (OS) of the VM.
+  * `performance` - The performance of the VM (`standard` \| `high` \|  `highest`).
+  * `placement` - Information about the placement of the VM.
+    * `subregion_name` - The name of the Subregion.
+    * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
+  * `private_dns_name` - The name of the private DNS.
+  * `private_ip` - The primary private IP address of the VM.
+  * `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
+  * `public_dns_name` - The name of the public DNS.
+  * `public_ip` - The public IP address of the VM.
+  * `reservation_id` - The reservation ID of the VM.
+  * `root_device_name` - The name of the root device for the VM (for example, /dev/vda1).
+  * `root_device_type` - The type of root device used by the VM (always `bsu`).
+  * `security_groups` - One or more security groups associated with the VM.
+    * `security_group_id` - The ID of the security group.
+    * `security_group_name` - (Public Cloud only) The name of the security group.
+  * `state` - The state of the VM (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
+  * `state_reason` - The reason explaining the current state of the VM.
+  * `subnet_id` - The ID of the Subnet for the VM.
+  * `tags` - One or more tags associated with the VM.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `user_data` - The Base64-encoded MIME user data.
+  * `vm_id` - The ID of the VM.
+  * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `delete`, the VM stops and is deleted.
+  * `vm_type` - The type of VM. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).

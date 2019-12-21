@@ -1,94 +1,77 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_route_tables"
-sidebar_current: "docs-outscale-datasource-route-tables"
+page_title: "3DS OUTSCALE: outscale_route_table"
+sidebar_current: "outscale-route-table"
 description: |-
-  Describes route tables
+  [Provides information about route tables.]
 ---
 
-# outscale_route_tables
+# outscale_route_table Data Source
 
-Describes one or more of your route tables.
-In your Virtual Private Cloud (VPC), each subnet must be associated with a route table. If a subnet is not explicitly associated with a route table, it is implicitly associated with the main route table of the VPC.
+Provides information about route tables.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-routetable).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_lin" "test" {
-    cidr_block = "172.16.0.0/16"
 
-    tag {
-        Name = "terraform-testacc-data-source"
-    }
+data "outscale_route_tables" "route_tables01" {
+  filter {
+    name   = "route_table_ids"
+    values = ["rtb-12345678", "rtb-12345679"]
+  }
 }
 
-resource "outscale_subnet" "test" {
-    cidr_block = "172.16.0.0/24"
-    vpc_id     = "${outscale_lin.test.id}"
-    tag {
-        Name = "terraform-testacc-data-source"
-    }
-}
 
-resource "outscale_route_table" "test" {
-    vpc_id = "${outscale_lin.test.id}"
-    tag {
-        Name = "terraform-testacc-routetable-data-source"
-    }
-}
-
-data "outscale_route_tables" "by_filter" {
-    filter {
-      name = "route-table-id"
-      values = ["${outscale_route_table.test.id}"]
-    }
-}
-
-data "outscale_route_tables" "by_id" {
-    route_table_id = ["${outscale_route_table.test.id}"]
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `Filter.N` (Optional). One or more filters.
-* `RouteTableId.N` (Optional). One or more route table IDs.
+* `filter` - One or more filters.
+  * `link_route_table_link_route_table_ids` - (Optional) The IDs of the associations between the route tables and the Subnets.
+  * `link_subnet_ids` - (Optional) The IDs of the Subnets involved in the associations.
+  * `net_ids` - (Optional) The IDs of the Nets for the route tables.
+  * `route_creation_methods` - (Optional) The methods used to create a route.
+  * `route_destination_ip_ranges` - (Optional) The IP ranges specified in routes in the tables.
+  * `route_gateway_ids` - (Optional) The IDs of the gateways specified in routes in the tables.
+  * `route_nat_service_ids` - (Optional) The IDs of the NAT services specified in routes in the tables.
+  * `route_net_peering_ids` - (Optional) The IDs of the Net peering connections specified in routes in the tables.
+  * `route_states` - (Optional) The states of routes in the route tables (`active` \| `blackhole`). The `blackhole` state indicates that the target of the route is not available.
+  * `route_table_ids` - (Optional) The IDs of the route tables.
+  * `route_vm_ids` - (Optional) The IDs of the VMs specified in routes in the tables.
+  * `tag_keys` - (Optional) The keys of the tags associated with the route tables.
+  * `tag_values` - (Optional) The values of the tags associated with the route tables.
+  * `tags` - (Optional) The key/value combination of the tags associated with the route tables, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
 
-## Filters
-
-You can use the Filter.N parameter to filter the route tables on the following properties:
-
-* `association.route-table-association-id` The ID of an association ID for the route table.
-* `association.route-table-id` The ID of the route table involved in the association.
-* `association.subnet-id` The ID of the subnet involved in the association.
-* `association.main` Indicates whether the route table is the main route table for the VPC (true | false).
-* `route-table-id` The ID of the route table.
-* `route.destination-cidr-block` The CIDR range specified in a route in the table.
-* `route.destination-prefix-list-id` The prefix ID of the service specified in a route in the table.
-* `route.gateway-id` The ID of a gateway specified in a route in the table.
-* `route.instance-id` The ID of an instance specified in a route in the table.
-* `route.nat-gateway-id` The ID of a NAT gateway specified in a route in the table.
-* `route.origin` How the route was created.
-* `route.state` The state of a route in the route table (active | blackhole). The blackhole state indicates that the target of the route is not available.
-* `route.vpc-peering-connection-id` The ID of a VPC peering connection specified in a route in the table.
-* `tag` The key/value combination of a tag associated with the resource, in the following format: key=value.
-* `tag-key` The key of a tag associated with the resource.
-* `tag-value` The value of a tag associated with the resource.
-* `vpc-id` The ID of the VPC for the route table.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `route_table_set.N` - Information about one or more route tables, each containing the following attributes:
-  - `association_set.N` - One or more associations between the route table and the subnets.
-  - `propagating_vgw_set.N` - Information about virtual private gateways propagating routes.
-  - `route_set.N` - One or more routes in the route table.
-  - `route_table_id` - The ID of the route table.
-  - `tag_set.N` - One or more tags associated with the route table.
-  - `vpc_id` - The ID of the VPC.
-  - `request_id` - The ID of the request
-
-[See detailed description](http://docs.outscale.com/api_fcu/operations/Action_DescribeRouteTables_get.html#_api_fcu-action_describeroutetables_get)
+* `route_tables` - Information about one or more route tables.
+  * `link_route_tables` - One or more associations between the route table and Subnets.
+    * `link_route_table_id` - The ID of the association between the route table and the Subnet.
+    * `main` - If `true`, the route table is the main one.
+    * `route_table_id` - The ID of the route table.
+    * `subnet_id` - The ID of the Subnet.
+  * `net_id` - The ID of the Net for the route table.
+  * `route_propagating_virtual_gateways` - Information about virtual gateways propagating routes.
+    * `virtual_gateway_id` - The ID of the virtual gateway.
+  * `route_table_id` - The ID of the route table.
+  * `routes` - One or more routes in the route table.
+    * `creation_method` - The method used to create the route.
+    * `destination_ip_range` - The IP range used for the destination match, in CIDR notation (for example, 10.0.0.0/24).
+    * `destination_service_id` - The ID of the 3DS OUTSCALE service.
+    * `gateway_id` - The ID of the Internet service or virtual gateway attached to the Net.
+    * `nat_service_id` - The ID of a NAT service attached to the Net.
+    * `net_access_point_id` - The ID of the Net access point.
+    * `net_peering_id` - The ID of the Net peering connection.
+    * `nic_id` - The ID of the NIC.
+    * `state` - The state of a route in the route table (`active` \| `blackhole`). The `blackhole` state indicates that the target of the route is not available.
+    * `vm_account_id` - The account ID of the owner of the VM.
+    * `vm_id` - The ID of a VM specified in a route in the table.
+  * `tags` - One or more tags associated with the route table.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

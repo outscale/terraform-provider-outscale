@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,29 +15,22 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleVpnRoutePropagation_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
+func TestAccOutscaleOAPIVpnRoutePropagation_basic(t *testing.T) {
+	t.Skip()
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckVpnRoutePropagationDestroy,
+		CheckDestroy: testAccCheckOAPIVpnRoutePropagationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleVpnRoutePropagationConfig(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnRoutePropagation(
+					testAccOutscaleOAPIVpnRoutePropagation(
 						"outscale_vpn_gateway_route_propagation.foo",
 					),
 				),
@@ -48,7 +39,7 @@ func TestAccOutscaleVpnRoutePropagation_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckVpnRoutePropagationDestroy(s *terraform.State) error {
+func testAccCheckOAPIVpnRoutePropagationDestroy(s *terraform.State) error {
 	FCU := testAccProvider.Meta().(*OutscaleClient).FCU
 
 	for _, rs := range s.RootModule().Resources {
@@ -69,7 +60,7 @@ func testAccCheckVpnRoutePropagationDestroy(s *terraform.State) error {
 				}
 				return resource.NonRetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return nil
 		})
 
 		if err != nil {
@@ -113,7 +104,7 @@ func testAccCheckVpnRoutePropagationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOutscaleVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
+func testAccOutscaleOAPIVpnRoutePropagation(routeProp string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[routeProp]
 		if !ok {
@@ -128,32 +119,33 @@ func testAccOutscaleVpnRoutePropagation(routeProp string) resource.TestCheckFunc
 	}
 }
 
-func testAccOutscaleVpnRoutePropagationConfig(rBgpAsn int) string {
+func testAccOutscaleOAPIVpnRoutePropagationConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
-resource "outscale_lin" "outscale_lin" {
-    count = 1
-
-    cidr_block = "10.0.0.0/16"
-}
-
-resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+		resource "outscale_net" "outscale_net" {
+			count    = 1
+			ip_range = "10.0.0.0/16"
+		}
+		
+		resource "outscale_vpn_gateway" "outscale_vpn_gateway" {
+			type = "ipsec.1"
     type = "ipsec.1" 
+			type = "ipsec.1"
+		}
+		
+		resource "outscale_vpn_gateway_link" "test" {
+			lin_id         = "${outscale_net.outscale_net.id}"
+			vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
+		}
+		
+		resource "outscale_route_table" "outscale_route_table" {
+			net_id = "${outscale_net.outscale_net.id}"
+		}
+		
+		resource "outscale_vpn_gateway_route_propagation" "foo" {
+			vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
+			route_table_id = "${outscale_route_table.outscale_route_table.route_table_id}"
+		}	
 }
-
-resource "outscale_vpn_gateway_link" "test" {
-	vpc_id = "${outscale_lin.outscale_lin.id}"
-	vpn_gateway_id = "${outscale_vpn_gateway.outscale_vpn_gateway.id}"
-}
-
-resource "outscale_route_table" "outscale_route_table" {
-    count = 1
-
-    vpc_id = "${outscale_lin.outscale_lin.vpc_id}"
-}
-
-resource "outscale_vpn_gateway_route_propagation" "foo" {
-    gateway_id      = "${outscale_vpn_gateway.outscale_vpn_gateway.vpn_gateway_id}"
-		route_table_id  = "${outscale_route_table.outscale_route_table.route_table_id}"
-}
-`)
+		}	
+	`)
 }

@@ -10,21 +10,21 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVMType() *schema.Resource {
+func dataSourceOutscaleOAPIVMType() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVMTypeRead,
+		Read: dataSourceOutscaleOAPIVMTypeRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"ebs_optimized_available": &schema.Schema{
+			"bsu_optimized": &schema.Schema{
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"max_ip_addresses": &schema.Schema{
+			"max_private_ip": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"memory": &schema.Schema{
+			"memory_size": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -40,7 +40,7 @@ func dataSourceOutscaleVMType() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"vcpu": &schema.Schema{
+			"vcore_count": &schema.Schema{
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -52,7 +52,7 @@ func dataSourceOutscaleVMType() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVMTypeRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVMTypeRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filter, filterOk := d.GetOk("filter")
@@ -90,9 +90,9 @@ func dataSourceOutscaleVMTypeRead(d *schema.ResourceData, meta interface{}) erro
 	vm := resp.InstanceTypeSet[0]
 
 	d.SetId(*vm.Name)
-	d.Set("ebs_optimized_available", *vm.EbsOptimizedAvailable)
-	d.Set("max_ip_addresses", *vm.MaxIpAddresses)
-	d.Set("memory", *vm.Memory)
+	d.Set("bsu_optimized", *vm.EbsOptimizedAvailable)
+	d.Set("max_private_ip", *vm.MaxIpAddresses)
+	d.Set("memory_size", *vm.Memory)
 	d.Set("name", *vm.Name)
 	d.Set("storage_count", *vm.StorageCount)
 	if vm.StorageSize != nil {
@@ -100,7 +100,7 @@ func dataSourceOutscaleVMTypeRead(d *schema.ResourceData, meta interface{}) erro
 	} else {
 		d.Set("storage_size", 0)
 	}
-	d.Set("vcpu", *vm.Vcpu)
+	d.Set("vcore_count", *vm.Vcpu)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

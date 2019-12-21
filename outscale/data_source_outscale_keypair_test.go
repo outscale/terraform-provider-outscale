@@ -2,46 +2,39 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleKeypairDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIKeypairDataSource_Instance(t *testing.T) {
+	//t.Skip()
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
+	keyPairName := fmt.Sprintf("acc-test-keypair-%d", acctest.RandIntRange(0, 400))
 
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleKeypairDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIKeypairDataSourceConfig(keyPairName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleKeypairDataSourceID("data.outscale_keypair.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_keypair.nat_ami", "key_name", "TestKey"),
+					testAccCheckOutscaleOAPIKeypairDataSourceID("data.outscale_keypair.nat_ami"),
+					resource.TestCheckResourceAttr("data.outscale_keypair.nat_ami", "keypair_name", keyPairName),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleKeypairDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeypairDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Can't find AMI data source: %s", n)
+			return fmt.Errorf("Can't find key pair data source: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
@@ -51,12 +44,18 @@ func testAccCheckOutscaleKeypairDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckOutscaleKeypairDataSourceConfig = `
-resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
+func testAccCheckOutscaleOAPIKeypairDataSourceConfig(keypairName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_keypair" "a_key_pair" {
+			keypair_name = "%s"
+		}
+		
+		data "outscale_keypair" "nat_ami" {
+			#keypair_name = "${outscale_keypair.a_key_pair.id}"
+			filter {
+				name   = "keypair_names"
+				values = ["${outscale_keypair.a_key_pair.keypair_name}"]
+			}
+		}
+	`, keypairName)
 }
-
-data "outscale_keypair" "nat_ami" {
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}
-`

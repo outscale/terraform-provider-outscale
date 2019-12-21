@@ -12,17 +12,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
-func dataSourceOutscaleReservedVMOffers() *schema.Resource {
+func dataSourceOutscaleOAPIReservedVMOffers() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleReservedVMOffersRead,
+		Read: dataSourceOutscaleOAPIReservedVMOffersRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"availability_zone": &schema.Schema{
+			"sub_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"instance_tenancy": &schema.Schema{
+			"tenancy": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -30,16 +30,16 @@ func dataSourceOutscaleReservedVMOffers() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"product_description": &schema.Schema{
+			"product_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"reserved_instances_offering_id": &schema.Schema{
+			"reserved_vms_offering_id": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"reserved_instances_offerings_set": &schema.Schema{
+			"reserved_vms_offering": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -48,7 +48,7 @@ func dataSourceOutscaleReservedVMOffers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"instance_type": &schema.Schema{
+						"type": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -56,7 +56,7 @@ func dataSourceOutscaleReservedVMOffers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"recurring_charges": &schema.Schema{
+						"recurring_charge": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -79,15 +79,15 @@ func dataSourceOutscaleReservedVMOffers() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleReservedVMOffersRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIReservedVMOffersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	az, azok := d.GetOk("availability_zone")
-	it, itok := d.GetOk("instance_tenancy")
-	ity, ityok := d.GetOk("instance_type")
-	pd, pdok := d.GetOk("product_description")
+	az, azok := d.GetOk("sub_region_name")
+	it, itok := d.GetOk("tenancy")
+	ity, ityok := d.GetOk("type")
+	pd, pdok := d.GetOk("product_type")
 	ot, otok := d.GetOk("offering_type")
-	ri, riok := d.GetOk("reserved_instances_offering_id")
+	ri, riok := d.GetOk("reserved_vms_offering_id")
 	filter, filterOk := d.GetOk("filter")
 
 	req := &fcu.DescribeReservedInstancesOfferingsInput{}
@@ -146,14 +146,14 @@ func dataSourceOutscaleReservedVMOffersRead(d *schema.ResourceData, meta interfa
 
 	for k, v := range resp.ReservedInstancesOfferingsSet {
 		r := make(map[string]interface{})
-		r["availability_zone"] = *v.AvailabilityZone
+		r["sub_region_name"] = *v.AvailabilityZone
 		r["currency_code"] = *v.CurrencyCode
-		r["instance_tenancy"] = *v.InstanceTenancy
-		r["instance_type"] = *v.InstanceType
+		r["tenancy"] = *v.InstanceTenancy
+		r["type"] = *v.InstanceType
 		r["marketplace"] = *v.Martketplace
 		r["offering_type"] = *v.OfferingType
-		r["product_description"] = *v.ProductDescription
-		r["reserved_instances_offering_id"] = *v.ReservedInstancesOfferingId
+		r["product_type"] = *v.ProductDescription
+		r["reserved_vms_offering_id"] = *v.ReservedInstancesOfferingId
 
 		rcs := make([]map[string]interface{}, len(v.RecurringCharges))
 		for k1, v1 := range v.RecurringCharges {
@@ -162,7 +162,7 @@ func dataSourceOutscaleReservedVMOffersRead(d *schema.ResourceData, meta interfa
 			rcs[k1] = rc
 		}
 
-		r["recurring_charges"] = rcs
+		r["recurring_charge"] = rcs
 
 		pds := make([]map[string]interface{}, len(v.PricingDetailsSet))
 		for k1, v1 := range v.PricingDetailsSet {
@@ -176,7 +176,7 @@ func dataSourceOutscaleReservedVMOffersRead(d *schema.ResourceData, meta interfa
 		rsi[k] = r
 	}
 
-	d.Set("reserved_instances_offerings_set", rsi)
+	d.Set("reserved_vms_offering", rsi)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

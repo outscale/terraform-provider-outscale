@@ -1,68 +1,72 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourcedOutscaleSnapshotAttributes() *schema.Resource {
+func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 	return &schema.Resource{
-		Exists: resourcedOutscaleSnapshotAttributesExists,
-		Create: resourcedOutscaleSnapshotAttributesCreate,
-		Read:   resourcedOutscaleSnapshotAttributesRead,
-		Delete: resourcedOutscaleSnapshotAttributesDelete,
+		Create: resourcedOutscaleOAPISnapshotAttributesCreate,
+		Read:   resourcedOutscaleOAPISnapshotAttributesRead,
+		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"snapshot_id": {
-				Type:     schema.TypeString,
-				Required: true,
+			"permissions_to_create_volume_additions": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
 				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+					},
+				},
 			},
-			"create_volume_permission_add": {
+			"permissions_to_create_volume_removals": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group": {
-							Type:     schema.TypeString,
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
 							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"user_id": {
-							Type:     schema.TypeString,
+						"global_permission": &schema.Schema{
+							Type:     schema.TypeBool,
 							Optional: true,
 						},
 					},
 				},
 			},
-			"create_volume_permissions": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"group": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"user_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
+			"snapshot_id": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
-			"account_id": {
+			"account_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": {
+			"request_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -70,45 +74,79 @@ func resourcedOutscaleSnapshotAttributes() *schema.Resource {
 	}
 }
 
-func resourcedOutscaleSnapshotAttributesExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*OutscaleClient).FCU
-
-	sid := d.Get("snapshot_id").(string)
-	aid := d.Get("account_id").(string)
-	return hasCreateVolumePermission(conn, sid, aid)
+func expandAccountIds(param interface{}) []string {
+	var values []string
+	for _, v := range param.([]interface{}) {
+		values = append(values, v.(string))
+	}
+	return values
 }
 
-func resourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourcedOutscaleOAPISnapshotAttributesCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	sid := d.Get("snapshot_id").(string)
-	aid := ""
+	snapshotID := d.Get("snapshot_id").(string)
 
-	req := &fcu.ModifySnapshotAttributeInput{
-		SnapshotId: aws.String(sid),
-		Attribute:  aws.String("createVolumePermission"),
+	req := oscgo.UpdateSnapshotRequest{
+		SnapshotId: snapshotID,
 	}
 
-	if v, ok := d.GetOk("create_volume_permission_add"); ok {
-		add := v.([]interface{})
-		if len(add) > 0 {
-			a := make([]*fcu.CreateVolumePermission, len(add))
+	perms := oscgo.PermissionsOnResourceCreation{}
 
-			for k, v1 := range v.([]interface{}) {
-				data := v1.(map[string]interface{})
-				a[k] = &fcu.CreateVolumePermission{
-					UserId: aws.String(data["user_id"].(string)),
-					Group:  aws.String(data["group"].(string)),
+	if addPermsParam, ok := d.GetOk("permissions_to_create_volume_additions"); ok {
+		AddPerms := addPermsParam.([]interface{})
+		addition := oscgo.PermissionsOnResource{}
+		if len(AddPerms) > 0 {
+			perms.SetAdditions(addition)
+
+			addMap := AddPerms[0].(map[string]interface{})
+			if addMap["account_ids"] != nil {
+				paramIds := addMap["account_ids"].([]interface{})
+				accountIds := make([]string, len(paramIds))
+				for i, v := range paramIds {
+					accountIds[i] = v.(string)
 				}
-				aid = data["user_id"].(string)
+				addition.SetAccountIds(accountIds)
+				perms.SetAdditions(addition)
 			}
-			req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Add: a}
+			if addMap["global_permission"] != nil {
+				globalPermission := addMap["global_permission"].(bool)
+				addition.SetGlobalPermission(globalPermission)
+				perms.SetAdditions(addition)
+			}
 		}
 	}
 
+	if removalPermsParam, ok := d.GetOk("permissions_to_create_volume_removals"); ok {
+		removalPerms := removalPermsParam.([]interface{})
+
+		if len(removalPerms) > 0 {
+			removal := oscgo.PermissionsOnResource{}
+			perms.SetRemovals(removal)
+
+			removalMap := removalPerms[0].(map[string]interface{})
+			if removalMap["account_ids"] != nil {
+				paramIds := removalMap["account_ids"].([]interface{})
+				accountIds := make([]string, len(paramIds))
+				for i, v := range paramIds {
+					accountIds[i] = v.(string)
+				}
+				removal.SetAccountIds(accountIds)
+				perms.SetRemovals(removal)
+			}
+			if removalMap["global_permission"] != nil {
+				globalPermission := removalMap["global_permission"].(bool)
+				removal.SetGlobalPermission(globalPermission)
+				perms.SetRemovals(removal)
+			}
+		}
+	}
+
+	req.SetPermissionsToCreateVolume(perms)
+
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.ModifySnapshotAttribute(req)
+		_, _, err = conn.SnapshotApi.UpdateSnapshot(context.Background(), &oscgo.UpdateSnapshotOpts{UpdateSnapshotRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -122,42 +160,25 @@ func resourcedOutscaleSnapshotAttributesCreate(d *schema.ResourceData, meta inte
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error adding snapshot createVolumePermission: %s", err)
+		return fmt.Errorf("Error createing snapshot createVolumePermission: %s", err)
 	}
 
-	d.SetId(fmt.Sprintf("%s-%s", sid, aid))
-	d.Set("account_id", aid)
-	d.Set("create_volume_permissions", make([]map[string]interface{}, 0))
+	d.SetId(snapshotID)
 
-	// Wait for the account to appear in the permission list
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"denied"},
-		Target:     []string{"granted"},
-		Refresh:    resourcedOutscaleSnapshotAttributesStateRefreshFunc(conn, sid, aid),
-		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf(
-			"Error waiting for snapshot createVolumePermission (%s) to be added: %s",
-			d.Id(), err)
-	}
-
-	return resourcedOutscaleSnapshotAttributesRead(d, meta)
+	return resourcedOutscaleOAPISnapshotAttributesRead(d, meta)
 }
 
-func resourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	sid := d.Get("snapshot_id").(string)
+func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var attrs *fcu.DescribeSnapshotAttributeOutput
+	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		attrs, err = conn.VM.DescribeSnapshotAttribute(&fcu.DescribeSnapshotAttributeInput{
-			SnapshotId: aws.String(sid),
-			Attribute:  aws.String("createVolumePermission"),
-		})
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(oscgo.ReadSnapshotsRequest{
+			Filters: &oscgo.FiltersSnapshot{
+				SnapshotIds: &[]string{d.Id()},
+			},
+		})})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -174,125 +195,26 @@ func resourcedOutscaleSnapshotAttributesRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
 	}
 
-	cvp := make([]map[string]interface{}, len(attrs.CreateVolumePermissions))
-	for k, v := range attrs.CreateVolumePermissions {
-		c := make(map[string]interface{})
-		c["group"] = aws.StringValue(v.Group)
-		c["user_id"] = aws.StringValue(v.UserId)
-		cvp[k] = c
+	lp := make([]map[string]interface{}, 1)
+	lp[0] = make(map[string]interface{})
+	lp[0]["global_permission"] = resp.GetSnapshots()[0].PermissionsToCreateVolume.GetGlobalPermission()
+	lp[0]["account_ids"] = resp.GetSnapshots()[0].PermissionsToCreateVolume.GetAccountIds()
+
+	if err := d.Set("permissions_to_create_volume_additions", lp); err != nil {
+		return err
 	}
-
-	d.Set("request_id", aws.StringValue(attrs.RequestId))
-
-	return d.Set("create_volume_permissions", cvp)
-}
-
-func resourcedOutscaleSnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-
-	sid := d.Get("snapshot_id").(string)
-	v := d.Get("create_volume_permission_add")
-	aid := ""
-
-	req := &fcu.ModifySnapshotAttributeInput{
-		SnapshotId: aws.String(sid),
-		Attribute:  aws.String("createVolumePermission"),
+	if err := d.Set("account_id", resp.GetSnapshots()[0].GetAccountId()); err != nil {
+		return err
 	}
-
-	remove := v.([]interface{})
-
-	a := make([]*fcu.CreateVolumePermission, 0)
-
-	for _, v1 := range remove {
-		data := v1.(map[string]interface{})
-		item := &fcu.CreateVolumePermission{
-			UserId: aws.String(data["user_id"].(string)),
-			Group:  aws.String(data["group"].(string)),
-		}
-		a = append(a, item)
-		aid = data["user_id"].(string)
-	}
-	req.CreateVolumePermission = &fcu.CreateVolumePermissionModifications{Remove: a}
-
-	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, err := conn.VM.ModifySnapshotAttribute(req)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Error: %q", err)
-				return resource.RetryableError(err)
-			}
-
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error removing snapshot createVolumePermission: %s", err)
-	}
-
-	// Wait for the account to disappear from the permission list
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"granted"},
-		Target:     []string{"denied"},
-		Refresh:    resourcedOutscaleSnapshotAttributesStateRefreshFunc(conn, sid, aid),
-		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
-	}
-	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf(
-			"Error waiting for snapshot createVolumePermission (%s) to be removed: %s",
-			d.Id(), err)
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func hasCreateVolumePermission(conn *fcu.Client, sid string, aid string) (bool, error) {
-	_, state, err := resourcedOutscaleSnapshotAttributesStateRefreshFunc(conn, sid, aid)()
-	if err != nil {
-		return false, err
-	}
-	if state == "granted" {
-		return true, nil
-	}
-	return false, nil
-}
+func resourcedOutscaleOAPISnapshotAttributesDelete(d *schema.ResourceData, meta interface{}) error {
+	d.SetId("")
 
-func resourcedOutscaleSnapshotAttributesStateRefreshFunc(conn *fcu.Client, sid string, aid string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-
-		var attrs *fcu.DescribeSnapshotAttributeOutput
-		var err error
-		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			attrs, err = conn.VM.DescribeSnapshotAttribute(&fcu.DescribeSnapshotAttributeInput{
-				SnapshotId: aws.String(sid),
-				Attribute:  aws.String("createVolumePermission"),
-			})
-			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-					log.Printf("[DEBUG] Error: %q", err)
-					return resource.RetryableError(err)
-				}
-
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			return nil, "", fmt.Errorf("Error refreshing snapshot createVolumePermission state: %s", err)
-		}
-
-		for _, vp := range attrs.CreateVolumePermissions {
-			if *vp.UserId == aid {
-				return attrs, "granted", nil
-			}
-		}
-		return attrs, "denied", nil
-	}
+	return nil
 }

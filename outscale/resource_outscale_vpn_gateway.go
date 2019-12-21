@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleVpnGateway() *schema.Resource {
+func resourceOutscaleOAPIVpnGateway() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVpnGatewayCreate,
-		Read:   resourceOutscaleVpnGatewayRead,
-		Delete: resourceOutscaleVpnGatewayDelete,
+		Create: resourceOutscaleOAPIVpnGatewayCreate,
+		Read:   resourceOutscaleOAPIVpnGatewayRead,
+		Delete: resourceOutscaleOAPIVpnGatewayDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -28,7 +28,7 @@ func resourceOutscaleVpnGateway() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"attachments": &schema.Schema{
+			"lin_to_vpn_gateway_link": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -37,7 +37,7 @@ func resourceOutscaleVpnGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vpc_id": &schema.Schema{
+						"lin_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -52,7 +52,7 @@ func resourceOutscaleVpnGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vpc_id": &schema.Schema{
+			"lin_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -60,13 +60,13 @@ func resourceOutscaleVpnGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": tagsSchemaComputed(),
-			"tag":     tagsSchema(),
+			"tag":  tagsSchemaComputed(),
+			"tags": tagsSchema(),
 		},
 	}
 }
 
-func resourceOutscaleVpnGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	createOpts := &fcu.CreateVpnGatewayInput{
@@ -97,13 +97,13 @@ func resourceOutscaleVpnGatewayCreate(d *schema.ResourceData, meta interface{}) 
 		if err := setTags(conn, d); err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
+		d.SetPartial("tag")
 	}
 
-	return resourceOutscaleVpnGatewayRead(d, meta)
+	return resourceOutscaleOAPIVpnGatewayRead(d, meta)
 }
 
-func resourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var resp *fcu.DescribeVpnGatewaysOutput
@@ -136,11 +136,11 @@ func resourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) er
 		return nil
 	}
 
-	vpnAttachment := vpnGatewayGetAttachment(vpnGateway)
+	vpnAttachment := oapiVpnGatewayGetAttachment(vpnGateway)
 	if len(vpnGateway.VpcAttachments) == 0 || *vpnAttachment.State == "detached" {
-		d.Set("vpc_id", "")
+		d.Set("lin_id", "")
 	} else {
-		d.Set("vpc_id", *vpnAttachment.VpcId)
+		d.Set("lin_id", *vpnAttachment.VpcId)
 	}
 
 	vs := make([]map[string]interface{}, len(vpnGateway.VpcAttachments))
@@ -149,21 +149,21 @@ func resourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) er
 		vp := make(map[string]interface{})
 
 		vp["state"] = *v.State
-		vp["vpc_id"] = *v.VpcId
+		vp["lin_id"] = *v.VpcId
 
 		vs[k] = vp
 	}
 
 	d.Set("vpn_gateway_id", vpnGateway.VpnGatewayId)
-	d.Set("attachments", vs)
+	d.Set("lin_to_vpn_gateway_link", vs)
 	d.Set("state", vpnGateway.State)
-	d.Set("tag_set", tagsToMap(vpnGateway.Tags))
+	d.Set("tag", tagsToMap(vpnGateway.Tags))
 	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
 
-func resourceOutscaleVpnGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -233,12 +233,12 @@ func vpnGatewayAttachStateRefreshFunc(conn *fcu.Client, id string, expected stri
 			return vpnGateway, "detached", nil
 		}
 
-		vpnAttachment := vpnGatewayGetAttachment(vpnGateway)
+		vpnAttachment := oapiVpnGatewayGetAttachment(vpnGateway)
 		return vpnGateway, *vpnAttachment.State, nil
 	}
 }
 
-func vpnGatewayGetAttachment(vgw *fcu.VpnGateway) *fcu.VpcAttachment {
+func oapiVpnGatewayGetAttachment(vgw *fcu.VpnGateway) *fcu.VpcAttachment {
 	for _, v := range vgw.VpcAttachments {
 		if *v.State == "attached" {
 			return v

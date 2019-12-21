@@ -6,13 +6,18 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccDataSourceOutscalePrefixLists(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIPrefixLists(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscalePrefixListsConfig,
+				Config: testAccDataSourceOutscaleOAPIPrefixListsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_prefix_lists.s3_by_id", "prefix_list_set.#", "1"),
 				),
@@ -21,8 +26,8 @@ func TestAccDataSourceOutscalePrefixLists(t *testing.T) {
 	})
 }
 
-const testAccDataSourceOutscalePrefixListsConfig = `
-data "outscale_prefix_lists" "s3_by_id" {
-  prefix_list_id = ["pl-a14a8cdc"]
-}
+const testAccDataSourceOutscaleOAPIPrefixListsConfig = `
+	data "outscale_prefix_lists" "s3_by_id" {
+		prefix_list_id = ["pl-a14a8cdc"]
+	}
 `

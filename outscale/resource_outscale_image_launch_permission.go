@@ -1,22 +1,27 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/spf13/cast"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleImageLaunchPermission() *schema.Resource {
+func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleImageLaunchPermissionCreate,
-		Read:   resourceOutscaleImageLaunchPermissionRead,
-		Delete: resourceOutscaleImageLaunchPermissionDelete,
+		Exists: resourceOutscaleOAPIImageLaunchPermissionExists,
+		Create: resourceOutscaleOAPIImageLaunchPermissionCreate,
+		Read:   resourceOutscaleOAPIImageLaunchPermissionRead,
+		Delete: resourceOutscaleOAPIImageLaunchPermissionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,47 +32,68 @@ func resourceOutscaleImageLaunchPermission() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"launch_permission_add": &schema.Schema{
+			"permission_additions": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group": &schema.Schema{
+						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
+							Default:  "false",
 						},
-						"user_id": &schema.Schema{
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
+			"permission_removals": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
+							Default:  "false",
+						},
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
+							Optional: true,
+							ForceNew: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
 			},
 			"description": &schema.Schema{
-				Type:     schema.TypeMap,
+				Type:     schema.TypeString,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"value": &schema.Schema{
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
 			},
-			"launch_permissions": &schema.Schema{
+			"permissions_to_launch": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group": &schema.Schema{
+						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"user_id": &schema.Schema{
-							Type:     schema.TypeString,
+						"account_ids": &schema.Schema{
+							Type:     schema.TypeList,
 							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -80,42 +106,56 @@ func resourceOutscaleImageLaunchPermission() *schema.Resource {
 	}
 }
 
-func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIImageLaunchPermissionExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	id, iok := d.GetOk("image_id")
+	imageID := d.Get("image_id").(string)
+	return hasOAPILaunchPermission(conn, imageID)
+}
 
-	fmt.Println("Creating Outscale Image Launch Permission, image_id", id.(string))
+func expandOAPIImagePermission(permissionType interface{}) (res oscgo.PermissionsOnResource) {
 
-	if !iok {
+	if len(permissionType.([]interface{})) > 0 {
+		permission := permissionType.([]interface{})[0].(map[string]interface{})
+
+		if globalPermission, ok := permission["global_permission"]; ok {
+			res.SetGlobalPermission(cast.ToBool(globalPermission))
+		}
+		if accountIDs, ok := permission["account_ids"]; ok {
+			for _, accountID := range accountIDs.([]interface{}) {
+				res.SetAccountIds(append(res.GetAccountIds(), accountID.(string)))
+			}
+		}
+	}
+	return
+}
+
+func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	imageID, ok := d.GetOk("image_id")
+
+	if !ok {
 		return fmt.Errorf("please provide the required attribute image_id")
 	}
+	log.Printf("Creating Outscale Image Launch Permission, image_id (%+v)", imageID.(string))
 
-	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(id.(string)),
+	permissionLunch := oscgo.PermissionsOnResourceCreation{}
+	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
+		permissionLunch.SetAdditions(expandOAPIImagePermission(permissionAdditions))
+	}
+	if permissionRemovals, ok := d.GetOk("permission_removals"); ok {
+		permissionLunch.SetRemovals(expandOAPIImagePermission(permissionRemovals))
 	}
 
-	if v, ok := d.GetOk("launch_permission_add"); ok {
-		request.Attribute = aws.String("launchPermission")
-
-		add := v.([]interface{})
-
-		if len(add) > 0 {
-			a := make([]*fcu.LaunchPermission, len(add))
-			for k, v1 := range add {
-				data := v1.(map[string]interface{})
-				a[k] = &fcu.LaunchPermission{
-					UserId: aws.String(data["user_id"].(string)),
-					Group:  aws.String(data["group"].(string)),
-				}
-			}
-			request.LaunchPermission = &fcu.LaunchPermissionModifications{Add: a}
-		}
+	request := oscgo.UpdateImageRequest{
+		ImageId:             imageID.(string),
+		PermissionsToLaunch: permissionLunch,
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, err = conn.VM.ModifyImageAttribute(request)
+		_, _, err = conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{UpdateImageRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -125,24 +165,30 @@ func resourceOutscaleImageLaunchPermissionCreate(d *schema.ResourceData, meta in
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return fmt.Errorf("error creating ami launch permission: %s", err)
+		errString = err.Error()
+
+		return fmt.Errorf("error creating omi launch permission: %s", errString)
 	}
 
-	d.SetId(fmt.Sprintf("%s-%s", id, "lp"))
-	return resourceOutscaleImageLaunchPermissionRead(d, meta)
+	d.SetId(imageID.(string))
+
+	return resourceOutscaleOAPIImageLaunchPermissionRead(d, meta)
 }
 
-func resourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	id := d.Get("image_id").(string)
-	var attrs *fcu.DescribeImageAttributeOutput
+func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	var resp oscgo.ReadImagesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		attrs, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(id),
-			Attribute: aws.String("launchPermission"),
-		})
+		resp, _, err = conn.ImageApi.ReadImages(context.Background(), &oscgo.ReadImagesOpts{ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{
+				ImageIds: &[]string{d.Id()},
+			},
+		})})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -152,90 +198,82 @@ func resourceOutscaleImageLaunchPermissionRead(d *schema.ResourceData, meta inte
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
+		// When an AMI disappears out from under a launch permission resource, we will
+		// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
 		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
 			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", d.Id())
 			return nil
 		}
-		return err
+		errString = err.Error()
+
+		return fmt.Errorf("Error reading Outscale image permission: %s", errString)
 	}
 
-	d.Set("request_id", attrs.RequestId)
-	desc := make(map[string]interface{})
+	result := resp.GetImages()[0]
 
-	if attrs.Description != nil {
-		desc["value"] = aws.StringValue(attrs.Description.Value)
-	}
-	d.Set("description", desc)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	d.Set("description", result.Description)
 
-	lp := make([]map[string]interface{}, len(attrs.LaunchPermissions))
-	for k, v := range attrs.LaunchPermissions {
-		l := make(map[string]interface{})
-		l["group"] = aws.StringValue(v.Group)
-		l["user_id"] = aws.StringValue(v.UserId)
-		lp[k] = l
-	}
+	lp := make(map[string]interface{})
+	lp["global_permission"] = strconv.FormatBool(result.PermissionsToLaunch.GetGlobalPermission())
+	lp["account_ids"] = result.PermissionsToLaunch.GetAccountIds()
 
-	return d.Set("launch_permissions", lp)
+	return d.Set("permissions_to_launch", []map[string]interface{}{lp})
 }
 
-func resourceOutscaleImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	ID := d.Get("image_id")
-	lp, lok := d.GetOk("launch_permission_add")
-
-	request := &fcu.ModifyImageAttributeInput{
-		ImageId: aws.String(ID.(string)),
+	imageID, ok := d.GetOk("image_id")
+	if !ok {
+		return fmt.Errorf("please provide the required attribute image_id")
 	}
 
-	if lok {
-		remove := lp.([]interface{})
-		a := make([]*fcu.LaunchPermission, 0)
-		request.Attribute = aws.String("launchPermission")
-		for _, v1 := range remove {
-			data := v1.(map[string]interface{})
-			item := &fcu.LaunchPermission{
-				UserId: aws.String(data["user_id"].(string)),
-				Group:  aws.String(data["group"].(string)),
-			}
-			a = append(a, item)
+	if permissionAdditions, ok := d.GetOk("permission_additions"); ok {
+		permission := oscgo.PermissionsOnResourceCreation{}
+		request := oscgo.UpdateImageRequest{
+			ImageId: imageID.(string),
 		}
-		request.LaunchPermission = &fcu.LaunchPermissionModifications{Remove: a}
-	}
+		permission.SetRemovals(expandOAPIImagePermission(permissionAdditions))
+		request.SetPermissionsToLaunch(permission)
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		_, err = conn.VM.ModifyImageAttribute(request)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+			var err error
+			_, _, err = conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{UpdateImageRequest: optional.NewInterface(request)})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
 			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			d.SetId("")
 			return nil
+		})
+
+		var errString string
+
+		if err != nil {
+			errString = err.Error()
+
+			return fmt.Errorf("error removing omi launch permission: %s", errString)
 		}
-		return fmt.Errorf("error removing ami launch permission: %s", err)
 	}
 
 	d.SetId("")
-
 	return nil
 }
 
-func hasLaunchPermission(conn *fcu.Client, ID string) (bool, error) {
-
+func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error) {
+	var resp oscgo.ReadImagesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DescribeImageAttribute(&fcu.DescribeImageAttributeInput{
-			ImageId:   aws.String(ID),
-			Attribute: aws.String("launchPermission"),
-		})
+		resp, _, err = conn.ImageApi.ReadImages(context.Background(), &oscgo.ReadImagesOpts{ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{
+				ImageIds: &[]string{imageID},
+			},
+		})})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -245,13 +283,29 @@ func hasLaunchPermission(conn *fcu.Client, ID string) (bool, error) {
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
+		// When an AMI disappears out from under a launch permission resource, we will
+		// see either InvalidAMIID.NotFound or InvalidAMIID.Unavailable.
 		if strings.Contains(fmt.Sprint(err), "InvalidAMIID") {
-			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission from the state", ID)
+			log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", imageID)
 			return false, nil
 		}
-		return false, err
+		errString = err.Error()
+
+		return false, fmt.Errorf("Error creating Outscale VM volume: %s", errString)
 	}
 
+	if len(resp.GetImages()) == 0 {
+		log.Printf("[DEBUG] %s no longer exists, so we'll drop launch permission for the state", imageID)
+		return false, nil
+	}
+
+	result := resp.GetImages()[0]
+
+	if len(result.PermissionsToLaunch.GetAccountIds()) > 0 {
+		return true, nil
+	}
 	return false, nil
 }

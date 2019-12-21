@@ -12,9 +12,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscalePrefixList() *schema.Resource {
+func dataSourceOutscaleOAPIPrefixList() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscalePrefixListRead,
+		Read: dataSourceOutscaleOAPIPrefixListRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -31,7 +31,7 @@ func dataSourceOutscalePrefixList() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"cidr_set": &schema.Schema{
+			"ip_range": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -40,7 +40,7 @@ func dataSourceOutscalePrefixList() *schema.Resource {
 	}
 }
 
-func dataSourceOutscalePrefixListRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIPrefixListRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -96,7 +96,7 @@ func dataSourceOutscalePrefixListRead(d *schema.ResourceData, meta interface{}) 
 	for i, v := range pl.Cidrs {
 		cidrs[i] = *v
 	}
-	d.Set("cidr_set", cidrs)
+	d.Set("ip_range", cidrs)
 	d.Set("request_id", resp.RequestId)
 
 	return nil

@@ -6,17 +6,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/outscale/osc-go/oapi"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourcedOutscaleSnapshotCopy() *schema.Resource {
+func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcedOutscaleSnapshotCopyCreate,
-		Read:   resourcedOutscaleSnapshotCopyRead,
-		Delete: resourcedOutscaleSnapshotCopyDelete,
+		Create: resourcedOutscaleOAPISnapshotCopyCreate,
+		Read:   resourcedOutscaleOAPISnapshotCopyRead,
+		Delete: resourcedOutscaleOAPISnapshotCopyDelete,
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
@@ -25,13 +25,7 @@ func resourcedOutscaleSnapshotCopy() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"destination_region": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-			},
-			"source_region": &schema.Schema{
+			"source_region_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -53,25 +47,22 @@ func resourcedOutscaleSnapshotCopy() *schema.Resource {
 	}
 }
 
-func resourcedOutscaleSnapshotCopyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OAPI
 
-	req := &fcu.CopySnapshotInput{
-		SourceRegion:     aws.String(d.Get("source_region").(string)),
-		SourceSnapshotId: aws.String(d.Get("source_snapshot_id").(string)),
+	req := oapi.CreateSnapshotRequest{
+		SourceRegionName: d.Get("source_region_name").(string),
+		SourceSnapshotId: d.Get("source_snapshot_id").(string),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		req.Description = aws.String(v.(string))
-	}
-	if v, ok := d.GetOk("destination_region"); ok {
-		req.DestinationRegion = aws.String(v.(string))
+		req.Description = v.(string)
 	}
 
-	var o *fcu.CopySnapshotOutput
+	var o *oapi.POST_CreateSnapshotResponses
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		o, err = conn.VM.CopySnapshot(req)
+		o, err = conn.POST_CreateSnapshot(req)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				log.Printf("[DEBUG] Error: %q", err)
@@ -89,17 +80,17 @@ func resourcedOutscaleSnapshotCopyCreate(d *schema.ResourceData, meta interface{
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("snapshot_id", aws.StringValue(o.SnapshotId))
-	d.Set("request_id", aws.StringValue(o.RequestId))
+	d.Set("snapshot_id", o.OK.Snapshot.SnapshotId)
+	d.Set("request_id", o.OK.ResponseContext.RequestId)
 
 	return nil
 }
 
-func resourcedOutscaleSnapshotCopyRead(d *schema.ResourceData, meta interface{}) error {
+func resourcedOutscaleOAPISnapshotCopyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourcedOutscaleSnapshotCopyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourcedOutscaleOAPISnapshotCopyDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 
 	return nil

@@ -1,37 +1,47 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_public_ip"
-sidebar_current: "docs-outscale-resource-public_ip"
+page_title: "3DS OUTSCALE: outscale_public_ip"
+sidebar_current: "outscale-public-ip"
 description: |-
-  Provides an Outscale Public IP Association as a top level resource, to associate and disassociate Public IPs from Outscale VMs and Network Interfaces.
+  [Manages a public IP.]
 ---
 
-# outscale_public_ip
+# outscale_public_ip Resource
 
-NOTE: outscale_public_ip is useful in scenarios where Public IPs are either pre-existing or distributed to customers or users and therefore cannot be changed.
+Manages a public IP.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-publicip).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_public_ip" "bar" {}
+
+resource "outscale_public_ip" "public_ip01" {
+}
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `domain` - (Optional) The type of platform in which you want to use the EIP (standard | vpc).
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
-## Attributes Reference
+## Attribute Reference
 
-* `domain` - (Optional) The type of platform in which you can use the EIP.
+The following attributes are exported:
 
-## Attribute reference
-
-* `allocation_id` - The ID that represents the allocation of the EIP for use with instances in a VPC.
-* `domain` - The type of platform in which you can use the EIP.
-* `public_ip` - The External IP address.
-* `request_id` - The ID of the request.
-
-
-See detailed information in [FCU Address](http://docs.outscale.com/api_fcu/definitions/Address.html#_api_fcu-address).
+* `public_ip` - Information about the public IP.
+  * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
+  * `nic_account_id` - The account ID of the owner of the NIC.
+  * `nic_id` - The ID of the NIC the EIP is associated with (if any).
+  * `private_ip` - The private IP address associated with the EIP.
+  * `public_ip` - The External IP address (EIP) associated with the NAT service.
+  * `public_ip_id` - The allocation ID of the EIP associated with the NAT service.
+  * `tags` - One or more tags associated with the EIP.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `vm_id` - The ID of the VM the External IP (EIP) is associated with (if any).

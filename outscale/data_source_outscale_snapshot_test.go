@@ -2,37 +2,48 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSnapshotDataSource_basic(t *testing.T) {
+func TestAccOutscaleOAPISnapshotDataSource_basic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleSnapshotDataSourceConfig,
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfig(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotDataSourceID("data.outscale_snapshot.snapshot"),
-					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "40"),
+					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
+					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "1"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccOutscaleSnapshotDataSource_multipleFilters(t *testing.T) {
+func TestAccOutscaleOAPISnapshotDataSource_multipleFilters(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleSnapshotDataSourceConfigWithMultipleFilters,
+				Config: testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSnapshotDataSourceID("data.outscale_snapshot.snapshot"),
+					testAccCheckOutscaleOAPISnapshotDataSourceID("data.outscale_snapshot.snapshot"),
 					resource.TestCheckResourceAttr("data.outscale_snapshot.snapshot", "volume_size", "10"),
 				),
 			},
@@ -40,7 +51,7 @@ func TestAccOutscaleSnapshotDataSource_multipleFilters(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleSnapshotDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPISnapshotDataSourceID(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -54,44 +65,41 @@ func testAccCheckOutscaleSnapshotDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckOutscaleSnapshotDataSourceConfig = `
-resource "outscale_volume" "example" {
-    availability_zone = "eu-west-2a"
-    volume_type = "gp2"
-    size = 40
-    tag {
-        Name = "External Volume"
-    }
+func testAccCheckOutscaleOAPISnapshotDataSourceConfig(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "example" {
+			subregion_name = "%sa"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.example.id}"
+		}
+
+		data "outscale_snapshot" "snapshot" {
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
+		}
+	`, region)
 }
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.example.id}"
-}
+func testAccCheckOutscaleOAPISnapshotDataSourceConfigWithMultipleFilters(region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "external1" {
+			subregion_name = "%sa"
+			size           = 10
+		}
 
-data "outscale_snapshot" "snapshot" {
-    snapshot_id = "${outscale_snapshot.snapshot.id}"
-}
-`
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.external1.id}"
+		}
 
-const testAccCheckOutscaleSnapshotDataSourceConfigWithMultipleFilters = `
-resource "outscale_volume" "external1" {
-    availability_zone = "eu-west-2a"
-    volume_type = "gp2"
-    size = 10
-    tag {
-        Name = "External Volume 1"
-    }
-}
+		data "outscale_snapshot" "snapshot" {
+			snapshot_id = "${outscale_snapshot.snapshot.id}"
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.external1.id}"
+			filter {
+				name   = "volume_sizes"
+				values = ["10"]
+			}
+		}
+	`, region)
 }
-
-data "outscale_snapshot" "snapshot" {
-    snapshot_id = "${outscale_snapshot.snapshot.id}"
-    filter {
-	name = "volume-size"
-	values = ["10"]
-    }
-}
-`

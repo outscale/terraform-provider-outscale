@@ -8,23 +8,27 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleImageTask_basic(t *testing.T) {
+func TestAccOutscaleOAPIImageTask_basic(t *testing.T) {
+	t.Skip()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleImageTaskConfig,
+				Config: testAccOutscaleOAPIImageTaskConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImageTaskExists("outscale_image_tasks.outscale_image_tasks"),
+					testAccCheckOutscaleOAPIImageTaskExists("outscale_image_tasks.outscale_image_tasks"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleImageTaskExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIImageTaskExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -39,27 +43,27 @@ func testAccCheckOutscaleImageTaskExists(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccOutscaleImageTaskConfig = `
-resource "outscale_vm" "outscale_vm" {
-    count = 1
+var testAccOutscaleOAPIImageTaskConfig = `
+	resource "outscale_vm" "outscale_vm" {
+		count = 1
 
-    image_id                    = "ami-880caa66"
-    instance_type               = "c4.large"
+		image_id = "ami-880caa66"
+		type     = "c4.large"
+	}
 
-}
+	resource "outscale_image" "outscale_image" {
+		name  = "image_${outscale_vm.outscale_vm.id}"
+		vm_id = "${outscale_vm.outscale_vm.id}"
+	}
 
-resource "outscale_image" "outscale_image" {
-    name            = "image_${outscale_vm.outscale_vm.id}"
-    instance_id     = "${outscale_vm.outscale_vm.id}"
-}
+	resource "outscale_image_tasks" "outscale_image_tasks" {
+		count = 1
 
-resource "outscale_image_tasks" "outscale_image_tasks" {
-    count = 1
-
-		export_to_osu {
+		osu_export {
 			disk_image_format = "raw"
-			osu_bucket = "test"
+			osu_bucket        = "test"
 		}
-    image_id = "${outscale_image.outscale_image.image_id}"
-}
+
+		image_id = "${outscale_image.outscale_image.image_id}"
+	}
 `

@@ -1,34 +1,41 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func datasourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeKeyPairsInput{}
+func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
+	}
+
+	KeyName, KeyNameisOk := d.GetOk("keypair_name")
+	if KeyNameisOk {
+		filter := oscgo.FiltersKeypair{}
+		filter.SetKeypairNames([]string{KeyName.(string)})
+		req.SetFilters(filter)
+	}
 
 	filters, filtersOk := d.GetOk("filter")
-	KeyName, KeyNameisOk := d.GetOk("key_name")
 
 	if filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if KeyNameisOk {
-		req.KeyNames = []*string{aws.String(KeyName.(string))}
+		req.SetFilters(buildOutscaleOAPIKeyPairsDataSourceFilters(filters.(*schema.Set)))
 	}
 
-	var resp *fcu.DescribeKeyPairsOutput
+	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, err = conn.VM.DescribeKeyPairs(req)
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -36,42 +43,53 @@ func datasourceOutscaleKeyPairRead(d *schema.ResourceData, meta interface{}) err
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return err
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
+			d.SetId("")
+			return nil
+		}
+		errString = err.Error()
+
+		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if len(resp.KeyPairs) < 1 {
+	if len(resp.GetKeypairs()) < 1 {
 		return fmt.Errorf("Unable to find key pair, please provide a better query criteria ")
 	}
-	if len(resp.KeyPairs) > 1 {
+	if len(resp.GetKeypairs()) > 1 {
 
 		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
 	}
 
-	keypair := resp.KeyPairs[0]
-	d.Set("key_name", keypair.KeyName)
-	d.Set("key_fingerprint", keypair.KeyFingerprint)
-	d.Set("request_id", resp.RequestId)
-	d.SetId(resource.UniqueId())
+	if resp.ResponseContext.GetRequestId() != "" {
+		d.Set("request_id", resp.ResponseContext.GetRequestId())
+	}
+
+	keypair := resp.GetKeypairs()[0]
+	d.Set("keypair_name", keypair.GetKeypairName())
+	d.Set("keypair_fingerprint", keypair.GetKeypairFingerprint())
+	d.SetId(keypair.GetKeypairName())
 	return nil
 }
 
-func datasourceOutscaleKeyPair() *schema.Resource {
+func datasourceOutscaleOAPIKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceOutscaleKeyPairRead,
+		Read: datasourceOutscaleOApiKeyPairRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			// Attributes
-			"key_name": {
+			"keypair_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"key_fingerprint": {
+			"keypair_fingerprint": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -81,4 +99,25 @@ func datasourceOutscaleKeyPair() *schema.Resource {
 			},
 		},
 	}
+}
+
+func buildOutscaleOAPIKeyPairsDataSourceFilters(set *schema.Set) oscgo.FiltersKeypair {
+	var filters oscgo.FiltersKeypair
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "keypair_fingerprints":
+			filters.SetKeypairFingerprints(filterValues)
+		case "keypair_names":
+			filters.SetKeypairNames(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
 }

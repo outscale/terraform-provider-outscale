@@ -1,41 +1,41 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleSubnets() *schema.Resource {
+func dataSourceOutscaleOAPISubnets() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleSubnetsRead,
+		Read: dataSourceOutscaleOAPISubnetsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"subnet_id": {
+			"subnet_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"subnet_set": {
+			"subnets": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"availability_zone": {
+						"subregion_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"cidr_block": {
+						"ip_range": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -50,14 +50,14 @@ func dataSourceOutscaleSubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tag_set": tagsSchemaComputed(),
+						"tags": tagsOAPIListSchemaComputed(),
 
-						"vpc_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 
-						"available_ip_address_count": {
+						"available_ips_count": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -72,79 +72,86 @@ func dataSourceOutscaleSubnets() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleSubnetsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPISubnetsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.DescribeSubnetsInput{}
+	req := oscgo.ReadSubnetsRequest{}
 
-	if id, ok := d.GetOk("subnet_id"); ok {
-		var ids []*string
+	if id := d.Get("subnet_ids"); id != "" {
+		var ids []string
 		for _, v := range id.([]interface{}) {
-			ids = append(ids, aws.String(v.(string)))
+			ids = append(ids, v.(string))
 		}
-		req.SubnetIds = ids
+		req.SetFilters(oscgo.FiltersSubnet{SubnetIds: &ids})
 	}
 
-	if filters, filtersOk := d.GetOk("filter"); filtersOk {
-		req.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+	filters, filtersOk := d.GetOk("filter")
+
+	if filtersOk {
+		req.Filters = buildOutscaleOAPISubnetDataSourceFilters(filters.(*schema.Set))
 	}
 
-	var resp *fcu.DescribeSubnetsOutput
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		var err error
-		resp, err = conn.VM.DescribeSubNet(req)
+	var resp oscgo.ReadSubnetsResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
+
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
 			}
+			return resource.NonRetryableError(err)
 		}
-
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return err
+		errString = err.Error()
+
+		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
 
-	if resp == nil || len(resp.Subnets) == 0 {
+	if len(resp.GetSubnets()) == 0 {
 		return fmt.Errorf("no matching subnet found")
 	}
 
-	subnets := make([]map[string]interface{}, len(resp.Subnets))
+	subnets := make([]map[string]interface{}, len(resp.GetSubnets()))
 
-	for k, v := range resp.Subnets {
+	for k, v := range resp.GetSubnets() {
 		subnet := make(map[string]interface{})
 
-		if v.AvailabilityZone != nil {
-			subnet["availability_zone"] = *v.AvailabilityZone
+		if v.GetSubregionName() != "" {
+			subnet["subregion_name"] = v.GetSubregionName()
 		}
-		if v.AvailableIpAddressCount != nil {
-			subnet["available_ip_address_count"] = *v.AvailableIpAddressCount
+		//if v.AvailableIpsCount != 0 {
+		subnet["available_ips_count"] = v.GetAvailableIpsCount()
+		//}
+		if v.GetIpRange() != "" {
+			subnet["ip_range"] = v.GetIpRange()
 		}
-		if v.CidrBlock != nil {
-			subnet["cidr_block"] = *v.CidrBlock
+		if v.GetState() != "" {
+			subnet["state"] = v.GetState()
 		}
-		if v.State != nil {
-			subnet["state"] = *v.State
+		if v.GetSubnetId() != "" {
+			subnet["subnet_id"] = v.GetSubnetId()
 		}
-		if v.SubnetId != nil {
-			subnet["subnet_id"] = *v.SubnetId
+		if v.GetTags() != nil {
+			subnet["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
-		if v.Tags != nil {
-			subnet["tag_set"] = tagsToMap(v.Tags)
-		}
-		if v.VpcId != nil {
-			subnet["vpc_id"] = *v.VpcId
+		if v.GetNetId() != "" {
+			subnet["net_id"] = v.GetNetId()
 		}
 
 		subnets[k] = subnet
 	}
 
-	if err := d.Set("subnet_set", subnets); err != nil {
+	if err := d.Set("subnets", subnets); err != nil {
 		return err
 	}
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }

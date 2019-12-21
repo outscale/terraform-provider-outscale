@@ -1,54 +1,54 @@
 package outscale
 
 import (
+	"context"
+
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleNatService() *schema.Resource {
+func resourceOutscaleOAPINatService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNatServiceCreate,
-		Read:   resourceNatServiceRead,
-		Delete: resourceNatServiceDelete,
+		Create: resourceOAPINatServiceCreate,
+		Read:   resourceOAPINatServiceRead,
+		Delete: resourceOAPINatServiceDelete,
+		Update: resourceOutscaleOAPINatServiceUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			// Arguments
-			"allocation_id": {
+			"public_ip_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-			},
-			"client_token": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			// Attributes
-			"nat_gateway_address": {
+
+			"nat_service_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"net_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"public_ips": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"allocation_id": {
+						"public_ip_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -59,159 +59,161 @@ func resourceOutscaleNatService() *schema.Resource {
 					},
 				},
 			},
-			"nat_gateway_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vpc_id": {
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
 
-func resourceNatServiceCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	createOpts := &fcu.CreateNatGatewayInput{
-		AllocationId: aws.String(d.Get("allocation_id").(string)),
-		SubnetId:     aws.String(d.Get("subnet_id").(string)),
+	req := &oscgo.CreateNatServiceOpts{
+		CreateNatServiceRequest: optional.NewInterface(oscgo.CreateNatServiceRequest{
+			PublicIpId: d.Get("public_ip_id").(string),
+			SubnetId:   d.Get("subnet_id").(string),
+		}),
 	}
 
-	var natResp *fcu.CreateNatGatewayOutput
-
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-		natResp, err = conn.VM.CreateNatGateway(createOpts)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	resp, _, err := conn.NatServiceApi.CreateNatService(context.Background(), req)
 	if err != nil {
-
-		return fmt.Errorf("Error creating NAT Gateway: %s", err)
+		return fmt.Errorf("Error creating Nat Service: %s", err.Error())
 	}
 
-	ng := natResp.NatGateway
-	d.SetId(*ng.NatGatewayId)
+	if !resp.HasNatService() {
+		return fmt.Errorf("Error there is not Nat Service (%s)", err)
+	}
 
-	log.Printf("\n\n[DEBUG] Waiting for NAT Gateway (%s) to become available", d.Id())
+	natService := resp.GetNatService()
+
+	// Get the ID and store it
+	log.Printf("\n\n[INFO] NAT Service ID: %s", natService.GetNatServiceId())
+
+	// Wait for the NAT Service to become available
+	log.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", natService.GetNatServiceId())
+
+	filterReq := &oscgo.ReadNatServicesOpts{
+		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
+			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{natService.GetNatServiceId()}},
+		}),
+	}
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"available"},
-		Refresh: ngStateRefreshFunc(conn, d.Id()),
+		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout: 10 * time.Minute,
 	}
 
 	if _, err := stateConf.WaitForState(); err != nil {
-		return fmt.Errorf("Error waiting for NAT Gateway (%s) to become available: %s", d.Id(), err)
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", natService.GetNatServiceId(), err)
+	}
+	//SetTags
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignTags(tags.([]interface{}), natService.GetNatServiceId(), conn)
+		if err != nil {
+			return err
+		}
 	}
 
-	return resourceNatServiceRead(d, meta)
+	d.SetId(natService.GetNatServiceId())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+
+	return resourceOAPINatServiceRead(d, meta)
 }
 
-func resourceNatServiceRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	// Refresh the NAT Gateway state
-	ngRaw, state, err := ngStateRefreshFunc(conn, d.Id())()
+	filterReq := &oscgo.ReadNatServicesOpts{
+		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
+			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
+		}),
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pending"},
+		Target:  []string{"available", "deleted"},
+		Refresh: NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Timeout: 10 * time.Minute,
+	}
+
+	value, err := stateConf.WaitForState()
 	if err != nil {
+		return fmt.Errorf("error waiting for NAT Service (%s) to become available: %s", d.Id(), err)
+	}
+
+	resp := value.(oscgo.ReadNatServicesResponse)
+	natService := resp.GetNatServices()[0]
+
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(natService.GetNatServiceId())
+
+		set("nat_service_id", natService.NatServiceId)
+		set("net_id", natService.NetId)
+		set("state", natService.State)
+
+		if err := set("public_ips", getOSCPublicIPs(*natService.PublicIps)); err != nil {
+			return err
+		}
+		if err := set("tags", getOapiTagSet(natService.Tags)); err != nil {
+			return err
+		}
+
+		if err := d.Set("tags", tagsOSCAPIToMap(natService.GetTags())); err != nil {
+			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
+		}
+
+		return d.Set("request_id", resp.ResponseContext.RequestId)
+	})
+}
+
+func resourceOutscaleOAPINatServiceUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
 		return err
 	}
 
-	status := map[string]bool{
-		"deleted":  true,
-		"deleting": true,
-		"failed":   true,
-	}
+	d.SetPartial("tags")
 
-	if _, ok := status[strings.ToLower(state)]; ngRaw == nil || ok {
-		log.Printf("\n\n[INFO] Removing %s from Terraform state as it is not found or in the deleted state.", d.Id())
-		d.SetId("")
-		return nil
-	}
-
-	opts := &fcu.DescribeNatGatewaysInput{
-		NatGatewayIds: []*string{aws.String(d.Id())},
-	}
-	var resp *fcu.DescribeNatGatewaysOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		var err error
-
-		resp, err = conn.VM.DescribeNatGateways(opts)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	nat := resp.NatGateways[0]
-
-	d.Set("nat_gateway_id", aws.StringValue(nat.NatGatewayId))
-	d.Set("state", aws.StringValue(nat.State))
-	d.Set("subnet_id", aws.StringValue(nat.SubnetId))
-	d.Set("vpc_id", aws.StringValue(nat.VpcId))
-
-	addresses := make([]map[string]interface{}, len(nat.NatGatewayAddresses))
-	if nat.NatGatewayAddresses != nil {
-		for k, v := range nat.NatGatewayAddresses {
-			address := make(map[string]interface{})
-			address["allocation_id"] = aws.StringValue(v.AllocationId)
-			address["public_ip"] = aws.StringValue(v.PublicIp)
-
-			addresses[k] = address
-		}
-	}
-
-	d.Set("request_id", resp.RequestId)
-
-	return d.Set("nat_gateway_address", addresses)
+	d.Partial(false)
+	return resourceOAPINatServiceRead(d, meta)
 }
 
-func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	deleteOpts := &fcu.DeleteNatGatewayInput{
-		NatGatewayId: aws.String(d.Id()),
+	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
+
+	_, _, err := conn.NatServiceApi.DeleteNatService(context.Background(), &oscgo.DeleteNatServiceOpts{
+		DeleteNatServiceRequest: optional.NewInterface(oscgo.DeleteNatServiceRequest{
+			NatServiceId: d.Id(),
+		}),
+	})
+	if err != nil {
+		return fmt.Errorf("Error deleting Nat Service: %s", err)
 	}
 
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DeleteNatGateway(deleteOpts)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound:") {
-			return nil
-		}
-
-		return err
+	filterReq := &oscgo.ReadNatServicesOpts{
+		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
+			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
+		}),
 	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"deleting"},
-		Target:     []string{"deleted"},
-		Refresh:    ngStateRefreshFunc(conn, d.Id()),
+		Target:     []string{"deleted", "available"},
+		Refresh:    NGOAPIStateRefreshFunc(conn, filterReq, "failed"),
 		Timeout:    30 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -219,40 +221,98 @@ func resourceNatServiceDelete(d *schema.ResourceData, meta interface{}) error {
 
 	_, stateErr := stateConf.WaitForState()
 	if stateErr != nil {
-		return fmt.Errorf("Error waiting for NAT Gateway (%s) to delete: %s", d.Id(), err)
+		return fmt.Errorf("Error waiting for NAT Service (%s) to delete: %s", d.Id(), stateErr)
 	}
 
 	return nil
 }
 
-func ngStateRefreshFunc(conn *fcu.Client, ID string) resource.StateRefreshFunc {
+// NGOAPIStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
+// a NAT Service.
+func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req *oscgo.ReadNatServicesOpts, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		opts := &fcu.DescribeNatGatewaysInput{
-			NatGatewayIds: []*string{aws.String(ID)},
-		}
-		var resp *fcu.DescribeNatGatewaysOutput
-		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			var err error
-
-			resp, err = conn.VM.DescribeNatGateways(opts)
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
+		resp, _, err := client.NatServiceApi.ReadNatServices(context.Background(), req)
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "NatGatewayNotFound") {
-				return nil, "", nil
-			}
-			log.Printf("\n\nError on NGStateRefresh: %s", err)
-			return nil, "", err
+			return nil, "failed", err
 		}
 
-		ng := resp.NatGateways[0]
-		return ng, *ng.State, nil
+		state := "deleted"
+
+		if resp.HasNatServices() && len(resp.GetNatServices()) > 0 {
+			natServices := resp.GetNatServices()
+			state = natServices[0].GetState()
+
+			if state == failState {
+				return natServices[0], state, fmt.Errorf("Failed to reach target state. Reason: %v", state)
+			}
+		}
+
+		return resp, state, nil
+	}
+}
+
+func getOSCPublicIPs(publicIps []oscgo.PublicIpLight) (res []map[string]interface{}) {
+	for _, p := range publicIps {
+		res = append(res, map[string]interface{}{
+			"public_ip_id": p.GetPublicIpId(),
+			"public_ip":    p.GetPublicIp(),
+		})
+	}
+	return
+}
+
+func getOAPINatServiceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		// Arguments
+		"public_ip_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"token": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ForceNew: true,
+			Computed: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"subnet_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		// Attributes
+		"public_ips": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"public_ip_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"public_ip": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"nat_service_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"state": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"net_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"tags": tagsListOAPISchema(),
 	}
 }

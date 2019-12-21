@@ -11,9 +11,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVpnGateway() *schema.Resource {
+func dataSourceOutscaleOAPIVpnGateway() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVpnGatewayRead,
+		Read: dataSourceOutscaleOAPIVpnGatewayRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -32,7 +32,7 @@ func dataSourceOutscaleVpnGateway() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"attachments": &schema.Schema{
+			"lin_to_vpn_gateway_link": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -41,7 +41,7 @@ func dataSourceOutscaleVpnGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vpc_id": &schema.Schema{
+						"lin_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -52,12 +52,12 @@ func dataSourceOutscaleVpnGateway() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tag_set": tagsSchemaComputed(),
+			"tag": tagsSchemaComputed(),
 		},
 	}
 }
 
-func dataSourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVpnGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -109,15 +109,15 @@ func dataSourceOutscaleVpnGatewayRead(d *schema.ResourceData, meta interface{}) 
 		vp := make(map[string]interface{})
 
 		vp["state"] = aws.StringValue(v.State)
-		vp["vpc_id"] = aws.StringValue(v.VpcId)
+		vp["lin_id"] = aws.StringValue(v.VpcId)
 
 		vs[k] = vp
 	}
 
-	d.Set("attachments", vs)
+	d.Set("lin_to_vpn_gateway_link", vs)
 	d.Set("state", aws.StringValue(vgw.State))
 	d.Set("type", aws.StringValue(vgw.Type))
-	d.Set("tag_set", tagsToMap(vgw.Tags))
+	d.Set("tag", tagsToMap(vgw.Tags))
 	d.Set("request_id", resp.RequestId)
 
 	return nil

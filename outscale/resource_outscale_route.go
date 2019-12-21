@@ -1,92 +1,95 @@
 package outscale
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-var errRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
-	"egress_only_gateway_id, nat_gateway_id, instance_id, network_interface_id, route_table_id or " +
-	"vpc_peering_connection_id is allowed.")
+var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
+	"nat_service_id, vm_id, nic_id or net_peering_id is allowed.")
 
-func resourceOutscaleRoute() *schema.Resource {
+var allowedTargets = []string{
+	"gateway_id",
+	"nat_service_id",
+	"vm_id",
+	"nic_id",
+	"net_peering_id",
+}
+
+func resourceOutscaleOAPIRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleRouteCreate,
-		Read:   resourceOutscaleRouteRead,
-		Update: resourceOutscaleRouteUpdate,
-		Delete: resourceOutscaleRouteDelete,
-		Exists: resourceOutscaleRouteExists,
+		Create: resourceOutscaleOAPIRouteCreate,
+		Read:   resourceOutscaleOAPIRouteRead,
+		Update: resourceOutscaleOAPIRouteUpdate,
+		Delete: resourceOutscaleOAPIRouteDelete,
+		Exists: resourceOutscaleOAPIRouteExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 		Schema: map[string]*schema.Schema{
-			"destination_cidr_block": {
+			"creation_method": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"destination_ip_range": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
+			"destination_service_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
-			"instance_id": {
+			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
-			"nat_gateway_id": {
+			"nat_access_point": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
-			"network_interface_id": {
+			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
-			"route_table_id": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-
-			"vpc_peering_connection_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-
-			"destination_prefix_list_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"instance_owner_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
-			"origin": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"vm_account_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"vm_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
+			"route_table_id": {
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -96,71 +99,57 @@ func resourceOutscaleRoute() *schema.Resource {
 	}
 }
 
-func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	var numTargets int
-	var setTarget string
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_gateway_id",
-		"instance_id",
-		"network_interface_id",
-		"vpc_peering_connection_id",
-	}
-
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
-		}
-	}
+func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	numTargets, target := getTarget(d)
 
 	if numTargets > 1 {
-		return errRoute
+		return errOAPIRoute
 	}
 
-	createOpts := &fcu.CreateRouteInput{}
-	switch setTarget {
+	createOpts := oscgo.CreateRouteRequest{}
+	switch target {
 	case "gateway_id":
-		createOpts = &fcu.CreateRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			GatewayId:            aws.String(d.Get("gateway_id").(string)),
+		createOpts = oscgo.CreateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
 		}
-	case "nat_gateway_id":
-		createOpts = &fcu.CreateRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			NatGatewayId:         aws.String(d.Get("nat_gateway_id").(string)),
+		createOpts.SetGatewayId(d.Get("gateway_id").(string))
+	case "nat_service_id":
+		createOpts = oscgo.CreateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
 		}
-	case "instance_id":
-		createOpts = &fcu.CreateRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			InstanceId:           aws.String(d.Get("instance_id").(string)),
+		createOpts.SetNatServiceId(d.Get("nat_service_id").(string))
+	case "vm_id":
+		createOpts = oscgo.CreateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
 		}
-	case "network_interface_id":
-		createOpts = &fcu.CreateRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			NetworkInterfaceId:   aws.String(d.Get("network_interface_id").(string)),
+		createOpts.SetVmId(d.Get("vm_id").(string))
+	case "nic_id":
+		createOpts = oscgo.CreateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
 		}
-	case "vpc_peering_connection_id":
-		createOpts = &fcu.CreateRouteInput{
-			RouteTableId:           aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock:   aws.String(d.Get("destination_cidr_block").(string)),
-			VpcPeeringConnectionId: aws.String(d.Get("vpc_peering_connection_id").(string)),
+		createOpts.SetNicId(d.Get("nic_id").(string))
+	case "net_peering_id":
+		createOpts = oscgo.CreateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
 		}
+		createOpts.SetNetPeeringId(d.Get("net_peering_id").(string))
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
+	log.Printf("[DEBUG] Route create config: %+v", createOpts)
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.CreateRoute(createOpts)
+		_, _, err = conn.RouteApi.CreateRoute(context.Background(), &oscgo.CreateRouteOpts{CreateRouteRequest: optional.NewInterface(createOpts)})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -170,15 +159,21 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 
 		return nil
 	})
+
+	var errString string
+
 	if err != nil {
-		return fmt.Errorf("Error creating route: %s", err)
+		errString = err.Error()
+
+		return fmt.Errorf("Error creating route: %s", errString)
 	}
 
-	var route *fcu.Route
+	var route *oscgo.Route
+	var requestID string
 
-	if v, ok := d.GetOk("destination_cidr_block"); ok {
+	if v, ok := d.GetOk("destination_ip_range"); ok {
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-			route, err = findResourceRoute(conn, d.Get("route_table_id").(string), v.(string))
+			route, requestID, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
 			return resource.RetryableError(err)
 		})
 		if err != nil {
@@ -186,141 +181,115 @@ func resourceOutscaleRouteCreate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
-	d.SetId(routeIDHash(d, route))
-	return resourceOutscaleRouteRead(d, meta)
-}
-
-func resourceOutscaleRouteRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	routeTableID := d.Get("route_table_id").(string)
-	cidr := d.Get("destination_cidr_block").(string)
-
-	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableID},
-	}
-
-	var resp *fcu.DescribeRouteTablesOutput
-	var err error
-	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeRouteTables(findOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Trying to create route again: %q", err)
-				return resource.RetryableError(err)
-			}
-
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return fmt.Errorf("Route Table %q is gone, or route does not exist",
-			routeTableID)
-	}
-
-	var route *fcu.Route
-
-	if cidr != "" {
-		for _, r := range (*resp.RouteTables[0]).Routes {
-			if r.DestinationCidrBlock != nil && *r.DestinationCidrBlock == cidr {
-				route = r
-			}
-		}
-	}
-
-	d.Set("destination_prefix_list_id", route.DestinationPrefixListId)
-	d.Set("gateway_id", route.GatewayId)
-	d.Set("instance_id", route.InstanceId)
-	d.Set("nat_gateway_id", route.NatGatewayId)
-	d.Set("network_interface_id", route.NetworkInterfaceId)
-	d.Set("vpc_peering_connection_id", route.VpcPeeringConnectionId)
-	d.Set("instance_owner_id", route.InstanceOwnerId)
-	d.Set("origin", route.Origin)
-	d.Set("state", route.State)
-	d.Set("request_id", resp.RequestId)
+	d.SetId(routeOAPIIDHash(d, route))
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 	return nil
 }
 
-func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	var numTargets int
-	var setTarget string
+func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	routeTableID := d.Get("route_table_id").(string)
 
-	allowedTargets := []string{
-		"gateway_id",
-		"nat_gateway_id",
-		"network_interface_id",
-		"instance_id",
-		"vpc_peering_connection_id",
+	destinationIPRange := d.Get("destination_ip_range").(string)
+	var requestID string
+
+	route, requestID, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
+			d.SetId("")
+			return nil
+		}
+		return err
 	}
-	replaceOpts := &fcu.ReplaceRouteInput{}
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	return nil
+}
 
-	for _, target := range allowedTargets {
-		if len(d.Get(target).(string)) > 0 {
-			numTargets++
-			setTarget = target
+func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) {
+	d.Set("destination_service_id", route.GetDestinationServiceId())
+	d.Set("gateway_id", route.GetGatewayId())
+	d.Set("vm_id", route.GetVmId())
+	d.Set("nat_access_point", route.GetNetAccessPointId())
+	d.Set("nic_id", route.NicId)
+	d.Set("net_peering_id", route.GetNetPeeringId())
+	d.Set("vm_account_id", route.GetVmAccountId())
+	d.Set("creation_method", route.GetCreationMethod())
+	d.Set("state", route.GetState())
+	d.Set("request_id", requestID)
+}
+
+func getTarget(d *schema.ResourceData) (n int, target string) {
+	for _, allowedTarget := range allowedTargets {
+		if allowed := d.Get(allowedTarget); allowed != nil {
+			if len(allowed.(string)) > 0 {
+				n++
+				target = allowedTarget
+			}
 		}
 	}
+	return
+}
 
-	switch setTarget {
-	case "instance_id":
-		if numTargets > 2 || (numTargets == 2 && len(d.Get("network_interface_id").(string)) == 0) {
-			return errRoute
+func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	numTargets, target := getTarget(d)
+
+	replaceOpts := &oscgo.UpdateRouteRequest{}
+
+	switch target {
+	case "vm_id":
+		if numTargets > 2 || (numTargets == 2 && len(d.Get("nic_id").(string)) == 0) {
+			return errOAPIRoute
 		}
 	default:
 		if numTargets > 1 {
-			return errRoute
+			return errOAPIRoute
 		}
 	}
 
-	switch setTarget {
+	switch target {
 	case "gateway_id":
-		replaceOpts = &fcu.ReplaceRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			GatewayId:            aws.String(d.Get("gateway_id").(string)),
+		replaceOpts = &oscgo.UpdateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
+			GatewayId:          d.Get("gateway_id").(*string),
 		}
-	case "nat_gateway_id":
-		replaceOpts = &fcu.ReplaceRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			NatGatewayId:         aws.String(d.Get("nat_gateway_id").(string)),
+	case "nat_service_id":
+		replaceOpts = &oscgo.UpdateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
+			GatewayId:          d.Get("nat_service_id").(*string),
 		}
-	case "instance_id":
-		replaceOpts = &fcu.ReplaceRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			InstanceId:           aws.String(d.Get("instance_id").(string)),
+	case "vm_id":
+		replaceOpts = &oscgo.UpdateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
+			VmId:               d.Get("vm_id").(*string),
 		}
-	case "network_interface_id":
-		replaceOpts = &fcu.ReplaceRouteInput{
-			RouteTableId:         aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock: aws.String(d.Get("destination_cidr_block").(string)),
-			NetworkInterfaceId:   aws.String(d.Get("network_interface_id").(string)),
+	case "nic_id":
+		replaceOpts = &oscgo.UpdateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
+			NicId:              d.Get("nic_id").(*string),
 		}
-	case "vpc_peering_connection_id":
-		replaceOpts = &fcu.ReplaceRouteInput{
-			RouteTableId:           aws.String(d.Get("route_table_id").(string)),
-			DestinationCidrBlock:   aws.String(d.Get("destination_cidr_block").(string)),
-			VpcPeeringConnectionId: aws.String(d.Get("vpc_peering_connection_id").(string)),
+	case "net_peering_id":
+		replaceOpts = &oscgo.UpdateRouteRequest{
+			RouteTableId:       d.Get("route_table_id").(string),
+			DestinationIpRange: d.Get("destination_ip_range").(string),
+			NetPeeringId:       d.Get("net_peering_id").(*string),
 		}
 	default:
-		return fmt.Errorf("An invalid target type specified: %s", setTarget)
+		return fmt.Errorf("An invalid target type specified: %s", target)
 	}
+	log.Printf("[DEBUG] Route replace config: %+v", replaceOpts)
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.ReplaceRoute(replaceOpts)
+		_, _, err = conn.RouteApi.UpdateRoute(context.Background(), &oscgo.UpdateRouteOpts{UpdateRouteRequest: optional.NewInterface(replaceOpts)})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
 				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
@@ -337,27 +306,29 @@ func resourceOutscaleRouteUpdate(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	deleteOpts := &fcu.DeleteRouteInput{
-		RouteTableId: aws.String(d.Get("route_table_id").(string)),
+	deleteOpts := oscgo.DeleteRouteRequest{
+		RouteTableId: d.Get("route_table_id").(string),
 	}
-	if v, ok := d.GetOk("destination_cidr_block"); ok {
-		deleteOpts.DestinationCidrBlock = aws.String(v.(string))
+	if v, ok := d.GetOk("destination_ip_range"); ok {
+		deleteOpts.SetDestinationIpRange(v.(string))
 	}
+	log.Printf("[DEBUG] Route delete opts: %+v", deleteOpts)
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		log.Printf("[DEBUG] Trying to delete route with opts %s", deleteOpts)
-		resp, err := conn.VM.DeleteRoute(deleteOpts)
-		log.Printf("[DEBUG] Route delete result: %s", resp)
+		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
+		resp, _, err := conn.RouteApi.DeleteRoute(context.Background(), &oscgo.DeleteRouteOpts{DeleteRouteRequest: optional.NewInterface(deleteOpts)})
+		log.Printf("[DEBUG] Route delete result: %+v", resp)
 
 		if err == nil {
 			return nil
 		}
 
-		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+		if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
+			log.Printf("[DEBUG] Trying to delete route again: %q", fmt.Sprint(err))
 			return resource.RetryableError(err)
 		}
 
@@ -372,21 +343,22 @@ func resourceOutscaleRouteDelete(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	conn := meta.(*OutscaleClient).OSCAPI
 	routeTableID := d.Get("route_table_id").(string)
 
-	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableID},
+	findOpts := oscgo.ReadRouteTablesRequest{
+		Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}},
 	}
 
-	var res *fcu.DescribeRouteTablesOutput
+	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.DescribeRouteTables(findOpts)
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(findOpts)})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
 
@@ -396,20 +368,26 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			log.Printf("[WARN] Route Table %q could not be found.", routeTableID)
 			return false, nil
 		}
-		return false, fmt.Errorf("Error while checking if route exists: %s", err)
+		errString = err.Error()
+
+		return false, fmt.Errorf("Error creating route: %s", errString)
 	}
 
-	if len(res.RouteTables) < 1 || res.RouteTables[0] == nil {
+	if len(resp.GetRouteTables()) < 1 || reflect.DeepEqual(resp.GetRouteTables()[0], oscgo.RouteTable{}) {
+		log.Printf("[WARN] Route Table %q is gone, or route does not exist.", routeTableID)
 		return false, nil
 	}
 
-	if v, ok := d.GetOk("destination_cidr_block"); ok {
-		for _, route := range (*res.RouteTables[0]).Routes {
-			if route.DestinationCidrBlock != nil && *route.DestinationCidrBlock == v.(string) {
+	if v, ok := d.GetOk("destination_ip_range"); ok {
+		for _, route := range resp.GetRouteTables()[0].GetRoutes() {
+			if route.GetDestinationIpRange() != "" && route.GetDestinationIpRange() == v.(string) {
 				return true, nil
 			}
 		}
@@ -418,24 +396,26 @@ func resourceOutscaleRouteExists(d *schema.ResourceData, meta interface{}) (bool
 	return false, nil
 }
 
-func routeIDHash(d *schema.ResourceData, r *fcu.Route) string {
-	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(*r.DestinationCidrBlock))
+func routeOAPIIDHash(d *schema.ResourceData, r *oscgo.Route) string {
+	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(r.GetDestinationIpRange()))
 }
 
-func findResourceRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Route, error) {
+func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*oscgo.Route, string, error) {
 	routeTableID := rtbid
 
-	findOpts := &fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&routeTableID},
+	findOpts := oscgo.ReadRouteTablesRequest{}
+	findOpts.Filters = &oscgo.FiltersRouteTable{
+		RouteTableIds: &[]string{routeTableID},
 	}
 
-	var resp *fcu.DescribeRouteTablesOutput
+	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeRouteTables(findOpts)
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(findOpts)})
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") || strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				log.Printf("[DEBUG] Trying to create route again: %q", err)
 				return resource.RetryableError(err)
 			}
 
@@ -445,27 +425,30 @@ func findResourceRoute(conn *fcu.Client, rtbid string, cidr string) (*fcu.Route,
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
+	var errString string
 
-	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return nil, fmt.Errorf("Route Table %q is gone, or route does not exist",
-			routeTableID)
+	if err != nil {
+		errString = err.Error()
+		return nil, "", fmt.Errorf("Error finding route resource: %s", errString)
+	}
+	requestID := resp.ResponseContext.GetRequestId()
+
+	if len(resp.GetRouteTables()) < 1 || reflect.DeepEqual(resp.GetRouteTables()[0], oscgo.RouteTable{}) {
+		return nil, requestID, fmt.Errorf("Route Table %q is gone, or route does not exist", routeTableID)
 	}
 
 	if cidr != "" {
-		for _, route := range (*resp.RouteTables[0]).Routes {
-			if route.DestinationCidrBlock != nil && *route.DestinationCidrBlock == cidr {
-				return route, nil
+		for _, route := range (resp.GetRouteTables()[0]).GetRoutes() {
+			if route.GetDestinationIpRange() != "" && route.GetDestinationIpRange() == cidr {
+				return &route, requestID, nil
 			}
 		}
 
-		return nil, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
+		return nil, requestID, fmt.Errorf("Unable to find matching route for Route Table (%s) "+
 			"and destination CIDR block (%s).", rtbid, cidr)
 	}
 
-	return nil, fmt.Errorf("When trying to find a matching route for Route Table %q "+
+	return nil, requestID, fmt.Errorf("When trying to find a matching route for Route Table %q "+
 		"you need to specify a CIDR block", rtbid)
 
 }

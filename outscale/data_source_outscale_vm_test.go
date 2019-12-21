@@ -2,72 +2,57 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccOutscaleVMDataSource_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
-	rInt := acctest.RandInt()
-
+func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVMDataSourceConfig(rInt),
+				Config: testAccOAPIVMDataSourceConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "image_id", "ami-8a6a0120"),
+						"outscale_vm.outscale_vm", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"data.outscale_vm.basic_web", "instance_type", "t2.micro"),
+						"outscale_vm.outscale_vm", "vm_type", "c4.large"),
 				),
 			},
 		},
 	})
 }
 
-func testAccVMDataSourceConfig(r int) string {
+func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
-		resource "outscale_keypair" "a_key_pair" {
-	key_name   = "terraform-key-%d"
-}
-
-resource "outscale_firewall_rules_set" "web" {
-  group_name = "terraform_acceptance_test_example_1"
-  group_description = "Used in the terraform acceptance tests"
-}
-
-resource "outscale_vm" "basic" {
-	image_id = "ami-8a6a0120"
-	instance_type = "t2.micro"
-	security_group = ["${outscale_firewall_rules_set.web.id}"]
-	key_name = "${outscale_keypair.a_key_pair.key_name}"
-}
-
-data "outscale_vm" "basic_web" {
-	filter {
-    name = "instance-id"
-    values = ["${outscale_vm.basic.id}"]
-	}
-}
-
-output "datasource_arch" {
-	value = "${data.outscale_vm.basic_web.owner_id}"
-}
-`, r)
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}	
+		 
+ 		resource "outscale_subnet" "outscale_subnet" {
+			net_id         = "${outscale_net.outscale_net.net_id}"
+			ip_range       = "10.0.0.0/24"
+			subregion_name = "eu-west-2a"
+		}
+		 
+ 		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%s"
+			vm_type      = "%s"
+			keypair_name = "terraform-basic"
+			subnet_id    = "${outscale_subnet.outscale_subnet.subnet_id}"
+		}
+		 
+    data "outscale_vm" "basic_web" {
+		 filter {
+				name   = "vm_ids"
+				values = ["${outscale_vm.outscale_vm.vm_id}"]
+		  }
+		}
+	`, omi, vmType)
 }

@@ -3,99 +3,79 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSnapshotAttributes_Basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
+func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
+	//t.Skip()
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleSnapshotAttributesConfig(true, accountID),
+				Config: testAccOutscaleOAPISnapshotAttributesAdditionsConfig(true, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
-					testAccOutscaleSnapshotAttributesExists(&accountID, &snapshotID),
-					testAccCheckState("outscale_snapshot_attributes.self-test"),
-					resource.TestCheckResourceAttrSet("outscale_snapshot_attributes.self-test", "request_id"),
 				),
 			},
-			// Drop just create volume permission to test destruction
 			resource.TestStep{
-				Config: testAccOutscaleSnapshotAttributesConfig(false, accountID),
+				Config: testAccOutscaleOAPISnapshotAttributesRemovalsConfig(true, accountID),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleSnapshotAttributesDestroyed(&accountID, &snapshotID),
+					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
 			},
 		},
 	})
 }
 
-func testAccOutscaleSnapshotAttributesExists(accountID, snapshotID *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-
-		if has, err := hasCreateVolumePermission(conn, *snapshotID, *accountID); err != nil {
-			return err
-		} else if !has {
-			return fmt.Errorf("create volume permission does not exist for '%s' on '%s'", *accountID, *snapshotID)
+func testAccOutscaleOAPISnapshotAttributesAdditionsConfig(includeCreateVolumePermission bool, aid string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "eu-west-2a"
+			size           = 1
 		}
-		return nil
-	}
-}
-
-func testAccOutscaleSnapshotAttributesDestroyed(accountID, snapshotID *string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		if has, err := hasCreateVolumePermission(conn, *snapshotID, *accountID); err != nil {
-			return err
-		} else if has {
-			return fmt.Errorf("create volume permission still exists for '%s' on '%s'", *accountID, *snapshotID)
+		
+		resource "outscale_snapshot" "test" {
+			volume_id   = "${outscale_volume.description_test.id}"
+			description = "Snapshot Acceptance Test"
 		}
-		return nil
-	}
+		
+		resource "outscale_snapshot_attributes" "self-test" {
+			snapshot_id = "${outscale_snapshot.test.id}"
+		
+			permissions_to_create_volume_additions {
+				account_ids = ["%s"]
+			}
+		}
+	`, aid)
 }
 
-func testAccOutscaleSnapshotAttributesConfig(includeCreateVolumePermission bool, aid string) string {
-	base := `
-resource "outscale_volume" "description_test" {
-	availability_zone = "eu-west-2a"
-	size = 1
-}
-
-resource "outscale_snapshot" "test" {
-	volume_id = "${outscale_volume.description_test.id}"
-	description = "Snapshot Acceptance Test"
-}
-`
-
-	if !includeCreateVolumePermission {
-		return base
-	}
-
-	return base + fmt.Sprintf(`
-resource "outscale_snapshot_attributes" "self-test" {
-	snapshot_id = "${outscale_snapshot.test.id}"
-	create_volume_permission_add = [{
-		user_id = "%s"
-	}]
-}
-`, aid)
+func testAccOutscaleOAPISnapshotAttributesRemovalsConfig(includeCreateVolumePermission bool, aid string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "description_test" {
+			subregion_name = "eu-west-2a"
+			size           = 1
+		}
+		
+		resource "outscale_snapshot" "test" {
+			volume_id   = "${outscale_volume.description_test.id}"
+			description = "Snapshot Acceptance Test"
+		}
+		
+		resource "outscale_snapshot_attributes" "self-test" {
+			snapshot_id = "${outscale_snapshot.test.id}"
+		
+			permissions_to_create_volume_removals {
+				account_ids = ["%s"]
+			}
+		}
+	`, aid)
 }

@@ -2,45 +2,35 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscalePublicIP(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscalePublicIPConfig,
+				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscalePublicIPCheck("data.outscale_public_ip.by_allocation_id"),
-					testAccDataSourceOutscalePublicIPCheck("data.outscale_public_ip.by_public_ip"),
+					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
+					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
-
-		fmt.Printf("\n[DEBUG] TEST RS %s \n", s.RootModule().Resources)
 
 		if !ok {
 			return fmt.Errorf("root module has no resource called %s", name)
@@ -53,11 +43,11 @@ func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc 
 
 		attr := rs.Primary.Attributes
 
-		if attr["allocation_id"] != eipRs.Primary.Attributes["allocation_id"] {
+		if attr["public_ip_id"] != eipRs.Primary.Attributes["public_ip_id"] {
 			return fmt.Errorf(
-				"allocation_id is %s; want %s",
-				attr["allocation_id"],
-				eipRs.Primary.Attributes["allocation_id"],
+				"public_ip_id is %s; want %s",
+				attr["public_ip_id"],
+				eipRs.Primary.Attributes["public_ip_id"],
 			)
 		}
 
@@ -73,13 +63,17 @@ func testAccDataSourceOutscalePublicIPCheck(name string) resource.TestCheckFunc 
 	}
 }
 
-const testAccDataSourceOutscalePublicIPConfig = `
-resource "outscale_public_ip" "test" {}
+const testAccDataSourceOutscaleOAPIPublicIPConfig = `
+	resource "outscale_public_ip" "test" {}
 
-data "outscale_public_ip" "by_allocation_id" {
-  allocation_id = "${outscale_public_ip.test.allocation_id}"
-}
-data "outscale_public_ip" "by_public_ip" {
-  public_ip = "${outscale_public_ip.test.public_ip}"
-}
+	data "outscale_public_ip" "by_public_ip_id" {
+	  public_ip_id = "${outscale_public_ip.test.public_ip_id}"
+	}
+
+	data "outscale_public_ip" "by_public_ip" {
+		filter {
+			name = "public_ips"
+			values = ["${outscale_public_ip.test.public_ip}"]
+		}
+	}
 `

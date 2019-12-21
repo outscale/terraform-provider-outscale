@@ -1,21 +1,22 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleKeyPair() *schema.Resource {
+func resourceOutscaleOAPIKeyPair() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceKeyPairCreate,
-		Read:   resourceKeyPairRead,
-		Delete: resourceKeyPairDelete,
+		Create: resourceOAPIKeyPairCreate,
+		Read:   resourceOAPIKeyPairRead,
+		Delete: resourceOAPIKeyPairDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -26,29 +27,34 @@ func resourceOutscaleKeyPair() *schema.Resource {
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
-		Schema: getKeyPairSchema(),
+		Schema: getOAPIKeyPairSchema(),
 	}
 }
 
-func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	var keyName string
-	if v, ok := d.GetOk("key_name"); ok {
+	if v, ok := d.GetOk("keypair_name"); ok {
 		keyName = v.(string)
 	} else {
 		keyName = resource.UniqueId()
-		d.Set("key_name", keyName)
+		d.Set("keypair_name", keyName)
 	}
 
-	req := &fcu.CreateKeyPairInput{
-		KeyName: aws.String(keyName),
+	req := oscgo.CreateKeypairRequest{
+		KeypairName: keyName,
 	}
 
-	var resp *fcu.CreateKeyPairOutput
+	//Accept public key as argument
+	if v, ok := d.GetOk("public_key"); ok {
+		req.SetPublicKey(v.(string))
+	}
+
+	var resp oscgo.CreateKeypairResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.CreateKeyPair(req)
+		resp, _, err = conn.KeypairApi.CreateKeypair(context.Background(), &oscgo.CreateKeypairOpts{CreateKeypairRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -58,24 +64,35 @@ func resourceKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		return nil
 	})
+
+	var errString string
+
 	if err != nil {
-		return fmt.Errorf("Error creating KeyPair: %s", err)
+		errString = err.Error()
+		return fmt.Errorf("Error creating OAPIKeyPair: %s", errString)
 	}
-	d.SetId(*resp.KeyName)
-	d.Set("key_material", *resp.KeyMaterial)
-	return resourceKeyPairRead(d, meta)
+
+	d.SetId(resp.Keypair.GetKeypairName())
+	d.Set("keypair_fingerprint", resp.Keypair.GetKeypairFingerprint())
+
+	//Set private key in creation
+	if resp.Keypair.GetPrivateKey() != "" {
+		d.Set("private_key", resp.Keypair.GetPrivateKey())
+	}
+
+	return resourceOAPIKeyPairRead(d, meta)
 }
 
-func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
-	req := &fcu.DescribeKeyPairsInput{
-		KeyNames: []*string{aws.String(d.Id())},
+func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	req := oscgo.ReadKeypairsRequest{
+		Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{d.Id()}},
 	}
 
-	var resp *fcu.DescribeKeyPairsOutput
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeKeyPairs(req)
+	var resp oscgo.ReadKeypairsResponse
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		var err error
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -86,33 +103,43 @@ func resourceKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
+	var errString string
 
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidKeyPair.NotFound") {
+		if strings.Contains(fmt.Sprint(err), "InvalidOAPIKeyPair.NotFound") {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("Error retrieving KeyPair: %s", err)
+		errString = err.Error()
+
+		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	d.Set("key_name", resp.KeyPairs[0].KeyName)
-	d.Set("key_fingerprint", resp.KeyPairs[0].KeyFingerprint)
-	d.Set("request_id", resp.RequestId)
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
-	return nil
+	for _, keyPair := range resp.GetKeypairs() {
+		if keyPair.GetKeypairName() == d.Id() {
+			d.Set("keypair_name", keyPair.GetKeypairName())
+			d.Set("keypair_fingerprint", keyPair.GetKeypairFingerprint())
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Unable to find key pair within: %#v", resp.GetKeypairs())
 }
 
-func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.VM.DeleteKeyPairs(&fcu.DeleteKeyPairInput{
-			KeyName: aws.String(d.Id()),
-		})
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		request := oscgo.DeleteKeypairRequest{
+			KeypairName: d.Id(),
+		}
+
+		var err error
+		_, _, err = conn.KeypairApi.DeleteKeypair(context.Background(), &oscgo.DeleteKeypairOpts{DeleteKeypairRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -129,24 +156,25 @@ func resourceKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 	return err
 }
 
-func getKeyPairSchema() map[string]*schema.Schema {
+func getOAPIKeyPairSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"key_fingerprint": {
+		// Attributes
+		"keypair_fingerprint": {
 			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
 			Computed: true,
 		},
-		"key_material": {
+		"private_key": {
 			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
 			Computed: true,
 		},
-		"key_name": {
+		"keypair_name": {
 			Type:     schema.TypeString,
 			Optional: true,
-			ForceNew: true,
+			Computed: true,
+		},
+		"public_key": {
+			Type:     schema.TypeString,
+			Optional: true,
 			Computed: true,
 		},
 		"request_id": {

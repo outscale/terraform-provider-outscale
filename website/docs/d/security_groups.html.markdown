@@ -1,26 +1,26 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_security_groups"
-sidebar_current: "docs-outscale-datasource-security-groups"
+page_title: "3DS OUTSCALE: outscale_security_group"
+sidebar_current: "outscale-security-group"
 description: |-
-  Describes one or more security groups.
+  [Provides information about security groups.]
 ---
 
-# outscale_security_groups
+# outscale_security_group Data Source
 
-You can specify either the name of the security groups or their IDs.
+Provides information about security groups.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Groups).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-securitygroup).
 
 ## Example Usage
 
 ```hcl
-data "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
 
-    filter {
-
-        owner-id ="339215505907"
-
-    }
-
+data "outscale_security_groups" "security_groups01" {
+  filter {
+    name   = "security_group_ids"
+    values = ["sg-12345678", "sg-12345679"]
+  }
 }
 
 
@@ -30,42 +30,44 @@ data "outscale_firewall_rules_sets" "outscale_firewall_rules_sets" {
 
 The following arguments are supported:
 
-* `group_id` - (Optional) The ID of one or more security groups.
-* `filter` - (Optional) One or more filters
-* `group_name` - (Optional) The name of one or more security groups. This parameter only matches security groups in the public Cloud. To match security groups in a VPC, use the group-name filter instead.
+* `filter` - One or more filters.
+  * `account_ids` - (Optional) The account IDs of the owners of the security groups.
+  * `security_group_ids` - (Optional) The IDs of the security groups.
+  * `security_group_names` - (Optional) The names of the security groups.
+  * `tag_keys` - (Optional) The keys of the tags associated with the security groups.
+  * `tag_values` - (Optional) The values of the tags associated with the security groups.
+  * `tags` - (Optional) The key/value combination of the tags associated with the security groups, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
 
-
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeSecurityGroups_get.html#_api_fcu-action_describesecuritygroups_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `description` The description of the security group.
-* `group-id` The ID of the security group.
-* `group-name` The name of the security group.
-* `ip-permission.cidr` A CIDR range that has been granted permission.
-* `ip-permission.from-port` The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-* `ip-permission.group-id` The ID of a security group that has been granted permission.
-* `ip-permission.group-name` The name of a security group that has been granted permission.
-* `ip-permission.protocol` The IP protocol for the permission (tcp | udp | icmp, or a protocol number).
-* `ip-permission.to-port` The end of the port range for the TCP and UDP protocols, or an ICMP code.
-* `ip-permission.user-id` The account ID of a user that has been granted permission.
-* `owner-id` The account ID of the owner of the security group.
-* `tag` The key/value combination of a tag that is assigned to the resource; in the following format: key=value.
-* `tag-key` The key of a tag associated with the security group.
-* `tag-value` The value of a tag associated with the security group.
-* `vpc-id` The ID of the VPC specified when the security group was created.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `request_id` - The ID of the request.
-* `security_groups_info` - Information about one or more security group.
-
-
-
-
-
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeSecurityGroups_get.html#_api_fcu-action_describesecuritygroups_get).
+* `security_groups` - Information about one or more security groups.
+  * `account_id` - The account ID of a user that has been granted permission.
+  * `description` - The description of the security group.
+  * `inbound_rules` - The inbound rules associated with the security group.
+    * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
+    * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
+    * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).
+    * `security_groups_members` - Information about one or more members of a security group.
+      * `account_id` - The account ID of a user.
+      * `security_group_id` - The ID of the security group.
+      * `security_group_name` - (Public Cloud only) The name of the security group.
+    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs-beta.outscale.com/#readnetaccesspointservices).
+    * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
+  * `net_id` - The ID of the Net for the security group.
+  * `outbound_rules` - The outbound rules associated with the security group.
+    * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
+    * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
+    * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).
+    * `security_groups_members` - Information about one or more members of a security group.
+      * `account_id` - The account ID of a user.
+      * `security_group_id` - The ID of the security group.
+      * `security_group_name` - (Public Cloud only) The name of the security group.
+    * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs-beta.outscale.com/#readnetaccesspointservices).
+    * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
+  * `security_group_id` - The ID of the security group.
+  * `security_group_name` - (Public Cloud only) The name of the security group.
+  * `tags` - One or more tags associated with the security group.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

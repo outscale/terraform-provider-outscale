@@ -11,26 +11,26 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVMTypes() *schema.Resource {
+func dataSourceOutscaleOAPIVMTypes() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVMTypesRead,
+		Read: dataSourceOutscaleOAPIVMTypesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"instance_type_set": &schema.Schema{
+			"type": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ebs_optimized_available": &schema.Schema{
+						"bsu_optimized": &schema.Schema{
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"max_ip_addresses": &schema.Schema{
+						"max_private_ip": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"memory": &schema.Schema{
+						"memory_size": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -46,7 +46,7 @@ func dataSourceOutscaleVMTypes() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"vcpu": &schema.Schema{
+						"vcore_count": &schema.Schema{
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
@@ -61,7 +61,7 @@ func dataSourceOutscaleVMTypes() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filter, filterOk := d.GetOk("filter")
@@ -99,9 +99,9 @@ func dataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 
 	for k, v := range resp.InstanceTypeSet {
 		vm := make(map[string]interface{})
-		vm["ebs_optimized_available"] = *v.EbsOptimizedAvailable
-		vm["max_ip_addresses"] = *v.MaxIpAddresses
-		vm["memory"] = *v.Memory
+		vm["bsu_optimized"] = *v.EbsOptimizedAvailable
+		vm["max_private_ip"] = *v.MaxIpAddresses
+		vm["memory_size"] = *v.Memory
 		vm["name"] = *v.Name
 		vm["storage_count"] = *v.StorageCount
 		if v.StorageSize != nil {
@@ -109,11 +109,11 @@ func dataSourceOutscaleVMTypesRead(d *schema.ResourceData, meta interface{}) err
 		} else {
 			vm["storage_size"] = 0
 		}
-		vm["vcpu"] = *v.Vcpu
+		vm["vcore_count"] = *v.Vcpu
 		vms[k] = vm
 	}
 
-	if err := d.Set("instance_type_set", vms); err != nil {
+	if err := d.Set("type", vms); err != nil {
 		return err
 	}
 	d.SetId(resource.UniqueId())

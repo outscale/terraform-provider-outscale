@@ -2,36 +2,28 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccOutscaleDSCustomerGateway_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPIDSCustomerGateway_basic(t *testing.T) {
+	t.Skip()
 
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		IDRefreshName: "outscale_client_endpoint.foo",
 		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckCustomerGatewayDestroy,
+		CheckDestroy:  testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCustomerGatewayDSConfig(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayDSConfig(rInt, rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.outscale_client_endpoint.test", "ip_address", "172.0.0.1"),
 				),
@@ -40,11 +32,11 @@ func TestAccOutscaleDSCustomerGateway_basic(t *testing.T) {
 	})
 }
 
-func testAccCustomerGatewayDSConfig(rInt, rBgpAsn int) string {
+func testAccOAPICustomerGatewayDSConfig(rInt, rBgpAsn int) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_endpoint" "foo" {
 			bgp_asn = %d
-			ip_address = "172.0.0.1"
+			public_ip = "172.0.0.1"
 			type = "ipsec.1"
 			tag {
 				Name = "foo-gateway-%d"
@@ -52,7 +44,7 @@ func testAccCustomerGatewayDSConfig(rInt, rBgpAsn int) string {
 		}
 
 		data "outscale_client_endpoint" "test" {
-			customer_gateway_id = "${outscale_client_endpoint.foo.id}"
+			client_endpoint_id = "${outscale_client_endpoint.foo.id}"
 		}
-		`, rBgpAsn, rInt)
+	`, rBgpAsn, rInt)
 }

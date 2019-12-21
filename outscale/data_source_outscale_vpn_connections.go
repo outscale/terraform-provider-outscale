@@ -13,9 +13,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleVpnConnections() *schema.Resource {
+func dataSourceOutscaleOAPIVpnConnections() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleVpnConnectionsRead,
+		Read: dataSourceOutscaleOAPIVpnConnectionsRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
@@ -24,7 +24,7 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"vpn_connection_set": &schema.Schema{
+			"vpn_connection": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -33,11 +33,11 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"customer_gateway_id": {
+						"client_endpoint_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"options": {
+						"vpn_connection_option": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -57,20 +57,20 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"customer_gateway_configuration": {
+						"client_endpoint_configuration": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"routes": {
+						"vpn_static_route": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"destination_cidr_block": {
+									"destination_ip_range": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"source": {
+									"type": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -82,21 +82,21 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 							},
 						},
 
-						"tag_set": tagsSchemaComputed(),
+						"tag": tagsSchemaComputed(),
 						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vgw_telemetry": {
+						"vpn_tunnel_description": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"accepted_route_count": {
+									"accepted_routes_count": {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"outside_ip_address": {
+									"outscale_side_ip": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -104,7 +104,7 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"status_message": {
+									"comment": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -122,7 +122,7 @@ func dataSourceOutscaleVpnConnections() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleVpnConnectionsRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVpnConnectionsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	filters, filtersOk := d.GetOk("filter")
@@ -171,29 +171,29 @@ func dataSourceOutscaleVpnConnectionsRead(d *schema.ResourceData, meta interface
 
 	for k, v := range resp.VpnConnections {
 		vc := make(map[string]interface{})
-		options := make(map[string]interface{})
+		vpn := make(map[string]interface{})
 		if v.Options != nil {
-			options["static_routes_only"] = strconv.FormatBool(aws.BoolValue(v.Options.StaticRoutesOnly))
+			vpn["static_routes_only"] = strconv.FormatBool(aws.BoolValue(v.Options.StaticRoutesOnly))
 		} else {
-			options["static_routes_only"] = strconv.FormatBool(false)
+			vpn["static_routes_only"] = strconv.FormatBool(false)
 		}
-		vc["options"] = options
-		vc["customer_gateway_configuration"] = *v.CustomerGatewayConfiguration
-		vc["customer_gateway_id"] = *v.CustomerGatewayId
+		vc["vpn_connection_option"] = vpn
+		vc["client_endpoint_configuration"] = *v.CustomerGatewayConfiguration
+		vc["client_endpoint_id"] = *v.CustomerGatewayId
 
-		routes := make([]map[string]interface{}, len(v.Routes))
+		vr := make([]map[string]interface{}, len(v.Routes))
 
 		for k1, v1 := range v.Routes {
 			route := make(map[string]interface{})
 
-			route["destination_cidr_block"] = *v1.DestinationCidrBlock
-			route["source"] = *v1.Source
+			route["destination_ip_range"] = *v1.DestinationCidrBlock
+			route["type"] = *v1.Source
 			route["state"] = *v1.State
 
-			routes[k1] = route
+			vr[k1] = route
 		}
-		vc["routes"] = routes
-		vc["tag_set"] = tagsToMap(v.Tags)
+		vc["vpn_static_route"] = vr
+		vc["tag"] = tagsToMap(v.Tags)
 		vc["state"] = *v.State
 
 		vgws := make([]map[string]interface{}, len(v.VgwTelemetry))
@@ -201,14 +201,14 @@ func dataSourceOutscaleVpnConnectionsRead(d *schema.ResourceData, meta interface
 		for k1, v1 := range v.VgwTelemetry {
 			vgw := make(map[string]interface{})
 
-			vgw["accepted_route_count"] = *v1.AcceptedRouteCount
-			vgw["outside_ip_address"] = *v1.OutsideIpAddress
+			vgw["accepted_routes_count"] = *v1.AcceptedRouteCount
+			vgw["outscale_side_ip"] = *v1.OutsideIpAddress
 			vgw["status"] = *v1.Status
-			vgw["status_message"] = *v1.StatusMessage
+			vgw["comment"] = *v1.StatusMessage
 
 			vgws[k1] = vgw
 		}
-		vc["vgw_telemetry"] = vgws
+		vc["vpn_tunnel_description"] = vgws
 		vc["vpn_connection_id"] = *v.VpnConnectionId
 		vc["vpn_gateway_id"] = *v.VpnGatewayId
 		vc["type"] = *v.Type
@@ -216,7 +216,7 @@ func dataSourceOutscaleVpnConnectionsRead(d *schema.ResourceData, meta interface
 		vcs[k] = vc
 	}
 
-	if err := d.Set("vpn_connection_set", vcs); err != nil {
+	if err := d.Set("vpn_connection", vcs); err != nil {
 		return err
 	}
 	d.Set("request_id", resp.RequestId)

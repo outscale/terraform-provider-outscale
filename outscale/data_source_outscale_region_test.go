@@ -8,23 +8,28 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscaleRegion(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIRegion(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleRegionConfig,
+				Config: testAccDataSourceOutscaleOAPIRegionConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleRegionCheck("data.outscale_region.by_name_current", "eu-west-2", "true"),
-					// testAccDataSourceOutscaleRegionCheck("data.outscale_region.by_name_other", "us-west-1", "false"),
+					testAccDataSourceOutscaleOAPIRegionCheck("data.outscale_region.by_name_current", "eu-west-2", "true"),
+					// testAccDataSourceOutscaleOAPIRegionCheck("data.outscale_region.by_name_other", "us-west-1", "false"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleRegionCheck(name, region, current string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleOAPIRegionCheck(name, region, current string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -41,13 +46,11 @@ func testAccDataSourceOutscaleRegionCheck(name, region, current string) resource
 	}
 }
 
-const testAccDataSourceOutscaleRegionConfig = `
-data "outscale_region" "by_name_current" {
-  filter {
-		name = "region-name"
-		values = ["eu-west-2"]
+const testAccDataSourceOutscaleOAPIRegionConfig = `
+	data "outscale_region" "by_name_current" {
+		filter {
+			name = "region-name"
+			values = ["eu-west-2"]
+		}
 	}
-}
-
-
 `

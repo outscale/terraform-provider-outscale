@@ -3,23 +3,27 @@ package outscale
 import (
 	"bytes"
 	"fmt"
-	"strings"
+	"log"
 	"time"
 
+	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/spf13/cast"
+
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleImages() *schema.Resource {
+func dataSourceOutscaleOAPIImages() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleImagesRead,
+		Read: dataSourceOutscaleOAPIImagesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"executable_by": {
+			"permissions": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
@@ -31,7 +35,7 @@ func dataSourceOutscaleImages() *schema.Resource {
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"owners": {
+			"account_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
@@ -42,65 +46,24 @@ func dataSourceOutscaleImages() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"images_set": {
+			"images": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"account_alias": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"architecture": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"creation_date": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"description": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_location": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_owner_alias": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_owner_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_state": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"image_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"is_public": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
-						"root_device_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"root_device_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						// Complex computed values
-						"block_device_mapping": {
+						"block_device_mappings": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -113,39 +76,96 @@ func dataSourceOutscaleImages() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"virtual_name": {
+									"virtual_device_name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"ebs": {
+									"bsu": {
 										Type:     schema.TypeMap,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"product_codes": {
-							Type:     schema.TypeSet,
+						"creation_date": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Set:      amiProductCodesHash,
+						},
+						"description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"file_location": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"image_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"permissions_to_launch": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"product_code": {
+									"global_permission": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"type": {
+									"account_id": &schema.Schema{
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"state_reason": {
+						"product_codes": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"root_device_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"root_device_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state_comment": {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
-						"tag_set": dataSourceTagsSchema(),
+						"tags": {
+							Type: schema.TypeList,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"value": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -153,256 +173,139 @@ func dataSourceOutscaleImages() *schema.Resource {
 	}
 }
 
-func dataSourceOutscaleImagesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	executableUsers, executableUsersOk := d.GetOk("executable_by")
+	executableUsers, executableUsersOk := d.GetOk("permissions")
 	filters, filtersOk := d.GetOk("filter")
-	owners, ownersOk := d.GetOk("owners")
-
-	if executableUsersOk == false && filtersOk == false && ownersOk == false {
-		return fmt.Errorf("One of executable_users, filters, or owners must be assigned")
+	aids, ownersOk := d.GetOk("account_ids")
+	if !executableUsersOk && !filtersOk && !ownersOk {
+		return fmt.Errorf("One of executable_users, filters, or account_ids must be assigned")
 	}
 
-	params := &fcu.DescribeImagesInput{}
-	if executableUsersOk {
-		params.ExecutableUsers = expandStringList(executableUsers.([]interface{}))
-	}
+	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if ownersOk {
-		o := expandStringList(owners.([]interface{}))
-
-		if len(o) > 0 {
-			params.Owners = o
-		}
+		filtersReq.SetAccountIds([]string{aids.(string)})
+	}
+	if executableUsersOk {
+		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
 	}
 
-	var res *fcu.DescribeImagesOutput
-	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.DescribeImages(params)
+	req := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: filtersReq,
+		}),
+	}
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available", "destroyed"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "deregistered"),
+		Timeout:    5 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
 
-		return resource.RetryableError(err)
-	})
-
+	value, err := stateConf.WaitForState()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error retrieving Outscale Images: %v", err)
 	}
 
-	if len(res.Images) < 1 {
-		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
-	}
+	resp := value.(oscgo.ReadImagesResponse)
+	images := resp.GetImages()
 
-	d.Set("request_id", res.RequestId)
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(resource.UniqueId())
 
-	return omisDescriptionAttributes(d, res.Images)
-}
-
-// populate the numerous fields that the image description returns.
-func omisDescriptionAttributes(d *schema.ResourceData, images []*fcu.Image) error {
-
-	i := make([]interface{}, len(images))
-
-	for k, v := range images {
-		im := make(map[string]interface{})
-
-		im["architecture"] = *v.Architecture
-		if v.CreationDate != nil {
-			im["creation_date"] = *v.CreationDate
-		} else {
-			im["creation_date"] = ""
-		}
-		if v.Description != nil {
-			im["description"] = *v.Description
-		} else {
-			im["description"] = ""
-		}
-		im["image_id"] = *v.ImageId
-		im["image_location"] = *v.ImageLocation
-		if v.ImageOwnerAlias != nil {
-			im["image_owner_alias"] = *v.ImageOwnerAlias
-		} else {
-			im["image_owner_alias"] = ""
-		}
-		im["image_owner_id"] = *v.OwnerId
-		im["image_type"] = *v.ImageType
-		im["image_state"] = *v.State
-		im["name"] = *v.Name
-		im["is_public"] = *v.Public
-		if v.RootDeviceName != nil {
-			im["root_device_name"] = *v.RootDeviceName
-		} else {
-			im["root_device_name"] = ""
-		}
-		im["root_device_type"] = *v.RootDeviceType
-
-		if v.BlockDeviceMappings != nil {
-			im["block_device_mapping"] = amiBlockDeviceMappings(v.BlockDeviceMappings)
-		}
-		if v.ProductCodes != nil {
-			im["product_codes"] = amiProductCodes(v.ProductCodes)
-		}
-		if v.StateReason != nil {
-			im["state_reason"] = amiStateReason(v.StateReason)
-		}
-		if v.Tags != nil {
-			im["tag_set"] = dataSourceTags(v.Tags)
-		}
-		i[k] = im
-	}
-
-	err := d.Set("images_set", i)
-	d.SetId(resource.UniqueId())
-
-	return err
-}
-
-// Returns a set of block device mappings.
-func amiBlockDeviceMappings(m []*fcu.BlockDeviceMapping) []map[string]interface{} {
-	s := make([]map[string]interface{}, len(m))
-
-	for k, v := range m {
-		mapping := make(map[string]interface{})
-		if v.Ebs != nil {
-			ebs := map[string]interface{}{
-				"delete_on_termination": fmt.Sprintf("%t", *v.Ebs.DeleteOnTermination),
-				"volume_size":           fmt.Sprintf("%d", *v.Ebs.VolumeSize),
-				"volume_type":           *v.Ebs.VolumeType,
+		imgs := make([]map[string]interface{}, len(images))
+		for i, image := range images {
+			imgs[i] = map[string]interface{}{
+				"architecture":          image.GetArchitecture(),
+				"creation_date":         image.GetCreationDate(),
+				"description":           image.GetDescription(),
+				"image_id":              image.GetImageId(),
+				"file_location":         image.GetFileLocation(),
+				"account_alias":         image.GetAccountAlias(),
+				"account_id":            image.GetAccountId(),
+				"image_type":            image.GetImageType(),
+				"image_name":            image.GetImageName(),
+				"root_device_name":      image.GetRootDeviceName(),
+				"root_device_type":      image.GetRootDeviceType(),
+				"state":                 image.GetState(),
+				"block_device_mappings": omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings),
+				"product_codes":         image.GetProductCodes(),
+				"state_comment":         omiOAPIStateReason(image.StateComment),
+				"permissions_to_launch": omiOAPIPermissionToLuch(image.PermissionsToLaunch),
+				"tags":                  getOapiTagSet(image.Tags),
 			}
-
-			if v.Ebs.Iops != nil {
-				ebs["iops"] = fmt.Sprintf("%d", *v.Ebs.Iops)
-			} else {
-				ebs["iops"] = "0"
-			}
-			// snapshot id may not be set
-			if v.Ebs.SnapshotId != nil {
-				ebs["snapshot_id"] = *v.Ebs.SnapshotId
-			}
-
-			mapping["ebs"] = ebs
-		}
-		if v.VirtualName != nil {
-			mapping["virtual_name"] = *v.VirtualName
-		}
-		if v.DeviceName != nil {
-			mapping["device_name"] = *v.DeviceName
-		}
-		if v.NoDevice != nil {
-			mapping["no_device"] = *v.NoDevice
 		}
 
-		s[k] = mapping
-	}
-	return s
+		d.Set("request_id", resp.ResponseContext.RequestId)
+		return set("images", imgs)
+	})
 }
 
-// Returns a set of product codes.
-func amiProductCodes(m []*fcu.ProductCode) *schema.Set {
-	s := &schema.Set{
-		F: amiProductCodesHash,
-	}
-	for _, v := range m {
-		code := map[string]interface{}{
-			"product_code": *v.ProductCode,
-			"type":         *v.Type,
+func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersImage {
+	filters := &oscgo.FiltersImage{}
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, cast.ToString(e))
 		}
-		s.Add(code)
-	}
-	return s
-}
 
-// Returns the state reason.
-func amiStateReason(m *fcu.StateReason) map[string]interface{} {
-	s := make(map[string]interface{})
-	if m != nil {
-		s["code"] = *m.Code
-		s["message"] = *m.Message
-	} else {
-		s["code"] = "UNSET"
-		s["message"] = "UNSET"
-	}
-	return s
-}
-
-// Generates a hash for the set hash function used by the block_device_mapping
-// attribute.
-func amiBlockDeviceMappingHash(v interface{}) int {
-	var buf bytes.Buffer
-	// All keys added in alphabetical order.
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["device_name"].(string)))
-	if d, ok := m["ebs"]; ok {
-		if len(d.(map[string]interface{})) > 0 {
-			e := d.(map[string]interface{})
-			buf.WriteString(fmt.Sprintf("%s-", e["delete_on_termination"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["encrypted"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["iops"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["volume_size"].(string)))
-			buf.WriteString(fmt.Sprintf("%s-", e["volume_type"].(string)))
-		}
-	}
-	if d, ok := m["no_device"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["virtual_name"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	if d, ok := m["snapshot_id"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", d.(string)))
-	}
-	return hashcode.String(buf.String())
-}
-
-// Generates a hash for the set hash function used by the product_codes
-// attribute.
-func amiProductCodesHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	// All keys added in alphabetical order.
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
-	return hashcode.String(buf.String())
-}
-
-func dataSourceTagsSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Computed: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"key": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-				"value": {
-					Type:     schema.TypeString,
-					Computed: true,
-				},
-			},
-		},
-	}
-}
-
-func expandStringList(configured []interface{}) []*string {
-	vs := make([]*string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, aws.String(v.(string)))
+		switch name := m["name"].(string); name {
+		case "account_aliases":
+			filters.SetAccountAliases(filterValues)
+		case "account_ids":
+			filters.SetAccountIds(filterValues)
+		case "architectures":
+			filters.SetArchitectures(filterValues)
+		case "block_device_mapping_delete_on_vm_deletion":
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "block_device_mapping_device_names":
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "block_device_mapping_snapshot_ids":
+			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
+		case "block_device_mapping_volume_sizes":
+			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
+		case "block_device_mapping_volume_type":
+			filters.SetBlockDeviceMappingVolumeTypes(filterValues)
+		case "description":
+			filters.SetDescriptions(filterValues)
+		case "file_locations":
+			filters.SetFileLocations(filterValues)
+		case "image_ids":
+			filters.SetImageIds(filterValues)
+		case "permissions_to_launch_account_ids":
+			filters.SetPermissionsToLaunchAccountIds(filterValues)
+		case "permissions_to_launch_global_permission":
+			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues))
+		case "root_device_names":
+			filters.SetRootDeviceNames(filterValues)
+		case "root_device_types":
+			filters.SetRootDeviceTypes(filterValues)
+		case "image_names":
+			filters.SetImageNames(filterValues)
+		case "states":
+			filters.SetStates(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "virtualization_types":
+			filters.SetVirtualizationTypes(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
 	}
-	return vs
+	return filters
 }
 
 func expandStringValueList(configured []interface{}) []string {
@@ -416,24 +319,24 @@ func expandStringValueList(configured []interface{}) []string {
 	return vs
 }
 
-func dataSourceTagsHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", m["key"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["value"].(string)))
-	return hashcode.String(buf.String())
+func expandStringList(configured []interface{}) []*string {
+	vs := make([]*string, 0, len(configured))
+	for _, v := range configured {
+		val, ok := v.(string)
+		if ok && val != "" {
+			vs = append(vs, aws.String(v.(string)))
+		}
+	}
+	return vs
 }
 
-func dataSourceTags(m []*fcu.Tag) *schema.Set {
-	s := &schema.Set{
-		F: dataSourceTagsHash,
-	}
-	for _, v := range m {
-		tag := map[string]interface{}{
-			"key":   *v.Key,
-			"value": *v.Value,
-		}
-		s.Add(tag)
-	}
-	return s
+// Generates a hash for the set hash function used by the product_codes
+// attribute.
+func amiProductCodesHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	// All keys added in alphabetical order.
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
+	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
+	return hashcode.String(buf.String())
 }

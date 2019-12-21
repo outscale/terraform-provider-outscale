@@ -1,54 +1,44 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_keypair"
-sidebar_current: "docs-outscale-datasource-keypair"
+page_title: "3DS OUTSCALE: outscale_keypair"
+sidebar_current: "outscale-keypair"
 description: |-
-Describes your keypair.
+  [Provides information about a specific keypair.]
 ---
 
-# outscale_keypair
+# outscale_keypair Data Source
 
-Describes your keypair.
+Provides information about a specific keypair.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Keypairs).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-keypair).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_keypair" "outscale_keypair" {
-    count = 1
 
-    key_name = "keyname_test_"
+data "outscale_keypair" "keypair01" {
+	filter {
+		name   = "keypair_names"
+		values = ["terraform-keypair-01"]
+	}
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `filter` - (Optional) One or more filters
-* `key_name` - (Optional) One keypair name.
+* `filter` - One or more filters.
+  * `keypair_fingerprints` - (Optional) The fingerprints of the keypairs.
+  * `keypair_names` - (Optional) The names of the keypairs.
 
-
-See detailed information in [Outscale Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeKeyPairs_get.html#_api_fcu-action_describekeypairs_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `fingerprint` The fingerprint of the keypair.
-* `key-name` The name of the keypair
-
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `request_id` - The ID of the request.
-* `key_set` - Information about one or more keypairs.
-
-
-
-
-
-
-
-See detailed information in [Describe Instances](http://docs.outscale.com/api_fcu/operations/Action_DescribeKeyPairs_get.html#_api_fcu-action_describekeypairs_get).
+* `keypairs` - Information about one or more keypairs.
+  * `keypair_fingerprint` - If you create a keypair, the SHA-1 digest of the DER encoded private key.<br />
+If you import a keypair, the MD5 public key fingerprint as specified in section 4 of RFC 4716.
+  * `keypair_name` - The name of the keypair.

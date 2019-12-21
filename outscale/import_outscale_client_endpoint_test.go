@@ -10,6 +10,8 @@ import (
 )
 
 func TestAccOutscaleClientEndpoint_importBasic(t *testing.T) {
+	t.Skip()
+
 	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
@@ -26,10 +28,10 @@ func TestAccOutscaleClientEndpoint_importBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCustomerGatewayDestroy,
+		CheckDestroy: testAccCheckOAPICustomerGatewayDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCustomerGatewayConfig(rInt, rBgpAsn),
+				Config: testAccOAPICustomerGatewayConfig(rInt, rBgpAsn),
 			},
 
 			resource.TestStep{

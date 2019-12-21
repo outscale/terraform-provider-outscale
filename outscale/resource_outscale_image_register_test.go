@@ -13,25 +13,30 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func TestAccOutscaleImageRegister_basic(t *testing.T) {
+func TestAccOutscaleOAPIImageRegister_basic(t *testing.T) {
+	t.Skip()
+
 	r := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckOutscaleImageRegisterDestroy,
+		CheckDestroy: testAccCheckOutscaleOAPIImageRegisterDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleImageRegisterConfig(r),
+				Config: testAccOutscaleOAPIImageRegisterConfig(r),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImageRegisterExists("outscale_image_register.outscale_image_register"),
+					testAccCheckOutscaleOAPIImageRegisterExists("outscale_image_register.outscale_image_register"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleImageRegisterDestroy(s *terraform.State) error {
+func testAccCheckOutscaleOAPIImageRegisterDestroy(s *terraform.State) error {
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_image_register" {
@@ -67,7 +72,7 @@ func testAccCheckOutscaleImageRegisterDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleImageRegisterExists(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIImageRegisterExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -77,30 +82,21 @@ func testAccCheckOutscaleImageRegisterExists(n string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No Role name is set")
 		}
-
 		return nil
 	}
 }
 
-func testAccOutscaleImageRegisterConfig(r int) string {
+func testAccOutscaleOAPIImageRegisterConfig(r int) string {
 	return fmt.Sprintf(`
-resource "outscale_volume" "outscale_volume" {
-  availability_zone = "eu-west-2a"
-  size              = 40
-}
-
-resource "outscale_snapshot" "outscale_snapshot" {
-  volume_id = "${outscale_volume.outscale_volume.volume_id}"
-}
-
-resource "outscale_image_register" "outscale_image_register" {
-  name = "registeredImageFromSnapshot-%d"
-
-  root_device_name = "/dev/sda1"
-
-  block_device_mapping {
-	  snapshot_id = "${outscale_snapshot.outscale_snapshot.snapshot_id}"
-	  device_name = "/dev/sda1"
-  }
-}`, r)
+		resource "outscale_vm" "outscale_vm" {
+			count    = 1
+			image_id = "ami-880caa66"
+			type     = "c4.large"
+		}
+		
+		resource "outscale_image_register" "outscale_image_register" {
+			name  = "image_%d"
+			vm_id = "${outscale_vm.outscale_vm.id}"
+		}
+	`, r)
 }

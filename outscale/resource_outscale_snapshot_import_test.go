@@ -10,33 +10,32 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSnapshotImport_Basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
+func TestAccOutscaleOAPISnapshotImport_Basic(t *testing.T) {
 	t.Skip()
+	o := os.Getenv("OUTSCALE_OAPI")
 
 	oapi, err := strconv.ParseBool(o)
 	if err != nil {
 		oapi = false
 	}
 
-	if oapi {
+	if !oapi {
 		t.Skip()
 	}
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleSnapshotCopyConfig(),
+				Config: testAccOutscaleOAPISnapshotCopyConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleSnapshotCopyExists("outscale_snapshot_import"),
+					testAccOutscaleOAPISnapshotCopyExists("outscale_snapshot_import"),
 				),
 			},
 		},
 	})
 }
 
-func testAccOutscaleSnapshotCopyExists(n string) resource.TestCheckFunc {
+func testAccOutscaleOAPISnapshotCopyExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -51,11 +50,30 @@ func testAccOutscaleSnapshotCopyExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleSnapshotImportConfig() string {
+func testAccOutscaleOAPISnapshotImportConfig() string {
 	return fmt.Sprintf(`
 resource "outscale_snapshot_import" "test" {
-	snapshot_location = ""
+	osu_location = ""
 snapshot_size = ""
+}
+`)
+}
+
+func testAccOutscaleOAPISnapshotCopyConfig() string {
+	return fmt.Sprintf(`
+resource "outscale_volume" "test" {
+	sub_region_name = "eu-west-2a"
+	size = 1
+}
+
+resource "outscale_snapshot" "test" {
+	volume_id = "${outscale_volume.test.id}"
+	description = "Snapshot Acceptance Test"
+}
+
+resource "outscale_snapshot_copy" "test" {
+	source_region_name =  "eu-west-2b"
+	source_snapshot_id = "${outscale_snapshot.test.id}"
 }
 `)
 }

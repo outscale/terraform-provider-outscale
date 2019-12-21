@@ -14,17 +14,17 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleVpnGatewayLink() *schema.Resource {
+func resourceOutscaleOAPIVpnGatewayLink() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVpnGatewayLinkCreate,
-		Read:   resourceOutscaleVpnGatewayLinkRead,
-		Delete: resourceOutscaleVpnGatewayLinkDelete,
+		Create: resourceOutscaleOAPIVpnGatewayLinkCreate,
+		Read:   resourceOutscaleOAPIVpnGatewayLinkRead,
+		Delete: resourceOutscaleOAPIVpnGatewayLinkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"vpc_id": &schema.Schema{
+			"lin_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -46,7 +46,7 @@ func resourceOutscaleVpnGatewayLink() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	vgwID := d.Get("vpn_gateway_id").(string)
@@ -84,23 +84,23 @@ func resourceOutscaleVpnGatewayLinkRead(d *schema.ResourceData, meta interface{}
 		return nil
 	}
 
-	vga := vpnGatewayGetAttachment(vgw)
+	vga := oapiVpnGatewayGetAttachment(vgw)
 	if len(vgw.VpcAttachments) == 0 || *vga.State == "detached" {
-		d.Set("vpc_id", "")
+		d.Set("lin_id", "")
 		return nil
 	}
 
-	d.Set("vpc_id", *vga.VpcId)
+	d.Set("lin_id", *vga.VpcId)
 	d.Set("state", vga.State)
 	d.Set("request_id", resp.RequestId)
 
 	return nil
 }
 
-func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	vpcID := d.Get("vpc_id").(string)
+	vpcID := d.Get("lin_id").(string)
 	vgwID := d.Get("vpn_gateway_id").(string)
 
 	createOpts := &fcu.AttachVpnGatewayInput{
@@ -146,14 +146,14 @@ func resourceOutscaleVpnGatewayLinkCreate(d *schema.ResourceData, meta interface
 	}
 	log.Printf("[DEBUG] VPN Gateway %q attached to VPC %q.", vgwID, vpcID)
 
-	return resourceOutscaleVpnGatewayLinkRead(d, meta)
+	return resourceOutscaleOAPIVpnGatewayLinkRead(d, meta)
 }
 
-func resourceOutscaleVpnGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	// Get the old VPC ID to detach from
-	vpcID, _ := d.GetChange("vpc_id")
+	vpcID, _ := d.GetChange("lin_id")
 
 	if vpcID.(string) == "" {
 		fmt.Printf(
@@ -204,7 +204,7 @@ func resourceOutscaleVpnGatewayLinkDelete(d *schema.ResourceData, meta interface
 	}
 
 	// Wait for it to be fully detached before continuing
-	fmt.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("vpn_gateway_id").(string))
+	log.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("vpn_gateway_id").(string))
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{"attached", "detaching", "available"},
 		Target:  []string{"detached"},
@@ -264,7 +264,7 @@ func vpnGatewayAttachmentStateRefresh(conn *fcu.Client, vpcID, vgwID string) res
 			return vgw, "detached", nil
 		}
 
-		vga := vpnGatewayGetAttachment(vgw)
+		vga := oapiVpnGatewayGetAttachment(vgw)
 
 		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
 		return vgw, *vga.State, nil

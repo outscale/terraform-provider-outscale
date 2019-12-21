@@ -3,49 +3,36 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleImagesDataSource_Instance(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleImagesDataSourceConfig,
+				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "t2.micro", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleImagesDataSourceID("data.outscale_images.nat_ami"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.architecture", "x86_64"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.description", "Debian 9 - 4.9.51"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.block_device_mappings.#", "1"),
-					resource.TestMatchResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_id", regexp.MustCompile("^ami-")),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_type", "machine"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.is_public", "true"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_name", "/dev/sda1"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.root_device_type", "ebs"),
-					resource.TestCheckResourceAttr("data.outscale_images.nat_ami", "image_set.0.image_state", "available"),
+					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIImagesDataSourceID(n string) resource.TestCheckFunc {
 	// Wait for IAM role
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -60,23 +47,37 @@ func testAccCheckOutscaleImagesDataSourceID(n string) resource.TestCheckFunc {
 	}
 }
 
-const testAccCheckOutscaleImagesDataSourceConfig = `
-data "outscale_images" "nat_ami" {
-	filter {
-		name = "architecture"
-		values = ["x86_64"]
-	}
-	filter {
-		name = "virtualization-type"
-		values = ["hvm"]
-	}
-	filter {
-		name = "root-device-type"
-		values = ["ebs"]
-	}
-	filter {
-		name = "block-device-mapping.volume-type"
-		values = ["standard"]
-	}
+func testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, vmType, region, imageName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic_one" {
+			image_id			           = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name	           = "terraform-basic"
+			placement_subregion_name = "%[3]sa"
+		}
+
+		resource "outscale_vm" "basic_two" {
+			image_id			           = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name	           = "terraform-basic"
+			placement_subregion_name = "%[3]sa"
+		}
+
+		resource "outscale_image" "image_one" {
+			image_name = "%[4]s-one"
+			vm_id = "${outscale_vm.basic_one.id}"
+		}
+
+		resource "outscale_image" "image_two" {
+			image_name = "%[4]s-two"
+			vm_id = "${outscale_vm.basic_two.id}"
+		}
+
+		data "outscale_images" "nat_ami" {
+			filter {
+				name = "image_ids"
+				values = ["${outscale_image.image_one.id}", "${outscale_image.image_two.id}"]
+			}
+		}
+	`, omi, vmType, region, imageName)
 }
-`

@@ -1,64 +1,84 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"strings"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"log"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 // Creates a network interface in the specified subnet
-func dataSourceOutscaleNics() *schema.Resource {
+func dataSourceOutscaleOAPINics() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleNicsRead,
-		Schema: getDSNicsSchema(),
+		Read:   dataSourceOutscaleOAPINicsRead,
+		Schema: getDSOAPINicsSchema(),
 	}
 }
 
-func getDSNicsSchema() map[string]*schema.Schema {
+func getDSOAPINicsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//  This is attribute part for schema Nic
 		"filter": dataSourceFiltersSchema(),
-		"network_interface_id": {
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
-		},
-		"network_interface_set": {
+		"nics": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"account_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					"description": &schema.Schema{
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"private_ip_address": &schema.Schema{
-						Type:     schema.TypeString,
+					"is_source_dest_checked": {
+						Type:     schema.TypeBool,
 						Computed: true,
 					},
-					"subnet_id": &schema.Schema{
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"association": {
+					"link_nic": {
 						Type:     schema.TypeMap,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"allocation_id": {
+								"delete_on_vm_deletion": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"device_number": {
+									Type:     schema.TypeInt,
+									Computed: true,
+								},
+								"nic_link_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"association_id": {
+								"state": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"ip_owner_id": {
+								"vm_account_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"vm_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"link_public_ip": {
+						Type:     schema.TypeMap,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"link_public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
@@ -70,72 +90,26 @@ func getDSNicsSchema() map[string]*schema.Schema {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-							},
-						},
-					},
-					"attachment": {
-						Type:     schema.TypeMap,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"attachment_id": {
+								"public_ip_account_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"delete_on_termination": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"device_index": {
-									Type:     schema.TypeInt,
-									Computed: true,
-								},
-								"instance_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"instance_owner_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"status": {
+								"public_ip_id": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
 					},
-
-					"availability_zone": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"group_set": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"group_id": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"group_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
-					},
-
 					"mac_address": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"network_interface_id": {
+					"net_id": &schema.Schema{
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"owner_id": {
+					"nic_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -143,26 +117,21 @@ func getDSNicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-
-					"private_ip_addresses_set": {
+					"private_ips": {
 						Type:     schema.TypeList,
 						Computed: true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"association": {
+								"is_primary": {
+									Type:     schema.TypeBool,
+									Computed: true,
+								},
+								"link_public_ip": {
 									Type:     schema.TypeMap,
 									Computed: true,
 									Elem: &schema.Resource{
 										Schema: map[string]*schema.Schema{
-											"allocation_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"association_id": {
-												Type:     schema.TypeString,
-												Computed: true,
-											},
-											"ip_owner_id": {
+											"link_public_ip_id": {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
@@ -174,49 +143,77 @@ func getDSNicsSchema() map[string]*schema.Schema {
 												Type:     schema.TypeString,
 												Computed: true,
 											},
+											"public_ip_account_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
+											"public_ip_id": {
+												Type:     schema.TypeString,
+												Computed: true,
+											},
 										},
 									},
-								},
-								"primary": {
-									Type:     schema.TypeBool,
-									Computed: true,
 								},
 								"private_dns_name": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
-								"private_ip_address": {
+								"private_ip": {
 									Type:     schema.TypeString,
 									Computed: true,
 								},
 							},
 						},
 					},
-					"requester_id": {
+					"security_groups": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"security_group_id": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"security_group_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+							},
+						},
+					},
+					"state": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"requester_managed": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"source_dest_check": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"status": {
+					"subnet_id": &schema.Schema{
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tag_set": tagsSchemaComputed(),
-					"vpc_id": {
+					"subregion_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-				},
+					"tags": &schema.Schema{
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:     schema.TypeString,
+									Optional: true,
+									Computed: true,
+								},
+								"value": {
+									Type:     schema.TypeString,
+									Optional: true,
+									Computed: true,
+								},
+							},
+						},
+					}},
 			},
 		},
-
 		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -225,130 +222,49 @@ func getDSNicsSchema() map[string]*schema.Schema {
 }
 
 //Read Nic
-func dataSourceOutscaleNicsRead(d *schema.ResourceData, meta interface{}) error {
-
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	n, nok := d.GetOk("network_interface_id")
-
-	if filtersOk == false && nok == false {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_gateway_id must be provided")
+	if filtersOk == false {
+		return fmt.Errorf("filters, or owner must be assigned, or nic_id must be provided")
 	}
 
-	params := &fcu.DescribeNetworkInterfacesInput{}
+	params := oscgo.ReadNicsRequest{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
-	if nok {
-		params.NetworkInterfaceIds = expandStringList(n.([]interface{}))
+		params.SetFilters(buildOutscaleOAPIDataSourceNicFilters(filters.(*schema.Set)))
 	}
 
-	var describeResp *fcu.DescribeNetworkInterfacesOutput
+	var resp oscgo.ReadNicsResponse
 	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		describeResp, err = conn.VM.DescribeNetworkInterfaces(params)
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(params)})
+		return resource.RetryableError(err)
 	})
 
 	if err != nil {
-
-		return fmt.Errorf("Error describing Network Interfaces : %s", err)
+		return fmt.Errorf("Error reading Network Interface Cards : %s", err)
 	}
 
-	if err != nil {
-		return fmt.Errorf("Error retrieving ENI: %s", err)
-	}
-	if len(describeResp.NetworkInterfaces) < 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", describeResp.NetworkInterfaces)
+	if resp.GetNics() == nil {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	nics := make([]map[string]interface{}, len(describeResp.NetworkInterfaces))
-
-	for k, eni := range describeResp.NetworkInterfaces {
-		nic := make(map[string]interface{})
-
-		nic["description"] = aws.StringValue(eni.Description)
-		nic["subnet_id"] = aws.StringValue(eni.SubnetId)
-
-		b := make(map[string]interface{})
-		if eni.Association != nil {
-			b["allocation_id"] = aws.StringValue(eni.Association.AllocationId)
-			b["association_id"] = aws.StringValue(eni.Association.AssociationId)
-			b["ip_owner_id"] = aws.StringValue(eni.Association.IpOwnerId)
-			b["public_dns_name"] = aws.StringValue(eni.Association.PublicDnsName)
-			b["public_ip"] = aws.StringValue(eni.Association.PublicIp)
-		}
-		nic["association"] = b
-
-		attach := make(map[string]interface{})
-		if eni.Attachment != nil {
-			attach["attachment_id"] = aws.StringValue(eni.Attachment.AttachmentId)
-			attach["delete_on_termination"] = aws.BoolValue(eni.Attachment.DeleteOnTermination)
-			attach["device_index"] = aws.Int64Value(eni.Attachment.DeviceIndex)
-			attach["instance_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-			attach["instance_owner_id"] = aws.StringValue(eni.Attachment.InstanceOwnerId)
-			attach["status"] = aws.StringValue(eni.Attachment.Status)
-		}
-		nic["attachment"] = attach
-		nic["availability_zone"] = aws.StringValue(eni.AvailabilityZone)
-
-		x := make([]map[string]interface{}, len(eni.Groups))
-		for k, v := range eni.Groups {
-			b := make(map[string]interface{})
-			b["group_id"] = aws.StringValue(v.GroupId)
-			b["group_name"] = aws.StringValue(v.GroupName)
-			x[k] = b
-		}
-		nic["group_set"] = x
-		nic["mac_address"] = aws.StringValue(eni.MacAddress)
-		nic["network_interface_id"] = aws.StringValue(eni.NetworkInterfaceId)
-		nic["owner_id"] = aws.StringValue(eni.OwnerId)
-		nic["private_dns_name"] = aws.StringValue(eni.PrivateDnsName)
-		nic["private_ip_address"] = aws.StringValue(eni.PrivateIpAddress)
-
-		y := make([]map[string]interface{}, len(eni.PrivateIpAddresses))
-		if eni.PrivateIpAddresses != nil {
-			for k, v := range eni.PrivateIpAddresses {
-				b := make(map[string]interface{})
-
-				d := make(map[string]interface{})
-				if v.Association != nil {
-					d["allocation_id"] = aws.StringValue(v.Association.AllocationId)
-					d["association_id"] = aws.StringValue(v.Association.AssociationId)
-					d["ip_owner_id"] = aws.StringValue(v.Association.IpOwnerId)
-					d["public_dns_name"] = aws.StringValue(v.Association.PublicDnsName)
-					d["public_ip"] = aws.StringValue(v.Association.PublicIp)
-				}
-				b["association"] = d
-				b["primary"] = aws.BoolValue(v.Primary)
-				b["private_dns_name"] = aws.StringValue(v.PrivateDnsName)
-				b["private_ip_address"] = aws.StringValue(v.PrivateIpAddress)
-
-				y[k] = b
-			}
-		}
-		nic["private_ip_addresses_set"] = y
-		nic["requester_id"] = aws.StringValue(eni.RequesterId)
-		nic["requester_managed"] = aws.BoolValue(eni.RequesterManaged)
-		nic["source_dest_check"] = aws.BoolValue(eni.SourceDestCheck)
-		nic["status"] = aws.StringValue(eni.Status)
-		nic["tag_set"] = tagsToMap(eni.TagSet)
-		nic["vpc_id"] = aws.StringValue(eni.VpcId)
-
-		nics[k] = nic
+	if len(resp.GetNics()) == 0 {
+		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	d.Set("request_id", describeResp.RequestId)
+	nics := resp.GetNics()
 
-	d.SetId(resource.UniqueId())
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		d.SetId(resource.UniqueId())
 
-	return d.Set("network_interface_set", nics)
+		if err := set("nics", getOAPIVMNetworkInterfaceSet(nics)); err != nil {
+			log.Printf("[DEBUG] NICS ERR %+v", err)
+			return err
+		}
+
+		return d.Set("request_id", resp.ResponseContext.GetRequestId())
+	})
 }

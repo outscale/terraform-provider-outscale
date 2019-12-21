@@ -2,8 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,28 +15,22 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleVpnConnectionRoute_basic(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
+func TestAccOutscaleOAPIVpnConnectionRoute_basic(t *testing.T) {
+	t.Skip()
 
 	rBgpAsn := acctest.RandIntRange(64512, 65534)
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			skipIfNoOAPI(t)
+		},
 		Providers:    testAccProviders,
-		CheckDestroy: testAccOutscaleVpnConnectionRouteDestroy,
+		CheckDestroy: testAccOutscaleOAPIVpnConnectionRouteDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleVpnConnectionRouteConfig(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionRouteConfig(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnConnectionRoute(
+					testAccOutscaleOAPIVpnConnectionRoute(
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.vpn_connection",
@@ -47,9 +39,9 @@ func TestAccOutscaleVpnConnectionRoute_basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccOutscaleVpnConnectionRouteConfigUpdate(rBgpAsn),
+				Config: testAccOutscaleOAPIVpnConnectionRouteConfigUpdate(rBgpAsn),
 				Check: resource.ComposeTestCheckFunc(
-					testAccOutscaleVpnConnectionRoute(
+					testAccOutscaleOAPIVpnConnectionRoute(
 						"outscale_vpn_gateway.vpn_gateway",
 						"outscale_client_endpoint.customer_gateway",
 						"outscale_vpn_connection.vpn_connection",
@@ -61,14 +53,14 @@ func TestAccOutscaleVpnConnectionRoute_basic(t *testing.T) {
 	})
 }
 
-func testAccOutscaleVpnConnectionRouteDestroy(s *terraform.State) error {
+func testAccOutscaleOAPIVpnConnectionRouteDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).FCU
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_vpn_connection_route" {
 			continue
 		}
 
-		cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(rs.Primary.ID)
+		cidrBlock, vpnConnectionID := resourceOutscaleOAPIVpnConnectionRouteParseID(rs.Primary.ID)
 
 		routeFilters := []*fcu.Filter{
 			&fcu.Filter{
@@ -128,7 +120,7 @@ func testAccOutscaleVpnConnectionRouteDestroy(s *terraform.State) error {
 	return fmt.Errorf("Fall through error, Check Destroy criteria not met")
 }
 
-func testAccOutscaleVpnConnectionRoute(
+func testAccOutscaleOAPIVpnConnectionRoute(
 	vpnGatewayResource string,
 	customerGatewayResource string,
 	vpnConnectionResource string,
@@ -147,7 +139,7 @@ func testAccOutscaleVpnConnectionRoute(
 			return fmt.Errorf("Not found: %s", vpnConnectionRouteResource)
 		}
 
-		cidrBlock, vpnConnectionID := resourceOutscaleVpnConnectionRouteParseID(route.Primary.ID)
+		cidrBlock, vpnConnectionID := resourceOutscaleOAPIVpnConnectionRouteParseID(route.Primary.ID)
 
 		routeFilters := []*fcu.Filter{
 			&fcu.Filter{
@@ -185,63 +177,65 @@ func testAccOutscaleVpnConnectionRoute(
 	}
 }
 
-func testAccOutscaleVpnConnectionRouteConfig(rBgpAsn int) string {
+func testAccOutscaleOAPIVpnConnectionRouteConfig(rBgpAsn int) string {
 	return fmt.Sprintf(`
-	resource "outscale_vpn_gateway" "vpn_gateway" {
-		tag {
-			Name = "vpn_gateway"
+		resource "outscale_vpn_gateway" "vpn_gateway" {
+			tag {
+				Name = "vpn_gateway"
+			}
 		}
-	}
-
-	resource "outscale_client_endpoint" "customer_gateway" {
-		bgp_asn = %d
-		ip_address = "182.0.0.1"
-		type = "ipsec.1"
-	}
-
-	resource "outscale_vpn_connection" "vpn_connection" {
-		vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
-		customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-		type = "ipsec.1"
-		options {
-			static_routes_only = "true"
+		
+		resource "outscale_client_endpoint" "customer_gateway" {
+			bgp_asn    = %d
+			ip_address = "182.0.0.1"
+			type       = "ipsec.1"
 		}
-	}
-
-	resource "outscale_vpn_connection_route" "foo" {
-	    destination_cidr_block = "172.168.10.0/24"
-	    vpn_connection_id = "${outscale_vpn_connection.vpn_connection.id}"
-	}
+		
+		resource "outscale_vpn_connection" "vpn_connection" {
+			vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
+			customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
+			type                = "ipsec.1"
+		
+			options {
+				static_routes_only = true
+			}
+		}
+		
+		resource "outscale_vpn_connection_route" "foo" {
+			destination_ip_range = "172.168.10.0/24"
+			vpn_connection_id    = "${outscale_vpn_connection.vpn_connection.id}"
+		}
 	`, rBgpAsn)
 }
 
-// Change destination_cidr_block
-func testAccOutscaleVpnConnectionRouteConfigUpdate(rBgpAsn int) string {
+// Change destination_ip_range
+func testAccOutscaleOAPIVpnConnectionRouteConfigUpdate(rBgpAsn int) string {
 	return fmt.Sprintf(`
-	resource "outscale_vpn_gateway" "vpn_gateway" {
-		tag {
-			Name = "vpn_gateway"
+		resource "outscale_vpn_gateway" "vpn_gateway" {
+			tag {
+				Name = "vpn_gateway"
+			}
 		}
-	}
-
-	resource "outscale_client_endpoint" "customer_gateway" {
-		bgp_asn = %d
-		ip_address = "182.0.0.1"
-		type = "ipsec.1"
-	}
-
-	resource "outscale_vpn_connection" "vpn_connection" {
-		vpn_gateway_id = "${outscale_vpn_gateway.vpn_gateway.id}"
-		customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
-		type = "ipsec.1"
-		options {
-			static_routes_only = "true"
+		
+		resource "outscale_client_endpoint" "customer_gateway" {
+			bgp_asn    = %d
+			ip_address = "182.0.0.1"
+			type       = "ipsec.1"
 		}
-	}
-
-	resource "outscale_vpn_connection_route" "foo" {
-		destination_cidr_block = "172.168.20.0/24"
-		vpn_connection_id = "${outscale_vpn_connection.vpn_connection.id}"
-	}
+		
+		resource "outscale_vpn_connection" "vpn_connection" {
+			vpn_gateway_id      = "${outscale_vpn_gateway.vpn_gateway.id}"
+			customer_gateway_id = "${outscale_client_endpoint.customer_gateway.id}"
+			type                = "ipsec.1"
+		
+			options {
+				static_routes_only = true
+			}
+		}
+		
+		resource "outscale_vpn_connection_route" "foo" {
+			destination_ip_range = "172.168.20.0/24"
+			vpn_connection_id    = "${outscale_vpn_connection.vpn_connection.id}"
+		}
 	`, rBgpAsn)
 }

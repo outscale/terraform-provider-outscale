@@ -1,55 +1,51 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_vm_state"
-sidebar_current: "docs-outscale-datasource-vm-state"
+page_title: "3DS OUTSCALE: outscale_vm_state"
+sidebar_current: "outscale-vm-state"
 description: |-
-  Describes the status of one or more instances.
+  [Provides information about a specific VM state.]
 ---
 
-# outscale_vm_state
+# outscale_vm_state Data Source
 
-Describes the status of one or more instances.
+Provides information about a specific VM state.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instance+Lifecycle).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#readvmsstate).
 
 ## Example Usage
 
 ```hcl
-data "outscale_vm_state" "state" {
-  instance_id = ["i-5adcfa0f"]
+
+data "outscale_vm_state" "vm_state01" {
+  filter {
+    name   = "vm_ids"
+    values = ["i-12345678"]
+  }
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `filter` - (Optional) One or more filters.
-* `instance_id` - (Optional) The IDs of the instances.
+* `all_vms` - (Optional) If `true`, includes the status of all VMs. By default or if set to `false`, only includes the status of running VMs.
+* `filter` - One or more filters.
+  * `subregion_names` - (Optional) The names of the Subregions of the VMs.
+  * `vm_ids` - (Optional) One or more IDs of VMs.
+  * `vm_states` - (Optional) The states of the VMs (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
 
-See detailed information in [Outscale VM Status](http://docs.outscale.com/api_fcu/operations/Action_DescribeInstanceStatus_get.html#_api_fcu-action_describeinstancestatus_get).
-
-## Filters
-
-Use the Filter.N parameter to filter the described instances on the following properties:
-
-* `availability-zone` - The Availability Zone of the instance.
-* `event.code` - The code for the scheduled event (`system-reboot` | `system-maintenance`).
-* `event.description` - Indicates whether the BSU volume is deleted when terminating the instance.
-* `event.not-after` - The latest end time for a scheduled event (for example, `2016-01-23T18:45:30.000Z`).
-* `event.not-before` - The earliest start time for a scheduled event (for example, `2016-01-23T18:45:30.000Z`).
-* `instance-state-code` - The state of the instance (a 16-bit unsigned integer). The high byte is an internal value you should ignore. The low byte represents the state of the instance: `0` (pending), `16` (running), `32` (shutting-down), `48` (terminated), `64` (stopping), or `80` (stopped).
-* `client-token` - The idempotency token provided when launching the instance.
-* `instance-state-name` - The state of the instance (`pending` | `running` | `shutting-down` | `terminated` | `stopping` | `stopped`).
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `availability_zone` - The Availability Zone in which the instance is located
-* `events_set` - One or more scheduled events associated with the instance.
-* `instance_id` - The ID of the instance.
-* `instance_state` - The state of the instance.
-* `instance_status` - Impaired functionality that stems from issues internal to the instance (for example, impaired reachability).
-* `system_status` - Impaired functionality that stems from issues related to the systems supporting an instance (for example, hardware failures or network connectivity problems).
-* `request_id` - The ID of the request.
-
-See detailed information in [Instance Status](http://docs.outscale.com/api_fcu/definitions/InstanceStatus.html#_api_fcu-instancestatus).
+* `vm_states` - Information about one or more VM states.
+  * `maintenance_events` - One or more scheduled events associated with the VM.
+    * `code` - The code of the event (`system-reboot` \| `system-maintenance`).
+    * `description` - The description of the event.
+    * `not_after` - The latest scheduled end time for the event.
+    * `not_before` - The earliest scheduled start time for the event.
+  * `subregion_name` - The name of the Subregion of the VM.
+  * `vm_id` - The ID of the VM.
+  * `vm_state` - The state of the VM (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).

@@ -8,22 +8,27 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccDataSourceOutscaleQuota(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIQuota(t *testing.T) {
+	t.Skip()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccDataSourceOutscaleQuotaConfig,
+				Config: testAccDataSourceOutscaleOAPIQuotaConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccDataSourceOutscaleQuotaCheck("data.outscale_quota.s3_by_id"),
+					testAccDataSourceOutscaleQuotaOAPICheck("data.outscale_quota.s3_by_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleQuotaCheck(name string) resource.TestCheckFunc {
+func testAccDataSourceOutscaleQuotaOAPICheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		_, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -34,8 +39,8 @@ func testAccDataSourceOutscaleQuotaCheck(name string) resource.TestCheckFunc {
 	}
 }
 
-const testAccDataSourceOutscaleQuotaConfig = `
-data "outscale_quota" "s3_by_id" {
-  quota_name = "vm_limit"
-}
+const testAccDataSourceOutscaleOAPIQuotaConfig = `
+	data "outscale_quota" "s3_by_id" {
+		quota_name = "vm_limit"
+	}
 `

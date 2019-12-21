@@ -1,76 +1,58 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/spf13/cast"
+
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func datasourceOutscaleVolumes() *schema.Resource {
+func datasourceOutscaleOAPIVolumes() *schema.Resource {
 	return &schema.Resource{
-		Read: datasourceVolumesRead,
+		Read: datasourceOAPIVolumesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
 			"volume_id": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"volume_set": &schema.Schema{
+			"volumes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"availability_zone": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"iops": {
-							Type: schema.TypeInt,
-
+							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"size": {
-							Type: schema.TypeInt,
-
-							Computed: true,
-						},
-						"snapshot_id": {
-							Type: schema.TypeString,
-
-							Computed: true,
-						},
-						"volume_type": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						// Attributes
-						"attachment_set": {
+						"linked_volumes": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"delete_on_termination": {
+									"delete_on_vm_deletion": {
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
-									"device": {
+									"device_name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"instance_id": {
+									"vm_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"status": {
+									"state": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -81,28 +63,28 @@ func datasourceOutscaleVolumes() *schema.Resource {
 								},
 							},
 						},
-						"status": {
+						"size": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"snapshot_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tag_set": {
-							Type: schema.TypeList,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"value": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+						"state": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tag": tagsSchema(),
+						"subregion_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"tags": tagsOAPIListSchemaComputed(),
 						"volume_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"volume_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -111,36 +93,40 @@ func datasourceOutscaleVolumes() *schema.Resource {
 			},
 			"request_id": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 		},
 	}
 }
 
-func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
-
-	conn := meta.(*OutscaleClient).FCU
+func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
 	volumeIds, volumeIdsOk := d.GetOk("volume_id")
-
-	if !filtersOk && !volumeIdsOk {
-		return fmt.Errorf("One of volume_id or filters must be assigned")
+	params := oscgo.ReadVolumesRequest{
+		Filters: &oscgo.FiltersVolume{},
 	}
 
-	params := &fcu.DescribeVolumesInput{}
-	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
-	}
 	if volumeIdsOk {
-		params.VolumeIds = expandStringList(volumeIds.([]interface{}))
+		volIDs := expandStringValueList(volumeIds.([]interface{}))
+		filter := oscgo.FiltersVolume{}
+		filter.SetVolumeIds(volIDs)
+		params.SetFilters(filter)
+	}
+	log.Printf("LOOOGGG___ filtersOk \n %+v \n", filtersOk)
+
+	if filtersOk {
+		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
-	var resp *fcu.DescribeVolumesOutput
+	log.Printf("LOOOGGG___ Filters \n %+v \n", params.Filters)
+
+	var resp oscgo.ReadVolumesResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVolumes(params)
+		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -149,58 +135,57 @@ func datasourceVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return resource.NonRetryableError(err)
 	})
-
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Found These Volumes %s", spew.Sdump(resp.Volumes))
+	log.Printf("Found These Volumes %s", spew.Sdump(resp.GetVolumes()))
 
-	filteredVolumes := resp.Volumes[:]
+	volumes := resp.GetVolumes()
 
-	if len(filteredVolumes) < 1 {
+	if len(volumes) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	d.Set("request_id", resp.RequestId)
+	log.Printf("LOOOGGG___ volumes \n %+v \n", volumes)
 
-	return volumesDescriptionAttributes(d, filteredVolumes)
-}
-
-func volumesDescriptionAttributes(d *schema.ResourceData, volumes []*fcu.Volume) error {
-
-	i := make([]interface{}, len(volumes))
-
-	for k, v := range volumes {
-		im := make(map[string]interface{})
-
-		if v.Attachments != nil {
-			a := make([]map[string]interface{}, len(v.Attachments))
-			for k, v := range v.Attachments {
-				at := make(map[string]interface{})
-				at["delete_on_termination"] = aws.BoolValue(v.DeleteOnTermination)
-				at["device"] = aws.StringValue(v.Device)
-				at["instance_id"] = aws.StringValue(v.InstanceId)
-				at["state"] = aws.StringValue(v.State)
-				at["volume_id"] = aws.StringValue(v.VolumeId)
-
-				a[k] = at
-			}
-			im["attachment_set"] = a
-		}
-		im["availability_zone"] = aws.StringValue(v.AvailabilityZone)
-		im["iops"] = aws.Int64Value(v.Iops)
-		im["size"] = aws.Int64Value(v.Size)
-		im["snapshot_id"] = aws.StringValue(v.SnapshotId)
-		im["volume_type"] = aws.StringValue(v.VolumeType)
-		im["status"] = aws.StringValue(v.State)
-		im["volume_id"] = aws.StringValue(v.VolumeId)
-		im["tag_set"] = tagsToMap(v.Tags)
-
-		i[k] = im
+	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
+		return err
 	}
+
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	d.SetId(resource.UniqueId())
 
-	return d.Set("volume_set", i)
+	return nil
+}
+
+func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
+	for _, v := range volumes {
+		res = append(res, map[string]interface{}{
+			"iops":           v.Iops,
+			"linked_volumes": v.LinkedVolumes,
+			"size":           v.Size,
+			"snapshot_id":    v.SnapshotId,
+			"state":          v.State,
+			"subregion_name": v.SubregionName,
+			"tags":           tagsOSCAPIToMap(v.GetTags()),
+			"volume_id":      v.VolumeId,
+			"volume_type":    v.VolumeType,
+		})
+	}
+	return
+}
+
+func getOAPILinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
+	for _, l := range linkedVolumes {
+		res = append(res, map[string]interface{}{
+			"delete_on_vm_deletion": cast.ToString(l.DeleteOnVmDeletion),
+			"device_name":           l.DeviceName,
+			"vm_id":                 l.VmId,
+			"state":                 l.State,
+			"volume_id":             l.VolumeId,
+		})
+	}
+	return
 }

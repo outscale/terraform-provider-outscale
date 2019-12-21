@@ -12,11 +12,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleImageTasks() *schema.Resource {
+func resourceOutscaleOAPIImageTasks() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceImageTasksCreate,
-		Read:   resourceImageTasksRead,
-		Delete: resourceImageTasksDelete,
+		Create: resourceOAPIImageTasksCreate,
+		Read:   resourceOAPIImageTasksRead,
+		Delete: resourceOAPIImageTasksDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -27,7 +27,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"export_to_osu": {
+			"osu_export": {
 				Type:     schema.TypeMap,
 				Required: true,
 				ForceNew: true,
@@ -41,12 +41,12 @@ func resourceOutscaleImageTasks() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"osu_ak_sk": {
+						"osu_api_key": {
 							Type:     schema.TypeMap,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"access_key": {
+									"api_key_id": {
 										Type:     schema.TypeString,
 										Required: true,
 									},
@@ -82,7 +82,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"export_to_osu": {
+						"osu_export": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -95,12 +95,12 @@ func resourceOutscaleImageTasks() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"osu_ak_sk": {
+									"osu_api_key": {
 										Type:     schema.TypeMap,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"access_key": {
+												"api_key_id": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
@@ -130,7 +130,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 								},
 							},
 						},
-						"image_export_task_id": {
+						"task_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -142,7 +142,7 @@ func resourceOutscaleImageTasks() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status_message": {
+						"comment": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -153,15 +153,15 @@ func resourceOutscaleImageTasks() *schema.Resource {
 	}
 }
 
-func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	eto, etoOk := d.GetOk("export_to_osu")
+	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
 	request := &fcu.CreateImageExportTaskInput{}
 
 	if !etoOk && !ok {
-		return fmt.Errorf("Please provide the required attributes export_to_osu and image_id")
+		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
 	}
 
 	request.ImageId = aws.String(v.(string))
@@ -178,10 +178,10 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 		if v, ok := e["osu_bucket"]; ok {
 			et.OsuBucket = aws.String(v.(string))
 		}
-		if v, ok := e["osu_ak_sk"]; ok {
+		if v, ok := e["osu_api_key"]; ok {
 			w := v.(map[string]interface{})
 			et.OsuAkSk = &fcu.ExportToOsuAccessKeySpecification{
-				AccessKey: aws.String(w["access_key"].(string)),
+				AccessKey: aws.String(w["api_key_id"].(string)),
 				SecretKey: aws.String(w["secret_key"].(string)),
 			}
 		}
@@ -214,16 +214,35 @@ func resourceImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	return resourceImageTasksRead(d, meta)
+	return resourceOAPIImageTasksRead(d, meta)
 }
 
-func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
+	fmt.Printf("Waiting for Image Task %s to become available...", ID)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending", "pending/queued", "queued"},
+		Target:     []string{"available"},
+		Refresh:    OAPIImageTaskStateRefreshFunc(client, ID),
+		Timeout:    OutscaleImageRetryTimeout,
+		Delay:      OutscaleImageRetryDelay,
+		MinTimeout: OutscaleImageRetryMinTimeout,
+	}
+
+	info, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", ID, err)
+	}
+	return info.(*fcu.Image), nil
+}
+
+func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var resp *fcu.DescribeImageExportTasksOutput
 	var err error
 
-	fmt.Printf("[DEBUG] DESCRIBE IMAGE TASK")
+	log.Printf("[DEBUG] DESCRIBE IMAGE TASK")
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, err = conn.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
@@ -246,10 +265,10 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	for k, v := range resp.ImageExportTask {
 		i := make(map[string]interface{})
 		i["completion"] = *v.Completion
-		i["image_export_task_id"] = *v.ImageExportTaskId
+		i["task_id"] = *v.ImageExportTaskId
 		i["image_id"] = *v.ImageId
 		i["state"] = *v.State
-		i["status_message"] = *v.StatusMessage
+		i["comment"] = *v.StatusMessage
 
 		exportToOsu := make(map[string]interface{})
 		exportToOsu["disk_image_format"] = *v.ExportToOsu.DiskImageFormat
@@ -258,12 +277,12 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 		exportToOsu["osu_prefix"] = *v.ExportToOsu.OsuPrefix
 
 		osuAkSk := make(map[string]interface{})
-		osuAkSk["access_key"] = *v.ExportToOsu.OsuAkSk.AccessKey
+		osuAkSk["api_key_id"] = *v.ExportToOsu.OsuAkSk.AccessKey
 		osuAkSk["secret_key"] = *v.ExportToOsu.OsuAkSk.SecretKey
 
-		exportToOsu["osu_ak_sk"] = osuAkSk
+		exportToOsu["osu_api_key"] = osuAkSk
 
-		i["export_to_osu"] = exportToOsu
+		i["osu_export"] = exportToOsu
 
 		imageExportTask[k] = i
 	}
@@ -277,34 +296,15 @@ func resourceImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceImageTasksDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOAPIImageTasksDelete(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId("")
 
 	return nil
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
-	fmt.Printf("Waiting for Image Task %s to become available...", ID)
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "pending/queued", "queued"},
-		Target:     []string{"available"},
-		Refresh:    ImageTaskStateRefreshFunc(client, ID),
-		Timeout:    OutscaleImageRetryTimeout,
-		Delay:      OutscaleImageRetryDelay,
-		MinTimeout: OutscaleImageRetryMinTimeout,
-	}
-
-	info, err := stateConf.WaitForState()
-	if err != nil {
-		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", ID, err)
-	}
-	return info.(*fcu.Image), nil
-}
-
-// ImageTaskStateRefreshFunc ...
-func ImageTaskStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshFunc {
+// OAPIImageTaskStateRefreshFunc ...
+func OAPIImageTaskStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		emptyResp := &fcu.DescribeImageExportTasksOutput{}
 

@@ -2,34 +2,30 @@ package outscale
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleImage() *schema.Resource {
+func dataSourceOutscaleOAPIImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleImageRead,
+		Read: dataSourceOutscaleOAPIImageRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"executable_by": {
+			"permission": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"image_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
-			"owner": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -47,19 +43,19 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_location": {
+			"file_location": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_alias": {
+			"account_alias": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_owner_id": {
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"image_state": {
+			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -67,7 +63,7 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"name": {
+			"image_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -87,8 +83,7 @@ func dataSourceOutscaleImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			// Complex computed values
-			"block_device_mapping": {
+			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -101,11 +96,11 @@ func dataSourceOutscaleImage() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"virtual_name": {
+						"virtual_device_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"ebs": {
+						"bsu": {
 							Type:     schema.TypeMap,
 							Computed: true,
 						},
@@ -113,136 +108,150 @@ func dataSourceOutscaleImage() *schema.Resource {
 				},
 			},
 			"product_codes": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
-				Set:      amiProductCodesHash,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"state_comment": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"permissions_to_launch": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"product_code": {
+						"global_permission": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"type": {
+						"account_id": &schema.Schema{
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"state_reason": {
-				Type:     schema.TypeMap,
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 				Computed: true,
 			},
-			"tag_set": dataSourceTagsSchema(),
 		},
 	}
 }
 
-func dataSourceOutscaleImageRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	executableUsers, executableUsersOk := d.GetOk("executable_by")
 	filters, filtersOk := d.GetOk("filter")
-	owner, ownersOk := d.GetOk("owner")
+	executableUsers, executableUsersOk := d.GetOk("permission")
+	ai, aisOk := d.GetOk("account_id")
 	imageID, imageIDOk := d.GetOk("image_id")
-
-	if executableUsersOk == false && filtersOk == false && ownersOk == false && imageIDOk == false {
-		return fmt.Errorf("One of executable_users, filters, or owner must be assigned, or image_id must be provided")
+	if !executableUsersOk && !filtersOk && !aisOk && !imageIDOk {
+		return fmt.Errorf("One of executable_users, filters, or account_id must be assigned, or image_id must be provided")
 	}
 
-	params := &fcu.DescribeImagesInput{}
-	if executableUsersOk {
-		params.ExecutableUsers = expandStringList(executableUsers.([]interface{}))
-	}
+	filtersReq := &oscgo.FiltersImage{}
 	if filtersOk {
-		params.Filters = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		filtersReq = buildOutscaleOAPIDataSourceImagesFilters(filters.(*schema.Set))
 	}
 	if imageIDOk {
-		params.ImageIds = []*string{aws.String(imageID.(string))}
+		filtersReq.SetImageIds([]string{imageID.(string)})
 	}
-	if ownersOk {
-		params.Owners = []*string{aws.String(owner.(string))}
+	if aisOk {
+		filtersReq.SetAccountIds([]string{ai.(string)})
+	}
+	if executableUsersOk {
+		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
 	}
 
-	var res *fcu.DescribeImagesOutput
-	var err error
-	err = resource.Retry(40*time.Minute, func() *resource.RetryError {
-		res, err = conn.VM.DescribeImages(params)
+	req := &oscgo.ReadImagesOpts{
+		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+			Filters: filtersReq,
+		}),
+	}
 
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				fmt.Printf("[INFO] Request limit exceeded")
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available", "destroyed"},
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "deregistered"),
+		Timeout:    5 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
 
-		return resource.RetryableError(err)
-	})
-
+	value, err := stateConf.WaitForState()
 	if err != nil {
-		return err
+		return fmt.Errorf("Error retrieving Outscale Images (%s): %v", imageID, err)
 	}
 
-	if len(res.Images) < 1 {
+	resp := value.(oscgo.ReadImagesResponse)
+	images := resp.GetImages()
+
+	if len(images) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-
-	if len(res.Images) > 1 {
-		return fmt.Errorf("your query returned more than one result, please try a more " +
-			"specific search criteria")
+	if len(images) > 1 {
+		return fmt.Errorf("your query returned more than one result, please try a more specific search criteria")
 	}
 
-	d.Set("request_id", res.RequestId)
+	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
+		image := images[0]
+		d.SetId(*image.ImageId)
 
-	return omiDescriptionAttributes(d, res.Images[0])
+		set("architecture", image.Architecture)
+		set("creation_date", image.CreationDate)
+		set("description", image.Description)
+		set("image_id", image.ImageId)
+		set("file_location", image.FileLocation)
+		set("account_alias", image.AccountAlias)
+		set("account_id", image.AccountId)
+		set("image_type", image.ImageType)
+		set("image_name", image.ImageName)
+		set("root_device_name", image.RootDeviceName)
+		set("root_device_type", image.RootDeviceType)
+		set("state", image.State)
+
+		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
+			return err
+		}
+		if err := set("product_codes", image.ProductCodes); err != nil {
+			return err
+		}
+		if err := set("state_comment", omiOAPIStateReason(image.StateComment)); err != nil {
+			return err
+		}
+		if err := set("permissions_to_launch", omiOAPIPermissionToLuch(image.PermissionsToLaunch)); err != nil {
+			return err
+		}
+		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
+			return err
+		}
+
+		return d.Set("request_id", resp.ResponseContext.RequestId)
+	})
 }
 
-// populate the numerous fields that the image description returns.
-func omiDescriptionAttributes(d *schema.ResourceData, image *fcu.Image) error {
-
-	d.SetId(*image.ImageId)
-	d.Set("architecture", image.Architecture)
-	if image.CreationDate != nil {
-		d.Set("creation_date", image.CreationDate)
-	} else {
-		d.Set("creation_date", "")
+func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]interface{}) {
+	for _, v := range *p.AccountIds {
+		res = append(res, map[string]interface{}{
+			"account_id":        v,
+			"global_permission": cast.ToString(p.GlobalPermission),
+		})
 	}
-	if image.Description != nil {
-		d.Set("description", image.Description)
-	} else {
-		d.Set("description", "")
-	}
-	d.Set("hypervisor", image.Hypervisor)
-	d.Set("image_id", image.ImageId)
-	d.Set("image_location", image.ImageLocation)
-	if image.ImageOwnerAlias != nil {
-		d.Set("image_owner_alias", image.ImageOwnerAlias)
-	} else {
-		d.Set("image_owner_alias", "")
-	}
-	d.Set("image_owner_id", image.OwnerId)
-	d.Set("image_type", image.ImageType)
-	d.Set("name", image.Name)
-	d.Set("is_public", image.Public)
-	if image.RootDeviceName != nil {
-		d.Set("root_device_name", image.RootDeviceName)
-	} else {
-		d.Set("root_device_name", "")
-	}
-	d.Set("root_device_type", image.RootDeviceType)
-	d.Set("image_state", image.State)
-	d.Set("virtualization_type", image.VirtualizationType)
-	// Complex types get their own functions
-	if err := d.Set("block_device_mapping", amiBlockDeviceMappings(image.BlockDeviceMappings)); err != nil {
-		return err
-	}
-	if err := d.Set("product_codes", amiProductCodes(image.ProductCodes)); err != nil {
-		return err
-	}
-	if err := d.Set("state_reason", amiStateReason(image.StateReason)); err != nil {
-		return err
-	}
-
-	return d.Set("tag_set", tagsToMap(image.Tags))
+	return
 }

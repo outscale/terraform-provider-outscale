@@ -1,35 +1,30 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccOutscaleTagDataSource(t *testing.T) {
-	o := os.Getenv("OUTSCALE_OAPI")
+func TestAccOutscaleOAPITagDataSource(t *testing.T) {
+	//t.Skip()
+	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTagDataSourceConfig,
+				Config: testAccOAPITagDataSourceConfig(omi, "t2.micro"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "key", "foo"),
+						"data.outscale_tag.web", "key", "Name"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "value", "bar"),
+						"data.outscale_tag.web", "value", "test-vm"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "resource_type", "instance"),
 				),
@@ -39,18 +34,24 @@ func TestAccOutscaleTagDataSource(t *testing.T) {
 }
 
 // Lookup based on InstanceID
-const testAccTagDataSourceConfig = `
-resource "outscale_vm" "basic" {
-  image_id = "ami-8a6a0120"
-	instance_type = "m1.small"
-	tag {
-		foo = "bar"
-	}
-}
+func testAccOAPITagDataSourceConfig(omi, vmType string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "basic" {
+			image_id            = "%s"
+			vm_type             = "%s"
+			keypair_name        = "terraform-basic"
 
-data "outscale_tag" "web" {
-	filter {
-    name = "resource-id"
-    values = ["${outscale_vm.basic.id}"]
-	}
-}`
+			tags {
+				key = "Name"
+				value = "test-vm"
+			}
+		}
+
+		data "outscale_tag" "web" {
+			filter {
+				name = "resource_ids"
+				values = ["${outscale_vm.basic.id}"]
+			}
+		}
+	`, omi, vmType)
+}

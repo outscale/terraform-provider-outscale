@@ -1,48 +1,73 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_snapshot"
-sidebar_current: "docs-outscale-resource-snapshot"
+page_title: "3DS OUTSCALE: outscale_snapshot"
+sidebar_current: "outscale-snapshot"
 description: |-
-  Creates a snapshot of a BSU volume.
+  [Manages a snapshot.]
 ---
 
-# outscale_snapshot
+# outscale_snapshot Resource
 
-Creates a snapshot of a BSU volume.
-Snapshots are point-in-time images of a volume you can use to back up your data or to create replicas of this volume at the time the snapshot was created.
+Manages a snapshot.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-snapshot).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_volume" "test" {
-    availability_zone = "eu-west-2a"
-    size = 1
+
+# Create a snapshot
+
+#resource "outscale_volume" "volume01" {
+#  subregion_name = "${var.region}a"
+#  size           = 40
+#}
+
+resource "outscale_snapshot" "snapshot01" {
+  volume_id = outscale_volume.volume01.volume_id
 }
 
-resource "outscale_snapshot" "test" {
-    volume_id = "${outscale_volume.test.id}"
+# Copy a snapshot
+
+resource "outscale_snapshot" "snapshot02" {
+  description        = "Terraform snapshot copy"
+  source_snapshot_id = "snap-12345678"
+  source_region_name = "eu-west-2"
 }
+
+
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `volume_id` - The ID of the BSU volume you want to create a snapshot of.
-* `description` - A description for the new snapshot.
+* `description` - (Optional) A description for the snapshot.
+* `file_location` - (Optional) The pre-signed URL of the snapshot you want to import from the OSU bucket.
+* `snapshot_size` - (Optional) The size of the snapshot created in your account, in bytes. This size must be exactly the same as the source snapshot one.
+* `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
+* `source_snapshot_id` - (Optional) The ID of the snapshot you want to copy.
+* `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.
+* `tags` - One or more tags to add to this resource.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+    
+## Attribute Reference
 
-## Attributes
+The following attributes are exported:
 
-* `snapshot_id` - The ID of the newly created snapshot.
-* `status` - The state of the snapshot (in-queue| pending | completed).
-* `owner_alias` - The account alias of the owner of the snapshot.
-* `description` - The description of the snapshot.
-* `tag_set.N` - One or more tags associated with the snapshot.
-* `volume_id` - The ID of the volume used to create the snapshot.
-* `status_message` - The error message in case of snapshot copy operation failure.
-* `owner_id` - The account ID of owner of the snapshot.
-* `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
-* `start_time` - The time at which the snapshot was initiated.
-* `request_id` - The ID of the request.
-
-[See detailed information.](http://docs.outscale.com/api_fcu/operations/Action_CreateSnapshot_get.html#_api_fcu-action_createsnapshot_get)
+* `snapshot` - Information about the snapshot.
+  * `account_alias` - The account alias of the owner of the snapshot.
+  * `account_id` - The account ID of the owner of the snapshot.
+  * `description` - The description of the snapshot.
+  * `permissions_to_create_volume` - Information about the users who have permissions for the resource.
+    * `account_ids` - The account ID of one or more users who have permissions for the resource.
+    * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+  * `progress` - The progress of the snapshot, as a percentage.
+  * `snapshot_id` - The ID of the snapshot.
+  * `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed`).
+  * `tags` - One or more tags associated with the snapshot.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
+  * `volume_id` - The ID of the volume used to create the snapshot.
+  * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).

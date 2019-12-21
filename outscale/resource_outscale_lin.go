@@ -1,7 +1,10 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
@@ -12,39 +15,40 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleLin() *schema.Resource {
+func resourceOutscaleOAPINet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleLinCreate,
-		Read:   resourceOutscaleLinRead,
-		Delete: resourceOutscaleLinDelete,
+		Create: resourceOutscaleOAPINetCreate,
+		Read:   resourceOutscaleOAPINetRead,
+		Update: resourceOutscaleOAPINetUpdate,
+		Delete: resourceOutscaleOAPINetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
-		Schema: getLinSchema(),
+		Schema: getOAPINetSchema(),
 	}
 }
 
-func resourceOutscaleLinCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &fcu.CreateVpcInput{}
+	req := oscgo.CreateNetRequest{
+		IpRange: d.Get("ip_range").(string),
+	}
 
-	req.CidrBlock = aws.String(d.Get("cidr_block").(string))
-
-	if c, ok := d.GetOk("instance_tenancy"); ok {
-		cidr := c.(string)
-		if cidr == "default" || cidr == "dedicated" {
-			req.InstanceTenancy = aws.String(cidr)
+	if c, ok := d.GetOk("tenancy"); ok {
+		tenancy := c.(string)
+		if tenancy == "default" || tenancy == "dedicated" {
+			req.SetTenancy(tenancy)
 		} else {
-			return fmt.Errorf("cidr_block option not supported %s", cidr)
+			return fmt.Errorf("tenancy option not supported: %s", tenancy)
 		}
 	}
 
-	var resp *fcu.CreateVpcOutput
+	var resp oscgo.CreateNetResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.CreateVpc(req)
+		resp, _, err = conn.NetApi.CreateNet(context.Background(), &oscgo.CreateNetOpts{CreateNetRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -54,25 +58,26 @@ func resourceOutscaleLinCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		return resource.RetryableError(err)
 	})
+
+	var errString string
+
 	if err != nil {
-		log.Printf("[DEBUG] Error creating lin (%s)", err)
-		return err
+		errString = err.Error()
+
+		return fmt.Errorf("Error creating Outscale Net: %s", errString)
 	}
 
-	if resp == nil {
-		return fmt.Errorf("Cannot create the vpc, empty response")
-	}
-
-	d.SetId(*resp.Vpc.VpcId)
-
-	if d.IsNewResource() {
-		if err := setTags(conn, d); err != nil {
+	//SetTags
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignTags(tags.([]interface{}), resp.Net.GetNetId(), conn)
+		if err != nil {
 			return err
 		}
-		d.SetPartial("tag_set")
 	}
 
-	return resourceOutscaleLinRead(d, meta)
+	d.SetId(resp.Net.GetNetId())
+
+	return resourceOutscaleOAPINetRead(d, meta)
 }
 
 func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
@@ -121,18 +126,77 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	return d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags))
 }
 
-func resourceOutscaleLinDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
-	req := &fcu.DeleteVpcInput{
-		VpcId: &id,
+	filters := oscgo.FiltersNet{
+		NetIds: &[]string{id},
+	}
+
+	req := oscgo.ReadNetsRequest{
+		Filters: &filters,
+	}
+
+	var resp oscgo.ReadNetsResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return resource.RetryableError(err)
+	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
+	}
+
+	if len(resp.GetNets()) == 0 {
+		d.SetId("")
+		return fmt.Errorf("oAPI network not found")
+	}
+
+	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
+	d.Set("tenancy", resp.GetNets()[0].Tenancy)
+	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	d.Set("net_id", resp.GetNets()[0].GetNetId())
+	d.Set("state", resp.GetNets()[0].GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
+}
+
+func resourceOutscaleOAPINetUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleOAPINetRead(d, meta)
+}
+
+func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	id := d.Id()
+
+	req := oscgo.DeleteNetRequest{
+		NetId: id,
 	}
 
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, err = conn.VM.DeleteVpc(req)
+		_, _, err = conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -151,14 +215,14 @@ func resourceOutscaleLinDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func getLinSchema() map[string]*schema.Schema {
+func getOAPINetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"cidr_block": {
+		"ip_range": {
 			Type:     schema.TypeString,
 			ForceNew: true,
 			Required: true,
 		},
-		"instance_tenancy": {
+		"tenancy": {
 			Type:     schema.TypeString,
 			ForceNew: true,
 			Computed: true,
@@ -166,7 +230,7 @@ func getLinSchema() map[string]*schema.Schema {
 		},
 
 		// Attributes
-		"dhcp_options_id": {
+		"dhcp_options_set_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -174,7 +238,8 @@ func getLinSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"vpc_id": {
+		"tags": tagsListOAPISchema(),
+		"net_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
@@ -182,7 +247,5 @@ func getLinSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"tag_set": tagsSchemaComputed(),
-		"tag":     tagsSchema(),
 	}
 }

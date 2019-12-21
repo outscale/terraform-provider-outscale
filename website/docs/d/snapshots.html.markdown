@@ -1,77 +1,66 @@
 ---
 layout: "outscale"
-page_title: "OUTSCALE: outscale_snapshots"
-sidebar_current: "docs-outscale-datasource-outscale-snapshots"
+page_title: "3DS OUTSCALE: outscale_snapshot"
+sidebar_current: "outscale-snapshot"
 description: |-
-  Describes one or more snapshots that are available to you.
+  [Provides information about snapshots.]
 ---
 
-# outscale_snapshots
+# outscale_snapshot Data Source
 
-Describes one or more snapshots that are available to you.
+Provides information about snapshots.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
+For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-snapshot).
 
 ## Example Usage
 
 ```hcl
-resource "outscale_volume" "example" {
-    availability_zone = "eu-west-2a"
-    volume_type = "gp2"
-    size = 40
-    tag {
-        Name = "External Volume"
-    }
+
+data "outscale_snapshots" "snapshots01" {
+  filter {
+    name   = "snapshot_ids"
+    values = ["snap-12345678", "snap-12345679"]
+  }
 }
 
-resource "outscale_snapshot" "snapshot" {
-    volume_id = "${outscale_volume.example.id}"
-}
 
-data "outscale_snapshots" "outscale_snapshots" {
-    snapshot_id = ["${outscale_snapshot.snapshot.id}"]
-}
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `snapshot_id.N` - One or more snapshot IDs.
-* `filter.N` - One or more filters
-* `owner.N` - One or more owners of the snapshots.
-* `restorable_by.N` - One or more accounts IDs that have the permissions to create volumes from the snapshot.
+* `filter` - One or more filters.
+  * `account_aliases` - (Optional) The account aliases of the owners of the snapshots.
+  * `account_ids` - (Optional) The account IDs of the owners of the snapshots.
+  * `descriptions` - (Optional) The descriptions of the snapshots.
+  * `permissions_to_create_volume_account_ids` - (Optional) The account IDs of one or more users who have permissions to create volumes.
+  * `permissions_to_create_volume_global_permission` - (Optional) If `true`, lists all public volumes. If `false`, lists all private volumes.
+  * `progresses` - (Optional) The progresses of the snapshots, as a percentage.
+  * `snapshot_ids` - (Optional) The IDs of the snapshots.
+  * `states` - (Optional) The states of the snapshots (`in-queue` \| `pending` \| `completed`).
+  * `tag_keys` - (Optional) The keys of the tags associated with the snapshots.
+  * `tag_values` - (Optional) The values of the tags associated with the snapshots.
+  * `tags` - (Optional) The key/value combination of the tags associated with the snapshots, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `volume_ids` - (Optional) The IDs of the volumes used to create the snapshots.
+  * `volume_sizes` - (Optional) The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
 
-## Filters
-
-You can filter the described snapshots using the snapshot_id.N, the owner.N and the restorable_by.N parameters.
-You can also use the Filter.N parameter to filter the snapshots on the following properties:
-
-* `description` - The description of the snapshot.
-* `owner-alias` - The account alias of the owner of the snapshot
-* `owner-id` - The account ID of the owner of the snapshot.
-* `progress` - The progress of the snapshot, as a percentage.
-* `snapshot-id` - The ID of the snapshot.
-* `start-time` - The time at which the snapshot was initiated.
-* `status` - The state of the snapshot (in-queue | pending | completed).
-* `volume-id` - The ID of the volume used to create the snapshot.
-* `volume-size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
-* `tag` - The key/value combination of a tag associated with the resource.
-* `tag-key` - The key of a tag associated with the resource.
-* `tag-value` - The value of a tag associated with the resource.
-
-## Attributes Reference
+## Attribute Reference
 
 The following attributes are exported:
 
-* `snapshot_set.N` - Information about one or more snapshots; each described with the following attributes:
-  * `progress` - The progress of the snapshot, as a percentage.
-  * `status` - The state of the snapshot (in-queue| pending | completed).
-  * `owner_alias` - The account alias of the owner of the snapshot.
+* `snapshots` - Information about one or more snapshots and their permissions.
+  * `account_alias` - The account alias of the owner of the snapshot.
+  * `account_id` - The account ID of the owner of the snapshot.
   * `description` - The description of the snapshot.
-  * `tag_set.N` - One or more tags associated with the snapshot.
+  * `permissions_to_create_volume` - Information about the users who have permissions for the resource.
+    * `account_ids` - The account ID of one or more users who have permissions for the resource.
+    * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+  * `progress` - The progress of the snapshot, as a percentage.
+  * `snapshot_id` - The ID of the snapshot.
+  * `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed`).
+  * `tags` - One or more tags associated with the snapshot.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
   * `volume_id` - The ID of the volume used to create the snapshot.
-  * `status_message` - The error message in case of snapshot copy operation failure.
-   `owner_id` - The account ID of owner of the snapshot.
-  * `volume_size` - The size of the volume used to create the snapshot, in Gibibytes (GiB).
-  * `start_time` - The time at which the snapshot was initiated.
-
-[See detailed description](http://docs.outscale.com/api_fcu/operations/Action_DescribeSnapshots_get.html#_api_fcu-action_describesnapshots_get)
+  * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).

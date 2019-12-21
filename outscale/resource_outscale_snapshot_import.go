@@ -13,11 +13,11 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourcedOutscaleSnapshotImport() *schema.Resource {
+func resourcedOutscaleOAPISnapshotImport() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcedOutscaleSnapshotImportCreate,
-		Read:   resourcedOutscaleSnapshotImportRead,
-		Delete: resourcedOutscaleSnapshotImportDelete,
+		Create: resourcedOutscaleOAPISnapshotImportCreate,
+		Read:   resourcedOutscaleOAPISnapshotImportRead,
+		Delete: resourcedOutscaleOAPISnapshotImportDelete,
 
 		Schema: map[string]*schema.Schema{
 			"description": &schema.Schema{
@@ -26,7 +26,7 @@ func resourcedOutscaleSnapshotImport() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"snapshot_location": &schema.Schema{
+			"osu_location": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -36,19 +36,23 @@ func resourcedOutscaleSnapshotImport() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"encrypted": &schema.Schema{
+			"is_encrypted": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"owner_alias": &schema.Schema{
+			"vm_profile_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"progress": &schema.Schema{
+			"account_alias": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"status": &schema.Schema{
+			"completion": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -64,11 +68,11 @@ func resourcedOutscaleSnapshotImport() *schema.Resource {
 	}
 }
 
-func resourcedOutscaleSnapshotImportCreate(d *schema.ResourceData, meta interface{}) error {
+func resourcedOutscaleOAPISnapshotImportCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	req := &fcu.ImportSnapshotInput{
-		SnapshotLocation: aws.String(d.Get("snapshot_location").(string)),
+		SnapshotLocation: aws.String(d.Get("osu_location").(string)),
 		SnapshotSize:     aws.String(d.Get("snapshot_size").(string)),
 	}
 
@@ -96,14 +100,14 @@ func resourcedOutscaleSnapshotImportCreate(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("Error adding snapshot createVolumePermission: %s", err)
 	}
 
-	d.Set("id", resp.ImportTaskId)
+	d.Set("vm_profile_id", resp.ImportTaskId)
 	d.SetId(*resp.Id)
 
 	// Wait for the account to appear in the permission list
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"completed"},
-		Refresh:    resourcedOutscaleSnapshotImportStateRefreshFunc(d, conn, *resp.ImportTaskId),
+		Refresh:    resourcedOutscaleOAPISnapshotImportStateRefreshFunc(d, conn, *resp.ImportTaskId),
 		Timeout:    5 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -114,10 +118,10 @@ func resourcedOutscaleSnapshotImportCreate(d *schema.ResourceData, meta interfac
 			d.Id(), err)
 	}
 
-	return resourcedOutscaleSnapshotImportRead(d, meta)
+	return resourcedOutscaleOAPISnapshotImportRead(d, meta)
 }
 
-func resourcedOutscaleSnapshotImportRead(d *schema.ResourceData, meta interface{}) error {
+func resourcedOutscaleOAPISnapshotImportRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var attrs *fcu.DescribeSnapshotsOutput
@@ -145,17 +149,17 @@ func resourcedOutscaleSnapshotImportRead(d *schema.ResourceData, meta interface{
 	s := attrs.Snapshots[0]
 
 	d.Set("description", s.Description)
-	d.Set("encrypted", s.Encrypted)
-	d.Set("owner_alias", s.OwnerAlias)
-	d.Set("progress", s.Progress)
-	d.Set("status", s.State)
+	d.Set("is_encrypted", s.Encrypted)
+	d.Set("account_alias", s.OwnerAlias)
+	d.Set("completion", s.Progress)
+	d.Set("state", s.State)
 	d.Set("volume_size", s.VolumeSize)
 	d.Set("request_id", attrs.RequestId)
 
 	return nil
 }
 
-func resourcedOutscaleSnapshotImportDelete(d *schema.ResourceData, meta interface{}) error {
+func resourcedOutscaleOAPISnapshotImportDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -192,7 +196,7 @@ func resourcedOutscaleSnapshotImportDelete(d *schema.ResourceData, meta interfac
 	})
 }
 
-func resourcedOutscaleSnapshotImportStateRefreshFunc(d *schema.ResourceData, conn *fcu.Client, id string) resource.StateRefreshFunc {
+func resourcedOutscaleOAPISnapshotImportStateRefreshFunc(d *schema.ResourceData, conn *fcu.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		var attrs *fcu.DescribeSnapshotsOutput
@@ -219,7 +223,7 @@ func resourcedOutscaleSnapshotImportStateRefreshFunc(d *schema.ResourceData, con
 
 		s := attrs.Snapshots[0]
 
-		d.Set("progress", s.Progress)
+		d.Set("completion", s.Progress)
 
 		return attrs, "error", nil
 	}

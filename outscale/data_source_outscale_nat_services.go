@@ -1,45 +1,41 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func dataSourceOutscaleNatServices() *schema.Resource {
+func dataSourceOutscaleOAPINatServices() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleNatServicesRead,
+		Read: dataSourceOutscaleOAPINatServicesRead,
 
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"nat_gateway_id": {
+			"nat_service_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 
 			// Attributes
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"nat_gateway": {
+			"nat_services": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"nat_gateway_address": {
+						"public_ips": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"allocation_id": {
+									"public_ip_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -50,7 +46,7 @@ func dataSourceOutscaleNatServices() *schema.Resource {
 								},
 							},
 						},
-						"nat_gateway_id": {
+						"nat_service_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -62,41 +58,51 @@ func dataSourceOutscaleNatServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"vpc_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
 
-func dataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	natGatewayID, natGatewayIDOK := d.GetOk("nat_gateway_id")
+	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
 
 	if filtersOk == false && natGatewayIDOK == false {
-		return fmt.Errorf("filters, or owner must be assigned, or nat_gateway_id must be provided")
+		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 
-	params := &fcu.DescribeNatGatewaysInput{}
+	params := oscgo.ReadNatServicesRequest{}
 	if filtersOk {
-		params.Filter = buildOutscaleDataSourceFilters(filters.(*schema.Set))
+		params.SetFilters(buildOutscaleOAPINatServiceDataSourceFilters(filters.(*schema.Set)))
 	}
 	if natGatewayIDOK {
-		params.NatGatewayIds = expandStringList(natGatewayID.([]interface{}))
+		ids := make([]string, len(natGatewayID.([]interface{})))
+
+		for k, v := range natGatewayID.([]interface{}) {
+			ids[k] = v.(string)
+		}
+		filter := oscgo.FiltersNatService{}
+		filter.SetNatServiceIds(ids)
+		params.SetFilters(filter)
 	}
 
-	var err error
-	var res *fcu.DescribeNatGatewaysOutput
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	var resp oscgo.ReadNatServicesResponse
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 
-		res, err = conn.VM.DescribeNatGateways(params)
+		resp, _, err = conn.NatServiceApi.ReadNatServices(context.Background(), &oscgo.ReadNatServicesOpts{ReadNatServicesRequest: optional.NewInterface(params)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -106,22 +112,25 @@ func dataSourceOutscaleNatServicesRead(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 
+	var errString string
+
 	if err != nil {
-		return err
+		errString = err.Error()
+
+		return fmt.Errorf("[DEBUG] Error reading Nar Service (%s)", errString)
 	}
 
-	if len(res.NatGateways) < 1 {
+	if len(resp.GetNatServices()) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	d.Set("request_id", res.RequestId)
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	return ngsDescriptionAttributes(d, res.NatGateways)
+	return ngsOAPIDescriptionAttributes(d, resp.GetNatServices())
 }
 
 // populate the numerous fields that the image description returns.
-func ngsDescriptionAttributes(d *schema.ResourceData, ngs []*fcu.NatGateway) error {
-
+func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService) error {
 	d.SetId(resource.UniqueId())
 
 	addngs := make([]map[string]interface{}, len(ngs))
@@ -129,23 +138,35 @@ func ngsDescriptionAttributes(d *schema.ResourceData, ngs []*fcu.NatGateway) err
 	for k, v := range ngs {
 		addng := make(map[string]interface{})
 
-		ngas := make([]interface{}, len(v.NatGatewayAddresses))
-		if v.NatGatewayAddresses != nil {
-			for i, w := range v.NatGatewayAddresses {
-				nga := make(map[string]interface{})
-				nga["allocation_id"] = aws.StringValue(w.AllocationId)
-				nga["public_ip"] = aws.StringValue(w.PublicIp)
-				ngas[i] = nga
+		ngas := make([]interface{}, len(v.GetPublicIps()))
+
+		for i, w := range v.GetPublicIps() {
+			nga := make(map[string]interface{})
+			if w.GetPublicIpId() != "" {
+				nga["public_ip_id"] = w.GetPublicIpId()
 			}
+			if w.GetPublicIp() != "" {
+				nga["public_ip"] = w.GetPublicIp()
+			}
+			ngas[i] = nga
 		}
-		addng["nat_gateway_address"] = ngas
-		addng["nat_gateway_id"] = aws.StringValue(v.NatGatewayId)
-		addng["state"] = aws.StringValue(v.State)
-		addng["subnet_id"] = aws.StringValue(v.SubnetId)
-		addng["vpc_id"] = aws.StringValue(v.VpcId)
+		addng["public_ips"] = ngas
+
+		if v.GetNatServiceId() != "" {
+			addng["nat_service_id"] = v.GetNatServiceId()
+		}
+		if v.GetState() != "" {
+			addng["state"] = v.GetState()
+		}
+		if v.GetSubnetId() != "" {
+			addng["subnet_id"] = v.GetSubnetId()
+		}
+		if v.GetNetId() != "" {
+			addng["net_id"] = v.GetNetId()
+		}
 
 		addngs[k] = addng
 	}
 
-	return d.Set("nat_gateway", addngs)
+	return d.Set("nat_services", addngs)
 }

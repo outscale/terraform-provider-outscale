@@ -14,29 +14,31 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleVpnConnection() *schema.Resource {
+func resourceOutscaleOAPIVpnConnection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVpnConnectionCreate,
-		Read:   resourceOutscaleVpnConnectionRead,
-		Delete: resourceOutscaleVpnConnectionDelete,
+		Create: resourceOutscaleOAPIVpnConnectionCreate,
+		Read:   resourceOutscaleOAPIVpnConnectionRead,
+		Delete: resourceOutscaleOAPIVpnConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 
 		Schema: map[string]*schema.Schema{
-			"customer_gateway_id": {
+			// Argumentos
+			"client_endpoint_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"options": {
+
+			"vpn_connection_option": {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"static_routes_only": {
+						"static_vpn_static_route_only": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
@@ -44,30 +46,36 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
+
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
+
 			"vpn_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"customer_gateway_configuration": {
+
+			// Atributos
+
+			"client_endpoint_configuration": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"routes": {
+
+			"vpn_static_route": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"destination_cidr_block": {
+						"destination_ip_range": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"source": {
+						"type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -78,40 +86,45 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 					},
 				},
 			},
-			"tag_set": tagsSchemaComputed(),
-			"tag":     tagsSchema(),
+
+			"tag":  tagsSchemaComputed(),
+			"tags": tagsSchema(),
+
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vgw_telemetry": {
+
+			"vpn_tunnel_description": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"accepted_route_count": {
+						"accepted_routes_count": {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"outside_ip_address": {
+						"outscale_side_ip": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status": {
+						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"status_message": {
+						"comment": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
+
 			"vpn_connection_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -120,16 +133,16 @@ func resourceOutscaleVpnConnection() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
-	cgid, ok := d.GetOk("customer_gateway_id")
+	cgid, ok := d.GetOk("client_endpoint_id")
 	vpngid, ok2 := d.GetOk("vpn_gateway_id")
 	typev, ok3 := d.GetOk("type")
-	options, ok4 := d.GetOk("options")
+	vpn, ok4 := d.GetOk("vpn_connection_option")
 
 	if !ok && !ok2 && ok3 {
-		return fmt.Errorf("please provide the required attributes customer_gateway_id, vpn_gateway_id and type")
+		return fmt.Errorf("please provide the required attributes client_endpoint_id, vpn_gateway_id and type")
 	}
 
 	createOpts := &fcu.CreateVpnConnectionInput{
@@ -139,8 +152,8 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if ok4 {
-		opt := options.(map[string]interface{})
-		option := opt["static_routes_only"]
+		opt := vpn.(map[string]interface{})
+		option := opt["static_vpn_static_route_only"]
 
 		b, err := strconv.ParseBool(option.(string))
 		if err != nil {
@@ -163,7 +176,7 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 			}
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.NonRetryableError(err)
 	})
 
 	if err != nil {
@@ -193,7 +206,7 @@ func resourceOutscaleVpnConnectionCreate(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	return resourceOutscaleVpnConnectionRead(d, meta)
+	return resourceOutscaleOAPIVpnConnectionRead(d, meta)
 }
 
 func vpnConnectionRefreshFunc(conn *fcu.Client, connectionID string) resource.StateRefreshFunc {
@@ -233,7 +246,7 @@ func vpnConnectionRefreshFunc(conn *fcu.Client, connectionID string) resource.St
 	}
 }
 
-func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var resp *fcu.DescribeVpnConnectionsOutput
@@ -249,7 +262,7 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 			}
 			return resource.NonRetryableError(err)
 		}
-		return nil
+		return resource.NonRetryableError(err)
 	})
 
 	if err != nil {
@@ -266,58 +279,60 @@ func resourceOutscaleVpnConnectionRead(d *schema.ResourceData, meta interface{})
 	}
 
 	vpnConnection := resp.VpnConnections[0]
-
 	if vpnConnection == nil || *vpnConnection.State == "deleted" {
 		d.SetId("")
 		return nil
 	}
-	options := make(map[string]interface{})
-	opt := "false"
+	vpn := make(map[string]interface{})
 	if vpnConnection.Options != nil {
-		opt = strconv.FormatBool(*vpnConnection.Options.StaticRoutesOnly)
+		vpn["static_vpn_static_route_only"] = strconv.FormatBool(aws.BoolValue(vpnConnection.Options.StaticRoutesOnly))
+	} else {
+		vpn["static_vpn_static_route_only"] = strconv.FormatBool(false)
 	}
-	options["static_routes_only"] = opt
-	if err := d.Set("options", options); err != nil {
+	if err := d.Set("vpn_connection_option", vpn); err != nil {
 		return err
 	}
+	d.Set("client_endpoint_configuration", vpnConnection.CustomerGatewayConfiguration)
 
-	d.Set("customer_gateway_configuration", aws.StringValue(vpnConnection.CustomerGatewayConfiguration))
-
-	routes := make([]map[string]interface{}, len(vpnConnection.Routes))
+	vpns := make([]map[string]interface{}, len(vpnConnection.Routes))
 
 	for k, v := range vpnConnection.Routes {
 		route := make(map[string]interface{})
 
-		route["destination_cidr_block"] = aws.StringValue(v.DestinationCidrBlock)
-		route["source"] = aws.StringValue(v.Source)
-		route["state"] = aws.StringValue(v.State)
+		route["destination_ip_range"] = *v.DestinationCidrBlock
+		route["type"] = *v.Source
+		route["state"] = *v.State
 
-		routes[k] = route
+		vpns[k] = route
 	}
 
-	d.Set("routes", routes)
-	d.Set("tag_set", tagsToMap(vpnConnection.Tags))
-	d.Set("state", aws.StringValue(vpnConnection.State))
+	d.Set("vpn_static_route", vpns)
+	d.Set("tag", tagsToMap(vpnConnection.Tags))
+
+	d.Set("state", vpnConnection.State)
 
 	vgws := make([]map[string]interface{}, len(vpnConnection.VgwTelemetry))
 
 	for k, v := range vpnConnection.VgwTelemetry {
 		vgw := make(map[string]interface{})
-		vgw["accepted_route_count"] = aws.Int64Value(v.AcceptedRouteCount)
-		vgw["outside_ip_address"] = aws.StringValue(v.OutsideIpAddress)
-		vgw["status"] = aws.StringValue(v.Status)
-		vgw["status_message"] = aws.StringValue(v.StatusMessage)
+
+		vgw["accepted_routes_count"] = *v.AcceptedRouteCount
+		vgw["outscale_side_ip"] = *v.OutsideIpAddress
+		vgw["state"] = *v.Status
+		vgw["comment"] = *v.StatusMessage
 
 		vgws[k] = vgw
 	}
 
+	d.Set("vpn_tunnel_description", vgws)
 	d.Set("vpn_connection_id", vpnConnection.VpnConnectionId)
+	d.Set("vpn_gateway_id", vpnConnection.VpnGatewayId)
 	d.Set("request_id", resp.RequestId)
 
-	return d.Set("vgw_telemetry", vgws)
+	return nil
 }
 
-func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnConnectionDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	var err error
@@ -345,7 +360,7 @@ func resourceOutscaleVpnConnectionDelete(d *schema.ResourceData, meta interface{
 	}
 
 	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending", "deleting"},
+		Pending:    []string{"deleting"},
 		Target:     []string{"deleted"},
 		Refresh:    vpnConnectionRefreshFunc(conn, d.Id()),
 		Timeout:    30 * time.Minute,

@@ -12,14 +12,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
-func resourceOutscaleVpnGatewayRoutePropagation() *schema.Resource {
+func resourceOutscaleOAPIVpnGatewayRoutePropagation() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOutscaleVpnGatewayRoutePropagationEnable,
-		Read:   resourceOutscaleVpnGatewayRoutePropagationRead,
-		Delete: resourceOutscaleVpnGatewayRoutePropagationDisable,
+		Create: resourceOutscaleOAPIVpnGatewayRoutePropagationEnable,
+		Read:   resourceOutscaleOAPIVpnGatewayRoutePropagationRead,
+		Delete: resourceOutscaleOAPIVpnGatewayRoutePropagationDisable,
 
 		Schema: map[string]*schema.Schema{
-			"gateway_id": &schema.Schema{
+			"vpn_gateway_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -37,7 +37,7 @@ func resourceOutscaleVpnGatewayRoutePropagation() *schema.Resource {
 	}
 }
 
-func resourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	gwID := d.Get("gateway_id").(string)
@@ -72,7 +72,7 @@ func resourceOutscaleVpnGatewayRoutePropagationEnable(d *schema.ResourceData, me
 	return nil
 }
 
-func resourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	gwID := d.Get("gateway_id").(string)
@@ -104,13 +104,12 @@ func resourceOutscaleVpnGatewayRoutePropagationDisable(d *schema.ResourceData, m
 	return nil
 }
 
-func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
+func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).FCU
 
 	gwID := d.Get("gateway_id").(string)
 	rtID := d.Get("route_table_id").(string)
 
-	log.Printf("\n\n[INFO] Reading route table %s to check for VPN gateway %s", rtID, gwID)
 	var resp *fcu.DescribeRouteTablesOutput
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -129,8 +128,6 @@ func resourceOutscaleVpnGatewayRoutePropagationRead(d *schema.ResourceData, meta
 	if err != nil {
 		return err
 	}
-
-	d.Set("request_id", *resp.RequestId)
 
 	rt := resp.RouteTables[0]
 
