@@ -665,11 +665,6 @@ resource "outscale_nic_private_ip" "nic_private_ip35" {
     private_ips = ["10.0.0.67"]
 }
 
-resource "outscale_nic_private_ip" "nic_private_ip35-2" {
-    nic_id      = outscale_nic.nic035.nic_id
-    secondary_private_ip_count = 2
- }
-
 #------------------------------------------------------------------------
 
 #---036------------------------------------------------------------------
