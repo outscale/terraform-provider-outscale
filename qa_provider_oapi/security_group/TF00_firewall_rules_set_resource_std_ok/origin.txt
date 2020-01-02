@@ -1,3 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_security_group/test_outscale_firewall_rules_set_resource_std_ok.py
-WARNING: tf file not found 'provider_outscale_oapi/config/outscale_firewall_rules_set/config_outscale_firewall_rules_set_std_ok'

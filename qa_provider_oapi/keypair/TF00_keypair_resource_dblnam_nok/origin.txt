@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_keypair/test_outscale_keypair_resource_dblnam_nok.py
-tf file: provider_outscale_oapi/config/outscale_keypair/config_outscale_keypair_resource_nok
-WARNING: No check file !!!

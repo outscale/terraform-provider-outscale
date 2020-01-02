@@ -1,5 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_net/test_outscale_net_datasource_ok.py
-tf file: provider_outscale_oapi/config/outscale_net/config_outscale_net_datasource_ok
-WARNING: No check file !!!
-WARNING: tf file not found 'provider_outscale_oapi/config/outscale_net/config_outscale_net_datasource_ok3'

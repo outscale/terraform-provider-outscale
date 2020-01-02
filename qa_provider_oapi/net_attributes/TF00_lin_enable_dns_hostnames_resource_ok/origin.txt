@@ -1,5 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_net_attributes/test_outscale_lin_enable_dns_hostnames_resource_ok.py
-WARNING: LIN found in tf file 'provider_outscale/config/outscale_lin_attributes/config_outscale_lin_enable_dns_hostnames_resource_ok'
-tf file: provider_outscale/config/outscale_lin_attributes/config_outscale_lin_enable_dns_hostnames_resource_ok
-WARNING: No check file !!!

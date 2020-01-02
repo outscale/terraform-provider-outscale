@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_internet_services/test_outscale_internet_services_datasource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_internet_services/config_outscale_internet_services_datasource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_internet_services/outscale_internet_services_datasource_attributes.txt

@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_volumes_link/test_outscale_volumes_link_resource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_volumes_link/config_outscale_volumes_link_resource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_volumes_link/outscale_volumes_link_resource_attributes.txt

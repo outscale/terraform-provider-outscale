@@ -1,5 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_nic/test_outscale_nic_datasource_creation_ok.py
-WARNING: LIN found in tf file 'provider_outscale_oapi/config/outscale_nic/config_outscale_nic_datasource_creation_ok'
-tf file: provider_outscale_oapi/config/outscale_nic/config_outscale_nic_datasource_creation_ok
-WARNING: check file not found 'provider_outscale_oapi/test/outscale_subnet/outscale_nic_datasource.txt'

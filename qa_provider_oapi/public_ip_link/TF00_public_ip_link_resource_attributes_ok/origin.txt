@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_public_ip_link/test_outscale_public_ip_link_resource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_public_ip_link/config_outscale_public_ip_link_resource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_public_ip_link/outscale_public_ip_link_resource_attributes.txt

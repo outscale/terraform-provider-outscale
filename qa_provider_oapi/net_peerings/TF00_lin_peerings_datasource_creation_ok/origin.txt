@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_net_peerings/test_outscale_lin_peerings_datasource_creation_ok.py
-WARNING: tf file not found 'provider_outscale_oapi/config/outscale_net_peerings/config_outscale_net_peerings_datasource_creation_ok'
-WARNING: tf file not found 'provider_outscale_oapi/config/outscale_net_peerings/config_outscale_net_peerings_datasource_deletion_ok'
