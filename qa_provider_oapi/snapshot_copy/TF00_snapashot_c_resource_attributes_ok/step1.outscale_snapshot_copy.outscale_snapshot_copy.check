@@ -1,0 +1,22 @@
+description
+account_alias
+account_id
+permission_to_create_volume.%
+permission_to_create_volume.account_ids
+permission_to_create_volume.global_permission
+progress
+snapshot_id
+state
+tag_keys.#
+tag_values.#
+tags.#
+tags.0.key
+tags.0.value
+volume_id
+volume_size
+destination_region_name
+source_region_name
+source_snapshot_id
+request_id
+# correctives below
+id
