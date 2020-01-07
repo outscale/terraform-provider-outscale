@@ -46,15 +46,20 @@ def looking_for_attributes(resource):
     return attributes
 
 
-def dict_exploration(value, line, result):
-    for key, val in value.items():
-        if isinstance(val, dict):
-            result.append('{}.{}.%'.format(line, key))
-            dict_exploration(val, '{}.{}'.format(line, key), result)
-        else:
-            result.append('{}.{}'.format(line, key))
-    return result
-
+def flattern(content, line, result):
+    if isinstance(content, (bool, int, str)):
+        result.append("{}.{}".format(line, content))  # end
+        return
+    for left, right in content.items():
+        if isinstance(right, (bool, int, str)) or right is None:
+            result.append("{}.{}".format(line, left))  # end
+        elif isinstance(right, list) and len(right) != 0:
+            result.append('{}.{}.#'.format(line, left))
+            for rright_count, rright in enumerate(right):
+                current_line = '{}.{}.{}'.format(line, left, rright_count)
+                flattern(rright, current_line, result)
+        elif isinstance(right, list) and len(right) == 0:
+            result.append('{}.{}'.format(line, left))
 
 def parse_terraform_state_pull(reported, item):
     """
@@ -71,19 +76,8 @@ def parse_terraform_state_pull(reported, item):
         return 1
     resource_item_content = resource_item_content[0]
     attributes = looking_for_attributes(resource_item_content)
-    for key, value in attributes.items():
-        if isinstance(value, (bool, int, str)) or value is None:
-            result.append(key)
-        elif isinstance(value, list) and len(value) == 0:
-            result.append('{}.#'.format(key))
-        elif isinstance(value, list) and len(value) != 0:
-             for pos, val in enumerate(value):
-                 result.append('{}.#'.format(key))
-                 if isinstance(val, (bool, int, str)) or val is None:
-                     result.append('{}.{}'.format(key, pos))
-                 elif isinstance(val, dict):
-                     res = dict_exploration(val, '{}.{}'.format(key, pos), [])
-                     result = res + result
+    flattern(attributes, '', result)
+    result = [res[1:] for res in result]
     result.sort()
     return result
 
@@ -111,11 +105,11 @@ def main(reported, attended, item):
     if reported_result == 1:
         logger.debug('???')
         return ['unknown error ???']
+    missing = set(attended_result) - set(reported_result)
     if attended_result or missing:
         logger.debug('===== check.py : Differences between terraform reported (pull result) attributes and attended attributes')
     for unkown in set(reported_result) - set(attended_result):
         logger.debug('Unkown: {}'.format(unkown))
-    missing = set(attended_result) - set(reported_result)
     for miss in missing:
         logger.debug('Missing: {}'.format(miss))
     if len(missing) != 0:
