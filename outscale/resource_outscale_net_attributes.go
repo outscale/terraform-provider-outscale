@@ -39,6 +39,19 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"ip_range": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tenancy": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
@@ -152,7 +165,14 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	return nil
+	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
+	d.Set("tenancy", resp.GetNets()[0].Tenancy)
+	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	d.Set("net_id", resp.GetNets()[0].GetNetId())
+	d.Set("state", resp.GetNets()[0].GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 
 func resourceOutscaleOAPILinAttrDelete(d *schema.ResourceData, meta interface{}) error {
