@@ -10,7 +10,7 @@ net_peerings.0.source_net.net_id
 net_peerings.0.state.%
 net_peerings.0.state.name
 net_peerings.0.state.message
-net_peerings.0.tags.#
+net_peerings.0.tags
 #net_peerings.0.tags.0.key
 #net_peerings.0.tags.0.value
 net_peerings.0.net_peering_id
@@ -25,7 +25,7 @@ net_peerings.1.source_net.net_id
 net_peerings.1.state.%
 net_peerings.1.state.name
 net_peerings.1.state.message
-net_peerings.1.tags.#
+net_peerings.1.tags
 #net_peerings.1.tags.0.key
 #net_peerings.1.tags.0.value
 net_peerings.1.net_peering_id
