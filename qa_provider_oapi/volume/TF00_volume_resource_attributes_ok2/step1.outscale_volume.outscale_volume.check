@@ -1,10 +1,10 @@
 iops
 linked_volumes.#
-linked_volumes.0.delete_on_vm_deletion
-linked_volumes.0.device_name
-linked_volumes.0.state
-linked_volumes.0.vm_id
-linked_volumes.0.volume_id
+#linked_volumes.0.delete_on_vm_deletion
+#linked_volumes.0.device_name
+#linked_volumes.0.state
+#linked_volumes.0.vm_id
+#linked_volumes.0.volume_id
 size
 snapshot_id
 state
