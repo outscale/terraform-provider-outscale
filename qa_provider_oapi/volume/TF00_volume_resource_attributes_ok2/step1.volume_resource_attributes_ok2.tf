@@ -8,5 +8,9 @@ resource "outscale_volume" "outscale_volume" {
     size            = 10
     iops            = 100
     volume_type     = "io1"
+    tags {
+      key = "name"
+      value = "volume-io1"
+     }
    
 }
