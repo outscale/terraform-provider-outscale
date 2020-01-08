@@ -4,10 +4,18 @@ resource "outscale_net" "outscale_net" {
 
 resource "outscale_route_table" "outscale_route_table" {
     net_id = outscale_net.outscale_net.net_id
+    tags {
+     key = "name"
+     value = "RT-1"
+    }
 }
 
 resource "outscale_route_table" "outscale_route_table2" {
     net_id = outscale_net.outscale_net.net_id
+    tags {
+     key = "name"
+     value = "RT-2"
+    }
 }
 
 data "outscale_route_tables" "outscale_route_tables" {
