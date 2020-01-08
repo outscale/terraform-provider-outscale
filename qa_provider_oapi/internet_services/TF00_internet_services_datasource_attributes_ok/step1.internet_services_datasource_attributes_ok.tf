@@ -1,7 +1,15 @@
 resource "outscale_internet_service" "outscale_internet_service" {
+ tags {
+  key = "name"
+  value = "Internet-service-1"
+ }
 }
 
 resource "outscale_internet_service" "outscale_internet_service2" {
+tags {
+  key = "name"
+  value = "Internet-service-2"
+ }
 }
 
 data "outscale_internet_services" "outscale_internet_services" {
