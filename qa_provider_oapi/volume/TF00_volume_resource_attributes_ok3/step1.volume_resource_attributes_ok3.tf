@@ -6,6 +6,11 @@
 resource "outscale_volume" "outscale_volume" {
     subregion_name = format("%s%s", var.region, "a")
     size            = 10
-    snapshot_id     = "snap-439943a0"
+    volume_type     = "gp2"
+    snapshot_id     = var.snapshot_id
+    tags {
+     key = "name"
+     value = "test1"
+    }
    
 }
