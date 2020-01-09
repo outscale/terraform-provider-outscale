@@ -11,7 +11,7 @@ route_tables.0.route_table_id
 route_tables.0.routes.#
 route_tables.0.routes.0.creation_method
 route_tables.0.routes.0.destination_ip_range
-route_tables.0.routes.0.destination_prefix_list_id
+route_tables.0.routes.0.destination_service_id
 route_tables.0.routes.0.gateway_id
 route_tables.0.routes.0.nat_service_id
 route_tables.0.routes.0.net_peering_id
