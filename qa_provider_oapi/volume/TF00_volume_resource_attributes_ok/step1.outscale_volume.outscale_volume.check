@@ -1,5 +1,5 @@
 iops
-linked_volumes.#
+linked_volumes
 #linked_volumes.0.delete_on_vm_deletion
 #linked_volumes.0.device_name
 #linked_volumes.0.state
