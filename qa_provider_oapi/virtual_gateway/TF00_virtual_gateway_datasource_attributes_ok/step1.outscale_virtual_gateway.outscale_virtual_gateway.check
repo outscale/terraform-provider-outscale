@@ -1,0 +1,10 @@
+ConnectionType
+state 
+virtual_gateway_id
+tags.# 
+tags.0.key 
+tags.0.value 
+request_id 
+# correctives below 
+id
+
