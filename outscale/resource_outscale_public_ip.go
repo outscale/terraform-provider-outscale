@@ -83,6 +83,10 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error retrieving EIP: %s", err)
 	}
 
+	if len(response.GetPublicIps()) == 0 {
+		return fmt.Errorf("Error retrieving EIP: not found")
+	}
+
 	if len(response.GetPublicIps()) != 1 ||
 		placement == "vpc" && response.GetPublicIps()[0].GetLinkPublicIpId() != id ||
 		response.GetPublicIps()[0].GetPublicIp() != id {
@@ -213,12 +217,14 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
+			lppiId := d.Get("link_public_ip_id").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				LinkPublicIpId: d.Get("link_public_ip_id").(*string),
+				LinkPublicIpId: &lppiId,
 			})})
 		case "standard":
+			pIP := d.Get("public_ip").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				PublicIp: d.Get("public_ip").(*string),
+				PublicIp: &pIP,
 			})})
 		}
 
