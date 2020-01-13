@@ -137,6 +137,9 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	}
 
 	resp := value.(oscgo.ReadInternetServicesResponse)
+	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
+		return fmt.Errorf("Error retrieving Internet Service Link: not found")
+	}
 	internetService := resp.GetInternetServices()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
@@ -151,6 +154,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 		if err := set("state", internetService.GetState()); err != nil {
 			return err
 		}
+
 		if err := set("tags", getOapiTagSet(internetService.Tags)); err != nil {
 			return err
 		}
