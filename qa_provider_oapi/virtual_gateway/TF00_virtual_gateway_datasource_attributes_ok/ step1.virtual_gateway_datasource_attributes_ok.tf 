@@ -1,4 +1,4 @@
-resource "outscale_vpn_gateway" "outscale_virtual_gateway" {
+resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
 connection_type = "ipsec.1"
  tags {
   key = "name"
@@ -6,6 +6,6 @@ connection_type = "ipsec.1"
   }
 }
 
-data "outscale_vpn_gateway" "outscale_vpn_gateway" {
-    virtual_gateway_id = outscale_vpn_gateway.outscale_virtual_gateway.virtual_gateway_id
+data "outscale_virtual_gateway" "outscale_vpn_gateway" {
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway.virtual_gateway_id
 }
