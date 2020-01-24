@@ -244,7 +244,7 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
 
 			nicMap := map[string]interface{}{
-				"delete_on_vm_deletion":  *nic.GetLinkNic().DeleteOnVmDeletion, // Workaround.
+				"delete_on_vm_deletion":  nic.LinkNic.GetDeleteOnVmDeletion(), // Workaround.
 				"account_id":             nic.GetAccountId(),
 				"description":            nic.GetDescription(),
 				"is_source_dest_checked": nic.GetIsSourceDestChecked(),

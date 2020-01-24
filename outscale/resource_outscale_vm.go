@@ -114,7 +114,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"delete_on_vm_deletion": {
 							Type:     schema.TypeBool,
-							Default:  true,
 							Optional: true,
 						},
 						"description": {
@@ -255,12 +254,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-						"security_groups_names": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups": {
@@ -944,8 +937,11 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 			ni.SetSecondaryPrivateIpCount(int64(v))
 		}
 
-		if d, dOk := nic["delete_on_vm_deletion"]; dOk {
-			ni.SetDeleteOnVmDeletion(d.(bool))
+		if d := oscgo.PtrBool(nic["delete_on_vm_deletion"].(bool)); d != nil {
+			fmt.Println("el delete no es nulo")
+			ni.SetDeleteOnVmDeletion(*d)
+		} else {
+			fmt.Println("el delete es nulo")
 		}
 
 		ni.SetDescription(nic["description"].(string))
