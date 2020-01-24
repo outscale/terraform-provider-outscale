@@ -288,7 +288,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	d.Set("subregion_name", volume.GetSubregionName())
 
 	//Commented until backend issues is resolved.
-	//d.Set("size", volume.Size)
+	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.GetSnapshotId())
 
 	if volume.GetVolumeType() != "" {

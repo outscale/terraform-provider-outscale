@@ -32,6 +32,11 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
 			},
+			{
+				ResourceName: "outscale_volume.test",
+				ImportState:  true,
+				//ImportStateVerify: true,
+			},
 		},
 	})
 }
