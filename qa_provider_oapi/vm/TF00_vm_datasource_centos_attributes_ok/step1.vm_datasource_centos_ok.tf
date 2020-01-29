@@ -3,6 +3,10 @@ resource "outscale_vm" "outscale_vm_centos" {
     vm_type            = var.vm_type
     keypair_name       = var.keypair_name
     security_group_names = [var.security_group_name]
+    tags {
+     key = "name"
+     value ="test-VM-tag"
+    }
 }
 
 data "outscale_vm" "outscale_vm" {
@@ -22,6 +26,10 @@ resource "outscale_vm" "outscale_vm_centos2" {
     vm_type            = var.vm_type
     keypair_name       = var.keypair_name
     security_group_ids = [var.security_group_id]
+     tags {
+     key = "name"
+     value ="test-VM-tag-2"
+    }
 }
 
 data "outscale_vm" "outscale_vm_centos2_0" {
