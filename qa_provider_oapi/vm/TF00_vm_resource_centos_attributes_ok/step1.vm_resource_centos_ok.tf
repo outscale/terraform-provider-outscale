@@ -1,4 +1,4 @@
-resource "outscale_vm" "outscale_vm" {
+resource "outscale_vm" "outscale_vm1" {
     image_id                 = var.image_id
     vm_type                  = var.vm_type
     keypair_name             = var.keypair_name
@@ -104,12 +104,16 @@ resource "outscale_route" "outscale_route" {
     route_table_id       = outscale_route_table.outscale_route_table.route_table_id
 } 
 
-resource "outscale_vm" "outscale_vmnet" {
+resource "outscale_vm" "outscale_vm" {
     image_id           = var.image_id
     vm_type            = "t2.nano"
     keypair_name       = var.keypair_name
     security_group_ids = [outscale_security_group.outscale_sg.security_group_id]
     subnet_id          = outscale_subnet.outscale_subnet.subnet_id
+    tags {
+         key = "name"
+         value = "VM Net"
+    }
 }
 
 resource "outscale_public_ip" "outscale_public_ip" {
