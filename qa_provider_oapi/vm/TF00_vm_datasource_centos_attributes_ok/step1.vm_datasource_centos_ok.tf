@@ -2,7 +2,7 @@ resource "outscale_vm" "outscale_vm_centos" {
     image_id           = var.image_id
     vm_type            = var.vm_type
     keypair_name       = var.keypair_name
-    security_group_ids = [var.security_group_id]
+    security_group_names = [var.security_group_name]
 }
 
 data "outscale_vm" "outscale_vm" {
