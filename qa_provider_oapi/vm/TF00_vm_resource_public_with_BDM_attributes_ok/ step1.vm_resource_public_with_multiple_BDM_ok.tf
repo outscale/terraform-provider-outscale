@@ -22,4 +22,8 @@ resource "outscale_vm" "outscale_vm2" {
          delete_on_vm_deletion = true
       }
     }
+    tags {
+    key = "name"
+    value = "VM with multiple BDM"
+    }
 }
