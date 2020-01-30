@@ -1,3 +1,3 @@
-python file: provider_outscale_oapi/test//outscale_vpn_gateway/test_outscale_vpn_gateway_resource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_vpn_gateway/config_outscale_vpn_gateway_resource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_vpn_gateway/outscale_vpn_gateway_resource_attributes.txt
+python file: new test
+tf file:  step1.vm_resource_public_with_multiple_BDM_ok.tf
+check file: step1.outscale_vm.outscale_vm.check
