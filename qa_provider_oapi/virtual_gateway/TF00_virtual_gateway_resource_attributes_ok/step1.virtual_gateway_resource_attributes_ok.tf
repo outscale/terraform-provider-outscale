@@ -5,4 +5,3 @@ resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
   value = "test-VGW-1"   
   }
 } 
-
