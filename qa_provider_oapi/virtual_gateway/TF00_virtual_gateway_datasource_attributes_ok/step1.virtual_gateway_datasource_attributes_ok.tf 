@@ -6,6 +6,6 @@ connection_type = "ipsec.1"
   }
 }
 
-data "outscale_virtual_gateway" "outscale_vpn_gateway" {
+data "outscale_virtual_gateway" "outscale_virtual_gateway" {
     virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway.virtual_gateway_id
 }
