@@ -7,9 +7,6 @@ import (
 
 	"github.com/outscale/osc-go/oapi"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
 	"github.com/hashicorp/terraform/helper/logging"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
@@ -26,7 +23,6 @@ type Config struct {
 
 //OutscaleClient client
 type OutscaleClient struct {
-	FCU    *fcu.Client
 	OAPI   *oapi.Client
 	OSCAPI *oscgo.APIClient
 }
@@ -40,7 +36,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 			Region:    c.Region,
 		},
 	}
-	fcu, err := fcu.NewFCUClient(config)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +70,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	oapiClient := oapi.NewClient(oapicfg, skipClient)
 
 	client := &OutscaleClient{
-		FCU:    fcu,
 		OAPI:   oapiClient,
 		OSCAPI: oscClient,
 	}

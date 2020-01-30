@@ -5,9 +5,6 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
-
-	"github.com/terraform-providers/terraform-provider-outscale/osc"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func main() {
