@@ -80,7 +80,8 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 }
 
 func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	//	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	id := d.Id()
 
@@ -123,6 +124,7 @@ func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("vpc_id", resp.Vpcs[0].VpcId)
 
 	return d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags))
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetVpcs()[0].GetTags()))
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
