@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func getPlacement(placement *fcu.Placement) map[string]interface{} {
