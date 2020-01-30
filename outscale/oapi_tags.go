@@ -15,7 +15,6 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/outscale/osc-go/oapi"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func tagsSchemaComputed() *schema.Schema {
