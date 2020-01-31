@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -153,11 +155,11 @@ func resourceOutscaleOAPIImageTasks() *schema.Resource {
 }
 
 func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
-	request := &fcu.CreateImageExportTaskInput{}
+	request := &oscgo.CreateImageExportTaskInput{}
 
 	if !etoOk && !ok {
 		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
@@ -167,7 +169,7 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 
 	if etoOk {
 		e := eto.(map[string]interface{})
-		et := &fcu.ImageExportToOsuTaskSpecification{}
+		et := &oscgo.ImageExportToOsuTaskSpecification{}
 		if v, ok := e["disk_image_format"]; ok {
 			et.DiskImageFormat = aws.String(v.(string))
 		}
@@ -179,7 +181,7 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 		if v, ok := e["osu_api_key"]; ok {
 			w := v.(map[string]interface{})
-			et.OsuAkSk = &fcu.ExportToOsuAccessKeySpecification{
+			et.OsuAkSk = &oscgo.ExportToOsuAccessKeySpecification{
 				AccessKey: aws.String(w["api_key_id"].(string)),
 				SecretKey: aws.String(w["secret_key"].(string)),
 			}
@@ -187,7 +189,7 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 		request.ExportToOsu = et
 	}
 
-	var resp *fcu.CreateImageExportTaskOutput
+	var resp *oscgo.CreateImageExportTaskOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -216,7 +218,7 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 	return resourceOAPIImageTasksRead(d, meta)
 }
 
-func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i int) (*fcu.Image, error) {
+func resourceOutscaleImageTaskWaitForAvailable(ID string, client *oscgo.APIClient, i int) (*oscgo.Image, error) {
 	fmt.Printf("Waiting for Image Task %s to become available...", ID)
 
 	stateConf := &resource.StateChangeConf{
@@ -232,19 +234,19 @@ func resourceOutscaleImageTaskWaitForAvailable(ID string, client *fcu.Client, i 
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", ID, err)
 	}
-	return info.(*fcu.Image), nil
+	return info.(*oscgo.Image), nil
 }
 
 func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var resp *fcu.DescribeImageExportTasksOutput
+	var resp *oscgo.DescribeImageExportTasksOutput
 	var err error
 
 	log.Printf("[DEBUG] DESCRIBE IMAGE TASK")
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
+		resp, err = conn.VM.DescribeImageExportTasks(&oscgo.DescribeImageExportTasksInput{
 			ImageExportTaskId: []*string{aws.String(d.Id())},
 		})
 		if err != nil {
@@ -303,15 +305,15 @@ func resourceOAPIImageTasksDelete(d *schema.ResourceData, meta interface{}) erro
 }
 
 // OAPIImageTaskStateRefreshFunc ...
-func OAPIImageTaskStateRefreshFunc(client *fcu.Client, ID string) resource.StateRefreshFunc {
+func OAPIImageTaskStateRefreshFunc(client *oscgo.APIClient, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		emptyResp := &fcu.DescribeImageExportTasksOutput{}
+		emptyResp := &oscgo.DescribeImageExportTasksOutput{}
 
-		var resp *fcu.DescribeImageExportTasksOutput
+		var resp *oscgo.DescribeImageExportTasksOutput
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = client.VM.DescribeImageExportTasks(&fcu.DescribeImageExportTasksInput{
+			resp, err = client.VM.DescribeImageExportTasks(&oscgo.DescribeImageExportTasksInput{
 				ImageExportTaskId: []*string{aws.String(ID)},
 			})
 			if err != nil {
