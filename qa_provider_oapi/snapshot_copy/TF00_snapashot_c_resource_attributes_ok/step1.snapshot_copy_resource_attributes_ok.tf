@@ -1,5 +1,5 @@
 resource "outscale_volume" "outscale_volume_snap" {
-    sub_region_name = format("%s%s", var.region, "a")
+    subregion_name = format("%s%s", var.region, "a")
     size            = 40
     snapshot_id     = var.snapshot_id
 }
