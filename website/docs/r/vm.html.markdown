@@ -10,7 +10,7 @@ description: |-
 
 Manages a virtual machine (VM).
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instances).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-vm).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
 
@@ -167,7 +167,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
-* `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs-beta.outscale.com/#readimages) method.
+* `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
 * `max_vms_count` - (Optional) The maximum number of VMs you want to create. If all the VMs cannot be created, the largest possible number of VMs above MinVmsCount is created.
 * `min_vms_count` - (Optional) The minimum number of VMs you want to create. If this number of VMs cannot be created, no VMs are created.

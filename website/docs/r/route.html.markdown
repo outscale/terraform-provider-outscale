@@ -10,7 +10,7 @@ description: |-
 
 Manages a route.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables#AboutRouteTables-RoutesRoutesandRoutingOptions).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-route).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-route).
 
 ## Example Usage
 
