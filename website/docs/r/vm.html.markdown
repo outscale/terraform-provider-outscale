@@ -187,7 +187,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
-* `security_groups` - (Optional) One or more names of security groups for the VMs.
+* `security_groups_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
 * `user_data` - (Optional) Data or a script used to add a specific configuration to the VM when creating it. If you are not using a command line tool, this must be Base64-encoded.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
