@@ -1,11 +1,10 @@
 resource "outscale_vm" "outscale_vm_centos" {
     count = 2                                             # plus testWebsite one already created
 
-    image_id               = "ami-be23e98b"
-    vm_type                   = "c4.large"
-    keypair_name           = "integ_sut_keypair"
-    #firewall_rules_set_ids = ["sg-c73d3b6b"]
-    security_group_ids     = ["sg-c73d3b6b"]    # tempo test
+    image_id               = var.image_id
+     vm_type                = var.vm_type
+     keypair_name           = var.keypair_name
+     security_group_ids     = [var.security_group_id]
 }
 
 data "outscale_vms" "outscale_vms" {
