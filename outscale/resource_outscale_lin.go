@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -77,54 +75,6 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	d.SetId(resp.Net.GetNetId())
 
 	return resourceOutscaleOAPINetRead(d, meta)
-}
-
-func resourceOutscaleLinRead(d *schema.ResourceData, meta interface{}) error {
-	//	conn := meta.(*OutscaleClient).FCU
-	conn := meta.(*OutscaleClient).OSCAPI
-
-	id := d.Id()
-
-	req := &fcu.DescribeVpcsInput{
-		VpcIds: []*string{aws.String(id)},
-	}
-
-	var resp *fcu.DescribeVpcsOutput
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeVpcs(req)
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
-	})
-	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
-	}
-
-	if resp == nil {
-		d.SetId("")
-		return fmt.Errorf("Lin not found")
-	}
-
-	if len(resp.Vpcs) == 0 {
-		d.SetId("")
-		return fmt.Errorf("Lin not found")
-	}
-
-	d.Set("cidr_block", resp.Vpcs[0].CidrBlock)
-	d.Set("instance_tenancy", resp.Vpcs[0].InstanceTenancy)
-	d.Set("dhcp_options_id", resp.Vpcs[0].DhcpOptionsId)
-	d.Set("request_id", resp.RequestId)
-	d.Set("state", resp.Vpcs[0].State)
-	d.Set("vpc_id", resp.Vpcs[0].VpcId)
-
-	return d.Set("tag_set", tagsToMap(resp.Vpcs[0].Tags))
-	return d.Set("tags", tagsOSCAPIToMap(resp.GetVpcs()[0].GetTags()))
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {

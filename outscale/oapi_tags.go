@@ -372,23 +372,6 @@ func tagsToMapC(ts []*common.Tag) []map[string]string {
 	return result
 }
 
-// tagsToMap turns the list of tag into a map.
-func tagsToMap(ts []*fcu.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = *t.Key
-			tag["value"] = *t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
 func dataSourceTagsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,

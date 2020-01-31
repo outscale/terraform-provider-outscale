@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/outscale/osc-go/oapi"
-
 	"github.com/hashicorp/terraform/helper/logging"
+	"github.com/outscale/osc-go/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/osc"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
@@ -35,9 +35,6 @@ func (c *Config) Client() (*OutscaleClient, error) {
 			SecretKey: c.SecretKeyID,
 			Region:    c.Region,
 		},
-	}
-	if err != nil {
-		return nil, err
 	}
 
 	oapicfg := &oapi.Config{
