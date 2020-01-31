@@ -176,7 +176,7 @@ func resourceOutscaleOAPIImageRegister() *schema.Resource {
 }
 
 func resourceOAPIImageRegisterCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	request := &fcu.RegisterImageInput{}
 
@@ -271,7 +271,7 @@ func resourceOAPIImageRegisterCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceOAPIImageRegisterDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	var err error
 
