@@ -1,5 +1,5 @@
 resource "outscale_vm" "outscale_vm" {
-    image_id           = "ami-be23e98b"
+    image_id           = var.image_id
 }
 
 resource "outscale_image" "outscale_image1" {
