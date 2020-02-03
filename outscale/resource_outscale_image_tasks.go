@@ -1,11 +1,13 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -159,41 +161,44 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("image_id")
-	request := &oscgo.CreateImageExportTaskInput{}
+	request := &oscgo.CreateImageExportTaskRequest{}
 
 	if !etoOk && !ok {
 		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
 	}
 
-	request.ImageId = aws.String(v.(string))
+	request.ImageId = v.(string)
 
 	if etoOk {
 		e := eto.(map[string]interface{})
-		et := &oscgo.ImageExportToOsuTaskSpecification{}
+		et := oscgo.OsuExport{}
 		if v, ok := e["disk_image_format"]; ok {
-			et.DiskImageFormat = aws.String(v.(string))
+			et.DiskImageFormat = v.(string)
 		}
 		if v, ok := e["manifest_url"]; ok {
-			et.OsuManifestUrl = aws.String(v.(string))
+			et.SetOsuManifestUrl(v.(string))
 		}
 		if v, ok := e["osu_bucket"]; ok {
-			et.OsuBucket = aws.String(v.(string))
+			et.OsuBucket = v.(string)
 		}
 		if v, ok := e["osu_api_key"]; ok {
 			w := v.(map[string]interface{})
-			et.OsuAkSk = &oscgo.ExportToOsuAccessKeySpecification{
-				AccessKey: aws.String(w["api_key_id"].(string)),
-				SecretKey: aws.String(w["secret_key"].(string)),
-			}
+			oak := oscgo.OsuApiKey{}
+			oak.SetApiKeyId(w["api_key_id"].(string))
+			oak.SetSecretKey(w["secret_key"].(string))
+			et.OsuApiKey = &oak
 		}
-		request.ExportToOsu = et
+		request.OsuExport = et
 	}
 
-	var resp *oscgo.CreateImageExportTaskOutput
+	var resp oscgo.CreateImageExportTaskResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.CreateImageExportTask(request)
+		resp, _, err = conn.ImageApi.CreateImageExportTask(
+			context.Background(),
+			&oscgo.CreateImageExportTaskOpts{
+				CreateImageExportTaskRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -207,7 +212,7 @@ func resourceOAPIImageTasksCreate(d *schema.ResourceData, meta interface{}) erro
 		return fmt.Errorf("[DEBUG] Error image task %s", err)
 	}
 
-	ID := *resp.ImageExportTask.ImageExportTaskId
+	ID := *resp.ImageExportTask.ImageId
 	d.SetId(ID)
 
 	_, err = resourceOutscaleImageTaskWaitForAvailable(ID, conn, 1)

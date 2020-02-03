@@ -46,9 +46,7 @@ func init() {
 			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment,
 			"outscale_nic":                     resourceOutscaleOAPINic,
 			"outscale_image_tasks":             resourceOutscaleOAPIImageTasks,
-			"outscale_image_copy":              resourceOutscaleOAPIImageCopy,
 			"outscale_snapshot_attributes":     resourcedOutscaleOAPISnapshotAttributes,
-			"outscale_image_register":          resourceOutscaleOAPIImageRegister,
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter,
 		},
 	}
