@@ -10,7 +10,6 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -245,15 +244,26 @@ func resourceOutscaleImageTaskWaitForAvailable(ID string, client *oscgo.APIClien
 func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	var resp *oscgo.DescribeImageExportTasksOutput
+	var resp oscgo.ReadImageExportTasksResponse
 	var err error
 
 	log.Printf("[DEBUG] DESCRIBE IMAGE TASK")
 
+	tids := []string{d.Id()}
+	filter := oscgo.FiltersExportTask{
+		TaskIds: &tids,
+	}
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeImageExportTasks(&oscgo.DescribeImageExportTasksInput{
-			ImageExportTaskId: []*string{aws.String(d.Id())},
-		})
+		resp, _, err = conn.ImageApi.ReadImageExportTasks(
+			context.Background(),
+			&oscgo.ReadImageExportTasksOpts{
+				ReadImageExportTasksRequest: optional.NewInterface(
+					&oscgo.ReadImageExportTasksRequest{
+						Filters: &filter,
+					},
+				),
+			},
+		)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -267,24 +277,24 @@ func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error reading task image %s", err)
 	}
 
-	imageExportTask := make([]map[string]interface{}, len(resp.ImageExportTask))
-	for k, v := range resp.ImageExportTask {
+	imageExportTask := make([]map[string]interface{}, len(*resp.ImageExportTasks))
+	for k, v := range *resp.ImageExportTasks {
 		i := make(map[string]interface{})
-		i["completion"] = *v.Completion
-		i["task_id"] = *v.ImageExportTaskId
+		i["completion"] = *v.Progress
+		i["task_id"] = *v.TaskId
 		i["image_id"] = *v.ImageId
 		i["state"] = *v.State
-		i["comment"] = *v.StatusMessage
+		i["comment"] = *v.Comment
 
 		exportToOsu := make(map[string]interface{})
-		exportToOsu["disk_image_format"] = *v.ExportToOsu.DiskImageFormat
-		exportToOsu["osu_bucket"] = *v.ExportToOsu.OsuBucket
-		exportToOsu["manifest_url"] = *v.ExportToOsu.OsuManifestUrl
-		exportToOsu["osu_prefix"] = *v.ExportToOsu.OsuPrefix
+		exportToOsu["disk_image_format"] = v.OsuExport.DiskImageFormat
+		exportToOsu["osu_bucket"] = v.OsuExport.OsuBucket
+		exportToOsu["manifest_url"] = *v.OsuExport.OsuManifestUrl
+		exportToOsu["osu_prefix"] = *v.OsuExport.OsuPrefix
 
 		osuAkSk := make(map[string]interface{})
-		osuAkSk["api_key_id"] = *v.ExportToOsu.OsuAkSk.AccessKey
-		osuAkSk["secret_key"] = *v.ExportToOsu.OsuAkSk.SecretKey
+		osuAkSk["api_key_id"] = *v.OsuExport.OsuApiKey.ApiKeyId
+		osuAkSk["secret_key"] = *v.OsuExport.OsuApiKey.SecretKey
 
 		exportToOsu["osu_api_key"] = osuAkSk
 
@@ -297,7 +307,7 @@ func resourceOAPIImageTasksRead(d *schema.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	d.Set("request_id", resp.RequestId)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }
@@ -312,15 +322,26 @@ func resourceOAPIImageTasksDelete(d *schema.ResourceData, meta interface{}) erro
 // OAPIImageTaskStateRefreshFunc ...
 func OAPIImageTaskStateRefreshFunc(client *oscgo.APIClient, ID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		emptyResp := &oscgo.DescribeImageExportTasksOutput{}
+		emptyResp := &oscgo.ReadImageExportTasksResponse{}
 
-		var resp *oscgo.DescribeImageExportTasksOutput
+		var resp oscgo.ReadImageExportTasksResponse
 		var err error
+		tids := []string{ID}
+		filter := oscgo.FiltersExportTask{
+			TaskIds: &tids,
+		}
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = client.VM.DescribeImageExportTasks(&oscgo.DescribeImageExportTasksInput{
-				ImageExportTaskId: []*string{aws.String(ID)},
-			})
+			resp, _, err = client.ImageApi.ReadImageExportTasks(
+				context.Background(),
+				&oscgo.ReadImageExportTasksOpts{
+					ReadImageExportTasksRequest: optional.NewInterface(
+						&oscgo.ReadImageExportTasksRequest{
+							Filters: &filter,
+						},
+					),
+				},
+			)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -335,7 +356,7 @@ func OAPIImageTaskStateRefreshFunc(client *oscgo.APIClient, ID string) resource.
 				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 
-			} else if resp != nil && len(resp.ImageExportTask) == 0 {
+			} else if resp.ImageExportTasks == nil || len(*resp.ImageExportTasks) == 0 {
 				log.Printf("[INFO] OMI %s state %s", ID, "destroyed")
 				return emptyResp, "destroyed", nil
 			} else {
@@ -343,13 +364,14 @@ func OAPIImageTaskStateRefreshFunc(client *oscgo.APIClient, ID string) resource.
 			}
 		}
 
-		if resp == nil || resp.ImageExportTask == nil || len(resp.ImageExportTask) == 0 {
+		if resp.ImageExportTasks == nil || len(*resp.ImageExportTasks) == 0 {
 			return emptyResp, "destroyed", nil
 		}
 
-		log.Printf("[INFO] OMI %s state %s", *resp.ImageExportTask[0].ImageId, *resp.ImageExportTask[0].State)
+		log.Printf("[INFO] OMI %s state %s", (*resp.ImageExportTasks)[0].ImageId,
+			(*resp.ImageExportTasks)[0].State)
 
 		// OMI is valid, so return it's state
-		return resp.ImageExportTask[0], *resp.ImageExportTask[0].State, nil
+		return (*resp.ImageExportTasks)[0], *(*resp.ImageExportTasks)[0].State, nil
 	}
 }
