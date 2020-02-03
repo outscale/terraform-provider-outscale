@@ -1,50 +1,20 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
-	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func TestAccOutscaleSecurityGroup_DefaultEgress_Classic(t *testing.T) {
-	t.Skip()
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-	// Classic
-	var group fcu.SecurityGroup
-	resource.Test(t, resource.TestCase{
-		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_firewall_rules_set.web",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOutscaleSecurityGroupDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOutscaleSecurityGroupConfigClassic,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleSecurityGroupExists("outscale_firewall_rules_set.web", &group),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckOutscaleSecurityGroupExists(n string, group *fcu.SecurityGroup) resource.TestCheckFunc {
+func testAccCheckOutscaleSecurityGroupExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -55,14 +25,22 @@ func testAccCheckOutscaleSecurityGroupExists(n string, group *fcu.SecurityGroup)
 			return fmt.Errorf("No Security Group is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).FCU
-		req := &fcu.DescribeSecurityGroupsInput{
-			GroupIds: []*string{aws.String(rs.Primary.ID)},
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
+		fids := []string{rs.Primary.ID}
+		filter := oscgo.FiltersSecurityGroup{
+			SecurityGroupIds: &fids,
+		}
+
+		req := &oscgo.ReadSecurityGroupsRequest{
+			Filters: &filter,
 		}
 		var err error
-		var resp *fcu.DescribeSecurityGroupsOutput
+		var resp oscgo.ReadSecurityGroupsResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSecurityGroups(req)
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(
+				context.Background(),
+				&oscgo.ReadSecurityGroupsOpts{
+					ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -77,8 +55,9 @@ func testAccCheckOutscaleSecurityGroupExists(n string, group *fcu.SecurityGroup)
 			return err
 		}
 
-		if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
-			*group = *resp.SecurityGroups[0]
+		if resp.SecurityGroups != nil && len(*resp.SecurityGroups) > 0 &&
+			*(*resp.SecurityGroups)[0].SecurityGroupId == rs.Primary.ID {
+			*group = (*resp.SecurityGroups)[0]
 			return nil
 		}
 
@@ -87,7 +66,7 @@ func testAccCheckOutscaleSecurityGroupExists(n string, group *fcu.SecurityGroup)
 }
 
 func testAccCheckOutscaleSecurityGroupDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).FCU
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_firewall_rules_set" {
@@ -95,12 +74,12 @@ func testAccCheckOutscaleSecurityGroupDestroy(s *terraform.State) error {
 		}
 
 		// Retrieve our group
-		req := &fcu.DescribeSecurityGroupsInput{
-			GroupIds: []*string{aws.String(rs.Primary.ID)},
+		req := &oscgo.DescribeSecurityGroupsInput{
+			GroupIds: []*string{rs.Primary.ID},
 		}
 
 		var err error
-		var resp *fcu.DescribeSecurityGroupsOutput
+		var resp *oscgo.DescribeSecurityGroupsOutput
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, err = conn.VM.DescribeSecurityGroups(req)
 
