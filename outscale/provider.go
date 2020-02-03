@@ -58,7 +58,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_route_table_link":        resourceOutscaleOAPILinkRouteTable(),
 			"outscale_nic":                     resourceOutscaleOAPINic(),
 			"outscale_snapshot":                resourceOutscaleOAPISnapshot(),
-			"outscale_keypair_importation":     resourceOutscaleOAPIKeyPairImportation(),
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission(),
 			"outscale_net_peering":             resourceOutscaleOAPILinPeeringConnection(),
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter(),

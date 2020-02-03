@@ -22,7 +22,7 @@ func resourceOutscaleRouteTableImportState(
 
 	// First query the resource itself
 	id := d.Id()
-	tableRaw, _, err := readOAPIRouteTable(conn, id)
+	tableRaw, _, _ := readOAPIRouteTable(conn, id)
 
 	table := tableRaw.(oscgo.RouteTable)
 	// Start building our results

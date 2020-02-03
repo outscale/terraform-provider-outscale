@@ -39,7 +39,6 @@ func init() {
 			"outscale_route_table":             resourceOutscaleOAPIRouteTable,
 			"outscale_route_table_link":        resourceOutscaleOAPILinkRouteTable,
 			"outscale_snapshot":                resourceOutscaleOAPISnapshot,
-			"outscale_keypair_importation":     resourceOutscaleOAPIKeyPairImportation,
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission,
 			"outscale_net_peering":             resourceOutscaleOAPILinPeeringConnection,
 			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP,

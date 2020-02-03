@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/osc"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
@@ -29,14 +28,6 @@ type OutscaleClient struct {
 
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
-	config := osc.Config{
-		Credentials: &osc.Credentials{
-			AccessKey: c.AccessKeyID,
-			SecretKey: c.SecretKeyID,
-			Region:    c.Region,
-		},
-	}
-
 	oapicfg := &oapi.Config{
 		AccessKey: c.AccessKeyID,
 		SecretKey: c.SecretKeyID,
