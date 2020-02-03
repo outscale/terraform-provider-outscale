@@ -9,7 +9,6 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -74,14 +73,23 @@ func testAccCheckOutscaleSecurityGroupDestroy(s *terraform.State) error {
 		}
 
 		// Retrieve our group
-		req := &oscgo.DescribeSecurityGroupsInput{
-			GroupIds: []*string{rs.Primary.ID},
+		fids := []string{rs.Primary.ID}
+		filter := oscgo.FiltersSecurityGroup{
+			SecurityGroupIds: &fids,
+		}
+
+		req := &oscgo.ReadSecurityGroupsRequest{
+			Filters: &filter,
 		}
 
 		var err error
-		var resp *oscgo.DescribeSecurityGroupsOutput
+		var resp oscgo.ReadSecurityGroupsResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.VM.DescribeSecurityGroups(req)
+
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(
+				context.Background(),
+				&oscgo.ReadSecurityGroupsOpts{
+					ReadSecurityGroupsRequest: optional.NewInterface(req)})
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -94,7 +102,8 @@ func testAccCheckOutscaleSecurityGroupDestroy(s *terraform.State) error {
 		})
 
 		if err == nil {
-			if len(resp.SecurityGroups) > 0 && *resp.SecurityGroups[0].GroupId == rs.Primary.ID {
+			if resp.SecurityGroups != nil && len(*resp.SecurityGroups) > 0 &&
+				*(*resp.SecurityGroups)[0].SecurityGroupId == rs.Primary.ID {
 				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
 			}
 
