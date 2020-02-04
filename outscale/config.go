@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform/helper/logging"
 	"github.com/outscale/osc-go/oapi"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
