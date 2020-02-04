@@ -9,12 +9,10 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/outscale/osc-go/oapi"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/common"
 )
 
 func tagsSchemaComputed() *schema.Schema {
@@ -354,24 +352,6 @@ func assignTags(tag []interface{}, resourceID string, conn *oscgo.APIClient) err
 	return nil
 }
 
-//TODO: remove the following function after oapi integration
-
-func tagsToMapC(ts []*common.Tag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = *t.Key
-			tag["value"] = *t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
 func dataSourceTagsSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeSet,
@@ -397,40 +377,6 @@ func tagsSchema() *schema.Schema {
 		Optional: true,
 		ForceNew: true,
 	}
-}
-
-func diffTagsCommon(oldTags, newTags []*common.Tag) ([]*common.Tag, []*common.Tag) {
-	// First, we're creating everything we have
-	create := make(map[string]interface{})
-	for _, t := range newTags {
-		create[*t.Key] = *t.Value
-	}
-
-	// Build the list of what to remove
-	var remove []*common.Tag
-	for _, t := range oldTags {
-		old, ok := create[*t.Key]
-		if !ok || old != *t.Value {
-			remove = append(remove, t)
-		}
-	}
-
-	return tagsFromMapCommon(create), remove
-}
-
-// tagsFromMap returns the tag for the given map of data.
-
-func tagsFromMapCommon(m map[string]interface{}) []*common.Tag {
-	result := make([]*common.Tag, 0, len(m))
-	for k, v := range m {
-		t := &common.Tag{
-			Key:   aws.String(k),
-			Value: aws.String(v.(string)),
-		}
-		result = append(result, t)
-	}
-
-	return result
 }
 
 func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
