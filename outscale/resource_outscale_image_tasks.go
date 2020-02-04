@@ -368,8 +368,8 @@ func OAPIImageTaskStateRefreshFunc(client *oscgo.APIClient, ID string) resource.
 			return emptyResp, "destroyed", nil
 		}
 
-		log.Printf("[INFO] OMI %s state %s", (*resp.ImageExportTasks)[0].ImageId,
-			(*resp.ImageExportTasks)[0].State)
+		log.Printf("[INFO] OMI %s state %s", *(*resp.ImageExportTasks)[0].ImageId,
+			*(*resp.ImageExportTasks)[0].State)
 
 		// OMI is valid, so return it's state
 		return (*resp.ImageExportTasks)[0], *(*resp.ImageExportTasks)[0].State, nil
