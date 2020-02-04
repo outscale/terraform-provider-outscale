@@ -99,57 +99,6 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 	}
 }
 
-//Missing on Swagger Spec
-// func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
-// 	conn := testAccProvider.Meta().(*OutscaleClient)
-
-// 	for _, rs := range s.RootModule().Resources {
-// 		if rs.Type != "outscale_net" {
-// 			continue
-// 		}
-
-// 		// Try to find an internet gateway
-// 		var resp *oscgo.ReadGate
-// 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 			var err error
-// 			resp, err = conn.FCU.VM.DescribeInternetGateways(&fcu.DescribeInternetGatewaysInput{
-// 				InternetGatewayIds: []*string{aws.String(rs.Primary.ID)},
-// 			})
-
-// 			if err != nil {
-// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-// 					return resource.RetryableError(err)
-// 				}
-// 				return resource.NonRetryableError(err)
-// 			}
-
-// 			return resource.RetryableError(err)
-// 		})
-
-// 		if resp == nil {
-// 			return nil
-// 		}
-
-// 		if err == nil {
-// 			if len(resp.InternetGateways) > 0 {
-// 				return fmt.Errorf("still exist")
-// 			}
-// 			return nil
-// 		}
-
-// 		// Verify the error is what we want
-// 		ec2err, ok := err.(awserr.Error)
-// 		if !ok {
-// 			return err
-// 		}
-// 		if ec2err.Code() != "InvalidVPC.NotFound" {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 const testAccOutscaleOAPILinConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"

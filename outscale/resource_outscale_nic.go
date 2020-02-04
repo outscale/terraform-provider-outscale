@@ -603,32 +603,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("private_ip")
 	}
 
-	// Missing Sourcedestcheck
-	// request := oscgo.UpdateNicRequest{
-	// 	NicId:           d.Id(),
-	// 	SourceDestCheck: &fcu.AttributeBooleanValue{Value: aws.Bool(d.Get("is_source_dest_checked").(bool))},
-	// }
-
-	// _, err := conn.VM.ModifyNetworkInterfaceAttribute(request)
-
-	// err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-	// 	var err error
-	// 	_, err = conn.POST_UpdateNic(request)
-	// 	if err != nil {
-	// 		if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-	// 			return resource.RetryableError(err)
-	// 		}
-	// 		return resource.NonRetryableError(err)
-	// 	}
-	// 	return nil
-	// })
-
-	// if err != nil {
-	// 	return fmt.Errorf("Failure updating ENI: %s", err)
-	// }
-
-	// d.SetPartial("is_source_dest_checked")
-
 	if d.HasChange("private_ips_count") {
 		o, n := d.GetChange("private_ips_count")
 		pips := d.Get("pips").(*schema.Set).List()
