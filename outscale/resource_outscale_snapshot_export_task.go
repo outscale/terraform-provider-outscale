@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
 
 func resourceOutscaleOAPIImageExportTasks() *schema.Resource {
@@ -113,11 +113,11 @@ func resourceOutscaleOAPIImageExportTasks() *schema.Resource {
 }
 
 func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	eto, etoOk := d.GetOk("osu_export")
 	v, ok := d.GetOk("snapshot_id")
-	request := &fcu.CreateSnapshotExportTaskInput{}
+	request := &oscgo.CreateSnapshotExportTaskInput{}
 
 	if !etoOk && !ok {
 		return fmt.Errorf("Please provide the required attributes osu_export and image_id")
@@ -129,7 +129,7 @@ func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}
 		exp := eto.([]interface{})
 		e := exp[0].(map[string]interface{})
 
-		et := &fcu.ExportToOsuTaskSpecification{}
+		et := &oscgo.ExportToOsuTaskSpecification{}
 
 		if v, ok := e["disk_image_format"]; ok {
 			et.DiskImageFormat = aws.String(v.(string))
@@ -147,7 +147,7 @@ func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}
 			a := v.([]interface{})
 			if len(a) > 0 {
 				w := a[0].(map[string]interface{})
-				et.AkSk = &fcu.ExportToOsuAccessKeySpecification{
+				et.AkSk = &oscgo.ExportToOsuAccessKeySpecification{
 					AccessKey: aws.String(w["api_key_id"].(string)),
 					SecretKey: aws.String(w["secret_key"].(string)),
 				}
@@ -156,7 +156,7 @@ func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}
 		request.ExportToOsu = et
 	}
 
-	var resp *fcu.CreateSnapshotExportTaskOutput
+	var resp *oscgo.CreateSnapshotExportTaskOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -186,13 +186,13 @@ func resourceOAPIImageExportTasksCreate(d *schema.ResourceData, meta interface{}
 }
 
 func resourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	var resp *fcu.DescribeSnapshotExportTasksOutput
+	var resp *oscgo.DescribeSnapshotExportTasksOutput
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.VM.DescribeSnapshotExportTasks(&fcu.DescribeSnapshotExportTasksInput{
+		resp, err = conn.VM.DescribeSnapshotExportTasks(&oscgo.DescribeSnapshotExportTasksInput{
 			SnapshotExportTaskId: []*string{aws.String(d.Id())},
 		})
 		if err != nil {
@@ -256,7 +256,7 @@ func resourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *fcu.Client, i int) (*fcu.SnapshotExportTask, error) {
+func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.Client, i int) (*oscgo.SnapshotExportTask, error) {
 	log.Printf("Waiting for Image Task %s to become available...", id)
 
 	stateConf := &resource.StateChangeConf{
@@ -272,7 +272,7 @@ func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *fcu.Client,
 	if err != nil {
 		return nil, fmt.Errorf("Error waiting for OMI (%s) to be ready: %s", id, err)
 	}
-	return info.(*fcu.SnapshotExportTask), nil
+	return info.(*oscgo.SnapshotExportTask), nil
 }
 
 func resourceOAPIImageExportTasksDelete(d *schema.ResourceData, meta interface{}) error {
@@ -286,15 +286,15 @@ func resourceOAPIImageExportTasksDelete(d *schema.ResourceData, meta interface{}
 }
 
 // SnapshotTaskStateRefreshFunc ...
-func SnapshotTaskStateRefreshFunc(client *fcu.Client, id string) resource.StateRefreshFunc {
+func SnapshotTaskStateRefreshFunc(client *oscgo.Client, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		emptyResp := &fcu.DescribeSnapshotExportTasksOutput{}
+		emptyResp := &oscgo.DescribeSnapshotExportTasksOutput{}
 
-		var resp *fcu.DescribeSnapshotExportTasksOutput
+		var resp *oscgo.DescribeSnapshotExportTasksOutput
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = client.VM.DescribeSnapshotExportTasks(&fcu.DescribeSnapshotExportTasksInput{
+			resp, err = client.VM.DescribeSnapshotExportTasks(&oscgo.DescribeSnapshotExportTasksInput{
 				SnapshotExportTaskId: []*string{aws.String(id)},
 			})
 			if err != nil {
