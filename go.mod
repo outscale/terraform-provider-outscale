@@ -5,23 +5,18 @@ go 1.12
 require (
 	github.com/antihax/optional v1.0.0
 	github.com/aws/aws-sdk-go v1.26.5
+	github.com/bflad/tfproviderlint v0.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/errwrap v1.0.0
-	github.com/hashicorp/go-hclog v0.9.2 // indirect
-	github.com/hashicorp/go-plugin v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20190821123243-0c888d1241f6 // indirect
-	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.12.20
-	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/marinsalinas/osc-sdk-go v0.0.0-20191219184659-536ff9c4c254
 	github.com/marstr/guid v1.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/openlyinc/pointy v1.1.2
 	github.com/outscale/osc-go v0.0.9
 	github.com/posener/complete v1.2.3 // indirect
-	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cast v1.3.0
 	github.com/ulikunitz/xz v0.5.6 // indirect
 	go.opencensus.io v0.22.2 // indirect

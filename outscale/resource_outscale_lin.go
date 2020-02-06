@@ -3,16 +3,18 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPINet() *schema.Resource {
@@ -59,12 +61,8 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 		return resource.RetryableError(err)
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("Error creating Outscale Net: %s", errString)
+		return fmt.Errorf("error creating Outscale Net: %s", utils.GetErrorResponse(err))
 	}
 
 	//SetTags
