@@ -10,7 +10,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 
-	"github.com/hashicorp/terraform/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
