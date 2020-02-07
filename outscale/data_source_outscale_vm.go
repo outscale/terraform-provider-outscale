@@ -139,6 +139,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 		return err
 	}
 	set("os_family", vm.GetOsFamily())
+	set("performance", vm.GetPerformance())
 	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
 	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
 	set("private_dns_name", vm.GetPrivateDnsName())
@@ -530,6 +531,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			},
 		},
 		"os_family": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"performance": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
