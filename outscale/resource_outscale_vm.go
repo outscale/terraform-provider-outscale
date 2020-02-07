@@ -114,8 +114,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"delete_on_vm_deletion": {
 							Type:     schema.TypeBool,
-							Default:  true,
 							Optional: true,
+							Computed: true,
 						},
 						"description": {
 							Type:     schema.TypeString,
@@ -255,12 +255,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-						"security_groups_names": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups": {
@@ -929,7 +923,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 	log.Printf("[DEBUG] NICS TO CREATE -> %+v", nics)
 	networkInterfaces := []oscgo.NicForVmCreation{}
 
-	for _, v := range nics {
+	for i, v := range nics {
 		nic := v.(map[string]interface{})
 
 		ni := oscgo.NicForVmCreation{
@@ -944,8 +938,16 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 			ni.SetSecondaryPrivateIpCount(int64(v))
 		}
 
-		if d, dOk := nic["delete_on_vm_deletion"]; dOk {
-			ni.SetDeleteOnVmDeletion(d.(bool))
+		// if d := oscgo.PtrBool(nic["delete_on_vm_deletion"].(bool)); d != nil {
+		// 	fmt.Println("el delete no es nulo")
+		// 	ni.SetDeleteOnVmDeletion(*d)
+		// } else {
+		// 	fmt.Println("el delete es nulo")
+		// }
+
+		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
+			log.Printf("[DEBUG] delete=%+v, deleteOK=%+v", delete, deleteOK)
+			ni.SetDeleteOnVmDeletion(delete.(bool))
 		}
 
 		ni.SetDescription(nic["description"].(string))

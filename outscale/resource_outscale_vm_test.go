@@ -531,7 +531,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 
 func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assertEqual(t, omi, server.ImageId, "Bad image_id.")
+		assertEqual(t, omi, *server.ImageId, "Bad image_id.")
 		return nil
 	}
 }
