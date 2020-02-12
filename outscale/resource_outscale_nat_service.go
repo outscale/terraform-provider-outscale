@@ -27,12 +27,10 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 			"public_ip_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"nat_service_id": {
@@ -159,11 +157,9 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		set("nat_service_id", natService.NatServiceId)
 		set("net_id", natService.NetId)
 		set("state", natService.State)
+		set("subnet_id", natService.SubnetId)
 
-		if err := set("public_ips", getOSCPublicIPs(*natService.PublicIps)); err != nil {
-			return err
-		}
-		if err := set("tags", getOapiTagSet(natService.Tags)); err != nil {
+		if err := set("public_ips", getOSCPublicIPs(natService.GetPublicIps())); err != nil {
 			return err
 		}
 
