@@ -395,6 +395,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"performance": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"private_dns_name": {
 				Type:     schema.TypeString,
 				Computed: true,
