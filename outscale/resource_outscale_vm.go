@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/spf13/cast"
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
@@ -107,9 +108,12 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Computed: true,
 			},
 			"nics": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				Set: func(v interface{}) int {
+					return v.(map[string]interface{})["device_number"].(int)
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"delete_on_vm_deletion": {
@@ -124,8 +128,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						},
 						"device_number": {
 							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Required: true,
 						},
 						"nic_id": {
 							Type:     schema.TypeString,
@@ -196,7 +199,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Optional: true,
 						},
 						"link_nic": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeList,
+							MaxItems: 1,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -491,7 +495,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source VM: %s", err)
+		return fmt.Errorf("Error launching source VM: %s", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasVms() || len(resp.GetVms()) == 0 {
@@ -919,8 +923,7 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
 
-	nics := d.Get("nics").([]interface{})
-	log.Printf("[DEBUG] NICS TO CREATE -> %+v", nics)
+	nics := d.Get("nics").(*schema.Set).List()
 	networkInterfaces := []oscgo.NicForVmCreation{}
 
 	for i, v := range nics {
@@ -937,13 +940,6 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		if v := nic["secondary_private_ip_count"].(int); v > 0 {
 			ni.SetSecondaryPrivateIpCount(int64(v))
 		}
-
-		// if d := oscgo.PtrBool(nic["delete_on_vm_deletion"].(bool)); d != nil {
-		// 	fmt.Println("el delete no es nulo")
-		// 	ni.SetDeleteOnVmDeletion(*d)
-		// } else {
-		// 	fmt.Println("el delete es nulo")
-		// }
 
 		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
 			log.Printf("[DEBUG] delete=%+v, deleteOK=%+v", delete, deleteOK)

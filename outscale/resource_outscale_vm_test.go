@@ -13,9 +13,9 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
@@ -33,6 +33,34 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "c4.large"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
+	var server oscgo.Vm
+	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			skipIfNoOAPI(t)
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -531,7 +559,7 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 
 func testAccCheckOutscaleOAPIVMAttributes(t *testing.T, server *oscgo.Vm, omi string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assertEqual(t, omi, *server.ImageId, "Bad image_id.")
+		assertEqual(t, omi, server.GetImageId(), "Bad image_id.")
 		return nil
 	}
 }
@@ -549,12 +577,58 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			           = "%s"
+			image_id			     = "%s"
 			vm_type                  = "%s"
-			keypair_name	           = "terraform-basic"
+			keypair_name	         = "terraform-basic"
 			placement_subregion_name = "%sa"
 			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
 			private_ips              =  ["10.0.0.12"]
+		}`, omi, vmType, region)
+}
+
+func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+		}
+
+		resource "outscale_subnet" "outscale_subnet" {
+			net_id              = "${outscale_net.outscale_net.net_id}"
+			ip_range            = "10.0.0.0/24"
+			subregion_name      = "eu-west-2a"
+		}
+
+		resource "outscale_security_group" "outscale_security_group8" {
+			description         = "test vm with nic"
+			security_group_name = "private-sg-1"
+			net_id              = outscale_net.outscale_net.net_id
+		}
+
+		resource "outscale_nic" "outscale_nic5" {
+			subnet_id = outscale_subnet.outscale_subnet.subnet_id
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id			     = "%s"
+			vm_type                  = "%s"
+			keypair_name	         = "terraform-basic"
+			placement_subregion_name = "%sa"
+
+			nics {
+				subnet_id = outscale_subnet.outscale_subnet.subnet_id
+				security_group_ids = [outscale_security_group.outscale_security_group8.security_group_id]
+				private_ips  {
+					  private_ip ="10.0.0.123"
+					  is_primary = true
+				 }
+				device_number = 0
+			}
+
+			nics {
+				nic_id =outscale_nic.outscale_nic5.nic_id
+				device_number = 1
+			}
+
 		}`, omi, vmType, region)
 }
 

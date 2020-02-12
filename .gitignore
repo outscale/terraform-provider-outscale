@@ -4,6 +4,7 @@ examples/terraform.tfstate
 examples/terraform.tfstate.backup
 
 test/
+.vscode/
 log.txt
 terraform-provider-outscale
 *.log
