@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/outscale/osc-go/oapi"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
@@ -22,20 +21,11 @@ type Config struct {
 
 //OutscaleClient client
 type OutscaleClient struct {
-	OAPI   *oapi.Client
 	OSCAPI *oscgo.APIClient
 }
 
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
-	oapicfg := &oapi.Config{
-		AccessKey: c.AccessKeyID,
-		SecretKey: c.SecretKeyID,
-		Region:    c.Region,
-		Service:   "api",
-		URL:       "outscale.com/oapi/latest",
-	}
-
 	skipClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -61,10 +51,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
-	oapiClient := oapi.NewClient(oapicfg, skipClient)
-
 	client := &OutscaleClient{
-		OAPI:   oapiClient,
 		OSCAPI: oscClient,
 	}
 

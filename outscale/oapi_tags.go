@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/outscale/osc-go/oapi"
 )
 
 func tagsSchemaComputed() *schema.Schema {
@@ -135,23 +134,6 @@ func tagsListOAPISchema() *schema.Schema {
 	}
 }
 
-// tagsOAPI	ToMap turns the list of tag into a map.
-func tagsOAPIToMap(ts []oapi.ResourceTag) []map[string]string {
-	result := make([]map[string]string, len(ts))
-	if len(ts) > 0 {
-		for k, t := range ts {
-			tag := make(map[string]string)
-			tag["key"] = t.Key
-			tag["value"] = t.Value
-			result[k] = tag
-		}
-	} else {
-		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
 // tagsOSCsAPI	ToMap turns the list of tag into a map.
 func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
 	result := make([]map[string]string, len(ts))
@@ -164,19 +146,6 @@ func tagsOSCAPIToMap(ts []oscgo.ResourceTag) []map[string]string {
 		}
 	} else {
 		result = make([]map[string]string, 0)
-	}
-
-	return result
-}
-
-func tagsOAPIFromMap(m map[string]interface{}) []oapi.ResourceTag {
-	result := make([]oapi.ResourceTag, 0, len(m))
-	for k, v := range m {
-		t := oapi.ResourceTag{
-			Key:   k,
-			Value: v.(string),
-		}
-		result = append(result, t)
 	}
 
 	return result
@@ -195,28 +164,9 @@ func tagsOSCAPIFromMap(m map[string]interface{}) []oscgo.ResourceTag {
 	return result
 }
 
-// diffOAPITags takes our tag locally and the ones remotely and returns
+// diffOSCAPITags takes our tag locally and the ones remotely and returns
 // the set of tag that must be created, and the set of tag that must
 // be destroyed.
-func diffOAPITags(oldTags, newTags []oapi.ResourceTag) ([]oapi.ResourceTag, []oapi.ResourceTag) {
-	// First, we're creating everything we have
-	create := make(map[string]interface{})
-	for _, t := range newTags {
-		create[t.Key] = t.Value
-	}
-
-	// Build the list of what to remove
-	var remove []oapi.ResourceTag
-	for _, t := range oldTags {
-		old, ok := create[t.Key]
-		if !ok || old != t.Value {
-			remove = append(remove, t)
-		}
-	}
-
-	return tagsOAPIFromMap(create), remove
-}
-
 func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, []oscgo.ResourceTag) {
 	// First, we're creating everything we have
 	create := make(map[string]interface{})
@@ -234,20 +184,6 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 	}
 
 	return tagsOSCAPIFromMap(create), remove
-}
-
-func tagsOAPIFromSliceMap(m []interface{}) []oapi.ResourceTag {
-	result := make([]oapi.ResourceTag, 0, len(m))
-	for _, v := range m {
-		tag := v.(map[string]interface{})
-		t := oapi.ResourceTag{
-			Key:   tag["key"].(string),
-			Value: tag["value"].(string),
-		}
-		result = append(result, t)
-	}
-
-	return result
 }
 
 func tagsFromSliceMap(m []interface{}) []oscgo.ResourceTag {
@@ -290,45 +226,6 @@ func oapiTagDescIgnored(t *oscgo.Tag) bool {
 	return false
 }
 
-func assignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) error {
-	request := oapi.CreateTagsRequest{}
-	request.Tags = tagsOAPIFromSliceMap(tag)
-	request.ResourceIds = []string{resourceID}
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.POST_CreateTags(request)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), ".NotFound") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func unAssignOapiTags(tag []interface{}, resourceID string, conn *oapi.Client) error {
-	request := oapi.DeleteTagsRequest{}
-	request.Tags = tagsOAPIFromSliceMap(tag)
-	request.ResourceIds = []string{resourceID}
-	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, err := conn.POST_DeleteTags(request)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), ".NotFound") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
 func assignTags(tag []interface{}, resourceID string, conn *oscgo.APIClient) error {
 	request := oscgo.CreateTagsRequest{}
 	request.Tags = tagsFromSliceMap(tag)
