@@ -17,7 +17,7 @@ type Config struct {
 	SecretKeyID string
 	Region      string
 	TokenID     string
-	OApi        bool
+	Endpoints   map[string]interface{}
 }
 
 //OutscaleClient client
@@ -46,8 +46,14 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	skipClient.Transport = oscgo.NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 
+	basePath := fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region)
+
+	if endpoint, ok := c.Endpoints["api"]; ok {
+		basePath = endpoint.(string)
+	}
+
 	oscConfig := &oscgo.Configuration{
-		BasePath:      fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region),
+		BasePath:      basePath,
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "terraform-provider-outscale-dev",
 		HTTPClient:    skipClient,
