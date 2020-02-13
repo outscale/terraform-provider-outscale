@@ -5,47 +5,41 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
-func routeIDHash(d *schema.ResourceData, r *fcu.Route) string {
-	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(*r.DestinationCidrBlock))
+func routeIDHash(d *schema.ResourceData, r *oscgo.Route) string {
+	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string),
+		hashcode.String(r.GetDestinationIpRange()))
 }
 
 // Route table import also imports all the rules
 func resourceOutscaleRouteTableImportState(
 	d *schema.ResourceData,
 	meta interface{}) ([]*schema.ResourceData, error) {
-	conn := meta.(*OutscaleClient).FCU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	// First query the resource itself
 	id := d.Id()
-	resp, err := conn.VM.DescribeRouteTables(&fcu.DescribeRouteTablesInput{
-		RouteTableIds: []*string{&id},
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(resp.RouteTables) < 1 || resp.RouteTables[0] == nil {
-		return nil, fmt.Errorf("route table %s is not found", id)
-	}
-	table := resp.RouteTables[0]
+	tableRaw, _, _ := readOAPIRouteTable(conn, id)
 
+	table := tableRaw.(oscgo.RouteTable)
 	// Start building our results
 	results := make([]*schema.ResourceData, 1,
-		2+len(table.Associations)+len(table.Routes))
+		2+len(table.GetLinkRouteTables())+len(table.GetRoutes()))
 	results[0] = d
 
 	{
 		// Construct the routes
 		subResource := resourceOutscaleOAPIRoute()
-		for _, route := range table.Routes {
+		for _, route := range table.GetRoutes() {
 			// Ignore the local/default route
 			if route.GatewayId != nil && *route.GatewayId == "local" {
 				continue
 			}
 
-			if route.DestinationPrefixListId != nil {
+			if route.DestinationServiceId != nil {
 				// Skipping because VPC endpoint routes are handled separately
 				// See aws_vpc_endpoint
 				continue
@@ -55,8 +49,8 @@ func resourceOutscaleRouteTableImportState(
 			d := subResource.Data(nil)
 			d.SetType("outscale_route")
 			d.Set("route_table_id", id)
-			d.Set("destination_cidr_block", route.DestinationCidrBlock)
-			d.SetId(routeIDHash(d, route))
+			d.Set("destination_cidr_block", route.DestinationIpRange)
+			d.SetId(routeIDHash(d, &route))
 			results = append(results, d)
 		}
 	}
@@ -64,7 +58,7 @@ func resourceOutscaleRouteTableImportState(
 	{
 		// Construct the associations
 		subResource := resourceOutscaleOAPILinkRouteTable()
-		for _, assoc := range table.Associations {
+		for _, assoc := range table.GetLinkRouteTables() {
 			if *assoc.Main {
 				// Ignore
 				continue
@@ -74,7 +68,7 @@ func resourceOutscaleRouteTableImportState(
 			d := subResource.Data(nil)
 			d.SetType("outscale_route_table_link")
 			d.Set("route_table_id", assoc.RouteTableId)
-			d.SetId(*assoc.RouteTableAssociationId)
+			d.SetId(*assoc.LinkRouteTableId)
 			results = append(results, d)
 		}
 	}

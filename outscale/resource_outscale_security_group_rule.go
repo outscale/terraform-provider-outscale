@@ -8,6 +8,7 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,40 @@ import (
 
 const OAPI_INBOUND_RULE = "Inbound"
 const OAPI_OUTBOUND_RULE = "Outbound"
+
+func sgProtocolIntegers() map[string]int {
+	var protocolIntegers = make(map[string]int)
+	protocolIntegers = map[string]int{
+		"udp":  17,
+		"tcp":  6,
+		"icmp": 1,
+		"all":  -1,
+	}
+	return protocolIntegers
+}
+
+func protocolForValue(v string) string {
+	protocol := strings.ToLower(v)
+	if protocol == "-1" || protocol == "all" {
+		return "-1"
+	}
+	if _, ok := sgProtocolIntegers()[protocol]; ok {
+		return protocol
+	}
+	p, err := strconv.Atoi(protocol)
+	if err != nil {
+		fmt.Printf("\n\n[WARN] Unable to determine valid protocol: %s", err)
+		return protocol
+	}
+
+	for k, v := range sgProtocolIntegers() {
+		if p == v {
+			return strings.ToLower(k)
+		}
+	}
+
+	return protocol
+}
 
 func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 	return &schema.Resource{

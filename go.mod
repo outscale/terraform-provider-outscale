@@ -5,11 +5,10 @@ go 1.12
 require (
 	github.com/antihax/optional v1.0.0
 	github.com/aws/aws-sdk-go v1.26.5
-	github.com/bflad/tfproviderlint v0.9.0 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/terraform v0.12.20 // indirect
+	github.com/hashicorp/terraform v0.12.20
 	github.com/hashicorp/terraform-plugin-sdk v1.6.0
 	github.com/marinsalinas/osc-sdk-go v0.0.0-20191219184659-536ff9c4c254
 	github.com/mattn/go-colorable v0.1.4 // indirect
