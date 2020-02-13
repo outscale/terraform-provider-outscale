@@ -1,8 +1,8 @@
 package outscale
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // Provider ...
@@ -56,7 +56,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_route":                   resourceOutscaleOAPIRoute(),
 			"outscale_route_table":             resourceOutscaleOAPIRouteTable(),
 			"outscale_route_table_link":        resourceOutscaleOAPILinkRouteTable(),
-			"outscale_image_tasks":             resourceOutscaleOAPIImageTasks(),
 			"outscale_nic":                     resourceOutscaleOAPINic(),
 			"outscale_snapshot":                resourceOutscaleOAPISnapshot(),
 			"outscale_image_launch_permission": resourceOutscaleOAPIImageLaunchPermission(),

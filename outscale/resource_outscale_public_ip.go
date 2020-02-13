@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPIPublicIP() *schema.Resource {
@@ -81,6 +81,10 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		}
 
 		return fmt.Errorf("Error retrieving EIP: %s", err)
+	}
+
+	if len(response.GetPublicIps()) == 0 {
+		return fmt.Errorf("Error retrieving EIP: not found")
 	}
 
 	if len(response.GetPublicIps()) != 1 ||
@@ -213,12 +217,14 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
+			lppiId := d.Get("link_public_ip_id").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				LinkPublicIpId: d.Get("link_public_ip_id").(*string),
+				LinkPublicIpId: &lppiId,
 			})})
 		case "standard":
+			pIP := d.Get("public_ip").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				PublicIp: d.Get("public_ip").(*string),
+				PublicIp: &pIP,
 			})})
 		}
 

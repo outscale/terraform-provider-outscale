@@ -3,8 +3,8 @@ package outscale
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/helper/hashcode"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )

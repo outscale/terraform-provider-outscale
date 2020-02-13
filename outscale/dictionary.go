@@ -1,6 +1,6 @@
 package outscale
 
-import "github.com/hashicorp/terraform/helper/schema"
+import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 //Dictionary for the Outscale APIs maps the apis to their respective functions
 type Dictionary map[string]ResourceMap
@@ -44,7 +44,6 @@ func init() {
 			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP,
 			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment,
 			"outscale_nic":                     resourceOutscaleOAPINic,
-			"outscale_image_tasks":             resourceOutscaleOAPIImageTasks,
 			"outscale_snapshot_attributes":     resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter,
 		},

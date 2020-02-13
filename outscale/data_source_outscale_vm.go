@@ -11,8 +11,8 @@ import (
 
 	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
@@ -122,6 +122,7 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 		return err
 	}
 	set("os_family", vm.GetOsFamily())
+	set("performance", vm.GetPerformance())
 	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
 	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
 	set("private_dns_name", vm.GetPrivateDnsName())
@@ -513,6 +514,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			},
 		},
 		"os_family": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"performance": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
