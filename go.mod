@@ -8,12 +8,12 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/terraform v0.12.20
+	github.com/hashicorp/terraform v0.12.20 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.6.0
 	github.com/marinsalinas/osc-sdk-go v0.0.0-20191219184659-536ff9c4c254
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/openlyinc/pointy v1.1.2
-	github.com/outscale/osc-go v0.0.9
+	github.com/outscale/osc-go v0.0.9 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/spf13/cast v1.3.0
 	github.com/ulikunitz/xz v0.5.6 // indirect
