@@ -10,7 +10,7 @@ description: |-
 
 Manages a route table link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkroutetable).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linkroutetable).
 
 ## Example Usage
 

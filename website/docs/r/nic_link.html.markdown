@@ -10,7 +10,7 @@ description: |-
 
 Manages a NIC link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs#AboutFNIs-FNIAttachmentFNIsAttachmenttoInstances).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linknic).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linknic).
 
 ## Example Usage
 

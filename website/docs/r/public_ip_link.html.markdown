@@ -10,7 +10,7 @@ description: |-
 
 Manages a public IP link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs#AboutEIPs-EipAssocationEIPAssociation).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkpublicip).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linkpublicip).
 
 ## Example Usage
 

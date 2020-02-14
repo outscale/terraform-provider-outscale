@@ -10,7 +10,7 @@ description: |-
 
 Manages a virtual machine (VM).
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instances).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-vm).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-vm).
 
 ## Example Usage
 
@@ -167,7 +167,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
-* `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs-beta.outscale.com/#readimages) method.
+* `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
 * `max_vms_count` - (Optional) The maximum number of VMs you want to create. If all the VMs cannot be created, the largest possible number of VMs above MinVmsCount is created.
 * `min_vms_count` - (Optional) The minimum number of VMs you want to create. If this number of VMs cannot be created, no VMs are created.
@@ -187,9 +187,9 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
-* `security_groups` - (Optional) One or more names of security groups for the VMs.
+* `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or a script used to add a specific configuration to the VM when creating it. If you are not using a command line tool, this must be Base64-encoded.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).

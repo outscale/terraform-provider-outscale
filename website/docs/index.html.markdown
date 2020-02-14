@@ -11,7 +11,7 @@ The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources.
 Use the navigation to the left to read about the available resources.
 For more information on our resources, see the [User Guide](https://wiki.outscale.net/display/EN#).
 
-The provider is based on our 3DS OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs-beta.outscale.com/#3ds-outscale-api).
+The provider is based on our 3DS OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs.outscale.com/api#3ds-outscale-api).
 
 The provider needs to be configured with the proper credentials before it can be used.
 

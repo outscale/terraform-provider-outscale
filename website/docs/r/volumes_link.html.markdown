@@ -10,7 +10,7 @@ description: |-
 
 Manages a volume link.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkvolume).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linkvolume).
 
 ## Example Usage
 

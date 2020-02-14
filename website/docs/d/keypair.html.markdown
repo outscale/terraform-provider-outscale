@@ -10,7 +10,7 @@ description: |-
 
 Provides information about a specific keypair.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Keypairs).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-keypair).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-keypair).
 
 ## Example Usage
 
