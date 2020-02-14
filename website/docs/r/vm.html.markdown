@@ -189,7 +189,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or a script used to add a specific configuration to the VM when creating it. If you are not using a command line tool, this must be Base64-encoded.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
