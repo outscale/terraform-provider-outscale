@@ -111,6 +111,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 				Set: func(v interface{}) int {
 					return v.(map[string]interface{})["device_number"].(int)
 				},
