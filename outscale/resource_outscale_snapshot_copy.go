@@ -1,12 +1,14 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
-	"github.com/outscale/osc-go/oapi"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -48,40 +50,39 @@ func resourcedOutscaleOAPISnapshotCopy() *schema.Resource {
 }
 
 func resourcedOutscaleOAPISnapshotCopyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oapi.CreateSnapshotRequest{
-		SourceRegionName: d.Get("source_region_name").(string),
-		SourceSnapshotId: d.Get("source_snapshot_id").(string),
+	req := oscgo.CreateSnapshotRequest{
+		SourceRegionName: oscgo.PtrString(d.Get("source_region_name").(string)),
+		SourceSnapshotId: oscgo.PtrString(d.Get("source_snapshot_id").(string)),
 	}
 
 	if v, ok := d.GetOk("description"); ok {
-		req.Description = v.(string)
+		req.Description = oscgo.PtrString(v.(string))
 	}
 
-	var o *oapi.POST_CreateSnapshotResponses
+	var o oscgo.CreateSnapshotResponse
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		o, err = conn.POST_CreateSnapshot(req)
+		o, _, err = conn.SnapshotApi.CreateSnapshot(context.Background(), &oscgo.CreateSnapshotOpts{
+			CreateSnapshotRequest: optional.NewInterface(req),
+		})
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				log.Printf("[DEBUG] Error: %q", err)
+			if strings.Contains(fmt.Sprint(err), "Throttling") {
 				return resource.RetryableError(err)
 			}
-
 			return resource.NonRetryableError(err)
 		}
-
 		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error copying snapshot: %s", err)
+		return fmt.Errorf("Error copying snapshot: %s", utils.GetErrorResponse(err))
 	}
 
 	d.SetId(resource.UniqueId())
-	d.Set("snapshot_id", o.OK.Snapshot.SnapshotId)
-	d.Set("request_id", o.OK.ResponseContext.RequestId)
+	d.Set("snapshot_id", o.Snapshot.SnapshotId)
+	d.Set("request_id", o.ResponseContext.RequestId)
 
 	return nil
 }

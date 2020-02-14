@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
-	"github.com/outscale/osc-go/oapi"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
@@ -17,25 +16,16 @@ type Config struct {
 	SecretKeyID string
 	Region      string
 	TokenID     string
-	OApi        bool
+	Endpoints   map[string]interface{}
 }
 
 //OutscaleClient client
 type OutscaleClient struct {
-	OAPI   *oapi.Client
 	OSCAPI *oscgo.APIClient
 }
 
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
-	oapicfg := &oapi.Config{
-		AccessKey: c.AccessKeyID,
-		SecretKey: c.SecretKeyID,
-		Region:    c.Region,
-		Service:   "api",
-		URL:       "outscale.com/oapi/latest",
-	}
-
 	skipClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -46,8 +36,14 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	skipClient.Transport = oscgo.NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 
+	basePath := fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region)
+
+	if endpoint, ok := c.Endpoints["api"]; ok {
+		basePath = endpoint.(string)
+	}
+
 	oscConfig := &oscgo.Configuration{
-		BasePath:      fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region),
+		BasePath:      basePath,
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "terraform-provider-outscale-dev",
 		HTTPClient:    skipClient,
@@ -55,10 +51,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
-	oapiClient := oapi.NewClient(oapicfg, skipClient)
-
 	client := &OutscaleClient{
-		OAPI:   oapiClient,
 		OSCAPI: oscClient,
 	}
 

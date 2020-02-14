@@ -5,6 +5,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
+var endpointServiceNames []string
+
+func init() {
+	endpointServiceNames = []string{
+		"api",
+	}
+}
+
 // Provider ...
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
@@ -27,12 +35,7 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_REGION", nil),
 				Description: "The Region for API operations.",
 			},
-			"oapi": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_OAPI", false),
-				Description: "Enable oAPI Usage",
-			},
+			"endpoints": endpointsSchema(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -110,7 +113,38 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		AccessKeyID: d.Get("access_key_id").(string),
 		SecretKeyID: d.Get("secret_key_id").(string),
 		Region:      d.Get("region").(string),
-		OApi:        d.Get("oapi").(bool),
+		Endpoints:   make(map[string]interface{}),
 	}
+
+	endpointsSet := d.Get("endpoints").(*schema.Set)
+
+	for _, endpointsSetI := range endpointsSet.List() {
+		endpoints := endpointsSetI.(map[string]interface{})
+		for _, endpointServiceName := range endpointServiceNames {
+			config.Endpoints[endpointServiceName] = endpoints[endpointServiceName].(string)
+		}
+	}
+
 	return config.Client()
+}
+
+func endpointsSchema() *schema.Schema {
+	endpointsAttributes := make(map[string]*schema.Schema)
+
+	for _, endpointServiceName := range endpointServiceNames {
+		endpointsAttributes[endpointServiceName] = &schema.Schema{
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "",
+			Description: "Use this to override the default service endpoint URL",
+		}
+	}
+
+	return &schema.Schema{
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: endpointsAttributes,
+		},
+	}
 }

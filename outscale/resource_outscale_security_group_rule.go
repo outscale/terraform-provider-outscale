@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
@@ -18,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/outscale/osc-go/oapi"
 )
 
 const OAPI_INBOUND_RULE = "Inbound"
@@ -686,153 +686,6 @@ func validateOAPISecurityGroupRule(ippems []interface{}) error {
 	return nil
 }
 
-func ipOAPIPermissionIDHash(ruleType, sgID string, ips []oapi.SecurityGroupRule) string {
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s-", sgID))
-
-	for _, ip := range ips {
-		if ip.FromPortRange > 0 {
-			buf.WriteString(fmt.Sprintf("%d-", ip.FromPortRange))
-		}
-		if ip.ToPortRange > 0 {
-			buf.WriteString(fmt.Sprintf("%d-", ip.ToPortRange))
-		}
-		buf.WriteString(fmt.Sprintf("%s-", ip.IpProtocol))
-		buf.WriteString(fmt.Sprintf("%s-", ruleType))
-
-		// We need to make sure to sort the strings below so that we always
-		// generate the same hash code no matter what is in the set.
-		if len(ip.IpRanges) > 0 {
-			s := make([]string, len(ip.IpRanges))
-			copy(s, ip.IpRanges)
-			sort.Strings(s)
-
-			for _, v := range s {
-				buf.WriteString(fmt.Sprintf("%s-", v))
-			}
-		}
-
-		if len(ip.PrefixListIds) > 0 {
-			s := make([]string, len(ip.PrefixListIds))
-			copy(s, ip.PrefixListIds)
-			sort.Strings(s)
-
-			for _, v := range s {
-				buf.WriteString(fmt.Sprintf("%s-", v))
-			}
-		}
-
-		if len(ip.SecurityGroupsMembers) > 0 {
-			//sort.Sort(ByGroupsMember(ip.SecurityGroupsMembers))
-			for _, pair := range ip.SecurityGroupsMembers {
-				if pair.SecurityGroupId != "" {
-					buf.WriteString(fmt.Sprintf("%s-", pair.SecurityGroupId))
-				} else {
-					buf.WriteString("-")
-				}
-				if pair.SecurityGroupName != "" {
-					buf.WriteString(fmt.Sprintf("%s-", pair.SecurityGroupName))
-				} else {
-					buf.WriteString("-")
-				}
-			}
-		}
-	}
-
-	return fmt.Sprintf("sgrule-%d", hashcode.String(buf.String()))
-}
-
-func findOAPIRuleMatch(p []oapi.SecurityGroupRule, rules []oapi.SecurityGroupRule) []oapi.SecurityGroupRule {
-	var rule = make([]oapi.SecurityGroupRule, 0)
-	//fmt.Printf("Rules (from config) -> %+v\n", p)
-	//fmt.Printf("Rules (from service) -> %+v\n", rules)
-	for _, i := range p {
-		for _, r := range rules {
-
-			//fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
-			if i.ToPortRange != r.ToPortRange {
-				continue
-			}
-
-			if i.FromPortRange != r.FromPortRange {
-				continue
-			}
-
-			if i.IpProtocol != r.IpProtocol {
-				continue
-			}
-
-			remaining := len(i.IpRanges)
-			for _, ip := range i.IpRanges {
-				for _, rip := range r.IpRanges {
-					if ip == rip {
-						remaining--
-					}
-				}
-			}
-
-			if remaining > 0 {
-				continue
-			}
-
-			remaining = len(i.PrefixListIds)
-			for _, pl := range i.PrefixListIds {
-				for _, rpl := range r.PrefixListIds {
-					if pl == rpl {
-						remaining--
-					}
-				}
-			}
-
-			if remaining > 0 {
-				continue
-			}
-
-			remaining = len(i.SecurityGroupsMembers)
-			for _, ip := range i.SecurityGroupsMembers {
-				for _, rip := range r.SecurityGroupsMembers {
-					if ip.SecurityGroupId == rip.SecurityGroupId {
-						remaining--
-					}
-				}
-			}
-
-			if remaining > 0 {
-				continue
-			}
-
-			rule = append(rule, r)
-		}
-	}
-	return rule
-}
-
-func setOAPIFromIPPerm(d *schema.ResourceData, sg *oapi.SecurityGroup, rules []oapi.SecurityGroupRule) ([]map[string]interface{}, error) {
-	ips := make([]map[string]interface{}, len(rules))
-
-	for k, rule := range rules {
-		ip := make(map[string]interface{})
-
-		ip["from_port_range"] = rule.FromPortRange
-		ip["to_port_range"] = rule.ToPortRange
-		ip["ip_protocol"] = rule.IpProtocol
-		ip["ip_ranges"] = rule.IpRanges
-		ip["service_ids"] = rule.PrefixListIds
-
-		if len(rule.SecurityGroupsMembers) > 0 {
-			s := rule.SecurityGroupsMembers[0]
-
-			d.Set("account_id", s.AccountId)
-			d.Set("security_group_id", s.SecurityGroupId)
-			d.Set("security_group_name", s.SecurityGroupName)
-		}
-
-		ips[k] = ip
-	}
-
-	return ips, nil
-}
-
 func ipOSCAPIPermissionIDHash(ruleType, sgID string, ips []oscgo.SecurityGroupRule) string {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s-", sgID))
@@ -986,7 +839,7 @@ type oapiSecurityGroupNotFound struct {
 }
 
 func (err oapiSecurityGroupNotFound) Error() string {
-	if err.securityGroups == nil {
+	if len(err.securityGroups) == 0 {
 		return fmt.Sprintf("No security group with ID %q", err.id)
 	}
 	return fmt.Sprintf("Expected to find one security group with ID %q, got: %#v",
