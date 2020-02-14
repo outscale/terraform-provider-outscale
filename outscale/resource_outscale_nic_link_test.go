@@ -2,9 +2,10 @@ package outscale
 
 import (
 	"fmt"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"testing"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
@@ -16,10 +17,7 @@ func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,

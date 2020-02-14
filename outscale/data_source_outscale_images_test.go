@@ -17,7 +17,6 @@ func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers: testAccProviders,

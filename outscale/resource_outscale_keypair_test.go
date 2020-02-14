@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -20,10 +21,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -43,10 +41,7 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -67,10 +62,7 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 	var conf oscgo.Keypair
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -195,10 +187,7 @@ func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:        func() { testAccPreCheck(t) },
 		IDRefreshName:   "outscale_keypair.a_key_pair",
 		IDRefreshIgnore: []string{"keypair_name_prefix"},
 		Providers:       testAccProviders,

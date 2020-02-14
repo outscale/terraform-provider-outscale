@@ -21,7 +21,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
+
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,

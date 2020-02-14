@@ -13,10 +13,7 @@ func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
 	omi := getOMIByRegion(region, "ubuntu").OMI
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

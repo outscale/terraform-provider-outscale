@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -51,14 +50,13 @@ func TestProvider_impl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
 }
 
-func skipIfNoOAPI(t *testing.T) {
-	isOAPI, err := strconv.ParseBool(os.Getenv("OUTSCALE_OAPI"))
-	if err != nil || !isOAPI {
-		t.Skip()
-	}
-}
-
 func testAccPreCheck(t *testing.T) {
+	if os.Getenv("OUTSCALE_ACCESSKEYID") == "" ||
+		os.Getenv("OUTSCALE_REGION") == "" ||
+		os.Getenv("OUTSCALE_SECRETKEYID") == "" ||
+		os.Getenv("OUTSCALE_IMAGEID") == "" {
+		t.Fatal("`OUTSCALE_ACCESSKEYID`, `OUTSCALE_SECRETKEYID`, `OUTSCALE_REGION` and `OUTSCALE_IMAGEID` must be set for acceptance testing")
+	}
 }
 
 func testAccWait(n time.Duration) resource.TestCheckFunc {

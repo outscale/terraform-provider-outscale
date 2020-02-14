@@ -19,10 +19,7 @@ func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISubNetDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{

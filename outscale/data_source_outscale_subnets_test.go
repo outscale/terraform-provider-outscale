@@ -13,10 +13,7 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 	rInt := acctest.RandIntRange(0, 256)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

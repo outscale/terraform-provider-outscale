@@ -3,13 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -51,10 +52,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -101,10 +99,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_route_table.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
@@ -144,7 +139,7 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			//skipIfNoOAPI(t)
+			//
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,

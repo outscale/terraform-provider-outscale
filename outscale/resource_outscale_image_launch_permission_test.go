@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -26,10 +27,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			// Scaffold everything
@@ -74,10 +72,7 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			// Scaffold everything

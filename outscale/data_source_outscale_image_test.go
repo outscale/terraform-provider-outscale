@@ -18,7 +18,6 @@ func TestAccOutscaleOAPIImageDataSource_Instance(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
@@ -40,7 +39,6 @@ func TestAccOutscaleOAPIImageDataSource_basic(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers: testAccProviders,
@@ -96,7 +94,7 @@ func testAccCheckOutscaleOAPIImageDataSourceBasicConfig(omi, vmType, region, ima
 func testAccCheckOutscaleOAPIImageConfigBasic(omi, vmType, region, imageName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id			           = "%[1]s"
+			image_id			     = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name	           = "terraform-basic"
 			placement_subregion_name = "%[3]sa"

@@ -14,10 +14,7 @@ import (
 
 func TestAccOutscaleOAPIInternetService_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleInternetServiceDestroyed,
 		Steps: []resource.TestStep{

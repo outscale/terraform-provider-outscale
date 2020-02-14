@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
 	"log"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
@@ -22,10 +23,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{

@@ -3,13 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -20,10 +21,7 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,

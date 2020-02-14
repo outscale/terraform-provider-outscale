@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -18,10 +19,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 	var conf oscgo.PublicIp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -44,10 +42,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -79,10 +74,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,

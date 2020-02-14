@@ -22,10 +22,7 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,

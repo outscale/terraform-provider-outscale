@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -18,10 +19,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 	var connection oscgo.NetPeering
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_net_peering.foo",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
@@ -55,10 +53,7 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{

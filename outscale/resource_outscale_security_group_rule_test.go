@@ -21,10 +21,7 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
