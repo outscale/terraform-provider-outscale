@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -9,7 +10,7 @@ import (
 
 func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 	//t.Skip()
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

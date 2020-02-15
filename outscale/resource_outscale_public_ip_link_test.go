@@ -18,7 +18,7 @@ import (
 
 func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{

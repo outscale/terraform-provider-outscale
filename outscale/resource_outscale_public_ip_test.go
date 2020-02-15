@@ -37,7 +37,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	var conf oscgo.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	//rInt := acctest.RandInt()
@@ -70,7 +70,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 // // associated Private PublicIPs of two instances
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{

@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccOutscaleOAPIImage_basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var ami oscgo.Image

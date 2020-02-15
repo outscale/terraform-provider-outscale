@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	imageID := ""
@@ -65,7 +65,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var imageID string

@@ -19,7 +19,7 @@ import (
 
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	v := &oscgo.Vm{}
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{

@@ -9,8 +9,7 @@ import (
 )
 
 func TestAccOutscaleOAPIVMSDataSource_basic(t *testing.T) {
-	region := os.Getenv("OUTSCALE_REGION")
-	omi := getOMIByRegion(region, "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

@@ -77,7 +77,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var v oscgo.RouteTable

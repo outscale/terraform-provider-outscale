@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -11,12 +12,14 @@ import (
 func TestAccOutscaleOAPIImageTask_basic(t *testing.T) {
 	t.Skip()
 
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccOutscaleOAPIImageTaskConfig,
+				Config: testAccOutscaleOAPIImageTaskConfig(omi),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImageTaskExists("outscale_image_tasks.outscale_image_tasks"),
 				),
@@ -40,11 +43,12 @@ func testAccCheckOutscaleOAPIImageTaskExists(n string) resource.TestCheckFunc {
 	}
 }
 
-var testAccOutscaleOAPIImageTaskConfig = `
+func testAccOutscaleOAPIImageTaskConfig(omi string) string {
+	return fmt.Sprintf(`
 	resource "outscale_vm" "outscale_vm" {
 		count = 1
 
-		image_id = "ami-880caa66"
+		image_id = "%s"
 		type     = "c4.large"
 	}
 
@@ -63,4 +67,5 @@ var testAccOutscaleOAPIImageTaskConfig = `
 
 		image_id = "${outscale_image.outscale_image.image_id}"
 	}
-`
+`, omi)
+}
