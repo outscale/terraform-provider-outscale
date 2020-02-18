@@ -118,9 +118,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	set("net_id", vm.GetNetId())
 
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
-		log.Printf("[DEBUG] NICS ERR %+v", err)
 		return err
 	}
+
 	set("os_family", vm.GetOsFamily())
 	set("performance", vm.GetPerformance())
 	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
@@ -428,8 +428,9 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"link_nic": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeList,
 						Computed: true,
+						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_vm_deletion": {
