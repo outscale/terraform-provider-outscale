@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -66,11 +68,8 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", errString)
+		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", utils.GetErrorResponse(err))
 	}
 
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
@@ -105,8 +104,8 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error creating lin (%s)", err)
-		return err
+		return fmt.Errorf("[DEBUG] Error creating lin (%s)", utils.GetErrorResponse(err))
+
 	}
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
@@ -137,7 +136,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
+		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
 	}
 
 	if len(resp.GetNets()) == 0 {

@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -60,7 +62,7 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
+		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
 	}
 
 	if len(resp.GetNets()) == 0 {
