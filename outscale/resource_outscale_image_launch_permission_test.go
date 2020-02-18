@@ -20,9 +20,9 @@ import (
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	imageID := ""
-	accountID := "520679080430"
 
 	rInt := acctest.RandInt()
 
