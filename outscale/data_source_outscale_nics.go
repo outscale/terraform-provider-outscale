@@ -3,10 +3,10 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -261,7 +261,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 		d.SetId(resource.UniqueId())
 
 		if err := set("nics", getOAPIVMNetworkInterfaceSet(nics)); err != nil {
-			log.Printf("[DEBUG] NICS ERR %+v", err)
 			return err
 		}
 

@@ -1,26 +1,12 @@
 package outscale
 
 import (
-	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleLinAttr_import(t *testing.T) {
-	t.Skip()
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
 	resourceName := "outscale_lin_attributes.outscale_lin_attributes"
 
 	resource.Test(t, resource.TestCase{

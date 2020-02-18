@@ -10,8 +10,6 @@ import (
 )
 
 func TestAccOutscaleOAPIImageTask_basic(t *testing.T) {
-	t.Skip()
-
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{

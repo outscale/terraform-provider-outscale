@@ -9,7 +9,6 @@ import (
 )
 
 func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
-	//t.Skip()
 	var snapshotID string
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 

@@ -117,8 +117,6 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
-	t.Skip()
-
 	value1 := `
 	tags { 
 		key = "name" 

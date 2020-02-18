@@ -11,7 +11,6 @@ import (
 )
 
 func TestAccOutscaleOAPINetworkInterfaceAttachmentBasic(t *testing.T) {
-	//t.Skip()
 	var conf oscgo.Nic
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
