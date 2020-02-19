@@ -147,7 +147,7 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "_", 2)
 	if len(parts) != 2 {
-		return nil, errors.New("import format error: to import a Link Route Table, use the format {route_table_id}-{link_route_table_id}")
+		return nil, errors.New("import format error: to import a Link Route Table, use the format {route_table_id}_{link_route_table_id}")
 	}
 
 	routeTableID := parts[0]
