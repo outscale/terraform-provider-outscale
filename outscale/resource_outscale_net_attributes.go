@@ -74,7 +74,7 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	d.SetId(resource.UniqueId())
+	d.SetId(resp.Net.GetNetId())
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
 }
@@ -115,7 +115,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters := oscgo.FiltersNet{
-		NetIds: &[]string{d.Get("net_id").(string)},
+		NetIds: &[]string{d.Id()},
 	}
 
 	req := oscgo.ReadNetsRequest{
@@ -141,7 +141,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 
 	if len(resp.GetNets()) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("network is not found")
 	}
 
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
