@@ -25,7 +25,9 @@ func resourceOutscaleOApiVM() *schema.Resource {
 		Read:   resourceOAPIVMRead,
 		Update: resourceOAPIVMUpdate,
 		Delete: resourceOAPIVMDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
