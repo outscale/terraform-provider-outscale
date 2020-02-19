@@ -186,12 +186,16 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "outscale_volume" {
-		subregion_name = "%sa" size = 10 
-	   }
-	   resource "outscale_snapshot" "outscale_snapshot" {
-	   volume_id = "${outscale_volume.outscale_volume.volume_id}" 
-	   tags = {
-		key = "Name" 
-	   value = "%s" }
-		}	`, region, value)
+		subregion_name = "%sa"
+		size           = 10
+	  }
+	  resource "outscale_snapshot" "outscale_snapshot" {
+		volume_id = "${outscale_volume.outscale_volume.volume_id}"
+		
+		tags {
+		  key   = "Name"
+		  value = "%s"
+		}
+	  }	  
+	`, region, value)
 }
