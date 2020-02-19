@@ -119,7 +119,7 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
-	omi := os.Getenv("OUTSCALE_REGION")
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	var before oscgo.Vm
 	var after oscgo.Vm
