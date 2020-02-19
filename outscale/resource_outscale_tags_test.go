@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
+	"github.com/go-test/deep"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
@@ -116,23 +117,20 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 }
 
 func testAccCheckOAPITags(
-	ts []oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
-	log.Printf("[DEBUG] testAccCheckOAPITags %+v", ts)
+	ts *[]oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		m := tagsOSCAPIToMap(ts)
-		v, ok := m[0]["Key"]
-		if value != "" && !ok {
-			return fmt.Errorf("Missing tag: %s", key)
-		} else if value == "" && ok {
-			return fmt.Errorf("Extra tag: %s", key)
+		expected := map[string]string{
+			"key":   key,
+			"value": value,
 		}
-		if value == "" {
+		tags := tagsOSCAPIToMap(*ts)
+		for _, tag := range tags {
+			if diff := deep.Equal(tag, expected); diff != nil {
+				continue
+			}
 			return nil
 		}
-		if v != value {
-			return fmt.Errorf("%s: bad value: %s", key, v)
-		}
-		return nil
+		return fmt.Errorf("error checking tags expected tag %+v is not found in %+v", expected, tags)
 	}
 }
 

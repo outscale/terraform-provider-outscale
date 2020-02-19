@@ -60,7 +60,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
 					testCheck,
 				),
 			},
@@ -68,7 +68,7 @@ func TestAccOutscaleOAPIRouteTable_basic(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfigChange,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &v, nil),
 					testCheckChange,
 				),
 			},
@@ -108,7 +108,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 				Config: testAccOAPIRouteTableConfigInstance(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
-						"outscale_route_table.foo", &v),
+						"outscale_route_table.foo", &v, nil),
 					testCheck,
 				),
 			},
@@ -134,10 +134,10 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 	}`
 
 	var rt oscgo.RouteTable
+	rtTags := make([]oscgo.ResourceTag, 0)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			//
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
@@ -146,15 +146,17 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 			{
 				Config: testAccOAPIRouteTableConfigTags(value1),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt),
-					testAccCheckOAPITags(rt.GetTags(), "name", "Terraform-RT"),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
+
+					testAccCheckOAPITags(&rtTags, "name", "Terraform-nic"),
 				),
 			},
 			{
 				Config: testAccOAPIRouteTableConfigTags(value2),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt),
-					testAccCheckOAPITags(rt.GetTags(), "name", "Terraform-RT"),
+					testAccCheckOAPIRouteTableExists("outscale_route_table.foo", &rt, &rtTags),
+					testAccCheckOAPITags(&rtTags, "name", "Terraform-RT"),
+					testAccCheckOAPITags(&rtTags, "name2", "Terraform-RT2"),
 				),
 			},
 		},
@@ -207,7 +209,7 @@ func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable) resource.TestCheckFunc {
+func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.ResourceTag) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -249,6 +251,11 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable) resource.Te
 		}
 
 		*v = resp.GetRouteTables()[0]
+
+		if t != nil {
+			*t = resp.GetRouteTables()[0].GetTags()
+			log.Printf("[DEBUG] Route Table Tags= %+v", t)
+		}
 
 		log.Printf("[DEBUG] RouteTable in Exist %+v", resp.GetRouteTables())
 
