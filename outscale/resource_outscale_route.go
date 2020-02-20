@@ -11,6 +11,7 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/openlyinc/pointy"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -254,31 +255,31 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          d.Get("gateway_id").(*string),
+			GatewayId:          pointy.String(d.Get("gateway_id").(string)),
 		}
 	case "nat_service_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          d.Get("nat_service_id").(*string),
+			GatewayId:          pointy.String(d.Get("nat_service_id").(string)),
 		}
 	case "vm_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			VmId:               d.Get("vm_id").(*string),
+			VmId:               pointy.String(d.Get("vm_id").(string)),
 		}
 	case "nic_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NicId:              d.Get("nic_id").(*string),
+			NicId:              pointy.String(d.Get("nic_id").(string)),
 		}
 	case "net_peering_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NetPeeringId:       d.Get("net_peering_id").(*string),
+			NetPeeringId:       pointy.String(d.Get("net_peering_id").(string)),
 		}
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", target)
