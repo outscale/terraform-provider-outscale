@@ -12,6 +12,7 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/openlyinc/pointy"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -56,12 +57,10 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nat_access_point": {
 				Type:     schema.TypeString,
@@ -70,7 +69,6 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nic_id": {
 				Type:     schema.TypeString,
@@ -88,7 +86,6 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"route_table_id": {
 				Type:     schema.TypeString,
@@ -289,7 +286,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteApi.UpdateRoute(context.Background(), &oscgo.UpdateRouteOpts{UpdateRouteRequest: optional.NewInterface(replaceOpts)})
+		_, _, err = conn.RouteApi.UpdateRoute(context.Background(), &oscgo.UpdateRouteOpts{UpdateRouteRequest: optional.NewInterface(*replaceOpts)})
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
@@ -303,7 +300,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating route: %s", utils.GetErrorResponse(err))
 	}
 
 	return nil
