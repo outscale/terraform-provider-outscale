@@ -303,11 +303,6 @@ func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOSCAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOSCAPIVMExistsWithProviders(n, i, &providers)
-}
-
 func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
 	return &oscgo.FiltersVm{
 		VmIds: &[]string{vmID},
@@ -337,48 +332,6 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 			for {
 				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})})
-				if err != nil {
-					time.Sleep(10 * time.Second)
-				} else {
-					break
-				}
-
-			}
-
-			if len(resp.GetVms()) > 0 {
-				*i = resp.GetVms()[0]
-				return nil
-			}
-		}
-
-		return fmt.Errorf("Vms not found")
-	}
-}
-
-func testAccCheckOSCAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-		for _, provider := range *providers {
-			// Ignore if Meta is empty, this can happen for validation providers
-			if provider.Meta() == nil {
-				continue
-			}
-
-			client := provider.Meta().(*OutscaleClient)
-
-			var resp oscgo.ReadVmsResponse
-			var err error
-			for {
-				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
-					Filters: getOSCVMsFilterByVMID(rs.Primary.ID),
 				})})
 				if err != nil {
 					time.Sleep(10 * time.Second)

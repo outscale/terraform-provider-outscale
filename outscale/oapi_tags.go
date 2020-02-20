@@ -219,7 +219,7 @@ func oapiTagsDescToList(ts []oscgo.Tag) []map[string]interface{} {
 func oapiTagDescIgnored(t *oscgo.Tag) bool {
 	filter := []string{"^outscale:"}
 	for _, v := range filter {
-		if r, _ := regexp.MatchString(v, t.GetKey()); r == true {
+		if r, _ := regexp.MatchString(v, t.GetKey()); r {
 			return true
 		}
 	}
@@ -296,15 +296,13 @@ func getOapiTagSet(tags *[]oscgo.ResourceTag) []map[string]interface{} {
 func getOscAPITagSet(tags []oscgo.ResourceTag) []map[string]interface{} {
 	res := []map[string]interface{}{}
 
-	if tags != nil {
-		for _, t := range tags {
-			tag := map[string]interface{}{}
+	for _, t := range tags {
+		tag := map[string]interface{}{}
 
-			tag["key"] = t.Key
-			tag["value"] = t.Value
+		tag["key"] = t.Key
+		tag["value"] = t.Value
 
-			res = append(res, tag)
-		}
+		res = append(res, tag)
 	}
 
 	return res

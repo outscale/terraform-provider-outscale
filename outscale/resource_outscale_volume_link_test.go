@@ -15,8 +15,8 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	//var i oscgo.Vm
-	//var v oscgo.Volume
+	var i oscgo.Vm
+	var v oscgo.Volume
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -28,13 +28,12 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
-				Check:  resource.ComposeTestCheckFunc( /*
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckOSCAPIVMExists(
-						"outscale_vm.web", &i),
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.web", &i),
 					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volumes_link.ebs_att", &i, &v),*/
+						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
 		},

@@ -171,16 +171,3 @@ func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
 		}
 	`, region)
 }
-
-func testAccOutscaleOAPIVolumeConfigUpdateTags(region, value string) string {
-	return fmt.Sprintf(`
-	resource "outscale_volume" "outscale_volume" {
-	  volume_type = "gp2"
-	  subregion_name = "%sa"
-	  size = 10
-	  tags {
-		key = "name" 
-		value = "%s"
-	  }
-	}`, region, value)
-}

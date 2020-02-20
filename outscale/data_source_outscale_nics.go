@@ -226,7 +226,7 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
-	if filtersOk == false {
+	if !filtersOk {
 		return fmt.Errorf("filters, or owner must be assigned, or nic_id must be provided")
 	}
 

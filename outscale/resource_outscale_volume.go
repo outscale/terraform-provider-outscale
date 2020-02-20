@@ -183,9 +183,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadVolumesResponse
-	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		r, _, err := conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

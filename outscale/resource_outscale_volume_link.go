@@ -136,9 +136,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		log.Printf("[DEBUG] Attaching Volume (%s) to Instance (%s)", vID, iID)
 
-		var err error
-
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
 			_, _, err = conn.VolumeApi.LinkVolume(context.Background(), &oscgo.LinkVolumeOpts{LinkVolumeRequest: optional.NewInterface(opts)})
 			if err != nil {
@@ -192,10 +190,6 @@ func isElegibleToLink(volumes []oscgo.Volume, instanceID string) bool {
 	}
 
 	return elegible
-}
-
-func isElegibleToUnLink(volumes []oscgo.Volume, instanceID string) bool {
-	return !isElegibleToLink(volumes, instanceID)
 }
 
 func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, instanceID string) resource.StateRefreshFunc {

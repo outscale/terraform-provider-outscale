@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -72,7 +73,7 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 	filters, filtersOk := d.GetOk("filter")
 	netIds, netIdsOk := d.GetOk("net_id")
 
-	if filtersOk == false && netIdsOk == false {
+	if !filtersOk && !netIdsOk {
 		return fmt.Errorf("filters or net_id(s) must be provided")
 	}
 

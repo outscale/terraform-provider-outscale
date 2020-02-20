@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -28,7 +27,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 
-	if filtersOk == false && instanceIDOk == false {
+	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -220,18 +219,6 @@ func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 		}
 	}
 	return filters
-}
-
-func sliceAtoi(sa []string) ([]int64, error) {
-	si := make([]int64, 0, len(sa))
-	for _, a := range sa {
-		i, err := strconv.Atoi(a)
-		if err != nil {
-			return si, err
-		}
-		si = append(si, int64(i))
-	}
-	return si, nil
 }
 
 func getOApiVMAttributesSchema() map[string]*schema.Schema {

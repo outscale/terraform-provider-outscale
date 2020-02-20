@@ -3,9 +3,7 @@ package outscale
 import (
 	"os"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -41,12 +39,5 @@ func testAccPreCheck(t *testing.T) {
 		os.Getenv("OUTSCALE_IMAGEID") == "" ||
 		os.Getenv("OUTSCALE_ACCOUNT") == "" {
 		t.Fatal("`OUTSCALE_ACCESSKEYID`, `OUTSCALE_SECRETKEYID`, `OUTSCALE_REGION`, `OUTSCALE_ACCOUNT` and `OUTSCALE_IMAGEID` must be set for acceptance testing")
-	}
-}
-
-func testAccWait(n time.Duration) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		time.Sleep(n)
-		return nil
 	}
 }

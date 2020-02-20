@@ -632,13 +632,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Get("vm_id").(string)
 
-	var stateConf *resource.StateChangeConf
-	var err error
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
 		d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		stateConf, err = stopVM(id, conn)
-		if err != nil {
+		if err := stopVM(id, conn); err != nil {
 			return err
 		}
 	}
@@ -761,7 +758,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
-	if err := startVM(id, stateConf, conn); err != nil {
+	if err := startVM(id, conn); err != nil {
 		return err
 	}
 
@@ -1028,7 +1025,7 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 	}
 }
 
-func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, error) {
+func stopVM(vmID string, conn *oscgo.APIClient) error {
 	_, _, err := conn.VmApi.StopVms(context.Background(), &oscgo.StopVmsOpts{
 		StopVmsRequest: optional.NewInterface(oscgo.StopVmsRequest{
 			VmIds: []string{vmID},
@@ -1036,7 +1033,7 @@ func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, erro
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error stopping vms %s", err)
+		return fmt.Errorf("error stopping vms %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -1050,14 +1047,13 @@ func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, erro
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Error waiting for instance (%s) to stop: %s", vmID, err)
+		return fmt.Errorf("Error waiting for instance (%s) to stop: %s", vmID, err)
 	}
 
-	return stateConf, nil
+	return nil
 }
 
-func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APIClient) error {
+func startVM(vmID string, conn *oscgo.APIClient) error {
 	_, _, err := conn.VmApi.StartVms(context.Background(), &oscgo.StartVmsOpts{
 		StartVmsRequest: optional.NewInterface(oscgo.StartVmsRequest{
 			VmIds: []string{vmID},
@@ -1068,7 +1064,7 @@ func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APICl
 		return fmt.Errorf("error starting vm %s", err)
 	}
 
-	stateConf = &resource.StateChangeConf{
+	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
 		Target:     []string{"running"},
 		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
@@ -1091,12 +1087,6 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 		return err
 	}
 	return nil
-}
-
-func getOSCVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
-	return &oscgo.FiltersVm{
-		VmIds: &[]string{vmID},
-	}
 }
 
 // AttributeSetter you can use this function to set the attributes

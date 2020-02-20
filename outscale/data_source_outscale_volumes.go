@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/spf13/cast"
 
@@ -164,7 +165,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
 			"iops":           v.Iops,
-			"linked_volumes": v.LinkedVolumes,
+			"linked_volumes": getOAPILinkedVolumes(v.GetLinkedVolumes()),
 			"size":           v.Size,
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,

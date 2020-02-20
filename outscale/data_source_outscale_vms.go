@@ -69,7 +69,7 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 	filters, filtersOk := d.GetOk("filter")
 	vmID, vmIDOk := d.GetOk("vm_id")
 
-	if filtersOk == false && vmIDOk == false {
+	if !filtersOk && !vmIDOk {
 		return fmt.Errorf("One of filters, and vm ID must be assigned")
 	}
 
@@ -145,26 +145,4 @@ func dataSourceOAPIVMS(i []oscgo.Vm) []map[string]interface{} {
 		vms[index] = vm
 	}
 	return vms
-}
-
-func dataSourceFiltersOApiSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeSet,
-		Optional: true,
-		ForceNew: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:     schema.TypeString,
-					Required: true,
-				},
-
-				"values": {
-					Type:     schema.TypeList,
-					Required: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
-				},
-			},
-		},
-	}
 }

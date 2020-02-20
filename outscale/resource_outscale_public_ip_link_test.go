@@ -174,16 +174,6 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 				return err
 			}
 
-			if err != nil {
-
-				// Verify the error is what we want
-				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
-					return nil
-				}
-
-				return err
-			}
-
 			if len(response.GetPublicIps()) != 1 ||
 				response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
