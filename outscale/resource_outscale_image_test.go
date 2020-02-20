@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	"github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"testing"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -14,17 +15,14 @@ import (
 )
 
 func TestAccOutscaleOAPIImage_basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var ami oscgo.Image
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIImageDestroy,
 		Steps: []resource.TestStep{

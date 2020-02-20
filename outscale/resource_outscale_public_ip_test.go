@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -18,10 +19,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 	var conf oscgo.PublicIp
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -39,15 +37,12 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 
 func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	var conf oscgo.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -75,14 +70,11 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 // // associated Private PublicIPs of two instances
 func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
@@ -239,16 +231,6 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 		})
 
 		if err != nil {
-			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
-				return nil
-			}
-
-			return err
-		}
-
-		if err != nil {
-
-			// Verify the error is what we want
 			if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {
 				return nil
 			}

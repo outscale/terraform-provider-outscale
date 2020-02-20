@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -93,7 +94,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	snapshotIds, snapshotIdsOk := d.GetOk("snapshot_id")
 	owners, ownersOk := d.GetOk("account_id")
 
-	if restorableUsers == false && filtersOk == false && snapshotIds == false && ownersOk == false {
+	if restorableUsers == false && !filtersOk && snapshotIds == false && !ownersOk {
 		return fmt.Errorf("One of snapshot_ids, filters, restorable_by_user_ids, or owners must be assigned")
 	}
 

@@ -25,14 +25,12 @@ const OAPI_INBOUND_RULE = "Inbound"
 const OAPI_OUTBOUND_RULE = "Outbound"
 
 func sgProtocolIntegers() map[string]int {
-	var protocolIntegers = make(map[string]int)
-	protocolIntegers = map[string]int{
+	return map[string]int{
 		"udp":  17,
 		"tcp":  6,
 		"icmp": 1,
 		"all":  -1,
 	}
-	return protocolIntegers
 }
 
 func protocolForValue(v string) string {

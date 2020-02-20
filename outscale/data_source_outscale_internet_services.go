@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -60,7 +61,7 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	filters, filtersOk := d.GetOk("filter")
 	internetID, internetIDOk := d.GetOk("internet_service_ids")
 
-	if filtersOk == false && internetIDOk == false {
+	if !filtersOk && !internetIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -72,9 +73,7 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	if internetIDOk {
 		i := internetID.([]string)
 		in := make([]string, len(i))
-		for k, v := range i {
-			in[k] = v
-		}
+		copy(in, i)
 		filter.SetInternetServiceIds(in)
 		params.SetFilters(filter)
 	}
@@ -107,7 +106,10 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+
 	d.SetId(resource.UniqueId())
 
 	result := resp.GetInternetServices()

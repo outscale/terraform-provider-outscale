@@ -20,14 +20,11 @@ import (
 
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -48,14 +45,11 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -76,14 +70,11 @@ func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -104,13 +95,10 @@ func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -131,17 +119,13 @@ func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
-	omi := getOMIByRegion(region, "centos").OMI
-	omi2 := getOMIByRegion(region, "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	var before oscgo.Vm
 	var after oscgo.Vm
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -155,10 +139,11 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi2, "c4.large", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
+					resource.TestCheckResourceAttr("outscale_vm.basic", "vm_type", "t2.micro"),
 				),
 			},
 		},
@@ -167,14 +152,11 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -195,15 +177,12 @@ func TestAccOutscaleOAPIVM_WithSubnet(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	vmType := "t2.micro"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -223,13 +202,10 @@ func TestAccOutscaleOAPIVM_WithBlockDeviceMappings(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -250,18 +226,12 @@ func TestAccOutscaleOAPIVM_DeletionProtectionUpdate(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
-	//omi2 := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	//var before oscgo.Vm
-	//var after oscgo.Vm
-
+	//TODO: check tags
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -279,15 +249,12 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 
 func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
 	var server oscgo.Vm
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	vmType := "t2.micro"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -336,11 +303,6 @@ func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	return testAccCheckOAPIVMExistsWithProviders(n, i, &providers)
 }
 
-func testAccCheckOSCAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
-	providers := []*schema.Provider{testAccProvider}
-	return testAccCheckOSCAPIVMExistsWithProviders(n, i, &providers)
-}
-
 func getVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
 	return &oscgo.FiltersVm{
 		VmIds: &[]string{vmID},
@@ -370,48 +332,6 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 			for {
 				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})})
-				if err != nil {
-					time.Sleep(10 * time.Second)
-				} else {
-					break
-				}
-
-			}
-
-			if len(resp.GetVms()) > 0 {
-				*i = resp.GetVms()[0]
-				return nil
-			}
-		}
-
-		return fmt.Errorf("Vms not found")
-	}
-}
-
-func testAccCheckOSCAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*schema.Provider) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
-		}
-		for _, provider := range *providers {
-			// Ignore if Meta is empty, this can happen for validation providers
-			if provider.Meta() == nil {
-				continue
-			}
-
-			client := provider.Meta().(*OutscaleClient)
-
-			var resp oscgo.ReadVmsResponse
-			var err error
-			for {
-				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
-					Filters: getOSCVMsFilterByVMID(rs.Primary.ID),
 				})})
 				if err != nil {
 					time.Sleep(10 * time.Second)

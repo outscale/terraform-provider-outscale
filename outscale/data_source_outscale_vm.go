@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -28,7 +27,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 
-	if filtersOk == false && instanceIDOk == false {
+	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -118,9 +117,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	set("net_id", vm.GetNetId())
 
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
-		log.Printf("[DEBUG] NICS ERR %+v", err)
 		return err
 	}
+
 	set("os_family", vm.GetOsFamily())
 	set("performance", vm.GetPerformance())
 	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
@@ -220,18 +219,6 @@ func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 		}
 	}
 	return filters
-}
-
-func sliceAtoi(sa []string) ([]int64, error) {
-	si := make([]int64, 0, len(sa))
-	for _, a := range sa {
-		i, err := strconv.Atoi(a)
-		if err != nil {
-			return si, err
-		}
-		si = append(si, int64(i))
-	}
-	return si, nil
 }
 
 func getOApiVMAttributesSchema() map[string]*schema.Schema {
@@ -428,8 +415,9 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"link_nic": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeList,
 						Computed: true,
+						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_vm_deletion": {

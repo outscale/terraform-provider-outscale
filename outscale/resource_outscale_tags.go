@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -144,7 +145,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 
 	resourceIds, resourceIdsOk := d.GetOk("resource_ids")
 
-	if tagsOk == false && resourceIdsOk == false {
+	if !tagsOk && !resourceIdsOk {
 		return fmt.Errorf("One tag and resource id, must be assigned")
 	}
 

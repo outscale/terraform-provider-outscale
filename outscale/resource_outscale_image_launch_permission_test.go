@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -17,19 +18,16 @@ import (
 )
 
 func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	imageID := ""
-	accountID := "520679080430"
 
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			// Scaffold everything
@@ -67,17 +65,14 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	var imageID string
 	rInt := acctest.RandInt()
 
 	r.Test(t, r.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []r.TestStep{
 			// Scaffold everything

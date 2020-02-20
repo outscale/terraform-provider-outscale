@@ -11,13 +11,12 @@ import (
 )
 
 func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	imageName := fmt.Sprintf("image-test-%d", acctest.RandInt())
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers: testAccProviders,

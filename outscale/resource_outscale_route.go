@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -315,10 +316,8 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		deleteOpts.SetDestinationIpRange(v.(string))
 	}
-	log.Printf("[DEBUG] Route delete opts: %+v", deleteOpts)
 
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
 		resp, _, err := conn.RouteApi.DeleteRoute(context.Background(), &oscgo.DeleteRouteOpts{DeleteRouteRequest: optional.NewInterface(deleteOpts)})
 		log.Printf("[DEBUG] Route delete result: %+v", resp)

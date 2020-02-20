@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/antihax/optional"
@@ -22,10 +21,7 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 	subregion := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_nic.outscale_nic",
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
@@ -44,20 +40,9 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 	var conf oscgo.Nic
 
-	o := os.Getenv("OUTSCALE_OAPI")
-
 	subregion := os.Getenv("OUTSCALE_REGION")
 	if subregion == "" {
 		subregion = "in-west-2"
-	}
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
 	}
 
 	resource.Test(t, resource.TestCase{

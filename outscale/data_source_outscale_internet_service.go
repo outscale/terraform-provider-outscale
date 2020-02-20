@@ -46,7 +46,7 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	filters, filtersOk := d.GetOk("filter")
 	internetID, insternetIDOk := d.GetOk("internet_service_id")
 
-	if filtersOk == false && insternetIDOk == false {
+	if !filtersOk && !insternetIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -65,8 +65,8 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(params)})
 
 		if err != nil {
@@ -97,10 +97,21 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 
 	log.Printf("[DEBUG] Setting OAPI Internet Service id (%s)", err)
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("internet_service_id", result.GetInternetServiceId())
-	d.Set("state", result.GetState())
-	d.Set("net_id", result.GetNetId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("internet_service_id", result.GetInternetServiceId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("state", result.GetState()); err != nil {
+		return err
+	}
+
+	if err := d.Set("net_id", result.GetNetId()); err != nil {
+		return err
+	}
 
 	d.SetId(result.GetInternetServiceId())
 

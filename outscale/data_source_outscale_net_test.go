@@ -16,10 +16,7 @@ func TestAccDataSourceOutscaleOAPIVpc_basic(t *testing.T) {
 	ipRange := fmt.Sprintf("172.%d.0.0/16", rInt)
 	tag := fmt.Sprintf("terraform-testacc-vpc-data-source-%d", rInt)
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{

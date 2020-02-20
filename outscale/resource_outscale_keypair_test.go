@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -20,10 +21,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -43,10 +41,7 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 
 	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -67,10 +62,7 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 	var conf oscgo.Keypair
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
@@ -190,34 +182,7 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPairNamePrefix(t *testing.T) {
-	var conf oscgo.Keypair
-
-	rInt := acctest.RandInt()
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
-		IDRefreshName:   "outscale_keypair.a_key_pair",
-		IDRefreshIgnore: []string{"keypair_name_prefix"},
-		Providers:       testAccProviders,
-		CheckDestroy:    testAccCheckOutscaleOAPIKeyPairDestroy,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
-					testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
-						"outscale_keypair.a_key_pair", "baz-"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(
-	resource, prefix string) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(resource, prefix string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		r, ok := s.RootModule().Resources[resource]
 		if !ok {
@@ -256,12 +221,3 @@ const testAccOutscaleOAPIKeyPairConfigGeneratedName = `
 		public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
 	}
 `
-
-func testAccCheckOutscaleOAPIKeyPairPrefixNameConfig(r int) string {
-	return fmt.Sprintf(`
-		resource "outscale_keypair" "a_key_pair" {
-			keypair_name_prefix   = "baz-%d"
-			public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD3F6tyPEFEzV0LX3X8BsXdMsQz1x2cEikKDEY0aIj41qgxMCP/iteneqXSIFZBp5vizPvaoIR3Um9xK7PGoW8giupGn+EPuxIA4cDM4vzOqOkiMPhz5XK0whEjkVzTo4+S0puvDZuwIsdiW9mxhJc7tgBNL0cYlWSYVkz4G/fslNfRPW5mYAM49f4fhtxPb5ok4Q2Lg9dPKVHO/Bgeu5woMc7RY0p1ej6D4CKFE6lymSDJpW0YHX/wqE9+cfEauh7xZcG0q9t2ta6F6fmX0agvpFyZo8aFbXeUBr7osSCJNgvavWbM/06niWrOvYX2xwWdhXmXSrbX8ZbabVohBK41 phodgson@thoughtworks.com"
-		}
-	`, r)
-}

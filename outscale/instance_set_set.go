@@ -110,69 +110,65 @@ func getOAPIPrivateIPs(privateIPs []oscgo.PrivateIp) (res []map[string]interface
 }
 
 func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]interface{}) {
-	if nics != nil {
-		for _, nic := range nics {
-			securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
+	for _, nic := range nics {
+		securityGroups, securityGroupIds := getOAPISecurityGroups(nic.GetSecurityGroups())
 
-			nicMap := map[string]interface{}{
-				"delete_on_vm_deletion":  nic.LinkNic.GetDeleteOnVmDeletion(), // Workaround.
-				"device_number":          nic.LinkNic.GetDeviceNumber(),
-				"account_id":             nic.GetAccountId(),
-				"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-				"mac_address":            nic.GetMacAddress(),
-				"net_id":                 nic.GetNetId(),
-				"nic_id":                 nic.GetNicId(),
-				"private_dns_name":       nic.GetPrivateDnsName(),
-				"security_groups":        securityGroups,
-				"security_group_ids":     securityGroupIds,
-				"state":                  nic.GetState(),
-				"subnet_id":              nic.GetSubnetId(),
-			}
-
-			if nic.HasDescription() {
-				nicMap["description"] = nic.GetDescription()
-			}
-
-			if nic.HasLinkPublicIp() {
-				nicMap["link_public_ip"] = getOAPILinkPublicIPLight(nic.GetLinkPublicIp())
-			}
-
-			if nic.HasPrivateIps() {
-				nicMap["private_ips"] = getOAPIPrivateIPsLight(nic.GetPrivateIps())
-			}
-
-			if nic.HasLinkNic() {
-				nicMap["link_nic"] = getOAPILinkNicLight(nic.GetLinkNic())
-			}
-
-			res = append(res, nicMap)
+		nicMap := map[string]interface{}{
+			"delete_on_vm_deletion":  nic.LinkNic.GetDeleteOnVmDeletion(), // Workaround.
+			"device_number":          nic.LinkNic.GetDeviceNumber(),
+			"account_id":             nic.GetAccountId(),
+			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
+			"mac_address":            nic.GetMacAddress(),
+			"net_id":                 nic.GetNetId(),
+			"nic_id":                 nic.GetNicId(),
+			"private_dns_name":       nic.GetPrivateDnsName(),
+			"security_groups":        securityGroups,
+			"security_group_ids":     securityGroupIds,
+			"state":                  nic.GetState(),
+			"subnet_id":              nic.GetSubnetId(),
 		}
+
+		if nic.HasDescription() {
+			nicMap["description"] = nic.GetDescription()
+		}
+
+		if nic.HasLinkPublicIp() {
+			nicMap["link_public_ip"] = getOAPILinkPublicIPLight(nic.GetLinkPublicIp())
+		}
+
+		if nic.HasPrivateIps() {
+			nicMap["private_ips"] = getOAPIPrivateIPsLight(nic.GetPrivateIps())
+		}
+
+		if nic.HasLinkNic() {
+			nicMap["link_nic"] = getOAPILinkNicLight(nic.GetLinkNic())
+		}
+
+		res = append(res, nicMap)
 	}
 	return
 }
 
 func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{}) {
-	if nics != nil {
-		for _, nic := range nics {
-			//securityGroups, _ := getOAPISecurityGroups(nic.SecurityGroups)
-			res = append(res, map[string]interface{}{
-				"account_id":             nic.GetAccountId(),
-				"description":            nic.GetDescription(),
-				"is_source_dest_checked": nic.GetIsSourceDestChecked(),
-				"link_nic":               getOAPILinkNic(nic.GetLinkNic()),
-				"link_public_ip":         getOAPILinkPublicIP(nic.GetLinkPublicIp()),
-				"mac_address":            nic.GetMacAddress(),
-				"net_id":                 nic.GetNetId(),
-				"nic_id":                 nic.GetNicId(),
-				"private_dns_name":       nic.GetPrivateDnsName(),
-				"private_ips":            getOAPIPrivateIPs(nic.GetPrivateIps()),
-				//"security_groups":        securityGroups,
-				"state":          nic.GetState(),
-				"subnet_id":      nic.GetSubnetId(),
-				"subregion_name": nic.GetSubregionName(),
-				// "tags":           getOapiTagSet(nic.Tags),
-			})
-		}
+	for _, nic := range nics {
+		//securityGroups, _ := getOAPISecurityGroups(nic.SecurityGroups)
+		res = append(res, map[string]interface{}{
+			"account_id":             nic.GetAccountId(),
+			"description":            nic.GetDescription(),
+			"is_source_dest_checked": nic.GetIsSourceDestChecked(),
+			"link_nic":               getOAPILinkNic(nic.GetLinkNic()),
+			"link_public_ip":         getOAPILinkPublicIP(nic.GetLinkPublicIp()),
+			"mac_address":            nic.GetMacAddress(),
+			"net_id":                 nic.GetNetId(),
+			"nic_id":                 nic.GetNicId(),
+			"private_dns_name":       nic.GetPrivateDnsName(),
+			"private_ips":            getOAPIPrivateIPs(nic.GetPrivateIps()),
+			//"security_groups":        securityGroups,
+			"state":          nic.GetState(),
+			"subnet_id":      nic.GetSubnetId(),
+			"subregion_name": nic.GetSubregionName(),
+			// "tags":           getOapiTagSet(nic.Tags),
+		})
 	}
 	return
 }

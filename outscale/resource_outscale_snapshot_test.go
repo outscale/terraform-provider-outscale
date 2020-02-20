@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -19,10 +20,7 @@ func TestAccOutscaleOAPISnapshot_basic(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -40,10 +38,7 @@ func TestAccOutscaleOAPISnapshot_withDescription(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -62,10 +57,7 @@ func TestAccOutscaleOAPISnapshot_CopySnapshot(t *testing.T) {
 
 	var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -84,10 +76,7 @@ func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 
 	//var v oscgo.Snapshot
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -197,12 +186,16 @@ func testAccOutscaleOAPISnapshotConfigCopySnapshot(region string) string {
 func testAccOutscaleOAPISnapshotConfigUpdateTags(region, value string) string {
 	return fmt.Sprintf(`
 	resource "outscale_volume" "outscale_volume" {
-		subregion_name = "%sa" size = 10 
-	   }
-	   resource "outscale_snapshot" "outscale_snapshot" {
-	   volume_id = "${outscale_volume.outscale_volume.volume_id}" 
-	   tags = {
-		key = "Name" 
-	   value = "%s" }
-		}	`, region, value)
+		subregion_name = "%sa"
+		size           = 10
+	  }
+	  resource "outscale_snapshot" "outscale_snapshot" {
+		volume_id = "${outscale_volume.outscale_volume.volume_id}"
+		
+		tags {
+		  key   = "Name"
+		  value = "%s"
+		}
+	  }	  
+	`, region, value)
 }

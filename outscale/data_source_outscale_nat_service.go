@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -67,7 +68,7 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_id")
 
-	if filtersOk == false && natGatewayIDOK == false {
+	if !filtersOk && !natGatewayIDOK {
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 

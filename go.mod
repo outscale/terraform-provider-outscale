@@ -6,6 +6,7 @@ require (
 	github.com/antihax/optional v1.0.0
 	github.com/aws/aws-sdk-go v1.26.5
 	github.com/davecgh/go-spew v1.1.1
+	github.com/go-test/deep v1.0.3
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.12.20 // indirect

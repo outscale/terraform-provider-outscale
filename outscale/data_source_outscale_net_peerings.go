@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -99,16 +100,14 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 }
 
 func getOAPINetPeerings(peerings []oscgo.NetPeering) (res []map[string]interface{}) {
-	if peerings != nil {
-		for _, p := range peerings {
-			res = append(res, map[string]interface{}{
-				"accepter_net":   getOAPINetPeeringAccepterNet(p.GetAccepterNet()),
-				"net_peering_id": p.GetNetPeeringId(),
-				"source_net":     getOAPINetPeeringSourceNet(p.GetSourceNet()),
-				"state":          getOAPINetPeeringState(p.GetState()),
-				//"tags":           getOapiTagSet(p.Tags),
-			})
-		}
+	for _, p := range peerings {
+		res = append(res, map[string]interface{}{
+			"accepter_net":   getOAPINetPeeringAccepterNet(p.GetAccepterNet()),
+			"net_peering_id": p.GetNetPeeringId(),
+			"source_net":     getOAPINetPeeringSourceNet(p.GetSourceNet()),
+			"state":          getOAPINetPeeringState(p.GetState()),
+			//"tags":           getOapiTagSet(p.Tags),
+		})
 	}
 	return res
 }

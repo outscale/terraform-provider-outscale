@@ -80,8 +80,8 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	}
 
 	var resp oscgo.ReadInternetServicesResponse
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(req)})
 
 		if err != nil {
