@@ -297,25 +297,9 @@ resource "outscale_subnet" "subnet019" {
 resource "outscale_public_ip" "public_ip019" {
 }
 
-resource "outscale_nat_service" "nat_service019" {
-  depends_on   = [outscale_route.route019]
-  subnet_id    = outscale_subnet.subnet019.subnet_id
-  public_ip_id = outscale_public_ip.public_ip019.public_ip_id
-  tags {
-    key = "Natservice"
-    value = "019"
-    }
-  
-}
 
 resource "outscale_route_table" "route_table019" {
   net_id = outscale_net.net019.net_id
-}
-
-resource "outscale_route" "route019" {
-  destination_ip_range = "0.0.0.0/0"
-  gateway_id           = outscale_internet_service.internet_service019.internet_service_id
-  route_table_id       = outscale_route_table.route_table019.route_table_id
 }
 
 resource "outscale_route_table_link" "route_table_link019" {
@@ -329,6 +313,22 @@ resource "outscale_internet_service" "internet_service019" {
 resource "outscale_internet_service_link" "internet_service_link019" {
   net_id              = outscale_net.net019.net_id
   internet_service_id = outscale_internet_service.internet_service019.id
+}
+
+resource "outscale_route" "route019" {
+  destination_ip_range = "0.0.0.0/0"
+  gateway_id           = outscale_internet_service.internet_service019.internet_service_id
+  route_table_id       = outscale_route_table.route_table019.route_table_id
+}
+
+resource "outscale_nat_service" "nat_service019" {
+  depends_on   = [outscale_route.route019]
+  subnet_id    = outscale_subnet.subnet019.subnet_id
+  public_ip_id = outscale_public_ip.public_ip019.public_ip_id
+  tags {
+    key = "Natservice"
+    value = "019"
+    }
 }
 
 data "outscale_nat_service" "nat_service019" {
