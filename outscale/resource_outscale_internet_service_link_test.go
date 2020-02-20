@@ -34,6 +34,38 @@ func TestAccOutscaleOAPIInternetServiceLink_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIInternetServiceLink_importBasic(t *testing.T) {
+	resourceName := "outscale_internet_service_link.outscale_internet_service_link"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOSCAPIInternetServiceLinkDestroyed,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleInternetServiceLinkConfig(),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleInternetServiceLinkImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
+}
+
 func testAccCheckOutscaleOSCAPIInternetServiceLinkExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
