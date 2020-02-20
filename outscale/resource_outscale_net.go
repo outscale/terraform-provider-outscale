@@ -10,8 +10,8 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceOutscaleOAPINet() *schema.Resource {
@@ -155,20 +155,27 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 		NetId: id,
 	}
 
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pending"},
+		Target:  []string{"deleted", "failed"},
+		Refresh: func() (interface{}, string, error) {
+			_, _, err := conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return nil, "pending", nil
+				}
+				return nil, "failed", err
 			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
-	})
+			return "", "deleted", nil
+		},
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	_, err := stateConf.WaitForState()
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting Net Service(%s): %s", d.Id(), err)
 	}
 
 	d.SetId("")
