@@ -47,6 +47,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"destination_ip_range": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"destination_service_id": {
 				Type:     schema.TypeString,
