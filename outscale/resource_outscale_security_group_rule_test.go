@@ -161,53 +161,6 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup
 	}
 }
 
-func testAccCheckOutscaleOSCAPIRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("Not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("No Security Group is set")
-		}
-
-		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
-		req := oscgo.ReadSecurityGroupsRequest{
-			Filters: &oscgo.FiltersSecurityGroup{
-				SecurityGroupIds: &[]string{rs.Primary.ID},
-			},
-		}
-
-		var resp oscgo.ReadSecurityGroupsResponse
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("\n\n[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		if err != nil {
-			return err
-		}
-
-		if len(resp.GetSecurityGroups()) > 0 && resp.GetSecurityGroups()[0].GetSecurityGroupId() == rs.Primary.ID {
-			*group = resp.GetSecurityGroups()[0]
-			return nil
-		}
-
-		return fmt.Errorf("Security Group not found")
-	}
-}
-
 func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

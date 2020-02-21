@@ -360,7 +360,9 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 		return err
 	}
 
-	d.Set("inbound_rules", ips)
+	if err := d.Set("inbound_rules", ips); err != nil {
+		return err
+	}
 
 	ips, err = setOSCAPIFromIPPerm(d, sg, findOSCAPIRuleMatch(configRules, sg.GetOutboundRules()))
 
@@ -368,13 +370,17 @@ information and instructions for recovery. Error message: %s`, sgID, "InvalidPer
 		return err
 	}
 
-	d.Set("outbound_rules", ips)
-	d.Set("security_group_name", sg.SecurityGroupName)
-	d.Set("net_id", sg.NetId)
+	if err := d.Set("outbound_rules", ips); err != nil {
+		return err
+	}
+	if err := d.Set("security_group_name", sg.SecurityGroupName); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", sg.NetId); err != nil {
+		return err
+	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-
-	return nil
+	return d.Set("request_id", resp.ResponseContext.GetRequestId())
 }
 
 func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface{}) error {
@@ -464,7 +470,9 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	d.Set("inbound_rules", ips)
+	if err := d.Set("inbound_rules", ips); err != nil {
+		return err
+	}
 
 	ips, err = setOSCAPIFromIPPerm(d, sg, findOSCAPIRuleMatch(configRules, sg.GetOutboundRules()))
 
@@ -472,12 +480,20 @@ func resourceOutscaleOAPIOutboundRuleRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	d.Set("outbound_rules", ips)
+	if err := d.Set("outbound_rules", ips); err != nil {
+		return err
+	}
 
-	d.Set("security_group_name", sg.GetSecurityGroupName())
-	d.Set("net_id", sg.GetNetId())
+	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", sg.GetNetId()); err != nil {
+		return err
+	}
 
-	d.Set("request_id", requestID)
+	if err := d.Set("request_id", requestID); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -820,9 +836,15 @@ func setOSCAPIFromIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, rules 
 		if len(rule.GetSecurityGroupsMembers()) > 0 {
 			s := rule.GetSecurityGroupsMembers()[0]
 
-			d.Set("account_id", s.GetAccountId())
-			d.Set("security_group_id", s.GetSecurityGroupId())
-			d.Set("security_group_name", s.GetSecurityGroupName())
+			if err := d.Set("account_id", s.GetAccountId()); err != nil {
+				return nil, err
+			}
+			if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
+				return nil, err
+			}
+			if err := d.Set("security_group_name", s.GetSecurityGroupName()); err != nil {
+				return nil, err
+			}
 		}
 
 		ips[k] = ip
@@ -858,22 +880,4 @@ func (b ByGroupsMember) Less(i, j int) bool {
 	}
 
 	panic("mismatched security group rules, may be a terraform bug")
-}
-
-func validateAwsSecurityGroupRule(ippems []interface{}) error {
-
-	for _, value := range ippems {
-		v := value.(map[string]interface{})
-
-		_, blocksOk := v["ip_ranges"]
-		_, sourceOk := v["source_security_group_owner_id"]
-		_, selfOk := v["self"]
-		_, prefixOk := v["prefix_list_ids"]
-		if !blocksOk && !sourceOk && !selfOk && !prefixOk {
-			return fmt.Errorf(
-				"One of ['cidr_blocks', 'self', 'source_security_group_id', 'prefix_list_ids'] must be set to create an AWS Security Group Rule")
-		}
-	}
-
-	return nil
 }
