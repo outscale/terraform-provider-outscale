@@ -146,21 +146,40 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 
 	snapshot := resp.GetSnapshots()[0]
 
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+
 	//Single Snapshot found so set to state
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
 
 func snapshotOAPIDescriptionAttributes(d *schema.ResourceData, snapshot *oscgo.Snapshot) error {
 	d.SetId(snapshot.GetSnapshotId())
-	d.Set("description", snapshot.GetDescription())
-	d.Set("account_alias", snapshot.GetAccountAlias())
-	d.Set("account_id", snapshot.GetAccountId())
-	d.Set("progress", snapshot.GetProgress())
-	d.Set("snapshot_id", snapshot.GetSnapshotId())
-	d.Set("state", snapshot.GetState())
-	d.Set("volume_id", snapshot.GetVolumeId())
-	d.Set("volume_size", snapshot.GetVolumeSize())
+	if err := d.Set("description", snapshot.GetDescription()); err != nil {
+		return err
+	}
+	if err := d.Set("account_alias", snapshot.GetAccountAlias()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", snapshot.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("progress", snapshot.GetProgress()); err != nil {
+		return err
+	}
+	if err := d.Set("snapshot_id", snapshot.GetSnapshotId()); err != nil {
+		return err
+	}
+	if err := d.Set("state", snapshot.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("volume_id", snapshot.GetVolumeId()); err != nil {
+		return err
+	}
+	if err := d.Set("volume_size", snapshot.GetVolumeSize()); err != nil {
+		return err
+	}
 
 	lp := make([]map[string]interface{}, 1)
 	lp[0] = make(map[string]interface{})
