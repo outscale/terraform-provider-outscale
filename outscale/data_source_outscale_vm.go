@@ -88,12 +88,15 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	vm = filteredVms[0]
 
-	d.Set("request_id", resp.GetResponseContext().RequestId)
-
+	if err := d.Set("request_id", resp.GetResponseContext().RequestId); err != nil {
+		return err
+	}
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
-		set("tags", getOscAPITagSet(vm.GetTags()))
+		if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
+			return err
+		}
 		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
@@ -101,47 +104,104 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 // Populate instance attribute fields with the returned instance
 func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 
-	set("architecture", vm.GetArchitecture())
+	if err := set("architecture", vm.GetArchitecture()); err != nil {
+		return err
+	}
+
 	if err := set("block_device_mappings_created", getOscAPIVMBlockDeviceMapping(vm.GetBlockDeviceMappings())); err != nil {
 		log.Printf("[DEBUG] BLOCKING DEVICE MAPPING ERR %+v", err)
 		return err
 	}
-	set("bsu_optimized", vm.GetBsuOptimized())
-	set("client_token", vm.GetClientToken())
-	set("deletion_protection", vm.GetDeletionProtection())
-	set("hypervisor", vm.GetHypervisor())
-	set("image_id", vm.GetImageId())
-	set("is_source_dest_checked", vm.GetIsSourceDestChecked())
-	set("keypair_name", vm.GetKeypairName())
-	set("launch_number", vm.GetLaunchNumber())
-	set("net_id", vm.GetNetId())
+	if err := set("bsu_optimized", vm.GetBsuOptimized()); err != nil {
+		return err
+	}
+	if err := set("client_token", vm.GetClientToken()); err != nil {
+		return err
+	}
+	if err := set("deletion_protection", vm.GetDeletionProtection()); err != nil {
+		return err
+	}
+	if err := set("hypervisor", vm.GetHypervisor()); err != nil {
+		return err
+	}
+	if err := set("image_id", vm.GetImageId()); err != nil {
+		return err
+	}
+	if err := set("is_source_dest_checked", vm.GetIsSourceDestChecked()); err != nil {
+		return err
+	}
+	if err := set("keypair_name", vm.GetKeypairName()); err != nil {
+		return err
+	}
+	if err := set("launch_number", vm.GetLaunchNumber()); err != nil {
+		return err
+	}
+	if err := set("net_id", vm.GetNetId()); err != nil {
+		return err
+	}
 
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
 		return err
 	}
 
-	set("os_family", vm.GetOsFamily())
-	set("performance", vm.GetPerformance())
-	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
-	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
-	set("private_dns_name", vm.GetPrivateDnsName())
-	set("private_ip", vm.GetPrivateIp())
-	set("product_codes", vm.GetProductCodes())
-	set("public_dns_name", vm.GetPublicDnsName())
-	set("public_ip", vm.GetPublicIp())
-	set("reservation_id", vm.GetReservationId())
-	set("root_device_name", vm.GetRootDeviceName())
-	set("root_device_type", vm.GetRootDeviceType())
+	if err := set("os_family", vm.GetOsFamily()); err != nil {
+		return err
+	}
+	if err := set("performance", vm.GetPerformance()); err != nil {
+		return err
+	}
+	if err := set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName)); err != nil {
+		return err
+	}
+	if err := set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy)); err != nil {
+		return err
+	}
+	if err := set("private_dns_name", vm.GetPrivateDnsName()); err != nil {
+		return err
+	}
+	if err := set("private_ip", vm.GetPrivateIp()); err != nil {
+		return err
+	}
+	if err := set("product_codes", vm.GetProductCodes()); err != nil {
+		return err
+	}
+	if err := set("public_dns_name", vm.GetPublicDnsName()); err != nil {
+		return err
+	}
+	if err := set("public_ip", vm.GetPublicIp()); err != nil {
+		return err
+	}
+	if err := set("reservation_id", vm.GetReservationId()); err != nil {
+		return err
+	}
+	if err := set("root_device_name", vm.GetRootDeviceName()); err != nil {
+		return err
+	}
+	if err := set("root_device_type", vm.GetRootDeviceType()); err != nil {
+		return err
+	}
 	if err := set("security_groups", getOAPIVMSecurityGroups(vm.GetSecurityGroups())); err != nil {
 		log.Printf("[DEBUG] SECURITY GROUPS ERR %+v", err)
 		return err
 	}
-	set("state", vm.GetState())
-	set("state_reason", vm.GetStateReason())
-	set("subnet_id", vm.GetSubnetId())
-	set("user_data", vm.GetUserData())
-	set("vm_id", vm.GetVmId())
-	set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior())
+	if err := set("state", vm.GetState()); err != nil {
+		return err
+	}
+	if err := set("state_reason", vm.GetStateReason()); err != nil {
+		return err
+	}
+	if err := set("subnet_id", vm.GetSubnetId()); err != nil {
+		return err
+	}
+	if err := set("user_data", vm.GetUserData()); err != nil {
+		return err
+	}
+	if err := set("vm_id", vm.GetVmId()); err != nil {
+		return err
+	}
+	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
+		return err
+	}
 
 	return set("vm_type", vm.GetVmType())
 }

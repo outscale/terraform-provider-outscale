@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -284,19 +283,20 @@ func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection s
 	`, omi, deletionProtection)
 }
 
-func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
-		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
-			expectedSecurityGroup := after.GetSecurityGroups()[0].GetSecurityGroupId()
-			for i := range before.GetSecurityGroups() {
-				assertNotEqual(t, before.GetSecurityGroups()[i].GetSecurityGroupId(), expectedSecurityGroup,
-					"Outscale VM SecurityGroupId Either not found or are the same.")
-			}
-		}
-		return nil
-	}
-}
+//TODO: check if is needed
+// func testAccCheckOAPIVMSecurityGroupsUpdated(t *testing.T, before, after *oscgo.Vm) resource.TestCheckFunc {
+// 	return func(s *terraform.State) error {
+// 		log.Printf("[DEBUG] ATTRS: %+v, %+v", before.GetSecurityGroups(), after.GetSecurityGroups())
+// 		if len(after.GetSecurityGroups()) > 0 && len(before.GetSecurityGroups()) > 0 {
+// 			expectedSecurityGroup := after.GetSecurityGroups()[0].GetSecurityGroupId()
+// 			for i := range before.GetSecurityGroups() {
+// 				assertNotEqual(t, before.GetSecurityGroups()[i].GetSecurityGroupId(), expectedSecurityGroup,
+// 					"Outscale VM SecurityGroupId Either not found or are the same.")
+// 			}
+// 		}
+// 		return nil
+// 	}
+// }
 
 func testAccCheckOAPIVMExists(n string, i *oscgo.Vm) resource.TestCheckFunc {
 	providers := []*schema.Provider{testAccProvider}
@@ -362,19 +362,20 @@ func testAccCheckOutscaleOAPIVMDestroy(s *terraform.State) error {
 	return testAccCheckOutscaleOAPIVMDestroyWithProvider(s, testAccProvider)
 }
 
-func testAccCheckOutscaleOAPIVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, provider := range *providers {
-			if provider.Meta() == nil {
-				continue
-			}
-			if err := testAccCheckOutscaleOAPIVMDestroyWithProvider(s, provider); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
+//TODO: check if it is needed
+// func testAccCheckOutscaleOAPIVMDestroyWithProviders(providers *[]*schema.Provider) resource.TestCheckFunc {
+// 	return func(s *terraform.State) error {
+// 		for _, provider := range *providers {
+// 			if provider.Meta() == nil {
+// 				continue
+// 			}
+// 			if err := testAccCheckOutscaleOAPIVMDestroyWithProvider(s, provider); err != nil {
+// 				return err
+// 			}
+// 		}
+// 		return nil
+// 	}
+// }
 
 func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider *schema.Provider) error {
 	conn := provider.Meta().(*OutscaleClient)
@@ -450,17 +451,13 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
 				})})
 				if err != nil {
+					if oapiErr, ok := err.(awserr.Error); ok && oapiErr.Code() == "InvalidVmsID.NotFound" {
+						continue
+					}
 					time.Sleep(10 * time.Second)
 				} else {
 					break
 				}
-			}
-
-			if oapiErr, ok := err.(awserr.Error); ok && oapiErr.Code() == "InvalidVmsID.NotFound" {
-				continue
-			}
-			if err != nil {
-				return err
 			}
 
 			if resp.Vms == nil {
