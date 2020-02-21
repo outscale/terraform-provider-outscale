@@ -2,10 +2,11 @@ package outscale
 
 import (
 	"context"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -73,7 +74,9 @@ func dataSourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	d.Set("tags", oapiTagsDescToList(resp.GetTags()))
+	if err := d.Set("tags", oapiTagsDescToList(resp.GetTags())); err != nil {
+		return err
+	}
 	d.SetId(resource.UniqueId())
 
 	return err

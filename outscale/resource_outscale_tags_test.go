@@ -97,10 +97,6 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 				}
 			}
 
-			if err != nil {
-				return err
-			}
-
 			if len(resp.GetVms()) == 0 {
 				return fmt.Errorf("VM not found")
 			}
