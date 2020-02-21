@@ -3,11 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -41,7 +43,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
 	resp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background(), &oscgo.CreatePublicIpOpts{CreatePublicIpRequest: optional.NewInterface(allocOpts)})
 	if err != nil {
-		return fmt.Errorf("Error creating EIP: %s", err)
+		return fmt.Errorf("error creating EIP: %s", utils.GetErrorResponse(err))
 	}
 
 	allocResp := resp
@@ -80,7 +82,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 
-		return fmt.Errorf("Error retrieving EIP: %s", err)
+		return fmt.Errorf("Error retrieving EIP: %s", utils.GetErrorResponse(err))
 	}
 
 	if len(response.GetPublicIps()) == 0 {
@@ -181,7 +183,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 		if err != nil {
 			d.Set("vm_id", "")
 			d.Set("nic_id", "")
-			return fmt.Errorf("Failure associating EIP: %s", err)
+			return fmt.Errorf("Failure associating EIP: %s", utils.GetErrorResponse(err))
 		}
 
 		d.Partial(true)
