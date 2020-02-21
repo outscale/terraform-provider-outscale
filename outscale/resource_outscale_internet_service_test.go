@@ -89,10 +89,11 @@ func testAccOutscaleOAPIInternetServiceConfig() string {
 			ip_range = "10.0.0.0/16"
 		}
 
-		resource "outscale_internet_service" "outscale_internet_service" {}
+		resource "outscale_internet_service" "outscale_internet_service" {
+			tags {
+				key = "Name"
+				value = "test-acc"
+			}
+		}
 	`
-}
-
-func testAccOutscaleOAPIInternetServiceWithoutTags() string {
-	return `resource "outscale_internet_service" "gateway" {}`
 }

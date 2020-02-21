@@ -9,6 +9,7 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -81,12 +82,8 @@ func datasourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta inte
 		return resource.RetryableError(err)
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-
-		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", errString)
+		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
