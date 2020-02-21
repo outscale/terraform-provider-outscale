@@ -72,9 +72,15 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 
 	d.SetId(resp.GetNets()[0].GetNetId())
 
-	d.Set("net_id", resp.GetNets()[0].GetNetId())
-	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("net_id", resp.GetNets()[0].GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return nil
 }
