@@ -10,8 +10,6 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/spf13/cast"
-
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -165,7 +163,7 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	for _, v := range volumes {
 		res = append(res, map[string]interface{}{
 			"iops":           v.Iops,
-			"linked_volumes": getOAPILinkedVolumes(v.GetLinkedVolumes()),
+			"linked_volumes": getLinkedVolumes(v.GetLinkedVolumes()),
 			"size":           v.Size,
 			"snapshot_id":    v.SnapshotId,
 			"state":          v.State,
@@ -178,10 +176,10 @@ func getOAPIVolumes(volumes []oscgo.Volume) (res []map[string]interface{}) {
 	return
 }
 
-func getOAPILinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
+func getLinkedVolumes(linkedVolumes []oscgo.LinkedVolume) (res []map[string]interface{}) {
 	for _, l := range linkedVolumes {
 		res = append(res, map[string]interface{}{
-			"delete_on_vm_deletion": cast.ToString(l.DeleteOnVmDeletion),
+			"delete_on_vm_deletion": l.DeleteOnVmDeletion,
 			"device_name":           l.DeviceName,
 			"vm_id":                 l.VmId,
 			"state":                 l.State,
