@@ -67,6 +67,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	var imageID string
 	rInt := acctest.RandInt()
@@ -80,6 +81,7 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, false),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
+					testAccOutscaleOAPIImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			r.TestStep{
