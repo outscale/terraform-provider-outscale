@@ -146,13 +146,13 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
 
-	log.Printf("LOOOGGG___ volumes \n %+v \n", volumes)
-
 	if err := d.Set("volumes", getOAPIVolumes(volumes)); err != nil {
 		return err
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	d.SetId(resource.UniqueId())
 

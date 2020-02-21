@@ -203,7 +203,9 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return readOAPIVolume(d, resp.GetVolumes()[0])
 }
 
@@ -284,23 +286,39 @@ func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource
 func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	d.SetId(volume.GetVolumeId())
 
-	d.Set("subregion_name", volume.GetSubregionName())
+	if err := d.Set("subregion_name", volume.GetSubregionName()); err != nil {
+		return err
+	}
 
 	//Commented until backend issues is resolved.
-	d.Set("size", volume.Size)
-	d.Set("snapshot_id", volume.GetSnapshotId())
+	if err := d.Set("size", volume.Size); err != nil {
+		return err
+	}
+	if err := d.Set("snapshot_id", volume.GetSnapshotId()); err != nil {
+		return err
+	}
 
 	if volume.GetVolumeType() != "" {
-		d.Set("volume_type", volume.GetVolumeType())
+		if err := d.Set("volume_type", volume.GetVolumeType()); err != nil {
+			return err
+		}
 	} else if vType, ok := d.GetOk("volume_type"); ok {
 		volume.SetVolumeType(vType.(string))
 	} else {
-		d.Set("volume_type", "")
+		if err := d.Set("volume_type", ""); err != nil {
+			return err
+		}
 	}
 
-	d.Set("iops", volume.GetIops())
-	d.Set("state", volume.GetState())
-	d.Set("volume_id", volume.GetVolumeId())
+	if err := d.Set("iops", volume.GetIops()); err != nil {
+		return err
+	}
+	if err := d.Set("state", volume.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+		return err
+	}
 
 	if volume.GetLinkedVolumes() != nil {
 		res := make([]map[string]interface{}, len(volume.GetLinkedVolumes()))
