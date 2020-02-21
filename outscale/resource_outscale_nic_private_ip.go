@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -154,12 +155,24 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 
 	_, ok := d.GetOk("allow_relink")
 
-	d.Set("allow_relink", ok)
-	d.Set("private_ips", ips)
-	d.Set("secondary_private_ip_count", len(eni.GetPrivateIps()))
-	d.Set("nic_id", eni.GetNicId())
-	d.Set("primary_private_ip", primaryPrivateID)
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("allow_relink", ok); err != nil {
+		return err
+	}
+	if err := d.Set("private_ips", ips); err != nil {
+		return err
+	}
+	if err := d.Set("secondary_private_ip_count", len(eni.GetPrivateIps())); err != nil {
+		return err
+	}
+	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
+		return err
+	}
+	if err := d.Set("primary_private_ip", primaryPrivateID); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return nil
 }

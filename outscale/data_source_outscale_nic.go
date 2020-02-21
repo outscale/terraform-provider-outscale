@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -269,10 +270,18 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 	eni := resp.GetNics()[0]
 
-	d.Set("description", eni.GetDescription())
-	d.Set("nic_id", eni.GetNicId())
-	d.Set("subregion_name", eni.GetSubregionName())
-	d.Set("subnet_id", eni.GetSubnetId())
+	if err := d.Set("description", eni.GetDescription()); err != nil {
+		return err
+	}
+	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
+		return err
+	}
+	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
+		return err
+	}
+	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
+		return err
+	}
 
 	b := make(map[string]interface{})
 
@@ -302,7 +311,9 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	d.Set("sub_region_name", eni.GetSubregionName())
+	if err := d.Set("sub_region_name", eni.GetSubregionName()); err != nil {
+		return err
+	}
 
 	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
 	for k, v := range eni.GetSecurityGroups() {
@@ -311,16 +322,27 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		b["security_group_name"] = v.GetSecurityGroupName()
 		x[k] = b
 	}
+
 	if err := d.Set("security_groups", x); err != nil {
 		return err
 	}
 
-	d.Set("mac_address", eni.GetMacAddress())
-	d.Set("nic_id", eni.GetNicId())
-	d.Set("account_id", eni.GetAccountId())
-	d.Set("private_dns_name", eni.GetPrivateDnsName())
+	if err := d.Set("mac_address", eni.GetMacAddress()); err != nil {
+		return err
+	}
+	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", eni.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
+		return err
+	}
 	// Check this one later
-	d.Set("private_ip_address", eni.GetNetId())
+	if err := d.Set("private_ip_address", eni.GetNetId()); err != nil {
+		return err
+	}
 
 	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
 	if eni.PrivateIps != nil {
@@ -347,11 +369,21 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked())
-	d.Set("state", eni.GetState())
-	d.Set("tags", tagsOSCAPIToMap(eni.GetTags()))
-	d.Set("net_id", eni.GetNetId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
+		return err
+	}
+	if err := d.Set("state", eni.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", eni.GetNetId()); err != nil {
+		return err
+	}
 
 	d.SetId(eni.GetNicId())
 	return nil

@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -163,17 +164,31 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	link := eni.GetLinkNic()
 
 	if link.GetVmAccountId() != "" {
-		d.Set("vm_account_id", link.GetVmAccountId())
+		if err := d.Set("vm_account_id", link.GetVmAccountId()); err != nil {
+			return err
+		}
 	}
 	if link.GetState() != "" {
-		d.Set("state", link.GetState())
+		if err := d.Set("state", link.GetState()); err != nil {
+			return err
+		}
 	}
 
-	d.Set("device_number", fmt.Sprintf("%d", link.GetDeviceNumber()))
-	d.Set("vm_id", link.GetVmId())
-	d.Set("delete_on_vm_deletion", link.GetDeleteOnVmDeletion())
-	d.Set("link_nic_id", link.GetLinkNicId())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("device_number", fmt.Sprintf("%d", link.GetDeviceNumber())); err != nil {
+		return err
+	}
+	if err := d.Set("vm_id", link.GetVmId()); err != nil {
+		return err
+	}
+	if err := d.Set("delete_on_vm_deletion", link.GetDeleteOnVmDeletion()); err != nil {
+		return err
+	}
+	if err := d.Set("link_nic_id", link.GetLinkNicId()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return nil
 }
