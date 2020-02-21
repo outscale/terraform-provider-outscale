@@ -3,15 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/davecgh/go-spew/spew"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -158,30 +159,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	d.Set("iops", volume.GetIops())
 
 	if volume.LinkedVolumes != nil {
-		res := make([]map[string]interface{}, len(volume.GetLinkedVolumes()))
-		for k, g := range volume.GetLinkedVolumes() {
-			r := make(map[string]interface{})
-			if g.DeleteOnVmDeletion != nil {
-				r["delete_on_vm_deletion"] = g.GetDeleteOnVmDeletion()
-			}
-			if g.GetDeviceName() != "" {
-				r["device_name"] = g.GetDeviceName()
-			}
-			if g.GetVmId() != "" {
-				r["vm_id"] = g.GetVmId()
-			}
-			if g.GetState() != "" {
-				r["state"] = g.GetState()
-			}
-			if g.GetVolumeId() != "" {
-				r["volume_id"] = g.GetVolumeId()
-			}
-
-			res[k] = r
-
-		}
-
-		if err := d.Set("linked_volumes", res); err != nil {
+		if err := d.Set("linked_volumes", getLinkedVolumes(volume.GetLinkedVolumes())); err != nil {
 			return err
 		}
 	} else {

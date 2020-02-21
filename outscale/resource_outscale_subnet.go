@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
@@ -95,8 +95,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		},
 	}
 	var resp oscgo.ReadSubnetsResponse
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

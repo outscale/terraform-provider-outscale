@@ -12,8 +12,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPIVolume() *schema.Resource {
@@ -183,9 +183,8 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var resp oscgo.ReadVolumesResponse
-	var err error
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		r, _, err := conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -288,7 +287,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 	d.Set("subregion_name", volume.GetSubregionName())
 
 	//Commented until backend issues is resolved.
-	//d.Set("size", volume.Size)
+	d.Set("size", volume.Size)
 	d.Set("snapshot_id", volume.GetSnapshotId())
 
 	if volume.GetVolumeType() != "" {

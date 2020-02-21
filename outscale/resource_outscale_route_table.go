@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPIRouteTable() *schema.Resource {
@@ -235,13 +234,14 @@ func readOAPIRouteTable(conn *oscgo.APIClient, routeTableID string, linkIds ...s
 
 	//Fix for OAPI issue when passing routeTableIds and routeTableLinkIds
 	rts := resp.GetRouteTables()[0].GetLinkRouteTables()
+
 	if len(linkIds) > 0 {
 		for _, linkID := range linkIds {
-			i := sort.Search(len(rts), func(i int) bool { return rts[i].GetLinkRouteTableId() == linkID })
-			if len(rts) > 0 && rts[i].GetLinkRouteTableId() == linkID {
-				return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
+			for _, rt := range rts {
+				if rt.GetLinkRouteTableId() == linkID {
+					return resp.GetRouteTables()[0], resp.ResponseContext.GetRequestId(), err
+				}
 			}
-
 		}
 		return nil, resp.ResponseContext.GetRequestId(), fmt.Errorf("Error getting route table: LinkRouteTables didn't match with provided (%+v)", linkIds)
 	}

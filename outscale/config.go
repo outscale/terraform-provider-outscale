@@ -5,12 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/outscale/osc-go/oapi"
-
-	"github.com/terraform-providers/terraform-provider-outscale/osc"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
-
-	"github.com/hashicorp/terraform/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
@@ -21,38 +16,16 @@ type Config struct {
 	SecretKeyID string
 	Region      string
 	TokenID     string
-	OApi        bool
+	Endpoints   map[string]interface{}
 }
 
 //OutscaleClient client
 type OutscaleClient struct {
-	FCU    *fcu.Client
-	OAPI   *oapi.Client
 	OSCAPI *oscgo.APIClient
 }
 
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
-	config := osc.Config{
-		Credentials: &osc.Credentials{
-			AccessKey: c.AccessKeyID,
-			SecretKey: c.SecretKeyID,
-			Region:    c.Region,
-		},
-	}
-	fcu, err := fcu.NewFCUClient(config)
-	if err != nil {
-		return nil, err
-	}
-
-	oapicfg := &oapi.Config{
-		AccessKey: c.AccessKeyID,
-		SecretKey: c.SecretKeyID,
-		Region:    c.Region,
-		Service:   "api",
-		URL:       "outscale.com/oapi/latest",
-	}
-
 	skipClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -63,8 +36,14 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	skipClient.Transport = oscgo.NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 
+	basePath := fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region)
+
+	if endpoint, ok := c.Endpoints["api"]; ok {
+		basePath = endpoint.(string)
+	}
+
 	oscConfig := &oscgo.Configuration{
-		BasePath:      fmt.Sprintf("https://api.%s.outscale.com/oapi/latest", c.Region),
+		BasePath:      basePath,
 		DefaultHeader: make(map[string]string),
 		UserAgent:     "terraform-provider-outscale-dev",
 		HTTPClient:    skipClient,
@@ -72,11 +51,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
-	oapiClient := oapi.NewClient(oapicfg, skipClient)
-
 	client := &OutscaleClient{
-		FCU:    fcu,
-		OAPI:   oapiClient,
 		OSCAPI: oscClient,
 	}
 

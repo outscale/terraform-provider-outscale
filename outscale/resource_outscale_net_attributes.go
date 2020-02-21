@@ -3,14 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPILinAttributes() *schema.Resource {
@@ -66,16 +68,13 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 
-	var errString string
-
 	if err != nil {
-		errString = err.Error()
-		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", errString)
+		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", utils.GetErrorResponse(err))
 	}
 
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	d.SetId(resource.UniqueId())
+	d.SetId(resp.Net.GetNetId())
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
 }
@@ -105,8 +104,8 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 		return nil
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error creating lin (%s)", err)
-		return err
+		return fmt.Errorf("[DEBUG] Error creating lin (%s)", utils.GetErrorResponse(err))
+
 	}
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
@@ -116,7 +115,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters := oscgo.FiltersNet{
-		NetIds: &[]string{d.Get("net_id").(string)},
+		NetIds: &[]string{d.Id()},
 	}
 
 	req := oscgo.ReadNetsRequest{
@@ -137,12 +136,12 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		return resource.RetryableError(err)
 	})
 	if err != nil {
-		log.Printf("[DEBUG] Error reading lin (%s)", err)
+		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
 	}
 
 	if len(resp.GetNets()) == 0 {
 		d.SetId("")
-		return fmt.Errorf("oAPI Lin not found")
+		return fmt.Errorf("network is not found")
 	}
 
 	d.Set("net_id", resp.GetNets()[0].GetNetId())

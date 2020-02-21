@@ -9,11 +9,11 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/outscale/osc-go/oapi"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
@@ -21,10 +21,7 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
@@ -40,47 +37,27 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).OAPI
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_firewall_rules_set" {
+		if rs.Type != "outscale_security_group_rule" {
 			continue
 		}
 
-		// Retrieve our group
-		req := oapi.ReadSecurityGroupsRequest{
-			Filters: oapi.FiltersSecurityGroup{
-				SecurityGroupIds: []string{rs.Primary.ID},
-			},
-		}
-		var resp *oapi.POST_ReadSecurityGroupsResponses
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.POST_ReadSecurityGroups(req)
+		resp, _, err := findOSCAPIResourceSecurityGroup(conn, rs.Primary.ID)
 
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					fmt.Printf("\n\n[INFO] Request limit exceeded")
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
 		if err == nil {
-			if len(resp.OK.SecurityGroups) > 0 && resp.OK.SecurityGroups[0].SecurityGroupId == rs.Primary.ID {
+			if *resp.SecurityGroupId == rs.Primary.ID {
 				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
 			}
-
 			return nil
 		}
 
-		if strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
+		if strings.Contains(fmt.Sprint(err), "No security group with ID") {
 			return nil
 		}
 
-		return err
+		return utils.GetErrorResponse(err)
 	}
 
 	return nil

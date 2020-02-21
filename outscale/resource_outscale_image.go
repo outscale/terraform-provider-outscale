@@ -13,8 +13,8 @@ import (
 	"github.com/openlyinc/pointy"
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 const (
@@ -249,7 +249,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	image := resp.GetImage()
 
-	fmt.Printf("Waiting for OMI %s to become available...", *image.ImageId)
+	log.Printf("[DEBUG] Waiting for OMI %s to become available...", *image.ImageId)
 
 	filterReq := &oscgo.ReadImagesOpts{
 		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{

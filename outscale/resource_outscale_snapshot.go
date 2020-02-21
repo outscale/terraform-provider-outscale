@@ -3,15 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPISnapshot() *schema.Resource {
@@ -250,11 +251,9 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		request := oscgo.DeleteSnapshotRequest{
-			SnapshotId: d.Id(),
-		}
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
+
+		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background(), &oscgo.DeleteSnapshotOpts{DeleteSnapshotRequest: optional.NewInterface(request)})
 
 			if err != nil {

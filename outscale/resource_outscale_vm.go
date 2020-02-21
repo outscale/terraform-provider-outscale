@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	"github.com/spf13/cast"
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOApiVM() *schema.Resource {
@@ -107,15 +108,18 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Computed: true,
 			},
 			"nics": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				Set: func(v interface{}) int {
+					return v.(map[string]interface{})["device_number"].(int)
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"delete_on_vm_deletion": {
 							Type:     schema.TypeBool,
-							Default:  true,
 							Optional: true,
+							Computed: true,
 						},
 						"description": {
 							Type:     schema.TypeString,
@@ -124,8 +128,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						},
 						"device_number": {
 							Type:     schema.TypeInt,
-							Computed: true,
-							Optional: true,
+							Required: true,
 						},
 						"nic_id": {
 							Type:     schema.TypeString,
@@ -196,7 +199,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Optional: true,
 						},
 						"link_nic": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeList,
+							MaxItems: 1,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -255,12 +259,6 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-						"security_groups_names": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups": {
@@ -397,6 +395,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"performance": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"private_dns_name": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -497,7 +499,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Error launching source VM: %s", err)
+		return fmt.Errorf("Error launching source VM: %s", utils.GetErrorResponse(err))
 	}
 
 	if !resp.HasVms() || len(resp.GetVms()) == 0 {
@@ -630,13 +632,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Get("vm_id").(string)
 
-	var stateConf *resource.StateChangeConf
-	var err error
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
 		d.HasChange("bsu_optimized") && !d.IsNewResource() {
-		stateConf, err = stopVM(id, conn)
-		if err != nil {
+		if err := stopVM(id, conn); err != nil {
 			return err
 		}
 	}
@@ -759,7 +758,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
-	if err := startVM(id, stateConf, conn); err != nil {
+	if err := startVM(id, conn); err != nil {
 		return err
 	}
 
@@ -925,11 +924,10 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 
 func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreation {
 
-	nics := d.Get("nics").([]interface{})
-	log.Printf("[DEBUG] NICS TO CREATE -> %+v", nics)
+	nics := d.Get("nics").(*schema.Set).List()
 	networkInterfaces := []oscgo.NicForVmCreation{}
 
-	for _, v := range nics {
+	for i, v := range nics {
 		nic := v.(map[string]interface{})
 
 		ni := oscgo.NicForVmCreation{
@@ -944,8 +942,9 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 			ni.SetSecondaryPrivateIpCount(int64(v))
 		}
 
-		if d, dOk := nic["delete_on_vm_deletion"]; dOk {
-			ni.SetDeleteOnVmDeletion(d.(bool))
+		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
+			log.Printf("[DEBUG] delete=%+v, deleteOK=%+v", delete, deleteOK)
+			ni.SetDeleteOnVmDeletion(delete.(bool))
 		}
 
 		ni.SetDescription(nic["description"].(string))
@@ -1026,7 +1025,7 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 	}
 }
 
-func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, error) {
+func stopVM(vmID string, conn *oscgo.APIClient) error {
 	_, _, err := conn.VmApi.StopVms(context.Background(), &oscgo.StopVmsOpts{
 		StopVmsRequest: optional.NewInterface(oscgo.StopVmsRequest{
 			VmIds: []string{vmID},
@@ -1034,7 +1033,7 @@ func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, erro
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error stopping vms %s", err)
+		return fmt.Errorf("error stopping vms %s", err)
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -1048,14 +1047,13 @@ func stopVM(vmID string, conn *oscgo.APIClient) (*resource.StateChangeConf, erro
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return nil, fmt.Errorf(
-			"Error waiting for instance (%s) to stop: %s", vmID, err)
+		return fmt.Errorf("Error waiting for instance (%s) to stop: %s", vmID, err)
 	}
 
-	return stateConf, nil
+	return nil
 }
 
-func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APIClient) error {
+func startVM(vmID string, conn *oscgo.APIClient) error {
 	_, _, err := conn.VmApi.StartVms(context.Background(), &oscgo.StartVmsOpts{
 		StartVmsRequest: optional.NewInterface(oscgo.StartVmsRequest{
 			VmIds: []string{vmID},
@@ -1066,7 +1064,7 @@ func startVM(vmID string, stateConf *resource.StateChangeConf, conn *oscgo.APICl
 		return fmt.Errorf("error starting vm %s", err)
 	}
 
-	stateConf = &resource.StateChangeConf{
+	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "stopped"},
 		Target:     []string{"running"},
 		Refresh:    vmStateRefreshFunc(conn, vmID, ""),
@@ -1089,12 +1087,6 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 		return err
 	}
 	return nil
-}
-
-func getOSCVMsFilterByVMID(vmID string) *oscgo.FiltersVm {
-	return &oscgo.FiltersVm{
-		VmIds: &[]string{vmID},
-	}
 }
 
 // AttributeSetter you can use this function to set the attributes

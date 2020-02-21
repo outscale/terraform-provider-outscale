@@ -5,33 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/fcu"
 )
-
-func buildOutscaleDataSourceFilters(set *schema.Set) []*fcu.Filter {
-	var filters []*fcu.Filter
-	for _, v := range set.List() {
-		m := v.(map[string]interface{})
-		var filterValues []*string
-		for _, e := range m["values"].([]interface{}) {
-			filterValues = append(filterValues, aws.String(e.(string)))
-		}
-		filters = append(filters, &fcu.Filter{
-			Name:   aws.String(m["name"].(string)),
-			Values: filterValues,
-		})
-	}
-	return filters
-}
 
 func dataSourceOutscaleOAPIVM() *schema.Resource {
 	return &schema.Resource{
@@ -45,7 +27,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	filters, filtersOk := d.GetOk("filter")
 	instanceID, instanceIDOk := d.GetOk("vm_id")
 
-	if filtersOk == false && instanceIDOk == false {
+	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
 
@@ -135,10 +117,11 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 	set("net_id", vm.GetNetId())
 
 	if err := set("nics", getOAPIVMNetworkInterfaceLightSet(vm.GetNics())); err != nil {
-		log.Printf("[DEBUG] NICS ERR %+v", err)
 		return err
 	}
+
 	set("os_family", vm.GetOsFamily())
+	set("performance", vm.GetPerformance())
 	set("placement_subregion_name", aws.StringValue(vm.GetPlacement().SubregionName))
 	set("placement_tenancy", aws.StringValue(vm.GetPlacement().Tenancy))
 	set("private_dns_name", vm.GetPrivateDnsName())
@@ -236,18 +219,6 @@ func buildOutscaleOAPIDataSourceVMFilters(set *schema.Set) *oscgo.FiltersVm {
 		}
 	}
 	return filters
-}
-
-func sliceAtoi(sa []string) ([]int64, error) {
-	si := make([]int64, 0, len(sa))
-	for _, a := range sa {
-		i, err := strconv.Atoi(a)
-		if err != nil {
-			return si, err
-		}
-		si = append(si, int64(i))
-	}
-	return si, nil
 }
 
 func getOApiVMAttributesSchema() map[string]*schema.Schema {
@@ -444,8 +415,9 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 						Optional: true,
 					},
 					"link_nic": {
-						Type:     schema.TypeMap,
+						Type:     schema.TypeList,
 						Computed: true,
+						MaxItems: 1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"delete_on_vm_deletion": {
@@ -530,6 +502,10 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			},
 		},
 		"os_family": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"performance": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},

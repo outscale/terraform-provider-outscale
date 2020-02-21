@@ -2,11 +2,12 @@ package outscale
 
 import (
 	"fmt"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
@@ -23,7 +24,7 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
+
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,

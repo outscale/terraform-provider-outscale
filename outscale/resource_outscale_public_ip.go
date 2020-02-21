@@ -3,15 +3,17 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
 
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPIPublicIP() *schema.Resource {
@@ -41,7 +43,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
 	resp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background(), &oscgo.CreatePublicIpOpts{CreatePublicIpRequest: optional.NewInterface(allocOpts)})
 	if err != nil {
-		return fmt.Errorf("Error creating EIP: %s", err)
+		return fmt.Errorf("error creating EIP: %s", utils.GetErrorResponse(err))
 	}
 
 	allocResp := resp
@@ -80,7 +82,11 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 			return nil
 		}
 
-		return fmt.Errorf("Error retrieving EIP: %s", err)
+		return fmt.Errorf("Error retrieving EIP: %s", utils.GetErrorResponse(err))
+	}
+
+	if len(response.GetPublicIps()) == 0 {
+		return fmt.Errorf("Error retrieving EIP: not found")
 	}
 
 	if len(response.GetPublicIps()) != 1 ||
@@ -177,7 +183,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 		if err != nil {
 			d.Set("vm_id", "")
 			d.Set("nic_id", "")
-			return fmt.Errorf("Failure associating EIP: %s", err)
+			return fmt.Errorf("Failure associating EIP: %s", utils.GetErrorResponse(err))
 		}
 
 		d.Partial(true)
@@ -213,12 +219,14 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		var err error
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
+			lppiId := d.Get("link_public_ip_id").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				LinkPublicIpId: d.Get("link_public_ip_id").(*string),
+				LinkPublicIpId: &lppiId,
 			})})
 		case "standard":
+			pIP := d.Get("public_ip").(string)
 			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
-				PublicIp: d.Get("public_ip").(*string),
+				PublicIp: &pIP,
 			})})
 		}
 

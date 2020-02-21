@@ -10,7 +10,7 @@ description: |-
 
 Manages a Net peering acceptation.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPC+Peering+Connections).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#acceptnetpeering).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#acceptnetpeering).
 
 ## Example Usage
 

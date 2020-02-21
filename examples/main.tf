@@ -297,25 +297,9 @@ resource "outscale_subnet" "subnet019" {
 resource "outscale_public_ip" "public_ip019" {
 }
 
-resource "outscale_nat_service" "nat_service019" {
-  depends_on   = [outscale_route.route019]
-  subnet_id    = outscale_subnet.subnet019.subnet_id
-  public_ip_id = outscale_public_ip.public_ip019.public_ip_id
-  tags {
-    key = "Natservice"
-    value = "019"
-    }
-  
-}
 
 resource "outscale_route_table" "route_table019" {
   net_id = outscale_net.net019.net_id
-}
-
-resource "outscale_route" "route019" {
-  destination_ip_range = "0.0.0.0/0"
-  gateway_id           = outscale_internet_service.internet_service019.internet_service_id
-  route_table_id       = outscale_route_table.route_table019.route_table_id
 }
 
 resource "outscale_route_table_link" "route_table_link019" {
@@ -329,6 +313,22 @@ resource "outscale_internet_service" "internet_service019" {
 resource "outscale_internet_service_link" "internet_service_link019" {
   net_id              = outscale_net.net019.net_id
   internet_service_id = outscale_internet_service.internet_service019.id
+}
+
+resource "outscale_route" "route019" {
+  destination_ip_range = "0.0.0.0/0"
+  gateway_id           = outscale_internet_service.internet_service019.internet_service_id
+  route_table_id       = outscale_route_table.route_table019.route_table_id
+}
+
+resource "outscale_nat_service" "nat_service019" {
+  depends_on   = [outscale_route.route019]
+  subnet_id    = outscale_subnet.subnet019.subnet_id
+  public_ip_id = outscale_public_ip.public_ip019.public_ip_id
+  tags {
+    key = "Natservice"
+    value = "019"
+    }
 }
 
 data "outscale_nat_service" "nat_service019" {
@@ -665,7 +665,6 @@ resource "outscale_nic_private_ip" "nic_private_ip35" {
     private_ips = ["10.0.0.67"]
 }
 
-
 #------------------------------------------------------------------------
 
 #---036------------------------------------------------------------------
@@ -697,5 +696,80 @@ resource "outscale_nic_link" "nic_link036" {
     nic_id        = outscale_nic.nic036.nic_id
 }
 
+
+#-------------------------
+#—037------------------------------------------------------------------
+resource "outscale_vm" "outscale_vm37" {
+    image_id            = var.image_id
+    vm_type             = var.vm_type
+    keypair_name        = var.keypair_name
+    block_device_mappings {
+    device_name = "/dev/sda1"   # resizing bootdisk volume
+      bsu = {
+      volume_size = "100"
+      volume_type = "gp2"
+      delete_on_vm_deletion = "true"
+      }
+    }
+    block_device_mappings {
+     device_name = "/dev/sdb"
+     bsu = {
+         volume_size=30
+         volume_type = "io1"
+         iops      = 150
+         snapshot_id = var.snapshot_id
+        delete_on_vm_deletion = false
+      }
+    }
+ tags {
+      key = "name"
+      value = "VM with multiple Block Device Mappings"
+    }
+}
+          
+#-------------------------
+          
+#---038------------------------------------------------------------------
+        
+resource "outscale_net" "outscale_net38" {
+    ip_range = "10.0.0.0/16"
+}     
+
+resource "outscale_subnet" "outscale_subnet38" {
+ net_id              = outscale_net.outscale_net38.net_id 
+ ip_range            = "10.0.0.0/24" 
+ subregion_name      = "${var.region}a"
+}   
+    
+resource "outscale_security_group" "outscale_security_group38" {
+    description         = "test vm with nic"
+    security_group_name = "private-sg-1"
+    net_id              = outscale_net.outscale_net38.net_id
+}
+
+
+resource "outscale_nic" "outscale_nic38" {
+    subnet_id = outscale_subnet.outscale_subnet38.subnet_id
+}
+
+resource "outscale_vm" "outscale_vm38" {
+    image_id            = var.image_id
+    vm_type             = "tinav4.c4r4p2"
+    keypair_name        = var.keypair_name
+    nics       {
+       subnet_id = outscale_subnet.outscale_subnet38.subnet_id
+       security_group_ids = [outscale_security_group.outscale_security_group38.security_group_id]
+       private_ips  {
+             private_ip ="10.0.0.123"
+             is_primary = true
+        }
+       device_number = "0"
+       delete_on_vm_deletion = true
+     }
+    nics {
+       nic_id =outscale_nic.outscale_nic38.nic_id
+       device_number = "1"
+     }
+}
 
 #-------------------------

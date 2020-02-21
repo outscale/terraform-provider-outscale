@@ -4,16 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIDSLinAttr_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
@@ -48,9 +45,15 @@ const testAccOutscaleOAPIDSLinAttrConfig = `
 		ip_range = "10.0.0.0/16"
 	}
 
+	resource "outscale_net" "vpc2" {
+		ip_range = "10.0.0.0/16"
+	}
+
+
+
 	resource "outscale_net_attributes" "outscale_net_attributes" {
 		net_id = "${outscale_net.vpc.id}"
-		dhcp_options_set_id = "dopt-ca98300d"
+		dhcp_options_set_id = outscale_net.vpc2.dhcp_options_set_id
 	}
 
 	data "outscale_net_attributes" "test" {

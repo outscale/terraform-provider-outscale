@@ -10,7 +10,7 @@ description: |-
 
 Provides information about snapshots.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#3ds-outscale-api-snapshot).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-snapshot).
 
 ## Example Usage
 

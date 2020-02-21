@@ -1,20 +1,17 @@
 package outscale
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/antihax/optional"
-	"github.com/aws/aws-sdk-go/aws"
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/spf13/cast"
 
-	"github.com/hashicorp/terraform/helper/hashcode"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPIImages() *schema.Resource {
@@ -243,7 +240,10 @@ func dataSourceOutscaleOAPIImagesRead(d *schema.ResourceData, meta interface{}) 
 			}
 		}
 
-		d.Set("request_id", resp.ResponseContext.RequestId)
+		if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
+			return err
+		}
+
 		return set("images", imgs)
 	})
 }
@@ -317,26 +317,4 @@ func expandStringValueList(configured []interface{}) []string {
 		}
 	}
 	return vs
-}
-
-func expandStringList(configured []interface{}) []*string {
-	vs := make([]*string, 0, len(configured))
-	for _, v := range configured {
-		val, ok := v.(string)
-		if ok && val != "" {
-			vs = append(vs, aws.String(v.(string)))
-		}
-	}
-	return vs
-}
-
-// Generates a hash for the set hash function used by the product_codes
-// attribute.
-func amiProductCodesHash(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-	// All keys added in alphabetical order.
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_id"].(string)))
-	buf.WriteString(fmt.Sprintf("%s-", m["product_code_type"].(string)))
-	return hashcode.String(buf.String())
 }

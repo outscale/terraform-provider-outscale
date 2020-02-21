@@ -3,15 +3,16 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
@@ -19,10 +20,7 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 
 	var v oscgo.Volume
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-			skipIfNoOAPI(t)
-		},
+		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_volume.test",
 		Providers:     testAccProviders,
 		Steps: []resource.TestStep{
@@ -31,6 +29,11 @@ func TestAccOutscaleOAPIVolume_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVolumeExists("outscale_volume.test", &v),
 				),
+			},
+			{
+				ResourceName: "outscale_volume.test",
+				ImportState:  true,
+				//ImportStateVerify: true,
 			},
 		},
 	})
@@ -43,7 +46,7 @@ func TestAccOutscaleOAPIVolume_updateSize(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
+
 		},
 		IDRefreshName: "outscale_volume.test",
 		Providers:     testAccProviders,
@@ -73,7 +76,7 @@ func TestAccOutscaleOAPIVolume_io1Type(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
+
 		},
 		IDRefreshName: "outscale_volume.test-io",
 		Providers:     testAccProviders,
@@ -167,17 +170,4 @@ func testOutscaleOAPIVolumeConfigIO1Type(region string) string {
 			iops           = 100
 		}
 	`, region)
-}
-
-func testAccOutscaleOAPIVolumeConfigUpdateTags(region, value string) string {
-	return fmt.Sprintf(`
-	resource "outscale_volume" "outscale_volume" {
-	  volume_type = "gp2"
-	  subregion_name = "%sa"
-	  size = 10
-	  tags {
-		key = "name" 
-		value = "%s"
-	  }
-	}`, region, value)
 }

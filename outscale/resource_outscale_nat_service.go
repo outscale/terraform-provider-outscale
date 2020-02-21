@@ -10,8 +10,8 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleOAPINatService() *schema.Resource {
@@ -27,12 +27,10 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 			"public_ip_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"nat_service_id": {
@@ -159,11 +157,9 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 		set("nat_service_id", natService.NatServiceId)
 		set("net_id", natService.NetId)
 		set("state", natService.State)
+		set("subnet_id", natService.SubnetId)
 
-		if err := set("public_ips", getOSCPublicIPs(*natService.PublicIps)); err != nil {
-			return err
-		}
-		if err := set("tags", getOapiTagSet(natService.Tags)); err != nil {
+		if err := set("public_ips", getOSCPublicIPs(natService.GetPublicIps())); err != nil {
 			return err
 		}
 
@@ -259,60 +255,4 @@ func getOSCPublicIPs(publicIps []oscgo.PublicIpLight) (res []map[string]interfac
 		})
 	}
 	return
-}
-
-func getOAPINatServiceSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		// Arguments
-		"public_ip_id": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		"token": {
-			Type:     schema.TypeString,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"subnet_id": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		// Attributes
-		"public_ips": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"public_ip_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"public_ip": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"nat_service_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"state": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"net_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"tags": tagsListOAPISchema(),
-	}
 }

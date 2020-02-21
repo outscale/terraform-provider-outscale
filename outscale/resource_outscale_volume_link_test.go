@@ -7,34 +7,33 @@ import (
 
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	//var i oscgo.Vm
-	//var v oscgo.Volume
+	var i oscgo.Vm
+	var v oscgo.Volume
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			skipIfNoOAPI(t)
+
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
-				Check:  resource.ComposeTestCheckFunc( /*
+				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
-					testAccCheckOSCAPIVMExists(
-						"outscale_vm.web", &i),
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.web", &i),
 					testAccCheckOAPIVolumeAttachmentExists(
-						"outscale_volumes_link.ebs_att", &i, &v),*/
+						"outscale_volumes_link.ebs_att", &i, &v),
 				),
 			},
 		},

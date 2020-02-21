@@ -3,14 +3,15 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPILin_basic(t *testing.T) {
@@ -18,10 +19,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 	var conf2 oscgo.Net
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
@@ -98,57 +96,6 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 		return nil
 	}
 }
-
-//Missing on Swagger Spec
-// func testAccCheckOutscaleOAPILinDestroyed(s *terraform.State) error {
-// 	conn := testAccProvider.Meta().(*OutscaleClient)
-
-// 	for _, rs := range s.RootModule().Resources {
-// 		if rs.Type != "outscale_net" {
-// 			continue
-// 		}
-
-// 		// Try to find an internet gateway
-// 		var resp *oscgo.ReadGate
-// 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-// 			var err error
-// 			resp, err = conn.FCU.VM.DescribeInternetGateways(&fcu.DescribeInternetGatewaysInput{
-// 				InternetGatewayIds: []*string{aws.String(rs.Primary.ID)},
-// 			})
-
-// 			if err != nil {
-// 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-// 					return resource.RetryableError(err)
-// 				}
-// 				return resource.NonRetryableError(err)
-// 			}
-
-// 			return resource.RetryableError(err)
-// 		})
-
-// 		if resp == nil {
-// 			return nil
-// 		}
-
-// 		if err == nil {
-// 			if len(resp.InternetGateways) > 0 {
-// 				return fmt.Errorf("still exist")
-// 			}
-// 			return nil
-// 		}
-
-// 		// Verify the error is what we want
-// 		ec2err, ok := err.(awserr.Error)
-// 		if !ok {
-// 			return err
-// 		}
-// 		if ec2err.Code() != "InvalidVPC.NotFound" {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 const testAccOutscaleOAPILinConfig = `
 	resource "outscale_net" "vpc" {

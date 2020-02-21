@@ -3,13 +3,14 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPINatServices() *schema.Resource {
@@ -79,7 +80,7 @@ func dataSourceOutscaleOAPINatServicesRead(d *schema.ResourceData, meta interfac
 	filters, filtersOk := d.GetOk("filter")
 	natGatewayID, natGatewayIDOK := d.GetOk("nat_service_ids")
 
-	if filtersOk == false && natGatewayIDOK == false {
+	if !filtersOk && !natGatewayIDOK {
 		return fmt.Errorf("filters, or owner must be assigned, or nat_service_id must be provided")
 	}
 

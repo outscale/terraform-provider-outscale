@@ -4,16 +4,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"reflect"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform/helper/hashcode"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/openlyinc/pointy"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 var errOAPIRoute = errors.New("Error: more than 1 target specified. Only 1 of gateway_id, " +
@@ -45,6 +48,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"destination_ip_range": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"destination_service_id": {
 				Type:     schema.TypeString,
@@ -53,12 +57,10 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nat_access_point": {
 				Type:     schema.TypeString,
@@ -67,7 +69,6 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"net_peering_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"nic_id": {
 				Type:     schema.TypeString,
@@ -85,7 +86,6 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"vm_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 			},
 			"route_table_id": {
 				Type:     schema.TypeString,
@@ -253,31 +253,31 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          d.Get("gateway_id").(*string),
+			GatewayId:          pointy.String(d.Get("gateway_id").(string)),
 		}
 	case "nat_service_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          d.Get("nat_service_id").(*string),
+			GatewayId:          pointy.String(d.Get("nat_service_id").(string)),
 		}
 	case "vm_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			VmId:               d.Get("vm_id").(*string),
+			VmId:               pointy.String(d.Get("vm_id").(string)),
 		}
 	case "nic_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NicId:              d.Get("nic_id").(*string),
+			NicId:              pointy.String(d.Get("nic_id").(string)),
 		}
 	case "net_peering_id":
 		replaceOpts = &oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			NetPeeringId:       d.Get("net_peering_id").(*string),
+			NetPeeringId:       pointy.String(d.Get("net_peering_id").(string)),
 		}
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", target)
@@ -286,7 +286,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(2*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteApi.UpdateRoute(context.Background(), &oscgo.UpdateRouteOpts{UpdateRouteRequest: optional.NewInterface(replaceOpts)})
+		_, _, err = conn.RouteApi.UpdateRoute(context.Background(), &oscgo.UpdateRouteOpts{UpdateRouteRequest: optional.NewInterface(*replaceOpts)})
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidParameterException") {
@@ -300,7 +300,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error updating route: %s", utils.GetErrorResponse(err))
 	}
 
 	return nil
@@ -315,10 +315,8 @@ func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		deleteOpts.SetDestinationIpRange(v.(string))
 	}
-	log.Printf("[DEBUG] Route delete opts: %+v", deleteOpts)
 
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		log.Printf("[DEBUG] Trying to delete route with opts %+v", deleteOpts)
 		resp, _, err := conn.RouteApi.DeleteRoute(context.Background(), &oscgo.DeleteRouteOpts{DeleteRouteRequest: optional.NewInterface(deleteOpts)})
 		log.Printf("[DEBUG] Route delete result: %+v", resp)

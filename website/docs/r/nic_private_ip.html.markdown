@@ -10,7 +10,7 @@ description: |-
 
 Manages a NIC private IP.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs#AboutFNIs-FNIsAttributes).
-For more information on this resource actions, see the [API documentation](https://docs-beta.outscale.com/#linkprivateips).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linkprivateips).
 
 ## Example Usage
 

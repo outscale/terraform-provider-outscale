@@ -3,29 +3,28 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
 	"log"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/antihax/optional"
+	"github.com/go-test/deep"
+
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 	v := &oscgo.Vm{}
-	omi := getOMIByRegion("eu-west-2", "ubuntu").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
@@ -118,23 +117,20 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 }
 
 func testAccCheckOAPITags(
-	ts []oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
-	log.Printf("[DEBUG] testAccCheckOAPITags %+v", ts)
+	ts *[]oscgo.ResourceTag, key string, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		m := tagsOSCAPIToMap(ts)
-		v, ok := m[0]["Key"]
-		if value != "" && !ok {
-			return fmt.Errorf("Missing tag: %s", key)
-		} else if value == "" && ok {
-			return fmt.Errorf("Extra tag: %s", key)
+		expected := map[string]string{
+			"key":   key,
+			"value": value,
 		}
-		if value == "" {
+		tags := tagsOSCAPIToMap(*ts)
+		for _, tag := range tags {
+			if diff := deep.Equal(tag, expected); diff != nil {
+				continue
+			}
 			return nil
 		}
-		if v != value {
-			return fmt.Errorf("%s: bad value: %s", key, v)
-		}
-		return nil
+		return fmt.Errorf("error checking tags expected tag %+v is not found in %+v", expected, tags)
 	}
 }
 

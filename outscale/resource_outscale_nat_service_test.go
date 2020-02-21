@@ -3,22 +3,20 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	"github.com/marinsalinas/osc-sdk-go"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
@@ -36,10 +34,7 @@ func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
 	var natService oscgo.NatService
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			skipIfNoOAPI(t)
-			testAccPreCheck(t)
-		},
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{

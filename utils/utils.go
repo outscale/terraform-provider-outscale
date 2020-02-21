@@ -23,7 +23,10 @@ func ToJSONString(v interface{}) string {
 }
 
 func GetErrorResponse(err error) error {
-	return fmt.Errorf("%s %s", err, ToJSONString(err.(oscgo.GenericOpenAPIError).Model().(oscgo.ErrorResponse)))
+	if e, ok := err.(oscgo.GenericOpenAPIError); ok {
+		return fmt.Errorf("%s %s", err, ToJSONString(e.Model().(oscgo.ErrorResponse)))
+	}
+	return err
 }
 
 // StringSliceToPtrInt64Slice ...
