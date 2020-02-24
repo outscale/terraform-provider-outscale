@@ -13,14 +13,6 @@ import (
 func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 	var route oscgo.Route
 
-	testCheck := func(s *terraform.State) error {
-		return nil
-	}
-
-	testCheckChange := func(s *terraform.State) error {
-		return nil
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -33,18 +25,49 @@ func TestAccOutscaleOAPIRoute_noopdiff(t *testing.T) {
 				Config: testAccOutscaleOAPIRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
-					testCheck,
 				),
 			},
 			{
 				Config: testAccOutscaleOAPIRouteNoopChange,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIRouteExists("outscale_route.test", &route),
-					testCheckChange,
 				),
 			},
 		},
 	})
+}
+
+func TestAccOutscaleOAPIRoute_importBasic(t *testing.T) {
+
+	resourceName := "outscale_route.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPIRouteNoopChange,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return fmt.Sprintf("%s_%s", rs.Primary.ID, rs.Primary.Attributes["destination_ip_range"]), nil
+	}
 }
 
 func testAccCheckOutscaleOAPIRouteExists(n string, res *oscgo.Route) resource.TestCheckFunc {
