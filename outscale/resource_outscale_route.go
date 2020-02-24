@@ -14,7 +14,6 @@ import (
 	"github.com/openlyinc/pointy"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -38,7 +37,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 		Delete: resourceOutscaleOAPIRouteDelete,
 		Exists: resourceOutscaleOAPIRouteExists,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceOutscaleOAPIRouteImportState,
 		},
 		Schema: map[string]*schema.Schema{
 			"creation_method": {
@@ -73,7 +72,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
+				// Computed: true,
 			},
 			"state": {
 				Type:     schema.TypeString,
@@ -107,37 +106,20 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 		return errOAPIRoute
 	}
 
-	createOpts := oscgo.CreateRouteRequest{}
+	createOpts := oscgo.CreateRouteRequest{
+		RouteTableId:       d.Get("route_table_id").(string),
+		DestinationIpRange: d.Get("destination_ip_range").(string),
+	}
 	switch target {
 	case "gateway_id":
-		createOpts = oscgo.CreateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-		}
 		createOpts.SetGatewayId(d.Get("gateway_id").(string))
 	case "nat_service_id":
-		createOpts = oscgo.CreateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-		}
 		createOpts.SetNatServiceId(d.Get("nat_service_id").(string))
 	case "vm_id":
-		createOpts = oscgo.CreateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-		}
 		createOpts.SetVmId(d.Get("vm_id").(string))
 	case "nic_id":
-		createOpts = oscgo.CreateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-		}
 		createOpts.SetNicId(d.Get("nic_id").(string))
 	case "net_peering_id":
-		createOpts = oscgo.CreateRouteRequest{
-			RouteTableId:       d.Get("route_table_id").(string),
-			DestinationIpRange: d.Get("destination_ip_range").(string),
-		}
 		createOpts.SetNetPeeringId(d.Get("net_peering_id").(string))
 	default:
 		return fmt.Errorf("An invalid target type specified: %s", target)
@@ -181,14 +163,14 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 		}
 	}
 
-	d.SetId(routeOAPIIDHash(d, route))
-
-	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	d.SetId(d.Get("route_table_id").(string))
+	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
+	return nil
 }
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	routeTableID := d.Get("route_table_id").(string)
+	routeTableID := d.Id()
 
 	destinationIPRange := d.Get("destination_ip_range").(string)
 	var requestID string
@@ -197,7 +179,7 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
-			d.SetId("")
+			// d.SetId("")
 			return nil
 		}
 		return err
@@ -415,10 +397,6 @@ func resourceOutscaleOAPIRouteExists(d *schema.ResourceData, meta interface{}) (
 	return false, nil
 }
 
-func routeOAPIIDHash(d *schema.ResourceData, r *oscgo.Route) string {
-	return fmt.Sprintf("r-%s%d", d.Get("route_table_id").(string), hashcode.String(r.GetDestinationIpRange()))
-}
-
 func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*oscgo.Route, string, error) {
 	routeTableID := rtbid
 
@@ -470,4 +448,36 @@ func findResourceOAPIRoute(conn *oscgo.APIClient, rtbid string, cidr string) (*o
 	return nil, requestID, fmt.Errorf("When trying to find a matching route for Route Table %q "+
 		"you need to specify a CIDR block", rtbid)
 
+}
+
+func resourceOutscaleOAPIRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	parts := strings.SplitN(d.Id(), "_", 2)
+	if len(parts) != 2 {
+		return nil, errors.New("import format error: to import a Outscale Route, use the format {route_table_id}_{destination_ip_range}")
+	}
+
+	routeTableID := parts[0]
+	destinationIPRange := parts[1]
+
+	_, _, err := findResourceOAPIRoute(conn, routeTableID, destinationIPRange)
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
+			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
+			return nil, err
+		}
+		return nil, err
+	}
+
+	if err := d.Set("route_table_id", routeTableID); err != nil {
+		return nil, fmt.Errorf("error setting `%s` for Outscale Route(%s): %s", "route_table_id", routeTableID, err)
+	}
+	if err := d.Set("destination_ip_range", destinationIPRange); err != nil {
+		return nil, fmt.Errorf("error setting `%s` for Outscale Route(%s): %s", "destination_ip_range", destinationIPRange, err)
+	}
+
+	d.SetId(routeTableID)
+
+	return []*schema.ResourceData{d}, nil
 }
