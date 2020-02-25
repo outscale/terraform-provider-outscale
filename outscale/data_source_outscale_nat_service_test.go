@@ -43,6 +43,10 @@ func testAccCheckOutscaleNatServiceDataSourceID(n string) resource.TestCheckFunc
 const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
+		tags {
+			key = "Name"
+			value = "test-acc-nat-service-ds"
+		}
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
