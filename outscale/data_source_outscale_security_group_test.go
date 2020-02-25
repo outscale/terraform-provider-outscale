@@ -77,6 +77,10 @@ func testAccDataSourceOutscaleOAPISecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "vpc" {
 				ip_range = "10.0.0.0/16"
+				tags {
+					key = "Name"
+					value = "testacc-sec-group-ds"
+				}
 		}
 
 		resource "outscale_security_group" "test" {

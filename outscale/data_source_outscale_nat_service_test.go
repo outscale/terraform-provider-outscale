@@ -45,7 +45,7 @@ const testAccCheckOutscaleOAPINatServiceDataSourceConfig = `
 		ip_range = "10.0.0.0/16"
 		tags {
 			key = "Name"
-			value = "test-acc-nat-service-ds"
+			value = "testacc-nat-service-ds"
 		}
 	}
 

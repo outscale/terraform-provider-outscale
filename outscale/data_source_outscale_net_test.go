@@ -64,7 +64,6 @@ func testAccDataSourceOutscaleOAPIVpcConfig(ipRange, tag string) string {
 		resource "outscale_net" "test" {
 			ip_range = "%s"
 		
-			#not supported yet
 			tags {
 				key   = "Name"
 				value = "%s"

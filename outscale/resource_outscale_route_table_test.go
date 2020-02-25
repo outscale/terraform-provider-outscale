@@ -350,6 +350,11 @@ func testAccCheckOAPIRouteTableExists(n string, v *oscgo.RouteTable, t *[]oscgo.
 const testAccOAPIRouteTableConfig = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
+
+	tags {
+		key = "Name"
+		value = "testacc-route-table-rs"
+	}
 }
 
 resource "outscale_internet_service" "foo" {}
@@ -362,6 +367,11 @@ resource "outscale_route_table" "foo" {
 const testAccOAPIRouteTableConfigChange = `
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
+
+	tags {
+		key = "Name"
+		value = "testacc-route-table-rs"
+	}
 }
 
 resource "outscale_internet_service" "foo" {}
@@ -375,6 +385,11 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "foo" {
 			ip_range = "10.1.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-route-table-rs"
+			}
 		}
 		
 		resource "outscale_subnet" "foo" {
@@ -401,6 +416,11 @@ func testAccOAPIRouteTableConfigTags(value string) string {
 	return fmt.Sprintf(`
 resource "outscale_net" "foo" {
 	ip_range = "10.1.0.0/16"
+
+	tags {
+		key = "Name"
+		value = "testacc-route-table-rs"
+	}
 }
 
 resource "outscale_route_table" "foo" {

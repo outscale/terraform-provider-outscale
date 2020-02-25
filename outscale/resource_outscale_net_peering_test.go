@@ -180,12 +180,17 @@ const testAccOAPIVpcPeeringConfig = `
 
 		tags {
 			key   = "Name"
-			value = "TestAccOutscaleOAPILinPeeringConnection_basic"
+			value = "testacc-net-peering-rs-foo"
 		}
 	}
 
 	resource "outscale_net" "bar" {
 		ip_range = "10.1.0.0/16"
+
+		tags {
+			key   = "Name"
+			value = "testacc-net-peering-acceptation-rs-bar"
+		}
 	}
 
 	resource "outscale_net_peering" "foo" {

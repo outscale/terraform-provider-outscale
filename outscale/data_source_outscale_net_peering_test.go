@@ -53,10 +53,18 @@ func testAccDataSourceOutscaleOAPILinPeeringConnectionCheck(name string) resourc
 const testAccDataSourceOutscaleOAPILinPeeringConnectionConfig = `
 	resource "outscale_net" "net" {
 		ip_range = "10.10.0.0/24"
+		tags {
+			key = "Name"
+			value = "testacc-net-peering-ds-net"
+		}
 	}
 
 	resource "outscale_net" "net2" {
 		ip_range = "10.11.0.0/24"
+		tags {
+			key = "Name"
+			value = "testacc-net-peering-ds-net2"
+		}
 	}
 
 	resource "outscale_net_peering" "net_peering" {

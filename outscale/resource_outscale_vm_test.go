@@ -485,6 +485,11 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-vm-rs"
+			}
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
@@ -507,6 +512,11 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNicAttached(omi, vmType, region st
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-vm-rs"
+			}
 		}
 
 		resource "outscale_subnet" "outscale_subnet" {
@@ -633,6 +643,11 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-vm-rs"
+			}
 		}
 	  
 	  resource "outscale_subnet" "outscale_subnet" {
@@ -715,9 +730,9 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string 
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 		
-		tags  {                               
-			key   = "name"
-			value = "Terraform_net"
+		tags {
+			key = "Name"
+			value = "testacc-vm-rs"
 		}
 	}
 	resource "outscale_subnet" "outscale_subnet" {

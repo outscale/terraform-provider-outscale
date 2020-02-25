@@ -11,7 +11,7 @@ import (
 
 func TestAccOutscaleOAPIKeypairsDataSource_Instance(t *testing.T) {
 
-	keyPairName := fmt.Sprintf("test-acc-keypair-%d", acctest.RandIntRange(0, 400))
+	keyPairName := fmt.Sprintf("testacc-keypair-%d", acctest.RandIntRange(0, 400))
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,

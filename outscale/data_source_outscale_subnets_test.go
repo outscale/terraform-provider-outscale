@@ -30,6 +30,11 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "172.%[1]d.123.0/24"
+
+			tags {
+				key = "Name"
+				value = "testacc-subets-ds"
+			}
 		}
 		
 		resource "outscale_subnet" "subnet" {

@@ -130,7 +130,7 @@ const testAccOAPILinkRouteTableConfig = `
 
 		tags {
 			key = "Name"
-			value = "outscale_net"
+			value = "testacc-route-table-link-rs"
 		}
 	}
 

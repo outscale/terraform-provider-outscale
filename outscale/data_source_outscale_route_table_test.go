@@ -90,7 +90,7 @@ const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 
 		tags {
 			key   = "Name"
-			value = "terraform-testacc-data-source"
+			value = "terraform-testacc-rt-data-source"
 		}
 	}
 
