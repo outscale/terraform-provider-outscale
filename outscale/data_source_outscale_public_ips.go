@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -14,7 +15,7 @@ import (
 
 func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   oapiDataSourceOutscalePublicIPSRead,
+		Read:   dataSourceOutscalePublicIPSRead,
 		Schema: oapiGetPublicIPSDataSourceSchema(),
 	}
 }
@@ -66,7 +67,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{}
@@ -120,7 +121,5 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 
 	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
-	err = d.Set("public_ips", address)
-
-	return err
+	return d.Set("public_ips", address)
 }
