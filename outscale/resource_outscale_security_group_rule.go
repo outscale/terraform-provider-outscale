@@ -823,19 +823,19 @@ func setOSCAPIFromIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, rules 
 		ip["ip_ranges"] = rule.IpRanges
 		ip["service_ids"] = rule.ServiceIds
 
-		if len(rule.GetSecurityGroupsMembers()) > 0 {
-			s := rule.GetSecurityGroupsMembers()[0]
-			//TODO: check if account_id is still needed
-			// if err := d.Set("account_id", s.GetAccountId()); err != nil {
-			// 	return nil, err
-			// }
-			if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
-				return nil, err
-			}
-			if err := d.Set("security_group_name", s.GetSecurityGroupName()); err != nil {
-				return nil, err
-			}
-		}
+		// if len(rule.GetSecurityGroupsMembers()) > 0 {
+		// 	s := rule.GetSecurityGroupsMembers()[0]
+		// 	//TODO: check if account_id is still needed
+		// 	// if err := d.Set("account_id", s.GetAccountId()); err != nil {
+		// 	// 	return nil, err
+		// 	// }
+		// 	if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
+		// 		return nil, err
+		// 	}
+		// 	if err := d.Set("security_group_name", s.GetSecurityGroupName()); err != nil {
+		// 		return nil, err
+		// 	}
+		// }
 
 		ips[k] = ip
 	}
