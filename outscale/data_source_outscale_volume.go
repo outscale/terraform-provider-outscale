@@ -9,6 +9,7 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -230,8 +231,6 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 			filters.SetSubregionNames(filterValues)
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
-		//TODO: case "tags":
-		// 	filters.Tags = filterValues
 		case "tag_values":
 			filters.SetTagValues(filterValues)
 		case "volume_ids":
@@ -240,6 +239,18 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 			filters.SetVolumeSizes(utils.StringSliceToInt64Slice(filterValues))
 		case "volume_types":
 			filters.SetVolumeTypes(filterValues)
+		case "link_volume_vm_ids":
+			filters.SetLinkVolumeVmIds(filterValues)
+		case "volume_states":
+			filters.SetVolumeStates(filterValues)
+		case "link_volume_link_states":
+			filters.SetLinkVolumeLinkStates(filterValues)
+		case "link_volume_delete_on_vm_deletion":
+			filters.SetLinkVolumeDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "link_volume_link_dates":
+			filters.SetLinkVolumeLinkDates(filterValues)
+		case "link_volume_device_names":
+			filters.SetLinkVolumeDeviceNames(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
