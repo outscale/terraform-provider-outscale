@@ -12,6 +12,7 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
@@ -277,8 +278,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		ToPortRange:                  &tPortRange,
 	}
 
-	//fmt.Printf("Req -> %+v\n", req)
-
 	var autherr error
 	log.Printf("[DEBUG] Authorizing security group %s %s rule: %#v", sgID, "Egress", expandedRules)
 
@@ -298,17 +297,8 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	})
 
 	if autherr != nil {
-		if strings.Contains(fmt.Sprint(autherr), "InvalidPermission.Duplicate") {
-			return fmt.Errorf(`[WARN] A duplicate Security Group rule was found on (%s). This may be
-a side effect of a now-fixed Terraform issue causing two security groups with
-identical attributes but different source_security_group_ids to overwrite each
-other in the state. See https://github.com/hashicorp/terraform/pull/2376 for more
-information and instructions for recovery. Error message: %s`, sgID, "InvalidPermission.Duplicate")
-		}
-
 		return fmt.Errorf(
-			"Error authorizing security group rule type %s: %s",
-			flow, autherr)
+			"Error authorizing security group rule type %s: %s", flow, utils.GetErrorResponse(autherr))
 	}
 
 	id := ipOSCAPIPermissionIDHash(flow, sgID, expandedRules)
@@ -835,10 +825,10 @@ func setOSCAPIFromIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, rules 
 
 		if len(rule.GetSecurityGroupsMembers()) > 0 {
 			s := rule.GetSecurityGroupsMembers()[0]
-
-			if err := d.Set("account_id", s.GetAccountId()); err != nil {
-				return nil, err
-			}
+			//TODO: check if account_id is still needed
+			// if err := d.Set("account_id", s.GetAccountId()); err != nil {
+			// 	return nil, err
+			// }
 			if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
 				return nil, err
 			}

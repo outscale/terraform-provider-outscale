@@ -24,7 +24,9 @@ func ToJSONString(v interface{}) string {
 
 func GetErrorResponse(err error) error {
 	if e, ok := err.(oscgo.GenericOpenAPIError); ok {
-		return fmt.Errorf("%s %s", err, ToJSONString(e.Model().(oscgo.ErrorResponse)))
+		if errorResponse, oker := e.Model().(oscgo.ErrorResponse); oker {
+			return fmt.Errorf("%s %s", err, ToJSONString(errorResponse))
+		}
 	}
 	return err
 }
