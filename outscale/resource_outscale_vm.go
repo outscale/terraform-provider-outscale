@@ -38,6 +38,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Optional: true,
+				//ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
@@ -53,18 +54,22 @@ func resourceOutscaleOApiVM() *schema.Resource {
 									"iops": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										ForceNew: true,
 									},
 									"snapshot_id": {
 										Type:     schema.TypeString,
 										Optional: true,
+										ForceNew: true,
 									},
 									"volume_size": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										ForceNew: true,
 									},
 									"volume_type": {
 										Type:     schema.TypeString,
 										Optional: true,
+										ForceNew: true,
 									},
 								},
 							},
@@ -72,14 +77,17 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"device_name": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 						"no_device": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 						"virtual_device_name": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -726,21 +734,36 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
-		maps := d.Get("block_device_mappings").(*schema.Set).List()
+		maps := d.Get("block_device_mappings").([]interface{})
 		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
 			mapping := oscgo.BlockDeviceMappingVmUpdate{}
-			mapping.SetDeviceName(f["device_name"].(string))
-			mapping.SetNoDevice(f["no_device"].(string))
-			mapping.SetVirtualDeviceName(f["virtual_device_name"].(string))
+
+			if v, ok := f["device_name"]; ok && v.(string) != "" {
+				mapping.SetDeviceName(v.(string))
+			}
+
+			if v, ok := f["no_device"]; ok && v.(string) != "" {
+				mapping.SetNoDevice(v.(string))
+			}
+
+			if v, ok := f["virtual_device_name"]; ok && v.(string) != "" {
+				mapping.SetVirtualDeviceName(v.(string))
+			}
 
 			e := f["bsu"].(map[string]interface{})
 			bsu := oscgo.BsuToUpdateVm{}
 
-			bsu.SetDeleteOnVmDeletion(e["delete_on_vm_deletion"].(bool))
-			bsu.SetVolumeId(e["volume_id"].(string))
+			//if v, ok := e["delete_on_vm_deletion"]; ok {
+			bsu.SetDeleteOnVmDeletion(cast.ToBool(e["delete_on_vm_deletion"]))
+
+			//}
+
+			if v, ok := e["volume_id"]; ok {
+				bsu.SetVolumeId(v.(string))
+			}
 
 			mapping.SetBsu(bsu)
 
@@ -752,7 +775,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetBlockDeviceMappings(mappings)
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			return utils.GetErrorResponse(err)
 		}
 	}
 
