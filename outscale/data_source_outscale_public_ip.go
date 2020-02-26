@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -26,7 +27,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 		"filter": dataSourceFiltersSchema(),
 		"public_ip_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Required: true,
 		},
 		"public_ip": {
 			Type:     schema.TypeString,
@@ -65,16 +66,13 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	req := oscgo.ReadPublicIpsRequest{
 		Filters: &oscgo.FiltersPublicIp{},
 	}
+	req.Filters.SetPublicIpIds([]string{d.Get("public_ip_id").(string)})
 
 	filters, filtersOk := d.GetOk("filter")
-
 	if filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
 	}
 
-	if id := d.Get("public_ip_id"); id != "" {
-		req.Filters.SetPublicIpIds([]string{id.(string)})
-	}
 	if id := d.Get("public_ip"); id != "" {
 		req.Filters.SetPublicIps([]string{id.(string)})
 	}
@@ -168,7 +166,7 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
 			filters.SetPublicIpIds(filterValues)
-		case "link_ids":
+		case "link_public_ip_id":
 			filters.SetLinkPublicIpIds(filterValues)
 		case "placements":
 			filters.SetPlacements(filterValues)
@@ -182,6 +180,12 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 			filters.SetPrivateIps(filterValues)
 		case "public_ips":
 			filters.SetPublicIps(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
