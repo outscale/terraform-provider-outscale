@@ -398,6 +398,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"performance": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			"private_dns_name": {
 				Type:     schema.TypeString,
@@ -723,6 +724,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if d.HasChange("performance") && !d.IsNewResource() {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetPerformance(d.Get("performance").(string))
+
+		if err := updateVmAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
 		maps := d.Get("block_device_mappings").(*schema.Set).List()
 		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
@@ -870,6 +880,10 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok && v != "" {
 		request.SetVmInitiatedShutdownBehavior(v.(string))
+	}
+
+	if v := d.Get("performance").(string); v != "" {
+		request.SetPerformance(v)
 	}
 
 	return request, nil
