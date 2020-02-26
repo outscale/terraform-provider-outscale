@@ -113,13 +113,12 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 		filter.SetVolumeIds(volIDs)
 		params.SetFilters(filter)
 	}
-	log.Printf("LOOOGGG___ filtersOk \n %+v \n", filtersOk)
 
 	if filtersOk {
 		params.SetFilters(buildOutscaleOSCAPIDataSourceVolumesFilters(filters.(*schema.Set)))
 	}
 
-	log.Printf("LOOOGGG___ Filters \n %+v \n", params.Filters)
+	log.Printf("LOG____ params: %#+v\n", params.GetFilters())
 
 	var resp oscgo.ReadVolumesResponse
 	var err error
