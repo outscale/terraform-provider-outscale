@@ -44,7 +44,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
 				Computed: true,
 			},
 			"delete_on_vm_deletion": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"vm_account_id": {
@@ -174,7 +174,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 		}
 	}
 
-	if err := d.Set("device_number", fmt.Sprintf("%d", link.GetDeviceNumber())); err != nil {
+	if err := d.Set("device_number", link.GetDeviceNumber()); err != nil {
 		return err
 	}
 	if err := d.Set("vm_id", link.GetVmId()); err != nil {

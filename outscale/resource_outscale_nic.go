@@ -291,7 +291,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("tags", make([]map[string]interface{}, 0)); err != nil {
 		return err
 	}
-	if err := d.Set("private_ip", make([]map[string]interface{}, 0)); err != nil {
+	if err := d.Set("private_ip", ""); err != nil {
 		return err
 	}
 

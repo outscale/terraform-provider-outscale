@@ -37,8 +37,7 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 				Computed: true,
 			},
 			"private_ip": &schema.Schema{
-				Type: schema.TypeString,
-
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"security_group_id": &schema.Schema{
@@ -311,7 +310,7 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	if err := d.Set("sub_region_name", eni.GetSubregionName()); err != nil {
+	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
 		return err
 	}
 
@@ -337,10 +336,6 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
-		return err
-	}
-	// Check this one later
-	if err := d.Set("private_ip_address", eni.GetNetId()); err != nil {
 		return err
 	}
 
