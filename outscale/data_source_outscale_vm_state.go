@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -134,7 +135,9 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 	state = filteredStates[0]
 
 	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return vmStateDataAttrSetter(d, &state)
 }
 
@@ -148,10 +151,18 @@ func vmStateDataAttrSetter(d *schema.ResourceData, status *oscgo.VmStates) error
 
 func statusDescriptionOAPIVMStateAttributes(set AttributeSetter, status *oscgo.VmStates) error {
 
-	set("subregion_name", status.GetSubregionName())
-	set("maintenance_events", statusSetOAPIVMState(status.GetMaintenanceEvents()))
-	set("vm_state", status.GetVmState())
-	set("vm_id", status.GetVmId())
+	if err := set("subregion_name", status.GetSubregionName()); err != nil {
+		return err
+	}
+	if err := set("maintenance_events", statusSetOAPIVMState(status.GetMaintenanceEvents())); err != nil {
+		return err
+	}
+	if err := set("vm_state", status.GetVmState()); err != nil {
+		return err
+	}
+	if err := set("vm_id", status.GetVmId()); err != nil {
+		return err
+	}
 
 	return nil
 }

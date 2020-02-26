@@ -159,6 +159,11 @@ func testAccOutscaleOAPISecurityGroupConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
 		}
 		
 		resource "outscale_security_group" "web" {

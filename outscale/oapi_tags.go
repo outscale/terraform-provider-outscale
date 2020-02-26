@@ -14,21 +14,6 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
-func tagsSchemaComputed() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeList,
-		Computed: true,
-		Elem:     &schema.Schema{Type: schema.TypeMap},
-	}
-}
-
-func tagsOAPISchemaComputed() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Computed: true,
-	}
-}
-
 func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
@@ -79,12 +64,6 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 	return nil
 }
 
-func tagsListOAPISchemaForceNew() *schema.Schema {
-	tagsSchema := tagsListOAPISchema()
-	tagsSchema.ForceNew = true
-	return tagsSchema
-}
-
 func tagsOAPIListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
@@ -101,15 +80,6 @@ func tagsOAPIListSchemaComputed() *schema.Schema {
 				},
 			},
 		},
-	}
-}
-
-func tagsOAPISchema() *schema.Schema {
-	return &schema.Schema{
-		Type:     schema.TypeMap,
-		Optional: true,
-		Computed: true,
-		ForceNew: true,
 	}
 }
 

@@ -107,14 +107,30 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	subnet := resp.GetSubnets()[0]
 
 	d.SetId(subnet.GetSubnetId())
-	d.Set("subnet_id", subnet.GetSubnetId())
-	d.Set("net_id", subnet.GetNetId())
-	d.Set("subregion_name", subnet.GetSubregionName())
-	d.Set("ip_range", subnet.GetIpRange())
-	d.Set("state", subnet.GetState())
-	d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
-	d.Set("available_ips_count", subnet.GetAvailableIpsCount())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("subnet_id", subnet.GetSubnetId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", subnet.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("subregion_name", subnet.GetSubregionName()); err != nil {
+		return err
+	}
+	if err := d.Set("ip_range", subnet.GetIpRange()); err != nil {
+		return err
+	}
+	if err := d.Set("state", subnet.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(subnet.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return nil
 }

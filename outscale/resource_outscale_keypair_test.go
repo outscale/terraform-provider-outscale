@@ -182,23 +182,6 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 	}
 }
 
-func testAccCheckOutscaleOAPIKeyPairGeneratedNamePrefix(resource, prefix string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		r, ok := s.RootModule().Resources[resource]
-		if !ok {
-			return fmt.Errorf("Resource not found")
-		}
-		name, ok := r.Primary.Attributes["name"]
-		if !ok {
-			return fmt.Errorf("Name attr not found: %#v", r.Primary.Attributes)
-		}
-		if !strings.HasPrefix(name, prefix) {
-			return fmt.Errorf("Name: %q, does not have prefix: %q", name, prefix)
-		}
-		return nil
-	}
-}
-
 func testAccOutscaleOAPIKeyPairConfig(r int) string {
 	return fmt.Sprintf(`
 		resource "outscale_keypair" "a_key_pair" {
