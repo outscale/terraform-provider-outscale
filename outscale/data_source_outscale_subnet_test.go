@@ -61,6 +61,10 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFun
 const testAccDataSourceOutscaleOAPISubnetConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
+		tags {
+			key = "Name"
+			value = "testacc-subet-ds"
+		}
 	}
 
 	resource "outscale_subnet" "test" {

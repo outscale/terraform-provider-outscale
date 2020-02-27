@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -168,17 +169,27 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	}
 
 	rt := resp.GetRouteTables()[0]
-
-	d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways()))
-	d.SetId(rt.GetRouteTableId())
-	d.Set("route_table_id", rt.GetRouteTableId())
-	d.Set("net_id", rt.GetNetId())
-	d.Set("tags", tagsOSCAPIToMap(rt.GetTags()))
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-
+	if err :=
+		d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
+		return err
+	}
+	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", rt.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
 		return err
 	}
+
+	d.SetId(rt.GetRouteTableId())
 
 	return d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
 }

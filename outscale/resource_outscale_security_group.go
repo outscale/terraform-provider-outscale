@@ -241,15 +241,29 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 	sg := resp.GetSecurityGroups()[0]
 
 	d.SetId(sg.GetSecurityGroupId())
-	d.Set("security_group_id", sg.GetSecurityGroupId())
-	d.Set("description", sg.GetDescription())
-	if sg.GetSecurityGroupName() != "" {
-		d.Set("security_group_name", sg.GetSecurityGroupName())
+	if err := d.Set("security_group_id", sg.GetSecurityGroupId()); err != nil {
+		return err
 	}
-	d.Set("net_id", sg.GetNetId())
-	d.Set("account_id", sg.GetAccountId())
-	d.Set("tags", tagsOSCAPIToMap(sg.GetTags()))
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("description", sg.GetDescription()); err != nil {
+		return err
+	}
+	if sg.GetSecurityGroupName() != "" {
+		if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
+			return err
+		}
+	}
+	if err := d.Set("net_id", sg.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(sg.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
 		return err

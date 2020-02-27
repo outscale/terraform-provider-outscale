@@ -8,12 +8,11 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
-
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIPublicIP() *schema.Resource {
@@ -92,39 +91,34 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	if len(response.GetPublicIps()) != 1 ||
 		placement == "vpc" && response.GetPublicIps()[0].GetLinkPublicIpId() != id ||
 		response.GetPublicIps()[0].GetPublicIp() != id {
-		if err != nil {
-			return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
-		}
+		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
 	}
 
 	publicIP := response.GetPublicIps()[0]
 
 	log.Printf("[DEBUG] EIP read configuration: %+v", publicIP)
 
-	if publicIP.GetLinkPublicIpId() != "" {
-		d.Set("link_public_ip_id", publicIP.GetLinkPublicIpId())
-	} else {
-		d.Set("link_public_ip_id", "")
+	if err := d.Set("link_public_ip_id", publicIP.GetLinkPublicIpId()); err != nil {
+		return err
 	}
-	if publicIP.GetVmId() != "" {
-		d.Set("vm_id", publicIP.GetVmId())
-	} else {
-		d.Set("vm_id", "")
+	if err := d.Set("vm_id", publicIP.GetVmId()); err != nil {
+		return err
 	}
-	if publicIP.GetNicId() != "" {
-		d.Set("nic_id", publicIP.GetNicId())
-	} else {
-		d.Set("nic_id", "")
+	if err := d.Set("nic_id", publicIP.GetNicId()); err != nil {
+		return err
 	}
-	if publicIP.GetNicAccountId() != "" {
-		d.Set("nic_account_id", publicIP.GetNicAccountId())
-	} else {
-		d.Set("nic_account_id", "")
+	if err := d.Set("nic_account_id", publicIP.GetNicAccountId()); err != nil {
+		return err
 	}
-	d.Set("private_ip", publicIP.GetPrivateIp())
-	d.Set("public_ip", publicIP.GetPublicIp())
-
-	d.Set("public_ip_id", publicIP.GetPublicIpId())
+	if err := d.Set("private_ip", publicIP.GetPrivateIp()); err != nil {
+		return err
+	}
+	if err := d.Set("public_ip", publicIP.GetPublicIp()); err != nil {
+		return err
+	}
+	if err := d.Set("public_ip_id", publicIP.GetPublicIpId()); err != nil {
+		return err
+	}
 
 	if err := d.Set("tags", tagsOSCAPIToMap(publicIP.GetTags())); err != nil {
 		log.Printf("[WARN] error setting tags for PublicIp(%s): %s", publicIP.GetPublicIp(), err)
@@ -181,8 +175,12 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 		})
 
 		if err != nil {
-			d.Set("vm_id", "")
-			d.Set("nic_id", "")
+			if err := d.Set("vm_id", ""); err != nil {
+				return err
+			}
+			if err := d.Set("nic_id", ""); err != nil {
+				return err
+			}
 			return fmt.Errorf("Failure associating EIP: %s", utils.GetErrorResponse(err))
 		}
 
@@ -238,23 +236,9 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	//placement := resourceOutscaleOAPIPublicIPDomain(d)
 	return resource.Retry(3*time.Minute, func() *resource.RetryError {
 		var err error
-		// switch placement {
-		// case "vpc":
-		// 	fmt.Printf(
-		// 		"[DEBUG] EIP release (destroy) address allocation: %v",
-		// 		d.Id())
-		// 	_, err = conn.POST_DeletePublicIp(oscgo.DeletePublicIpRequest{
-		// 		ReservationId: d.Id(),
-		// 	})
-		// case "standard":
-		// 	log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
-		// 	_, err = conn.POST_DeletePublicIp(oscgo.DeletePublicIpRequest{
-		// 		PublicIp: d.Id(),
-		// 	})
-		// }
+
 		idIP := d.Id()
 		log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
 		_, _, err = conn.PublicIpApi.DeletePublicIp(context.Background(), &oscgo.DeletePublicIpOpts{DeletePublicIpRequest: optional.NewInterface(oscgo.DeletePublicIpRequest{

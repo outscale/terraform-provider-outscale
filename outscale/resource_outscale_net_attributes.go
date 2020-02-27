@@ -72,7 +72,9 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", utils.GetErrorResponse(err))
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	d.SetId(resp.Net.GetNetId())
 
@@ -143,9 +145,12 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		d.SetId("")
 		return fmt.Errorf("network is not found")
 	}
-
-	d.Set("net_id", resp.GetNets()[0].GetNetId())
-	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	if err := d.Set("net_id", resp.GetNets()[0].GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId()); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -142,7 +142,12 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-nic-ds"
 			}
+		}
 			
 		resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%sa"
@@ -167,6 +172,11 @@ func testAccOutscaleOAPIENIDataSourceConfig(subregion string) string {
 const testAccOutscaleOAPIENIDataSourceConfigFilter = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
+
+		tags {
+			key = "Name"
+			value = "testacc-nic-ds-filter"
+		}
 	}
 	
 	resource "outscale_subnet" "outscale_subnet" {

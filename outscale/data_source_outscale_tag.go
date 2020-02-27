@@ -80,10 +80,19 @@ func dataSourceOutscaleOAPITagRead(d *schema.ResourceData, meta interface{}) err
 
 	tag := resp.GetTags()[0]
 
-	d.Set("key", tag.GetKey())
-	d.Set("value", tag.GetValue())
-	d.Set("resource_id", tag.GetResourceId())
-	d.Set("resource_type", tag.GetResourceType())
+	if err := d.Set("key", tag.GetKey()); err != nil {
+		return err
+	}
+	if err := d.Set("value", tag.GetValue()); err != nil {
+		return err
+	}
+	if err := d.Set("resource_id", tag.GetResourceId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("resource_type", tag.GetResourceType()); err != nil {
+		return err
+	}
 
 	d.SetId(resource.UniqueId())
 

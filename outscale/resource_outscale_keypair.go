@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -39,7 +40,9 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 		keyName = v.(string)
 	} else {
 		keyName = resource.UniqueId()
-		d.Set("keypair_name", keyName)
+		if err := d.Set("keypair_name", keyName); err != nil {
+			return err
+		}
 	}
 
 	req := oscgo.CreateKeypairRequest{
@@ -73,11 +76,15 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(resp.Keypair.GetKeypairName())
-	d.Set("keypair_fingerprint", resp.Keypair.GetKeypairFingerprint())
+	if err := d.Set("keypair_fingerprint", resp.Keypair.GetKeypairFingerprint()); err != nil {
+		return err
+	}
 
 	//Set private key in creation
 	if resp.Keypair.GetPrivateKey() != "" {
-		d.Set("private_key", resp.Keypair.GetPrivateKey())
+		if err := d.Set("private_key", resp.Keypair.GetPrivateKey()); err != nil {
+			return err
+		}
 	}
 
 	return resourceOAPIKeyPairRead(d, meta)
@@ -121,8 +128,12 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 
 	for _, keyPair := range resp.GetKeypairs() {
 		if keyPair.GetKeypairName() == d.Id() {
-			d.Set("keypair_name", keyPair.GetKeypairName())
-			d.Set("keypair_fingerprint", keyPair.GetKeypairFingerprint())
+			if err := d.Set("keypair_name", keyPair.GetKeypairName()); err != nil {
+				return err
+			}
+			if err := d.Set("keypair_fingerprint", keyPair.GetKeypairFingerprint()); err != nil {
+				return err
+			}
 			return nil
 		}
 	}

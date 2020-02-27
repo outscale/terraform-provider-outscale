@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/antihax/optional"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -53,7 +54,7 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 		CreateInternetServiceRequest: optional.NewInterface(oscgo.CreateInternetServiceRequest{}),
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", err)
+		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", utils.GetErrorResponse(err))
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -95,15 +96,19 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", err.Error())
+		return fmt.Errorf("[DEBUG] Error reading Internet Service id (%s)", utils.GetErrorResponse(err))
 
 	}
 	if !resp.HasInternetServices() {
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("internet_service_id", resp.GetInternetServices()[0].GetInternetServiceId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+	if err := d.Set("internet_service_id", resp.GetInternetServices()[0].GetInternetServiceId()); err != nil {
+		return err
+	}
 
 	if err := d.Set("net_id", resp.GetInternetServices()[0].GetNetId()); err != nil {
 		return err

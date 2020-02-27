@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -220,14 +221,30 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	sg := resp.GetSecurityGroups()[0]
 
 	d.SetId(sg.GetSecurityGroupId())
-	d.Set("security_group_id", sg.GetSecurityGroupId())
-	d.Set("description", sg.GetDescription())
-	d.Set("security_group_name", sg.GetSecurityGroupName())
-	d.Set("net_id", sg.GetNetId())
-	d.Set("account_id", sg.GetAccountId())
-	d.Set("tags", tagsOSCAPIToMap(sg.GetTags()))
-	d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules()))
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("security_group_id", sg.GetSecurityGroupId()); err != nil {
+		return err
+	}
+	if err := d.Set("description", sg.GetDescription()); err != nil {
+		return err
+	}
+	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", sg.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", sg.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(sg.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("inbound_rules", flattenOAPISecurityGroupRule(sg.GetInboundRules())); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 

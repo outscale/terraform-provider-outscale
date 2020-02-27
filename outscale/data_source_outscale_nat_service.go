@@ -114,7 +114,9 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 			"specific search criteria")
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
 }
@@ -123,16 +125,28 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 func ngOAPIDescriptionAttributes(d *schema.ResourceData, ng oscgo.NatService) error {
 
 	d.SetId(ng.GetNatServiceId())
-	d.Set("nat_service_id", ng.GetNatServiceId())
+
+	if err := d.Set("nat_service_id", ng.GetNatServiceId()); err != nil {
+		return err
+	}
 
 	if ng.GetState() != "" {
-		d.Set("state", ng.State)
+		if err := d.Set("state", ng.State); err != nil {
+			return err
+		}
+
 	}
 	if ng.GetSubnetId() != "" {
-		d.Set("subnet_id", ng.GetSubnetId())
+		if err := d.Set("subnet_id", ng.GetSubnetId()); err != nil {
+			return err
+		}
+
 	}
 	if ng.GetNetId() != "" {
-		d.Set("net_id", ng.GetNetId())
+		if err := d.Set("net_id", ng.GetNetId()); err != nil {
+			return err
+		}
+
 	}
 
 	addresses := make([]map[string]interface{}, len(ng.GetPublicIps()))

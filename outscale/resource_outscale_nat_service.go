@@ -122,7 +122,9 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(natService.GetNatServiceId())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return resourceOAPINatServiceRead(d, meta)
 }
@@ -154,10 +156,18 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(natService.GetNatServiceId())
 
-		set("nat_service_id", natService.NatServiceId)
-		set("net_id", natService.NetId)
-		set("state", natService.State)
-		set("subnet_id", natService.SubnetId)
+		if err := set("nat_service_id", natService.NatServiceId); err != nil {
+			return err
+		}
+		if err := set("net_id", natService.NetId); err != nil {
+			return err
+		}
+		if err := set("state", natService.State); err != nil {
+			return err
+		}
+		if err := set("subnet_id", natService.SubnetId); err != nil {
+			return err
+		}
 
 		if err := set("public_ips", getOSCPublicIPs(natService.GetPublicIps())); err != nil {
 			return err

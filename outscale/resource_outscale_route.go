@@ -182,8 +182,8 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	}
 
 	d.SetId(routeOAPIIDHash(d, route))
-	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
-	return nil
+
+	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
 func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) error {
@@ -202,21 +202,42 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 		}
 		return err
 	}
-	resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
-	return nil
+
+	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
-func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) {
-	d.Set("destination_service_id", route.GetDestinationServiceId())
-	d.Set("gateway_id", route.GetGatewayId())
-	d.Set("vm_id", route.GetVmId())
-	d.Set("nat_access_point", route.GetNetAccessPointId())
-	d.Set("nic_id", route.NicId)
-	d.Set("net_peering_id", route.GetNetPeeringId())
-	d.Set("vm_account_id", route.GetVmAccountId())
-	d.Set("creation_method", route.GetCreationMethod())
-	d.Set("state", route.GetState())
-	d.Set("request_id", requestID)
+func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *oscgo.Route, requestID string) error {
+	if err := d.Set("destination_service_id", route.GetDestinationServiceId()); err != nil {
+		return err
+	}
+	if err := d.Set("gateway_id", route.GetGatewayId()); err != nil {
+		return err
+	}
+	if err := d.Set("vm_id", route.GetVmId()); err != nil {
+		return err
+	}
+	if err := d.Set("nat_access_point", route.GetNetAccessPointId()); err != nil {
+		return err
+	}
+	if err := d.Set("nic_id", route.NicId); err != nil {
+		return err
+	}
+	if err := d.Set("net_peering_id", route.GetNetPeeringId()); err != nil {
+		return err
+	}
+	if err := d.Set("vm_account_id", route.GetVmAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("creation_method", route.GetCreationMethod()); err != nil {
+		return err
+	}
+	if err := d.Set("state", route.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", requestID); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getTarget(d *schema.ResourceData) (n int, target string) {

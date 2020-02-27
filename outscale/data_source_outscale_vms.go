@@ -117,7 +117,9 @@ func dataSourceOutscaleOApiVMSRead(d *schema.ResourceData, meta interface{}) err
 		}
 	}
 
-	d.Set("request_id", resp.GetResponseContext().RequestId)
+	if err := d.Set("request_id", resp.GetResponseContext().RequestId); err != nil {
+		return err
+	}
 
 	if len(filteredVms) < 1 {
 		return errors.New("Your query returned no results. Please change your search criteria and try again")

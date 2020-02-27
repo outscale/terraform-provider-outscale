@@ -81,8 +81,12 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 	a := make([]interface{}, 0)
 
 	//d.Set("tags", a)
-	d.Set("routes", a)
-	d.Set("link_route_tables", a)
+	if err := d.Set("routes", a); err != nil {
+		return err
+	}
+	if err := d.Set("link_route_tables", a); err != nil {
+		return err
+	}
 
 	return resourceOutscaleOAPIRouteTableRead(d, meta)
 }
@@ -98,13 +102,27 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	}
 
 	rt := rtRaw.(oscgo.RouteTable)
-	d.Set("request_id", requestID)
-	d.Set("route_table_id", rt.GetRouteTableId())
-	d.Set("net_id", rt.GetNetId())
-	d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways()))
-	d.Set("routes", setOSCAPIRoutes(rt.GetRoutes()))
-	d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables()))
-	d.Set("tags", tagsOSCAPIToMap(rt.GetTags()))
+	if err := d.Set("request_id", requestID); err != nil {
+		return err
+	}
+	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", rt.GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("route_propagating_virtual_gateways", setOSCAPIPropagatingVirtualGateways(rt.GetRoutePropagatingVirtualGateways())); err != nil {
+		return err
+	}
+	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
+		return err
+	}
+	if err := d.Set("link_route_tables", setOSCAPILinkRouteTables(rt.GetLinkRouteTables())); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
+		return err
+	}
 
 	return nil
 }

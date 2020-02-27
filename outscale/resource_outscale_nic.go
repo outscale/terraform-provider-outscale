@@ -288,8 +288,12 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 		d.SetPartial("tags")
 	}
 
-	d.Set("tags", make([]map[string]interface{}, 0))
-	d.Set("private_ip", make([]map[string]interface{}, 0))
+	if err := d.Set("tags", make([]map[string]interface{}, 0)); err != nil {
+		return err
+	}
+	if err := d.Set("private_ip", ""); err != nil {
+		return err
+	}
 
 	log.Printf("[INFO] ENI ID: %s", d.Id())
 
@@ -340,9 +344,13 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	}
 
 	eni := resp.GetNics()[0]
-	d.Set("description", eni.GetDescription())
+	if err := d.Set("description", eni.GetDescription()); err != nil {
+		return err
+	}
 
-	d.Set("subnet_id", eni.GetSubnetId())
+	if err := d.Set("subnet_id", eni.GetSubnetId()); err != nil {
+		return err
+	}
 
 	b := make(map[string]interface{})
 	link := eni.GetLinkPublicIp()
@@ -375,7 +383,9 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("subregion_name", eni.GetSubregionName())
+	if err := d.Set("subregion_name", eni.GetSubregionName()); err != nil {
+		return err
+	}
 
 	x := make([]map[string]interface{}, len(eni.GetSecurityGroups()))
 	for k, v := range eni.GetSecurityGroups() {
@@ -388,10 +398,18 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("mac_address", eni.GetMacAddress())
-	d.Set("nic_id", eni.GetNicId())
-	d.Set("account_id", eni.GetAccountId())
-	d.Set("private_dns_name", eni.GetPrivateDnsName())
+	if err := d.Set("mac_address", eni.GetMacAddress()); err != nil {
+		return err
+	}
+	if err := d.Set("nic_id", eni.GetNicId()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", eni.GetAccountId()); err != nil {
+		return err
+	}
+	if err := d.Set("private_dns_name", eni.GetPrivateDnsName()); err != nil {
+		return err
+	}
 	//d.Set("private_ip", eni.)
 
 	y := make([]map[string]interface{}, len(eni.GetPrivateIps()))
@@ -419,11 +437,21 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 		return err
 	}
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked())
-	d.Set("state", eni.GetState())
-	d.Set("tags", tagsOSCAPIToMap(eni.GetTags()))
-	d.Set("net_id", eni.GetNetId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
+		return err
+	}
+	if err := d.Set("state", eni.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("tags", tagsOSCAPIToMap(eni.GetTags())); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", eni.GetNetId()); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -763,40 +791,6 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshF
 		hasLink := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
 		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasLink)
 		return eni, hasLink, nil
-	}
-}
-
-func networkInterfaceOAPIAttachmentRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-
-		dnir := oscgo.ReadNicsRequest{
-			Filters: &oscgo.FiltersNic{
-				NicIds: &[]string{id},
-			},
-		}
-
-		var resp oscgo.ReadNicsResponse
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
-			return nil, "", err
-		}
-
-		eni := resp.GetNics()[0]
-		hasAttachment := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
-		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasAttachment)
-		return eni, hasAttachment, nil
 	}
 }
 

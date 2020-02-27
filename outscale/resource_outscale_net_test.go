@@ -104,7 +104,7 @@ const testAccOutscaleOAPILinConfig = `
 
 		tags {
 			key = "Name" 
-			value = "outscale_net"
+			value = "testacc-net-rs"
 		}	
 	}
 `

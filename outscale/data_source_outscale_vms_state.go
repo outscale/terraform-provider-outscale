@@ -88,7 +88,9 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 	if len(filteredStates) < 1 {
 		return fmt.Errorf("your query returned no results, please change your search criteria and try again")
 	}
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
 }
 

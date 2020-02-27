@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -93,12 +94,26 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	net := resp.GetNets()[0]
 
 	d.SetId(net.GetNetId())
-	d.Set("net_id", net.GetNetId())
-	d.Set("ip_range", net.GetIpRange())
-	d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId())
-	d.Set("tenancy", net.GetTenancy())
-	d.Set("state", net.GetState())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+
+	if err := d.Set("net_id", net.GetNetId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("ip_range", net.GetIpRange()); err != nil {
+		return err
+	}
+	if err := d.Set("dhcp_options_set_id", net.GetDhcpOptionsSetId()); err != nil {
+		return err
+	}
+	if err := d.Set("tenancy", net.GetTenancy()); err != nil {
+		return err
+	}
+	if err := d.Set("state", net.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }
