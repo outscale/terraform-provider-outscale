@@ -33,6 +33,38 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 	})
 }
 
+func TestAccResourceOAPILinkRouteTable_importBasic(t *testing.T) {
+	resourceName := "outscale_route_table_link.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPILinkRouteTableConfig,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOAPILinkRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return fmt.Sprintf("%s_%s", rs.Primary.Attributes["route_table_id"], rs.Primary.ID), nil
+	}
+}
+
 func testAccCheckOAPILinkRouteTableDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
