@@ -150,7 +150,6 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
-	d.SetId(volume.GetVolumeId())
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
 		return err
 	}
@@ -166,7 +165,6 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	if err := d.Set("volume_type", volume.GetVolumeType()); err != nil {
 		return err
 	}
-
 	if err := d.Set("state", volume.GetState()); err != nil {
 		return err
 	}
@@ -210,6 +208,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	}
 
+	d.SetId(volume.GetVolumeId())
 	return nil
 }
 
@@ -229,6 +228,8 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 			filters.SetSnapshotIds(filterValues)
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
 		case "tag_values":
