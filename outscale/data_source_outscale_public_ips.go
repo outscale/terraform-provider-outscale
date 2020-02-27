@@ -15,7 +15,7 @@ import (
 
 func dataSourceOutscaleOAPIPublicIPS() *schema.Resource {
 	return &schema.Resource{
-		Read:   oapiDataSourceOutscalePublicIPSRead,
+		Read:   dataSourceOutscalePublicIPSRead,
 		Schema: oapiGetPublicIPSDataSourceSchema(),
 	}
 }
@@ -67,7 +67,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 	}
 }
 
-func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.ReadPublicIpsRequest{}
@@ -123,7 +123,5 @@ func oapiDataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	err = d.Set("public_ips", address)
-
-	return err
+	return d.Set("public_ips", address)
 }

@@ -60,6 +60,19 @@ func testAccDataSourceOutscaleOAPIPublicIPCheck(name string) resource.TestCheckF
 	}
 }
 
+func TestAccDataSourceOutscaleOAPIPublicIP_withTags(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccDataSourceOutscaleOAPIPublicIPConfigWithTags,
+			},
+		},
+	})
+}
+
 const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 	resource "outscale_public_ip" "test" {}
 
@@ -71,6 +84,24 @@ const testAccDataSourceOutscaleOAPIPublicIPConfig = `
 		filter {
 			name = "public_ips"
 			values = ["${outscale_public_ip.test.public_ip}"]
+		}
+	}
+`
+
+const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
+	resource "outscale_public_ip" "outscale_public_ip" {
+		tags {
+			key   = "name"
+			value = "public_ip-data"
+		}
+	}
+
+	data "outscale_public_ip" "outscale_public_ip" {
+		public_ip_id = outscale_public_ip.outscale_public_ip.public_ip_id
+
+		filter {
+			name   = "tags"
+			values = ["name=public_ip-data"]
 		}
 	}
 `
