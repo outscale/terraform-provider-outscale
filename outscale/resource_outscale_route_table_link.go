@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -40,7 +41,7 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 				Computed: true,
 			},
 			"main": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"request_id": {
@@ -86,8 +87,12 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	}
 
 	d.SetId(resp.GetLinkRouteTableId())
-	d.Set("link_route_table_id", d.Id())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("link_route_table_id", d.Id()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
 
 	return nil
@@ -111,8 +116,12 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	for _, a := range rt.GetLinkRouteTables() {
 		if a.GetLinkRouteTableId() == d.Id() {
 			found = true
-			d.Set("subnet_id", a.GetSubnetId())
-			d.Set("main", a.GetMain())
+			if err := d.Set("subnet_id", a.GetSubnetId()); err != nil {
+				return err
+			}
+			if err := d.Set("main", a.GetMain()); err != nil {
+				return err
+			}
 			break
 		}
 	}

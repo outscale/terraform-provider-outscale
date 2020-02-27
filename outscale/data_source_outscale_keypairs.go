@@ -3,10 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -70,7 +71,9 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	d.SetId(resource.UniqueId())
 
 	if resp.ResponseContext.GetRequestId() != "" {
-		d.Set("request_id", resp.ResponseContext.GetRequestId())
+		if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+			return err
+		}
 	}
 
 	keypairs := make([]map[string]interface{}, len(resp.GetKeypairs()))
@@ -84,8 +87,8 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 		}
 		keypairs[k] = keypair
 	}
-	d.Set("keypairs", keypairs)
-	return nil
+
+	return d.Set("keypairs", keypairs)
 }
 
 func datasourceOutscaleOAPIKeyPairs() *schema.Resource {

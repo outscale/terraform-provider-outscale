@@ -84,39 +84,13 @@ func testAccDataSourceOutscaleOAPIRouteTableCheck(name string) resource.TestChec
 	}
 }
 
-func testAccDataSourceOutscaleOAPIRouteTableCheckMain(name string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[name]
-
-		if !ok {
-			return fmt.Errorf("root module has no resource called %s", name)
-		}
-
-		attr := rs.Primary.Attributes
-
-		// Verify attributes are set
-		if _, ok := attr["id"]; !ok {
-			return fmt.Errorf("id not set for main route table")
-		}
-		if _, ok := attr["net_id"]; !ok {
-			return fmt.Errorf("net_id not set for main route table")
-		}
-		// Verify it's actually the main route table that's returned
-		if attr["route_table_link.0.main"] != "true" {
-			return fmt.Errorf("main route table not found")
-		}
-
-		return nil
-	}
-}
-
 const testAccDataSourceOutscaleOAPIRouteTableGroupConfig = `
 	resource "outscale_net" "test" {
 		ip_range = "172.16.0.0/16"
 
 		tags {
 			key   = "Name"
-			value = "terraform-testacc-data-source"
+			value = "terraform-testacc-rt-data-source"
 		}
 	}
 

@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -134,8 +135,12 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 		return nil
 	}
 
-	d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags))
-	d.Set("request_id", response.ResponseContext.GetRequestId())
+	if err := d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags)); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", response.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return readOutscaleOAPIPublicIPLink(d, &response.GetPublicIps()[0])
 }
 

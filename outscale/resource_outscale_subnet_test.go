@@ -128,6 +128,11 @@ func testAccOutscaleOAPISubnetConfig(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
 			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-subnet-rs"
+			}
 		}
 
 		resource "outscale_subnet" "subnet" {

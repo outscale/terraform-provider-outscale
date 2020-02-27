@@ -140,7 +140,9 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	// Query returned single result.
 	volume = filteredVolumes[0]
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
 	return volumeOAPIDescriptionAttributes(d, &volume)
 
@@ -148,15 +150,31 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
 	d.SetId(volume.GetVolumeId())
-	d.Set("volume_id", volume.GetVolumeId())
-	d.Set("subregion_name", volume.GetSubregionName())
-	d.Set("size", volume.GetSize())
-	d.Set("snapshot_id", volume.GetSnapshotId())
-	d.Set("volume_type", volume.GetVolumeType())
+	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+		return err
+	}
+	if err := d.Set("subregion_name", volume.GetSubregionName()); err != nil {
+		return err
+	}
+	if err := d.Set("size", volume.GetSize()); err != nil {
+		return err
+	}
+	if err := d.Set("snapshot_id", volume.GetSnapshotId()); err != nil {
+		return err
+	}
+	if err := d.Set("volume_type", volume.GetVolumeType()); err != nil {
+		return err
+	}
 
-	d.Set("state", volume.GetState())
-	d.Set("volume_id", volume.GetVolumeId())
-	d.Set("iops", volume.GetIops())
+	if err := d.Set("state", volume.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
+		return err
+	}
+	if err := d.Set("iops", volume.GetIops()); err != nil {
+		return err
+	}
 
 	if volume.LinkedVolumes != nil {
 		if err := d.Set("linked_volumes", getLinkedVolumes(volume.GetLinkedVolumes())); err != nil {

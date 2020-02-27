@@ -105,7 +105,9 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 	}
 
 	d.SetId(internetServiceID)
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 
 	return resourceOutscaleOAPIInternetServiceLinkRead(d, meta)
 }
@@ -140,7 +142,9 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(internetService.GetInternetServiceId())
 
-		set("state", internetService.State)
+		if err := set("state", internetService.State); err != nil {
+			return err
+		}
 
 		if err := set("tags", getOapiTagSet(internetService.Tags)); err != nil {
 			return err

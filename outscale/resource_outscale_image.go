@@ -301,18 +301,42 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(*image.ImageId)
 
-		set("architecture", image.Architecture)
-		set("creation_date", image.CreationDate)
-		set("description", image.Description)
-		set("image_id", image.ImageId)
-		set("file_location", image.FileLocation)
-		set("account_alias", image.AccountAlias)
-		set("account_id", image.AccountId)
-		set("image_type", image.ImageType)
-		set("image_name", image.ImageName)
-		set("root_device_name", image.RootDeviceName)
-		set("root_device_type", image.RootDeviceType)
-		set("state", image.State)
+		if err := set("architecture", image.Architecture); err != nil {
+			return err
+		}
+		if err := set("creation_date", image.CreationDate); err != nil {
+			return err
+		}
+		if err := set("description", image.Description); err != nil {
+			return err
+		}
+		if err := set("image_id", image.ImageId); err != nil {
+			return err
+		}
+		if err := set("file_location", image.FileLocation); err != nil {
+			return err
+		}
+		if err := set("account_alias", image.AccountAlias); err != nil {
+			return err
+		}
+		if err := set("account_id", image.AccountId); err != nil {
+			return err
+		}
+		if err := set("image_type", image.ImageType); err != nil {
+			return err
+		}
+		if err := set("image_name", image.ImageName); err != nil {
+			return err
+		}
+		if err := set("root_device_name", image.RootDeviceName); err != nil {
+			return err
+		}
+		if err := set("root_device_type", image.RootDeviceType); err != nil {
+			return err
+		}
+		if err := set("state", image.State); err != nil {
+			return err
+		}
 
 		if err := set("block_device_mappings", omiOAPIBlockDeviceMappings(*image.BlockDeviceMappings)); err != nil {
 			return err

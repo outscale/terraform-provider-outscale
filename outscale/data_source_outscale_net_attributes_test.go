@@ -43,10 +43,18 @@ func testAccDataSourceOutscaleOAPIVpcAttrCheck(name string) resource.TestCheckFu
 const testAccOutscaleOAPIDSLinAttrConfig = `
 	resource "outscale_net" "vpc" {
 		ip_range = "10.0.0.0/16"
+		tags {
+			key = "Name"
+			value = "testacc-net-attributes-ds-vpc"
+		}
 	}
 
 	resource "outscale_net" "vpc2" {
 		ip_range = "10.0.0.0/16"
+		tags {
+			key = "Name"
+			value = "testacc-net-attributes-ds-vpc2"
+		}
 	}
 
 

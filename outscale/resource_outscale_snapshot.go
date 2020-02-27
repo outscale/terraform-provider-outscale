@@ -218,16 +218,36 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		permisions := snapshot.GetPermissionsToCreateVolume()
-		set("description", snapshot.GetDescription())
-		set("volume_id", snapshot.GetVolumeId())
-		set("account_alias", snapshot.GetAccountAlias())
-		set("account_id", snapshot.GetAccountId())
-		set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions))
-		set("progress", snapshot.GetProgress())
-		set("snapshot_id", snapshot.GetSnapshotId())
-		set("state", snapshot.GetState())
-		set("tags", tagsOSCAPIToMap(snapshot.GetTags()))
-		set("volume_size", snapshot.GetVolumeSize())
+		if err := set("description", snapshot.GetDescription()); err != nil {
+			return err
+		}
+		if err := set("volume_id", snapshot.GetVolumeId()); err != nil {
+			return err
+		}
+		if err := set("account_alias", snapshot.GetAccountAlias()); err != nil {
+			return err
+		}
+		if err := set("account_id", snapshot.GetAccountId()); err != nil {
+			return err
+		}
+		if err := set("permissions_to_create_volume", omiOAPIPermissionToLuch(&permisions)); err != nil {
+			return err
+		}
+		if err := set("progress", snapshot.GetProgress()); err != nil {
+			return err
+		}
+		if err := set("snapshot_id", snapshot.GetSnapshotId()); err != nil {
+			return err
+		}
+		if err := set("state", snapshot.GetState()); err != nil {
+			return err
+		}
+		if err := set("tags", tagsOSCAPIToMap(snapshot.GetTags())); err != nil {
+			return err
+		}
+		if err := set("volume_size", snapshot.GetVolumeSize()); err != nil {
+			return err
+		}
 		return set("request_id", resp.ResponseContext.GetRequestId())
 	})
 }

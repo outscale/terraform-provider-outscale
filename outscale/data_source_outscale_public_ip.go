@@ -112,42 +112,36 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[DEBUG] EIP read configuration: %+v", address)
 
-	if address.GetLinkPublicIpId() != "" {
-		d.Set("link_public_ip_id", address.GetLinkPublicIpId())
-	} else {
-		d.Set("link_public_ip_id", "")
+	if err := d.Set("link_public_ip_id", address.GetLinkPublicIpId()); err != nil {
+		return err
 	}
-	if address.GetVmId() != "" {
-		d.Set("vm_id", address.GetVmId())
-	} else {
-		d.Set("vm_id", "")
-	}
-	if address.GetNicId() != "" {
-		d.Set("nic_id", address.GetNicId())
-	} else {
-		d.Set("nic_id", "")
-	}
-	if address.GetNicAccountId() != "" {
-		d.Set("nic_account_id", address.GetNicAccountId())
-	} else {
-		d.Set("nic_account_id", "")
-	}
-	if address.GetPrivateIp() != "" {
-		d.Set("private_ip", address.GetPrivateIp())
-	} else {
-		d.Set("private_ip", "")
+	if err := d.Set("vm_id", address.GetVmId()); err != nil {
+		return err
 	}
 
-	d.Set("request_id", response.ResponseContext.GetRequestId())
-	d.Set("public_ip_id", address.GetPublicIpId())
+	if err := d.Set("nic_id", address.GetNicId()); err != nil {
+		return err
+	}
 
-	d.Set("public_ip", address.GetPublicIp())
-	//missing
-	// if address.Placement == "vpc" {
-	// 	d.SetId(address.ReservationId)
-	// } else {
-	// 	d.SetId(address.PublicIp)
-	// }
+	if err := d.Set("nic_account_id", address.GetNicAccountId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("private_ip", address.GetPrivateIp()); err != nil {
+		return err
+	}
+
+	if err := d.Set("request_id", response.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
+		return err
+	}
+
+	if err := d.Set("public_ip", address.GetPublicIp()); err != nil {
+		return err
+	}
 
 	d.SetId(address.GetPublicIp())
 

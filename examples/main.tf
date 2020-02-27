@@ -773,3 +773,62 @@ resource "outscale_vm" "outscale_vm38" {
 }
 
 #-------------------------
+
+#---039------------------------------------------------------------------
+
+resource "outscale_net" "outscale_net39" {
+   ip_range = "10.0.0.0/16"
+
+    tags {
+        key   = "Name"
+        value = "outscale_net_resource-39"
+    }
+}
+
+resource "outscale_security_group" "outscale_security_group39_1" {
+    description         = "test rules"
+    security_group_name = "terraform-SG-39_1"
+    net_id              = outscale_net.outscale_net39.net_id
+    tags {
+        key   = "Name"
+        value = "outscale_sg39_1"
+    }
+}
+
+resource "outscale_security_group" "outscale_security_group39_2" {
+    description         = "test rules"
+    security_group_name = "terraform-SG-39_2"
+    net_id              = outscale_net.outscale_net39.net_id
+    tags {
+        key   = "Name"
+        value = "outscale_sg39_2"
+    }
+}
+
+resource "outscale_security_group_rule" "outscale_security_group_rule39_1" {
+    flow              = "Outbound"
+    security_group_id = outscale_security_group.outscale_security_group39_1.id
+    rules {
+     from_port_range   = "22"
+     to_port_range     = "22"
+     ip_protocol       = "tcp"
+      security_groups_members {
+           account_id         = var.account_id
+           security_group_id  = outscale_security_group.outscale_security_group39_2.id
+       }
+     }
+}
+
+resource "outscale_security_group_rule" "outscale_security_group_rule39_2" {
+    flow              = "Inbound"
+    security_group_id = outscale_security_group.outscale_security_group39_1.id
+    rules {
+     from_port_range   = "8080"
+     to_port_range     = "8080"
+     ip_protocol       = "tcp"
+      security_groups_members {
+           account_id         = var.account_id
+           security_group_id  = outscale_security_group.outscale_security_group39_2.id
+       }
+     }
+}

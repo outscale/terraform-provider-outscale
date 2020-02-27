@@ -3,12 +3,13 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/spf13/cast"
 
@@ -214,8 +215,12 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 
 	result := resp.GetImages()[0]
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
-	d.Set("description", result.Description)
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+	if err := d.Set("description", result.Description); err != nil {
+		return err
+	}
 
 	lp := make(map[string]interface{})
 	lp["global_permission"] = strconv.FormatBool(result.PermissionsToLaunch.GetGlobalPermission())

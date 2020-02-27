@@ -110,12 +110,24 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 		return fmt.Errorf("oAPI network not found")
 	}
 
-	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
-	d.Set("tenancy", resp.GetNets()[0].Tenancy)
-	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
-	d.Set("net_id", resp.GetNets()[0].GetNetId())
-	d.Set("state", resp.GetNets()[0].GetState())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
+	if err := d.Set("ip_range", resp.GetNets()[0].GetIpRange()); err != nil {
+		return err
+	}
+	if err := d.Set("tenancy", resp.GetNets()[0].Tenancy); err != nil {
+		return err
+	}
+	if err := d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId()); err != nil {
+		return err
+	}
+	if err := d.Set("net_id", resp.GetNets()[0].GetNetId()); err != nil {
+		return err
+	}
+	if err := d.Set("state", resp.GetNets()[0].GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 

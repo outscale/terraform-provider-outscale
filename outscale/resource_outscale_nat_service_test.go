@@ -103,6 +103,11 @@ func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.T
 const testAccOAPINatGatewayConfig = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
+
+		tags {
+			key = "Name"
+			value = "testacc-nat-service-rs"
+		}
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
@@ -144,6 +149,11 @@ const testAccOAPINatGatewayConfig = `
 const testAccOAPINatGatewayConfigWithDataSource = `
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
+
+		tags {
+			key = "Name"
+			value = "testacc-nat-service-rs"
+		}
 	}
 
 	resource "outscale_subnet" "outscale_subnet" {
