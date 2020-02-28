@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -14,28 +15,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+const (
+	errorLinkRouteTableSetting = "error setting `%s` for Link Route Table (%s): %s"
+)
+
 func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILinkRouteTableCreate,
 		Read:   resourceOutscaleOAPILinkRouteTableRead,
 		Delete: resourceOutscaleOAPILinkRouteTableDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: resourceOutscaleOAPILinkRouteTableImportState,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"subnet_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-
 			"route_table_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-
 			"link_route_table_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -87,47 +89,27 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	}
 
 	d.SetId(resp.GetLinkRouteTableId())
-	if err := d.Set("link_route_table_id", d.Id()); err != nil {
-		return err
-	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-	log.Printf("[INFO] LinkRouteTable ID: %s", d.Id())
 
 	return nil
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
-
-	rtRaw, _, err := resourceOutscaleOAPIRouteTableStateRefreshFunc(
-		conn, d.Get("route_table_id").(string), d.Get("link_route_table_id").(string))()
+	routeTable, requestID, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), d.Get("route_table_id").(string), d.Id())
 	if err != nil {
 		return err
 	}
-	if rtRaw == nil {
-		return nil
-	}
-	rt := rtRaw.(oscgo.RouteTable)
-	log.Printf("[DEBUG] LinkRouteTables: %v and %v", rt.LinkRouteTables, d.Get("link_route_table_id"))
-
-	found := false
-	for _, a := range rt.GetLinkRouteTables() {
-		if a.GetLinkRouteTableId() == d.Id() {
-			found = true
-			if err := d.Set("subnet_id", a.GetSubnetId()); err != nil {
-				return err
-			}
-			if err := d.Set("main", a.GetMain()); err != nil {
-				return err
-			}
-			break
-		}
-	}
-
-	if !found {
+	if routeTable == nil {
 		d.SetId("")
+	}
+
+	if err := d.Set("link_route_table_id", routeTable.GetLinkRouteTableId()); err != nil {
+		return fmt.Errorf(errorLinkRouteTableSetting, "link_route_table_id", routeTable.GetLinkRouteTableId(), err)
+	}
+	if err := d.Set("main", routeTable.GetMain()); err != nil {
+		return fmt.Errorf(errorLinkRouteTableSetting, "main", routeTable.GetLinkRouteTableId(), err)
+	}
+	if err := d.Set("request_id", requestID); err != nil {
+		return fmt.Errorf(errorLinkRouteTableSetting, "request_id", routeTable.GetLinkRouteTableId(), err)
 	}
 
 	return nil
@@ -160,4 +142,67 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 	}
 
 	return nil
+}
+
+func resourceOutscaleOAPILinkRouteTableImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), "_", 2)
+	if len(parts) != 2 {
+		return nil, errors.New("import format error: to import a Link Route Table, use the format {route_table_id}_{link_route_table_id}")
+	}
+
+	routeTableID := parts[0]
+	linkRouteTableID := parts[1]
+
+	routeTable, _, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), routeTableID, linkRouteTableID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't import Link Route Table(%s), error: %s", linkRouteTableID, err)
+	}
+
+	if err := d.Set("route_table_id", routeTable.GetRouteTableId()); err != nil {
+		return nil, fmt.Errorf(errorLinkRouteTableSetting, "route_table_id", routeTable.GetLinkRouteTableId(), err)
+	}
+	if err := d.Set("subnet_id", routeTable.GetSubnetId()); err != nil {
+		return nil, fmt.Errorf(errorLinkRouteTableSetting, "subnet_id", routeTable.GetLinkRouteTableId(), err)
+	}
+
+	d.SetId(linkRouteTableID)
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTableID string) (*oscgo.LinkRouteTable, string, error) {
+	conn := meta.OSCAPI
+
+	var rt oscgo.ReadRouteTablesResponse
+	var err error
+
+	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
+		rt, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(),
+			&oscgo.ReadRouteTablesOpts{
+				ReadRouteTablesRequest: optional.NewInterface(oscgo.ReadRouteTablesRequest{
+					Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}},
+				}),
+			})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, rt.ResponseContext.GetRequestId(), err
+	}
+
+	return getLinkRouteTable(linkRouteTableID, rt.GetRouteTables()[0].GetLinkRouteTables()), rt.ResponseContext.GetRequestId(), nil
+}
+
+func getLinkRouteTable(id string, routeTables []oscgo.LinkRouteTable) (routeTable *oscgo.LinkRouteTable) {
+	for _, rt := range routeTables {
+		if rt.GetLinkRouteTableId() == id {
+			routeTable = &rt
+		}
+	}
+	return
 }

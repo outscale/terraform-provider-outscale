@@ -42,6 +42,40 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	region := os.Getenv("OUTSCALE_REGION")
+	resourceName := "outscale_vm.basic"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "c4.large", region),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleVMImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"private_ips", "request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
+}
+
 func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
@@ -563,45 +597,45 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
 	return fmt.Sprintf(`resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
 	  }
-	  
+
 	  resource "outscale_subnet" "outscale_subnet" {
 		net_id         = "${outscale_net.outscale_net.net_id}"
 		ip_range       = "10.0.0.0/24"
 		subregion_name = "eu-west-2a"
 	  }
-	  
+
 	  resource "outscale_nic" "outscale_nic" {
 		subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
 	  }
-	  
+
 	  resource "outscale_security_group" "outscale_security_group" {
 		description         = "test vm with nic"
 		security_group_name = "private-sg"
 		net_id              = "${outscale_net.outscale_net.net_id}"
 	  }
-	  
+
 	  resource "outscale_vm" "basic" {
 		image_id     = "%s"
 		vm_type      = "%s"
 		keypair_name = "terraform-basic"
-	  
+
 		# subnet_id              ="${outscale_subnet.outscale_subnet.subnet_id}"
 		nics {
 		  # delete_on_vm_deletion      = false
 		  # description                = "myDescription"
 		  device_number = 0
-	  
+
 		  # nic_id                     = "${outscale_nic.outscale_nic.nic_id}"
 		  # secondary_private_ip_count = 1
 		  subnet_id = "${outscale_subnet.outscale_subnet.subnet_id}"
-	  
+
 		  security_group_ids = ["${outscale_security_group.outscale_security_group.security_group_id}"]
-	  
+
 		  private_ips {
 			private_ip = "10.0.0.123"
 			is_primary = true
 		  }
-	  
+
 		  private_ips {
 			private_ip = "10.0.0.124"
 			is_primary = false
@@ -649,19 +683,19 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 				value = "testacc-vm-rs"
 			}
 		}
-	  
+
 	  resource "outscale_subnet" "outscale_subnet" {
 			subregion_name = "%[3]sa"
 			ip_range       = "10.0.0.0/16"
 			net_id         = "${outscale_net.outscale_net.net_id}"
 	  }
-	  
+
 	  resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
 			security_group_name = "sg1-test-group_test-net"
 			net_id              = "${outscale_net.outscale_net.net_id}"
 	  }
-	  
+
 	  resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
@@ -670,7 +704,7 @@ func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region strin
 			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
 			placement_subregion_name = "%sa"
 			placement_tenancy        = "default"
-	  }	  
+	  }
 	`, omi, vmType, region)
 }
 
@@ -680,16 +714,16 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 		subregion_name = "eu-west-2a"
 		size           = 1
 	  }
-	  
+
 	  resource "outscale_snapshot" "snapshot" {
 		volume_id = "${outscale_volume.external1.id}"
 	  }
-	  
+
 	  resource "outscale_vm" "basic" {
 		image_id     = "%[1]s"
 		vm_type      = "%[2]s"
 		keypair_name = "terraform-basic"
-	  
+
 		block_device_mappings {
 		  device_name = "/dev/sdb"
 		  no_device   = "/dev/xvdb"
@@ -700,7 +734,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			delete_on_vm_deletion = true
 		  }
 		}
-	  
+
 		block_device_mappings {
 		  device_name = "/dev/sdc"
 		  bsu = {
@@ -711,7 +745,7 @@ func testAccCheckOutscaleOAPIVMConfigWithBlockDeviceMappings(omi, vmType, region
 			delete_on_vm_deletion = true
 		  }
 		}
-	  
+
 		block_device_mappings {
 		  device_name = "/dev/sdc"
 		  bsu = {
@@ -729,18 +763,18 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string 
 	return fmt.Sprintf(`
 	resource "outscale_net" "outscale_net" {
 		ip_range = "10.0.0.0/16"
-		
-		tags {
-			key = "Name"
-			value = "testacc-vm-rs"
+
+		tags  {
+			key   = "name"
+			value = "Terraform_net"
 		}
 	}
 	resource "outscale_subnet" "outscale_subnet" {
 		net_id         = "${outscale_net.outscale_net.net_id}"
 		ip_range       = "10.0.0.0/24"
-		subregion_name = "%[3]sb"    
-		
-		tags {                               
+		subregion_name = "%[3]sb"
+
+		tags {
 			key   = "name"
 			value = "Terraform_subnet"
 		}
@@ -751,13 +785,13 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string 
 		security_group_name = "terraform-sg"
 		net_id              = "${outscale_net.outscale_net.net_id}"
 	}
-	
+
 	resource "outscale_internet_service" "outscale_internet_service" {}
 
 	resource "outscale_route_table" "outscale_route_table" {
 		net_id = "${outscale_net.outscale_net.net_id}"
-		
-		tags {                               
+
+		tags {
 			key   = "name"
 			value = "Terraform_RT"
 		}
@@ -769,7 +803,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string 
 	}
 
 	resource "outscale_internet_service_link" "outscale_internet_service_link" {
-		internet_service_id = "${outscale_internet_service.outscale_internet_service.internet_service_id}" 
+		internet_service_id = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
 		net_id              = "${outscale_net.outscale_net.net_id}"
 	}
 
@@ -777,7 +811,7 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region string) string 
 		gateway_id           = "${outscale_internet_service.outscale_internet_service.internet_service_id}"
 		destination_ip_range = "0.0.0.0/0"
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
-	} 
+	}
 	resource "outscale_vm" "outscale_vmnet" {
 		image_id           = "%[1]s"
 		vm_type            = "%[2]s"

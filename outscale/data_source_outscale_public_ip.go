@@ -67,17 +67,17 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		Filters: &oscgo.FiltersPublicIp{},
 	}
 
-	filters, filtersOk := d.GetOk("filter")
+	if p, ok := d.GetOk("public_ip_id"); ok {
+		req.Filters.SetPublicIpIds([]string{p.(string)})
+	}
 
+	if id, ok := d.GetOk("public_ip"); ok {
+		req.Filters.SetPublicIps([]string{id.(string)})
+	}
+
+	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
-	}
-
-	if id := d.Get("public_ip_id"); id != "" {
-		req.Filters.SetPublicIpIds([]string{id.(string)})
-	}
-	if id := d.Get("public_ip"); id != "" {
-		req.Filters.SetPublicIps([]string{id.(string)})
 	}
 
 	var response oscgo.ReadPublicIpsResponse
@@ -104,11 +104,11 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	// Verify Outscale returned our EIP
 	if len(response.GetPublicIps()) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
+		return fmt.Errorf("Unable to find Public IP: %#v", req)
 	}
 
 	if len(response.GetPublicIps()) > 1 {
-		return fmt.Errorf("multiple External IPs matched; use additional constraints to reduce matches to a single External IP")
+		return fmt.Errorf("multiple Public IPs matched; you can either use additional constraints to reduce matches to a single Public IP or use public_ips data source instead.")
 	}
 
 	address := response.GetPublicIps()[0]
@@ -163,7 +163,7 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
 			filters.SetPublicIpIds(filterValues)
-		case "link_ids":
+		case "link_public_ip_id":
 			filters.SetLinkPublicIpIds(filterValues)
 		case "placements":
 			filters.SetPlacements(filterValues)
@@ -177,6 +177,12 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 			filters.SetPrivateIps(filterValues)
 		case "public_ips":
 			filters.SetPublicIps(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

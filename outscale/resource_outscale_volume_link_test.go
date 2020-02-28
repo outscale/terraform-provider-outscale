@@ -40,6 +40,41 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	region := os.Getenv("OUTSCALE_REGION")
+
+	resourceName := "outscale_volumes_link.ebs_att"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOAPIVolumeAttachmentImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
+}
+
 func testAccCheckOAPIVolumeAttachmentDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_volume_link" {

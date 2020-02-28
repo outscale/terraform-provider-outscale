@@ -1,7 +1,6 @@
 package outscale
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log"
@@ -10,9 +9,10 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/openlyinc/pointy"
+	"github.com/spf13/cast"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -45,18 +45,16 @@ func getOAPIVolumeLinkSchema() map[string]*schema.Schema {
 		},
 		"vm_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Required: true,
 			ForceNew: true,
-			Computed: true,
-		},
-		"force_unlink": {
-			Type:     schema.TypeBool,
-			Optional: true,
-			ForceNew: true,
-			Computed: true,
 		},
 		"volume_id": {
 			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"force_unlink": {
+			Type:     schema.TypeBool,
 			Optional: true,
 			ForceNew: true,
 			Computed: true,
@@ -173,7 +171,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 			vID, iID, err)
 	}
 
-	d.SetId(volumeOAPIAttachmentID(name, vID, iID))
+	d.SetId(vID)
 	return resourceOAPIVolumeLinkRead(d, meta)
 }
 
@@ -241,7 +239,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 
 	request := oscgo.ReadVolumesRequest{
 		Filters: &oscgo.FiltersVolume{
-			VolumeIds: &[]string{d.Get("volume_id").(string)},
+			VolumeIds: &[]string{d.Id()},
 		},
 	}
 
@@ -268,8 +266,28 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("Error reading Outscale volume %s for instance: %s: %#v", d.Get("volume_id").(string), d.Get("vm_id").(string), err)
 	}
 
+	var linkedVolume oscgo.LinkedVolume
+	for _, vol := range vols.GetVolumes()[0].GetLinkedVolumes() {
+		linkedVolume = vol
+	}
+
+	if err := d.Set("device_name", linkedVolume.GetDeviceName()); err != nil {
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `device_name`, linkedVolume.GetVolumeId(), err)
+	}
+	if err := d.Set("vm_id", linkedVolume.GetVmId()); err != nil {
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `vm_id`, linkedVolume.GetVolumeId(), err)
+	}
+	if err := d.Set("volume_id", linkedVolume.GetVolumeId()); err != nil {
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `volume_id`, linkedVolume.GetVolumeId(), err)
+	}
+	if err := d.Set("delete_on_vm_termination", linkedVolume.GetDeleteOnVmDeletion()); err != nil {
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `delete_on_vm_termination`, linkedVolume.GetVolumeId(), err)
+	}
+	if err := d.Set("state", linkedVolume.GetState()); err != nil {
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `state`, linkedVolume.GetVolumeId(), err)
+	}
 	if err := d.Set("request_id", vols.ResponseContext.GetRequestId()); err != nil {
-		return err
+		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `request_id`, linkedVolume.GetVolumeId(), err)
 	}
 
 	if len(vols.GetVolumes()) == 0 || vols.GetVolumes()[0].GetState() == "available" || isElegibleToLink(vols.GetVolumes(), d.Get("vm_id").(string)) {
@@ -278,7 +296,6 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	return nil
-
 }
 
 func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) error {
@@ -290,14 +307,14 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 		return nil
 	}
 
-	vID := d.Get("volume_id").(string)
+	vID := d.Id()
 	iID := d.Get("vm_id").(string)
 
 	opts := oscgo.UnlinkVolumeRequest{
 		//VmId:       iID,
-		//ForceUnlink: d.Get("force_unlink").(bool),
 		//DeviceName: d.Get("device_name").(string), //Removed due oAPI Bug.
-		VolumeId: vID,
+		ForceUnlink: pointy.Bool(cast.ToBool(d.Get("force_unlink"))),
+		VolumeId:    vID,
 	}
 
 	force, forceOk := d.GetOk("force_unlink")
@@ -341,13 +358,4 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 	}
 	d.SetId("")
 	return nil
-}
-
-func volumeOAPIAttachmentID(name, volumeID, instanceID string) string {
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s-", name))
-	buf.WriteString(fmt.Sprintf("%s-", instanceID))
-	buf.WriteString(fmt.Sprintf("%s-", volumeID))
-
-	return fmt.Sprintf("vai-%d", hashcode.String(buf.String()))
 }

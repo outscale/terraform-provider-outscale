@@ -9,6 +9,6 @@ log.txt
 terraform-provider-outscale
 *.log
 *.out
-
+log.*
 .DS_Store
 *~

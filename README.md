@@ -20,9 +20,9 @@ Installing The Provider on Linux
 Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
 
 ```sh
-$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8/terraform-provider-outscale_linux_amd64_v0.1.0-rc8.zip
-$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc8.zip
-$ mv terraform-provider-outscale_v0.1.0-rc8 ~/.terraform.d/plugins/linux_amd64/.
+$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8.1/terraform-provider-outscale_linux_amd64_v0.1.0-rc8.1.zip
+$ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc8.1.zip
+$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
 Installing The Provider on MacOs
@@ -31,9 +31,9 @@ Installing The Provider on MacOs
 Download the binary and install it in ~/.terraform/plugins/darwin_amd64/.
 
 ```sh
-$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8/terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.zip
-$ unzip terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.zip
-$ mv terraform-provider-outscale_v0.1.0-rc8 ~/.terraform.d/plugins/darwin_amd64/.
+$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8.1/terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.1.zip
+$ unzip terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.1.zip
+$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/darwin_amd64/.
 ```
 
 Building The Provider
@@ -43,14 +43,14 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch release-0.1.0RC8 https://github.com/outscale-dev/terraform-provider-outscale
+$ git clone --branch release-0.1.0RC8.1 https://github.com/outscale-dev/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.1.0-rc8
+$ go build -o terraform-provider-outscale_v0.1.0-rc8.1
 ```
 
 Using the provider
@@ -59,7 +59,7 @@ Using the provider
 2. Move the plugin to the repository ~/.terraform.d/plugins/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.1.0-rc8 ~/.terraform.d/plugins/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/linux_amd64/.
 ```
 
 3. Execute `terraform plan`
