@@ -42,9 +42,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
+							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"delete_on_vm_deletion": {
@@ -753,19 +754,18 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				mapping.SetVirtualDeviceName(v.(string))
 			}
 
-			e := f["bsu"].(map[string]interface{})
-			bsu := oscgo.BsuToUpdateVm{}
+			if bsuList, ok := f["bsu"].([]interface{}); ok && len(bsuList) > 0 {
+				bsu := oscgo.BsuToUpdateVm{}
 
-			//if v, ok := e["delete_on_vm_deletion"]; ok {
-			bsu.SetDeleteOnVmDeletion(cast.ToBool(e["delete_on_vm_deletion"]))
+				if e, ok1 := bsuList[0].(map[string]interface{}); ok1 {
+					bsu.SetDeleteOnVmDeletion(cast.ToBool(e["delete_on_vm_deletion"]))
 
-			//}
-
-			if v, ok := e["volume_id"]; ok {
-				bsu.SetVolumeId(v.(string))
+					if v, ok := e["volume_id"]; ok {
+						bsu.SetVolumeId(v.(string))
+					}
+					mapping.SetBsu(bsu)
+				}
 			}
-
-			mapping.SetBsu(bsu)
 
 			mappings = append(mappings, mapping)
 		}
@@ -909,9 +909,9 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
 
 		value := v.(map[string]interface{})
-		bsu := value["bsu"].(map[string]interface{})
-
-		blockDevice.SetBsu(expandBlockDeviceBSU(bsu))
+		if bsu, ok := value["bsu"].([]interface{}); ok && len(bsu) > 0 {
+			blockDevice.SetBsu(expandBlockDeviceBSU(bsu[0].(map[string]interface{})))
+		}
 
 		if deviceName, ok := value["device_name"]; ok {
 			blockDevice.SetDeviceName(cast.ToString(deviceName))
@@ -935,9 +935,6 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
 
-	if iops, ok := bsu["iops"]; ok {
-		bsuToCreate.SetIops(cast.ToInt64(iops))
-	}
 	if snapshotID, ok := bsu["snapshot_id"]; ok {
 		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
 	}
@@ -945,7 +942,13 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 		bsuToCreate.SetVolumeSize(cast.ToInt64(volumeSize))
 	}
 	if volumeType, ok := bsu["volume_type"]; ok {
-		bsuToCreate.SetVolumeType(cast.ToString(volumeType))
+
+		vType := cast.ToString(volumeType)
+		bsuToCreate.SetVolumeType(vType)
+
+		if iops, ok := bsu["iops"]; ok && vType == "io1" {
+			bsuToCreate.SetIops(cast.ToInt64(iops))
+		}
 	}
 
 	return bsuToCreate

@@ -705,7 +705,7 @@ resource "outscale_vm" "outscale_vm37" {
     keypair_name        = var.keypair_name
     block_device_mappings {
     device_name = "/dev/sda1"   # resizing bootdisk volume
-      bsu = {
+      bsu {
       volume_size = "100"
       volume_type = "gp2"
       delete_on_vm_deletion = "true"
@@ -713,7 +713,7 @@ resource "outscale_vm" "outscale_vm37" {
     }
     block_device_mappings {
      device_name = "/dev/sdb"
-     bsu = {
+     bsu {
          volume_size=30
          volume_type = "io1"
          iops      = 150
