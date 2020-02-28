@@ -64,16 +64,14 @@ const testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags = `
 	resource "outscale_public_ip" "outscale_public_ip2" {
 		tags {
 			key   = "name"
-			value = "public_ip-data"
+			value = outscale_public_ip.outscale_public_ip.tags[0].value
 		}
 	}
 
 	data "outscale_public_ips" "outscale_public_ips" {
 		filter {
 			name   = "tags"
-			values = ["name=public_ip-data"]
+			values = ["name=${outscale_public_ip.outscale_public_ip.tags[0].value}"]
 		}
-
-		depends_on = [outscale_public_ip.outscale_public_ip, outscale_public_ip.outscale_public_ip2]
 	}
 `

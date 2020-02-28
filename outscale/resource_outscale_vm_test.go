@@ -43,12 +43,12 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
-	omi := getOMIByRegion("eu-west-2", "centos").OMI
+	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	resourceName := "outscale_vm.basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     func() { skipIfNoOAPI(t); testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{

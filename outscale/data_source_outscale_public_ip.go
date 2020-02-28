@@ -27,7 +27,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 		"filter": dataSourceFiltersSchema(),
 		"public_ip_id": {
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
 		},
 		"public_ip": {
 			Type:     schema.TypeString,
@@ -66,15 +66,18 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	req := oscgo.ReadPublicIpsRequest{
 		Filters: &oscgo.FiltersPublicIp{},
 	}
-	req.Filters.SetPublicIpIds([]string{d.Get("public_ip_id").(string)})
+
+	if p, ok := d.GetOk("public_ip_id"); ok {
+		req.Filters.SetPublicIpIds([]string{p.(string)})
+	}
+
+	if id, ok := d.GetOk("public_ip"); ok {
+		req.Filters.SetPublicIps([]string{id.(string)})
+	}
 
 	filters, filtersOk := d.GetOk("filter")
 	if filtersOk {
 		req.Filters = buildOutscaleOAPIDataSourcePublicIpsFilters(filters.(*schema.Set))
-	}
-
-	if id := d.Get("public_ip"); id != "" {
-		req.Filters.SetPublicIps([]string{id.(string)})
 	}
 
 	var response oscgo.ReadPublicIpsResponse
