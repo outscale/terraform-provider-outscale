@@ -104,11 +104,11 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	// Verify Outscale returned our EIP
 	if len(response.GetPublicIps()) == 0 {
-		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
+		return fmt.Errorf("Unable to find Public IP: %#v", req)
 	}
 
 	if len(response.GetPublicIps()) > 1 {
-		return fmt.Errorf("multiple External IPs matched; use additional constraints to reduce matches to a single External IP")
+		return fmt.Errorf("multiple Public IPs matched; you can either use additional constraints to reduce matches to a single Public IP or use public_ips data source instead.")
 	}
 
 	address := response.GetPublicIps()[0]
