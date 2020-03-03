@@ -60,6 +60,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"nat_service_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"nat_access_point": {
 				Type:     schema.TypeString,
@@ -179,12 +180,10 @@ func resourceOutscaleOAPIRouteRead(d *schema.ResourceData, meta interface{}) err
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 			log.Printf("[WARN] Route Table %q could not be found. Removing Route from state.", routeTableID)
-			// d.SetId("")
 			return nil
 		}
 		return err
 	}
-
 	return resourceOutscaleOAPIRouteSetResourceData(d, route, requestID)
 }
 
@@ -199,6 +198,9 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *osc
 		return err
 	}
 	if err := d.Set("nat_access_point", route.GetNetAccessPointId()); err != nil {
+		return err
+	}
+	if err := d.Set("nat_service_id", route.GetNatServiceId()); err != nil {
 		return err
 	}
 	if err := d.Set("nic_id", route.NicId); err != nil {
