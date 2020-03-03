@@ -592,7 +592,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// If nothing was found, then return no state
-	if !resp.HasVms() {
+	if !resp.HasVms() || len(resp.GetVms()) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -639,7 +639,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
-		d.HasChange("bsu_optimized") && !d.IsNewResource() {
+		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
+		d.HasChange("performance") && !d.IsNewResource() {
 		if err := stopVM(id, conn); err != nil {
 			return err
 		}
@@ -666,6 +667,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
+
+		if err := updateVmAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("performance") && !d.IsNewResource() {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
@@ -718,15 +728,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("is_source_dest_checked") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetIsSourceDestChecked(d.Get("is_source_dest_checked").(bool))
-
-		if err := updateVmAttr(conn, opts); err != nil {
-			return err
-		}
-	}
-
-	if d.HasChange("performance") && !d.IsNewResource() {
-		opts := oscgo.UpdateVmRequest{VmId: id}
-		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
