@@ -335,7 +335,7 @@ func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefr
 			return nil, "", fmt.Errorf("Error on SGStateRefresh: %s", errString)
 		}
 
-		if resp.GetSecurityGroups() == nil {
+		if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
 			return nil, "", nil
 		}
 

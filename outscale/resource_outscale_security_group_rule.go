@@ -679,9 +679,9 @@ func validateOAPISecurityGroupRule(ippems []interface{}) error {
 			for _, v := range members {
 				member := v.(map[string]interface{})
 
-				if member["security_group_id"].(string) == "" {
+				if member["security_group_id"].(string) == "" && member["security_group_name"].(string) == "" {
 					return fmt.Errorf(
-						"'security_group_id' must be set")
+						"'security_group_id' or 'security_group_name' must be set")
 				}
 			}
 		}
