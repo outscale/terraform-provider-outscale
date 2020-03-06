@@ -22,7 +22,8 @@ Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
 ```sh
 $ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8.1/terraform-provider-outscale_linux_amd64_v0.1.0-rc8.1.zip
 $ unzip terraform-provider-outscale_linux_amd64_v0.1.0-rc8.1.zip
-$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/linux_amd64/.
+$ mkdir -p ~/.terraform.d/plugins/linux_amd64
+$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/linux_amd64/
 ```
 
 Installing The Provider on MacOs
@@ -33,7 +34,8 @@ Download the binary and install it in ~/.terraform/plugins/darwin_amd64/.
 ```sh
 $ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC8.1/terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.1.zip
 $ unzip terraform-provider-outscale_darwin_amd64_v0.1.0-rc8.1.zip
-$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/darwin_amd64/.
+$ mkdir -p ~/.terraform.d/plugins/darwin_amd64
+$ mv terraform-provider-outscale_v0.1.0-rc8.1 ~/.terraform.d/plugins/darwin_amd64/
 ```
 
 Building The Provider
