@@ -67,6 +67,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nic_link":                resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":          resourceOutscaleOAPINetworkInterfacePrivateIP(),
 			"outscale_snapshot_attributes":     resourcedOutscaleOAPISnapshotAttributes(),
+			"outscale_client_gateway":          resourceOutscaleClientGateway(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                dataSourceOutscaleOAPIVM(),
@@ -102,6 +103,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_peerings":      dataSourceOutscaleOAPILinPeeringsConnection(),
 			"outscale_nics":              dataSourceOutscaleOAPINics(),
 			"outscale_nic":               dataSourceOutscaleOAPINic(),
+			"outscale_client_gateway":    dataSourceOutscaleClientGateway(),
+			"outscale_client_gateways":   dataSourceOutscaleClientGateways(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
