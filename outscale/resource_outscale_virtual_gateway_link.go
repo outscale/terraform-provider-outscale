@@ -170,7 +170,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 		return fmt.Errorf("Error waiting for Virtual Gateway %q to attach to VPC %q: %s",
 			vgwID, netID, err)
 	}
-	log.Printf("[DEBUG] VPN Gateway %q attached to VPC %q.", vgwID, netID)
+	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
 
 	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
 }
@@ -254,6 +254,7 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(
 				oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
 					VirtualGatewayIds: &[]string{vgwID},
+					LinkNetIds:        &[]string{vpcID},
 				}})})
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
