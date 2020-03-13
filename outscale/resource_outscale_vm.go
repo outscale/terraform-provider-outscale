@@ -122,6 +122,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 				Set: func(v interface{}) int {
 					return v.(map[string]interface{})["device_number"].(int)
 				},
@@ -131,31 +132,37 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"description": {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"device_number": {
 							Type:     schema.TypeInt,
 							Required: true,
+							ForceNew: true,
 						},
 						"nic_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"private_ips": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"is_primary": {
 										Type:     schema.TypeBool,
 										Optional: true,
 										Computed: true,
+										ForceNew: true,
 									},
 									"link_public_ip": {
 										Type:     schema.TypeSet,
@@ -185,6 +192,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Type:     schema.TypeString,
 										Optional: true,
 										Computed: true,
+										ForceNew: true,
 									},
 								},
 							},
@@ -193,6 +201,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"account_id": {
 							Type:     schema.TypeString,
@@ -208,6 +217,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"link_nic": {
 							Type:     schema.TypeList,
@@ -270,6 +280,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups": {
