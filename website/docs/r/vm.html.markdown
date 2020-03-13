@@ -39,7 +39,7 @@ resource "outscale_vm" "vm02" {
   keypair_name            = var.keypair_name
   block_device_mappings {
     device_name = "/dev/sdb"
-    bsu         = {
+    bsu  {
       volume_size = 15
       volume_type = "gp2"
       snapshot_id = var.snapshot_id
@@ -47,7 +47,7 @@ resource "outscale_vm" "vm02" {
   }  
   block_device_mappings {
     device_name = "/dev/sdc"
-    bsu         = {
+    bsu  {
       volume_size           = 22
       volume_type           = "io1"
       iops                  = 150
