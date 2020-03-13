@@ -420,6 +420,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"performance": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			"private_dns_name": {
 				Type:     schema.TypeString,
@@ -613,7 +614,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// If nothing was found, then return no state
-	if !resp.HasVms() {
+	if !resp.HasVms() || len(resp.GetVms()) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -660,7 +661,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
-		d.HasChange("bsu_optimized") && !d.IsNewResource() {
+		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
+		d.HasChange("performance") && !d.IsNewResource() {
 		if err := stopVM(id, conn); err != nil {
 			return err
 		}
@@ -687,6 +689,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
+
+		if err := updateVmAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("performance") && !d.IsNewResource() {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
@@ -906,6 +917,10 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 
 	if v, ok := d.GetOk("vm_initiated_shutdown_behavior"); ok && v != "" {
 		request.SetVmInitiatedShutdownBehavior(v.(string))
+	}
+
+	if v := d.Get("performance").(string); v != "" {
+		request.SetPerformance(v)
 	}
 
 	return request, nil
