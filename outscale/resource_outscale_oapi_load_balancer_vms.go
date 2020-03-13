@@ -1,14 +1,15 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -20,13 +21,13 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 		Delete: resourceOutscaleOAPILBUAttachmentDelete,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
 
-			"backend_vm_id": &schema.Schema{
+			"backend_vm_id": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Required: true,
@@ -44,7 +45,7 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 }
 
 func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	e, eok := d.GetOk("load_balancer_name")
 	i, iok := d.GetOk("backend_vm_id")
@@ -53,21 +54,26 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 		return fmt.Errorf("please provide the required attributes load_balancer_name and backend_vm_id")
 	}
 
-	lb := make([]*lbu.Instance, len(i.([]interface{})))
-
-	for k, v := range i.([]interface{}) {
-		ins := v.(map[string]interface{})["vm_id"]
-		lb[k] = &lbu.Instance{InstanceId: aws.String(ins.(string))}
+	m := i.([]interface{})
+	a := make([]string, len(m))
+	for k, v := range m {
+		a[k] = v.(string)
 	}
 
-	registerInstancesOpts := lbu.RegisterInstancesWithLoadBalancerInput{
-		LoadBalancerName: aws.String(e.(string)),
-		Instances:        lb,
+	req := oscgo.RegisterVmsInLoadBalancerRequest{
+		LoadBalancerName: e.(string),
+		BackendVmIds:     a,
+	}
+
+	registerInstancesOpts := oscgo.RegisterVmsInLoadBalancerOpts{
+		optional.NewInterface(req),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.RegisterInstancesWithLoadBalancer(&registerInstancesOpts)
+		_, _, err = conn.LoadBalancerApi.
+			RegisterVmsInLoadBalancer(context.Background(),
+				&registerInstancesOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -89,20 +95,29 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 }
 
 func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	e := d.Get("load_balancer_name").(string)
 	expected := d.Get("backend_vm_id").([]interface{})
 
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(e)},
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{e},
 	}
 
-	var resp *lbu.DescribeLoadBalancersOutput
-	var describeResp *lbu.DescribeLoadBalancersResult
+	req := &oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -111,31 +126,32 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 			}
 			return resource.NonRetryableError(err)
 		}
-		if resp.DescribeLoadBalancersResult != nil {
-			describeResp = resp.DescribeLoadBalancersResult
-		}
 		return nil
 	})
 
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			log.Printf("[ERROR] LBU %s not found", e)
-			d.SetId("")
-			return nil
-		}
+		/*
+			if isLoadBalancerNotFound(err) {
+				log.Printf("[ERROR] LBU %s not found", e)
+				d.SetId("")
+				return nil
+			}
+		*/
 		return fmt.Errorf("Error retrieving LBU: %s", err)
-	}
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
-		log.Printf("[ERROR] Unable to find LBU: %v", describeResp.LoadBalancerDescriptions)
-		d.SetId("")
-		return nil
 	}
 
 	found := false
-	for _, i := range describeResp.LoadBalancerDescriptions[0].Instances {
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", expected)
+	}
+
+	lb := (lbs)[0]
+
+	for _, v := range *lb.BackendVmIds {
 		for k1 := range expected {
-			instance := expected[k1].(map[string]interface{})["vm_id"].(string)
-			if instance == *i.InstanceId {
+			sid := expected[k1].(string)
+			if sid == v {
 				d.Set("backend_vm_id", expected)
 				found = true
 			}
@@ -151,25 +167,29 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 }
 
 func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	e := d.Get("load_balancer_name").(string)
 	i := d.Get("backend_vm_id").([]interface{})
 
-	lb := make([]*lbu.Instance, len(i))
+	lb := make([]string, len(i))
 
 	for k, v := range i {
-		ins := v.(map[string]interface{})["vm_id"]
-		lb[k] = &lbu.Instance{InstanceId: aws.String(ins.(string))}
+		lb[k] = v.(string)
 	}
 
-	deRegisterInstancesOpts := lbu.DeregisterInstancesFromLoadBalancerInput{
-		LoadBalancerName: aws.String(e),
-		Instances:        lb,
+	req := oscgo.DeregisterVmsInLoadBalancerRequest{
+		LoadBalancerName: e,
+		BackendVmIds:     lb,
+	}
+	deRegisterInstancesOpts := oscgo.DeregisterVmsInLoadBalancerOpts{
+		optional.NewInterface(req),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err := conn.API.DeregisterInstancesFromLoadBalancer(&deRegisterInstancesOpts)
+		_, _, err := conn.LoadBalancerApi.
+			DeregisterVmsInLoadBalancer(context.Background(),
+				&deRegisterInstancesOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {

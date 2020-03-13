@@ -3,31 +3,22 @@ package outscale
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 	o := os.Getenv("OUTSCALE_OAPI")
 
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if !oapi {
-		t.Skip()
-	}
-
-	var conf lbu.LoadBalancerDescription
+	var conf oscgo.LoadBalancer
 
 	testCheckInstanceAttached := func(count int) resource.TestCheckFunc {
 		return func(*terraform.State) error {
-			if len(conf.Instances) != count {
+			if len(*conf.BackendVmIds) != count {
 				return fmt.Errorf("backend_vm_id count does not match")
 			}
 			return nil
@@ -40,7 +31,7 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILBUAttachmentConfig1,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
