@@ -118,6 +118,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connections":   dataSourceOutscaleVPNConnections(),
 			"outscale_access_key":        dataSourceOutscaleAccessKey(),
 			"outscale_access_keys":       dataSourceOutscaleAccessKeys(),
+			"outscale_dhcp_option":       dataSourceOutscaleDHCPOption(),
+			"outscale_dhcp_options":      dataSourceOutscaleDHCPOptions(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
