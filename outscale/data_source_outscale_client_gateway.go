@@ -146,7 +146,7 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.Filters
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
 		case "tag_values":
-			filters.SetTagKeys(filterValues)
+			filters.SetTagValues(filterValues)
 		case "tags":
 			filters.SetTags(filterValues)
 		default:
