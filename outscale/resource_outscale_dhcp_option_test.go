@@ -10,21 +10,54 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform/helper/acctest"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 
+	resourceName := "outscale_dhcp_option.foo"
+	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
+	updateValue := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
-		IDRefreshName: "outscale_dhcp_option.foo",
+		IDRefreshName: resourceName,
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalConfig(),
+				Config: testAccOAPIDHCPOptionalConfig(value),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleDHCPOptionExists("outscale_dhcp_option.foo"),
+					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
+					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+
+					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
+					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
+					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
+				),
+			},
+			{
+				Config: testAccOAPIDHCPOptionalConfig(updateValue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleDHCPOptionExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
+					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
+					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
+
+					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
+					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
+					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", updateValue),
 				),
 			},
 		},
@@ -33,6 +66,7 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 
 func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
 	resourceName := "outscale_dhcp_option.foo"
+	value := fmt.Sprintf("test-acc-value-%s", acctest.RandString(5))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -40,7 +74,7 @@ func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalConfig(),
+				Config: testAccOAPIDHCPOptionalConfig(value),
 			},
 			{
 				ResourceName:            resourceName,
@@ -92,7 +126,7 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "outscale_customer_endpoint" {
+		if rs.Type != "outscale_dhcp_option" {
 			continue
 		}
 
@@ -117,16 +151,17 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOAPIDHCPOptionalConfig() string {
-	return `
+func testAccOAPIDHCPOptionalConfig(value string) string {
+	return fmt.Sprintf(`
 		resource "outscale_dhcp_option" "foo" {
 			domain_name         = "test.fr"
 			domain_name_servers = ["192.168.12.1"]
 			ntp_servers         = ["192.0.0.2"]
+
 			tags {
 				key   = "name"
-				value = "MyDHCPoptionsSet"
+				value = "%s"
 			}
 		}
-	`
+	`, value)
 }
