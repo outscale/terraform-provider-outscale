@@ -17,6 +17,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleDHCPOptionCreate,
 		Read:   resourceOutscaleDHCPOptionRead,
+		Update: resourceOutscaleDHCPOptionUpdate,
 		Delete: resourceOutscaleDHCPOptionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -55,25 +56,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
-						},
-					},
-				},
-			},
+			"tags": tagsListOAPISchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -179,6 +162,21 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 	return nil
+}
+
+func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
+	return resourceOutscaleDHCPOptionRead(d, meta)
 }
 
 func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) error {
