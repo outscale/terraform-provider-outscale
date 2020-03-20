@@ -318,3 +318,8 @@ func expandStringValueList(configured []interface{}) []string {
 	}
 	return vs
 }
+
+func expandStringValueListPointer(configured []interface{}) *[]string {
+	res := expandStringValueList(configured)
+	return &res
+}
