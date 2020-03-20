@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 )
 
 func resourceOutscaleOAPILoadBalancerSSLCertificate() *schema.Resource {
@@ -45,7 +47,7 @@ func resourceOutscaleOAPILoadBalancerSSLCertificate() *schema.Resource {
 }
 
 func resourceOutscaleOAPILoadBalancerSSLCertificateCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	ename, ok := d.GetOk("load_balancer_name")
 	port, pok := d.GetOk("load_balancer_port")
@@ -62,17 +64,24 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateCreate(d *schema.ResourceData
 	if !sok {
 		return fmt.Errorf("please provide server_certificate_id argument")
 	}
-
-	opts := lbu.SetLoadBalancerListenerSSLCertificateInput{
-		LoadBalancerName: aws.String(ename.(string)),
-		LoadBalancerPort: aws.Int64(int64(port.(int))),
-		SSLCertificateId: aws.String(ssl.(string)),
+	port_i := port.(int64)
+	ssl_s := ssl.(string)
+	req := oscgo.UpdateLoadBalancerRequest{
+		LoadBalancerName:    ename.(string),
+		LoadBalancerPort:    &port_i,
+		ServerCertificateId: &ssl_s,
 	}
+
+	opts := oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(req),
+	}
+
 	var err error
-	var resp = &lbu.SetLoadBalancerListenerSSLCertificateOutput{}
+	var resp = oscgo.UpdateLoadBalancerResponse{}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.SetLoadBalancerListenerSSLCertificate(&opts)
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), &opts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
@@ -87,8 +96,8 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateCreate(d *schema.ResourceData
 		return fmt.Errorf("Failure setting Load Balancer Listeners SSL Certificate for LBU: %s", err)
 	}
 
-	if resp.ResponseMetadata != nil {
-		d.Set("request_id", resp.ResponseMetadata.RequestID)
+	if resp.ResponseContext != nil {
+		d.Set("request_id", resp.ResponseContext.RequestId)
 	}
 
 	d.SetId(ename.(string))
@@ -101,18 +110,27 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateUpdate(d *schema.ResourceData
 		return nil
 	}
 
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	opts := lbu.SetLoadBalancerListenerSSLCertificateInput{
-		LoadBalancerName: aws.String(d.Get("load_balancer_name").(string)),
-		LoadBalancerPort: aws.Int64(d.Get("server_certificate_id").(int64)),
-		SSLCertificateId: aws.String(d.Get("server_certificate_id").(string)),
+	port := d.Get("load_balancer_port").(int64)
+	ssl := d.Get("server_certificate_id").(string)
+
+	req := oscgo.UpdateLoadBalancerRequest{
+		LoadBalancerName:    d.Get("load_balancer_name").(string),
+		LoadBalancerPort:    &port,
+		ServerCertificateId: &ssl,
 	}
+
+	opts := oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(req),
+	}
+
 	var err error
-	var resp = &lbu.SetLoadBalancerListenerSSLCertificateOutput{}
+	var resp = oscgo.UpdateLoadBalancerResponse{}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.SetLoadBalancerListenerSSLCertificate(&opts)
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), &opts)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
@@ -127,11 +145,11 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateUpdate(d *schema.ResourceData
 		return fmt.Errorf("Failure setting Load Balancer Listeners SSL Certificate for LBU: %s", err)
 	}
 
-	if resp.ResponseMetadata != nil {
-		d.Set("request_id", resp.ResponseMetadata.RequestID)
+	if resp.ResponseContext != nil {
+		d.Set("request_id", resp.ResponseContext.RequestId)
 	}
 
-	d.SetId(aws.StringValue(opts.LoadBalancerName))
+	d.SetId(req.LoadBalancerName)
 
 	return resourceOutscaleOAPILoadBalancerSSLCertificateRead(d, meta)
 }
