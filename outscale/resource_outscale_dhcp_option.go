@@ -26,11 +26,13 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"domain_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 			"domain_name_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -39,6 +41,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"ntp_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -69,13 +72,26 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	createOpts := oscgo.CreateDhcpOptionsRequest{}
-	createOpts.SetDomainName(d.Get("domain_name").(string))
-	createOpts.SetDomainNameServers(expandStringValueList(d.Get("domain_name_servers").([]interface{})))
-	createOpts.SetNtpServers(expandStringValueList(d.Get("ntp_servers").([]interface{})))
+
+	domainName, okDomainName := d.GetOk("domain_name")
+	domainNameServers, okDomainNameServers := d.GetOk("domain_name_servers")
+	ntpServers, okNTPServers := d.GetOk("ntp_servers")
+
+	if !okDomainName && !okDomainNameServers && !okNTPServers {
+		return fmt.Errorf("Insufficient parameters provided out of: DomainName, domainNameServers, ntpServers. Expected at least: 1")
+	}
+	if okDomainName {
+		createOpts.SetDomainName(domainName.(string))
+	}
+	if okDomainNameServers {
+		createOpts.SetDomainNameServers(expandStringValueList(domainNameServers.([]interface{})))
+	}
+	if okNTPServers {
+		createOpts.SetNtpServers(expandStringValueList(ntpServers.([]interface{})))
+	}
 
 	var resp oscgo.CreateDhcpOptionsResponse
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background(), &oscgo.CreateDhcpOptionsOpts{
 			CreateDhcpOptionsRequest: optional.NewInterface(createOpts),
