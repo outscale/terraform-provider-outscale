@@ -823,19 +823,25 @@ func setOSCAPIFromIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, rules 
 		ip["ip_ranges"] = rule.IpRanges
 		ip["service_ids"] = rule.ServiceIds
 
-		// if len(rule.GetSecurityGroupsMembers()) > 0 {
-		// 	s := rule.GetSecurityGroupsMembers()[0]
-		// 	//TODO: check if account_id is still needed
-		// 	// if err := d.Set("account_id", s.GetAccountId()); err != nil {
-		// 	// 	return nil, err
-		// 	// }
-		// 	if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
-		// 		return nil, err
-		// 	}
-		// 	if err := d.Set("security_group_name", s.GetSecurityGroupName()); err != nil {
-		// 		return nil, err
-		// 	}
-		// }
+		if rule.GetSecurityGroupsMembers() != nil && len(rule.GetSecurityGroupsMembers()) > 0 {
+			grp := make([]map[string]interface{}, len(rule.GetSecurityGroupsMembers()))
+			for i, v := range rule.GetSecurityGroupsMembers() {
+				g := make(map[string]interface{})
+
+				if v.GetAccountId() != "" {
+					g["account_id"] = v.GetAccountId()
+				}
+				if v.GetSecurityGroupName() != "" {
+					g["security_group_name"] = v.GetSecurityGroupName()
+				}
+				if v.GetSecurityGroupId() != "" {
+					g["security_group_id"] = v.GetSecurityGroupId()
+				}
+
+				grp[i] = g
+			}
+			ip["security_groups_members"] = grp
+		}
 
 		ips[k] = ip
 	}
