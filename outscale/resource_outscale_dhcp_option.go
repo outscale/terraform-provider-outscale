@@ -26,14 +26,14 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"domain_name": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
+				Computed: true,
 			},
 			"domain_name_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -41,8 +41,8 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"ntp_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Computed: true,
 				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -192,6 +192,7 @@ func resourceOutscaleDHCPOptionUpdate(d *schema.ResourceData, meta interface{}) 
 	d.SetPartial("tags")
 
 	d.Partial(false)
+
 	return resourceOutscaleDHCPOptionRead(d, meta)
 }
 

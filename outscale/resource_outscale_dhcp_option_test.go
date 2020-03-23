@@ -27,24 +27,22 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(value),
+				Config: testAccOAPIDHCPOptionalBasicConfig(value, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
-					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
-					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 				),
 			},
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(updateValue),
+				Config: testAccOAPIDHCPOptionalBasicConfig(updateValue, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleDHCPOptionExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
@@ -127,7 +125,7 @@ func TestAccOutscaleDHCPOption_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIDHCPOptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIDHCPOptionalBasicConfig(value),
+				Config: testAccOAPIDHCPOptionalBasicConfig(value, true),
 			},
 			{
 				ResourceName:            resourceName,
@@ -204,19 +202,30 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccOAPIDHCPOptionalBasicConfig(value string) string {
-	return fmt.Sprintf(`
-		resource "outscale_dhcp_option" "foo" {
-			domain_name         = "test.fr"
-			domain_name_servers = ["192.168.12.1"]
-			ntp_servers         = ["192.0.0.2"]
+func testAccOAPIDHCPOptionalBasicConfig(value string, ntpServers bool) string {
+	var ntp string
 
-			tags {
-				key   = "name"
-				value = "%s"
-			}
+	if ntpServers {
+		ntp = `ntp_servers = ["192.0.0.2"]`
+	}
+
+	tf := fmt.Sprintf(`
+	resource "outscale_dhcp_option" "foo" {
+		domain_name         = "test.fr"
+		domain_name_servers = ["192.168.12.1"]
+
+
+		tags {
+			key   = "name"
+			value = "%s"
 		}
-	`, value)
+
+		%s
+
+	}
+`, value, ntp)
+
+	return tf
 }
 
 func testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServers []string, value string) string {
