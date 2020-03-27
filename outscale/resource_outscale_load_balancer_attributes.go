@@ -1,16 +1,18 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
@@ -24,45 +26,45 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"publication_interval": &schema.Schema{
+			"publication_interval": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"is_enabled": &schema.Schema{
+			"is_enabled": {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
-			"osu_bucket_name": &schema.Schema{
+			"osu_bucket_name": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"osu_bucket_prefix": &schema.Schema{
+			"osu_bucket_prefix": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"load_balancer_attributes": &schema.Schema{
+			"load_balancer_attributes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_log": &schema.Schema{
+						"access_log": {
 							Type:     schema.TypeMap,
 							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"publication_interval": &schema.Schema{
+									"publication_interval": {
 										Type:     schema.TypeInt,
 										Computed: true,
 									},
-									"is_enabled": &schema.Schema{
+									"is_enabled": {
 										Type:     schema.TypeBool,
 										Computed: true,
 									},
-									"osu_bucket_name": &schema.Schema{
+									"osu_bucket_name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"osu_bucket_prefix": &schema.Schema{
+									"osu_bucket_prefix": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -72,12 +74,12 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					},
 				},
 			},
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -86,7 +88,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	v, ok := d.GetOk("is_enabled")
 	v1, ok1 := d.GetOk("load_balancer_name")
@@ -95,30 +97,38 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		return fmt.Errorf("please provide the is_enabled and load_balancer_name required attributes")
 	}
 
-	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(v1.(string)),
+	req := &oscgo.UpdateLoadBalancerRequest{
+		LoadBalancerName: v1.(string),
 	}
-	access := &lbu.AccessLog{
-		Enabled: aws.Bool(v.(bool)),
+
+	is_enable := v.(bool)
+	access := &oscgo.AccessLog{
+		IsEnabled: &is_enable,
 	}
 
 	if v, ok := d.GetOk("publication_interval"); ok {
-		access.EmitInterval = aws.Int64(int64(v.(int)))
+		pi := int64(v.(int))
+		access.PublicationInterval = &pi
 	}
 	if v, ok := d.GetOk("osu_bucket_name"); ok {
-		access.S3BucketName = aws.String(v.(string))
+		obn := v.(string)
+		access.OsuBucketName = &obn
 	}
 	if v, ok := d.GetOk("osu_bucket_prefix"); ok {
-		access.S3BucketPrefix = aws.String(v.(string))
+		obp := v.(string)
+		access.OsuBucketPrefix = &obp
 	}
 
-	elbOpts.LoadBalancerAttributes = &lbu.LoadBalancerAttributes{
-		AccessLog: access,
+	req.AccessLog = access
+
+	elbOpts := oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(req),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.ModifyLoadBalancerAttributes(elbOpts)
+		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), &elbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -134,35 +144,41 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		return err
 	}
 
-	d.SetId(*elbOpts.LoadBalancerName)
+	d.SetId(req.LoadBalancerName)
 	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
 
 	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
 	// Retrieve the LBU Attr properties for updating the state
-	describeElbOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName),
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
 
-	var describeResp *lbu.DescribeLoadBalancerAttributesResult
-	var resp *lbu.DescribeLoadBalancerAttributesOutput
+	req := &oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
-		}
-		if resp.DescribeLoadBalancerAttributesResult != nil {
-			describeResp = resp.DescribeLoadBalancerAttributesResult
 		}
 		return nil
 	})
@@ -176,37 +192,46 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		return fmt.Errorf("Error retrieving LBU Attr: %s", err)
 	}
 
-	if describeResp.LoadBalancerAttributes == nil {
+	if resp.LoadBalancers == nil {
+		return fmt.Errorf("NO ELB FOUND")
+	}
+
+	if len(*resp.LoadBalancers) != 1 {
+		return fmt.Errorf("Unable to find ELB: %#v", resp.LoadBalancers)
+	}
+
+	lb_resp := (*resp.LoadBalancers)[0]
+	if lb_resp.AccessLog == nil {
 		return fmt.Errorf("NO Attributes FOUND")
 	}
 
-	a := describeResp.LoadBalancerAttributes.AccessLog
+	a := lb_resp.AccessLog
 
 	access := make(map[string]string)
 	ac := make(map[string]interface{})
-	access["publication_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	access["is_enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	access["osu_bucket_name"] = aws.StringValue(a.S3BucketName)
-	access["osu_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
+	access["publication_interval"] = strconv.Itoa(int(*a.PublicationInterval))
+	access["is_enabled"] = strconv.FormatBool(*a.IsEnabled)
+	access["osu_bucket_name"] = *a.OsuBucketName
+	access["osu_bucket_prefix"] = *a.OsuBucketPrefix
 	ac["access_log"] = access
 
 	l := make([]map[string]interface{}, 1)
 	l[0] = ac
 
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return d.Set("load_balancer_attributes", l)
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	elbOpts := &lbu.ModifyLoadBalancerAttributesInput{}
-	access := &lbu.AccessLog{}
+	req := &oscgo.UpdateLoadBalancerRequest{}
+	access := &oscgo.AccessLog{}
 	if d.HasChange("load_balancer_name") {
 		_, n := d.GetChange("load_balancer_name")
 
-		elbOpts.LoadBalancerName = aws.String(n.(string))
+		req.LoadBalancerName = n.(string)
 	}
 	if d.HasChange("is_enabled") {
 		_, n := d.GetChange("is_enabled")
@@ -216,7 +241,7 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 			return err
 		}
 
-		access.Enabled = aws.Bool(b)
+		access.IsEnabled = &b
 	}
 	if d.HasChange("publication_interval") {
 		_, n := d.GetChange("publication_interval")
@@ -225,25 +250,32 @@ func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, me
 		if err != nil {
 			return err
 		}
-		access.EmitInterval = aws.Int64(int64(i))
+		i64 := int64(i)
+		access.PublicationInterval = &i64
 	}
 	if d.HasChange("osu_bucket_name") {
 		_, n := d.GetChange("osu_bucket_name")
 
-		access.S3BucketName = aws.String(n.(string))
+		s := n.(string)
+		access.OsuBucketName = &s
 	}
 	if d.HasChange("osu_bucket_prefix") {
 		_, n := d.GetChange("osu_bucket_prefix")
-		access.S3BucketPrefix = aws.String(n.(string))
+
+		s := n.(string)
+		access.OsuBucketPrefix = &s
 	}
 
-	elbOpts.LoadBalancerAttributes = &lbu.LoadBalancerAttributes{
-		AccessLog: access,
+	req.AccessLog = access
+
+	elbOpts := &oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(req),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.ModifyLoadBalancerAttributes(elbOpts)
+		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), elbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
