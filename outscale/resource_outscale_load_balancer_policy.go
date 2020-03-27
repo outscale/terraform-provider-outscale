@@ -1,15 +1,17 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func resourceOutscaleOAPILoadBalancerPolicy() *schema.Resource {
@@ -22,23 +24,23 @@ func resourceOutscaleOAPILoadBalancerPolicy() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"policy_names": &schema.Schema{
+			"policy_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"load_balancer_port": &schema.Schema{
+			"load_balancer_port": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -46,25 +48,40 @@ func resourceOutscaleOAPILoadBalancerPolicy() *schema.Resource {
 	}
 }
 
-func resourceOutscaleOAPILoadBalancerPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+func expandStringList(ifs []interface{}) *[]string {
+	r := make([]string, len(ifs))
 
-	pInput := &lbu.SetLoadBalancerPoliciesOfListenerInput{}
+	for k, v := range ifs {
+		r[k] = v.(string)
+	}
+	return &r
+}
+
+func resourceOutscaleOAPILoadBalancerPolicyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	pInput := oscgo.UpdateLoadBalancerRequest{}
 
 	pInput.PolicyNames = expandStringList(d.Get("policy_names").([]interface{}))
 
 	if v, ok := d.GetOk("load_balancer_name"); ok {
-		pInput.LoadBalancerName = aws.String(v.(string))
+		pInput.LoadBalancerName = v.(string)
 	}
 
 	if v, ok := d.GetOk("load_balancer_port"); ok {
-		pInput.LoadBalancerPort = aws.Int64(int64(v.(int)))
+		port := int64(v.(int))
+		pInput.LoadBalancerPort = &port
+	}
+
+	opts := &oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(pInput),
 	}
 
 	var err error
-	var resp *lbu.SetLoadBalancerPoliciesOfListenerOutput
+	var resp oscgo.UpdateLoadBalancerResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.SetLoadBalancerPoliciesOfListener(pInput)
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), opts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -81,11 +98,11 @@ func resourceOutscaleOAPILoadBalancerPolicyCreate(d *schema.ResourceData, meta i
 		return err
 	}
 
-	if resp.ResponseMatadata != nil {
-		d.Set("request_id", resp.ResponseMatadata.RequestID)
+	if resp.ResponseContext != nil {
+		d.Set("request_id", resp.ResponseContext.RequestId)
 	}
 
-	d.SetId(*pInput.LoadBalancerName)
+	d.SetId(pInput.LoadBalancerName)
 	log.Printf("[INFO] ELB Policies Listener ID: %s", d.Id())
 
 	return nil
@@ -96,24 +113,31 @@ func resourceOutscaleOAPILoadBalancerPolicyRead(d *schema.ResourceData, meta int
 }
 
 func resourceOutscaleOAPILoadBalancerPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	pInput := &lbu.SetLoadBalancerPoliciesOfListenerInput{}
+	pInput := &oscgo.UpdateLoadBalancerRequest{}
 
-	pInput.PolicyNames = make([]*string, 0)
+	pols := make([]string, 0)
+	pInput.PolicyNames = &pols
 
 	if v, ok := d.GetOk("load_balancer_name"); ok {
-		pInput.LoadBalancerName = aws.String(v.(string))
+		pInput.LoadBalancerName = v.(string)
 	}
 
 	if v, ok := d.GetOk("load_balancer_port"); ok {
-		pInput.LoadBalancerPort = aws.Int64(int64(v.(int)))
+		p := int64(v.(int))
+		pInput.LoadBalancerPort = &p
+	}
+
+	opts := &oscgo.UpdateLoadBalancerOpts{
+		optional.NewInterface(pInput),
 	}
 
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = conn.API.SetLoadBalancerPoliciesOfListener(pInput)
+		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background(), opts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
