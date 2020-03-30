@@ -19,7 +19,7 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVirtualGatewayRead,
 
 		Schema: map[string]*schema.Schema{
-			"filters": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(),
 			"virtual_gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -63,15 +63,17 @@ func dataSourceOutscaleOAPIVirtualGateway() *schema.Resource {
 func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filters")
+	filters, filtersOk := d.GetOk("filter")
 	virtualId, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filters must be assigned")
+		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
 	}
 
-	params := oscgo.ReadVirtualGatewaysRequest{
-		Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}},
+	params := oscgo.ReadVirtualGatewaysRequest{}
+
+	if vpnOk {
+		params.SetFilters(oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{virtualId.(string)}})
 	}
 
 	if filtersOk {
@@ -136,10 +138,12 @@ func buildOutscaleAPIVirtualGatewayFilters(set *schema.Set) oscgo.FiltersVirtual
 		switch name := m["name"].(string); name {
 		// case "available_ips_counts":
 		// 	filters.AvailableIpsCounts = filterValues
-		case "tag_values":
-			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
 		case "states":
 			filters.SetStates(filterValues)
 		case "connection_types":
