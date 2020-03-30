@@ -81,8 +81,6 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 				Config: testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServres, value),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleDHCPOptionExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 
@@ -98,8 +96,6 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 				Config: testAccOAPIDHCPOptionalBasicConfigWithEmptyAttrs(ntpServresUpdated, updateValue),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleDHCPOptionExists(resourceName),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name"),
-					resource.TestCheckResourceAttrSet(resourceName, "domain_name_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "ntp_servers.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "tags.#"),
 

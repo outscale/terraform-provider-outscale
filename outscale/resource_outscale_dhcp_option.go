@@ -27,13 +27,11 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
 			},
 			"domain_name_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -42,7 +40,6 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
-				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -153,15 +150,6 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	}
 	dhcp := dhcps[0]
 
-	if err := d.Set("domain_name", dhcp.GetDomainName()); err != nil {
-		return err
-	}
-	if err := d.Set("domain_name_servers", dhcp.GetDomainNameServers()); err != nil {
-		return err
-	}
-	if err := d.Set("ntp_servers", dhcp.GetNtpServers()); err != nil {
-		return err
-	}
 	if err := d.Set("default", dhcp.GetDefault()); err != nil {
 		return err
 	}
