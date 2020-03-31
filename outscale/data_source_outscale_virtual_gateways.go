@@ -17,7 +17,7 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 		Read: dataSourceOutscaleOAPIVirtualGatewaysRead,
 
 		Schema: map[string]*schema.Schema{
-			"filters": dataSourceFiltersSchema(),
+			"filter": dataSourceFiltersSchema(),
 			"virtual_gateway_id": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -72,17 +72,17 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters, filtersOk := d.GetOk("filters")
+	filter, filtersOk := d.GetOk("filter")
 	_, vpnOk := d.GetOk("virtual_gateway_id")
 
 	if !filtersOk && !vpnOk {
-		return fmt.Errorf("One of virtual_gateway_id or filters must be assigned")
+		return fmt.Errorf("One of virtual_gateway_id or filter must be assigned")
 	}
 
 	params := oscgo.ReadVirtualGatewaysRequest{}
 
 	if filtersOk {
-		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filters.(*schema.Set)))
+		params.SetFilters(buildOutscaleAPIVirtualGatewayFilters(filter.(*schema.Set)))
 	}
 
 	var resp oscgo.ReadVirtualGatewaysResponse
