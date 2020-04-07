@@ -33,18 +33,23 @@ func resourceOutscaleVPNConnection() *schema.Resource {
 			"client_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"virtual_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"connection_type": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"static_routes_only": {
 				Type:     schema.TypeBool,
+				Default:  false,
 				Optional: true,
+				ForceNew: true,
 			},
 			"client_gateway_configuration": {
 				Type:     schema.TypeString,
@@ -149,6 +154,9 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 		return err
 	}
 	if err := d.Set("state", vpnConnection.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("static_routes_only", vpnConnection.GetStaticRoutesOnly()); err != nil {
 		return err
 	}
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
