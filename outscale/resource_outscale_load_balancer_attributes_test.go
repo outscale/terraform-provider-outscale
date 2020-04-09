@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 	t.Skip()
 
-	var conf lbu.LoadBalancerAttributes
+	var conf oscgo.AccessLog
 
 	r := acctest.RandIntRange(0, 10)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		IDRefreshName: "outscale_load_balancer_attributes.bar2",
@@ -34,7 +34,7 @@ func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
 	})
 }
 
-func testAccCheckOutscaleOAPILBUAttrExists(n string, res *lbu.LoadBalancerAttributes) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

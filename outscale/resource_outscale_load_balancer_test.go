@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -8,22 +9,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPILBUBasic(t *testing.T) {
-	t.Skip()
-	var conf lbu.LoadBalancerDescription
+	var conf oscgo.LoadBalancer
 
 	r := acctest.RandIntRange(0, 10)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		IDRefreshName: "outscale_load_balancer.bar",
@@ -53,7 +53,7 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 }
 
 func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*OutscaleClient).LBU
+	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "outscale_load_balancer" {
@@ -61,12 +61,22 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 		}
 
 		var err error
-		var resp *lbu.DescribeLoadBalancersOutput
-		var describe *lbu.DescribeLoadBalancersResult
+		var resp oscgo.ReadLoadBalancersResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
-			})
+			filter := &oscgo.FiltersLoadBalancer{
+				LoadBalancerNames: &[]string{rs.Primary.ID},
+			}
+
+			req := &oscgo.ReadLoadBalancersRequest{
+				Filters: filter,
+			}
+
+			describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+				ReadLoadBalancersRequest: optional.NewInterface(req),
+			}
+			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+				context.Background(),
+				describeElbOpts)
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -74,15 +84,13 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 				}
 				return resource.NonRetryableError(err)
 			}
-			if resp.DescribeLoadBalancersResult != nil {
-				describe = resp.DescribeLoadBalancersResult
-			}
 			return nil
 		})
 
 		if err == nil {
-			if len(describe.LoadBalancerDescriptions) != 0 &&
-				*describe.LoadBalancerDescriptions[0].LoadBalancerName == rs.Primary.ID {
+			if len(*resp.LoadBalancers) != 0 &&
+				*(*resp.LoadBalancers)[0].LoadBalancerName ==
+					rs.Primary.ID {
 				return fmt.Errorf("LBU still exists")
 			}
 		}
@@ -99,19 +107,19 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckOutscaleOAPILBUAttributes(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILBUAttributes(conf *oscgo.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		zones := []string{"eu-west-2a"}
-		azs := make([]string, 0, len(conf.AvailabilityZones))
-		for _, x := range conf.AvailabilityZones {
-			azs = append(azs, *x)
+		azs := make([]string, 0, len(*conf.SubregionNames))
+		for _, x := range *conf.SubregionNames {
+			azs = append(azs, x)
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
 			return fmt.Errorf("bad sub_region_name")
 		}
 
-		if *conf.DNSName == "" {
+		if *conf.DnsName == "" {
 			return fmt.Errorf("empty dns_name")
 		}
 
@@ -119,19 +127,19 @@ func testAccCheckOutscaleOAPILBUAttributes(conf *lbu.LoadBalancerDescription) re
 	}
 }
 
-func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *oscgo.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		zones := []string{"eu-west-2a"}
-		azs := make([]string, 0, len(conf.AvailabilityZones))
-		for _, x := range conf.AvailabilityZones {
-			azs = append(azs, *x)
+		azs := make([]string, 0, len(*conf.SubregionNames))
+		for _, x := range *conf.SubregionNames {
+			azs = append(azs, x)
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
 			return fmt.Errorf("bad sub_region_name")
 		}
 
-		if *conf.DNSName == "" {
+		if *conf.DnsName == "" {
 			return fmt.Errorf("empty dns_name")
 		}
 
@@ -139,7 +147,7 @@ func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *lbu.LoadBalancerDesc
 	}
 }
 
-func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescription) resource.TestCheckFunc {
+func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -150,23 +158,32 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescriptio
 			return fmt.Errorf("No LBU ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*OutscaleClient).LBU
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
 		var err error
-		var resp *lbu.DescribeLoadBalancersOutput
-		var describe *lbu.DescribeLoadBalancersResult
+		var resp oscgo.ReadLoadBalancersResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, err = conn.API.DescribeLoadBalancers(&lbu.DescribeLoadBalancersInput{
-				LoadBalancerNames: []*string{aws.String(rs.Primary.ID)},
-			})
+			filter := &oscgo.FiltersLoadBalancer{
+				LoadBalancerNames: &[]string{rs.Primary.ID},
+			}
+
+			req := &oscgo.ReadLoadBalancersRequest{
+				Filters: filter,
+			}
+
+			describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+				ReadLoadBalancersRequest: optional.NewInterface(req),
+			}
+
+			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+				context.Background(),
+				describeElbOpts)
+
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
 					return resource.RetryableError(err)
 				}
 				return resource.NonRetryableError(err)
-			}
-			if resp.DescribeLoadBalancersResult != nil {
-				describe = resp.DescribeLoadBalancersResult
 			}
 			return nil
 		})
@@ -175,14 +192,14 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *lbu.LoadBalancerDescriptio
 			return err
 		}
 
-		if len(describe.LoadBalancerDescriptions) != 1 ||
-			*describe.LoadBalancerDescriptions[0].LoadBalancerName != rs.Primary.ID {
+		if len(*resp.LoadBalancers) != 1 ||
+			*(*resp.LoadBalancers)[0].LoadBalancerName != rs.Primary.ID {
 			return fmt.Errorf("LBU not found")
 		}
 
-		*res = *describe.LoadBalancerDescriptions[0]
+		res = &(*resp.LoadBalancers)[0]
 
-		if res.VPCId != nil {
+		if res.NetId != nil {
 			sgid := rs.Primary.Attributes["source_security_group_id"]
 			if sgid == "" {
 				return fmt.Errorf("Expected to find source_security_group_id for LBU, but was empty")
