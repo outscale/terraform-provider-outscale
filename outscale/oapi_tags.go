@@ -155,6 +155,19 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 	return tagsOSCAPIFromMap(create), remove
 }
 
+func tagsFromMapLBU(m map[string]interface{}) *[]oscgo.ResourceTag {
+	result := make([]oscgo.ResourceTag, 0, len(m))
+	for k, v := range m {
+		t := oscgo.ResourceTag{
+			Key:   k,
+			Value: v.(string),
+		}
+		result = append(result, t)
+	}
+
+	return &result
+}
+
 func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {
 	result := make([]oscgo.ResourceTag, 0, m.Len())
 	for _, v := range m.List() {
