@@ -1,7 +1,9 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/antihax/optional"
@@ -179,27 +181,25 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 		filtersReq.SetPermissionsToLaunchAccountIds(expandStringValueList(executableUsers.([]interface{})))
 	}
 
-	req := &oscgo.ReadImagesOpts{
-		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-			Filters: filtersReq,
-		}),
-	}
+	req := oscgo.ReadImagesRequest{Filters: filtersReq}
 
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"pending"},
-		Target:     []string{"available", "destroyed"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "deregistered"),
-		Timeout:    5 * time.Minute,
-		MinTimeout: 30 * time.Second,
-		Delay:      1 * time.Minute,
-	}
+	var resp oscgo.ReadImagesResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.ImageApi.ReadImages(context.Background(), &oscgo.ReadImagesOpts{ReadImagesRequest: optional.NewInterface(req)})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
 
-	value, err := stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Error retrieving Outscale Images (%s): %v", imageID, err)
+		return err
 	}
 
-	resp := value.(oscgo.ReadImagesResponse)
 	images := resp.GetImages()
 
 	if len(images) < 1 {
