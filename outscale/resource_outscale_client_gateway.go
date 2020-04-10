@@ -76,7 +76,7 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), *client.GetClientGateway().ClientGatewayId, conn)
+		err := assignTags(tags.(*schema.Set), *client.GetClientGateway().ClientGatewayId, conn)
 		if err != nil {
 			return err
 		}
