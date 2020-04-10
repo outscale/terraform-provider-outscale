@@ -10,8 +10,8 @@ import (
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
@@ -21,7 +21,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 		Delete: resourceOutscaleAppCookieStickinessPolicyDelete,
 
 		Schema: map[string]*schema.Schema{
-			"policy_name": &schema.Schema{
+			"policy_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
@@ -35,17 +35,17 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				},
 			},
 
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"cookie_name": &schema.Schema{
+			"cookie_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

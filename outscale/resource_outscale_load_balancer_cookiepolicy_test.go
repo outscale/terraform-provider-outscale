@@ -1,35 +1,21 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
-	t.Skip()
-
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
 
 	resource.Test(t, resource.TestCase{
@@ -37,7 +23,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccAppCookieStickinessPolicyConfig(lbName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
@@ -46,7 +32,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 					),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccAppCookieStickinessPolicyConfigUpdate(lbName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
@@ -60,31 +46,23 @@ func TestAccOutscaleAppCookieStickinessPolicy_basic(t *testing.T) {
 }
 
 func TestAccOutscaleAppCookieStickinessPolicy_missingLB(t *testing.T) {
-	t.Skip()
-	o := os.Getenv("OUTSCALE_OAPI")
-
-	oapi, err := strconv.ParseBool(o)
-	if err != nil {
-		oapi = false
-	}
-
-	if oapi {
-		t.Skip()
-	}
-
 	lbName := fmt.Sprintf("tf-test-lb-%s", acctest.RandString(5))
 
 	// check that we can destroy the policy if the LB is missing
 	removeLB := func() {
-		conn := testAccProvider.Meta().(*OutscaleClient).LBU
+		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		deleteElbOpts := lbu.DeleteLoadBalancerInput{
-			LoadBalancerName: aws.String(lbName),
+		request := oscgo.DeleteLoadBalancerRequest{
+			LoadBalancerName: lbName,
+		}
+
+		deleteElbOpts := oscgo.DeleteLoadBalancerOpts{
+			optional.NewInterface(request),
 		}
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, err = conn.API.DeleteLoadBalancer(&deleteElbOpts)
+			_, _, err = conn.LoadBalancerApi.DeleteLoadBalancer(context.Background(), &deleteElbOpts)
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -106,7 +84,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_missingLB(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAppCookieStickinessPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccAppCookieStickinessPolicyConfig(lbName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAppCookieStickinessPolicy(
@@ -115,7 +93,7 @@ func TestAccOutscaleAppCookieStickinessPolicy_missingLB(t *testing.T) {
 					),
 				),
 			},
-			resource.TestStep{
+			{
 				PreConfig: removeLB,
 				Config:    testAccAppCookieStickinessPolicyConfigDestroy(lbName),
 			},
