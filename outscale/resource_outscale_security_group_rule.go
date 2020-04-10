@@ -271,11 +271,15 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		Rules:                        &expandedRules,
 		Flow:                         flow,
 		IpRange:                      &ipRange,
-		FromPortRange:                &fPortRange,
 		IpProtocol:                   &ipProtocol,
 		SecurityGroupNameToLink:      &nameToLink,
 		SecurityGroupAccountIdToLink: &accountIdtoLink,
-		ToPortRange:                  &tPortRange,
+	}
+	if fPortRange > 0 {
+		req.FromPortRange = &fPortRange
+	}
+	if tPortRange > 0 {
+		req.ToPortRange = &tPortRange
 	}
 
 	var autherr error
@@ -285,7 +289,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	autherr = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
 		resp, _, err = conn.SecurityGroupRuleApi.CreateSecurityGroupRule(context.Background(), &oscgo.CreateSecurityGroupRuleOpts{CreateSecurityGroupRuleRequest: optional.NewInterface(req)})
-
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -307,7 +310,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	var configRules []oscgo.SecurityGroupRule
 	retErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		sg, _, err = findOSCAPIResourceSecurityGroup(conn, sgID)
-
 		if err != nil {
 			log.Printf("[DEBUG] Error finding Security Group (%s) for Rule (%s): %s", sgID, id, err)
 			return resource.NonRetryableError(err)
@@ -345,7 +347,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	d.SetId(id)
 
 	ips, err := setOSCAPIFromIPPerm(d, sg, findOSCAPIRuleMatch(configRules, sg.GetInboundRules()))
-
 	if err != nil {
 		return err
 	}
@@ -355,7 +356,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	}
 
 	ips, err = setOSCAPIFromIPPerm(d, sg, findOSCAPIRuleMatch(configRules, sg.GetOutboundRules()))
-
 	if err != nil {
 		return err
 	}
@@ -679,9 +679,9 @@ func validateOAPISecurityGroupRule(ippems []interface{}) error {
 			for _, v := range members {
 				member := v.(map[string]interface{})
 
-				if member["security_group_id"].(string) == "" {
+				if member["security_group_id"].(string) == "" && member["security_group_name"].(string) == "" {
 					return fmt.Errorf(
-						"'security_group_id' must be set")
+						"'security_group_id' or 'security_group_name' must be set")
 				}
 			}
 		}
@@ -748,12 +748,12 @@ func ipOSCAPIPermissionIDHash(ruleType, sgID string, ips []oscgo.SecurityGroupRu
 
 func findOSCAPIRuleMatch(p []oscgo.SecurityGroupRule, rules []oscgo.SecurityGroupRule) []oscgo.SecurityGroupRule {
 	var rule = make([]oscgo.SecurityGroupRule, 0)
-	//fmt.Printf("Rules (from config) -> %+v\n", p)
-	//fmt.Printf("Rules (from service) -> %+v\n", rules)
+	fmt.Printf("[DEBUG] Rules (from config) -> %+v\n", p)
+	fmt.Printf("Rules (from service) -> %+v\n", rules)
 	for _, i := range p {
 		for _, r := range rules {
 
-			//fmt.Printf("Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
+			fmt.Printf("[DEBUG] Rule (from config) -> %+v\nRule (from service) -> %+v\n", i, r)
 			if i.GetToPortRange() != r.GetToPortRange() {
 				continue
 			}
@@ -795,7 +795,7 @@ func findOSCAPIRuleMatch(p []oscgo.SecurityGroupRule, rules []oscgo.SecurityGrou
 			remaining = len(i.GetSecurityGroupsMembers())
 			for _, ip := range i.GetSecurityGroupsMembers() {
 				for _, rip := range r.GetSecurityGroupsMembers() {
-					if ip.GetSecurityGroupId() == rip.GetSecurityGroupId() {
+					if (ip.GetSecurityGroupId() == rip.GetSecurityGroupId()) || (ip.GetSecurityGroupName() == rip.GetSecurityGroupName()) {
 						remaining--
 					}
 				}
@@ -823,19 +823,25 @@ func setOSCAPIFromIPPerm(d *schema.ResourceData, sg *oscgo.SecurityGroup, rules 
 		ip["ip_ranges"] = rule.IpRanges
 		ip["service_ids"] = rule.ServiceIds
 
-		// if len(rule.GetSecurityGroupsMembers()) > 0 {
-		// 	s := rule.GetSecurityGroupsMembers()[0]
-		// 	//TODO: check if account_id is still needed
-		// 	// if err := d.Set("account_id", s.GetAccountId()); err != nil {
-		// 	// 	return nil, err
-		// 	// }
-		// 	if err := d.Set("security_group_id", s.GetSecurityGroupId()); err != nil {
-		// 		return nil, err
-		// 	}
-		// 	if err := d.Set("security_group_name", s.GetSecurityGroupName()); err != nil {
-		// 		return nil, err
-		// 	}
-		// }
+		if rule.GetSecurityGroupsMembers() != nil && len(rule.GetSecurityGroupsMembers()) > 0 {
+			grp := make([]map[string]interface{}, len(rule.GetSecurityGroupsMembers()))
+			for i, v := range rule.GetSecurityGroupsMembers() {
+				g := make(map[string]interface{})
+
+				if v.GetAccountId() != "" {
+					g["account_id"] = v.GetAccountId()
+				}
+				if v.GetSecurityGroupName() != "" {
+					g["security_group_name"] = v.GetSecurityGroupName()
+				}
+				if v.GetSecurityGroupId() != "" {
+					g["security_group_id"] = v.GetSecurityGroupId()
+				}
+
+				grp[i] = g
+			}
+			ip["security_groups_members"] = grp
+		}
 
 		ips[k] = ip
 	}
