@@ -1,15 +1,17 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
 )
 
 func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
@@ -52,7 +54,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 }
 
 func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	l, lok := d.GetOk("load_balancer_name")
 	p, pok := d.GetOk("policy_name")
@@ -62,16 +64,23 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		return fmt.Errorf("please provide the required attributes load_balancer_name, policy_name and cookie_name")
 	}
 
-	acspOpts := &lbu.CreateAppCookieStickinessPolicyInput{
-		LoadBalancerName: aws.String(l.(string)),
-		PolicyName:       aws.String(p.(string)),
-		CookieName:       aws.String(v.(string)),
+	vs := v.(string)
+	req := &oscgo.CreateLoadBalancerPolicyRequest{
+		LoadBalancerName: l.(string),
+		PolicyName:       p.(string),
+		CookieName:       &vs,
+	}
+	acspOpts := oscgo.CreateLoadBalancerPolicyOpts{
+		optional.NewInterface(req),
 	}
 
 	var err error
-	var resp *lbu.CreateAppCookieStickinessPolicyOutput
+	var resp oscgo.CreateLoadBalancerPolicyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.CreateAppCookieStickinessPolicy(acspOpts)
+		resp, _, err = conn.LoadBalancerPolicyApi.
+			CreateLoadBalancerPolicy(
+				context.Background(),
+				&acspOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -90,8 +99,8 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	//utils.PrintToJSON(resp, "RESPONSECookie")
 
 	reqID := ""
-	if resp.ResponseMetadata != nil {
-		reqID = aws.StringValue(resp.ResponseMetadata.RequestID)
+	if resp.ResponseContext != nil {
+		reqID = *resp.ResponseContext.RequestId
 	}
 	d.Set("request_id", reqID)
 	d.SetId(resource.UniqueId())
@@ -107,19 +116,25 @@ func resourceOutscaleAppCookieStickinessPolicyRead(d *schema.ResourceData, meta 
 }
 
 func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, meta interface{}) error {
-	elbconn := meta.(*OutscaleClient).LBU
+	elbconn := meta.(*OutscaleClient).OSCAPI
 
 	l := d.Get("load_balancer_name").(string)
 	p := d.Get("policy_name").(string)
 
-	request := &lbu.DeleteLoadBalancerPolicyInput{
-		LoadBalancerName: aws.String(l),
-		PolicyName:       aws.String(p),
+	request := &oscgo.DeleteLoadBalancerPolicyRequest{
+		LoadBalancerName: l,
+		PolicyName:       p,
+	}
+
+	opts := &oscgo.DeleteLoadBalancerPolicyOpts{
+		optional.NewInterface(request),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, err = elbconn.API.DeleteLoadBalancerPolicy(request)
+		_, _, err = elbconn.LoadBalancerPolicyApi.
+			DeleteLoadBalancerPolicy(
+				context.Background(), opts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
