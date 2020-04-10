@@ -64,7 +64,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), resp.Net.GetNetId(), conn)
+               err := assignTags(tags.(*schema.Set), resp.Net.GetNetId(), conn)
 		if err != nil {
 			return err
 		}

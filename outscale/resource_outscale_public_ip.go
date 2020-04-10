@@ -53,7 +53,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), *allocResp.GetPublicIp().PublicIpId, conn)
+               err := assignTags(tags.(*schema.Set), *allocResp.GetPublicIp().PublicIpId, conn)
 		if err != nil {
 			return err
 		}

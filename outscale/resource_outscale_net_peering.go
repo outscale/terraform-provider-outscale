@@ -68,7 +68,7 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), d.Id(), conn)
+               err := assignTags(tags.(*schema.Set), d.Id(), conn)
 		if err != nil {
 			return err
 		}
