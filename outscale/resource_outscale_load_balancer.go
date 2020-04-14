@@ -26,9 +26,10 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"sub_region_name": {
+			"subregion_name": {
 				Type:     schema.TypeList,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"listener": {
@@ -267,7 +268,7 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 		req.LoadBalancerType = &s
 	}
 
-	if v, ok := d.GetOk("sub_region_name"); ok {
+	if v, ok := d.GetOk("subregion_name"); ok {
 		req.SubregionNames = expandStringList(v.([]interface{}))
 	}
 
@@ -280,7 +281,7 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 	}
 
 	elbOpts := &oscgo.CreateLoadBalancerOpts{
-		optional.NewInterface(req),
+		optional.NewInterface(*req),
 	}
 
 	log.Printf("[DEBUG] Load Balancer create configuration: %#v", elbOpts)
@@ -318,9 +319,12 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
 
-func flattenStringList(list []string) []interface{} {
-	vs := make([]interface{}, 0, len(list))
-	for _, v := range list {
+func flattenStringList(list *[]string) []interface{} {
+	if list == nil {
+		return make([]interface{}, 0)
+	}
+	vs := make([]interface{}, 0, len(*list))
+	for _, v := range *list {
 		vs = append(vs, v)
 	}
 	return vs
@@ -335,7 +339,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 		LoadBalancerNames: &[]string{elbName},
 	}
 
-	req := &oscgo.ReadLoadBalancersRequest{
+	req := oscgo.ReadLoadBalancersRequest{
 		Filters: filter,
 	}
 
@@ -378,7 +382,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	lb := (*resp.LoadBalancers)[0]
 
-	d.Set("sub_region_name", flattenStringList(*lb.SubregionNames))
+	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
 	d.Set("public_dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
@@ -428,7 +432,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("policies", policies)
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("firewall_rules_set_name", flattenStringList(*lb.SecurityGroups))
+		d.Set("firewall_rules_set_name", flattenStringList(lb.SecurityGroups))
 	} else {
 		d.Set("firewall_rules_set_name", make([]map[string]interface{}, 0))
 	}
@@ -438,7 +442,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 		ssg["account_alias"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 	}
 	d.Set("source_firewall_rules_set", ssg)
-	d.Set("subnet_id", flattenStringList(*lb.Subnets))
+	d.Set("subnet_id", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", lb.NetId)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
@@ -457,7 +461,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("firewall_rules_set_name update is not supported")
 	}
 
-	if d.HasChange("sub_region_name") {
+	if d.HasChange("subregion_name") {
 		return fmt.Errorf("sub_region_name update is not supported")
 	}
 
@@ -479,7 +483,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				ports = append(ports, *listener.LoadBalancerPort)
 			}
 
-			req := &oscgo.DeleteLoadBalancerListenersRequest{
+			req := oscgo.DeleteLoadBalancerListenersRequest{
 				LoadBalancerName:  d.Id(),
 				LoadBalancerPorts: ports,
 			}
@@ -510,7 +514,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 
 		if len(add) > 0 {
-			req := &oscgo.CreateLoadBalancerListenersRequest{
+			req := oscgo.CreateLoadBalancerListenersRequest{
 				LoadBalancerName: d.Id(),
 				Listeners:        add,
 			}
@@ -733,10 +737,14 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 			"backend_protocol":       strings.ToLower(*i.BackendProtocol),
 			"load_balancer_port":     strconv.Itoa(int(*i.LoadBalancerPort)),
 			"load_balancer_protocol": strings.ToLower(*i.LoadBalancerProtocol),
-			"server_certificate_id":  i.ServerCertificateId,
+		}
+		if i.ServerCertificateId != nil {
+			listener["server_certificate_id"] =
+				*i.ServerCertificateId
 		}
 		l["listener"] = listener
-		l["policy_name"] = flattenStringList(*i.PolicyNames)
+		l["policy_name"] = flattenStringList(i.PolicyNames)
+		log.Printf("[DEBUG] before append: %v", l)
 		result = append(result, l)
 	}
 	return result

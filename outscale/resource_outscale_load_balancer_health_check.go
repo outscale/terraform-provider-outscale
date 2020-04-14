@@ -171,7 +171,7 @@ func resourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, met
 		LoadBalancerNames: &[]string{elbName},
 	}
 
-	req := &oscgo.ReadLoadBalancersRequest{
+	req := oscgo.ReadLoadBalancersRequest{
 		Filters: filter,
 	}
 

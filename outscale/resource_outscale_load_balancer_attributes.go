@@ -97,7 +97,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		return fmt.Errorf("please provide the is_enabled and load_balancer_name required attributes")
 	}
 
-	req := &oscgo.UpdateLoadBalancerRequest{
+	req := oscgo.UpdateLoadBalancerRequest{
 		LoadBalancerName: v1.(string),
 	}
 
@@ -159,7 +159,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		LoadBalancerNames: &[]string{elbName},
 	}
 
-	req := &oscgo.ReadLoadBalancersRequest{
+	req := oscgo.ReadLoadBalancersRequest{
 		Filters: filter,
 	}
 
@@ -226,7 +226,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oscgo.UpdateLoadBalancerRequest{}
+	req := oscgo.UpdateLoadBalancerRequest{}
 	access := &oscgo.AccessLog{}
 	if d.HasChange("load_balancer_name") {
 		_, n := d.GetChange("load_balancer_name")

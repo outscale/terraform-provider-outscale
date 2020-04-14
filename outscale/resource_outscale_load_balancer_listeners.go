@@ -75,10 +75,10 @@ func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int64(data["instance_port"].(int))
+		ip := int64(data["backend_port"].(int))
 		lp := int64(data["load_balancer_port"].(int))
-		bproto := data["instance_protocol"].(string)
-		lproto := data["protocol"].(string)
+		bproto := data["backend_protocol"].(string)
+		lproto := data["load_balancer_protocol"].(string)
 		l := &oscgo.Listener{
 			BackendPort:          &ip,
 			BackendProtocol:      &bproto,
@@ -120,10 +120,10 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int64(data["instance_port"].(int))
+		ip := int64(data["backend_port"].(int))
 		lp := int64(data["load_balancer_port"].(int))
-		bproto := data["instance_protocol"].(string)
-		lproto := data["protocol"].(string)
+		bproto := data["backend_protocol"].(string)
+		lproto := data["load_balancer_protocol"].(string)
 		l := oscgo.ListenerForCreation{
 			BackendPort:          ip,
 			BackendProtocol:      &bproto,
@@ -256,7 +256,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 				ports = append(ports, *listener.LoadBalancerPort)
 			}
 
-			req := &oscgo.DeleteLoadBalancerListenersRequest{
+			req := oscgo.DeleteLoadBalancerListenersRequest{
 				LoadBalancerName:  d.Id(),
 				LoadBalancerPorts: ports,
 			}
@@ -285,7 +285,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 		}
 
 		if len(add) > 0 {
-			req := &oscgo.CreateLoadBalancerListenersRequest{
+			req := oscgo.CreateLoadBalancerListenersRequest{
 				LoadBalancerName: d.Id(),
 				Listeners:        add,
 			}
@@ -339,7 +339,7 @@ func resourceOutscaleOAPILoadBalancerListenersDelete(d *schema.ResourceData, met
 		ports = append(ports, *listener.LoadBalancerPort)
 	}
 
-	req := &oscgo.DeleteLoadBalancerListenersRequest{
+	req := oscgo.DeleteLoadBalancerListenersRequest{
 		LoadBalancerName:  d.Id(),
 		LoadBalancerPorts: ports,
 	}

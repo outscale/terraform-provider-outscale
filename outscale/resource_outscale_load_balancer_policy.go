@@ -115,7 +115,7 @@ func resourceOutscaleOAPILoadBalancerPolicyRead(d *schema.ResourceData, meta int
 func resourceOutscaleOAPILoadBalancerPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	pInput := &oscgo.UpdateLoadBalancerRequest{}
+	pInput := oscgo.UpdateLoadBalancerRequest{}
 
 	pols := make([]string, 0)
 	pInput.PolicyNames = &pols

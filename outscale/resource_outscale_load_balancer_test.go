@@ -36,9 +36,9 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleOAPILBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "sub_region_name.#", "1"),
+						"outscale_load_balancer.bar", "subregion_name.#", "1"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "sub_region_name.0", "eu-west-2a"),
+						"outscale_load_balancer.bar", "subregion_name.0", "eu-west-2a"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listener.0.backend_port", "8000"),
 					resource.TestCheckResourceAttr(
@@ -116,7 +116,7 @@ func testAccCheckOutscaleOAPILBUAttributes(conf *oscgo.LoadBalancer) resource.Te
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad sub_region_name")
+			return fmt.Errorf("bad subregion_name")
 		}
 
 		if *conf.DnsName == "" {
@@ -136,7 +136,7 @@ func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *oscgo.LoadBalancer) 
 		}
 		sort.StringSlice(azs).Sort()
 		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad sub_region_name")
+			return fmt.Errorf("bad subregion_name")
 		}
 
 		if *conf.DnsName == "" {
@@ -213,7 +213,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  sub_region_name = ["eu-west-2a"]
+  subregion_name = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
   listeners {
     backend_port = 8000

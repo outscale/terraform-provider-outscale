@@ -104,7 +104,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		LoadBalancerNames: &[]string{e},
 	}
 
-	req := &oscgo.ReadLoadBalancersRequest{
+	req := oscgo.ReadLoadBalancersRequest{
 		Filters: filter,
 	}
 

@@ -65,7 +65,7 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	}
 
 	vs := v.(string)
-	req := &oscgo.CreateLoadBalancerPolicyRequest{
+	req := oscgo.CreateLoadBalancerPolicyRequest{
 		LoadBalancerName: l.(string),
 		PolicyName:       p.(string),
 		CookieName:       &vs,
@@ -121,7 +121,7 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 	l := d.Get("load_balancer_name").(string)
 	p := d.Get("policy_name").(string)
 
-	request := &oscgo.DeleteLoadBalancerPolicyRequest{
+	request := oscgo.DeleteLoadBalancerPolicyRequest{
 		LoadBalancerName: l,
 		PolicyName:       p,
 	}
