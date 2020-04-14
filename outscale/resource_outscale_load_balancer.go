@@ -26,7 +26,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"subregion_name": {
+			"subregion_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
@@ -43,19 +43,19 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 				ForceNew: true,
 			},
-			"firewall_rules_set_name": {
+			"security_groups": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"subnet_id": {
+			"subnets": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tag": tagsSchema(),
+			"tags": tagsListOAPISchema(),
 
 			"public_dns_name": {
 				Type:     schema.TypeString,
@@ -103,7 +103,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				},
 			},
 			"listeners": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -135,16 +135,16 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"source_firewall_rules_set": {
+			"source_security_group": {
 				Type:     schema.TypeMap,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"firewall_rules_set_name": {
+						"security_group_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"account_alias": {
+						"security_group_account_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -209,7 +209,7 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 
 	req := &oscgo.CreateLoadBalancerRequest{}
 
-	listeners, err := expandListenerForCreation(d.Get("listeners").([]interface{}))
+	listeners, err := expandListenerForCreation(d.Get("listeners").(*schema.Set).List())
 	if err != nil {
 		return err
 	}
@@ -220,8 +220,9 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 		req.LoadBalancerName = v.(string)
 	}
 
-	if v, ok := d.GetOk("tag"); ok {
-		req.Tags = tagsFromMapLBU(v.(map[string]interface{}))
+	if v, ok := d.GetOk("tags"); ok {
+		r := tagsFromSliceMap(v.([]interface{}))
+		req.Tags = &r
 	}
 
 	if v, ok := d.GetOk("load_balancer_type"); ok {
@@ -229,15 +230,15 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 		req.LoadBalancerType = &s
 	}
 
-	if v, ok := d.GetOk("subregion_name"); ok {
+	if v, ok := d.GetOk("subregion_names"); ok {
 		req.SubregionNames = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("firewall_rules_set_name"); ok {
+	if v, ok := d.GetOk("security_groups"); ok {
 		req.SecurityGroups = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("subnet_id"); ok {
+	if v, ok := d.GetOk("subnets"); ok {
 		req.Subnets = expandStringList(v.([]interface{}))
 	}
 
@@ -343,7 +344,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	lb := (*resp.LoadBalancers)[0]
 
-	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
+	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("public_dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
@@ -362,7 +363,6 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
-	log.Printf("[DEBUG] out-")
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	policies := make(map[string]interface{})
@@ -395,21 +395,20 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("policies", policies)
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("firewall_rules_set_name", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
 	} else {
-		d.Set("firewall_rules_set_name", make([]map[string]interface{}, 0))
+		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
-		ssg["firewall_rules_set_name"] = *lb.SourceSecurityGroup.SecurityGroupName
-		ssg["account_alias"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
+		ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
+		ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 	}
-	d.Set("source_firewall_rules_set", ssg)
-	d.Set("subnet_id", flattenStringList(lb.Subnets))
+	d.Set("source_security_group", ssg)
+	d.Set("subnets", flattenStringList(lb.Subnets))
 	d.Set("vpc_id", lb.NetId)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
-	log.Printf("[DEBUG] out- out out")
 	return nil
 }
 
@@ -421,25 +420,25 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 	// if anye of thoses V are true, ake a
 	// resourceOutscaleOAPILoadBalancerDelete(d, meta)
 	// resourceOutscaleOAPILoadBalancerCreate(d, meta)
-	if d.HasChange("firewall_rules_set_name") {
-		return fmt.Errorf("firewall_rules_set_name update is not supported")
+	if d.HasChange("security_groups") {
+		return fmt.Errorf("security group update is not supported")
 	}
 
-	if d.HasChange("subregion_name") {
+	if d.HasChange("subregion_names") {
 		return fmt.Errorf("sub_region_name update is not supported")
 	}
 
-	if d.HasChange("subnet_id") {
+	if d.HasChange("subnets") {
 		return fmt.Errorf("subnet_id update is not supported")
 	}
 
 	if d.HasChange("listeners") {
 		o, n := d.GetChange("listeners")
-		os := o.([]interface{})
-		ns := n.([]interface{})
+		os := o.(*schema.Set).List()
+		ns := n.(*schema.Set).List()
 
-		remove, _ := expandListeners(ns)
-		add, _ := expandListenerForCreation(os)
+		remove, _ := expandListeners(os)
+		add, _ := expandListenerForCreation(ns)
 
 		if len(remove) > 0 {
 			ports := make([]int64, 0, len(remove))
@@ -695,7 +694,6 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(*list))
 
 	for _, i := range *list {
-		log.Printf("[DEBUG] i: %v", i)
 		listener := map[string]interface{}{
 			"backend_port":           int(*i.BackendPort),
 			"backend_protocol":       *i.BackendProtocol,
@@ -707,10 +705,8 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 				*i.ServerCertificateId
 		}
 		listener["policy_name"] = flattenStringList(i.PolicyNames)
-		log.Printf("[DEBUG] before append: %v", listener)
 		result = append(result, listener)
 	}
-	log.Printf("[DEBUG] out %v", result)
 	return result
 }
 

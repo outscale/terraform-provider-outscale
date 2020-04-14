@@ -25,7 +25,7 @@ func resourceOutscaleOAPILoadBalancerListeners() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"listeners": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
@@ -164,7 +164,7 @@ func resourceOutscaleOAPILoadBalancerListenersCreate(d *schema.ResourceData, met
 
 	req := oscgo.CreateLoadBalancerListenersRequest{}
 
-	listener, err := expandListenerForCreation(d.Get("listeners").([]interface{}))
+	listener, err := expandListenerForCreation(d.Get("listeners").(*schema.Set).List())
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func resourceOutscaleOAPILoadBalancerListenersCreate(d *schema.ResourceData, met
 }
 
 func resourceOutscaleOAPILoadBalancerListenersRead(d *schema.ResourceData, meta interface{}) error {
-	listener, err := expandListeners(d.Get("listeners").([]interface{}))
+	listener, err := expandListeners(d.Get("listeners").(*schema.Set).List())
 	if err != nil {
 		return err
 	}
@@ -244,11 +244,11 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 
 	if d.HasChange("listeners") {
 		o, n := d.GetChange("listeners")
-		os := o.([]interface{})
-		ns := n.([]interface{})
+		os := o.(*schema.Set).List()
+		ns := n.(*schema.Set).List()
 
-		remove, _ := expandListeners(ns)
-		add, _ := expandListenerForCreation(os)
+		remove, _ := expandListeners(os)
+		add, _ := expandListenerForCreation(ns)
 
 		if len(remove) > 0 {
 			ports := make([]int64, 0, len(remove))
@@ -296,6 +296,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				log.Printf("[DEBUG] Load Balancer Create Listeners opts: %v", createListenersOpts)
 				_, _, err = conn.ListenerApi.CreateLoadBalancerListeners(
 					context.Background(), createListenersOpts)
 				if err != nil {
@@ -332,7 +333,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 func resourceOutscaleOAPILoadBalancerListenersDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	remove, _ := expandListeners(d.Get("listeners").([]interface{}))
+	remove, _ := expandListeners(d.Get("listeners").(*schema.Set).List())
 
 	ports := make([]int64, 0, len(remove))
 	for _, listener := range remove {
