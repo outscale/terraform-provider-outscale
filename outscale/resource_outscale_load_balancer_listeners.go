@@ -24,7 +24,7 @@ func resourceOutscaleOAPILoadBalancerListeners() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"listener": {
+			"listeners": {
 				Type:     schema.TypeList,
 				Required: true,
 				ForceNew: true,
@@ -164,7 +164,7 @@ func resourceOutscaleOAPILoadBalancerListenersCreate(d *schema.ResourceData, met
 
 	req := oscgo.CreateLoadBalancerListenersRequest{}
 
-	listener, err := expandListenerForCreation(d.Get("listener").([]interface{}))
+	listener, err := expandListenerForCreation(d.Get("listeners").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func resourceOutscaleOAPILoadBalancerListenersCreate(d *schema.ResourceData, met
 }
 
 func resourceOutscaleOAPILoadBalancerListenersRead(d *schema.ResourceData, meta interface{}) error {
-	listener, err := expandListeners(d.Get("listener").([]interface{}))
+	listener, err := expandListeners(d.Get("listeners").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func resourceOutscaleOAPILoadBalancerListenersRead(d *schema.ResourceData, meta 
 		}
 		result = append(result, listener)
 	}
-	if err := d.Set("listener", result); err != nil {
+	if err := d.Set("listeners", result); err != nil {
 		return err
 	}
 	d.Set("load_balancer_name", d.Id())
@@ -242,8 +242,8 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 
 	d.Partial(true)
 
-	if d.HasChange("listener") {
-		o, n := d.GetChange("listener")
+	if d.HasChange("listeners") {
+		o, n := d.GetChange("listeners")
 		os := o.([]interface{})
 		ns := n.([]interface{})
 
@@ -321,7 +321,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 			}
 		}
 
-		d.SetPartial("listener")
+		d.SetPartial("listeners")
 	}
 
 	d.Partial(false)
@@ -332,7 +332,7 @@ func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, met
 func resourceOutscaleOAPILoadBalancerListenersDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	remove, _ := expandListeners(d.Get("listener").([]interface{}))
+	remove, _ := expandListeners(d.Get("listeners").([]interface{}))
 
 	ports := make([]int64, 0, len(remove))
 	for _, listener := range remove {

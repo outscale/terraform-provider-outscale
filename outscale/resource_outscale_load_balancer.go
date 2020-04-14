@@ -32,37 +32,6 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"listener": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"backend_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-
-						"backend_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-
-						"load_balancer_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-
-						"load_balancer_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"server_certificate_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
-			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -135,36 +104,28 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 			},
 			"listeners": {
 				Type:     schema.TypeList,
-				Computed: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"listener": {
-							Type:     schema.TypeMap,
+						"backend_port": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"backend_protocol": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"load_balancer_port": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"load_balancer_protocol": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"server_certificate_id": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"backend_port": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"backend_protocol": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"load_balancer_port": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"load_balancer_protocol": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"server_certificate_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
 						"policy_name": {
 							Type:     schema.TypeList,
@@ -248,7 +209,7 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 
 	req := &oscgo.CreateLoadBalancerRequest{}
 
-	listeners, err := expandListenerForCreation(d.Get("listener").([]interface{}))
+	listeners, err := expandListenerForCreation(d.Get("listeners").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -393,6 +354,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	}
 	if lb.Listeners != nil {
 		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+			log.Printf("[DEBUG] out err %v", err)
 			return err
 		}
 	} else {
@@ -400,6 +362,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
+	log.Printf("[DEBUG] out-")
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	policies := make(map[string]interface{})
@@ -446,6 +409,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("vpc_id", lb.NetId)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
+	log.Printf("[DEBUG] out- out out")
 	return nil
 }
 
@@ -469,8 +433,8 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("subnet_id update is not supported")
 	}
 
-	if d.HasChange("listener") {
-		o, n := d.GetChange("listener")
+	if d.HasChange("listeners") {
+		o, n := d.GetChange("listeners")
 		os := o.([]interface{})
 		ns := n.([]interface{})
 
@@ -553,7 +517,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			}
 		}
 
-		d.SetPartial("listener")
+		d.SetPartial("listeners")
 	}
 
 	if d.HasChange("backend_vm_id") {
@@ -731,22 +695,22 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(*list))
 
 	for _, i := range *list {
-		l := make(map[string]interface{})
+		log.Printf("[DEBUG] i: %v", i)
 		listener := map[string]interface{}{
-			"backend_port":           strconv.Itoa(int(*i.BackendPort)),
-			"backend_protocol":       strings.ToLower(*i.BackendProtocol),
-			"load_balancer_port":     strconv.Itoa(int(*i.LoadBalancerPort)),
-			"load_balancer_protocol": strings.ToLower(*i.LoadBalancerProtocol),
+			"backend_port":           int(*i.BackendPort),
+			"backend_protocol":       *i.BackendProtocol,
+			"load_balancer_port":     int(*i.LoadBalancerPort),
+			"load_balancer_protocol": *i.LoadBalancerProtocol,
 		}
 		if i.ServerCertificateId != nil {
 			listener["server_certificate_id"] =
 				*i.ServerCertificateId
 		}
-		l["listener"] = listener
-		l["policy_name"] = flattenStringList(i.PolicyNames)
-		log.Printf("[DEBUG] before append: %v", l)
-		result = append(result, l)
+		listener["policy_name"] = flattenStringList(i.PolicyNames)
+		log.Printf("[DEBUG] before append: %v", listener)
+		result = append(result, listener)
 	}
+	log.Printf("[DEBUG] out %v", result)
 	return result
 }
 
