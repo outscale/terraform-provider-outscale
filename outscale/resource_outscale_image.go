@@ -173,26 +173,11 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 					},
 				},
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-				Computed: true,
-			},
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"tags": tagsListOAPISchema(),
 		},
 	}
 }
@@ -269,6 +254,13 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("Errorrr waiting for OMI (%s) to be ready: %v", *image.ImageId, err)
+	}
+
+	if tags, ok := d.GetOk("tags"); ok {
+		err := assignTags(tags.(*schema.Set), image.GetImageId(), conn)
+		if err != nil {
+			return err
+		}
 	}
 
 	d.SetId(*image.ImageId)
@@ -350,8 +342,8 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 		if err := set("permissions_to_launch", setResourcePermissions(*image.PermissionsToLaunch)); err != nil {
 			return err
 		}
-		if err := set("tags", getOapiTagSet(image.Tags)); err != nil {
-			return err
+		if err := d.Set("tags", tagsOSCAPIToMap(image.GetTags())); err != nil {
+			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
 		return d.Set("request_id", resp.ResponseContext.RequestId)
@@ -368,19 +360,13 @@ func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interf
 }
 
 func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
-	//	conn := meta.(*OutscaleClient).OSCAPI
+	conn := meta.(*OutscaleClient).OSCAPI
 
 	d.Partial(true)
-	//TODO: add tags
-	// if d.Get("description").(string) != "" {
-	// 	_, _, err := conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{
-	// 		UpdateImageRequest: optional.NewInterface(oscgo.UpdateImageRequest{}),
-	// 	})
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	d.SetPartial("description")
-	// }
+	if err := setOSCAPITags(conn, d); err != nil {
+		return err
+	}
+	d.SetPartial("tags")
 
 	d.Partial(false)
 
