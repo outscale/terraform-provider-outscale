@@ -46,7 +46,7 @@ func dataSourceOutscaleOAPILinPeeringsConnection() *schema.Resource {
 								},
 							},
 						},
-						"tags": tagsOAPIListSchemaComputed(),
+						"tags": dataSourceTagsSchema(),
 					},
 				},
 			},

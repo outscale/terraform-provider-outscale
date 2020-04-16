@@ -57,7 +57,7 @@ func oapiGetPublicIPSDataSourceSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": tagsOAPIListSchemaComputed(),
+					"tags": dataSourceTagsSchema(),
 				},
 			},
 		},
