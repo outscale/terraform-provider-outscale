@@ -41,7 +41,7 @@ func dataSourceOutscaleOAPIRouteTables() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"tags": tagsListOAPISchema(),
+						"tags": dataSourceTagsSchema(),
 						"route_propagating_virtual_gateways": {
 							Type:     schema.TypeList,
 							Computed: true,

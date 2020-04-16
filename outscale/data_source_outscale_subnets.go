@@ -51,7 +51,7 @@ func dataSourceOutscaleOAPISubnets() *schema.Resource {
 							Computed: true,
 						},
 
-						"tags": tagsOAPIListSchemaComputed(),
+						"tags": dataSourceTagsSchema(),
 
 						"net_id": {
 							Type:     schema.TypeString,

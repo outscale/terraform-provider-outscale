@@ -50,7 +50,7 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": dataSourceTagsSchema(),
 		},
 	}
 }

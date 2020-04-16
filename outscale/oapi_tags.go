@@ -221,7 +221,7 @@ func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error
 
 func dataSourceTagsSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
