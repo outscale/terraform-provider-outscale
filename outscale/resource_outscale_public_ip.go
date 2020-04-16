@@ -49,11 +49,11 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 
 	log.Printf("[DEBUG] EIP Allocate: %#v", allocResp)
 
-	d.SetId(allocResp.PublicIp.GetPublicIp())
+	d.SetId(allocResp.PublicIp.GetPublicIpId())
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-               err := assignTags(tags.(*schema.Set), *allocResp.GetPublicIp().PublicIpId, conn)
+		err := assignTags(tags.(*schema.Set), *allocResp.GetPublicIp().PublicIpId, conn)
 		if err != nil {
 			return err
 		}
@@ -66,11 +66,10 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	placement := resourceOutscaleOAPIPublicIPDomain(d)
 	id := d.Id()
 
 	req := oscgo.ReadPublicIpsRequest{
-		Filters: &oscgo.FiltersPublicIp{PublicIps: &[]string{id}},
+		Filters: &oscgo.FiltersPublicIp{PublicIpIds: &[]string{id}},
 	}
 
 	response, _, err := conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
@@ -89,8 +88,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if len(response.GetPublicIps()) != 1 ||
-		placement == "vpc" && response.GetPublicIps()[0].GetLinkPublicIpId() != id ||
-		response.GetPublicIps()[0].GetPublicIp() != id {
+		response.GetPublicIps()[0].GetPublicIpId() != id {
 		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
 	}
 
@@ -124,7 +122,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		log.Printf("[WARN] error setting tags for PublicIp(%s): %s", publicIP.GetPublicIp(), err)
 	}
 
-	d.SetId(publicIP.GetPublicIp())
+	d.SetId(publicIP.GetPublicIpId())
 
 	return d.Set("request_id", response.ResponseContext.GetRequestId())
 }
@@ -132,31 +130,22 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	placement := resourceOutscaleOAPIPublicIPDomain(d)
-
-	vInstance, okInstance := d.GetOk("vm_id")
-	vInterface, okInterface := d.GetOk("nic_id")
+	vVm, okInstance := d.GetOk("vm_id")
+	vNic, okInterface := d.GetOk("nic_id")
 	idIP := d.Id()
 	if okInstance || okInterface {
-		instanceID := vInstance.(string)
-		networkInterfaceID := vInterface.(string)
-
 		assocOpts := oscgo.LinkPublicIpRequest{
-			VmId:     &instanceID,
-			PublicIp: &idIP,
+			PublicIpId: &idIP,
 		}
 
-		if placement == "vpc" {
-			var privateIPAddress string
-			if v := d.Get("private_ip").(string); v != "" {
-				privateIPAddress = v
-			}
-			assocOpts = oscgo.LinkPublicIpRequest{
-				NicId: &networkInterfaceID,
-				VmId:  &instanceID,
-				//ReservationId: d.Id(),
-				PrivateIp: &privateIPAddress,
-			}
+		if okInterface {
+			assocOpts.SetNicId(vNic.(string))
+		} else {
+			assocOpts.SetVmId(vVm.(string))
+		}
+
+		if v, ok := d.GetOk("allow_relink"); ok {
+			assocOpts.SetAllowRelink(v.(bool))
 		}
 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -184,17 +173,16 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 			return fmt.Errorf("Failure associating EIP: %s", utils.GetErrorResponse(err))
 		}
 
-		d.Partial(true)
-
-		if err := setOSCAPITags(conn, d); err != nil {
-			return err
-		}
-
-		d.SetPartial("tags")
-
-		d.Partial(false)
-
 	}
+	d.Partial(true)
+
+	if err := setOSCAPITags(conn, d); err != nil {
+		return err
+	}
+
+	d.SetPartial("tags")
+
+	d.Partial(false)
 
 	return resourceOutscaleOAPIPublicIPRead(d, meta)
 }
@@ -242,7 +230,7 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		idIP := d.Id()
 		log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
 		_, _, err = conn.PublicIpApi.DeletePublicIp(context.Background(), &oscgo.DeletePublicIpOpts{DeletePublicIpRequest: optional.NewInterface(oscgo.DeletePublicIpRequest{
-			PublicIp: &idIP,
+			PublicIpId: &idIP,
 		})})
 
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
