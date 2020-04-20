@@ -55,6 +55,11 @@ func testAccOutscaleVPNConnectionsDataSourceConfigBasic(publicIP string) string 
 			virtual_gateway_id  = "${outscale_virtual_gateway.virtual_gateway.id}"
 			connection_type     = "ipsec.1"
 			static_routes_only  = true
+
+			tags {
+        key   = "Name"
+        value = "test-VPN"
+			}
 		}
 
 		data "outscale_vpn_connections" "test" {

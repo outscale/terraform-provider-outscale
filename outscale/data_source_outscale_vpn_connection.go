@@ -151,7 +151,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
-	if err := d.Set("tags", vpnConnection.GetTags()); err != nil {
+	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
 		return err
 	}
 	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
