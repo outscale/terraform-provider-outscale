@@ -26,6 +26,19 @@ func TestAccDataSourceOutscaleOAPISubnets(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceOutscaleOAPISubnets_withAvailableIpsCountsFilter(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter(),
+			},
+		},
+	})
+}
+
 func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "net" {
@@ -36,18 +49,18 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 				value = "testacc-subets-ds"
 			}
 		}
-		
+
 		resource "outscale_subnet" "subnet" {
 			ip_range       = "172.%[1]d.123.0/24"
 			subregion_name = "eu-west-2a"
 			net_id         = "${outscale_net.net.id}"
-		
+
 			tags {
 				key   = "name"
 				value = "terraform-subnet"
 			}
 		}
-		
+
 		data "outscale_subnets" "by_filter" {
 			filter {
 				name   = "subnet_ids"
@@ -55,4 +68,44 @@ func testAccDataSourceOutscaleOAPISubnetsConfig(rInt int) string {
 			}
 		}
 	`, rInt)
+}
+
+func testAccDataSourceOutscaleOAPISubnetsWithAvailableIpsCountsFilter() string {
+	return `
+		resource "outscale_net" "outscale_net1" {
+			ip_range = "10.0.0.0/16"
+			tags {
+				key   = "Name"
+				value = "Net1"
+			}
+		}
+
+		resource "outscale_net" "outscale_net2" {
+			ip_range = "10.0.0.0/16"
+			tags {
+				key   = "Name"
+				value = "Net1"
+			}
+		}
+
+		resource "outscale_subnet" "sub1" {
+			subregion_name = "eu-west-2a"
+			ip_range       = "10.0.0.0/16"
+			net_id         = outscale_net.outscale_net1.net_id
+		}
+
+		resource "outscale_subnet" "sub2" {
+			subregion_name = "eu-west-2a"
+			ip_range       = "10.0.0.0/16"
+			net_id         = outscale_net.outscale_net2.net_id
+		}
+
+
+		data "outscale_subnets" "by_filter" {
+			filter {
+				name   = "available_ips_counts"
+				values = ["${outscale_subnet.sub1.available_ips_count}", "${outscale_subnet.sub2.available_ips_count}"]
+			}
+		}
+	`
 }

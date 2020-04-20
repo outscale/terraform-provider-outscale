@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
@@ -140,13 +142,15 @@ func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSub
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
+		var availableIPsCounts []int64
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
+			availableIPsCounts = append(availableIPsCounts, cast.ToInt64(e))
 		}
 
 		switch name := m["name"].(string); name {
-		// case "available_ips_counts":
-		// 	filters.AvailableIpsCounts = filterValues
+		case "available_ips_counts":
+			filters.AvailableIpsCounts = &availableIPsCounts
 		case "ip_ranges":
 			filters.IpRanges = &filterValues
 		case "net_ids":
