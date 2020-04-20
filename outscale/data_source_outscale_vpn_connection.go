@@ -183,14 +183,14 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.Filters
 		case "virtual_gateway_ids":
 			filters.SetVirtualGatewayIds(filterValues)
 		case "client_gateway_ids":
-			filters.SetVpnConnectionIds(filterValues)
+			filters.SetClientGatewayIds(filterValues)
 		case "connection_types":
 			filters.SetConnectionTypes(filterValues)
-		case "route_destination_ip_rRanges":
+		case "route_destination_ip_ranges":
 			filters.SetRouteDestinationIpRanges(filterValues)
 		case "states":
 			filters.SetStates(filterValues)
-		case "tag_keys":
+		case "static_routes_only":
 			filters.SetStaticRoutesOnly(cast.ToBool(filterValues[0]))
 		case "bgp_asns":
 			filters.SetBgpAsns(filteBgpAsnsValues)
