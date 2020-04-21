@@ -11,7 +11,6 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -97,8 +96,6 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 			vgwID, netID, err)
 	}
 
-	d.SetId(vpnGatewayLinkID(netID, vgwID))
-
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"detached", "attaching"},
 		Target:     []string{"attached"},
@@ -115,13 +112,15 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 	}
 	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
 
+	d.SetId(vgwID)
+
 	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
 }
 
 func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	vgwID := d.Get("virtual_gateway_id").(string)
+	vgwID := d.Id()
 
 	var resp oscgo.ReadVirtualGatewaysResponse
 	var err error
@@ -136,7 +135,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.NonRetryableError(err)
+		return nil
 	})
 
 	if err != nil {
@@ -149,31 +148,49 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 		return err
 	}
 
-	vgw := resp.GetVirtualGateways()[0]
-	if vgw.GetState() == "deleted" {
-		log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
-		d.SetId("")
-		return nil
-	}
+	if len(resp.GetVirtualGateways()) > 0 {
+		vgw := resp.GetVirtualGateways()[0]
+		if vgw.GetState() == "deleted" {
+			log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
+			d.SetId("")
+			return nil
+		}
 
-	vga := oapiVpnGatewayGetLink(vgw)
-	if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
-		//d.Set("net_id", "")
-		return nil
-	}
-	vs := make([]map[string]interface{}, len(vgw.GetNetToVirtualGatewayLinks()))
+		vga := oapiVpnGatewayGetLink(vgw)
+		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
+			//d.Set("net_id", "")
+			return nil
+		}
 
-	for k, v := range vgw.GetNetToVirtualGatewayLinks() {
-		vp := make(map[string]interface{})
-		vp["state"] = v.GetState()
-		vp["net_id"] = v.GetNetId()
-
-		vs[k] = vp
+		if err := d.Set("net_id", vga.GetNetId()); err != nil {
+			return err
+		}
+		if err := d.Set("virtual_gateway_id", vgw.GetVirtualGatewayId()); err != nil {
+			return err
+		}
+		if err := d.Set("net_to_virtual_gateway_links", flattenNetToVirtualGatewayLinks(vgw.NetToVirtualGatewayLinks)); err != nil {
+			return err
+		}
+		if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
+			return err
+		}
 	}
-	d.Set("net_to_virtual_gateway_links", vs)
-	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
+}
+
+func flattenNetToVirtualGatewayLinks(netToVirtualGatewayLinks *[]oscgo.NetToVirtualGatewayLink) []map[string]interface{} {
+	res := make([]map[string]interface{}, len(*netToVirtualGatewayLinks))
+
+	if len(*netToVirtualGatewayLinks) > 0 {
+		for i, n := range *netToVirtualGatewayLinks {
+			res[i] = map[string]interface{}{
+				"state":  n.GetState(),
+				"net_id": n.GetNetId(),
+			}
+		}
+	}
+	return res
 }
 
 func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
@@ -199,7 +216,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		_, _, err = conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background(), &oscgo.UnlinkVirtualGatewayOpts{UnlinkVirtualGatewayRequest: optional.NewInterface(oscgo.UnlinkVirtualGatewayRequest{
-			VirtualGatewayId: d.Get("virtual_gateway_id").(string),
+			VirtualGatewayId: d.Id(),
 			NetId:            netID.(string),
 		})})
 		if err != nil {
@@ -291,8 +308,4 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
 		return vgw, *vga.State, nil
 	}
-}
-
-func vpnGatewayLinkID(vpcID, vgwID string) string {
-	return fmt.Sprintf("vpn-attachment-%x", hashcode.String(fmt.Sprintf("%s-%s", vpcID, vgwID)))
 }
