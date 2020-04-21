@@ -163,7 +163,7 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
 			filters.SetPublicIpIds(filterValues)
-		case "link_public_ip_id":
+		case "link_public_ip_ids":
 			filters.SetLinkPublicIpIds(filterValues)
 		case "placements":
 			filters.SetPlacements(filterValues)
