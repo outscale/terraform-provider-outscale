@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
@@ -63,6 +64,58 @@ func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	netID := d.Get("net_id").(string)
+	vgwID := d.Get("virtual_gateway_id").(string)
+
+	createOpts := oscgo.LinkVirtualGatewayRequest{
+		NetId:            netID,
+		VirtualGatewayId: vgwID,
+	}
+	log.Printf("[DEBUG] VPN Gateway attachment options: %#v", createOpts)
+
+	var err error
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background(), &oscgo.LinkVirtualGatewayOpts{LinkVirtualGatewayRequest: optional.NewInterface(createOpts)})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVirtualGatewayID.NotFound") {
+				return resource.RetryableError(
+					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error attaching Virtual Gateway %q to VPC %q: %s",
+			vgwID, netID, err)
+	}
+
+	d.SetId(vpnGatewayLinkID(netID, vgwID))
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"detached", "attaching"},
+		Target:     []string{"attached"},
+		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
+		Timeout:    15 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for Virtual Gateway %q to attach to VPC %q: %s",
+			vgwID, netID, err)
+	}
+	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
+
+	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
 }
 
 func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
@@ -121,58 +174,6 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
-}
-
-func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
-
-	netID := d.Get("net_id").(string)
-	vgwID := d.Get("virtual_gateway_id").(string)
-
-	createOpts := oscgo.LinkVirtualGatewayRequest{
-		NetId:            netID,
-		VirtualGatewayId: vgwID,
-	}
-	log.Printf("[DEBUG] VPN Gateway attachment options: %#v", createOpts)
-
-	var err error
-
-	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background(), &oscgo.LinkVirtualGatewayOpts{LinkVirtualGatewayRequest: optional.NewInterface(createOpts)})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidVirtualGatewayID.NotFound") {
-				return resource.RetryableError(
-					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("Error attaching Virtual Gateway %q to VPC %q: %s",
-			vgwID, netID, err)
-	}
-
-	d.SetId(vpnGatewayLinkID(netID, vgwID))
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"detached", "attaching"},
-		Target:     []string{"attached"},
-		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
-		Timeout:    15 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 5 * time.Second,
-	}
-
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf("Error waiting for Virtual Gateway %q to attach to VPC %q: %s",
-			vgwID, netID, err)
-	}
-	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
-
-	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
 }
 
 func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
