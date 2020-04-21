@@ -33,7 +33,7 @@ func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "test" {
 			ip_range = "%s"
-			
+
 			tags {
 			key = "Name"
 			value = "%s"
@@ -41,7 +41,7 @@ func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
 		}
 
 		data "outscale_nets" "by_id" {
-			net_id = ["${outscale_net.test.id}"]
+			net_ids = ["${outscale_net.test.id}"]
 		}
 	`, ipRange, tag)
 }
