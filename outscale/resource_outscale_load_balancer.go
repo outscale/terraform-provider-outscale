@@ -339,7 +339,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	if len(*resp.LoadBalancers) != 1 {
 		return fmt.Errorf("Unable to find Load Balancer: %#v",
-			resp.LoadBalancers)
+			elbName)
 	}
 
 	lb := (*resp.LoadBalancers)[0]
@@ -420,16 +420,13 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 	// if anye of thoses V are true, ake a
 	// resourceOutscaleOAPILoadBalancerDelete(d, meta)
 	// resourceOutscaleOAPILoadBalancerCreate(d, meta)
-	if d.HasChange("security_groups") {
-		return fmt.Errorf("security group update is not supported")
-	}
-
-	if d.HasChange("subregion_names") {
-		return fmt.Errorf("sub_region_name update is not supported")
-	}
-
-	if d.HasChange("subnets") {
-		return fmt.Errorf("subnet_id update is not supported")
+	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
+		d.HasChange("subnets") {
+		log.Printf("[INFO] update Load Balancer: %s", d.Id())
+		//dcp := *d
+		resourceOutscaleOAPILoadBalancerDelete(d, meta)
+		resourceOutscaleOAPILoadBalancerCreate(d, meta)
+		return nil
 	}
 
 	if d.HasChange("listeners") {
