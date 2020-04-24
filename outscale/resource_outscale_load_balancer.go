@@ -30,6 +30,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"load_balancer_name": {
@@ -52,6 +53,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 			"subnets": {
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -205,6 +207,10 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 }
 
 func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
+	return resourceOutscaleOAPILoadBalancerCreate_(d, meta, false)
+}
+
+func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := &oscgo.CreateLoadBalancerRequest{}
@@ -230,16 +236,22 @@ func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interfa
 		req.LoadBalancerType = &s
 	}
 
-	if v, ok := d.GetOk("subregion_names"); ok {
-		req.SubregionNames = expandStringList(v.([]interface{}))
-	}
-
 	if v, ok := d.GetOk("security_groups"); ok {
 		req.SecurityGroups = expandStringList(v.([]interface{}))
 	}
 
-	if v, ok := d.GetOk("subnets"); ok {
-		req.Subnets = expandStringList(v.([]interface{}))
+	v_sb, sb_ok := d.GetOk("subnets")
+	if sb_ok {
+		req.Subnets = expandStringList(v_sb.([]interface{}))
+	}
+
+	v_srn, srn_ok := d.GetOk("subregion_names")
+	if isUpdate && sb_ok && srn_ok {
+		return fmt.Errorf("can't use both 'subregion_names' and 'subnets'")
+	}
+
+	if srn_ok && sb_ok == false {
+		req.SubregionNames = expandStringList(v_srn.([]interface{}))
 	}
 
 	elbOpts := &oscgo.CreateLoadBalancerOpts{
@@ -417,16 +429,15 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	d.Partial(true)
 
-	// if anye of thoses V are true, ake a
-	// resourceOutscaleOAPILoadBalancerDelete(d, meta)
-	// resourceOutscaleOAPILoadBalancerCreate(d, meta)
 	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
 		d.HasChange("subnets") {
 		log.Printf("[INFO] update Load Balancer: %s", d.Id())
-		//dcp := *d
-		resourceOutscaleOAPILoadBalancerDelete(d, meta)
-		resourceOutscaleOAPILoadBalancerCreate(d, meta)
-		return nil
+		e := resourceOutscaleOAPILoadBalancerDelete_(d, meta, false)
+
+		if e != nil {
+			return e
+		}
+		return resourceOutscaleOAPILoadBalancerCreate_(d, meta, true)
 	}
 
 	if d.HasChange("listeners") {
@@ -632,8 +643,11 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
-
 func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
+	return resourceOutscaleOAPILoadBalancerDelete_(d, meta, true)
+}
+
+func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interface{}, needupdate bool) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[INFO] Deleting Load Balancer: %s", d.Id())
@@ -664,7 +678,9 @@ func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Error deleting Load Balancer: %s", err)
 	}
 
-	d.SetId("")
+	if needupdate {
+		d.SetId("")
+	}
 
 	return nil
 }
