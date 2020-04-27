@@ -54,3 +54,13 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `link_public_ip_id` - (Net only) The ID representing the association of the EIP with the VM or the NIC.
+
+## Import
+
+A public IP link can be imported using the public IP and the public IP link ID. For example:
+
+```hcl
+
+$ terraform import outscale_public_ip_link.ImportedPublicIpLink eipassoc-1908754d
+
+```

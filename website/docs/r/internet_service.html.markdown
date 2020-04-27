@@ -41,3 +41,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the Internet service.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+An internet service can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_internet_service.ImportedInternetService igw-c1a0b415
+
+```

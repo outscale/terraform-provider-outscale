@@ -63,3 +63,13 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
   * `volume_id` - The ID of the volume.
   * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).
+
+## Import
+
+A volume can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_volume.ImportedVolume vol-69a3b0ea
+
+```

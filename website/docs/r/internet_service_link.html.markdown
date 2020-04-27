@@ -45,3 +45,13 @@ The following attributes are exported:
 * `internet_service_id` - The ID of the Internet service you want to attach.
 * `state` - The state of the attachment of the Net to the Internet service (always `available`).
 * `tags` - One or more tags associated with the Internet service.
+
+## Import
+
+An internet service link can be imported using the internet service ID. For example:
+
+```hcl
+
+$ terraform import outscale_internet_service_link.ImportedInternetServiceLink igw-c1a0b415
+
+```

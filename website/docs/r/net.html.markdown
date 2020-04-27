@@ -91,3 +91,13 @@ The following attributes are exported:
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
   * `tenancy` - The VM tenancy in a Net.
+
+## Import
+
+A NET can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_net_attributes.ImportedNet vpc-eebd7948
+
+```

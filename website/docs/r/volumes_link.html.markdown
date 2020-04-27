@@ -54,3 +54,13 @@ The following attributes are exported:
 * `vm_id` - The ID of the VM you want to attach the volume to.
 * `state` - The attachment state of the volume (`attaching` | `detaching` | `attached` | `detached`).
 * `volume_id` - The ID of the volume you want to attach.
+
+## Import
+
+A volume link can be imported using a volume ID. For example:
+
+```hcl
+
+$ terraform import outscale_volumes_link.ImportedVolumeLink  vol-2b029127
+
+```

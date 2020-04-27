@@ -114,3 +114,14 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `tags` - One or more tags associated with the OMI.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+
+## Import
+
+An image can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_image.ImportedImage ami-480cd0bd
+
+```

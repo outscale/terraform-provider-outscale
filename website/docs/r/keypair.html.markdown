@@ -48,3 +48,14 @@ The following attributes are exported:
 If you import a keypair, the MD5 public key fingerprint as specified in section 4 of RFC 4716.
   * `keypair_name` - The name of the keypair.
   * `private_key` - The private key.
+
+
+## Import
+
+A keypair can be imported using its name. For example:
+
+```hcl
+
+$ terraform import outscale_keypair.ImportedKeypair Name-of-the-Keypair
+
+```

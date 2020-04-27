@@ -74,3 +74,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the security group.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A security group can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_security_group.ImportedSecurityGroup sg-facb2830
+
+```

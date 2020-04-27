@@ -41,3 +41,13 @@ The following attributes are exported:
 
 * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
 * `net_id` - The ID of the Net.
+
+## Import
+
+A NET attribute can be imported using the NET ID. For example:
+
+```hcl
+
+$ terraform import outscale_net.ImportedNet vpc-eebd7949
+
+```

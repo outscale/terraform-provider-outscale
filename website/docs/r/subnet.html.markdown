@@ -54,3 +54,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the Subnet.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A subnet can be imported using its ID. For example:
+
+```hcl
+
+$ terraform import outscale_subnet.ImportedSubnet subnet-23ba71b4
+
+```
