@@ -36,6 +36,7 @@ The following arguments are supported:
 * `description` - (Required) A description for the security group, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
 * `net_id` - (Optional) The ID of the Net for the security group.
 * `security_group_name` - (Required) (Public Cloud only) The name of the security group.<br />
+This name must not start with `sg-`.</br>
 This name must be unique and contain between 1 and 255 ASCII characters. Accented letters are not allowed.
 * `tags` - One or more tags to add to this resource.
     * `key` - The key of the tag, with a minimum of 1 character.
