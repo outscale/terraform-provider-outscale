@@ -34,7 +34,7 @@ The following arguments are supported:
 * `filter` - One or more filters.
   * `subregion_names` - (Optional) The names of the Subregions of the VMs.
   * `vm_ids` - (Optional) One or more IDs of VMs.
-  * `vm_states` - (Optional) The states of the VMs (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
+  * `vm_states` - (Optional) The states of the VMs (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
 
 ## Attribute Reference
 
@@ -48,4 +48,4 @@ The following attributes are exported:
     * `not_before` - The earliest scheduled start time for the event.
   * `subregion_name` - The name of the Subregion of the VM.
   * `vm_id` - The ID of the VM.
-  * `vm_state` - The state of the VM (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
+  * `vm_state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).

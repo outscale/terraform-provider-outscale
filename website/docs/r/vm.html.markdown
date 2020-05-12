@@ -265,7 +265,7 @@ The following attributes are exported:
   * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - (Public Cloud only) The name of the security group.
-  * `state` - The state of the VM (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
+  * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
   * `state_reason` - The reason explaining the current state of the VM.
   * `subnet_id` - The ID of the Subnet for the VM.
   * `tags` - One or more tags associated with the VM.

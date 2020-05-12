@@ -107,7 +107,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `product_codes` - The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
   * `root_device_name` - The name of the root device.
   * `root_device_type` - The type of root device used by the OMI (always `bsu`).
-  * `state` - The state of the OMI.
+  * `state` - The state of the OMI (`pending` \| `available` \| `failed`).
   * `state_comment` - Information about the change of state.
     * `state_code` - The code of the change of state.
     * `state_message` - A message explaining the change of state.
