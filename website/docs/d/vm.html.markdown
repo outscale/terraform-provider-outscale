@@ -112,5 +112,5 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
   * `user_data` - The Base64-encoded MIME user data.
   * `vm_id` - The ID of the VM.
-  * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `delete`, the VM stops and is deleted.
+  * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
   * `vm_type` - The type of VM. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
