@@ -46,7 +46,7 @@ The following arguments are supported:
   * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
   * `permissions_to_launch_global_permission` - (Optional) If `true`, lists all public OMIs. If `false`, lists all private OMIs.
   * `root_device_names` - (Optional) The device names of the root devices (for example, `/dev/sda1`).
-  * `root_device_types` - (Optional) The types of root device used by the OMIs (always `ebs`).
+  * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
   * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
   * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
   * `tag_values` - (Optional) The values of the tags associated with the OMIs.
