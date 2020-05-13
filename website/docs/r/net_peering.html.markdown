@@ -65,10 +65,10 @@ The following attributes are exported:
 
 ## Import
 
-A NET peering can be imported using its ID. For example:
+A Net peering can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_net_peering.ImportedNetPeering pcx-867201db
+$ terraform import outscale_net_peering.ImportedNetPeering pcx-12345678
 
 ```

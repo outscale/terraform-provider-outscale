@@ -77,10 +77,10 @@ The following attributes are exported:
 
 ## Import
 
-A route can be imported using the route table ID and the distination IP range. For example:
+A route can be imported using the route table ID and the destination IP range. For example:
 
-```hcl
+```
 
-$ terraform import outscale_routeImportedRoute rtb-9b76de73_10.0.0.0/16
+$ terraform import outscale_routeImportedRoute rtb-9b76de73_10.0.0.0/0
 
 ```

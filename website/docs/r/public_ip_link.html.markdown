@@ -57,10 +57,10 @@ The following attributes are exported:
 
 ## Import
 
-A public IP link can be imported using the public IP and the public IP link ID. For example:
+A public IP link can be imported using the public IP or the public IP link ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_public_ip_link.ImportedPublicIpLink eipassoc-1908754d
+$ terraform import outscale_public_ip_link.ImportedPublicIpLink 111.11.111.11
 
 ```

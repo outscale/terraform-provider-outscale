@@ -94,10 +94,10 @@ The following attributes are exported:
 
 ## Import
 
-A NET can be imported using its ID. For example:
+A Net can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_net_attributes.ImportedNet vpc-eebd7948
+$ terraform import outscale_net.ImportedNet vpc-87654321
 
 ```

@@ -50,8 +50,8 @@ The following attributes are exported:
 
 A public IP can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_public_ip.ImportedPublicIp 171.33.95.143
+$ terraform import outscale_public_ip.ImportedPublicIp 111.11.111.11
 
 ```

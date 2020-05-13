@@ -50,8 +50,8 @@ The following attributes are exported:
 
 An internet service link can be imported using the internet service ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_internet_service_link.ImportedInternetServiceLink igw-c1a0b415
+$ terraform import outscale_internet_service_link.ImportedInternetServiceLink igw-87654321
 
 ```

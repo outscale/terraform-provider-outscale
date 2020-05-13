@@ -66,8 +66,8 @@ The following attributes are exported:
 
 A NAT service can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_nat_service.ImportedNatService nat-72c49b0f
+$ terraform import outscale_nat_service.ImportedNatService nat-87654321
 
 ```

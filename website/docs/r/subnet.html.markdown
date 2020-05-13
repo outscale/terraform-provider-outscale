@@ -59,8 +59,8 @@ The following attributes are exported:
 
 A subnet can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_subnet.ImportedSubnet subnet-23ba71b4
+$ terraform import outscale_subnet.ImportedSubnet subnet-12345678
 
 ```

@@ -120,8 +120,8 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 
 An image can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_image.ImportedImage ami-480cd0bd
+$ terraform import outscale_image.ImportedImage ami-12345678
 
 ```

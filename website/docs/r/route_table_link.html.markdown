@@ -57,8 +57,8 @@ The following attributes are exported:
 
 A route table link can be imported using the route table ID and the route table link ID. For example:
 
-```hcl
+```
 
-$ terraform import  outscale_route_table_link.ImportedRouteTableLink rtb-65e851d0_rtbassoc-4628f95b
+$ terraform import outscale_route_table_link.ImportedRouteTableLink rtb-12345678_rtbassoc-87654321
 
 ```

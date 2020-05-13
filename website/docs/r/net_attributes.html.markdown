@@ -44,10 +44,10 @@ The following attributes are exported:
 
 ## Import
 
-A NET attribute can be imported using the NET ID. For example:
+A Net attribute can be imported using the Net ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_net.ImportedNet vpc-eebd7949
+$ terraform import outscale_net_attributes.ImportedNet vpc-12345678
 
 ```

@@ -98,8 +98,8 @@ The following attributes are exported:
 
 A NIC can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_nic.ImportedNic eni-3da448cd
+$ terraform import outscale_nic.ImportedNic eni-12345678
 
 ```

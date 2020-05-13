@@ -68,8 +68,8 @@ The following attributes are exported:
 
 A volume can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_volume.ImportedVolume vol-69a3b0ea
+$ terraform import outscale_volume.ImportedVolume vol-12345678
 
 ```

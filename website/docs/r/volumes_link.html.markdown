@@ -59,8 +59,8 @@ The following attributes are exported:
 
 A volume link can be imported using a volume ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_volumes_link.ImportedVolumeLink  vol-2b029127
+$ terraform import outscale_volumes_link.ImportedVolumeLink  vol-12345678
 
 ```

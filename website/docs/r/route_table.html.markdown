@@ -70,8 +70,8 @@ The following attributes are exported:
 
 A route table can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_route_table.ImportedRouteTable rtb-9b76de74
+$ terraform import outscale_route_table.ImportedRouteTable rtb-12345678
 
 ```

@@ -46,8 +46,8 @@ The following attributes are exported:
 
 An internet service can be imported using its ID. For example:
 
-```hcl
+```
 
-$ terraform import outscale_internet_service.ImportedInternetService igw-c1a0b415
+$ terraform import outscale_internet_service.ImportedInternetService igw-12345678
 
 ```
