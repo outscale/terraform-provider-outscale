@@ -61,6 +61,6 @@ A public IP link can be imported using the public IP or the public IP link ID. F
 
 ```
 
-$ terraform import outscale_public_ip_link.ImportedPublicIpLink 111.11.111.11
+$ terraform import outscale_public_ip_link.ImportedPublicIpLink eipassoc-12345678
 
 ```
