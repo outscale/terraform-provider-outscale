@@ -70,6 +70,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_virtual_gateway":                   resourceOutscaleOAPIVirtualGateway(),
 			"outscale_virtual_gateway_link":              resourceOutscaleOAPIVirtualGatewayLink(),
 			"outscale_virtual_gateway_route_propagation": resourceOutscaleOAPIVirtualGatewayRoutePropagation(),
+			"outscale_client_gateway":                    resourceOutscaleClientGateway(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                dataSourceOutscaleOAPIVM(),
