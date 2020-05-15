@@ -37,7 +37,7 @@ resource "outscale_keypair" "keypair02" {
 The following arguments are supported:
 
 * `keypair_name` - (Required) A unique name for the keypair, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
-* `public_key` - (Optional) The public key. If you are not using command line tools, it must be encoded in Base64.
+* `public_key` - (Optional) The public key. It must be base64-encoded.
 
 ## Attribute Reference
 
