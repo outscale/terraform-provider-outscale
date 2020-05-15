@@ -29,6 +29,11 @@ resource "outscale_vm" "vm01" {
     key   = "name"
     value = "terraform-public-vm"
   }
+  user_data                = base64encode(<<EOT
+# content
+# content
+EOT
+  )
 }
 
 # Create a VM with block device mappings
@@ -189,7 +194,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals).
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
