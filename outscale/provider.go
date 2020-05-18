@@ -67,10 +67,12 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nic_link":                          resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                    resourceOutscaleOAPINetworkInterfacePrivateIP(),
 			"outscale_snapshot_attributes":               resourcedOutscaleOAPISnapshotAttributes(),
+			"outscale_client_gateway":                    resourceOutscaleClientGateway(),
 			"outscale_virtual_gateway":                   resourceOutscaleOAPIVirtualGateway(),
 			"outscale_virtual_gateway_link":              resourceOutscaleOAPIVirtualGatewayLink(),
 			"outscale_virtual_gateway_route_propagation": resourceOutscaleOAPIVirtualGatewayRoutePropagation(),
-			"outscale_client_gateway":                    resourceOutscaleClientGateway(),
+			"outscale_vpn_connection":                    resourceOutscaleVPNConnection(),
+			"outscale_vpn_connection_route":              resourceOutscaleVPNConnectionRoute(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                dataSourceOutscaleOAPIVM(),
@@ -110,6 +112,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_client_gateways":   dataSourceOutscaleClientGateways(),
 			"outscale_virtual_gateway":   dataSourceOutscaleOAPIVirtualGateway(),
 			"outscale_virtual_gateways":  dataSourceOutscaleOAPIVirtualGateways(),
+			"outscale_vpn_connection":    dataSourceOutscaleVPNConnection(),
+			"outscale_vpn_connections":   dataSourceOutscaleVPNConnections(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
