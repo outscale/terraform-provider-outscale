@@ -189,7 +189,47 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 
 	dhcpID := d.Id()
 
-	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+	// Validate if the DHCP  Option is attached to a Net, if so, we need to remove the link
+	// in order to remove it
+	var resp oscgo.ReadNetsResponse
+	var err error
+	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.NetApi.ReadNets(context.Background(),
+			&oscgo.ReadNetsOpts{
+				ReadNetsRequest: optional.NewInterface(oscgo.ReadNetsRequest{
+					Filters: &oscgo.FiltersNet{
+						DhcpOptionsSetIds: &[]string{dhcpID},
+					},
+				}),
+			})
+
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
+	}
+
+	if nets := resp.GetNets(); len(nets) > 0 {
+		for _, net := range nets {
+			_, _, err = conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{
+				UpdateNetRequest: optional.NewInterface(oscgo.UpdateNetRequest{
+					DhcpOptionsSetId: "default",
+					NetId:            net.GetNetId(),
+				}),
+			})
+			if err != nil {
+				return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
+			}
+		}
+	}
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background(), &oscgo.DeleteDhcpOptionsOpts{
 			DeleteDhcpOptionsRequest: optional.NewInterface(oscgo.DeleteDhcpOptionsRequest{
 				DhcpOptionsSetId: dhcpID,
