@@ -268,7 +268,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	_, err = stateConf.WaitForState()
 	if err != nil {
-		return fmt.Errorf("Errorrr waiting for OMI (%s) to be ready: %v", *image.ImageId, err)
+		return fmt.Errorf("Error waiting for OMI (%s) to be ready: %v", *image.ImageId, err)
 	}
 
 	d.SetId(*image.ImageId)
