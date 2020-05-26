@@ -9,7 +9,6 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -44,22 +43,11 @@ func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error 
 			continue
 		}
 
-		resp, _, err := findOSCAPIResourceSecurityGroup(conn, rs.Primary.ID)
-
-		if err == nil {
-			if *resp.SecurityGroupId == rs.Primary.ID {
-				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
-			}
-			return nil
+		_, resp, err := readSecurityGroups(conn, rs.Primary.ID)
+		if err == nil || len(resp.GetSecurityGroups()) > 0 {
+			return fmt.Errorf("Outscale Security Group Rule(%s) still exists", rs.Primary.ID)
 		}
-
-		if strings.Contains(fmt.Sprint(err), "No security group with ID") {
-			return nil
-		}
-
-		return utils.GetErrorResponse(err)
 	}
-
 	return nil
 }
 
@@ -213,13 +201,12 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 		resource "outscale_security_group_rule" "outscale_security_group_rule" {
 			flow              = "Inbound"
 			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
-		
-			from_port_range = "0"
+
 			to_port_range   = "0"
 			ip_protocol     = "tcp"
 			ip_range        = "0.0.0.0/0"
 		}
-		
+
 		resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
 			flow              = "Inbound"
 			from_port_range   = 443
@@ -228,7 +215,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 			ip_range          = "46.231.147.8/32"
 			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
 		}
-		
+
 		resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
 			security_group_name = "sg1-test-group_test_%d"
