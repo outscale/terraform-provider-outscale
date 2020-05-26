@@ -19,9 +19,12 @@ The provider needs to be configured with the proper credentials before it can be
 
 ```hcl
 provider "outscale" {
-  access_key_id = "AZERTY123456QSDF7890"
-  secret_key_id = "123456AZERTY7890QSDFAZERTY123456QSDF7890"
-  region        = "eu-west-2"
+  access_key_id = "123456789ABCDEFGHIJK"
+  secret_key_id = "ABCDEFGHIJKLMNOPQRSTU1234567891011121314"
+  region        = "cn-southeast-1"
+  endpoints {
+    api  = "https://api.cn-southeast-1.outscale.hk/api/v1"
+    }
 }
 ```
 
@@ -80,3 +83,5 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 * `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 
 * `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
+
+* `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
