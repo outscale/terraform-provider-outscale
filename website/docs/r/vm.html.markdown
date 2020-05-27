@@ -29,10 +29,9 @@ resource "outscale_vm" "vm01" {
     key   = "name"
     value = "terraform-public-vm"
   }
-  user_data                = base64encode(<<EOT
-# content
-# content
-EOT
+  user_data                = base64encode(<<EOF
+<CONFIGURATION>
+EOF
   )
 }
 
