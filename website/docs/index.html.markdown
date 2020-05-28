@@ -34,7 +34,7 @@ provider "outscale" {
 For more information on access keys, see [About Access Keys](https://wiki.outscale.net/display/EN/About+Access+Keys).
 To retrieve your access keys, see [Getting Information About Your Access Keys](https://wiki.outscale.net/display/EN/Getting+Information+About+Your+Access+Keys).
 
-The 3DS OUTSCALE provider offers several ways of providing credentials for authentication. The following methods are supported:
+The 3DS OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
 
 1. [Static credentials](#static-credentials)
 2. [Environment variables](#environment-variables)
