@@ -183,7 +183,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `private_ips` - (Optional) One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
     * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
     * `private_ip` - (Optional) The private IP address of the NIC.
-  * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `PrivateIps` parameter.
+  * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
 * `performance` - (Optional) The performance of the VM (`standard` \| `high` \|  `highest`).

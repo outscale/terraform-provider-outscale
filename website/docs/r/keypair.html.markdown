@@ -14,7 +14,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
-```hcl
+```
 
 # Create a keypair
 
@@ -58,7 +58,7 @@ If you import a keypair, the MD5 public key fingerprint as specified in section 
 
 A keypair can be imported using its name. For example:
 
-```hcl
+```
 
 $ terraform import outscale_keypair.ImportedKeypair Name-of-the-Keypair
 
