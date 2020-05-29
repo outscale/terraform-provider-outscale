@@ -3,11 +3,12 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -40,6 +41,38 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccResourceVpnGatewayAttachment_importBasic(t *testing.T) {
+	resourceName := "outscale_virtual_gateway_link.outscale_virtual_gateway_link"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIVpnGatewayAttachmentDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIVpnGatewayAttachmentConfig,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
 }
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
@@ -152,10 +185,12 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 			return err
 		}
 
-		vgw := resp.GetVirtualGateways()[0]
-		if vgw.GetNetToVirtualGatewayLinks()[0].GetState() != "detached" {
-			return fmt.Errorf("Expected VPN Gateway %q to be in detached state, but got: %q",
-				vgwID, vgw.GetNetToVirtualGatewayLinks()[0].GetState())
+		if len(resp.GetVirtualGateways()) > 1 {
+			vgw := resp.GetVirtualGateways()[0]
+			if vgw.GetNetToVirtualGatewayLinks()[0].GetState() != "detached" {
+				return fmt.Errorf("Expected VPN Gateway %q to be in detached state, but got: %q",
+					vgwID, vgw.GetNetToVirtualGatewayLinks()[0].GetState())
+			}
 		}
 	}
 
@@ -168,7 +203,7 @@ const testAccNoOAPIVpnGatewayAttachmentConfig = `
 	}
 
 	resource "outscale_virtual_gateway" "test" {
-		connection_type = "ipsec.1" 
+		connection_type = "ipsec.1"
 }
 `
 
