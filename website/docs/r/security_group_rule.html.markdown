@@ -24,7 +24,7 @@ resource "outscale_security_group" "security_group01" {
 }
 
 resource "outscale_security_group_rule" "security_group_rule01" {
-  flow              = "inbound"
+  flow              = "Inbound"
   security_group_id = outscale_security_group.security_group01.security_group_id
   from_port_range   = "80"
   to_port_range     = "80"
@@ -45,7 +45,7 @@ resource "outscale_security_group" "security_group03" {
 }
 
 resource "outscale_security_group_rule" "security_group_rule02" 
-    flow              = "inbound"
+    flow              = "Inbound"
     security_group_id = outscale_security_group.security_group02.security_group_id
     rules {
      from_port_range   = "22"
@@ -64,7 +64,7 @@ resource "outscale_security_group_rule" "security_group_rule02"
 
 The following arguments are supported:
 
-* `flow` - (Required) The direction of the flow: `inbound` or `outbound`. You can specify `outbound` for Nets only.
+* `flow` - (Required) The direction of the flow: `Inbound` or `Outbound`. You can specify `Outbound` for Nets only.
 * `from_port_range` - (Optional) The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
 * `ip_protocol` - (Optional) The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
 * `ip_range` - (Optional) The IP range for the security group rule, in CIDR notation (for example, 10.0.0.0/16).
