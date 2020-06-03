@@ -190,6 +190,10 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error 
 		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
 		return err
 	}
+	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
+		fmt.Printf("[WARN] ERROR readOutscaleSubNet6 (%s)", err)
+		return err
+	}
 	return d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
 }
 func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
@@ -245,6 +249,10 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 		},
 		"request_id": {
 			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"map_public_ip_on_launch": &schema.Schema{
+			Type:     schema.TypeBool,
 			Computed: true,
 		},
 		"tags": tagsListOAPISchema(),

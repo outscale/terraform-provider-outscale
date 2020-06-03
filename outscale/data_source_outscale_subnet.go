@@ -26,25 +26,20 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"ip_range": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"tags": dataSourceTagsSchema(),
-
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -53,9 +48,12 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"available_ips_count": {
 				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"map_public_ip_on_launch": &schema.Schema{
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 		},
@@ -122,6 +120,9 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 	if err := d.Set("state", subnet.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
 		return err
 	}
 	if err := d.Set("tags", tagsOSCAPIToMap(subnet.GetTags())); err != nil {
