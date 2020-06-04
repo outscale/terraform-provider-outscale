@@ -170,6 +170,7 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 		vs[k] = vp
 	}
 
+	d.Set("connection_type", virtualGateway.GetConnectionType())
 	d.Set("virtual_gateway_id", virtualGateway.GetVirtualGatewayId())
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", virtualGateway.State)
