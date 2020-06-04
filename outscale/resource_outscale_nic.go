@@ -39,22 +39,22 @@ func resourceOutscaleOAPINic() *schema.Resource {
 func getOAPINicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//  This is attribute part for schema OAPINic
-		"description": &schema.Schema{
+		"description": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"private_ip": &schema.Schema{
+		"private_ip": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_ids": &schema.Schema{
+		"security_group_ids": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"subnet_id": &schema.Schema{
+		"subnet_id": {
 			Type:     schema.TypeString,
 			Required: true,
 		},

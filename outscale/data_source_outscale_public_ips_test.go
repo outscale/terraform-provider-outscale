@@ -12,7 +12,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPSConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
@@ -33,7 +33,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPS_withTags(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags,
 			},
 		},

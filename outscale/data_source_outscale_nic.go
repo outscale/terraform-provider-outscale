@@ -25,27 +25,27 @@ func dataSourceOutscaleOAPINic() *schema.Resource {
 			"filter": dataSourceFiltersSchema(),
 			// This is attribute part for schema Nic
 			// Argument
-			"nic_id": &schema.Schema{
+			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
 
 			// Attributes
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"private_ip": &schema.Schema{
+			"private_ip": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"security_group_id": &schema.Schema{
+			"security_group_id": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"subnet_id": &schema.Schema{
+			"subnet_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

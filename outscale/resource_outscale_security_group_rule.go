@@ -172,7 +172,7 @@ func getIPOAPIPermissionsSchema(isForAttr bool) *schema.Schema {
 					ForceNew: !isForAttr,
 					Computed: isForAttr,
 				},
-				"security_groups_members": &schema.Schema{
+				"security_groups_members": {
 					Type:     schema.TypeList,
 					Optional: true,
 					Computed: true,

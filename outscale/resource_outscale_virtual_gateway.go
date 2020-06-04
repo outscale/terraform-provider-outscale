@@ -26,39 +26,39 @@ func resourceOutscaleOAPIVirtualGateway() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"connection_type": &schema.Schema{
+			"connection_type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 
-			"net_to_virtual_gateway_links": &schema.Schema{
+			"net_to_virtual_gateway_links": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"state": &schema.Schema{
+						"state": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"net_id": &schema.Schema{
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"virtual_gateway_id": &schema.Schema{
+			"virtual_gateway_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,

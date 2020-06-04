@@ -156,16 +156,16 @@ func resourceOutscaleOAPIImage() *schema.Resource {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
-			"permissions_to_launch": &schema.Schema{
+			"permissions_to_launch": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -360,7 +360,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 
 func setResourcePermissions(por oscgo.PermissionsOnResource) []map[string]interface{} {
 	return []map[string]interface{}{
-		map[string]interface{}{
+		{
 			"global_permission": por.GetGlobalPermission(),
 			"account_ids":       por.GetAccountIds(),
 		},

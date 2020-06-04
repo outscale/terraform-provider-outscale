@@ -25,7 +25,7 @@ func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVirtualGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVirtualGatewayExists(
@@ -33,7 +33,7 @@ func TestAccOutscaleOAPIVirtualGateway_basic(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccOAPIVirtualGatewayConfigChangeVPC,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVirtualGatewayExists(
@@ -52,10 +52,10 @@ func TestAccOutscaleOAPIVirtualGatewayChangeTags(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW"),
 			},
-			resource.TestStep{
+			{
 				Config: testAccOAPIVirtualGatewayConfigChangeTags("ipsec.1", "test-VGW2"),
 			},
 		},
@@ -83,12 +83,12 @@ func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVirtualGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVirtualGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVirtualGatewayExists("outscale_virtual_gateway.foo", &virtualGateway)),
 			},
-			resource.TestStep{
+			{
 				Config: testAccOAPINoVirtualGatewayConfig,
 				Check:  resource.ComposeTestCheckFunc(testDeleted("outscale_virtual_gateway.foo")),
 			},

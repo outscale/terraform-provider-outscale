@@ -14,7 +14,7 @@ func TestAccDataSourceOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPILinPeeringConnectionConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPILinPeeringConnectionCheck("outscale_net_peering.net_peering"),

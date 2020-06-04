@@ -321,12 +321,12 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"security_group_ids": &schema.Schema{
+			"security_group_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"security_group_names": &schema.Schema{
+			"security_group_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -430,7 +430,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"product_codes": &schema.Schema{
+			"product_codes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -1015,7 +1015,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		}
 
 		if v, ok := d.GetOk("private_ip"); ok {
-			ni.SetPrivateIps([]oscgo.PrivateIpLight{oscgo.PrivateIpLight{
+			ni.SetPrivateIps([]oscgo.PrivateIpLight{{
 				PrivateIp: aws.String(v.(string)),
 			}})
 		}

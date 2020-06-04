@@ -28,25 +28,25 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"image_id": &schema.Schema{
+			"image_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"permission_additions": &schema.Schema{
+			"permission_additions": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
 							Default:  "false",
 						},
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
 							ForceNew: true,
@@ -55,20 +55,20 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 					},
 				},
 			},
-			"permission_removals": &schema.Schema{
+			"permission_removals": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
 							Default:  "false",
 						},
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
 							ForceNew: true,
@@ -77,21 +77,21 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 					},
 				},
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"permissions_to_launch": &schema.Schema{
+			"permissions_to_launch": {
 				Type:     schema.TypeList,
 				Computed: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -99,7 +99,7 @@ func resourceOutscaleOAPIImageLaunchPermission() *schema.Resource {
 					},
 				},
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

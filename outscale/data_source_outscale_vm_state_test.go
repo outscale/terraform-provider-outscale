@@ -16,7 +16,7 @@ func TestAccDataSourceOutscaleOAPIVmState(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIVmStateConfig(omi, "c4.large"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIVMStateCheck("data.outscale_vm_state.state"),

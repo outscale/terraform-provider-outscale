@@ -347,7 +347,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	} else {
 		if err := d.Set("linked_volumes", []map[string]interface{}{
-			map[string]interface{}{
+			{
 				"delete_on_vm_deletion": false,
 				"device_name":           "none",
 				"vm_id":                 "none",
@@ -364,7 +364,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	} else {
 		if err := d.Set("tags", []map[string]string{
-			map[string]string{
+			{
 				"key":   "",
 				"value": "",
 			},

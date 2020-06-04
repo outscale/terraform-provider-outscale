@@ -20,22 +20,22 @@ func resourceOutscaleOAPIVirtualGatewayRoutePropagation() *schema.Resource {
 		Delete: resourceOutscaleOAPIVpnGatewayRoutePropagationDisable,
 
 		Schema: map[string]*schema.Schema{
-			"virtual_gateway_id": &schema.Schema{
+			"virtual_gateway_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"route_table_id": &schema.Schema{
+			"route_table_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"enable": &schema.Schema{
+			"enable": {
 				Type:     schema.TypeBool,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

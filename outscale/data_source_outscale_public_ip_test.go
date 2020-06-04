@@ -15,7 +15,7 @@ func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
@@ -33,7 +33,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi),
 			},
 		},
@@ -81,7 +81,7 @@ func TestAccDataSourceOutscaleOAPIPublicIP_withTags(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfigWithTags,
 			},
 		},

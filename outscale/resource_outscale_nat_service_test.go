@@ -20,7 +20,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPINatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
@@ -38,7 +38,7 @@ func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPINatGatewayConfigWithDataSource,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),

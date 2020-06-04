@@ -23,7 +23,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 		Delete: resourceOutscaleOAPISnapshotDelete,
 
 		Schema: map[string]*schema.Schema{
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -68,16 +68,16 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"permissions_to_create_volume": &schema.Schema{
+			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"account_id": &schema.Schema{
+						"account_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
