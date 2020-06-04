@@ -96,6 +96,27 @@ func TestAccOutscaleOAPIVirtualGateway_delete(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVirtualGateway_importBasic(t *testing.T) {
+	resourceName := "outscale_virtual_gateway.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIVirtualGatewayDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIVirtualGatewayConfig,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
 func testAccOutscaleOAPIVirtualGatewayDisappears(gateway *oscgo.VirtualGateway) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
@@ -293,4 +314,14 @@ func testAccOAPIVirtualGatewayConfigChangeTags(connectionType, name string) stri
 		}
 
 	`, connectionType, name)
+}
+
+func testAccCheckOutscaleVirtualGatewayImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
 }
