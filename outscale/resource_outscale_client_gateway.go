@@ -84,7 +84,7 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 
 	d.SetId(*client.GetClientGateway().ClientGatewayId)
 
-	return nil
+	return resourceOutscaleClientGatewayRead(d, meta)
 }
 
 func resourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{}) error {

@@ -128,6 +128,7 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.FiltersClientGateway {
 	var filters oscgo.FiltersClientGateway
 	for _, v := range set.List() {
+		log.Printf("[DEBUG] gateway filters %+v", v)
 		m := v.(map[string]interface{})
 		var filterValues []string
 		for _, e := range m["values"].([]interface{}) {
