@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleOAPIVirtualGateway_unattached(t *testing.T) {
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIVirtualGatewayUnattachedConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair(

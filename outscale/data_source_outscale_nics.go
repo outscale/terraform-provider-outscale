@@ -33,7 +33,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"description": &schema.Schema{
+					"description": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -105,7 +105,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"net_id": &schema.Schema{
+					"net_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -185,7 +185,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"subnet_id": &schema.Schema{
+					"subnet_id": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
@@ -193,7 +193,7 @@ func getDSOAPINicsSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tags": &schema.Schema{
+					"tags": {
 						Type:     schema.TypeList,
 						Optional: true,
 						Computed: true,

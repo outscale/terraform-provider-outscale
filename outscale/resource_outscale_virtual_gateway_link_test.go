@@ -25,7 +25,7 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 		//IDRefreshName: "outscale_virtual_gateway_link.test",
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check:  resource.ComposeTestCheckFunc(
 				// testAccCheckOutscaleOAPILinExists(
@@ -98,7 +98,7 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					// testAccCheckOutscaleOAPILinExists(
@@ -112,7 +112,7 @@ func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 						&vpc, &vgw),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccNoOAPIVpnGatewayAttachmentConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testDeleted("outscale_virtual_gateway_link.test"),

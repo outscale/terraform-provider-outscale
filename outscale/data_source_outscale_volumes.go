@@ -25,7 +25,7 @@ func datasourceOutscaleOAPIVolumes() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"volumes": &schema.Schema{
+			"volumes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{

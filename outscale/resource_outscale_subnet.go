@@ -214,36 +214,36 @@ func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource
 func getOAPISubNetSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//This is attribute part for schema SubNet
-		"net_id": &schema.Schema{
+		"net_id": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"ip_range": &schema.Schema{
+		"ip_range": {
 			Type:     schema.TypeString,
 			Required: true,
 			ForceNew: true,
 		},
-		"subregion_name": &schema.Schema{
+		"subregion_name": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
 		//This is arguments part for schema SubNet
-		"available_ips_count": &schema.Schema{
+		"available_ips_count": {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-		"state": &schema.Schema{
+		"state": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"subnet_id": &schema.Schema{
+		"subnet_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"request_id": &schema.Schema{
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},

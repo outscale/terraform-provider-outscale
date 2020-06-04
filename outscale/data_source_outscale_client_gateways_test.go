@@ -11,7 +11,7 @@ func TestAccOutscaleClientGatewaysDatasource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleClientGatewaysDatasourceConfigBasic,
 			},
 		},
@@ -23,7 +23,7 @@ func TestAccOutscaleClientGatewaysDatasource_withFilters(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleClientGatewaysDatasourceConfigWithFilters,
 			},
 		},

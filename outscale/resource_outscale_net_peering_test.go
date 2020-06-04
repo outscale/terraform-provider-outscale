@@ -24,7 +24,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(
@@ -89,7 +89,7 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(

@@ -23,7 +23,7 @@ func TestAccOutscaleOAPILin_basic(t *testing.T) {
 		Providers: testAccProviders,
 		// CheckDestroy: testAccCheckOutscaleLinDestroyed, // we need to create the destroyed test case
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILinConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinExists("outscale_net.vpc.0", &conf1),
@@ -44,11 +44,11 @@ func TestAccOutscaleOAPILin_UpdateTags(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPINICDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILinConfigUpdateTags("Terraform_net2"),
 				Check:  resource.ComposeTestCheckFunc(),
 			},

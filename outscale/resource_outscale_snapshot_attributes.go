@@ -21,53 +21,53 @@ func resourcedOutscaleOAPISnapshotAttributes() *schema.Resource {
 		Delete: resourcedOutscaleOAPISnapshotAttributesDelete,
 
 		Schema: map[string]*schema.Schema{
-			"permissions_to_create_volume_additions": &schema.Schema{
+			"permissions_to_create_volume_additions": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
 					},
 				},
 			},
-			"permissions_to_create_volume_removals": &schema.Schema{
+			"permissions_to_create_volume_removals": {
 				Type:     schema.TypeList,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
 					},
 				},
 			},
-			"snapshot_id": &schema.Schema{
+			"snapshot_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

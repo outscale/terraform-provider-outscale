@@ -13,7 +13,7 @@ func TestAccOutscaleOAPIDSLinAttr_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIDSLinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIVpcAttrCheck("data.outscale_net_attributes.test"),

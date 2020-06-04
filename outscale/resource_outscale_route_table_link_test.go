@@ -22,7 +22,7 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPILinkRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPILinkRouteTableExists(

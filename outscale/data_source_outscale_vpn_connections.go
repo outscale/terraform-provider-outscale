@@ -24,7 +24,7 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"vpn_connections": &schema.Schema{
+			"vpn_connections": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{

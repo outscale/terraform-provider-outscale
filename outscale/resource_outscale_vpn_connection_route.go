@@ -21,17 +21,17 @@ func resourceOutscaleVPNConnectionRoute() *schema.Resource {
 		Delete: resourceOutscaleVPNConnectionRouteDelete,
 
 		Schema: map[string]*schema.Schema{
-			"destination_ip_range": &schema.Schema{
+			"destination_ip_range": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"vpn_connection_id": &schema.Schema{
+			"vpn_connection_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

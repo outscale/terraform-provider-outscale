@@ -41,16 +41,16 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"net_to_virtual_gateway_links": &schema.Schema{
+						"net_to_virtual_gateway_links": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"state": &schema.Schema{
+									"state": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"net_id": &schema.Schema{
+									"net_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -61,7 +61,7 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 					},
 				},
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

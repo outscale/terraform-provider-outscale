@@ -24,7 +24,7 @@ func TestAccOutscaleOAPIPublicIP_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
@@ -47,7 +47,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
@@ -55,7 +55,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
@@ -79,7 +79,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
@@ -87,7 +87,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 				),
 			},
 
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),

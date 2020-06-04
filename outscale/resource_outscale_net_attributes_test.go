@@ -12,7 +12,7 @@ func TestAccOutscaleOAPILinAttr_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILinAttrConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("outscale_net_attributes.outscale_net_attributes", "dhcp_options_set_id"),

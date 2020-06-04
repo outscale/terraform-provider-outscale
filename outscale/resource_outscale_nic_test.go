@@ -26,7 +26,7 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPINICDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIENIConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
@@ -34,7 +34,7 @@ func TestAccOutscaleOAPIENI_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("outscale_nic.outscale_nic", "private_ips.#", "2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIENIConfigUpdate(subregion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),

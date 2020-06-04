@@ -19,7 +19,7 @@ func TestAccDataSourceOutscaleOAPIVpnGateways_unattached(t *testing.T) {
 		},
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIVpnGatewaysUnattachedConfig(rInt),
 			},
 		},

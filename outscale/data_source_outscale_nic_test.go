@@ -26,7 +26,7 @@ func TestAccOutscaleOAPIENIDataSource_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIENIDataSourceConfig(subregion),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
@@ -51,7 +51,7 @@ func TestAccOutscaleOAPIENIDataSource_basicFilter(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIENIDataSourceConfigFilter,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
