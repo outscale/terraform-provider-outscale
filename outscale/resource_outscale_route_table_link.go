@@ -90,7 +90,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(resp.GetLinkRouteTableId())
 
-	return nil
+	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
