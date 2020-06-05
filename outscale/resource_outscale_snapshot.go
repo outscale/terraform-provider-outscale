@@ -217,6 +217,10 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error reading the snapshot %snapshot", err)
 	}
 
+	if len(resp.GetSnapshots()) == 0 {
+		return fmt.Errorf("Error reading the snapshot: there are not snapshots with id %s", d.Id())
+	}
+
 	snapshot := resp.GetSnapshots()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
@@ -293,8 +297,10 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 		}
 
 		ebsErr, ok := err.(awserr.Error)
-		if ebsErr.Code() == "SnapshotInUse" {
-			return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
+		if ebsErr != nil {
+			if ebsErr.Code() == "SnapshotInUse" {
+				return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
+			}
 		}
 
 		if !ok {
