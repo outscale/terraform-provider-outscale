@@ -148,6 +148,11 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 		return err
 	}
 
+	if len(resp.GetVirtualGateways()) == 0 {
+		return fmt.Errorf("[ERROR] Error finding VpnGateway: doesn't exists with id %s", d.Id())
+
+	}
+
 	virtualGateway := resp.GetVirtualGateways()[0]
 	if virtualGateway.GetState() == "deleted" {
 		d.SetId("")
