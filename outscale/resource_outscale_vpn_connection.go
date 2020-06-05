@@ -252,6 +252,10 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 			}
 		}
 
+		if len(resp.GetVpnConnections()) == 0 {
+			return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: there are not vpn connections", *vpnConnectionID)
+		}
+
 		vpnConnection := resp.GetVpnConnections()[0]
 
 		return resp, vpnConnection.GetState(), nil
