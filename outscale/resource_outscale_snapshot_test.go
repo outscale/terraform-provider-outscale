@@ -91,6 +91,30 @@ func TestAccOutscaleOAPISnapshot_UpdateTags(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPISnapshot_importBasic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+
+	var v oscgo.Snapshot
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISnapshotConfig(region),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOAPISnapshotExists("outscale_snapshot.outscale_snapshot", &v),
+				),
+			},
+			{
+				ResourceName:            "outscale_snapshot.outscale_snapshot",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
 func testAccCheckOAPISnapshotExists(n string, v *oscgo.Snapshot) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
