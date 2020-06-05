@@ -21,6 +21,9 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 		Read:   resourceOutscaleOAPISnapshotRead,
 		Update: resourceOutscaleOAPISnapshotUpdate,
 		Delete: resourceOutscaleOAPISnapshotDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"description": {
