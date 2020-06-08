@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -91,11 +92,16 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	req := oscgo.CreateSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
 		SecurityGroupId: d.Get("security_group_id").(string),
-		FromPortRange:   pointy.Int64(cast.ToInt64(d.Get("from_port_range"))),
-		ToPortRange:     pointy.Int64(cast.ToInt64(d.Get("to_port_range"))),
 		Rules:           expandRules(d),
 	}
 
+	vv, okk := d.GetOkExists("from_port_range")
+	if v, ok := d.GetOkExists("from_port_range"); ok {
+		req.FromPortRange = pointy.Int64(cast.ToInt64(v))
+	}
+	if v, ok := d.GetOkExists("to_port_range"); ok {
+		req.ToPortRange = pointy.Int64(cast.ToInt64(v))
+	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
 		req.IpProtocol = pointy.String(v.(string))
 	}
@@ -167,11 +173,15 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	req := oscgo.DeleteSecurityGroupRuleRequest{
 		Flow:            d.Get("flow").(string),
 		SecurityGroupId: d.Get("security_group_id").(string),
-		FromPortRange:   pointy.Int64(cast.ToInt64(d.Get("from_port_range"))),
-		ToPortRange:     pointy.Int64(cast.ToInt64(d.Get("to_port_range"))),
 		Rules:           expandRules(d),
 	}
 
+	if v, ok := d.GetOkExists("from_port_range"); ok {
+		req.FromPortRange = pointy.Int64(cast.ToInt64(v))
+	}
+	if v, ok := d.GetOkExists("to_port_range"); ok {
+		req.ToPortRange = pointy.Int64(cast.ToInt64(v))
+	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
 		req.IpProtocol = pointy.String(v.(string))
 	}
@@ -208,14 +218,19 @@ func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
 			r := rule.(map[string]interface{})
 
 			rules[i] = oscgo.SecurityGroupRule{
-				IpRanges:              expandStringValueListPointer(r["ip_ranges"].([]interface{})),
-				ServiceIds:            expandStringValueListPointer(r["service_ids"].([]interface{})),
 				SecurityGroupsMembers: expandSecurityGroupsMembers(r["security_groups_members"].([]interface{})),
+			}
+
+			if ipRanges := expandStringValueListPointer(r["ip_ranges"].([]interface{})); len(*ipRanges) > 0 {
+				rules[i].IpRanges = expandStringValueListPointer(r["ip_ranges"].([]interface{}))
+			}
+			if serviceIDs := expandStringValueListPointer(r["service_ids"].([]interface{})); len(*serviceIDs) > 0 {
+				rules[i].ServiceIds = expandStringValueListPointer(r["service_ids"].([]interface{}))
 			}
 			if v, ok := r["from_port_range"]; ok {
 				rules[i].FromPortRange = pointy.Int64(cast.ToInt64(v))
 			}
-			if v, ok := r["ip_protocol"]; ok {
+			if v, ok := r["ip_protocol"]; ok && v != "" {
 				rules[i].IpProtocol = pointy.String(cast.ToString(v))
 			}
 			if v, ok := r["to_port_range"]; ok {
@@ -260,16 +275,16 @@ func expandSecurityGroupsMembers(gps []interface{}) *[]oscgo.SecurityGroupsMembe
 	groups := make([]oscgo.SecurityGroupsMember, len(gps))
 
 	for i, group := range gps {
-		g := group.(map[string][]interface{})
+		g := group.(map[string]interface{})
 		groups[i] = oscgo.SecurityGroupsMember{}
 
-		if v, ok := g["account_id"]; ok {
+		if v, ok := g["account_id"]; ok && v != "" {
 			groups[i].AccountId = pointy.String(cast.ToString(v))
 		}
-		if v, ok := g["security_group_id"]; ok {
+		if v, ok := g["security_group_id"]; ok && v != "" {
 			groups[i].SecurityGroupId = pointy.String(cast.ToString(v))
 		}
-		if v, ok := g["security_group_name"]; ok {
+		if v, ok := g["security_group_name"]; ok && v != "" {
 			groups[i].SecurityGroupName = pointy.String(cast.ToString(v))
 		}
 	}

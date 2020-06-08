@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
+func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -30,6 +30,21 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 					testAccCheckOutscaleOAPIRuleExists("outscale_security_group.outscale_security_group", &group),
 					testAccCheckOutscaleOAPIRuleAttributes("outscale_security_group_rule.outscale_security_group_rule_https", &group, nil, "Inbound"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt),
 			},
 		},
 	})
@@ -221,4 +236,40 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 			security_group_name = "sg1-test-group_test_%d"
 		}
 	`, rInt)
+}
+
+func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int) string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "outscale_security_group" {
+			description         = "test group"
+			security_group_name = "sg3-terraform-test"
+			tags {
+				key   = "Name"
+				value = "outscale_sg"
+			}
+		}
+
+		resource "outscale_security_group" "outscale_security_group2" {
+			description         = "test group"
+			security_group_name = "sg4-terraform-test"
+			tags {
+				key   = "Name"
+				value = "outscale_sg2"
+			}
+		}
+
+		resource "outscale_security_group_rule" "outscale_security_group_rule-3" {
+			flow              = "Inbound"
+			security_group_id = outscale_security_group.outscale_security_group.id
+			rules {
+				from_port_range = "22"
+				to_port_range   = "22"
+				ip_protocol     = "tcp"
+				security_groups_members {
+					account_id          = "339215505907"
+					security_group_name = outscale_security_group.outscale_security_group2.security_group_name
+				}
+			}
+		}
+	`)
 }
