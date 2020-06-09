@@ -1,11 +1,15 @@
 package outscale
 
 import (
+<<<<<<< HEAD
 	"context"
+=======
+>>>>>>> fbd6a594... chore: updated vendor files
 	"fmt"
 	"strings"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/antihax/optional"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -20,6 +24,18 @@ func resourceOutscaleAccessKey() *schema.Resource {
 		Read:   resourceOutscaleAccessKeyRead,
 		Update: resourceOutscaleAccessKeyUpdate,
 		Delete: resourceOutscaleAccessKeyDelete,
+=======
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+func resourceOutscaleIamAccessKey() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceOutscaleIamAccessKeyCreate,
+		Read:   resourceOutscaleIamAccessKeyRead,
+		Delete: resourceOutscaleIamAccessKeyDelete,
+>>>>>>> fbd6a594... chore: updated vendor files
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -42,10 +58,15 @@ func resourceOutscaleAccessKey() *schema.Resource {
 				Computed: true,
 			},
 			"state": &schema.Schema{
+<<<<<<< HEAD
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "ACTIVE",
 				ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),
+=======
+				Type:     schema.TypeString,
+				Computed: true,
+>>>>>>> fbd6a594... chore: updated vendor files
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -55,6 +76,7 @@ func resourceOutscaleAccessKey() *schema.Resource {
 	}
 }
 
+<<<<<<< HEAD
 func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -62,6 +84,24 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background())
+=======
+func resourceOutscaleIamAccessKeyCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	return resourceOutscaleIamAccessKeyRead(d, meta)
+}
+
+func resourceOutscaleIamAccessKeyRead(d *schema.ResourceData, meta interface{}) error {
+	iamconn := meta.(*OutscaleClient).ICU
+
+	request := &icu.ListAccessKeysInput{}
+
+	var getResp *icu.ListAccessKeysOutput
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		getResp, err = iamconn.API.ListAccessKeys(request)
+
+>>>>>>> fbd6a594... chore: updated vendor files
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -71,6 +111,7 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 		return nil
 	})
 	if err != nil {
+<<<<<<< HEAD
 		return err
 	}
 
@@ -144,13 +185,46 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 
 	req := oscgo.DeleteAccessKeyRequest{
 		AccessKeyId: d.Id(),
+=======
+		if strings.Contains(fmt.Sprint(err), "NoSuchEntity") {
+			d.SetId("")
+			return nil
+		}
+		return fmt.Errorf("Error reading acces key: %s", err)
+	}
+
+	for _, key := range getResp.AccessKeyMetadata {
+		if key.AccessKeyID != nil && *key.AccessKeyID == d.Id() {
+			d.Set("access_key_id", key.AccessKeyID)
+			d.Set("secret_access_key", key.SecretAccessKey)
+			d.Set("owner_id", key.OwnerID)
+			d.Set("status", key.Status)
+			d.Set("tag_set", tagsToMapI(key.Tags))
+			return d.Set("request_id", getResp.ResponseMetadata.RequestID)
+		}
+	}
+	d.SetId("")
+	return fmt.Errorf("AccessKey not found")
+}
+
+func resourceOutscaleIamAccessKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	iamconn := meta.(*OutscaleClient).ICU
+
+	request := &icu.DeleteAccessKeyInput{
+		AccessKeyId: aws.String(d.Id()),
+>>>>>>> fbd6a594... chore: updated vendor files
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+<<<<<<< HEAD
 		_, _, err = conn.AccessKeyApi.DeleteAccessKey(context.Background(), &oscgo.DeleteAccessKeyOpts{
 			DeleteAccessKeyRequest: optional.NewInterface(req),
 		})
+=======
+		_, err = iamconn.API.DeleteAccessKey(request)
+
+>>>>>>> fbd6a594... chore: updated vendor files
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -159,6 +233,7 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 		}
 		return nil
 	})
+<<<<<<< HEAD
 	if err != nil {
 		return fmt.Errorf("Error deleting Outscale Access Key %s: %s", d.Id(), err)
 	}
@@ -179,5 +254,11 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		return err
 	}
 
+=======
+
+	if err != nil {
+		return fmt.Errorf("Error deleting access key %s: %s", d.Id(), err)
+	}
+>>>>>>> fbd6a594... chore: updated vendor files
 	return nil
 }

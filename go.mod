@@ -10,7 +10,9 @@ require (
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hashicorp/terraform v0.12.26
+	github.com/hashicorp/hcl/v2 v2.3.0 // indirect
+	github.com/hashicorp/terraform v0.12.26 // indirect
+	github.com/hashicorp/terraform-config-inspect v0.0.0-20191212124732-c6ae6269b9d7 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.6.0
 	github.com/marinsalinas/osc-sdk-go v0.0.0-20200604013811-2a0709d28c42
 	github.com/mattn/go-colorable v0.1.4 // indirect
