@@ -32,6 +32,29 @@ func TestAccOutscaleOAPINetworkInterfacePrivateIPBasic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPINetworkInterfacePrivateIP_importBasic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+	resourceName := "outscale_nic_private_ip.outscale_nic_private_ip"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: "outscale_nic.outscale_nic",
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccCheckOutscaleOAPIENIDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
 func testAccOutscaleOAPINetworkInterfacePrivateIPConfigBasic(region string) string {
 	return fmt.Sprintf(`
 		resource "outscale_net" "outscale_net" {
