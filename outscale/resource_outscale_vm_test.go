@@ -76,7 +76,7 @@ func testAccCheckOutscaleVMImportStateIDFunc(resourceName string) resource.Impor
 	}
 }
 
-func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
+func TestAccOutscaleOAPIVM_withNicAttached(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -101,7 +101,7 @@ func TestAccOutscaleOAPIVM_BasicWithNicAttached(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
+func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
@@ -126,7 +126,7 @@ func TestAccOutscaleOAPIVM_BasicTags(t *testing.T) {
 	})
 }
 
-func TestAccOutscaleOAPIVM_BasicWithNics(t *testing.T) {
+func TestAccOutscaleOAPIVM_withNics(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
@@ -304,6 +304,72 @@ func TestAccOutscaleOAPIVM_WithNet(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccOutscaleOAPIVM_multiBlockDeviceMapping(t *testing.T) {
+	var server oscgo.Vm
+	region := os.Getenv("OUTSCALE_REGION")
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.outscale_vm", &server),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "image_id", omi),
+					resource.TestCheckResourceAttr("outscale_vm.outscale_vm", "vm_type", "c4.large"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleVMWithMultiBlockDeviceMapping(region, omi string) string {
+	return fmt.Sprintf(`
+		resource "outscale_volume" "example" {
+			subregion_name = "%sa"
+			size           = 1
+		}
+
+		resource "outscale_snapshot" "snapshot" {
+			volume_id = "${outscale_volume.example.id}"
+		}
+
+		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%s"
+			vm_type      = "c4.large"
+			keypair_name = "terraform-basic"
+
+			block_device_mappings {
+				device_name = "/dev/sda1" # resizing bootdisk volume
+				bsu {
+					volume_size           = "100"
+					volume_type           = "gp2"
+					delete_on_vm_deletion = "true"
+				}
+			}
+
+			block_device_mappings {
+				device_name = "/dev/sdb"
+				bsu {
+					volume_size           = 30
+					volume_type           = "io1"
+					iops                  = 150
+					snapshot_id           = outscale_snapshot.snapshot.id
+					delete_on_vm_deletion = false
+				}
+			}
+
+			tags {
+				key   = "name"
+				value = "VM with multiple Block Device Mappings"
+			}
+		}
+	`, region, omi)
 }
 
 func testAccCheckOutscaleDeletionProtectionUpdateBasic(omi, deletionProtection string) string {
