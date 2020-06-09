@@ -39,6 +39,18 @@ func TestAccOutscaleGatewayDatasource_withFilters(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleGatewayDatasource_withFiltersNoLocalhost(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccClientGatewayDatasourceWithFiltersNoLocalhost(),
+			},
+		},
+	})
+}
+
 func testAccClientGatewayDatasourceBasic(rBgpAsn int, value string) string {
 	return fmt.Sprintf(`
 		resource "outscale_client_gateway" "foo" {
@@ -78,4 +90,25 @@ func testAccClientGatewayDatasourceWithFilters(rBgpAsn int, value string) string
 			}
 		}
 	`, rBgpAsn, value)
+}
+
+func testAccClientGatewayDatasourceWithFiltersNoLocalhost() string {
+	return fmt.Sprintf(`
+	resource "outscale_client_gateway" "outscale_client_gateway" {
+		bgp_asn     = 571
+		public_ip  = "171.33.75.123"
+		connection_type        = "ipsec.1"
+		tags {
+		 key = "name-mzi"
+		 value = "CGW_1_mzi"
+		}
+	}
+	
+	data "outscale_client_gateway" "outscale_client_gateway_2" {
+		filter {
+		   name   = "client_gateway_ids"
+		   values = [outscale_client_gateway.outscale_client_gateway.client_gateway_id]
+		}
+	}
+	`)
 }
