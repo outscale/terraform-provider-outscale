@@ -42,7 +42,7 @@ func resourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
 							Computed: true,
 							ForceNew: true,
 						},
-						"checked_vm": {
+						"path": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
@@ -100,6 +100,7 @@ func resourceOutscaleOAPILoadBalancerHealthCheckCreate(d *schema.ResourceData, m
 	ut, uterr := strconv.Atoi(check["unhealthy_threshold"].(string))
 	i, ierr := strconv.Atoi(check["check_interval"].(string))
 	t, terr := strconv.Atoi(check["timeout"].(string))
+	p, perr := strconv.Atoi(check["port"].(string))
 
 	if hterr != nil {
 		return fmt.Errorf("please provide an number in health_check.healthy_threshold argument")
@@ -117,15 +118,23 @@ func resourceOutscaleOAPILoadBalancerHealthCheckCreate(d *schema.ResourceData, m
 		return fmt.Errorf("please provide an number in health_check.timeout argument")
 	}
 
+	if perr != nil {
+		return fmt.Errorf("please provide an number in health_check.port argument")
+	}
+
 	req := oscgo.UpdateLoadBalancerRequest{
 		LoadBalancerName: ename.(string),
 		HealthCheck: &oscgo.HealthCheck{
 			HealthyThreshold:   int64(ht),
 			UnhealthyThreshold: int64(ut),
 			CheckInterval:      int64(i),
-			Path:               check["checked_vm"].(string),
+			Protocol:           check["protocol"].(string),
+			Port:               int64(p),
 			Timeout:            int64(t),
 		},
+	}
+	if check["path"] != nil {
+		req.HealthCheck.Path = check["path"].(string)
 	}
 
 	configureHealthCheckOpts := oscgo.UpdateLoadBalancerOpts{
@@ -231,7 +240,7 @@ func resourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, met
 
 	healthCheck["healthy_threshold"] = h
 	healthCheck["check_interval"] = i
-	healthCheck["checked_vm"] = t
+	healthCheck["path"] = t
 	healthCheck["timeout"] = ti
 	healthCheck["unhealthy_threshold"] = u
 

@@ -76,7 +76,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"checked_vm": {
+						"path": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -607,10 +607,15 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 					HealthyThreshold:   int64(check["healthy_threshold"].(int)),
 					UnhealthyThreshold: int64(check["unhealthy_threshold"].(int)),
 					CheckInterval:      int64(check["check_interval"].(int)),
-					Path:               check["checked_vm"].(string),
+					Protocol:           check["protocol"].(string),
+					Port:               int64(check["port"].(int)),
 					Timeout:            int64(check["timeout"].(int)),
 				},
 			}
+			if check["path"] != nil {
+				req.HealthCheck.Path = check["path"].(string)
+			}
+
 			configureHealthCheckOpts := oscgo.UpdateLoadBalancerOpts{
 				optional.NewInterface(req),
 			}
@@ -729,7 +734,7 @@ func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 	if check != nil {
 		chk["unhealthy_threshold"] = strconv.Itoa(int(check.UnhealthyThreshold))
 		chk["healthy_threshold"] = strconv.Itoa(int(check.HealthyThreshold))
-		chk["target"] = check.Path
+		chk["path"] = check.Path
 		chk["timeout"] = strconv.Itoa(int(check.Timeout))
 		chk["interval"] = strconv.Itoa(int(check.CheckInterval))
 	}
