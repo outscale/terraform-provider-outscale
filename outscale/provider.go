@@ -73,6 +73,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_virtual_gateway_route_propagation": resourceOutscaleOAPIVirtualGatewayRoutePropagation(),
 			"outscale_vpn_connection":                    resourceOutscaleVPNConnection(),
 			"outscale_vpn_connection_route":              resourceOutscaleVPNConnectionRoute(),
+			"outscale_access_key":                        resourceOutscaleAccessKey(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                dataSourceOutscaleOAPIVM(),
@@ -114,6 +115,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_virtual_gateways":  dataSourceOutscaleOAPIVirtualGateways(),
 			"outscale_vpn_connection":    dataSourceOutscaleVPNConnection(),
 			"outscale_vpn_connections":   dataSourceOutscaleVPNConnections(),
+			"outscale_access_key":        dataSourceOutscaleAccessKey(),
+			"outscale_access_keys":       dataSourceOutscaleAccessKeys(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
