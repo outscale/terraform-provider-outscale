@@ -2,7 +2,9 @@ package outscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -19,6 +21,9 @@ func resourceOutscaleVPNConnectionRoute() *schema.Resource {
 		Create: resourceOutscaleVPNConnectionRouteCreate,
 		Read:   resourceOutscaleVPNConnectionRouteRead,
 		Delete: resourceOutscaleVPNConnectionRouteDelete,
+		Importer: &schema.ResourceImporter{
+			State: resourceOutscaleOAPIVPNConnectionRouteImportState,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"destination_ip_range": {
@@ -149,6 +154,9 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 			}
 		}
 
+		if len(resp.GetVpnConnections()) == 0 {
+			return nil, "failed", fmt.Errorf("error on vpnConnectionRouteRefresh: there are not vpn connections with id %v", vpnConnectionID)
+		}
 		vpnConnection := resp.GetVpnConnections()[0]
 
 		routes, ok := vpnConnection.GetRoutesOk()
@@ -167,4 +175,49 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 func resourceOutscaleVPNConnectionRouteParseID(ID string) (string, string) {
 	parts := strings.SplitN(ID, ":", 2)
 	return parts[0], parts[1]
+}
+
+func resourceOutscaleOAPIVPNConnectionRouteImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	parts := strings.SplitN(d.Id(), "_", 2)
+	if len(parts) != 2 {
+		return nil, errors.New("import format error: to import a Outscale VPN connection Route, use the format {vpn_connection_id}_{destination_ip_range}")
+	}
+
+	vpnConnectionID := parts[0]
+	destinationIPRange := parts[1]
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"available", "failed"},
+		Refresh:    vpnConnectionRouteRefreshFunc(conn, &destinationIPRange, &vpnConnectionID),
+		Timeout:    10 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	_, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf("Error waiting for Outscale VPN Connection Route import(%s) to become ready: %s", d.Id(), err)
+	}
+
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "NotFound") {
+			log.Printf("[WARN] VPN Connection route %q could not be found. Removing Route from state.", vpnConnectionID)
+			return nil, err
+		}
+		return nil, err
+	}
+
+	if err := d.Set("vpn_connection_id", vpnConnectionID); err != nil {
+		return nil, fmt.Errorf("error setting `%s` for Outscale VPN Connection Route(%s): %s", "vpn_connection_id", vpnConnectionID, err)
+	}
+	if err := d.Set("destination_ip_range", destinationIPRange); err != nil {
+		return nil, fmt.Errorf("error setting `%s` for Outscale VPN Connection Route(%s): %s", "destination_ip_range", destinationIPRange, err)
+	}
+
+	d.SetId(fmt.Sprintf("%s:%s", destinationIPRange, vpnConnectionID))
+
+	return []*schema.ResourceData{d}, nil
 }
