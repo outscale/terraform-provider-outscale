@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -95,7 +94,6 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 		Rules:           expandRules(d),
 	}
 
-	vv, okk := d.GetOkExists("from_port_range")
 	if v, ok := d.GetOkExists("from_port_range"); ok {
 		req.FromPortRange = pointy.Int64(cast.ToInt64(v))
 	}
