@@ -9,14 +9,13 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
+func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -36,6 +35,21 @@ func TestAccOutscaleOAPIOutboundRule(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error {
 	conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
@@ -44,22 +58,11 @@ func testAccCheckOutscaleOAPISecurityGroupRuleDestroy(s *terraform.State) error 
 			continue
 		}
 
-		resp, _, err := findOSCAPIResourceSecurityGroup(conn, rs.Primary.ID)
-
-		if err == nil {
-			if *resp.SecurityGroupId == rs.Primary.ID {
-				return fmt.Errorf("Security Group (%s) still exists", rs.Primary.ID)
-			}
-			return nil
+		_, resp, err := readSecurityGroups(conn, rs.Primary.ID)
+		if err == nil || len(resp.GetSecurityGroups()) > 0 {
+			return fmt.Errorf("Outscale Security Group Rule(%s) still exists", rs.Primary.ID)
 		}
-
-		if strings.Contains(fmt.Sprint(err), "No security group with ID") {
-			return nil
-		}
-
-		return utils.GetErrorResponse(err)
 	}
-
 	return nil
 }
 
@@ -213,13 +216,12 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 		resource "outscale_security_group_rule" "outscale_security_group_rule" {
 			flow              = "Inbound"
 			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
-		
-			from_port_range = "0"
+
 			to_port_range   = "0"
 			ip_protocol     = "tcp"
 			ip_range        = "0.0.0.0/0"
 		}
-		
+
 		resource "outscale_security_group_rule" "outscale_security_group_rule_https" {
 			flow              = "Inbound"
 			from_port_range   = 443
@@ -228,10 +230,46 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 			ip_range          = "46.231.147.8/32"
 			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
 		}
-		
+
 		resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
 			security_group_name = "sg1-test-group_test_%d"
 		}
 	`, rInt)
+}
+
+func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int) string {
+	return fmt.Sprintf(`
+		resource "outscale_security_group" "outscale_security_group" {
+			description         = "test group"
+			security_group_name = "sg3-terraform-test"
+			tags {
+				key   = "Name"
+				value = "outscale_sg"
+			}
+		}
+
+		resource "outscale_security_group" "outscale_security_group2" {
+			description         = "test group"
+			security_group_name = "sg4-terraform-test"
+			tags {
+				key   = "Name"
+				value = "outscale_sg2"
+			}
+		}
+
+		resource "outscale_security_group_rule" "outscale_security_group_rule-3" {
+			flow              = "Inbound"
+			security_group_id = outscale_security_group.outscale_security_group.id
+			rules {
+				from_port_range = "22"
+				to_port_range   = "22"
+				ip_protocol     = "tcp"
+				security_groups_members {
+					account_id          = "339215505907"
+					security_group_name = outscale_security_group.outscale_security_group2.security_group_name
+				}
+			}
+		}
+	`)
 }

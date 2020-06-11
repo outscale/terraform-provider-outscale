@@ -164,7 +164,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	log.Printf("[DEBUG] Waiting for Security Group (%s) to exist", d.Id())
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{""},
-		Target:  []string{"exists"},
+		Target:  []string{"exists", "failed"},
 		Refresh: SGOAPIStateRefreshFunc(conn, d.Id()),
 		Timeout: 3 * time.Minute,
 	}
@@ -189,58 +189,15 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	sgRaw, _, err := SGOAPIStateRefreshFunc(conn, d.Id())()
+	sg, resp, err := readSecurityGroups(conn, d.Id())
 	if err != nil {
 		return err
 	}
-	if sgRaw == nil {
+	if sg == nil {
 		d.SetId("")
 		return nil
 	}
 
-	group := sgRaw.(oscgo.SecurityGroup)
-
-	req := oscgo.ReadSecurityGroupsRequest{}
-	req.Filters = &oscgo.FiltersSecurityGroup{SecurityGroupIds: &[]string{group.GetSecurityGroupId()}}
-
-	var resp oscgo.ReadSecurityGroupsResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-
-		return nil
-	})
-
-	var errString string
-
-	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
-			strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-			err = nil
-		} else {
-			//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-			errString = err.Error()
-		}
-		return fmt.Errorf("Error on SGStateRefresh: %s", errString)
-	}
-
-	if len(resp.GetSecurityGroups()) == 0 {
-		return fmt.Errorf("Unable to find Security Group")
-	}
-
-	if len(resp.GetSecurityGroups()) > 1 {
-		return fmt.Errorf("multiple results returned, please use a more specific criteria in your query")
-	}
-
-	sg := resp.GetSecurityGroups()[0]
-
-	d.SetId(sg.GetSecurityGroupId())
 	if err := d.Set("security_group_id", sg.GetSecurityGroupId()); err != nil {
 		return err
 	}
@@ -269,6 +226,8 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
+	d.SetId(sg.GetSecurityGroupId())
+
 	return d.Set("outbound_rules", flattenOAPISecurityGroupRule(sg.GetOutboundRules()))
 }
 
@@ -276,10 +235,10 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
-	securityGroupId := d.Id()
+	securityGroupID := d.Id()
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background(), &oscgo.DeleteSecurityGroupOpts{DeleteSecurityGroupRequest: optional.NewInterface(oscgo.DeleteSecurityGroupRequest{
-			SecurityGroupId: &securityGroupId,
+			SecurityGroupId: &securityGroupID,
 		})})
 
 		if err != nil {
@@ -299,48 +258,11 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 // SGOAPIStateRefreshFunc ...
 func SGOAPIStateRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		req := oscgo.ReadSecurityGroupsRequest{
-			Filters: &oscgo.FiltersSecurityGroup{
-				SecurityGroupIds: &[]string{id},
-			},
-		}
-
-		var err error
-		var resp oscgo.ReadSecurityGroupsResponse
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
-
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-
-			return nil
-		})
-
-		var errString string
-
+		securityGroup, _, err := readSecurityGroups(conn, id)
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "InvalidSecurityGroupID.NotFound") ||
-				strings.Contains(fmt.Sprint(err), "InvalidGroup.NotFound") {
-				resp.SetSecurityGroups(nil)
-				err = nil
-			} else {
-				//fmt.Printf("\n\nError on SGStateRefresh: %s", err)
-				errString = err.Error()
-			}
-
-			return nil, "", fmt.Errorf("Error on SGStateRefresh: %s", errString)
+			return nil, "failed", err
 		}
-
-		if resp.GetSecurityGroups() == nil || len(resp.GetSecurityGroups()) == 0 {
-			return nil, "", nil
-		}
-
-		group := resp.GetSecurityGroups()[0]
-		return group, "exists", nil
+		return securityGroup, "exists", nil
 	}
 }
 
@@ -357,4 +279,36 @@ func resourceOutscaleOAPISecurityGroupUpdate(d *schema.ResourceData, meta interf
 
 	d.Partial(false)
 	return resourceOutscaleOAPISecurityGroupRead(d, meta)
+}
+
+func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo.SecurityGroup, *oscgo.ReadSecurityGroupsResponse, error) {
+	filters := oscgo.ReadSecurityGroupsRequest{
+		Filters: &oscgo.FiltersSecurityGroup{
+			SecurityGroupIds: &[]string{securityGroupID},
+		},
+	}
+
+	var err error
+	var resp oscgo.ReadSecurityGroupsResponse
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{
+			ReadSecurityGroupsRequest: optional.NewInterface(filters),
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("error reading the Outscale Security Group(%s): %s", securityGroupID, err)
+	}
+
+	if len(*resp.SecurityGroups) == 0 {
+		return nil, nil, fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	return &resp.GetSecurityGroups()[0], &resp, nil
 }
