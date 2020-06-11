@@ -159,6 +159,15 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("static_routes_only", vpnConnection.GetStaticRoutesOnly()); err != nil {
 		return err
 	}
+	if err := d.Set("client_gateway_id", vpnConnection.GetClientGatewayId()); err != nil {
+		return err
+	}
+	if err := d.Set("virtual_gateway_id", vpnConnection.GetVirtualGatewayId()); err != nil {
+		return err
+	}
+	if err := d.Set("connection_type", vpnConnection.GetConnectionType()); err != nil {
+		return err
+	}
 	if err := d.Set("routes", flattenVPNConnection(vpnConnection.GetRoutes())); err != nil {
 		return err
 	}
@@ -241,6 +250,10 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 			default:
 				return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: %s", err)
 			}
+		}
+
+		if len(resp.GetVpnConnections()) == 0 {
+			return nil, "failed", fmt.Errorf("Error on vpnConnectionRefresh: there are not vpn connections", *vpnConnectionID)
 		}
 
 		vpnConnection := resp.GetVpnConnections()[0]

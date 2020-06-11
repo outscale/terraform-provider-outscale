@@ -121,6 +121,39 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleVPNConnection_importBasic(t *testing.T) {
+	resourceName := "outscale_vpn_connection.foo"
+
+	publicIP := fmt.Sprintf("172.0.0.%d", acctest.RandIntRange(1, 255))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:      func() { testAccPreCheck(t) },
+		IDRefreshName: resourceName,
+		Providers:     testAccProviders,
+		CheckDestroy:  testAccOutscaleVPNConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOutscaleVPNConnectionConfig(publicIP, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccOutscaleVPNConnectionExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "client_gateway_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "virtual_gateway_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "connection_type"),
+					resource.TestCheckResourceAttrSet(resourceName, "static_routes_only"),
+					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
+					resource.TestCheckResourceAttr(resourceName, "static_routes_only", "true"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
 func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
