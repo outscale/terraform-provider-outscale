@@ -939,13 +939,13 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 			blockDevice.SetBsu(expandBlockDeviceBSU(bsu[0].(map[string]interface{})))
 		}
 
-		if deviceName, ok := value["device_name"]; ok {
+		if deviceName, ok := value["device_name"]; ok && deviceName != "" {
 			blockDevice.SetDeviceName(cast.ToString(deviceName))
 		}
-		if noDevice, ok := value["no_device"]; ok {
+		if noDevice, ok := value["no_device"]; ok && noDevice != "" {
 			blockDevice.SetNoDevice(cast.ToString(noDevice))
 		}
-		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
+		if virtualDeviceName, ok := value["virtual_device_name"]; ok && virtualDeviceName != "" {
 			blockDevice.SetVirtualDeviceName(cast.ToString(virtualDeviceName))
 		}
 
@@ -957,17 +957,17 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 	bsuToCreate := oscgo.BsuToCreate{}
 
-	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
+	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
 
-	if snapshotID, ok := bsu["snapshot_id"]; ok {
+	if snapshotID, ok := bsu["snapshot_id"]; ok && snapshotID != "" {
 		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
 	}
-	if volumeSize, ok := bsu["volume_size"]; ok {
+	if volumeSize, ok := bsu["volume_size"]; ok && volumeSize != "" {
 		bsuToCreate.SetVolumeSize(cast.ToInt64(volumeSize))
 	}
-	if volumeType, ok := bsu["volume_type"]; ok {
+	if volumeType, ok := bsu["volume_type"]; ok && volumeType != "" {
 
 		vType := cast.ToString(volumeType)
 		bsuToCreate.SetVolumeType(vType)
