@@ -51,7 +51,7 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsOAPIListSchemaComputed(),
 		},
 	}
 }
