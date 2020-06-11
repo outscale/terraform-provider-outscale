@@ -20,19 +20,19 @@ func dataSourceOutscaleAccessKey() *schema.Resource {
 		Read: dataSourceOutscaleAccessKeyRead,
 		Schema: map[string]*schema.Schema{
 			"filter": dataSourceFiltersSchema(),
-			"access_key_id": &schema.Schema{
+			"access_key_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"creation_date": &schema.Schema{
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"last_modification_date": &schema.Schema{
+			"last_modification_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ACTIVE", "INACTIVE"}, false),

@@ -25,23 +25,23 @@ func resourceOutscaleAccessKey() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"access_key_id": &schema.Schema{
+			"access_key_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"creation_date": &schema.Schema{
+			"creation_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"last_modification_date": &schema.Schema{
+			"last_modification_date": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"secret_key": &schema.Schema{
+			"secret_key": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"state": &schema.Schema{
+			"state": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "ACTIVE",
