@@ -26,11 +26,13 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"domain_name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 			"domain_name_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -39,6 +41,7 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 			"ntp_servers": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -87,32 +90,19 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 		createOpts.SetNtpServers(expandStringValueList(ntpServers.([]interface{})))
 	}
 
-	var resp oscgo.CreateDhcpOptionsResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background(), &oscgo.CreateDhcpOptionsOpts{
-			CreateDhcpOptionsRequest: optional.NewInterface(createOpts),
-		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	dhcp, _, err := createDhcpOption(conn, createOpts)
 	if err != nil {
 		return err
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), *resp.GetDhcpOptionsSet().DhcpOptionsSetId, conn)
+		err := assignTags(tags.([]interface{}), dhcp.GetDhcpOptionsSetId(), conn)
 		if err != nil {
 			return err
 		}
 	}
 
-	d.SetId(*resp.GetDhcpOptionsSet().DhcpOptionsSetId)
+	d.SetId(dhcp.GetDhcpOptionsSetId())
 
 	return resourceOutscaleDHCPOptionRead(d, meta)
 }
@@ -121,24 +111,7 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	conn := meta.(*OutscaleClient).OSCAPI
 	dhcpID := d.Id()
 
-	filterRequest := oscgo.ReadDhcpOptionsRequest{
-		Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{dhcpID}},
-	}
-
-	var resp oscgo.ReadDhcpOptionsResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.DhcpOptionApi.ReadDhcpOptions(context.Background(), &oscgo.ReadDhcpOptionsOpts{
-			ReadDhcpOptionsRequest: optional.NewInterface(filterRequest),
-		})
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
+	_, resp, err := readDhcpOption(conn, dhcpID)
 	if err != nil {
 		return err
 	}
@@ -150,6 +123,15 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	}
 	dhcp := dhcps[0]
 
+	if err := d.Set("domain_name", dhcp.GetDomainName()); err != nil {
+		return err
+	}
+	if err := d.Set("domain_name_servers", dhcp.GetDomainNameServers()); err != nil {
+		return err
+	}
+	if err := d.Set("ntp_servers", dhcp.GetNtpServers()); err != nil {
+		return err
+	}
 	if err := d.Set("default", dhcp.GetDefault()); err != nil {
 		return err
 	}
@@ -189,8 +171,96 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 
 	dhcpID := d.Id()
 
-	// Validate if the DHCP  Option is attached to a Net, if so, we need to remove the link
-	// in order to remove it
+	nets, err := getAttachedDHCPs(conn, dhcpID)
+	if err != nil {
+		return err
+	}
+
+	if err := detachDHCPs(conn, nets); err != nil {
+		return err
+	}
+
+	// Deletes the dhcp option
+	if err := deleteDhcpOptions(conn, dhcpID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest) (*oscgo.DhcpOptionsSet, *oscgo.CreateDhcpOptionsResponse, error) {
+	var resp oscgo.CreateDhcpOptionsResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background(), &oscgo.CreateDhcpOptionsOpts{
+			CreateDhcpOptionsRequest: optional.NewInterface(dhcp),
+		})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resp.DhcpOptionsSet, &resp, err
+}
+
+func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet, *oscgo.ReadDhcpOptionsResponse, error) {
+	filterRequest := oscgo.ReadDhcpOptionsRequest{
+		Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{dhcpID}},
+	}
+
+	var resp oscgo.ReadDhcpOptionsResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.DhcpOptionApi.ReadDhcpOptions(context.Background(), &oscgo.ReadDhcpOptionsOpts{
+			ReadDhcpOptionsRequest: optional.NewInterface(filterRequest),
+		})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, &resp, err
+	}
+
+	dhcps, ok := resp.GetDhcpOptionsSetsOk()
+	if !ok || len(dhcps) == 0 {
+		return nil, &resp, fmt.Errorf("the Outscale DHCP Option is not found %s", dhcpID)
+	}
+
+	return &dhcps[0], &resp, err
+}
+
+func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
+	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background(), &oscgo.DeleteDhcpOptionsOpts{
+			DeleteDhcpOptionsRequest: optional.NewInterface(oscgo.DeleteDhcpOptionsRequest{
+				DhcpOptionsSetId: dhcpID,
+			}),
+		})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	return err
+}
+
+func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error) {
+	// Validate if the DHCP  Option is attached to a Net
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
@@ -212,40 +282,24 @@ func resourceOutscaleDHCPOptionDelete(d *schema.ResourceData, meta interface{}) 
 		return nil
 	})
 	if err != nil {
-		return fmt.Errorf("[DEBUG] Error reading network (%s)", err)
+		return nil, fmt.Errorf("[DEBUG] Error reading network (%s)", err)
 	}
 
-	if nets := resp.GetNets(); len(nets) > 0 {
-		for _, net := range nets {
-			_, _, err = conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{
-				UpdateNetRequest: optional.NewInterface(oscgo.UpdateNetRequest{
-					DhcpOptionsSetId: "default",
-					NetId:            net.GetNetId(),
-				}),
-			})
-			if err != nil {
-				return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
-			}
-		}
-	}
+	return resp.GetNets(), nil
+}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background(), &oscgo.DeleteDhcpOptionsOpts{
-			DeleteDhcpOptionsRequest: optional.NewInterface(oscgo.DeleteDhcpOptionsRequest{
-				DhcpOptionsSetId: dhcpID,
+func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
+	// Detaching the dhcp of the nets
+	for _, net := range nets {
+		_, _, err := conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{
+			UpdateNetRequest: optional.NewInterface(oscgo.UpdateNetRequest{
+				DhcpOptionsSetId: "default",
+				NetId:            net.GetNetId(),
 			}),
 		})
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
+			return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
 		}
-		return nil
-	})
-	if err != nil {
-		return err
 	}
-
 	return nil
 }
