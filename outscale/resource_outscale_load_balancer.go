@@ -91,17 +91,12 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"backend_vm_id": {
+			"backend_vm_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"vm_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"listeners": {
@@ -361,9 +356,9 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
 	if lb.BackendVmIds != nil {
-		d.Set("backend_vm_id", flattenOAPIInstances(lb.BackendVmIds))
+		d.Set("backend_vm_ids", lb.BackendVmIds)
 	} else {
-		d.Set("backend_vm_id", make([]map[string]interface{}, 0))
+		d.Set("backend_vm_ids", make([]interface{}, 0))
 	}
 	if lb.Listeners != nil {
 		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
@@ -371,7 +366,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	} else {
-		if err := d.Set("listeners", make([]map[string]interface{}, 0)); err != nil {
+		if err := d.Set("listeners", make([]interface{}, 0)); err != nil {
 			return err
 		}
 	}
@@ -527,8 +522,8 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		d.SetPartial("listeners")
 	}
 
-	if d.HasChange("backend_vm_id") {
-		o, n := d.GetChange("backend_vm_id")
+	if d.HasChange("backend_vm_ids") {
+		o, n := d.GetChange("backend_vm_ids")
 		os := o.(*schema.Set)
 		ns := n.(*schema.Set)
 		remove := expandInstanceString(os.Difference(ns).List())
@@ -594,7 +589,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			}
 		}
 
-		d.SetPartial("backend_vm_id")
+		d.SetPartial("backend_vm_ids")
 	}
 
 	if d.HasChange("health_check") {
@@ -695,14 +690,6 @@ func expandInstanceString(list []interface{}) []string {
 	result := make([]string, 0, len(list))
 	for _, i := range list {
 		result = append(result, i.(string))
-	}
-	return result
-}
-
-func flattenOAPIInstances(list *[]string) []map[string]string {
-	result := make([]map[string]string, len(*list))
-	for _, s := range *list {
-		result = append(result, map[string]string{"vm_id": s})
 	}
 	return result
 }

@@ -27,18 +27,11 @@ func resourceOutscaleOAPILBUAttachment() *schema.Resource {
 				Required: true,
 			},
 
-			"backend_vm_id": {
+			"backend_vm_ids": {
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"vm_id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
@@ -48,7 +41,7 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	e, eok := d.GetOk("load_balancer_name")
-	i, iok := d.GetOk("backend_vm_id")
+	i, iok := d.GetOk("backend_vm_ids")
 
 	if !eok && !iok {
 		return fmt.Errorf("please provide the required attributes load_balancer_name and backend_vm_id")
@@ -86,7 +79,7 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failure registering backend_vm_id with LBU: %s", err)
+		return fmt.Errorf("Failure registering backend_vm_ids with LBU: %s", err)
 	}
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
@@ -98,7 +91,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	e := d.Get("load_balancer_name").(string)
-	expected := d.Get("backend_vm_id").([]interface{})
+	expected := d.Get("backend_vm_ids").([]interface{})
 
 	filter := &oscgo.FiltersLoadBalancer{
 		LoadBalancerNames: &[]string{e},
@@ -152,7 +145,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		for k1 := range expected {
 			sid := expected[k1].(string)
 			if sid == v {
-				d.Set("backend_vm_id", expected)
+				d.Set("backend_vm_ids", expected)
 				found = true
 			}
 		}
@@ -169,7 +162,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	e := d.Get("load_balancer_name").(string)
-	i := d.Get("backend_vm_id").([]interface{})
+	i := d.Get("backend_vm_ids").([]interface{})
 
 	lb := make([]string, len(i))
 
@@ -202,7 +195,7 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 	})
 
 	if err != nil {
-		return fmt.Errorf("Failure deregistering backend_vm_id from LBU: %s", err)
+		return fmt.Errorf("Failure deregistering backend_vm_ids from LBU: %s", err)
 	}
 
 	return nil

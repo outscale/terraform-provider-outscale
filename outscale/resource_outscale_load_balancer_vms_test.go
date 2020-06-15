@@ -16,7 +16,7 @@ func TestAccOutscaleOAPILBUAttachment_basic(t *testing.T) {
 	testCheckInstanceAttached := func(count int) resource.TestCheckFunc {
 		return func(*terraform.State) error {
 			if len(*conf.BackendVmIds) != count {
-				return fmt.Errorf("backend_vm_id count does not match")
+				return fmt.Errorf("backend_vm_ids count does not match")
 			}
 			return nil
 		}
@@ -60,6 +60,6 @@ resource "outscale_vm" "foo1" {
 
 resource "outscale_load_balancer_vms" "foo1" {
   load_balancer_name      = "${outscale_load_balancer.bar.id}"
-  backend_vm_id = ["${outscale_vm.foo1.id}"]
+  backend_vm_ids = ["${outscale_vm.foo1.id}"]
 }
 `
