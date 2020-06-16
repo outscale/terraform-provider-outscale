@@ -67,6 +67,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_nic_link":                          resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                    resourceOutscaleOAPINetworkInterfacePrivateIP(),
 			"outscale_snapshot_attributes":               resourcedOutscaleOAPISnapshotAttributes(),
+			"outscale_dhcp_option":                       resourceOutscaleDHCPOption(),
 			"outscale_client_gateway":                    resourceOutscaleClientGateway(),
 			"outscale_virtual_gateway":                   resourceOutscaleOAPIVirtualGateway(),
 			"outscale_virtual_gateway_link":              resourceOutscaleOAPIVirtualGatewayLink(),
@@ -117,6 +118,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connections":   dataSourceOutscaleVPNConnections(),
 			"outscale_access_key":        dataSourceOutscaleAccessKey(),
 			"outscale_access_keys":       dataSourceOutscaleAccessKeys(),
+			"outscale_dhcp_option":       dataSourceOutscaleDHCPOption(),
+			"outscale_dhcp_options":      dataSourceOutscaleDHCPOptions(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
