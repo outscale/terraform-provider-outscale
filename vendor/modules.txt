@@ -196,7 +196,7 @@ github.com/hashicorp/terraform-svchost/disco
 github.com/hashicorp/yamux
 # github.com/jmespath/go-jmespath v0.3.0
 github.com/jmespath/go-jmespath
-# github.com/marinsalinas/osc-sdk-go v0.0.0-20200604013811-2a0709d28c42
+# github.com/marinsalinas/osc-sdk-go v0.0.0-20200616160510-b775d5bdde1a
 github.com/marinsalinas/osc-sdk-go
 # github.com/mattn/go-colorable v0.1.1
 github.com/mattn/go-colorable

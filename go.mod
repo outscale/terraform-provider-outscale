@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/errwrap v1.0.0
 	github.com/hashicorp/terraform v0.12.26
 	github.com/hashicorp/terraform-plugin-sdk v1.13.1
-	github.com/marinsalinas/osc-sdk-go v0.0.0-20200604013811-2a0709d28c42
+	github.com/marinsalinas/osc-sdk-go v0.0.0-20200616160510-b775d5bdde1a
 	github.com/openlyinc/pointy v1.1.2
 	github.com/spf13/cast v1.3.1
 )
