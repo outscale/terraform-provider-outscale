@@ -27,11 +27,22 @@ data "outscale_net_attributes" "net_attributes01" {
 
 The following arguments are supported:
 
-* `net_id` - (Required) The ID of the Net.
+* `filters` - One or more filters.
+  * `dhcp_options_set_id` - (Optional) The ID of the DHCP options set.
+  * `ip_range` - (Optional) The IP range for the Net, in CIDR notation (for example, 10.0.0.0/16).
+  * `net_id` - (Optional) The ID of the Net.
+  * `state` - (Optional) The state of the Net (`pending` | `available`).
+  * `tags` - (Optional) The key/value combination of the tags associated with the security groups, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}. 
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
-* `net_id` - The ID of the Net.
+* `net_attributes` - Information about one or more Net attributes.
+  * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
+  * `ip_range` - The IP range for the Net, in CIDR notation (for example 10.0.0.0/16).
+  * `net_id` - The ID of the Net.
+  * `state` - The state of the Net (`pending` | `available`).
+  * `tags` - One or more tags associated with the Net.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.

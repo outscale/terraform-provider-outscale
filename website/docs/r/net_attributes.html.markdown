@@ -21,8 +21,8 @@ For more information on this resource actions, see the [API documentation](https
 #}
 
 resource "outscale_net_attributes" "net_attributes01" {
-	net_id              = outscale_net.net01.net_id
-	dhcp_options_set_id = var.dhcp_options_set_id
+    net_id              = outscale_net.net01.net_id
+    dhcp_options_set_id = var.dhcp_options_set_id
 }
 
 
@@ -40,7 +40,10 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
+* `ip_range` - The IP range for the Net, in CIDR notation (for example, 10.0.0.0/16).
 * `net_id` - The ID of the Net.
+* `state` - The state of the Net (`pending` | `available`).
+* `tenancy` - The VM tenancy in a Net (`default` | `dedicated`).
 
 ## Import
 
