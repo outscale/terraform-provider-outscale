@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
-	"github.com/terraform-providers/terraform-provider-outscale/utils"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
@@ -17,28 +18,28 @@ func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
 		Read: dataSourceOutscaleLoadBalancerAccessLogsRead,
 
 		Schema: map[string]*schema.Schema{
-			"emit_interval": &schema.Schema{
+			"emit_interval": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"s3_bucket_name": &schema.Schema{
+			"s3_bucket_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"s3_bucket_prefix": &schema.Schema{
+			"s3_bucket_prefix": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -47,31 +48,37 @@ func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
 }
 
 func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	elbName, ok1 := d.GetOk("load_balancer_name")
 
 	if !ok1 {
 		return fmt.Errorf("please provide the load_balancer_name required attribute")
 	}
 
-	describeElbOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName.(string)),
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName.(string)},
 	}
 
-	var resp *lbu.DescribeLoadBalancerAttributesOutput
-	var describeResp *lbu.DescribeLoadBalancerAttributesResult
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
-		}
-		if resp.DescribeLoadBalancerAttributesResult != nil {
-			describeResp = resp.DescribeLoadBalancerAttributesResult
 		}
 		return nil
 	})
@@ -85,21 +92,28 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 		return fmt.Errorf("Error retrieving LBU Attr: %s", err)
 	}
 
-	if describeResp.LoadBalancerAttributes == nil {
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName.(string))
+	}
+
+	lb := (lbs)[0]
+
+	if lb.AccessLog == nil {
 		return fmt.Errorf("NO Attributes FOUND")
 	}
 
-	utils.PrintToJSON(describeResp, "RESPONSE =>")
+	//utils.PrintToJSON(resp, "RESPONSE =>")
 
-	a := describeResp.LoadBalancerAttributes.AccessLog
+	a := lb.AccessLog
 
-	d.Set("emit_interval", aws.Int64Value(a.EmitInterval))
-	d.Set("enabled", aws.BoolValue(a.Enabled))
-	d.Set("s3_bucket_name", aws.StringValue(a.S3BucketName))
-	d.Set("s3_bucket_prefix", aws.StringValue(a.S3BucketPrefix))
+	d.Set("publication_interval", a.PublicationInterval)
+	d.Set("is_enabled", a.IsEnabled)
+	d.Set("osu_bucket_name", a.OsuBucketName)
+	d.Set("osu_bucket_prefix", a.OsuBucketPrefix)
 
 	d.SetId(elbName.(string))
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }

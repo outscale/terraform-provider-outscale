@@ -6,8 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleLoadBalancerAccessLogs_basic(t *testing.T) {
@@ -59,10 +58,10 @@ resource "outscale_load_balancer" "bar" {
   availability_zones = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb-ds"
   listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
+    backend_port = 8000
+    backend_protocol = "HTTP"
     load_balancer_port = 80
-    protocol = "HTTP"
+    load_balancer_protocol = "HTTP"
   }
 
 	tag {
@@ -72,8 +71,8 @@ resource "outscale_load_balancer" "bar" {
 }
 
 resource "outscale_load_balancer_attributes" "bar2" {
-	enabled = "false"
-			s3_bucket_name = "donustestbucket"
+	is_enabled = "false"
+			osu_bucket_name = "donustestbucket"
 	load_balancer_name = "${outscale_load_balancer.bar.id}"
 }
 
