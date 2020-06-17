@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"log"
 	"os"
 	"strings"
@@ -21,13 +22,15 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),
@@ -185,14 +188,35 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, sgName string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "vm" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
 			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			security_group_ids       = ["${outscale_security_group.sg.id}"]
+			placement_subregion_name = "%[3]sb"
 		}
 		
 		resource "outscale_public_ip" "ip" {}
@@ -201,5 +225,5 @@ func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
 			public_ip = "${outscale_public_ip.ip.public_ip}"
 			vm_id     = "${outscale_vm.vm.id}"
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, sgName)
 }

@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"testing"
 
@@ -15,6 +16,8 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	var i oscgo.Vm
 	var v oscgo.Volume
 
@@ -27,7 +30,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
@@ -46,13 +49,15 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 
 	resourceName := "outscale_volumes_link.ebs_att"
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region, sgName),
 			},
 			{
 				ResourceName:            resourceName,
@@ -108,13 +113,34 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volu
 	}
 }
 
-func testAccOAPIVolumeAttachmentConfig(omi, vmType, region string) string {
+func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, sgName string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "web" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
 			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
+			security_group_ids       = ["${outscale_security_group.sg.id}"]
 			placement_subregion_name = "%[3]sb"
 		}
 
@@ -129,5 +155,5 @@ func testAccOAPIVolumeAttachmentConfig(omi, vmType, region string) string {
 			volume_id   = "${outscale_volume.volume.id}"
 			vm_id       = "${outscale_vm.web.id}"
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, sgName)
 }

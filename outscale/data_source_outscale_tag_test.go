@@ -23,7 +23,7 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "value", "test-vm"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "resource_type", "instance"),
+						"data.outscale_tag.web", "resource_type", "vm"),
 				),
 			},
 		},

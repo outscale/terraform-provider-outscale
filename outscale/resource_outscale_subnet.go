@@ -251,7 +251,7 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"map_public_ip_on_launch": &schema.Schema{
+		"map_public_ip_on_launch": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
