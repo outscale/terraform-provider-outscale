@@ -114,7 +114,7 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), *vpn.GetVpnConnection().VpnConnectionId, conn)
+		err := assignTags(tags.(*schema.Set), *vpn.GetVpnConnection().VpnConnectionId, conn)
 		if err != nil {
 			return err
 		}

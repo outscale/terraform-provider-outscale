@@ -96,7 +96,7 @@ func resourceOutscaleDHCPOptionCreate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), dhcp.GetDhcpOptionsSetId(), conn)
+		err := assignTags(tags.(*schema.Set), dhcp.GetDhcpOptionsSetId(), conn)
 		if err != nil {
 			return err
 		}
