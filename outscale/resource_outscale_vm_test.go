@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"strings"
 	"testing"
@@ -111,6 +112,8 @@ func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -164,6 +167,8 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 
 	var before oscgo.Vm
 	var after oscgo.Vm
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -274,6 +279,8 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	//TODO: check tags
 	resource.Test(t, resource.TestCase{
@@ -727,6 +734,27 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType, keypair string) 
 
 func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
@@ -739,6 +767,27 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, keypair, sgId string) 
 
 func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[5]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"

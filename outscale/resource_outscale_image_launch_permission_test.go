@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"strings"
 	"testing"
@@ -12,7 +13,6 @@ import (
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	r "github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
@@ -27,6 +27,8 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	imageID := ""
 
 	rInt := acctest.RandInt()
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	r.Test(t, r.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -75,6 +77,8 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 
 	var imageID string
 	rInt := acctest.RandInt()
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	r.Test(t, r.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
@@ -189,6 +193,27 @@ func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
 
 func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int, keypair, sgId string) string {
 	base := fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[5]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "outscale_instance" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
@@ -220,6 +245,27 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 
 func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool, keypair, sgId string) string {
 	base := fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[5]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "outscale_instance" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"

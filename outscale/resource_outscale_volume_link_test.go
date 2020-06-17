@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"testing"
 
@@ -16,6 +17,8 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	var i oscgo.Vm
 	var v oscgo.Volume
@@ -49,6 +52,8 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resourceName := "outscale_volumes_link.ebs_att"
+
+	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -114,6 +119,27 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volu
 
 func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "web" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
