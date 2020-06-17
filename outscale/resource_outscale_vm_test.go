@@ -728,6 +728,17 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, sgName string) string 
 			}
 		}
 
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+
 		resource "outscale_security_group" "sg" {
 			security_group_name = "%[4]s"
 			description         = "Used in the terraform acceptance tests"
@@ -745,6 +756,7 @@ func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, sgName string) string 
 			vm_type                  = "%[2]s"
 			keypair_name             = "terraform-basic"
 			security_group_ids       = ["${outscale_security_group.sg.id}"]
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 			placement_subregion_name = "%[3]sb"
 		}
 	`, omi, vmType, region, sgName)
@@ -758,6 +770,17 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, sgName string)
 			tags {
 				key = "Name"
 				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
 			}
 		}
 
@@ -779,6 +802,7 @@ func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, sgName string)
 			keypair_name             = "terraform-basic"
 			security_group_ids       = ["${outscale_security_group.sg.id}"]
 			placement_subregion_name = "%[3]sb"
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 
 			tags {
 				key   = "name"

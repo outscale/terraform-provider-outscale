@@ -158,6 +158,17 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, sgNa
 			}
 		}
 
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[1]sa"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+
 		resource "outscale_security_group" "sg" {
 			security_group_name = "%[3]s"
 			description         = "Used in the terraform acceptance tests"
@@ -175,6 +186,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, sgNa
 			vm_type            = "t2.micro"
 			keypair_name       = "terraform-basic"
 			security_group_ids = ["${outscale_security_group.sg.id}"]
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 
 		resource "outscale_volumes_link" "outscale_volumes_link" {

@@ -198,6 +198,17 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 			}
 		}
 
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+
 		resource "outscale_security_group" "sg" {
 			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
@@ -216,6 +227,7 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 			keypair_name       = "terraform-basic"
 			security_group_ids = ["${outscale_security_group.sg.id}"]
 			placement_subregion_name = "%[3]sb"
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 		
 		resource "outscale_image" "outscale_image" {
@@ -250,6 +262,17 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 			}
 		}
 
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+
 		resource "outscale_security_group" "sg" {
 			security_group_name = "%[5]s"
 			description         = "Used in the terraform acceptance tests"
@@ -268,6 +291,7 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 			keypair_name             = "terraform-basic"
 			security_group_ids       = ["${outscale_security_group.sg.id}"]
 			placement_subregion_name = "%[3]sb"
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 		
 		resource "outscale_image" "outscale_image" {
