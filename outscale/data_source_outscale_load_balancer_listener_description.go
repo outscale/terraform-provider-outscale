@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILoadBalancerLD() *schema.Resource {
@@ -63,7 +64,7 @@ func dataSourceOutscaleOAPILoadBalancerLD() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILoadBalancerLDRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -72,22 +73,31 @@ func dataSourceOutscaleOAPILoadBalancerLDRead(d *schema.ResourceData, meta inter
 
 	elbName := ename.(string)
 
-	// Retrieve the ELB properties for updating the state
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName)},
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
-	var resp *lbu.DescribeLoadBalancersOutput
-	var describeResp *lbu.DescribeLoadBalancersResult
+
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -100,31 +110,28 @@ func dataSourceOutscaleOAPILoadBalancerLDRead(d *schema.ResourceData, meta inter
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
 
-	if describeResp.LoadBalancerDescriptions == nil {
-		return fmt.Errorf("NO ELB FOUND")
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
-	}
+	lb := (lbs)[0]
 
-	lb := describeResp.LoadBalancerDescriptions[0]
-
-	v := lb.ListenerDescriptions[0]
+	v := (*lb.Listeners)[0]
 
 	l := make(map[string]interface{})
-	l["backend_port"] = strconv.Itoa(int(aws.Int64Value(v.Listener.InstancePort)))
-	l["backend_protocol"] = aws.StringValue(v.Listener.InstanceProtocol)
-	l["load_balancer_port"] = strconv.Itoa(int(aws.Int64Value(v.Listener.LoadBalancerPort)))
-	l["load_balancer_protocol"] = aws.StringValue(v.Listener.Protocol)
-	l["server_certificate_id"] = aws.StringValue(v.Listener.SSLCertificateId)
+	l["backend_port"] = v.BackendPort
+	l["backend_protocol"] = v.BackendProtocol
+	l["load_balancer_port"] = v.LoadBalancerPort
+	l["load_balancer_protocol"] = v.LoadBalancerProtocol
+	l["server_certificate_id"] = v.ServerCertificateId
 
 	if err := d.Set("listener", l); err != nil {
 		return err
 	}
 
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
-	return d.Set("policy_name", flattenStringList(lb.ListenerDescriptions[0].PolicyNames))
+	return d.Set("policy_name", flattenStringList(v.PolicyNames))
 }
