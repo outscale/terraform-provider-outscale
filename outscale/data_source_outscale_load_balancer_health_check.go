@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
@@ -28,7 +30,7 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"checked_vm": &schema.Schema{
+			"path": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -49,7 +51,7 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -58,23 +60,30 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, m
 
 	elbName := ename.(string)
 
-	// Retrieve the ELB properties for updating the state
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: []*string{aws.String(elbName)},
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
-	var resp *lbu.DescribeLoadBalancersOutput
-	var describeResp *lbu.DescribeLoadBalancersResult
+
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
-		}
-		if resp.DescribeLoadBalancersResult != nil {
-			describeResp = resp.DescribeLoadBalancersResult
 		}
 		return nil
 	})
@@ -88,15 +97,16 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, m
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
 
-	if describeResp.LoadBalancerDescriptions == nil {
-		return fmt.Errorf("NO ELB FOUND")
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
-	if len(describeResp.LoadBalancerDescriptions) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
-	}
+	lb := (lbs)[0]
 
-	lb := describeResp.LoadBalancerDescriptions[0]
+	if lb.AccessLog == nil {
+		return fmt.Errorf("NO Attributes FOUND")
+	}
 
 	h := int64(0)
 	i := int64(0)
@@ -104,21 +114,21 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, m
 	ti := int64(0)
 	u := int64(0)
 
-	if *lb.HealthCheck.Target != "" {
-		h = aws.Int64Value(lb.HealthCheck.HealthyThreshold)
-		i = aws.Int64Value(lb.HealthCheck.Interval)
-		t = aws.StringValue(lb.HealthCheck.Target)
-		ti = aws.Int64Value(lb.HealthCheck.Timeout)
-		u = aws.Int64Value(lb.HealthCheck.UnhealthyThreshold)
+	if lb.HealthCheck.Path != "" {
+		h = lb.HealthCheck.HealthyThreshold
+		i = lb.HealthCheck.CheckInterval
+		t = lb.HealthCheck.Path
+		ti = lb.HealthCheck.Timeout
+		u = lb.HealthCheck.UnhealthyThreshold
 	}
 
 	d.Set("healthy_threshold", h)
 	d.Set("check_interval", i)
-	d.Set("checked_vm", t)
+	d.Set("path", t)
 	d.Set("timeout", ti)
 	d.Set("unhealthy_threshold", u)
 
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil
