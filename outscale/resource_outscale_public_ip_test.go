@@ -43,8 +43,6 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -79,8 +77,6 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
-
-	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },

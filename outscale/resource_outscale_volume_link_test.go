@@ -18,8 +18,6 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	var i oscgo.Vm
 	var v oscgo.Volume
 

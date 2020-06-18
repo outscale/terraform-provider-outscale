@@ -112,8 +112,6 @@ func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -279,8 +277,6 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
-
-	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	//TODO: check tags
 	resource.Test(t, resource.TestCase{

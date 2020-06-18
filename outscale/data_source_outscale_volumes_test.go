@@ -52,8 +52,6 @@ func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
