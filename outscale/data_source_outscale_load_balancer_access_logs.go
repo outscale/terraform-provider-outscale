@@ -18,19 +18,19 @@ func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
 		Read: dataSourceOutscaleLoadBalancerAccessLogsRead,
 
 		Schema: map[string]*schema.Schema{
-			"emit_interval": {
+			"publication_interval": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"enabled": {
+			"is_enabled": {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"s3_bucket_name": {
+			"osu_bucket_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"s3_bucket_prefix": {
+			"osu_bucket_prefix": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

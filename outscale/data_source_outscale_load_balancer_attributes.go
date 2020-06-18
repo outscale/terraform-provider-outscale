@@ -1,15 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILoadBalancerAttr() *schema.Resource {
@@ -62,7 +63,7 @@ func dataSourceOutscaleOAPILoadBalancerAttr() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILoadBalancerAttrRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -71,24 +72,30 @@ func dataSourceOutscaleOAPILoadBalancerAttrRead(d *schema.ResourceData, meta int
 
 	elbName := ename.(string)
 
-	describeElbOpts := &lbu.DescribeLoadBalancerAttributesInput{
-		LoadBalancerName: aws.String(elbName),
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
 
-	var describeResp *lbu.DescribeLoadBalancerAttributesResult
-	var resp *lbu.DescribeLoadBalancerAttributesOutput
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancerAttributes(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
-		}
-		if resp.DescribeLoadBalancerAttributesResult != nil {
-			describeResp = resp.DescribeLoadBalancerAttributesResult
 		}
 		return nil
 	})
@@ -102,23 +109,26 @@ func dataSourceOutscaleOAPILoadBalancerAttrRead(d *schema.ResourceData, meta int
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
 
-	if describeResp.LoadBalancerAttributes == nil {
-		return fmt.Errorf("NO ELB FOUND")
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
-	a := describeResp.LoadBalancerAttributes.AccessLog
+	lb := (lbs)[0]
+
+	a := lb.AccessLog
 
 	ld := make([]map[string]interface{}, 1)
 	acc := make(map[string]interface{})
 
-	acc["publication_interval"] = strconv.Itoa(int(aws.Int64Value(a.EmitInterval)))
-	acc["is_enabled"] = strconv.FormatBool(aws.BoolValue(a.Enabled))
-	acc["osu_bucket_name"] = aws.StringValue(a.S3BucketName)
-	acc["osu_bucket_prefix"] = aws.StringValue(a.S3BucketPrefix)
+	acc["publication_interval"] = a.PublicationInterval
+	acc["is_enabled"] = a.IsEnabled
+	acc["osu_bucket_name"] = a.OsuBucketName
+	acc["osu_bucket_prefix"] = a.OsuBucketPrefix
 
 	ld[0] = map[string]interface{}{"access_log": acc}
 
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("load_balancer_attributes", ld)
