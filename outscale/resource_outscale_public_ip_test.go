@@ -39,6 +39,8 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	var conf oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
@@ -48,7 +50,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -56,7 +58,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -72,6 +74,8 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	var one oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -80,15 +84,14 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
-
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -258,74 +261,74 @@ resource "outscale_public_ip" "bar" {
 }
 `
 
-func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
+			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
+			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
 			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_vm" "basic2" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
 			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
 			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_vm" "basic2" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			keypair_name       = "%[4]s"
+			security_group_ids = ["%[5]s"]
 			placement_subregion_name = "%[3]sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }

@@ -15,7 +15,7 @@ func TestAccOutscaleDHCPOptionsDatasource_basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleDHCPOptionsDatasourceConfigBasic(value),
 			},
 		},
@@ -29,7 +29,7 @@ func TestAccOutscaleDHCPOptionsDatasource_withFilters(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleDHCPOptionsDatasourceConfigWithFilters(value),
 			},
 		},

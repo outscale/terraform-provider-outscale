@@ -21,6 +21,8 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	imageID := ""
 
@@ -32,21 +34,21 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, false, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, false, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -54,7 +56,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageDisappears(&imageID),
 				),
@@ -68,6 +70,8 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 	accountID := os.Getenv("OUTSCALE_ACCOUNT")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	var imageID string
 	rInt := acctest.RandInt()
@@ -78,14 +82,14 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, false),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, false, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleOAPIImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, true),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, true, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -183,22 +187,22 @@ func testCheckResourceGetAttr(name, key string, value *string) r.TestCheckFunc {
 	}
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int) string {
+func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, accountID string, includeLaunchPermission bool, r int, keypair, sgId string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_vm" "outscale_instance" {
-			image_id           = "%s"
-			vm_type            = "%s"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id           = "%[1]s"
+			vm_type            = "%[2]s"
+			keypair_name       = "%[5]s"
+			security_group_ids = ["%[6]s"]
+			placement_subregion_name = "%[3]sb"
 		}
 		
 		resource "outscale_image" "outscale_image" {
-			image_name        = "terraform test-123-%d"
+			image_name        = "terraform test-123-%[4]d"
 			vm_id = "${outscale_vm.outscale_instance.id}"
 			no_reboot   = "true"
 		}
-	`, omi, vmType, region, r)
+	`, omi, vmType, region, r, keypair, sgId)
 
 	if !includeLaunchPermission {
 		return base
@@ -214,22 +218,22 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 	`, accountID)
 }
 
-func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool) string {
+func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region string, r int, includeAddtion, includeRemoval bool, keypair, sgId string) string {
 	base := fmt.Sprintf(`
 		resource "outscale_vm" "outscale_instance" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "%[5]s"
+			security_group_ids       = ["%[6]s"]
+			placement_subregion_name = "%[3]sb"
 		}
 		
 		resource "outscale_image" "outscale_image" {
-			image_name = "terraform test-123-%d"
+			image_name = "terraform test-123-%[4]d"
 			vm_id      = "${outscale_vm.outscale_instance.id}"
 			no_reboot  = "true"
 		}
-	`, omi, vmType, region, r)
+	`, omi, vmType, region, r, keypair, sgId)
 
 	if includeAddtion {
 		return base + `
