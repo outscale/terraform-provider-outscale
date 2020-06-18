@@ -1,13 +1,16 @@
 package outscale
 
 import (
+	"context"
+	"fmt"
+	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILBUTags() *schema.Resource {
@@ -19,53 +22,65 @@ func dataSourceOutscaleOAPILBUTags() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	lbus := d.Get("load_balancer_names")
+	elbName := d.Get("load_balancer_names").(string)
 
-	params := &lbu.DescribeTagsInput{
-		LoadBalancerNames: expandStringList(lbus.([]interface{})),
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
 
-	var resp *lbu.DescribeTagsResult
-	var rs *lbu.DescribeTagsOutput
-	var err error
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
 
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		rs, err = conn.API.DescribeTags(params)
-		if rs != nil {
-			resp = rs.DescribeTagsResult
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 
 	if err != nil {
 		return err
 	}
 
-	td := make([]map[string]interface{}, len(resp.TagDescriptions))
-
-	for k, v := range resp.TagDescriptions {
-		t := make(map[string]interface{})
-		t["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
-
-		ta := make([]map[string]interface{}, len(v.Tags))
-		for k1, v1 := range v.Tags {
-			t := make(map[string]interface{})
-			t["key"] = aws.StringValue(v1.Key)
-			t["value"] = aws.StringValue(v1.Key)
-			ta[k1] = t
-		}
-
-		t["tag"] = ta
-
-		td[k] = t
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
-	d.SetId(resource.UniqueId())
-	d.Set("request_id", rs.ResponseMetadata.RequestID)
+	v := (lbs)[0]
+	t := make(map[string]interface{})
+	t["load_balancer_name"] = elbName
 
-	return d.Set("tag", td)
+	ta := make([]map[string]interface{}, len(*v.Tags))
+	for k1, v1 := range *v.Tags {
+		t := make(map[string]interface{})
+		t["key"] = v1.Key
+		t["value"] = v1.Key
+		ta[k1] = t
+	}
+
+	t["tag"] = ta
+
+	d.SetId(resource.UniqueId())
+	d.Set("request_id", resp.ResponseContext.RequestId)
+
+	return d.Set("tag", t)
 }
 
 func getDSOAPILBUTagsSchema() map[string]*schema.Schema {
