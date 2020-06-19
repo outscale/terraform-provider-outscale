@@ -2,6 +2,7 @@
 ========================
 
 FEATURES:
+---------
 
 - New Data Source: outscale_access_key
 - New Data Source: outscale_access_keys
@@ -23,6 +24,7 @@ FEATURES:
 
 
 BUG FIXES:
+----------
 
 - oAPI outscale_vpn_connection resource is using fcu type call (TPD-1738)
 - Wrong attributes for outscale_net_attributes resource (TPD-1803)
@@ -60,6 +62,7 @@ BUG FIXES:
 
 
 NOTES:
+------
 
 It is recommended to set tags inside the resources rather than using outscale_tag.
 
@@ -69,6 +72,7 @@ It is recommended to set tags inside the resources rather than using outscale_ta
 ===========================
 
 BUG FIXES:
+----------
 
 - outscale_image datasource(s) is very slow (TPD-1881)
 - Issue with tags order on different resources (TPD-1882)
@@ -79,6 +83,7 @@ BUG FIXES:
 
 
 NOTES:
+------
 
 It is recommended to set tags inside the resources rather than using outscale_tag.
 
@@ -88,6 +93,7 @@ It is recommended to set tags inside the resources rather than using outscale_ta
 ==========================
 
 BUG FIXES:
+----------
 
 - outscale_vm cannot be imported (TPD-1833)
 - Missing attributes when importing outscale_route_table_link (TPD-1843)
@@ -101,6 +107,7 @@ BUG FIXES:
 
 
 NOTES:
+------
 
 Release sent to Hasicorp for full review
 
@@ -110,6 +117,7 @@ Release sent to Hasicorp for full review
 ============================
 
 BUG FIXES:
+----------
 
 - Remove legacy API (TPD-1752)
 - outscale_vm tags are not updated when updating the configuration (TPD-1793)
@@ -128,6 +136,7 @@ BUG FIXES:
 ============================== 
 
 BUG FIXES:
+----------
 
 - outscale_Snapshot resource: cannot import snapshot (TPD-1732)
 - outscale_Snapshot resource: cannot copy snapshot (TPD-1733)
@@ -166,6 +175,7 @@ BUG FIXES:
 =========================== 
 
 BUG FIXES:
+----------
 
 - outscale_image Incorrect attribute on datasource (TPD-1776)
 - Wrong attribute for Tags in outscale_subnets datasources (TPD-1763)
@@ -215,6 +225,7 @@ BUG FIXES:
 ======================== 
 
 BUG FIXES:
+----------
 
 - outscale_net_peering_acceptation fails (TPD-1722)
 - outscale_net_attributes resource and datasource are missing request_id attribute (TPD-1724)
@@ -231,6 +242,7 @@ BUG FIXES:
 ========================= 
 
 BUG FIXES:
+----------
 
 - outscale_public_ip datasource is not displayed in terraform show (TPD-1684)
 - outscale_public_ip_link is missing attributes (TPD-1686)
@@ -241,6 +253,7 @@ BUG FIXES:
 
 
 EXPERIMENTS:
+------------
 
 - TERPIN-0327-FCURES outscale_vpn_gateway_link (TPD-779)
 - TERPIN-0480-FCUEXTRES outscale_snapshot_export_tasks (TPD-789)
@@ -284,6 +297,7 @@ EXPERIMENTS:
 ========================= 
 
 FEATURES:
+---------
 
 - New Data Source: outscale_vm
 - New Data Source: outscale_vms
@@ -362,6 +376,7 @@ FEATURES:
 =========================== 
 
 FEATURES:
+---------
 
 - New Data Source: outscale_vm
 - New Data Source: outscale_vms
@@ -370,6 +385,7 @@ FEATURES:
 
 
 NOTES:
+------
 
 One resource/datasource delivery for initial Hashicorp review. 
 
