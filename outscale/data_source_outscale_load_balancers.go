@@ -1,14 +1,16 @@
 package outscale
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
@@ -16,103 +18,103 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 		Read: dataSourceOutscaleOAPILoadBalancersRead,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"load_balancer": &schema.Schema{
+			"load_balancer": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"load_balancer_name": &schema.Schema{
+						"load_balancer_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"sub_region_name": &schema.Schema{
+						"sub_region_name": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"public_dns_name": &schema.Schema{
+						"public_dns_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"health_check": &schema.Schema{
+						"health_check": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"healthy_threshold": &schema.Schema{
+									"healthy_threshold": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"unhealthy_threshold": &schema.Schema{
+									"unhealthy_threshold": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"checked_vm": &schema.Schema{
+									"checked_vm": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"check_interval": &schema.Schema{
+									"check_interval": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"timeout": &schema.Schema{
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"backend_vm_id": &schema.Schema{
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"vm_id": &schema.Schema{
+									"timeout": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"listeners": &schema.Schema{
+						"backend_vm_id": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"listener": &schema.Schema{
+									"vm_id": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+								},
+							},
+						},
+						"listeners": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"listener": {
 										Type:     schema.TypeMap,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"backend_port": &schema.Schema{
+												"backend_port": {
 													Type:     schema.TypeInt,
 													Computed: true,
 												},
-												"backend_protocol": &schema.Schema{
+												"backend_protocol": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
-												"load_balancer_port": &schema.Schema{
+												"load_balancer_port": {
 													Type:     schema.TypeInt,
 													Computed: true,
 												},
-												"load_balancer_protocol": &schema.Schema{
+												"load_balancer_protocol": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
-												"server_certificate_id": &schema.Schema{
+												"server_certificate_id": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
 											},
 										},
 									},
-									"policy_name": &schema.Schema{
+									"policy_name": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -120,40 +122,40 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 								},
 							},
 						},
-						"policies": &schema.Schema{
+						"policies": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"application_sticky_cookie_policy": &schema.Schema{
+									"application_sticky_cookie_policy": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"cookie_name": &schema.Schema{
+												"cookie_name": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
-												"policy_name": &schema.Schema{
+												"policy_name": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
 											},
 										},
 									},
-									"load_balancer_sticky_cookie_policy": &schema.Schema{
+									"load_balancer_sticky_cookie_policy": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"policy_name": &schema.Schema{
+												"policy_name": {
 													Type:     schema.TypeString,
 													Computed: true,
 												},
 											},
 										},
 									},
-									"other_policy": &schema.Schema{
+									"other_policy": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem:     &schema.Schema{Type: schema.TypeString},
@@ -161,44 +163,44 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 								},
 							},
 						},
-						"load_balancer_type": &schema.Schema{
+						"load_balancer_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"security_groups_member": &schema.Schema{
+						"security_groups_member": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"firewall_rules_set_name": &schema.Schema{
+						"firewall_rules_set_name": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"firewall_rules_set_name": &schema.Schema{
+									"firewall_rules_set_name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"account_alias": &schema.Schema{
+									"account_alias": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"subnet_id": &schema.Schema{
+						"subnet_id": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"lin_id": &schema.Schema{
+						"lin_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -207,29 +209,41 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 }
 
 func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).LBU
+	conn := meta.(*OutscaleClient).OSCAPI
 
-	elbName, ok := d.GetOk("load_balancer_name")
+	eName, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
 		return fmt.Errorf("load_balancer_name(s) must be provided")
 	}
 
-	describeElbOpts := &lbu.DescribeLoadBalancersInput{
-		LoadBalancerNames: expandStringList(elbName.([]interface{})),
+	elbName := eName.(string)
+
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
 	}
-	var resp *lbu.DescribeLoadBalancersOutput
-	var describeResp *lbu.DescribeLoadBalancersResult
+
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, err = conn.API.DescribeLoadBalancers(describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
-		describeResp = resp.DescribeLoadBalancersResult
 		return nil
 	})
 
@@ -241,60 +255,63 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		return fmt.Errorf("Error retrieving ELB: %s", err)
 	}
-	if len(describeResp.LoadBalancerDescriptions) < 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", describeResp.LoadBalancerDescriptions)
+
+	lbs_len := len(*resp.LoadBalancers)
+	lbs_ret := make([]map[string]interface{}, lbs_len)
+
+	lbs := *resp.LoadBalancers
+	if len(lbs) != 1 {
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
-	lbs := make([]map[string]interface{}, len(describeResp.LoadBalancerDescriptions))
-
-	for k, v := range describeResp.LoadBalancerDescriptions {
+	for k, v := range lbs {
 		l := make(map[string]interface{})
 
-		l["sub_region_name"] = flattenStringList(v.AvailabilityZones)
-		l["public_dns_name"] = aws.StringValue(v.DNSName)
-		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
-		l["backend_vm_id"] = flattenOAPIInstances(v.Instances)
-		l["listeners"] = flattenOAPIListeners(v.ListenerDescriptions)
-		l["load_balancer_name"] = aws.StringValue(v.LoadBalancerName)
+		l["sub_region_name"] = v.SubregionNames
+		l["public_dns_name"] = v.DnsName
+		l["health_check"] = v.HealthCheck
+		l["backend_vm_id"] = v.BackendVmIds
+		l["listeners"] = flattenOAPIListeners(v.Listeners)
+		l["load_balancer_name"] = elbName
 
 		policies := make(map[string]interface{})
 		pl := make([]map[string]interface{}, 1)
-		if v.Policies != nil {
-			app := make([]map[string]interface{}, len(v.Policies.AppCookieStickinessPolicies))
-			for k, v := range v.Policies.AppCookieStickinessPolicies {
+		if v.ApplicationStickyCookiePolicies != nil {
+			app := make([]map[string]interface{}, len(*v.ApplicationStickyCookiePolicies))
+			for k, v := range *v.ApplicationStickyCookiePolicies {
 				a := make(map[string]interface{})
-				a["cookie_name"] = aws.StringValue(v.CookieName)
-				a["policy_name"] = aws.StringValue(v.PolicyName)
+				a["cookie_name"] = v.CookieName
+				a["policy_name"] = v.PolicyName
 				app[k] = a
 			}
 			policies["application_sticky_cookie_policy"] = app
-			vc := make([]map[string]interface{}, len(v.Policies.LBCookieStickinessPolicies))
-			for k, v := range v.Policies.LBCookieStickinessPolicies {
+			vc := make([]map[string]interface{},
+				len(*v.LoadBalancerStickyCookiePolicies))
+			for k, v := range *v.LoadBalancerStickyCookiePolicies {
 				a := make(map[string]interface{})
-				a["policy_name"] = aws.StringValue(v.PolicyName)
+				a["policy_name"] = v.PolicyName
 				vc[k] = a
 			}
 			policies["load_balancer_sticky_cookie_policy"] = vc
-			policies["other_policy"] = flattenStringList(v.Policies.OtherPolicies)
 		}
 
 		pl[0] = policies
 		l["policies"] = pl
-		l["load_balancer_type"] = aws.StringValue(v.Scheme)
+		l["load_balancer_type"] = v.LoadBalancerType
 		l["security_groups_member"] = flattenStringList(v.SecurityGroups)
 		ssg := make(map[string]string)
 		if v.SourceSecurityGroup != nil {
-			ssg["firewall_rules_set_name"] = aws.StringValue(v.SourceSecurityGroup.GroupName)
-			ssg["account_alias"] = aws.StringValue(v.SourceSecurityGroup.OwnerAlias)
+			ssg["security_group_account_id"] = *v.SourceSecurityGroup.SecurityGroupAccountId
+			ssg["security_group_name"] = *v.SourceSecurityGroup.SecurityGroupName
 		}
 		l["firewall_rules_set_name"] = ssg
 		l["subnet_id"] = flattenStringList(v.Subnets)
-		l["lin_id"] = aws.StringValue(v.VPCId)
+		l["net_id"] = v.NetId
 
-		lbs[k] = l
+		lbs_ret[k] = l
 	}
 
-	d.Set("request_id", resp.ResponseMetadata.RequestID)
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return d.Set("load_balancer", lbs)
