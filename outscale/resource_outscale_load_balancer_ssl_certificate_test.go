@@ -35,7 +35,7 @@ func TestAccOutscaleLBUOAPISSLCertificate_basic(t *testing.T) {
 func testAccOutscaleOAPISSLCertificateConfig(r int, fName string) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  sub_region_name = ["eu-west-2a"]
+  subregion_name = ["eu-west-2a"]
   load_balancer_name = "foobar-terraform-lbu-%d"
   listeners {
     backend_port = 8000

@@ -40,7 +40,7 @@ func TestAccOutscaleOAPIHealthCheck_basic(t *testing.T) {
 func testAccOutscaleOAPIHealthCheckConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  sub_region_name = ["eu-west-2a"]
+  subregion_name = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-elb-%d"
   listener {
     backend_port = 8000
