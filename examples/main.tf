@@ -380,7 +380,7 @@ resource "outscale_route_table_link" "outscale_route_table_link53" {
 }
 
 #------------------------------------------------------------------------
-#TODO outscale_route
+
 
 resource "outscale_internet_service" "outscale_internet_service54" {
 }
@@ -436,7 +436,7 @@ domain_name= "test-outscale"
 
 resource "outscale_net_attributes" "net_attributes025" {
   net_id              = outscale_net.net025.net_id
-  dhcp_options_set_id = outscale_dhcp_option.outscale_dhcp_option025
+  dhcp_options_set_id = outscale_dhcp_option.outscale_dhcp_option025.dhcp_options_set_id
 }
 
 data "outscale_net_attributes" "net_attributes025d" {
