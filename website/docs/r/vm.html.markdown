@@ -195,7 +195,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
 * `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals).
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
-* `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
+* `vm_type` - (Optional) The type of VM (`t2.small` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
 * `tags` - One or more tags to add to this resource.
     * `key` - The key of the tag, with a minimum of 1 character.
