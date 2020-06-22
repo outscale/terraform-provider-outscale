@@ -633,7 +633,7 @@ resource "outscale_snapshot" "snapshot034" {
 resource "outscale_snapshot_attributes" "snapshot_attributes034" {
   snapshot_id = outscale_snapshot.snapshot034.snapshot_id
   permissions_to_create_volume_additions {
-    account_ids = ["<ACCOUNTNUMBER>"]
+    account_ids = [var.account_id]
   }
 }
 
