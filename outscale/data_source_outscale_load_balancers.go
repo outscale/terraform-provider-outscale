@@ -155,11 +155,6 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 											},
 										},
 									},
-									"other_policy": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem:     &schema.Schema{Type: schema.TypeString},
-									},
 								},
 							},
 						},
@@ -193,7 +188,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"lin_id": {
+						"net_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -260,7 +255,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 	lbs_ret := make([]map[string]interface{}, lbs_len)
 
 	lbs := *resp.LoadBalancers
-	if len(lbs) != 1 {
+	if len(lbs) < 1 {
 		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
