@@ -837,14 +837,7 @@ resource "outscale_security_group_rule" "outscale_security_group_rule39_2" {
 
 #---040------------------------------------------------------------------
 
-resource "outscale_net" "outscale_net_040" {
-   ip_range = "10.0.0.0/16"
 
-    tags {
-        key   = "Name"
-        value = "outscale_net_resource-040"
-    }
-}
 
 resource "outscale_client_gateway" "outscale_client_gateway_040" {
     bgp_asn     = 51
@@ -856,7 +849,6 @@ resource "outscale_client_gateway" "outscale_client_gateway_040" {
     }
 }
 
-
 resource "outscale_virtual_gateway" "outscale_virtual_gateway_040" {
  connection_type = "ipsec.1"
  tags {
@@ -865,10 +857,6 @@ resource "outscale_virtual_gateway" "outscale_virtual_gateway_040" {
  }
 }
 
-resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link_040" {
-    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
-    net_id             = outscale_net.outscale_net_040.net_id
-}
 
 resource "outscale_vpn_connection" "outscale_vpn_connection_40" {
     client_gateway_id  = outscale_client_gateway.outscale_client_gateway_040.client_gateway_id
@@ -885,3 +873,31 @@ resource "outscale_vpn_connection_route" "outscale_vpn_connection_route_040" {
  vpn_connection_id  = outscale_vpn_connection.outscale_vpn_connection_40.vpn_connection_id
  destination_ip_range = "30.0.0.0/16"
  }
+ 
+resource "outscale_net" "outscale_net_040" {
+   ip_range = "10.0.0.0/16"
+
+    tags {
+        key   = "Name"
+        value = "outscale_net_resource-040"
+    }
+}
+
+resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link_040" {
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
+    net_id             = outscale_net.outscale_net_040.net_id
+}
+
+resource "outscale_route_table" "outscale_route_table_040" {
+    net_id = outscale_net.outscale_net_040.net_id
+    tags {
+     key = "Name"
+     value = "route_table_040"
+    }
+}
+
+resource "outscale_virtual_gateway_route_propagation" "outscale_virtual_gateway_route_propagation_040" {
+   enable = true
+   virtual_gateway_id = outscale_virtual_gateway_link.outscale_virtual_gateway_link_040.virtual_gateway_id
+    route_table_id  = outscale_route_table.outscale_route_table_040.route_table_id
+}
