@@ -900,7 +900,7 @@ resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link_041" {
 }
 
 resource "outscale_route_table" "outscale_route_table_041" {
-    net_id = outscale_net.outscale_net_040.net_id
+    net_id = outscale_net.outscale_net_041.net_id
     tags {
      key = "Name"
      value = "route_table_041"
