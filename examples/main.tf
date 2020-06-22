@@ -106,13 +106,6 @@ resource "outscale_vm" "outscale_vm005" {
 
 #------------------------------------------------------------------------
 
-#---014------------------------------------------------------------------
-#TODO outscale_vm_attributes (merged in outscale_vm)
-
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-
 #---006------------------------------------------------------------------
 resource "outscale_vm" "vm006" {
   image_id     = var.image_id
@@ -433,9 +426,17 @@ resource "outscale_net" "net025" {
   ip_range = "10.0.0.0/16"
 }
 
+resource "outscale_dhcp_option" "outscale_dhcp_option025" {
+domain_name= "test-outscale"
+ tags {
+  key ="Name"
+  value = "dhcp_option025"
+ }
+}
+
 resource "outscale_net_attributes" "net_attributes025" {
   net_id              = outscale_net.net025.net_id
-  dhcp_options_set_id = var.dhcp_options_set_id
+  dhcp_options_set_id = outscale_dhcp_option.outscale_dhcp_option025
 }
 
 data "outscale_net_attributes" "net_attributes025d" {
@@ -465,7 +466,6 @@ resource "outscale_net_peering" "outscale_net_peering58" {
 }
 
 #---027------------------------------------------------------------------
-#TODO outscale_net_peering_acceptation (6)
 
 resource "outscale_net_peering_acceptation" "outscale_net_peering_acceptation58" {
   net_peering_id = outscale_net_peering.outscale_net_peering58.net_peering_id
@@ -832,3 +832,56 @@ resource "outscale_security_group_rule" "outscale_security_group_rule39_2" {
        }
      }
 }
+
+#-------------------------
+
+#---040------------------------------------------------------------------
+
+resource "outscale_net" "outscale_net_040" {
+   ip_range = "10.0.0.0/16"
+
+    tags {
+        key   = "Name"
+        value = "outscale_net_resource-040"
+    }
+}
+
+resource "outscale_client_gateway" "outscale_client_gateway_040" {
+    bgp_asn     = 51
+    public_ip  = "192.168.0.1"
+    connection_type        = "ipsec.1"
+    tags {
+     key = "Name"
+     value = "client_gateway_040"
+    }
+}
+
+
+resource "outscale_virtual_gateway" "outscale_virtual_gateway_040" {
+ connection_type = "ipsec.1"
+ tags {
+  key = "Name"
+  value = "virtual_gateway_040"
+ }
+}
+
+resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link_040" {
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
+    net_id             = outscale_net.outscale_net_040.net_id
+}
+
+resource "outscale_vpn_connection" "outscale_vpn_connection_40" {
+    client_gateway_id  = outscale_client_gateway.outscale_client_gateway_040.client_gateway_id
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
+    connection_type    = "ipsec.1"
+    static_routes_only = true
+  tags {
+        key   = "Name"
+        value = "vpn_connection_40"
+    }
+}
+
+resource "outscale_vpn_connection_route" "outscale_vpn_connection_route_040" {
+ vpn_connection_id  = outscale_vpn_connection.outscale_vpn_connection_40.vpn_connection_id
+ destination_ip_range = "30.0.0.0/16"
+ }
