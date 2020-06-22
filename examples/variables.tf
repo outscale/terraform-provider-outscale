@@ -3,11 +3,6 @@ variable "secret_key_id" {}
 variable "region" {
     default = "eu-west-2"
 }
-variable "access_key" {}
-variable "secret_key" {}
-#variable "region" {
-#    default = "eu-west-2"
-#}
 
 variable "ssh_privkey_filename" {
     description = "The name of the file containning the private ssh key"
