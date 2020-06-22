@@ -194,7 +194,7 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"tag": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			ForceNew: true,
 			Elem: &schema.Resource{
