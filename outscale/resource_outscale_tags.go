@@ -44,7 +44,7 @@ func resourceOutscaleOAPITagsCreate(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.SetTags(tagsFromSliceMap(tag.([]interface{})))
+               request.SetTags(tagsFromSliceMap(tag.(*schema.Set)))
 	}
 	if resourceIdsOk {
 		var rids []string
@@ -87,7 +87,7 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 	tag, tagsOk := d.GetOk("tag")
 	filter := oscgo.FiltersTag{}
 	if tagsOk {
-		tgs := tagsFromSliceMap(tag.([]interface{}))
+               tgs := tagsFromSliceMap(tag.(*schema.Set))
 		keys := make([]string, 0, len(tgs))
 		values := make([]string, 0, len(tgs))
 		for _, t := range tgs {
@@ -154,7 +154,7 @@ func resourceOutscaleOAPITagsDelete(d *schema.ResourceData, meta interface{}) er
 	}
 
 	if tagsOk {
-		request.Tags = tagsFromSliceMap(tag.([]interface{}))
+               request.Tags = tagsFromSliceMap(tag.(*schema.Set))
 	}
 	if resourceIdsOk {
 		var rids []string
@@ -194,7 +194,7 @@ func getOAPITagsSchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"tag": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			ForceNew: true,
 			Elem: &schema.Resource{

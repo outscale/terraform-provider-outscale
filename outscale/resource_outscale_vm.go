@@ -534,7 +534,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(vm.GetVmId())
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), vm.GetVmId(), conn)
+               err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
 		if err != nil {
 			return err
 		}

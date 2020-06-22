@@ -18,8 +18,8 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
 		oraw, nraw := d.GetChange("tags")
-		o := oraw.([]interface{})
-		n := nraw.([]interface{})
+               o := oraw.(*schema.Set)
+               n := nraw.(*schema.Set)
 		create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
 
 		// Set tag
@@ -66,7 +66,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 func tagsOAPIListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeList,
+               Type:     schema.TypeSet,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -85,7 +85,7 @@ func tagsOAPIListSchemaComputed() *schema.Schema {
 
 func tagsListOAPISchema() *schema.Schema {
 	return &schema.Schema{
-		Type: schema.TypeList,
+               Type: schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": {
@@ -156,9 +156,9 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 	return tagsOSCAPIFromMap(create), remove
 }
 
-func tagsFromSliceMap(m []interface{}) []oscgo.ResourceTag {
-	result := make([]oscgo.ResourceTag, 0, len(m))
-	for _, v := range m {
+func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {
+       result := make([]oscgo.ResourceTag, 0, m.Len())
+       for _, v := range m.List() {
 		tag := v.(map[string]interface{})
 		t := oscgo.ResourceTag{
 			Key:   tag["key"].(string),
@@ -196,7 +196,7 @@ func oapiTagDescIgnored(t *oscgo.Tag) bool {
 	return false
 }
 
-func assignTags(tag []interface{}, resourceID string, conn *oscgo.APIClient) error {
+func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error {
 	request := oscgo.CreateTagsRequest{}
 	request.Tags = tagsFromSliceMap(tag)
 	request.ResourceIds = []string{resourceID}
@@ -221,7 +221,7 @@ func assignTags(tag []interface{}, resourceID string, conn *oscgo.APIClient) err
 
 func dataSourceTagsSchema() *schema.Schema {
 	return &schema.Schema{
-		Type:     schema.TypeSet,
+		Type:     schema.TypeList,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

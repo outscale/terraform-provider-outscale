@@ -58,7 +58,7 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), resp.InternetService.GetInternetServiceId(), conn)
+               err := assignTags(tags.(*schema.Set), resp.InternetService.GetInternetServiceId(), conn)
 		if err != nil {
 			return err
 		}

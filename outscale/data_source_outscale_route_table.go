@@ -33,7 +33,7 @@ func dataSourceOutscaleOAPIRouteTable() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": dataSourceTagsSchema(),
 			"routes": {
 				Type:     schema.TypeList,
 				Computed: true,
