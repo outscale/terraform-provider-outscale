@@ -443,6 +443,13 @@ data "outscale_net_attributes" "net_attributes025d" {
   net_id = outscale_net.net025.net_id
 }
 
+data "outscale_dhcp_option" "outscale_dhcp_option025d" {
+filter {
+       name   = "dhcp_options_set_ids"
+       values = [outscale_dhcp_option.outscale_dhcp_option025.dhcp_options_set_id]
+    }
+}    
+
 #------------------------------------------------------------------------
 
 #---026------------------------------------------------------------------
@@ -844,8 +851,8 @@ resource "outscale_client_gateway" "outscale_client_gateway_040" {
     public_ip  = "192.168.0.1"
     connection_type        = "ipsec.1"
     tags {
-     key = "Name"
-     value = "client_gateway_040"
+         key = "Name"
+         value = "client_gateway_040"
     }
 }
 
@@ -874,7 +881,21 @@ resource "outscale_vpn_connection_route" "outscale_vpn_connection_route_040" {
  destination_ip_range = "30.0.0.0/16"
  }
  
- #-------------------------
+data "outscale_client_gateway" "outscale_client_gateway_040d" {
+ filter {
+       name   = "client_gateway_ids"
+       values = [outscale_client_gateway.outscale_client_gateway_040.client_gateway_id]
+    }
+}
+
+data "outscale_vpn_connection" "outscale_vpn_connection_40d" {
+filter {
+       name   = "vpn_connection_ids"
+       values = [outscale_vpn_connection.outscale_vpn_connection_40.vpn_connection_id]
+    }
+}
+
+#-------------------------
 
 #---041------------------------------------------------------------------
 resource "outscale_net" "outscale_net_041" {
@@ -913,4 +934,23 @@ resource "outscale_virtual_gateway_route_propagation" "outscale_virtual_gateway_
     route_table_id  = outscale_route_table.outscale_route_table_041.route_table_id
 }
 
+data "outscale_virtual_gateway" "outscale_virtual_gateway_041d" {
+filter {
+        name   = "virtual_gateway_ids"
+        values = [outscale_virtual_gateway.outscale_virtual_gateway_041.virtual_gateway_id]
+ }
+}
  #-------------------------
+ 
+ #---042------------------------------------------------------------------
+ resource "outscale_access_key" "outscale_access_key_042"{
+
+ }
+
+data "outscale_access_key" "outscale_access_key_042d"{
+ filter {
+         name ="access_key_ids"
+         values = [outscale_access_key.outscale_access_key_042.access_key_id]
+    }
+}
+ 
