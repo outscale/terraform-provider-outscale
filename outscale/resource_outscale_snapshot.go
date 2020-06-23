@@ -182,7 +182,7 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-               err := assignTags(tags.(*schema.Set), resp.Snapshot.GetSnapshotId(), conn)
+		err := assignTags(tags.(*schema.Set), resp.Snapshot.GetSnapshotId(), conn)
 		if err != nil {
 			return err
 		}

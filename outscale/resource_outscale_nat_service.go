@@ -115,7 +115,7 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-               err := assignTags(tags.(*schema.Set), natService.GetNatServiceId(), conn)
+		err := assignTags(tags.(*schema.Set), natService.GetNatServiceId(), conn)
 		if err != nil {
 			return err
 		}
