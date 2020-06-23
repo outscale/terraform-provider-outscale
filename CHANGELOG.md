@@ -6,19 +6,21 @@ FEATURES:
 
 * New Data Source: outscale_access_key
 * New Data Source: outscale_access_keys
-* New Data Source: outscale_ virtual_gateway
-* New Data Source: outscale_virtual_gateways
 * New Data Source: outscale_client_gateway
 * New Data Source: outscale_client_gateways
+* New Data Source: outscale_dhcp_option
+* New Data Source: outscale_dhcp_options
+* New Data Source: outscale_virtual_gateway
+* New Data Source: outscale_virtual_gateways
 * New Data Source: outscale_vpn_connection
 * New Data Source: outscale_vpn_connections
 
 * New Resource: outscale_access_key
-* New Resource: outscale_dhcp_options
+* New Resource: outscale_client_gateway
+* New Resource: outscale_dhcp_option
 * New Resource: outscale_virtual_gateway
 * New Resource: outscale_virtual_gateway_link
 * New Resource: outscale_virtual_gateway_route_propagation
-* New Resource: outscale_client_gateway
 * New Resource: outscale_vpn_connection
 * New Resource: outscale_vpn_connection_route
 
