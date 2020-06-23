@@ -66,8 +66,9 @@ BUG FIXES:
 NOTES:
 ------
 
-It is recommended to set tags inside the resources rather than using outscale_tag.
+**WARNING:** When creating access keys, the secret key is stored in the Terraform state. For security reasons, it is strongly recommended to create access keys using the API instead of the Terraform resource. For more information on how to create access keys using the API, see our [official API documentation](https://docs.outscale.com/api#3ds-outscale-api-accesskey).
 
+It is recommended to set tags inside the resources rather than using outscale_tag.
 
 
 0.1.0RC8.2 (April 20, 2020)
@@ -372,6 +373,12 @@ FEATURES:
 * New Resource: outscale_snapshot
 * New Resource: outscale_snapshot_attributes
 
+NOTES:
+------
+
+**WARNING:** When creating keypairs, the private key and fingerprint are stored in the Terraform state. For security reasons, it is strongly recommended to create keypairs using the API instead of the Terraform resource. For more information on how to create keypairs using the API, see our [official API documentation](https://docs.outscale.com/api#3ds-outscale-api-keypair).
+
+It is recommended to set tags inside the resources rather than using outscale_tag.
 
 
 0.1.0RC1 (Februry 23, 2018)
