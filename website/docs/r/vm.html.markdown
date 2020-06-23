@@ -29,6 +29,10 @@ resource "outscale_vm" "vm01" {
     key   = "name"
     value = "terraform-public-vm"
   }
+  user_data                = base64encode(<<EOF
+<CONFIGURATION>
+EOF
+  )
 }
 
 # Create a VM with block device mappings
@@ -179,7 +183,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `private_ips` - (Optional) One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
     * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
     * `private_ip` - (Optional) The private IP address of the NIC.
-  * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `PrivateIps` parameter.
+  * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
 * `performance` - (Optional) The performance of the VM (`standard` \| `high` \|  `highest`).
@@ -189,9 +193,9 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals).
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
-* `vm_type` - (Optional) The type of VM (`tinav2.c1r2` by default).<br />
+* `vm_type` - (Optional) The type of VM (`t2.small` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
 * `tags` - One or more tags to add to this resource.
     * `key` - The key of the tag, with a minimum of 1 character.
@@ -265,7 +269,7 @@ The following attributes are exported:
   * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
     * `security_group_name` - (Public Cloud only) The name of the security group.
-  * `state` - The state of the VM (`pending` \| `running` \| `shutting-down` \| `terminated` \| `stopping` \| `stopped`).
+  * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
   * `state_reason` - The reason explaining the current state of the VM.
   * `subnet_id` - The ID of the Subnet for the VM.
   * `tags` - One or more tags associated with the VM.
@@ -273,5 +277,15 @@ The following attributes are exported:
     * `value` - The value of the tag, between 0 and 255 characters.
   * `user_data` - The Base64-encoded MIME user data.
   * `vm_id` - The ID of the VM.
-  * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `delete`, the VM stops and is deleted.
+  * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.
   * `vm_type` - The type of VM. For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
+
+## Import
+
+A VM can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_vm.ImportedVm i-12345678
+
+```

@@ -107,10 +107,21 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `product_codes` - The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
   * `root_device_name` - The name of the root device.
   * `root_device_type` - The type of root device used by the OMI (always `bsu`).
-  * `state` - The state of the OMI.
+  * `state` - The state of the OMI (`pending` \| `available` \| `failed`).
   * `state_comment` - Information about the change of state.
     * `state_code` - The code of the change of state.
     * `state_message` - A message explaining the change of state.
   * `tags` - One or more tags associated with the OMI.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+
+## Import
+
+An image can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_image.ImportedImage ami-12345678
+
+```

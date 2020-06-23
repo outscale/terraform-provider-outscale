@@ -36,6 +36,7 @@ The following arguments are supported:
 * `description` - (Required) A description for the security group, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
 * `net_id` - (Optional) The ID of the Net for the security group.
 * `security_group_name` - (Required) (Public Cloud only) The name of the security group.<br />
+This name must not start with `sg-`.</br>
 This name must be unique and contain between 1 and 255 ASCII characters. Accented letters are not allowed.
 * `tags` - One or more tags to add to this resource.
     * `key` - The key of the tag, with a minimum of 1 character.
@@ -74,3 +75,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the security group.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A security group can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_security_group.ImportedSecurityGroup sg-87654321
+
+```

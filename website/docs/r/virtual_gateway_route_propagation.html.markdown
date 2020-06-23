@@ -1,41 +1,53 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_route_table"
-sidebar_current: "outscale-route-table"
+page_title: "3DS OUTSCALE: outscale_virtual_gateway_route_propagation"
+sidebar_current: "outscale-virtual-gateway-route-propagation"
 description: |-
-  [Manages a route table.]
+  [Manages a virtual gateway route propagation.]
 ---
 
-# outscale_route_table Resource
+# outscale_virtual_gateway_route_propagation Resource
 
-Manages a route table.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-routetable).
+Manages a virtual gateway route propagation.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Routing+Configuration+for+VPN+Connections).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-virtualgateway).
 
 ## Example Usage
 
 ```hcl
+#resource "outscale_virtual_gateway" "virtual_gateway01" {
+#  connection_type = "ipsec.1"
+#}
 
 #resource "outscale_net" "net01" {
 #  ip_range = "10.0.0.0/16"
 #}
 
-resource "outscale_route_table" "route_table01" {
-  net_id = outscale_net.net01.net_id
+#resource "outscale_route_table" "route_table01" {
+#  net_id = outscale_net.net01.net_id
+#}
+
+#resource "outscale_virtual_gateway_link" "virtual_gateway_link01" {
+#  virtual_gateway_id = outscale_virtual_gateway.virtual_gateway01.virtual_gateway_id
+#  net_id             = outscale_net.net01.net_id
+#}
+
+resource "outscale_virtual_gateway_route_propagation" "virtual_gateway_route_propagation01" {
+  enable             = true
+  virtual_gateway_id = outscale_virtual_gateway.virtual_gateway01.virtual_gateway_id
+  route_table_id     = outscale_route_table.route_table01.route_table_id
+  depends_on         = [outscale_virtual_gateway_link.virtual_gateway_link01]
 }
-
-
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `net_id` - (Required) The ID of the Net for which you want to create a route table.
-* `tags` - One or more tags to add to this resource.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
-    
+* `enable` - (Required) If `true`, a virtual gateway can propagate routes to a specified route table of a Net. If `false`, the propagation is disabled.
+* `route_table_id` - (Required) The ID of the route table.
+* `virtual_gateway_id` - (Required) The ID of the virtual gateway.
+
 ## Attribute Reference
 
 The following attributes are exported:
@@ -66,12 +78,3 @@ The following attributes are exported:
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
 
-## Import
-
-A route table can be imported using its ID. For example:
-
-```
-
-$ terraform import outscale_route_table.ImportedRouteTable rtb-12345678
-
-```

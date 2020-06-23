@@ -16,19 +16,46 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-#resource "outscale_security_group" "security_group01" {
-#  description         = "Terraform security group for rule"
-#  security_group_name = "terraform-security-group-test-01"
-#}
+# Set rule from IP range
+
+resource "outscale_security_group" "security_group01" {
+  description         = "Terraform security group for sg rule"
+  security_group_name = "terraform-security-group-test-01"
+}
 
 resource "outscale_security_group_rule" "security_group_rule01" {
   flow              = "Inbound"
-  security_group_id = outscale_security_group.security_group01.id
+  security_group_id = outscale_security_group.security_group01.security_group_id
   from_port_range   = "80"
   to_port_range     = "80"
   ip_protocol       = "tcp"
   ip_range          = "10.0.0.0/16"
 }
+
+# Set rule from another security group
+
+resource "outscale_security_group" "security_group02" {
+    description         = "Terraform security group for sg rule"
+    security_group_name = "terraform-security-group-test-02"
+}
+
+resource "outscale_security_group" "security_group03" {
+    description         = "Terraform security group for sg rule"
+    security_group_name = "terraform-security-group-test-03"
+}
+
+resource "outscale_security_group_rule" "security_group_rule02" 
+    flow              = "Inbound"
+    security_group_id = outscale_security_group.security_group02.security_group_id
+    rules {
+     from_port_range   = "22"
+     to_port_range     = "22"
+     ip_protocol       = "tcp"
+     security_groups_members {
+        account_id          =  "012345678910"
+        security_group_name = outscale_security_group.security_group03.security_group_name
+       }
+     }
 
 
 ```
@@ -45,10 +72,10 @@ The following arguments are supported:
   * `from_port_range` - (Optional) The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `ip_protocol` - (Optional) The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
   * `ip_ranges` - (Optional) One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).
-  * `security_groups_members` - (Optional) Information about one or more members of a security group.
-    * `account_id` - (Optional) The account ID of a user.
-    * `security_group_id` - (Required) The ID of the security group.
-    * `security_group_name` - (Optional) (Public Cloud only) The name of the security group.
+  * `security_groups_members` - (Optional) Information about one or more members of a security group.  
+    * `account_id` - (Optional) The account ID of a user.  
+    * `security_group_id` - (Required) The ID of the security group.  
+    * `security_group_name` - (Optional) (Public Cloud only) The name of the security group.  
   * `service_ids` - (Optional) One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).
   * `to_port_range` - (Optional) The end of the port range for the TCP and UDP protocols, or an ICMP type number.
 * `security_group_account_id_to_link` - (Optional) The account ID of the owner of the security group for which you want to create a rule.
@@ -63,14 +90,14 @@ The following attributes are exported:
 * `security_group` - Information about the security group.
   * `account_id` - The account ID of a user that has been granted permission.
   * `description` - The description of the security group.
-  * `inbound_rules` - The inbound rules associated with the security group.
-    * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.
-    * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.
-    * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).
-    * `security_groups_members` - Information about one or more members of a security group.
-      * `account_id` - The account ID of a user.
-      * `security_group_id` - The ID of the security group.
-      * `security_group_name` - (Public Cloud only) The name of the security group.
+  * `inbound_rules` - The inbound rules associated with the security group.  
+    * `from_port_range` - The beginning of the port range for the TCP and UDP protocols, or an ICMP type number.  
+    * `ip_protocol` - The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.  
+    * `ip_ranges` - One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).  
+    * `security_groups_members` - Information about one or more members of a security group.  
+      * `account_id` - The account ID of a user.  
+      * `security_group_id` - The ID of the security group.  
+      * `security_group_name` - (Public Cloud only) The name of the security group.  
     * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).
     * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `net_id` - The ID of the Net for the security group.

@@ -62,3 +62,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the Net peering connection.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A Net peering can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_net_peering.ImportedNetPeering pcx-12345678
+
+```

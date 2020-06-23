@@ -74,3 +74,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the route table.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A route can be imported using the route table ID and the destination IP range. For example:
+
+```
+
+$ terraform import outscale_routeImportedRoute rtb-12345678_10.0.0.0/0
+
+```

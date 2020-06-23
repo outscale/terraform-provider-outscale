@@ -21,8 +21,8 @@ For more information on this resource actions, see the [API documentation](https
 #}
 
 resource "outscale_net_attributes" "net_attributes01" {
-	net_id              = outscale_net.net01.net_id
-	dhcp_options_set_id = var.dhcp_options_set_id
+    net_id              = outscale_net.net01.net_id
+    dhcp_options_set_id = var.dhcp_options_set_id
 }
 
 
@@ -40,4 +40,20 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `dhcp_options_set_id` - The ID of the DHCP options set (or `default` if you want to associate the default one).
+* `ip_range` - The IP range for the Net, in CIDR notation (for example, 10.0.0.0/16).
 * `net_id` - The ID of the Net.
+* `state` - The state of the Net (`pending` | `available`).
+* `tags` - One or more tags associated with the Net.
+  * `key` - The key of the tag, with a minimum of 1 character.
+  * `value` - The value of the tag, between 0 and 255 characters.
+* `tenancy` - The VM tenancy in a Net (`default` | `dedicated`).
+
+## Import
+
+A Net attribute can be imported using the Net ID. For example:
+
+```
+
+$ terraform import outscale_net_attributes.ImportedNet vpc-12345678
+
+```
