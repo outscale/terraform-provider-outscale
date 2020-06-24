@@ -60,7 +60,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	result := resp.GetSubnet()
 	if tags, ok := d.GetOk("tags"); ok {
-               err := assignTags(tags.(*schema.Set), result.GetSubnetId(), conn)
+		err := assignTags(tags.(*schema.Set), result.GetSubnetId(), conn)
 		if err != nil {
 			return err
 		}
@@ -251,7 +251,7 @@ func getOAPISubNetSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"map_public_ip_on_launch": &schema.Schema{
+		"map_public_ip_on_launch": {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},

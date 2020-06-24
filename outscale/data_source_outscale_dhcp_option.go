@@ -51,7 +51,7 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": dataSourceTagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

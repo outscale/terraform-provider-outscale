@@ -77,7 +77,7 @@ func dataSourceOutscaleVPNConnections() *schema.Resource {
 								},
 							},
 						},
-						"tags": tagsOAPIListSchemaComputed(),
+						"tags": dataSourceTagsSchema(),
 					},
 				},
 			},

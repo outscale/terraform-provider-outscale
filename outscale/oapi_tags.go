@@ -18,8 +18,8 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 	if d.HasChange("tags") {
 		oraw, nraw := d.GetChange("tags")
-               o := oraw.(*schema.Set)
-               n := nraw.(*schema.Set)
+		o := oraw.(*schema.Set)
+		n := nraw.(*schema.Set)
 		create, remove := diffOSCAPITags(tagsFromSliceMap(o), tagsFromSliceMap(n))
 
 		// Set tag
@@ -66,7 +66,7 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 
 func tagsOAPIListSchemaComputed() *schema.Schema {
 	return &schema.Schema{
-               Type:     schema.TypeSet,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -85,7 +85,7 @@ func tagsOAPIListSchemaComputed() *schema.Schema {
 
 func tagsListOAPISchema() *schema.Schema {
 	return &schema.Schema{
-               Type: schema.TypeSet,
+		Type: schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": {
@@ -157,8 +157,8 @@ func diffOSCAPITags(oldTags, newTags []oscgo.ResourceTag) ([]oscgo.ResourceTag, 
 }
 
 func tagsFromSliceMap(m *schema.Set) []oscgo.ResourceTag {
-       result := make([]oscgo.ResourceTag, 0, m.Len())
-       for _, v := range m.List() {
+	result := make([]oscgo.ResourceTag, 0, m.Len())
+	for _, v := range m.List() {
 		tag := v.(map[string]interface{})
 		t := oscgo.ResourceTag{
 			Key:   tag["key"].(string),

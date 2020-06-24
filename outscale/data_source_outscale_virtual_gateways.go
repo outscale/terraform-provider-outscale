@@ -57,7 +57,7 @@ func dataSourceOutscaleOAPIVirtualGateways() *schema.Resource {
 								},
 							},
 						},
-						"tags": tagsOAPIListSchemaComputed(),
+						"tags": dataSourceTagsSchema(),
 					},
 				},
 			},
