@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"strings"
 	"testing"
@@ -41,8 +40,6 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	//rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -51,7 +48,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region, sgName),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -59,7 +56,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region, sgName),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -76,8 +73,6 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
 		IDRefreshName: "outscale_public_ip.bar",
@@ -85,7 +80,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region, sgName),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -93,7 +88,7 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region, sgName),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -263,208 +258,74 @@ resource "outscale_public_ip" "bar" {
 }
 `
 
-func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, sgName string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%[3]sb"
-			net_id         = "${outscale_net.net.id}"
-
-			tags {
-				key   = "name"
-				value = "terraform-subnet"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = "${outscale_net.net.id}"
-		}
-
 		resource "outscale_vm" "basic" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
+			image_id                 = "%s"
+			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			security_group_ids       = ["${outscale_security_group.sg.id}"]
-			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region, sgName)
+	`, omi, vmType, region)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, sgName string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%[3]sb"
-			net_id         = "${outscale_net.net.id}"
-
-			tags {
-				key   = "name"
-				value = "terraform-subnet"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = "${outscale_net.net.id}"
-		}
-
 		resource "outscale_vm" "basic" {
-			image_id                 = "%[1]s"
-			vm_type                  = "%[2]s"
+			image_id                 = "%s"
+			vm_type                  = "%s"
 			keypair_name             = "terraform-basic"
-			security_group_ids       = ["${outscale_security_group.sg.id}"]
-			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
+			security_group_ids       = ["sg-f4b1c2f8"]
+			placement_subregion_name = "%sb"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region, sgName)
+	`, omi, vmType, region)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, sgName string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%[3]sb"
-			net_id         = "${outscale_net.net.id}"
-
-			tags {
-				key   = "name"
-				value = "terraform-subnet"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = "${outscale_net.net.id}"
-		}
-
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.sg.id}"]
+			security_group_ids = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 
 		resource "outscale_vm" "basic2" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.sg.id}"]
+			security_group_ids = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region, sgName)
+	`, omi, vmType, region)
 }
 
-func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, sgName string) string {
+func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region string) string {
 	return fmt.Sprintf(`
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%[3]sb"
-			net_id         = "${outscale_net.net.id}"
-
-			tags {
-				key   = "name"
-				value = "terraform-subnet"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[4]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = "${outscale_net.net.id}"
-		}
-
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.sg.id}"]
+			security_group_ids = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 
 		resource "outscale_vm" "basic2" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.sg.id}"]
+			security_group_ids = ["sg-f4b1c2f8"]
 			placement_subregion_name = "%[3]sb"
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
 		}
 
 		resource "outscale_public_ip" "bar" {}
-	`, omi, vmType, region, sgName)
+	`, omi, vmType, region)
 }
