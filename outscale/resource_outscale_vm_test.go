@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"strings"
 	"testing"
@@ -106,13 +107,15 @@ func TestAccOutscaleOAPIVM_withTags(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM"),
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM", sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
 					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
@@ -157,13 +160,15 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 	var before oscgo.Vm
 	var after oscgo.Vm
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "c4.large", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "c4.large", region, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &before),
 					testAccCheckOutscaleOAPIVMAttributes(t, &before, omi),
@@ -172,7 +177,7 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro", region),
+				Config: testAccVmsConfigUpdateOAPIVMKey(omi, "t2.micro", region, sgName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIVMExists("outscale_vm.basic", &after),
 					testAccCheckOAPIVMNotRecreated(t, &before, &after),
@@ -262,6 +267,8 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
 
+	sgName := acctest.RandomWithPrefix("testacc-sg")
+
 	//TODO: check tags
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -269,11 +276,11 @@ func TestAccOutscaleOAPIVMTags_Update(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM"),
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM", sgName),
 				//Check:  resource.ComposeTestCheckFunc(),
 			},
 			{
-				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM2"),
+				Config: testAccVmsConfigUpdateOAPIVMTags(omi, "c4.large", region, "Terraform-VM2", sgName),
 				//Check:  resource.ComposeTestCheckFunc(),
 			},
 		},
@@ -710,33 +717,99 @@ func testAccCheckOutscaleOAPIVMConfigBasicWithNics(omi, vmType string) string {
 	  }`, omi, vmType)
 }
 
-func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region string) string {
+func testAccVmsConfigUpdateOAPIVMKey(omi, vmType, region, sgName string) string {
 	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
-		}
-	`, omi, vmType, region)
-}
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
 
-func testAccVmsConfigUpdateOAPIVMTags(omi, vmType string, region, value string) string {
-	return fmt.Sprintf(`
-		resource "outscale_vm" "basic" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
 
 			tags {
 				key   = "name"
-				value = "%s"
+				value = "terraform-subnet"
 			}
 		}
-	`, omi, vmType, region, value)
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["${outscale_security_group.sg.id}"]
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
+			placement_subregion_name = "%[3]sb"
+		}
+	`, omi, vmType, region, sgName)
+}
+
+func testAccVmsConfigUpdateOAPIVMTags(omi, vmType, region, value, sgName string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_subnet" "subnet" {
+			ip_range       = "10.0.0.0/16"
+			subregion_name = "%[3]sb"
+			net_id         = "${outscale_net.net.id}"
+
+			tags {
+				key   = "name"
+				value = "terraform-subnet"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[5]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "terraform-basic"
+			security_group_ids       = ["${outscale_security_group.sg.id}"]
+			placement_subregion_name = "%[3]sb"
+			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
+
+			tags {
+				key   = "name"
+				value = "%[4]s"
+			}
+		}
+	`, omi, vmType, region, value, sgName)
 }
 
 func testAccCheckOutscaleOAPIVMConfigWithSubnet(omi, vmType string, region string) string {
