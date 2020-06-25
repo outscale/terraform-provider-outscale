@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/acctest"
 	"os"
 	"testing"
 
@@ -50,14 +49,12 @@ func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, omi, sgName),
+				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, omi),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
@@ -116,7 +113,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, sgName string) string {
+func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -149,44 +146,11 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, sgNa
 			}
 		}
 
-		resource "outscale_net" "net" {
-			ip_range = "10.0.0.0/16"
-
-			tags {
-				key = "Name"
-				value = "testacc-security-group-rs"
-			}
-		}
-
-		resource "outscale_subnet" "subnet" {
-			ip_range       = "10.0.0.0/16"
-			subregion_name = "%[1]sa"
-			net_id         = "${outscale_net.net.id}"
-
-			tags {
-				key   = "name"
-				value = "terraform-subnet"
-			}
-		}
-
-		resource "outscale_security_group" "sg" {
-			security_group_name = "%[3]s"
-			description         = "Used in the terraform acceptance tests"
-
-			tags {
-				key   = "Name"
-				value = "tf-acc-test"
-			}
-
-			net_id = "${outscale_net.net.id}"
-		}
-
 		resource "outscale_vm" "outscale_vm" {
-			image_id           = "%[2]s"
+			image_id           = "%s"
 			vm_type            = "t2.micro"
 			keypair_name       = "terraform-basic"
-			security_group_ids = ["${outscale_security_group.sg.id}"]
-			subnet_id          ="${outscale_subnet.subnet.subnet_id}"
+			security_group_ids = ["sg-f4b1c2f8"]
 		}
 
 		resource "outscale_volumes_link" "outscale_volumes_link" {
@@ -213,5 +177,5 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, sgNa
 				values = ["${outscale_vm.outscale_vm.vm_id}"]
 			}
 		}
-	`, region, imageID, sgName)
+	`, region, imageID)
 }
