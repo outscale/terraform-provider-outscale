@@ -83,20 +83,20 @@ const testAccDataSourceOutscaleOAPISubnetConfig = `
 		}
 	}
 
-	resource "outscale_subnet" "test" {
+	resource "outscale_subnet" "outscale_subnet" {
 		net_id        = "${outscale_net.outscale_net.net_id}"
 		ip_range      = "10.0.0.0/16"
 		subregion_name = "eu-west-2a"
 	}
 
 	data "outscale_subnet" "by_id" {
-		subnet_id = "${outscale_subnet.test.id}"
+		subnet_id = "${outscale_subnet.outscale_subnet.id}"
 	}
 
 	data "outscale_subnet" "by_filter" {
 		filter {
 			name   = "subnet_ids"
-			values = ["${outscale_subnet.test.id}"]
+			values = ["${outscale_subnet.outscale_subnet.id}"]
 		}
 	}
 `

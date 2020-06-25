@@ -150,7 +150,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 		} else {
 			req := oscgo.ReadPublicIpsRequest{
 				Filters: &oscgo.FiltersPublicIp{
-					PublicIps: &[]string{rs.Primary.ID},
+					PublicIpIds: &[]string{rs.Primary.ID},
 				},
 			}
 
@@ -178,7 +178,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			}
 
 			if len(response.GetPublicIps()) != 1 ||
-				response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
+				response.GetPublicIps()[0].GetPublicIpId() != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
 			*res = response.GetPublicIps()[0]

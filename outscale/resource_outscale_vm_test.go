@@ -912,7 +912,9 @@ func testAccCheckOutscaleOAPIVMConfigWithNet(omi, vmType, region, keypair string
 		net_id              = "${outscale_net.outscale_net.net_id}"
 	}
 
-	resource "outscale_internet_service" "outscale_internet_service" {}
+	resource "outscale_internet_service" "outscale_internet_service" {
+                depends_on = [outscale_net.outscale_net]
+        }
 
 	resource "outscale_route_table" "outscale_route_table" {
 		net_id = "${outscale_net.outscale_net.net_id}"

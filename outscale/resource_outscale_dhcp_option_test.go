@@ -36,9 +36,9 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					/*resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),*/
 				),
 			},
 			{
@@ -53,9 +53,9 @@ func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "domain_name", "test.fr"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", "192.168.12.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.2"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					/*resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", updateValue),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", updateValue),*/
 				),
 			},
 		},
@@ -87,9 +87,9 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.1", "192.0.0.2"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					/*resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),*/
 				),
 			},
 			{
@@ -102,9 +102,9 @@ func TestAccOutscaleOAPIDhcpOptional_withEmptyAttrs(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.0", "192.0.0.1"),
 					resource.TestCheckResourceAttr(resourceName, "ntp_servers.1", "192.0.0.3"),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					/*resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "name"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", updateValue),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", updateValue),*/
 				),
 			},
 		},
@@ -141,9 +141,9 @@ func TestAccOutscaleOAPIDhcpOptional_withNet(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.0", ntpServres[0]),
 					resource.TestCheckResourceAttr(resourceName, "domain_name_servers.1", ntpServres[1]),
-					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					/*resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0.key", tags.GetKey()),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", tags.GetValue()),
+					resource.TestCheckResourceAttr(resourceName, "tags.0.value", tags.GetValue()),*/
 				),
 			},
 			{

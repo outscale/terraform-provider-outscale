@@ -114,7 +114,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 	data "outscale_public_ip" "outscale_public_ip" {
 		filter {
 			name   = "tags"
-			values = ["name=${outscale_public_ip.outscale_public_ip.tags[0].value}"]
+			values = ["name=public_ip-data"]
 		}
 
 		filter {
