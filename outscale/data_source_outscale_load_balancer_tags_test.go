@@ -4,19 +4,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
-	t.Skip()
-
 	r := acctest.RandString(4)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		Providers: testAccProviders,
@@ -50,7 +47,7 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
-			sub_region         = ["eu-west-2a"]
+			subregion_names    = ["eu-west-2a"]
 			load_balancer_name = "foobar-terraform-elb-%s"
 		
 			listeners {

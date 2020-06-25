@@ -3,17 +3,16 @@ package outscale
 import (
 	"testing"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBUListenerDesc_basic(t *testing.T) {
-	t.Skip()
-
-	var conf lbu.LoadBalancerDescription
+	var conf oscgo.LoadBalancer
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		IDRefreshName: "outscale_load_balancer.bar",

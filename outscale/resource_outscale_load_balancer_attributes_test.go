@@ -12,8 +12,6 @@ import (
 )
 
 func TestAccOutscaleOAPILBUAttr_basic(t *testing.T) {
-	t.Skip()
-
 	var conf oscgo.AccessLog
 
 	r := acctest.RandIntRange(0, 10)
@@ -52,8 +50,8 @@ func testAccCheckOutscaleOAPILBUAttrExists(n string, res *oscgo.AccessLog) resou
 func testAccOutscaleOAPILBUAttrConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  sub_regions = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb-%d"
+  subregion_names = ["eu-west-2a"]
+  load_balancer_name               = "foobar-terraform-elb-%d"
   listeners {
     backend_port = 8000
     backend_protocol = "HTTP"

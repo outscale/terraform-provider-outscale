@@ -28,7 +28,7 @@ func TestOutscaleOAPILoadBalancerPolicy_basic(t *testing.T) {
 const testAccOutscaleOAPILoadBalancerPolicyPrefixNameConfig = `
 resource "outscale_load_balancer" "outscale_load_balancer" {
     load_balancer_name     = "foobar-terraform-elb"
-    subregion_name 	   = ["eu-west-2a"]
+    subregion_names 	   = ["eu-west-2a"]
 
     listener {
     	backend_port = 8000

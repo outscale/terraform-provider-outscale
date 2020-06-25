@@ -36,9 +36,9 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
 					testAccCheckOutscaleOAPILBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "subregion_name.#", "1"),
+						"outscale_load_balancer.bar", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "subregion_name.0", "eu-west-2a"),
+						"outscale_load_balancer.bar", "subregion_names.0", "eu-west-2a"),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "listener.0.backend_port", "8000"),
 					resource.TestCheckResourceAttr(
@@ -213,8 +213,8 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  subregion_name = ["eu-west-2a"]
-	load_balancer_name               = "foobar-terraform-elb-%d"
+  subregion_names = ["eu-west-2a"]
+  load_balancer_name               = "foobar-terraform-elb-%d"
   listeners {
     backend_port = 8000
     backend_protocol = "HTTP"

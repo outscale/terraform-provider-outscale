@@ -32,7 +32,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"subregion_name": {
+						"subregion_names": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -262,7 +262,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 	for k, v := range lbs {
 		l := make(map[string]interface{})
 
-		l["subregion_name"] = v.SubregionNames
+		l["subregion_names"] = v.SubregionNames
 		l["public_dns_name"] = v.DnsName
 		l["health_check"] = v.HealthCheck
 		l["backend_vm_id"] = v.BackendVmIds

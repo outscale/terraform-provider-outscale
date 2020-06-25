@@ -37,7 +37,7 @@ func TestAccOutscaleOAPILBUUpdate_Listener(t *testing.T) {
 func testAccOutscaleOAPILBUListenersConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "lb" {
-  subregion_name = ["eu-west-2a"]
+  subregion_names = ["eu-west-2a"]
 	load_balancer_name               = "foobar-terraform-lbu-%d"
 	 listener {
     backend_port = 8000

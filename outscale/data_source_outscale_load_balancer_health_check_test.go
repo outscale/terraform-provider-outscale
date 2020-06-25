@@ -4,20 +4,18 @@ import (
 	"fmt"
 	"testing"
 
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
-	t.Skip()
-
 	var conf oscgo.LoadBalancer
 	rs := acctest.RandString(5)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
-			skipIfNoOAPI(t)
 			testAccPreCheck(t)
 		},
 		IDRefreshName: "outscale_load_balancer.bar",
@@ -39,7 +37,7 @@ func TestAccOutscaleOAPIDSLBUH_basic(t *testing.T) {
 func getTestAccDSOutscaleOAPILBUHConfig(r string) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
-			subregion_name        = ["eu-west-2a"]
+			subregion_names       = ["eu-west-2a"]
 			load_balancer_name = "foobar-terraform-elb-%s"
 		
 			listener {
