@@ -3,8 +3,7 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBUListenerDesc_basic(t *testing.T) {
@@ -33,7 +32,7 @@ func TestAccOutscaleOAPIDSLBUListenerDesc_basic(t *testing.T) {
 
 const testAccDSOutscaleOAPILBUListenerDescConfig = `
 	resource "outscale_load_balancer" "bar" {
-		availability_zones = ["eu-west-2a"]
+		subregion_name = ["eu-west-2a"]
 		load_balancer_name = "foobar-terraform-elb"
 
 		listeners {

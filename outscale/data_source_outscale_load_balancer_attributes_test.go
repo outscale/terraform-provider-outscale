@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/acctest"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBUAttr_basic(t *testing.T) {
@@ -14,7 +13,7 @@ func TestAccOutscaleOAPIDSLBUAttr_basic(t *testing.T) {
 
 	r := acctest.RandIntRange(0, 10)
 
-	var conf lbu.LoadBalancerDescription
+	var conf oscgo.LoadBalancer
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:      func() { testAccPreCheck(t) },
@@ -35,7 +34,7 @@ func TestAccOutscaleOAPIDSLBUAttr_basic(t *testing.T) {
 func testAccDSOutscaleOAPILBUAttrConfig(r int) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
-			sub_regions        = ["eu-west-2a"]
+			subregion_name        = ["eu-west-2a"]
 			load_balancer_name = "foobar-terraform-elb-%d"
 		
 			listener {

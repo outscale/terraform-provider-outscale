@@ -3,8 +3,7 @@ package outscale
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/terraform-providers/terraform-provider-outscale/osc/lbu"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
@@ -37,14 +36,14 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 
 const testAccDSOutscaleOAPILBUConfig = `
 	resource "outscale_load_balancer" "bar" {
-		sub_region_name    = ["eu-west-2a"]
+		subregion_name    = ["eu-west-2a"]
 		load_balancer_name = "foobar-terraform-elb"
 
 		listener {
 			backend_port           = 8000
 			backend_protocol       = "HTTP"
 			load_balancer_protocol = 80
-			protocol               = "HTTP"
+			load_balancer_protocol = "HTTP"
 		}
 
 		tag {
