@@ -48,13 +48,15 @@ func TestAccOutscaleOAPIVolumeDataSource_multipleVIdsFilters(t *testing.T) {
 func TestAccOutscaleOAPIVolumesDataSource_withVM(t *testing.T) {
 	region := os.Getenv("OUTSCALE_REGION")
 	omi := os.Getenv("OUTSCALE_IMAGEID")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, omi),
+				Config: testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, omi, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIVolumeDataSourceID("data.outscale_volumes.outscale_volumes"),
 					// resource.TestCheckResourceAttr("data.outscale_volumes.outscale_volumes", "volumes.0.size", "1"),
@@ -113,7 +115,7 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithMultipleVolumeIDsFilter(
 	`, region)
 }
 
-func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID string) string {
+func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume" {
 			subregion_name = "%[1]sa"
@@ -147,10 +149,10 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID strin
 		}
 
 		resource "outscale_vm" "outscale_vm" {
-			image_id           = "%s"
+			image_id           = "%[2]s"
 			vm_type            = "t2.micro"
-			keypair_name       = "terraform-basic"
-			security_group_ids = ["sg-f4b1c2f8"]
+			keypair_name       = "%[3]s"
+			security_group_ids = ["%[4]s"]
 		}
 
 		resource "outscale_volumes_link" "outscale_volumes_link" {
@@ -177,5 +179,5 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID strin
 				values = ["${outscale_vm.outscale_vm.vm_id}"]
 			}
 		}
-	`, region, imageID)
+	`, region, imageID, keypair, sgId)
 }

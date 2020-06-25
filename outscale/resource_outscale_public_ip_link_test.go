@@ -20,6 +20,8 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,7 +29,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),
@@ -185,14 +187,14 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "vm" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "%[4]s"
+			security_group_ids       = ["%[5]s"]
+			placement_subregion_name = "%[3]sb"
 		}
 		
 		resource "outscale_public_ip" "ip" {}
@@ -201,5 +203,5 @@ func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
 			public_ip = "${outscale_public_ip.ip.public_ip}"
 			vm_id     = "${outscale_vm.vm.id}"
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }
