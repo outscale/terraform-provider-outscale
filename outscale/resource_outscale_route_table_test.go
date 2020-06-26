@@ -105,7 +105,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, "c4.large", region),
+				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
 						"outscale_route_table.foo", &v, nil),

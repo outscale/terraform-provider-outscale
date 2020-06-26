@@ -30,7 +30,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),
@@ -216,7 +216,7 @@ func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId st
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[4]s"
 			security_group_ids       = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 		
 		resource "outscale_public_ip" "ip" {}

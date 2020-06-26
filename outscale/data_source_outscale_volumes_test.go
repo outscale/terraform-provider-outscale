@@ -172,9 +172,9 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 
 		resource "outscale_vm" "outscale_vm" {
 			image_id           = "%[2]s"
-			vm_type            = "t2.micro"
 			keypair_name       = "%[3]s"
 			security_group_ids = ["%[4]s"]
+			vm_type            = "tinav4.c2r2p2"
 		}
 
 		resource "outscale_volumes_link" "outscale_volumes_link" {

@@ -51,7 +51,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -59,7 +59,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -85,14 +85,14 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -290,7 +290,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgI
 			vm_type                  = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -325,7 +325,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sg
 			vm_type                  = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -360,7 +360,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, ke
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -368,7 +368,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, ke
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -403,7 +403,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, regi
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -411,7 +411,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, regi
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}

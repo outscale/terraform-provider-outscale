@@ -36,21 +36,21 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
 			},
 			// Drop just launch permission to test destruction
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, false, rInt, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, false, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageLaunchPermissionDestroyed(accountID, &imageID),
 				),
 			},
 			// Re-add everything so we can test when AMI disappears
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -58,7 +58,7 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 			// Here we delete the AMI to verify the follow-on refresh after this step
 			// should not error.
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "c4.large", region, accountID, true, rInt, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionConfig(omi, "tinav4.c2r2p2", region, accountID, true, rInt, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testAccOutscaleOAPIImageDisappears(&imageID),
 				),
@@ -86,14 +86,14 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 		Steps: []r.TestStep{
 			// Scaffold everything
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, false, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, false, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 					testAccOutscaleOAPIImageLaunchPermissionExists(accountID, &imageID),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "c4.large", region, rInt, true, true, keypair, sgId),
+				Config: testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, "tinav4.c2r2p2", region, rInt, true, true, keypair, sgId),
 				Check: r.ComposeTestCheckFunc(
 					testCheckResourceOAPILPIGetAttr("outscale_image.outscale_image", "id", &imageID),
 				),
@@ -219,7 +219,7 @@ func testAccOutscaleOAPIImageLaunchPermissionConfig(omi, vmType, region, account
 			vm_type            = "%[2]s"
 			keypair_name       = "%[5]s"
 			security_group_ids = ["%[6]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 		
 		resource "outscale_image" "outscale_image" {
@@ -271,7 +271,7 @@ func testAccOutscaleOAPIImageLaunchPermissionCreateConfig(omi, vmType, region st
 			vm_type                  = "%[2]s"
 			keypair_name             = "%[5]s"
 			security_group_ids       = ["%[6]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 		
 		resource "outscale_image" "outscale_image" {

@@ -15,12 +15,12 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVMDataSourceConfig(omi, "c4.large"),
+				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_vm.outscale_vm", "image_id", omi),
 					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vm", "vm_type", "c4.large"),
+						"outscale_vm.outscale_vm", "vm_type", "tinav4.c2r2p2"),
 				),
 			},
 		},

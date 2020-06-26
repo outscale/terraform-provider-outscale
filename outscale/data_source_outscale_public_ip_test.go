@@ -128,7 +128,7 @@ func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
-			vm_type      = "c4.large"
+			vm_type      = "tinav4.c2r2p2"
 			keypair_name = "terraform-basic"
 		}
 
