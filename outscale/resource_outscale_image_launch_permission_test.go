@@ -28,8 +28,6 @@ func TestAccOutscaleOAPIImageLaunchPermission_Basic(t *testing.T) {
 
 	rInt := acctest.RandInt()
 
-	sgName := acctest.RandomWithPrefix("testacc-sg")
-
 	r.Test(t, r.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -77,8 +75,6 @@ func TestAccOutscaleOAPIImageLaunchPermissionDestruction_Basic(t *testing.T) {
 
 	var imageID string
 	rInt := acctest.RandInt()
-
-	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	r.Test(t, r.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },

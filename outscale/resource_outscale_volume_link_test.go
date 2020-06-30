@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"testing"
 
@@ -50,8 +49,6 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resourceName := "outscale_volumes_link.ebs_att"
-
-	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

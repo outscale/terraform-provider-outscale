@@ -2,7 +2,6 @@ package outscale
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/acctest"
 	"os"
 	"testing"
 

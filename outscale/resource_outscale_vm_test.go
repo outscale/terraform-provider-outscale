@@ -3,7 +3,6 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"strings"
 	"testing"
@@ -165,8 +164,6 @@ func TestAccOutscaleOAPIVM_Update(t *testing.T) {
 
 	var before oscgo.Vm
 	var after oscgo.Vm
-
-	sgName := acctest.RandomWithPrefix("testacc-sg")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
