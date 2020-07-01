@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -37,6 +38,7 @@ func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 
 func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 	rInt := acctest.RandInt()
+	accountID := os.Getenv("OUTSCALE_ACCOUNT")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -44,7 +46,7 @@ func TestAccOutscaleSecurityGroupRule_withSecurityGroupMember(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPISecurityGroupRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt),
+				Config: testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt, accountID),
 			},
 		},
 	})
@@ -216,7 +218,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 		resource "outscale_security_group_rule" "outscale_security_group_rule" {
 			flow              = "Inbound"
 			security_group_id = "${outscale_security_group.outscale_security_group.security_group_id}"
-
+                        from_port_range = "0"
 			to_port_range   = "0"
 			ip_protocol     = "tcp"
 			ip_range        = "0.0.0.0/0"
@@ -238,7 +240,7 @@ func testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt int) string {
 	`, rInt)
 }
 
-func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int) string {
+func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int, accountID string) string {
 	return fmt.Sprintf(`
 		resource "outscale_security_group" "outscale_security_group" {
 			description         = "test group"
@@ -266,10 +268,11 @@ func testAccOutscaleOAPISecurityGroupRuleWithGroupMembers(rInt int) string {
 				to_port_range   = "22"
 				ip_protocol     = "tcp"
 				security_groups_members {
-					account_id          = "339215505907"
+					account_id          = "%[1]s"
 					security_group_name = outscale_security_group.outscale_security_group2.security_group_name
 				}
 			}
+                     depends_on = [outscale_security_group.outscale_security_group2]
 		}
-	`)
+	`, accountID)
 }

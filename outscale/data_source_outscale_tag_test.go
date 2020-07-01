@@ -16,14 +16,14 @@ func TestAccOutscaleOAPITagDataSource(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPITagDataSourceConfig(omi, "t2.micro"),
+				Config: testAccOAPITagDataSourceConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "key", "Name"),
 					resource.TestCheckResourceAttr(
 						"data.outscale_tag.web", "value", "test-vm"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_tag.web", "resource_type", "instance"),
+						"data.outscale_tag.web", "resource_type", "vm"),
 				),
 			},
 		},

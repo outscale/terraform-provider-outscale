@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -44,7 +45,7 @@ func TestAccOutscaleOAPIVpnGatewayAttachment_basic(t *testing.T) {
 }
 
 func TestAccResourceVpnGatewayAttachment_importBasic(t *testing.T) {
-	resourceName := "outscale_virtual_gateway_link.outscale_virtual_gateway_link"
+	resourceName := "outscale_virtual_gateway_link.test"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -77,49 +78,53 @@ func testAccCheckVpnGatewayAttachmentImportStateIDFunc(resourceName string) reso
 
 func TestAccAWSOAPIVpnGatewayAttachment_deleted(t *testing.T) {
 
-	var vpc oscgo.NetToVirtualGatewayLink
-	var vgw oscgo.VirtualGateway
+	if os.Getenv("TEST_QUOTA") == "true" {
+		var vpc oscgo.NetToVirtualGatewayLink
+		var vgw oscgo.VirtualGateway
 
-	testDeleted := func(n string) resource.TestCheckFunc {
-		return func(s *terraform.State) error {
-			_, ok := s.RootModule().Resources[n]
-			if ok {
-				return fmt.Errorf("expected vpn gateway attachment resource %q to be deleted", n)
+		testDeleted := func(n string) resource.TestCheckFunc {
+			return func(s *terraform.State) error {
+				_, ok := s.RootModule().Resources[n]
+				if ok {
+					return fmt.Errorf("expected vpn gateway attachment resource %q to be deleted", n)
+				}
+				return nil
 			}
-			return nil
 		}
-	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		IDRefreshName: "outscale_virtual_gateway_link.test",
-		Providers:     testAccProviders,
-		CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccOAPIVpnGatewayAttachmentConfig,
-				Check: resource.ComposeTestCheckFunc(
-					// testAccCheckOutscaleOAPILinExists(
-					// 	"outscale_net.test",
-					// 	&vpc),  TODO: Fix once we develop this resource
-					testAccCheckOAPIVirtualGatewayExists(
-						"outscale_virtual_gateway.test",
-						&vgw),
-					testAccCheckOAPIVpnGatewayAttachmentExists(
-						"outscale_virtual_gateway_link.test",
-						&vpc, &vgw),
-				),
+		resource.Test(t, resource.TestCase{
+			PreCheck: func() {
+				testAccPreCheck(t)
 			},
-			{
-				Config: testAccNoOAPIVpnGatewayAttachmentConfig,
-				Check: resource.ComposeTestCheckFunc(
-					testDeleted("outscale_virtual_gateway_link.test"),
-				),
+			IDRefreshName: "outscale_virtual_gateway_link.test",
+			Providers:     testAccProviders,
+			CheckDestroy:  testAccCheckOAPIVpnGatewayAttachmentDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccOAPIVpnGatewayAttachmentConfig,
+					Check: resource.ComposeTestCheckFunc(
+						// testAccCheckOutscaleOAPILinExists(
+						// 	"outscale_net.test",
+						// 	&vpc),  TODO: Fix once we develop this resource
+						testAccCheckOAPIVirtualGatewayExists(
+							"outscale_virtual_gateway.test",
+							&vgw),
+						testAccCheckOAPIVpnGatewayAttachmentExists(
+							"outscale_virtual_gateway_link.test",
+							&vpc, &vgw),
+					),
+				},
+				{
+					Config: testAccNoOAPIVpnGatewayAttachmentConfig,
+					Check: resource.ComposeTestCheckFunc(
+						testDeleted("outscale_virtual_gateway_link.test"),
+					),
+				},
 			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 func testAccCheckOAPIVpnGatewayAttachmentExists(n string, vpc *oscgo.NetToVirtualGatewayLink, vgw *oscgo.VirtualGateway) resource.TestCheckFunc {
@@ -199,7 +204,7 @@ func testAccCheckOAPIVpnGatewayAttachmentDestroy(s *terraform.State) error {
 
 const testAccNoOAPIVpnGatewayAttachmentConfig = `
 	resource "outscale_net" "test" {
-		cidr_block = "10.0.0.0/16"
+		ip_range = "10.0.0.0/16"
 	}
 
 	resource "outscale_virtual_gateway" "test" {
@@ -208,14 +213,14 @@ const testAccNoOAPIVpnGatewayAttachmentConfig = `
 `
 
 const testAccOAPIVpnGatewayAttachmentConfig = `
-resource "outscale_virtual_gateway" "outscale_virtual_gateway" {
+resource "outscale_virtual_gateway" "test" {
  connection_type = "ipsec.1"
 }
-resource "outscale_net" "outscale_net" {
+resource "outscale_net" "test" {
     ip_range = "10.0.0.0/18"
 }
-resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link" {
-    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway.virtual_gateway_id
-    net_id              = outscale_net.outscale_net.net_id
+resource "outscale_virtual_gateway_link" "test" {
+    virtual_gateway_id = outscale_virtual_gateway.test.virtual_gateway_id
+    net_id              = outscale_net.test.net_id
 }
 `

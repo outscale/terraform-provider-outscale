@@ -31,7 +31,7 @@ func TestAccOutscaleNicLink_Basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleNicLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "c4.large", region),
+				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIENIExists("outscale_nic.outscale_nic", &conf),
 					resource.TestCheckResourceAttr(
@@ -58,7 +58,7 @@ func TestAccOutscaleNicLink_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleNicLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "c4.large", region),
+				Config: testAccOutscaleNicLinkConfigBasic(rInt, omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("outscale_nic_link.outscale_nic_link", "device_number", "1"),
 					resource.TestCheckResourceAttrSet("outscale_nic_link.outscale_nic_link", "vm_id"),

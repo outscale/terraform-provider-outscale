@@ -41,7 +41,11 @@ func testAccDataSourceOutscaleOAPIVpcsConfig(ipRange, tag string) string {
 		}
 
 		data "outscale_nets" "by_id" {
-			net_ids = ["${outscale_net.test.id}"]
-		}
+                  filter {
+                   name = "net_ids"
+                   values = [outscale_net.test.id]
+                 }
+             }
 	`, ipRange, tag)
+
 }

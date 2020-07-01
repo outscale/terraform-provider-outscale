@@ -50,7 +50,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -58,7 +58,7 @@ func TestAccOutscaleOAPIPublicIP_instance(t *testing.T) {
 			},
 
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfig2(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &conf),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&conf),
@@ -84,14 +84,14 @@ func TestAccOutscaleOAPIPublicIP_associated_user_private_ip(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPIPublicIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPExists("outscale_public_ip.bar", &one),
 					testAccCheckOutscaleOAPIPublicIPAttributes(&one),
@@ -139,7 +139,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 		// } else {
 		req := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
-				PublicIps: &[]string{rs.Primary.ID},
+				PublicIpIds: &[]string{rs.Primary.ID},
 			},
 		}
 
@@ -213,7 +213,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 		// } else {
 		req := oscgo.ReadPublicIpsRequest{
 			Filters: &oscgo.FiltersPublicIp{
-				PublicIps: &[]string{rs.Primary.ID},
+				PublicIpIds: &[]string{rs.Primary.ID},
 			},
 		}
 
@@ -242,7 +242,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 		}
 
 		if len(response.GetPublicIps()) != 1 ||
-			response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
+			response.GetPublicIps()[0].GetPublicIpId() != rs.Primary.ID {
 			return fmt.Errorf("PublicIP not found")
 		}
 		*res = response.GetPublicIps()[0]
@@ -263,12 +263,33 @@ resource "outscale_public_ip" "bar" {
 
 func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -277,12 +298,33 @@ func testAccOutscaleOAPIPublicIPInstanceConfig(omi, vmType, region, keypair, sgI
 
 func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -291,12 +333,33 @@ func testAccOutscaleOAPIPublicIPInstanceConfig2(omi, vmType, region, keypair, sg
 
 func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -304,7 +367,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, ke
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}
@@ -313,12 +376,33 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociated(omi, vmType, region, ke
 
 func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "basic" {
 			image_id           = "%[1]s"
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_vm" "basic2" {
@@ -326,7 +410,7 @@ func testAccOutscaleOAPIPublicIPInstanceConfigAssociatedSwitch(omi, vmType, regi
 			vm_type            = "%[2]s"
 			keypair_name       = "%[4]s"
 			security_group_ids = ["%[5]s"]
-			placement_subregion_name = "%[3]sb"
+			placement_subregion_name = "%[3]sa"
 		}
 
 		resource "outscale_public_ip" "bar" {}

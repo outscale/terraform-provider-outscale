@@ -22,7 +22,7 @@ func TestAccOutscaleOAPIImagesDataSource_Instance(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "t2.micro", region, imageName),
+				Config: testAccCheckOutscaleOAPIImagesDataSourceConfig(omi, "tinav4.c2r2p2", region, imageName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIImagesDataSourceID("data.outscale_images.nat_ami"),
 				),

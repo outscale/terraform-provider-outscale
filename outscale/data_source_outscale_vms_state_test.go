@@ -16,7 +16,7 @@ func TestAccDataSourceOutscaleOAPIVMSState(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVMSStateConfig(omi, "c4.large"),
+				Config: testAccDataSourceOutscaleOAPIVMSStateConfig(omi, "tinav4.c2r2p2"),
 			},
 		},
 	})

@@ -113,8 +113,8 @@ func TestAccOutscaleVPNConnection_withTags(t *testing.T) {
 
 					resource.TestCheckResourceAttr(resourceName, "connection_type", "ipsec.1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
-					resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
+					//resource.TestCheckResourceAttr(resourceName, "tags.0.key", "Name"),
+					//resource.TestCheckResourceAttr(resourceName, "tags.0.value", value),
 				),
 			},
 		},

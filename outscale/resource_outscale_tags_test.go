@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "t2.micro", region, "keyOriginal", "valueOriginal"),
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyOriginal", "valueOriginal"),
 				Check: resource.ComposeTestCheckFunc(
 					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 					testAccCheckOAPIVMTags(v, "keyOriginal", "valueOriginal"),
@@ -39,7 +39,7 @@ func TestAccOutscaleOAPIVM_tags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckOAPIInstanceConfigTags(omi, "t2.micro", region, "keyUpdated", "valueUpdated"),
+				Config: testAccCheckOAPIInstanceConfigTags(omi, "tinav4.c2r2p2", region, "keyUpdated", "valueUpdated"),
 				Check: resource.ComposeTestCheckFunc(
 					oapiTestAccCheckOutscaleVMExists("outscale_vm.vm", v),
 					testAccCheckOAPIVMTags(v, "keyUpdated", "valueUpdated"),

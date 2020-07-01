@@ -29,7 +29,7 @@ func TestAccOutscaleOAPIVolumeAttachment_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"outscale_volumes_link.ebs_att", "device_name", "/dev/sdh"),
@@ -56,7 +56,7 @@ func TestAccOutscaleOAPIVolumeAttachment_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIVolumeAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIVolumeAttachmentConfig(omi, "c4.large", region, keypair, sgId),
+				Config: testAccOAPIVolumeAttachmentConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 			},
 			{
 				ResourceName:            resourceName,
@@ -114,6 +114,27 @@ func testAccCheckOAPIVolumeAttachmentExists(n string, i *oscgo.Vm, v *oscgo.Volu
 
 func testAccOAPIVolumeAttachmentConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "web" {
 			image_id                 = "%[1]s"
 			vm_type                  = "%[2]s"

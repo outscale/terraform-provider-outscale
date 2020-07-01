@@ -148,11 +148,32 @@ func testAccCheckOutscaleOAPIVolumesDataSourceConfigWithVM(region, imageID, keyp
 			}
 		}
 
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[3]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "outscale_vm" {
 			image_id           = "%[2]s"
-			vm_type            = "t2.micro"
 			keypair_name       = "%[3]s"
 			security_group_ids = ["%[4]s"]
+			vm_type            = "tinav4.c2r2p2"
 		}
 
 		resource "outscale_volumes_link" "outscale_volumes_link" {
