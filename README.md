@@ -36,6 +36,18 @@ $ unzip terraform-provider-outscale_darwin_amd64_v0.1.0-rc9.zip
 $ mv terraform-provider-outscale_v0.1.0-rc9 ~/.terraform.d/plugins/darwin_amd64/.
 ```
 
+Installing The Provider on Windows
+----------------------------------
+
+Download the binary and install it in %APPDATA%\terraform.d\plugins
+
+```sh
+$ download the plugin from https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0RC9/terraform-provider-outscale_windows_386_v0.1.0-rc9.zip
+$ unzip terraform-provider-outscale_windows_386_v0.1.0-rc9.zip
+$ move terraform-provider-outscale_v0.1.0-rc9 %APPDATA%\terraform.d\plugins
+```
+
+
 Building The Provider
 ---------------------
 
