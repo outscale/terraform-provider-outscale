@@ -222,7 +222,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
-		r := tagsFromSliceMap(v.([]interface{}))
+		r := tagsFromSliceMap(v.(*schema.Set))
 		req.Tags = &r
 	}
 
