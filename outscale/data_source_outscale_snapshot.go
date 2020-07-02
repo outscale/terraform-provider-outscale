@@ -24,17 +24,17 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			//selection criteria
 			"filter": dataSourceFiltersSchema(),
-			"permissions_to_create_volume": &schema.Schema{
+			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"account_ids": &schema.Schema{
+						"account_ids": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
@@ -77,7 +77,7 @@ func dataSourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": dataSourceTagsSchema(),
 			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,

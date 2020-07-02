@@ -62,11 +62,11 @@ func resourceOutscaleOAPIVolume() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"delete_on_vm_termination": {
+						"delete_on_vm_deletion": {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
-						"device": {
+						"device_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -320,24 +320,22 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		return err
 	}
 
-	if volume.GetLinkedVolumes() != nil {
+	if volume.LinkedVolumes != nil {
 		res := make([]map[string]interface{}, len(volume.GetLinkedVolumes()))
 		for k, g := range volume.GetLinkedVolumes() {
 			r := make(map[string]interface{})
-			if g.DeleteOnVmDeletion != nil {
-				r["delete_on_vm_termination"] = g.GetDeleteOnVmDeletion()
-			}
+			r["delete_on_vm_deletion"] = g.GetDeleteOnVmDeletion()
 			if g.GetDeviceName() != "" {
-				r["device"] = g.DeviceName
+				r["device_name"] = g.GetDeviceName()
 			}
 			if g.GetVmId() != "" {
-				r["vm_id"] = g.VmId
+				r["vm_id"] = g.GetVmId()
 			}
 			if g.GetState() != "" {
-				r["state"] = g.State
+				r["state"] = g.GetState()
 			}
 			if g.GetVolumeId() != "" {
-				r["volume_id"] = g.VolumeId
+				r["volume_id"] = g.GetVolumeId()
 			}
 
 			res[k] = r
@@ -349,12 +347,12 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	} else {
 		if err := d.Set("linked_volumes", []map[string]interface{}{
-			map[string]interface{}{
-				"delete_on_vm_termination": false,
-				"device":                   "none",
-				"vm_id":                    "none",
-				"state":                    "none",
-				"volume_id":                "none",
+			{
+				"delete_on_vm_deletion": false,
+				"device_name":           "none",
+				"vm_id":                 "none",
+				"state":                 "none",
+				"volume_id":             "none",
 			},
 		}); err != nil {
 			return err
@@ -366,7 +364,7 @@ func readOAPIVolume(d *schema.ResourceData, volume oscgo.Volume) error {
 		}
 	} else {
 		if err := d.Set("tags", []map[string]string{
-			map[string]string{
+			{
 				"key":   "",
 				"value": "",
 			},

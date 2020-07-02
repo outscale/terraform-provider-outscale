@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cast"
+
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
 
@@ -24,25 +26,20 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"ip_range": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-
 			"state": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"tags": dataSourceTagsSchema(),
-
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -51,9 +48,12 @@ func dataSourceOutscaleOAPISubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-
 			"available_ips_count": {
 				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"map_public_ip_on_launch": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 		},
@@ -122,6 +122,9 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("state", subnet.GetState()); err != nil {
 		return err
 	}
+	if err := d.Set("map_public_ip_on_launch", subnet.GetMapPublicIpOnLaunch()); err != nil {
+		return err
+	}
 	if err := d.Set("tags", tagsOSCAPIToMap(subnet.GetTags())); err != nil {
 		return err
 	}
@@ -140,13 +143,15 @@ func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSub
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
+		var availableIPsCounts []int64
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
+			availableIPsCounts = append(availableIPsCounts, cast.ToInt64(e))
 		}
 
 		switch name := m["name"].(string); name {
-		// case "available_ips_counts":
-		// 	filters.AvailableIpsCounts = filterValues
+		case "available_ips_counts":
+			filters.AvailableIpsCounts = &availableIPsCounts
 		case "ip_ranges":
 			filters.IpRanges = &filterValues
 		case "net_ids":

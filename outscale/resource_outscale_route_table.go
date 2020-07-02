@@ -21,10 +21,118 @@ func resourceOutscaleOAPIRouteTable() *schema.Resource {
 		Update: resourceOutscaleOAPIRouteTableUpdate,
 		Delete: resourceOutscaleOAPIRouteTableDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceOutscaleRouteTableImportState,
+			State: schema.ImportStatePassthrough,
 		},
+		Schema: map[string]*schema.Schema{
+			"net_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"route_table_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 
-		Schema: getOAPIRouteTableSchema(),
+			"tags": tagsListOAPISchema(),
+
+			"route_propagating_virtual_gateways": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"virtual_gateway_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"routes": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"destination_ip_range": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"destination_service_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"gateway_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"vm_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"vm_account_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"nic_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"creation_method": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"net_access_point_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"net_peering_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"nat_service_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"link_route_tables": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"main": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"route_table_to_subnet_link_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"link_route_table_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"route_table_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"subnet_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -273,119 +381,6 @@ func resourceOutscaleOAPIRouteTableStateRefreshFunc(conn *oscgo.APIClient, route
 			return nil, "", err
 		}
 		return rtRaw.(oscgo.RouteTable), "ready", err
-	}
-}
-
-func getOAPIRouteTableSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"net_id": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
-		},
-		"route_table_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"request_id": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-
-		"tags": tagsListOAPISchema(),
-
-		"route_propagating_virtual_gateways": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"virtual_gateway_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"routes": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"destination_ip_range": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"destination_service_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"gateway_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"vm_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"vm_account_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"nic_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"creation_method": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"state": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"net_access_point_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"net_peering_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"nat_service_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		"link_route_tables": {
-			Type:     schema.TypeList,
-			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"main": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"route_table_to_subnet_link_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"link_route_table_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"route_table_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"subnet_id": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
 	}
 }
 

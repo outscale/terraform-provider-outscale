@@ -64,7 +64,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	//SetTags
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), resp.Net.GetNetId(), conn)
+		err := assignTags(tags.(*schema.Set), resp.Net.GetNetId(), conn)
 		if err != nil {
 			return err
 		}
@@ -155,20 +155,27 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 		NetId: id,
 	}
 
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
-
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"pending"},
+		Target:  []string{"deleted", "failed"},
+		Refresh: func() (interface{}, string, error) {
+			_, _, err := conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return nil, "pending", nil
+				}
+				return nil, "failed", err
 			}
-			return resource.NonRetryableError(err)
-		}
-		return resource.RetryableError(err)
-	})
+			return "", "deleted", nil
+		},
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	_, err := stateConf.WaitForState()
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting Net Service(%s): %s", d.Id(), err)
 	}
 
 	d.SetId("")

@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -20,7 +21,9 @@ func resourceOutscaleOAPINetworkInterfaceAttachment() *schema.Resource {
 		Create: resourceOutscaleOAPINetworkInterfaceAttachmentCreate,
 		Read:   resourceOutscaleOAPINetworkInterfaceAttachmentRead,
 		Delete: resourceOutscaleOAPINetworkInterfaceAttachmentDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: resourceOutscaleNetworkInterfaceAttachmentImportState,
+		},
 		Schema: map[string]*schema.Schema{
 			"device_number": {
 				Type:     schema.TypeInt,
@@ -67,20 +70,19 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	di := d.Get("device_number").(int)
-	iID := d.Get("vm_id").(string)
+	vmID := d.Get("vm_id").(string)
 	nicID := d.Get("nic_id").(string)
 
 	opts := oscgo.LinkNicRequest{
 		DeviceNumber: int64(di),
-		VmId:         iID,
+		VmId:         vmID,
 		NicId:        nicID,
 	}
 
-	log.Printf("[DEBUG] Attaching network interface (%s) to instance (%s)", nicID, iID)
+	log.Printf("[DEBUG] Attaching network interface (%s) to instance (%s)", nicID, vmID)
 
 	var resp oscgo.LinkNicResponse
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.NicApi.LinkNic(context.Background(), &oscgo.LinkNicOpts{LinkNicRequest: optional.NewInterface(opts)})
 		if err != nil {
@@ -93,24 +95,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	})
 
 	if err != nil {
-		errString := err.Error()
-		return fmt.Errorf("Error creating Outscale LinkNic: %s", errString)
-
-	}
-
-	stateConf := &resource.StateChangeConf{
-		Pending:    []string{"false"},
-		Target:     []string{"true"},
-		Refresh:    nicLinkRefreshFunc(conn, nicID),
-		Timeout:    5 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 3 * time.Second,
-	}
-
-	_, err = stateConf.WaitForState()
-	if err != nil {
-		return fmt.Errorf(
-			"Error waiting for Volume (%s) to attach to Instance: %s, error: %s", nicID, iID, err)
+		return fmt.Errorf("Error creating Outscale LinkNic: %s", err)
 	}
 
 	d.SetId(resp.GetLinkNicId())
@@ -120,73 +105,39 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	interfaceID := d.Get("nic_id").(string)
+	nicID := d.Get("nic_id").(string)
 
-	req := oscgo.ReadNicsRequest{
-		Filters: &oscgo.FiltersNic{NicIds: &[]string{interfaceID}},
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"attaching", "detaching"},
+		Target:     []string{"attached", "detached", "failed"},
+		Refresh:    nicLinkRefreshFunc(conn, nicID),
+		Timeout:    5 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
 
-	var resp oscgo.ReadNicsResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)})
-		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	resp, err := stateConf.WaitForState()
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "InvalidNetworkInterfaceID.NotFound") {
-			// The ENI is gone now, so just remove the attachment from the state
-			d.SetId("")
-			return nil
-		}
-		errString := err.Error()
-		return fmt.Errorf("Could not find network interface: %s", errString)
-
-	}
-	if len(resp.GetNics()) != 1 {
-		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, resp.GetNics())
+		return fmt.Errorf(
+			"Error waiting for Volume to attach to Instance: %s, error: %s", nicID, err)
 	}
 
-	eni := resp.GetNics()[0]
+	r := resp.(oscgo.ReadNicsResponse)
+	linkNic := r.GetNics()[0].GetLinkNic()
 
-	if reflect.DeepEqual(eni.GetLinkNic(), oscgo.LinkNic{}) {
-		// Interface is no longer attached, remove from state
-		d.SetId("")
-		return nil
-	}
-
-	link := eni.GetLinkNic()
-
-	if link.GetVmAccountId() != "" {
-		if err := d.Set("vm_account_id", link.GetVmAccountId()); err != nil {
-			return err
-		}
-	}
-	if link.GetState() != "" {
-		if err := d.Set("state", link.GetState()); err != nil {
-			return err
-		}
-	}
-
-	if err := d.Set("device_number", link.GetDeviceNumber()); err != nil {
+	if err := d.Set("device_number", linkNic.GetDeviceNumber()); err != nil {
 		return err
 	}
-	if err := d.Set("vm_id", link.GetVmId()); err != nil {
+	if err := d.Set("vm_id", linkNic.GetVmId()); err != nil {
 		return err
 	}
-	if err := d.Set("delete_on_vm_deletion", link.GetDeleteOnVmDeletion()); err != nil {
+	if err := d.Set("delete_on_vm_deletion", linkNic.GetDeleteOnVmDeletion()); err != nil {
 		return err
 	}
-	if err := d.Set("link_nic_id", link.GetLinkNicId()); err != nil {
+	if err := d.Set("link_nic_id", linkNic.GetLinkNicId()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+	if err := d.Set("request_id", r.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 
@@ -196,16 +147,19 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	interfaceID := d.Get("nic_id").(string)
+	interfaceID := d.Id()
 
-	dr := oscgo.UnlinkNicRequest{
-		LinkNicId: d.Id(),
+	req := oscgo.UnlinkNicRequest{
+		LinkNicId: interfaceID,
 	}
 
 	var err error
-
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.UnlinkNic(context.Background(), &oscgo.UnlinkNicOpts{UnlinkNicRequest: optional.NewInterface(dr)})
+		_, _, err = conn.NicApi.UnlinkNic(context.Background(),
+			&oscgo.UnlinkNicOpts{
+				UnlinkNicRequest: optional.NewInterface(req),
+			},
+		)
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -221,18 +175,99 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 		}
 	}
 
-	log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", interfaceID)
+	nicID := d.Get("nic_id").(string)
+
+	// log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", interfaceID)
 	stateConf := &resource.StateChangeConf{
-		Pending: []string{"true"},
-		Target:  []string{"false"},
-		Refresh: nicLinkRefreshFunc(conn, interfaceID),
-		Timeout: 10 * time.Minute,
+		Pending:    []string{"detaching"},
+		Target:     []string{"detached", "failed"},
+		Refresh:    nicLinkRefreshFunc(conn, nicID),
+		Timeout:    5 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
 	}
 
-	if _, err := stateConf.WaitForState(); err != nil {
+	_, err = stateConf.WaitForState()
+	if err != nil {
 		return fmt.Errorf(
-			"Error waiting for ENI (%s) to become dettached: %s", interfaceID, err)
+			"Error waiting for Volume to dettache to Instance: %s, error: %s", nicID, err)
 	}
 
 	return nil
+}
+
+func resourceOutscaleNetworkInterfaceAttachmentImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if d.Id() == "" {
+		return nil, errors.New("import error: to import a Nic Link, use the format {nic_id} it must not be empty")
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"attaching", "detaching"},
+		Target:     []string{"attached", "detached", "failed"},
+		Refresh:    nicLinkRefreshFunc(meta.(*OutscaleClient).OSCAPI, d.Id()),
+		Timeout:    5 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 3 * time.Second,
+	}
+
+	resp, err := stateConf.WaitForState()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"Error waiting for Volume to attach to Instance: %s, error: %s", d.Id(), err)
+	}
+	r := resp.(oscgo.ReadNicsResponse)
+	linkNic := r.GetNics()[0].GetLinkNic()
+
+	if err := d.Set("device_number", linkNic.GetDeviceNumber()); err != nil {
+		return nil, err
+	}
+	if err := d.Set("vm_id", linkNic.GetVmId()); err != nil {
+		return nil, err
+	}
+	if err := d.Set("nic_id", r.GetNics()[0].GetNicId()); err != nil {
+		return nil, err
+	}
+
+	d.SetId(linkNic.GetLinkNicId())
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		req := oscgo.ReadNicsRequest{
+			Filters: &oscgo.FiltersNic{
+				NicIds: &[]string{nicID},
+			},
+		}
+
+		var resp oscgo.ReadNicsResponse
+		var err error
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			resp, _, err = conn.NicApi.ReadNics(context.Background(),
+				&oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)},
+			)
+			if err != nil {
+				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return nil, "failed", err
+		}
+		if len(resp.GetNics()) < 1 {
+			return nil, "failed", fmt.Errorf("error to find the Outscale Nic(%s): %#v", nicID, resp.GetNics())
+		}
+
+		linkNic := resp.GetNics()[0].GetLinkNic()
+		if reflect.DeepEqual(linkNic, oscgo.LinkNic{}) {
+			return resp, "detached", nil
+		}
+
+		return resp, linkNic.GetState(), nil
+	}
 }

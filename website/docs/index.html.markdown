@@ -19,9 +19,12 @@ The provider needs to be configured with the proper credentials before it can be
 
 ```hcl
 provider "outscale" {
-  access_key_id = "AZERTY123456QSDF7890"
-  secret_key_id = "123456AZERTY7890QSDFAZERTY123456QSDF7890"
-  region        = "eu-west-2"
+  access_key_id = "123456789ABCDEFGHIJK"
+  secret_key_id = "ABCDEFGHIJKLMNOPQRSTU1234567891011121314"
+  region        = "cn-southeast-1"
+  endpoints {
+    api  = "https://api.cn-southeast-1.outscale.hk/api/v1"
+    }
 }
 ```
 
@@ -31,8 +34,7 @@ provider "outscale" {
 For more information on access keys, see [About Access Keys](https://wiki.outscale.net/display/EN/About+Access+Keys).
 To retrieve your access keys, see [Getting Information About Your Access Keys](https://wiki.outscale.net/display/EN/Getting+Information+About+Your+Access+Keys).
 
-To provide your credentials to Terraform, you need to specify the `access_key_id` and `secret_key_id` attributes in your configuration file.
-The 3DS OUTSCALE provider offers several ways to specify these attributes. The following methods are supported:
+The 3DS OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
 
 1. [Static credentials](#static-credentials)
 2. [Environment variables](#environment-variables)
@@ -41,7 +43,7 @@ The 3DS OUTSCALE provider offers several ways to specify these attributes. The f
 
 !> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
 
-In the provider block of your configuration file, you can provide your credentials with raw values:
+You can provide your credentials by specifying the `access_key_id` and `secret_key_id` attributes in the provider block:
 
 Example:
 
@@ -55,16 +57,12 @@ provider "outscale" {
 
 ### Environment variables
 
-In the provider block of your configuration file, you can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
+You can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
 
 Example:
 
 ```hcl
-provider "outscale" {
-  access_key_id   = "var.access_key_id"
-  secret_key_id   = "var.secret_key_id"
-  region          = "var.region"
-}
+provider "outscale" {}
 ```
 
 Usage:
@@ -85,3 +83,5 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 * `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 
 * `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
+
+* `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).

@@ -17,13 +17,13 @@ func TestAccOutscaleOAPISnapshotAttributes_Basic(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, false, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPISnapshotAttributesConfig(true, true, accountID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckResourceGetAttr("outscale_snapshot.test", "id", &snapshotID),

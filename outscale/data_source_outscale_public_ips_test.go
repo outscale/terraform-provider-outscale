@@ -1,6 +1,7 @@
 package outscale
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -12,7 +13,7 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPSConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(
@@ -29,15 +30,19 @@ func TestAccDataSourceOutscaleOAPIPublicIPS(t *testing.T) {
 
 func TestAccDataSourceOutscaleOAPIPublicIPS_withTags(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags,
+	if os.Getenv("TEST_QUOTA") == "true" {
+		resource.Test(t, resource.TestCase{
+			PreCheck:  func() { testAccPreCheck(t) },
+			Providers: testAccProviders,
+			Steps: []resource.TestStep{
+				{
+					Config: testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags,
+				},
 			},
-		},
-	})
+		})
+	} else {
+		t.Skip("will be done soon")
+	}
 }
 
 const testAccDataSourceOutscaleOAPIPublicIPSConfig = `
@@ -64,14 +69,15 @@ const testAccDataSourceOutscaleOAPIPublicIPSConfigWithTags = `
 	resource "outscale_public_ip" "outscale_public_ip2" {
 		tags {
 			key   = "name"
-			value = outscale_public_ip.outscale_public_ip.tags[0].value
+			value = "public_ip-data"
 		}
 	}
 
 	data "outscale_public_ips" "outscale_public_ips" {
 		filter {
 			name   = "tags"
-			values = ["name=${outscale_public_ip.outscale_public_ip.tags[0].value}"]
+			values = ["name=public_ip-data"]
 		}
+         depends_on = [outscale_public_ip.outscale_public_ip, outscale_public_ip.outscale_public_ip2]
 	}
 `

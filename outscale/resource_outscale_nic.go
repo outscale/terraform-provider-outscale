@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -39,22 +40,22 @@ func resourceOutscaleOAPINic() *schema.Resource {
 func getOAPINicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		//  This is attribute part for schema OAPINic
-		"description": &schema.Schema{
+		"description": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"private_ip": &schema.Schema{
+		"private_ip": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_ids": &schema.Schema{
+		"security_group_ids": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"subnet_id": &schema.Schema{
+		"subnet_id": {
 			Type:     schema.TypeString,
 			Required: true,
 		},
@@ -463,7 +464,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 
 	log.Printf("[INFO] Deleting ENI: %s", d.Id())
 
-	err := resourceOutscaleOAPINicDetach(d.Get("link_nic").(interface{}), meta, d.Id())
+	err := resourceOutscaleOAPINicDetach(meta, d.Id())
 	if err != nil {
 		return err
 	}
@@ -491,19 +492,38 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID string) error {
+func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 	// if there was an old nic_link, remove it
-	if oa != nil {
-		oa := oa.(map[string]interface{})
-		dr := oscgo.UnlinkNicRequest{
-			LinkNicId: oa["link_nic_id"].(string),
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"attaching", "detaching"},
+		Target:  []string{"attached", "detached", "failed"},
+		Refresh: nicLinkRefreshFunc(conn, nicID),
+		Timeout: 10 * time.Minute,
+	}
+	resp, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf(
+			"Error waiting for ENI (%s) to become dettached: %s", nicID, err)
+	}
+
+	r := resp.(oscgo.ReadNicsResponse)
+	linkNic := r.GetNics()[0].GetLinkNic()
+
+	if !reflect.DeepEqual(linkNic, oscgo.LinkNic{}) {
+		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", nicID)
+
+		req := oscgo.UnlinkNicRequest{
+			LinkNicId: linkNic.GetLinkNicId(),
 		}
 
-		conn := meta.(*OutscaleClient).OSCAPI
-
-		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.NicApi.UnlinkNic(context.Background(), &oscgo.UnlinkNicOpts{UnlinkNicRequest: optional.NewInterface(dr)})
+			_, _, err = conn.NicApi.UnlinkNic(context.Background(),
+				&oscgo.UnlinkNicOpts{
+					UnlinkNicRequest: optional.NewInterface(req),
+				},
+			)
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -518,20 +538,7 @@ func resourceOutscaleOAPINicDetach(oa interface{}, meta interface{}, eniID strin
 				return fmt.Errorf("Error detaching ENI: %s", err)
 			}
 		}
-
-		log.Printf("[DEBUG] Waiting for ENI (%s) to become dettached", eniID)
-		stateConf := &resource.StateChangeConf{
-			Pending: []string{"true"},
-			Target:  []string{"false"},
-			Refresh: nicLinkRefreshFunc(conn, eniID),
-			Timeout: 10 * time.Minute,
-		}
-		if _, err := stateConf.WaitForState(); err != nil {
-			return fmt.Errorf(
-				"Error waiting for ENI (%s) to become dettached: %s", eniID, err)
-		}
 	}
-
 	return nil
 }
 
@@ -542,9 +549,9 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	var err error
 
 	if d.HasChange("link_nic") {
-		oa, na := d.GetChange("link_nic")
+		_, na := d.GetChange("link_nic")
 
-		err := resourceOutscaleOAPINicDetach(oa.([]interface{}), meta, d.Id())
+		err := resourceOutscaleOAPINicDetach(meta, d.Id())
 		if err != nil {
 			return err
 		}
@@ -757,41 +764,6 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 	d.Partial(false)
 
 	return resourceOutscaleOAPINicRead(d, meta)
-}
-
-func nicLinkRefreshFunc(conn *oscgo.APIClient, id string) resource.StateRefreshFunc {
-	return func() (interface{}, string, error) {
-		dnir := oscgo.ReadNicsRequest{
-			Filters: &oscgo.FiltersNic{NicIds: &[]string{id}},
-		}
-
-		var resp oscgo.ReadNicsResponse
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-
-			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
-			if err != nil {
-				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
-					return resource.RetryableError(err)
-				}
-				return resource.NonRetryableError(err)
-			}
-			return nil
-		})
-
-		if err != nil {
-			errString := err.Error()
-			log.Printf("[ERROR] Could not find network interface %s. %s", id, err)
-			return nil, "", fmt.Errorf("Could not find network interface: %s", errString)
-
-		}
-
-		eni := resp.GetNics()[0]
-		//hasLink := strconv.FormatBool(&eni.LinkNic != nil || !reflect.DeepEqual(eni.LinkNic, oscgo.LinkNic{}))
-		hasLink := strconv.FormatBool(eni.LinkNic.GetLinkNicId() != "")
-		log.Printf("[DEBUG] ENI %s has attachment state %s", id, hasLink)
-		return eni, hasLink, nil
-	}
 }
 
 func expandPrivateIPLight(pIPs []interface{}) []oscgo.PrivateIpLight {

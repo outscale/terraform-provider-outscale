@@ -25,7 +25,7 @@ func TestAccOutscaleOAPIKeyPair_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIKeyPairConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
@@ -45,7 +45,7 @@ func TestAccOutscaleOAPIKeyPair_retrieveName(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIKeyPairConfigRetrieveName(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),
@@ -66,7 +66,7 @@ func TestAccOutscaleOAPIKeyPair_generatedName(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPIKeyPairDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPIKeyPairConfigGeneratedName,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIKeyPairExists("outscale_keypair.a_key_pair", &conf),

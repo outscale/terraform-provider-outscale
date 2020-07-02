@@ -229,51 +229,51 @@ func readOutscaleOAPIPublicIPLink(d *schema.ResourceData, address *oscgo.PublicI
 
 func getOAPIPublicIPLinkSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"public_ip_id": &schema.Schema{
+		"public_ip_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"allow_relink": &schema.Schema{
+		"allow_relink": {
 			Type:     schema.TypeBool,
 			Optional: true,
 			ForceNew: true,
 		},
-		"vm_id": &schema.Schema{
+		"vm_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"nic_id": &schema.Schema{
+		"nic_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"private_ip": &schema.Schema{
+		"private_ip": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"public_ip": &schema.Schema{
+		"public_ip": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
 			ForceNew: true,
 		},
-		"link_public_ip_id": &schema.Schema{
+		"link_public_ip_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 			ForceNew: true,
 		},
-		"request_id": &schema.Schema{
+		"request_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"nic_account_id": &schema.Schema{
+		"nic_account_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 		},

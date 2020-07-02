@@ -105,7 +105,7 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 		CheckDestroy:  testAccCheckOAPIRouteTableDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOAPIRouteTableConfigInstance(omi, "c4.large", region),
+				Config: testAccOAPIRouteTableConfigInstance(omi, "tinav4.c2r2p2", region),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPIRouteTableExists(
 						"outscale_route_table.foo", &v, nil),
@@ -118,19 +118,19 @@ func TestAccOutscaleOAPIRouteTable_instance(t *testing.T) {
 
 func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 	value1 := `
-	tags { 
-		key = "name" 
+	tags {
+		key = "name"
 		value = "Terraform-nic"
 	}`
 
 	value2 := `
-	tags{ 
-		key = "name" 
+	tags{
+		key = "name"
 		value = "Terraform-RT"
 	}
 	tags{
-		key = "name2" 
-		value = "Terraform-RT2"	
+		key = "name2"
+		value = "Terraform-RT2"
 	}`
 
 	var rt oscgo.RouteTable
@@ -161,6 +161,39 @@ func TestAccOutscaleOAPIRouteTable_tags(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccOutscaleRouteTable_importBasic(t *testing.T) {
+	resourceName := "outscale_route_table.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIRouteTableDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIRouteTableConfig,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleRouteTableImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
+	}
 }
 
 func testAccCheckOAPIRouteTableDestroy(s *terraform.State) error {
@@ -391,12 +424,12 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 				value = "testacc-route-table-rs"
 			}
 		}
-		
+
 		resource "outscale_subnet" "foo" {
 			ip_range = "10.1.1.0/24"
 			net_id   = "${outscale_net.foo.id}"
 		}
-		
+
 		resource "outscale_vm" "foo" {
 			image_id                 = "%s"
 			vm_type                  = "%s"
@@ -405,7 +438,7 @@ func testAccOAPIRouteTableConfigInstance(omi, vmType, region string) string {
 			placement_subregion_name = "%sa"
 			placement_tenancy        = "default"
 		}
-		
+
 		resource "outscale_route_table" "foo" {
 			net_id = "${outscale_net.foo.id}"
 		}

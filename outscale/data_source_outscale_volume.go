@@ -9,6 +9,7 @@ import (
 
 	"github.com/antihax/optional"
 	oscgo "github.com/marinsalinas/osc-sdk-go"
+	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -76,7 +77,7 @@ func datasourceOutscaleOAPIVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": dataSourceTagsSchema(),
 			"volume_id": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -149,7 +150,6 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volume) error {
-	d.SetId(volume.GetVolumeId())
 	if err := d.Set("volume_id", volume.GetVolumeId()); err != nil {
 		return err
 	}
@@ -165,7 +165,6 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 	if err := d.Set("volume_type", volume.GetVolumeType()); err != nil {
 		return err
 	}
-
 	if err := d.Set("state", volume.GetState()); err != nil {
 		return err
 	}
@@ -182,7 +181,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	} else {
 		if err := d.Set("linked_volumes", []map[string]interface{}{
-			map[string]interface{}{
+			{
 				"delete_on_vm_deletion": false,
 				"device_name":           "none",
 				"vm_id":                 "none",
@@ -200,7 +199,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	} else {
 		if err := d.Set("tags", []map[string]string{
-			map[string]string{
+			{
 				"key":   "",
 				"value": "",
 			},
@@ -209,6 +208,7 @@ func volumeOAPIDescriptionAttributes(d *schema.ResourceData, volume *oscgo.Volum
 		}
 	}
 
+	d.SetId(volume.GetVolumeId())
 	return nil
 }
 
@@ -228,10 +228,10 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 			filters.SetSnapshotIds(filterValues)
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		case "tag_keys":
 			filters.SetTagKeys(filterValues)
-		//TODO: case "tags":
-		// 	filters.Tags = filterValues
 		case "tag_values":
 			filters.SetTagValues(filterValues)
 		case "volume_ids":
@@ -240,6 +240,18 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 			filters.SetVolumeSizes(utils.StringSliceToInt64Slice(filterValues))
 		case "volume_types":
 			filters.SetVolumeTypes(filterValues)
+		case "link_volume_vm_ids":
+			filters.SetLinkVolumeVmIds(filterValues)
+		case "volume_states":
+			filters.SetVolumeStates(filterValues)
+		case "link_volume_link_states":
+			filters.SetLinkVolumeLinkStates(filterValues)
+		case "link_volume_delete_on_vm_deletion":
+			filters.SetLinkVolumeDeleteOnVmDeletion(cast.ToBool(filterValues))
+		case "link_volume_link_dates":
+			filters.SetLinkVolumeLinkDates(filterValues)
+		case "link_volume_device_names":
+			filters.SetLinkVolumeDeviceNames(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

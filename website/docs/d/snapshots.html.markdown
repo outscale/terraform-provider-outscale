@@ -38,7 +38,7 @@ The following arguments are supported:
   * `permissions_to_create_volume_global_permission` - (Optional) If `true`, lists all public volumes. If `false`, lists all private volumes.
   * `progresses` - (Optional) The progresses of the snapshots, as a percentage.
   * `snapshot_ids` - (Optional) The IDs of the snapshots.
-  * `states` - (Optional) The states of the snapshots (`in-queue` \| `pending` \| `completed`).
+  * `states` - (Optional) The states of the snapshots (`in-queue` \| `completed` \| `error`).
   * `tag_keys` - (Optional) The keys of the tags associated with the snapshots.
   * `tag_values` - (Optional) The values of the tags associated with the snapshots.
   * `tags` - (Optional) The key/value combination of the tags associated with the snapshots, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
@@ -58,7 +58,7 @@ The following attributes are exported:
     * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
   * `progress` - The progress of the snapshot, as a percentage.
   * `snapshot_id` - The ID of the snapshot.
-  * `state` - The state of the snapshot (`in-queue` \| `pending` \| `completed`).
+  * `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).
   * `tags` - One or more tags associated with the snapshot.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

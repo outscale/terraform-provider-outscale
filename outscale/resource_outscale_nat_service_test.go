@@ -20,7 +20,7 @@ func TestAccOutscaleOAPINatService_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPINatGatewayConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
@@ -38,7 +38,7 @@ func TestAccOutscaleOAPINatService_basicWithDataSource(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPINatGatewayDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPINatGatewayConfigWithDataSource,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPINatGatewayExists("outscale_nat_service.outscale_nat_service", &natService),
@@ -128,6 +128,7 @@ const testAccOAPINatGatewayConfig = `
 	}
 
 	resource "outscale_route" "outscale_route" {
+		depends_on   = [outscale_route_table_link.outscale_route_table_link]
 		destination_ip_range = "0.0.0.0/0"
 		gateway_id           = "${outscale_internet_service_link.outscale_internet_service_link.internet_service_id}"
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
@@ -174,6 +175,7 @@ const testAccOAPINatGatewayConfigWithDataSource = `
 	}
 
 	resource "outscale_route" "outscale_route" {
+		depends_on   = [outscale_route_table_link.outscale_route_table_link]
 		destination_ip_range = "0.0.0.0/0"
 		gateway_id           = "${outscale_internet_service_link.outscale_internet_service_link.internet_service_id}"
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"

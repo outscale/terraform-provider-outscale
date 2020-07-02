@@ -21,9 +21,12 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 		Read:   resourceOutscaleOAPISnapshotRead,
 		Update: resourceOutscaleOAPISnapshotUpdate,
 		Delete: resourceOutscaleOAPISnapshotDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -68,16 +71,16 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"permissions_to_create_volume": &schema.Schema{
+			"permissions_to_create_volume": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"global_permission": &schema.Schema{
+						"global_permission": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"account_id": &schema.Schema{
+						"account_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -179,7 +182,7 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), resp.Snapshot.GetSnapshotId(), conn)
+		err := assignTags(tags.(*schema.Set), resp.Snapshot.GetSnapshotId(), conn)
 		if err != nil {
 			return err
 		}
@@ -212,6 +215,10 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 
 	if err != nil {
 		return fmt.Errorf("Error reading the snapshot %snapshot", err)
+	}
+
+	if len(resp.GetSnapshots()) == 0 {
+		return fmt.Errorf("Error reading the snapshot: there are not snapshots with id %s", d.Id())
 	}
 
 	snapshot := resp.GetSnapshots()[0]
@@ -290,8 +297,10 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 		}
 
 		ebsErr, ok := err.(awserr.Error)
-		if ebsErr.Code() == "SnapshotInUse" {
-			return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
+		if ebsErr != nil {
+			if ebsErr.Code() == "SnapshotInUse" {
+				return resource.RetryableError(fmt.Errorf("EBS SnapshotInUse - trying again while it detaches"))
+			}
 		}
 
 		if !ok {

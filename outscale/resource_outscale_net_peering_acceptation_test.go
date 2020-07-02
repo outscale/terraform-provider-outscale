@@ -14,7 +14,7 @@ func TestAccOutscaleOAPILinPeeringConnectionAccepter_sameAccount(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccOutscaleOAPILinPeeringConnectionAccepterDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOutscaleOAPILinPeeringConnectionAccepterSameAccountConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionAccepterExists("outscale_net_peering_acceptation.peer"),

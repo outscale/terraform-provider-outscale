@@ -50,7 +50,7 @@ func dataSourceOutscaleOAPIVpc() *schema.Resource {
 				Computed: true,
 			},
 
-			"tags": tagsOAPIListSchemaComputed(),
+			"tags": dataSourceTagsSchema(),
 		},
 	}
 }
@@ -128,21 +128,20 @@ func buildOutscaleOAPIDataSourceNetFilters(set *schema.Set) oscgo.FiltersNet {
 		}
 
 		switch name := m["name"].(string); name {
+		case "dhcp_options_set_ids":
+			filters.SetDhcpOptionsSetIds(filterValues)
+		case "ip_ranges":
+			filters.SetIpRanges(filterValues)
 		case "net_ids":
 			filters.SetNetIds(filterValues)
-		case "ip_range":
-			filters.SetIpRanges(filterValues)
-		case "dhcp_options_set_id":
-			filters.SetDhcpOptionsSetIds(filterValues)
-		case "is_default":
-			//bool
-			//filters.IsDefault = filterValues
-		case "state":
+		case "states":
 			filters.SetStates(filterValues)
-		case "tag_key":
+		case "tag_keys":
 			filters.SetTagKeys(filterValues)
-		case "tag_value":
+		case "tag_values":
 			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

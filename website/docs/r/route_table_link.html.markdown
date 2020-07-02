@@ -52,3 +52,13 @@ The following attributes are exported:
 * `main` - If true, the route table is the main one.
 * `route_table_id` - The ID of the route table.
 * `subnet_id` - The ID of the subnet.
+
+## Import
+
+A route table link can be imported using the route table ID and the route table link ID. For example:
+
+```
+
+$ terraform import outscale_route_table_link.ImportedRouteTableLink rtb-12345678_rtbassoc-87654321
+
+```

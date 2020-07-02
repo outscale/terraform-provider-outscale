@@ -28,17 +28,17 @@ func resourceOutscaleOAPILinkRouteTable() *schema.Resource {
 			State: resourceOutscaleOAPILinkRouteTableImportState,
 		},
 		Schema: map[string]*schema.Schema{
-			"subnet_id": &schema.Schema{
+			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"route_table_id": &schema.Schema{
+			"route_table_id": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"link_route_table_id": &schema.Schema{
+			"link_route_table_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -90,7 +90,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 
 	d.SetId(resp.GetLinkRouteTableId())
 
-	return nil
+	return resourceOutscaleOAPILinkRouteTableRead(d, meta)
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {

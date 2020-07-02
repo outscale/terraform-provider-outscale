@@ -58,7 +58,7 @@ func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta inte
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), resp.InternetService.GetInternetServiceId(), conn)
+		err := assignTags(tags.(*schema.Set), resp.InternetService.GetInternetServiceId(), conn)
 		if err != nil {
 			return err
 		}
@@ -139,11 +139,32 @@ func resourceOutscaleOAPIInternetServiceUpdate(d *schema.ResourceData, meta inte
 func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oscgo.DeleteInternetServiceRequest{
-		InternetServiceId: d.Id(),
+	internetServiceID := d.Id()
+	filterReq := &oscgo.ReadInternetServicesOpts{
+		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
+		}),
 	}
 
-	_, _, err := conn.InternetServiceApi.DeleteInternetService(context.Background(), &oscgo.DeleteInternetServiceOpts{
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"pending"},
+		Target:     []string{"deleted", "available"},
+		Refresh:    LISOAPIStateRefreshFunction(conn, filterReq, "failed"),
+		Timeout:    10 * time.Minute,
+		MinTimeout: 30 * time.Second,
+		Delay:      1 * time.Minute,
+	}
+
+	_, err := stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("error waiting for Internet Service (%s) to become deleted: %s", d.Id(), err)
+	}
+
+	req := oscgo.DeleteInternetServiceRequest{
+		InternetServiceId: internetServiceID,
+	}
+
+	_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background(), &oscgo.DeleteInternetServiceOpts{
 		DeleteInternetServiceRequest: optional.NewInterface(req),
 	})
 	if err != nil {

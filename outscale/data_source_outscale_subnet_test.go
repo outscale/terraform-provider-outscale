@@ -25,6 +25,22 @@ func TestAccDataSourceOutscaleOAPISubnet(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceOutscaleOAPISubnet_withAvailableIpsCountsFilter(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccDataSourceOutscaleOAPISubnetCheck("data.outscale_subnet.by_filter"),
+				),
+			},
+		},
+	})
+}
+
 func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -32,9 +48,9 @@ func testAccDataSourceOutscaleOAPISubnetCheck(name string) resource.TestCheckFun
 			return fmt.Errorf("root module has no resource called %s", name)
 		}
 
-		subnetRs, ok := s.RootModule().Resources["outscale_subnet.test"]
+		subnetRs, ok := s.RootModule().Resources["outscale_subnet.outscale_subnet"]
 		if !ok {
-			return fmt.Errorf("can't find outscale_subnet.test in state")
+			return fmt.Errorf("can't find outscale_subnet.outscale_subnet in state")
 		}
 
 		attr := rs.Primary.Attributes
@@ -67,20 +83,45 @@ const testAccDataSourceOutscaleOAPISubnetConfig = `
 		}
 	}
 
-	resource "outscale_subnet" "test" {
+	resource "outscale_subnet" "outscale_subnet" {
 		net_id        = "${outscale_net.outscale_net.net_id}"
 		ip_range      = "10.0.0.0/16"
 		subregion_name = "eu-west-2a"
 	}
-	
+
 	data "outscale_subnet" "by_id" {
-		subnet_id = "${outscale_subnet.test.id}"
+		subnet_id = "${outscale_subnet.outscale_subnet.id}"
 	}
 
 	data "outscale_subnet" "by_filter" {
 		filter {
 			name   = "subnet_ids"
-			values = ["${outscale_subnet.test.id}"]
+			values = ["${outscale_subnet.outscale_subnet.id}"]
 		}
 	}
 `
+
+func testAccDataSourceOutscaleOAPISubnetWithAvailableIpsCountsFilter() string {
+	return `
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+			tags {
+				key   = "Name"
+				value = "Net1"
+			}
+		}
+
+		resource "outscale_subnet" "outscale_subnet" {
+			subregion_name = "eu-west-2a"
+			ip_range       = "10.0.0.0/16"
+			net_id         = outscale_net.outscale_net.net_id
+		}
+
+		data "outscale_subnet" "by_filter" {
+			filter {
+				name   = "available_ips_counts"
+				values = ["${outscale_subnet.outscale_subnet.available_ips_count}"]
+			}
+		}
+	`
+}

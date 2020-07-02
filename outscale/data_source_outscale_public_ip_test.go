@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -14,12 +15,26 @@ func TestAccDataSourceOutscaleOAPIPublicIP(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip_id"),
 					testAccDataSourceOutscaleOAPIPublicIPCheck("data.outscale_public_ip.by_public_ip"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceOutscaleOAPIPublicIPWithVM(t *testing.T) {
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi),
 			},
 		},
 	})
@@ -66,7 +81,7 @@ func TestAccDataSourceOutscaleOAPIPublicIP_withTags(t *testing.T) {
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceOutscaleOAPIPublicIPConfigWithTags,
 			},
 		},
@@ -99,7 +114,7 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 	data "outscale_public_ip" "outscale_public_ip" {
 		filter {
 			name   = "tags"
-			values = ["name=${outscale_public_ip.outscale_public_ip.tags[0].value}"]
+			values = ["name=public_ip-data"]
 		}
 
 		filter {
@@ -108,3 +123,40 @@ const testAccDataSourceOutscaleOAPIPublicIPConfigWithTags = `
 		}
 	}
 `
+
+func testAccDataSourceOutscaleOAPIPublicIPConfigwithVM(omi string) string {
+	return fmt.Sprintf(`
+		resource "outscale_vm" "outscale_vm" {
+			image_id     = "%s"
+			vm_type      = "tinav4.c2r2p2"
+			keypair_name = "terraform-basic"
+		}
+
+		resource "outscale_public_ip" "outscale_public_ip" {
+			tags {
+				key   = "name"
+				value = "Terraform_EIP"
+			}
+			tags {
+				key   = "platform"
+				value = "eu-west-2"
+			}
+			tags {
+				key   = "project"
+				value = "terraform"
+			}
+		}
+
+		resource "outscale_public_ip_link" "outscale_public_ip_link" {
+			vm_id     = outscale_vm.outscale_vm.vm_id
+			public_ip = outscale_public_ip.outscale_public_ip.public_ip
+		}
+
+		data "outscale_public_ip" "outscale_public_ip-5" {
+			filter {
+				name   = "link_public_ip_ids"
+				values = [outscale_public_ip_link.outscale_public_ip_link.link_public_ip_id]
+			}
+		}
+	`, omi)
+}

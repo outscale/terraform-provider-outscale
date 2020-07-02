@@ -46,8 +46,8 @@ The following arguments are supported:
   * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
   * `permissions_to_launch_global_permission` - (Optional) If `true`, lists all public OMIs. If `false`, lists all private OMIs.
   * `root_device_names` - (Optional) The device names of the root devices (for example, `/dev/sda1`).
-  * `root_device_types` - (Optional) The types of root device used by the OMIs (always `ebs`).
-  * `states` - (Optional) The states of the OMIs.
+  * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
+  * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
   * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
   * `tag_values` - (Optional) The values of the tags associated with the OMIs.
   * `tags` - (Optional) The key/value combination of the tags associated with the OMIs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
@@ -85,7 +85,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `product_codes` - The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
   * `root_device_name` - The name of the root device.
   * `root_device_type` - The type of root device used by the OMI (always `bsu`).
-  * `state` - The state of the OMI.
+  * `state` - The state of the OMI (`pending` \| `available` \| `failed`).
   * `state_comment` - Information about the change of state.
     * `state_code` - The code of the change of state.
     * `state_message` - A message explaining the change of state.

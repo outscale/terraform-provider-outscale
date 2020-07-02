@@ -45,3 +45,13 @@ The following attributes are exported:
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
   * `vm_id` - The ID of the VM the External IP (EIP) is associated with (if any).
+
+## Import
+
+A public IP can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_public_ip.ImportedPublicIp 111.11.111.11
+
+```

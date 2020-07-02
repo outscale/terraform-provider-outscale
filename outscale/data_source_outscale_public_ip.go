@@ -57,6 +57,7 @@ func getOAPIPublicIPDataSourceSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Optional: true,
 		},
+		"tags": dataSourceTagsSchema(),
 	}
 }
 
@@ -142,9 +143,11 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	if err := d.Set("public_ip", address.GetPublicIp()); err != nil {
-		return err
+	if err := d.Set("tags", tagsOSCAPIToMap(address.GetTags())); err != nil {
+		return fmt.Errorf("Error setting PublicIp tags: %s", err)
 	}
+
+	d.Set("public_ip", address.PublicIp)
 
 	d.SetId(address.GetPublicIp())
 
@@ -163,7 +166,7 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		switch name := m["name"].(string); name {
 		case "public_ip_ids":
 			filters.SetPublicIpIds(filterValues)
-		case "link_public_ip_id":
+		case "link_public_ip_ids":
 			filters.SetLinkPublicIpIds(filterValues)
 		case "placements":
 			filters.SetPlacements(filterValues)
@@ -176,13 +179,13 @@ func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.Filters
 		case "private_ips":
 			filters.SetPrivateIps(filterValues)
 		case "public_ips":
-			filters.SetPublicIps(filterValues)
-		case "tags":
-			filters.SetTags(filterValues)
+			filters.PublicIps = &filterValues
 		case "tag_keys":
-			filters.SetTagKeys(filterValues)
+			filters.TagKeys = &filterValues
 		case "tag_values":
-			filters.SetTagValues(filterValues)
+			filters.TagValues = &filterValues
+		case "tags":
+			filters.Tags = &filterValues
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

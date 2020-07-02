@@ -18,6 +18,9 @@ func resourceOutscaleOAPINetworkInterfacePrivateIP() *schema.Resource {
 		Create: resourceOutscaleOAPINetworkInterfacePrivateIPCreate,
 		Read:   resourceOutscaleOAPINetworkInterfacePrivateIPRead,
 		Delete: resourceOutscaleOAPINetworkInterfacePrivateIPDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"allow_relink": {
@@ -99,10 +102,8 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	interfaceID := d.Get("nic_id").(string)
-
 	req := oscgo.ReadNicsRequest{
-		Filters: &oscgo.FiltersNic{NicIds: &[]string{interfaceID}},
+		Filters: &oscgo.FiltersNic{NicIds: &[]string{d.Id()}},
 	}
 
 	var resp oscgo.ReadNicsResponse
@@ -128,8 +129,8 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 		return fmt.Errorf("Could not find network interface: %s", errString)
 
 	}
-	if len(resp.GetNics()) != 1 {
-		return fmt.Errorf("Unable to find ENI (%s): %#v", interfaceID, resp.GetNics())
+	if len(resp.GetNics()) == 0 {
+		return fmt.Errorf("Unable to find ENI (%s): %#v", d.Id(), resp.GetNics())
 	}
 
 	eni := resp.GetNics()[0]

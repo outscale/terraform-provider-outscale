@@ -61,3 +61,13 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the NAT service.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.
+
+## Import
+
+A NAT service can be imported using its ID. For example:
+
+```
+
+$ terraform import outscale_nat_service.ImportedNatService nat-87654321
+
+```

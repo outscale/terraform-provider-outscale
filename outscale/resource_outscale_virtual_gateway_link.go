@@ -1,0 +1,311 @@
+package outscale
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+)
+
+func resourceOutscaleOAPIVirtualGatewayLink() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceOutscaleOAPIVirtualGatewayLinkCreate,
+		Read:   resourceOutscaleOAPIVirtualGatewayLinkRead,
+		Delete: resourceOutscaleOAPIVirtualGatewayLinkDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+
+		Schema: map[string]*schema.Schema{
+			"net_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"virtual_gateway_id": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
+			"dry_run": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+			"net_to_virtual_gateway_links": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"state": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"net_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	netID := d.Get("net_id").(string)
+	vgwID := d.Get("virtual_gateway_id").(string)
+
+	createOpts := oscgo.LinkVirtualGatewayRequest{
+		NetId:            netID,
+		VirtualGatewayId: vgwID,
+	}
+	log.Printf("[DEBUG] VPN Gateway attachment options: %#v", createOpts)
+
+	var err error
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background(), &oscgo.LinkVirtualGatewayOpts{LinkVirtualGatewayRequest: optional.NewInterface(createOpts)})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVirtualGatewayID.NotFound") {
+				return resource.RetryableError(
+					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Error attaching Virtual Gateway %q to VPC %q: %s",
+			vgwID, netID, err)
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"detached", "attaching"},
+		Target:     []string{"attached"},
+		Refresh:    vpnGatewayLinkStateRefresh(conn, netID, vgwID),
+		Timeout:    15 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 5 * time.Second,
+	}
+
+	_, err = stateConf.WaitForState()
+	if err != nil {
+		return fmt.Errorf("Error waiting for Virtual Gateway %q to attach to VPC %q: %s",
+			vgwID, netID, err)
+	}
+	log.Printf("[DEBUG] Virtual Gateway %q attached to VPC %q.", vgwID, netID)
+
+	d.SetId(vgwID)
+
+	return resourceOutscaleOAPIVirtualGatewayLinkRead(d, meta)
+}
+
+func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	vgwID := d.Id()
+
+	var resp oscgo.ReadVirtualGatewaysResponse
+	var err error
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
+			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
+		})})
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		awsErr, ok := err.(awserr.Error)
+		if ok && awsErr.Code() == "InvalidVPNGatewayID.NotFound" {
+			log.Printf("[WARN] VPN Gateway %q not found.", vgwID)
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	if len(resp.GetVirtualGateways()) > 0 {
+		vgw := resp.GetVirtualGateways()[0]
+		if vgw.GetState() == "deleted" {
+			log.Printf("[INFO] VPN Gateway %q appears to have been deleted.", vgwID)
+			d.SetId("")
+			return nil
+		}
+
+		vga := oapiVpnGatewayGetLink(vgw)
+		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 || vga.GetState() == "detached" {
+			//d.Set("net_id", "")
+			return nil
+		}
+
+		if err := d.Set("net_id", vga.GetNetId()); err != nil {
+			return err
+		}
+		if err := d.Set("virtual_gateway_id", vgw.GetVirtualGatewayId()); err != nil {
+			return err
+		}
+		if err := d.Set("net_to_virtual_gateway_links", flattenNetToVirtualGatewayLinks(vgw.NetToVirtualGatewayLinks)); err != nil {
+			return err
+		}
+		if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func flattenNetToVirtualGatewayLinks(netToVirtualGatewayLinks *[]oscgo.NetToVirtualGatewayLink) []map[string]interface{} {
+	res := make([]map[string]interface{}, len(*netToVirtualGatewayLinks))
+
+	if len(*netToVirtualGatewayLinks) > 0 {
+		for i, n := range *netToVirtualGatewayLinks {
+			res[i] = map[string]interface{}{
+				"state":  n.GetState(),
+				"net_id": n.GetNetId(),
+			}
+		}
+	}
+	return res
+}
+
+func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	// Get the old VPC ID to detach from
+	netID, _ := d.GetChange("net_id")
+
+	if netID.(string) == "" {
+		fmt.Printf(
+			"[DEBUG] Not detaching Virtual Gateway '%s' as no VPC ID is set",
+			d.Get("virtual_gateway_id").(string))
+		return nil
+	}
+
+	fmt.Printf(
+		"[INFO] Detaching Virtual Gateway '%s' from VPC '%s'",
+		d.Get("virtual_gateway_id").(string),
+		netID.(string))
+
+	wait := true
+
+	var err error
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		_, _, err = conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background(), &oscgo.UnlinkVirtualGatewayOpts{UnlinkVirtualGatewayRequest: optional.NewInterface(oscgo.UnlinkVirtualGatewayRequest{
+			VirtualGatewayId: d.Id(),
+			NetId:            netID.(string),
+		})})
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+				return resource.RetryableError(
+					fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+			err = nil
+			wait = false
+		} else if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayAttachment.NotFound") {
+			err = nil
+			wait = false
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	if !wait {
+		return nil
+	}
+
+	// Wait for it to be fully detached before continuing
+	log.Printf("[DEBUG] Waiting for VPN gateway (%s) to detach", d.Get("virtual_gateway_id").(string))
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"attached", "detaching", "available"},
+		Target:  []string{"detached"},
+		Refresh: vpnGatewayAttachStateRefreshFunc(conn, d.Get("virtual_gateway_id").(string), "detached"),
+		Timeout: 5 * time.Minute,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf(
+			"Error waiting for vpn gateway (%s) to detach: %s",
+			d.Get("virtual_gateway_id").(string), err)
+	}
+
+	return nil
+}
+
+func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		var err error
+		var resp oscgo.ReadVirtualGatewaysResponse
+		err = resource.Retry(30*time.Second, func() *resource.RetryError {
+			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(
+				oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
+					VirtualGatewayIds: &[]string{vgwID},
+					LinkNetIds:        &[]string{vpcID},
+				}})})
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
+					return resource.RetryableError(
+						fmt.Errorf("Gateway not found, retry for eventual consistancy"))
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			awsErr, ok := err.(awserr.Error)
+			if ok {
+				switch awsErr.Code() {
+				case "InvalidVPNGatewayID.NotFound":
+					fallthrough
+				case "InvalidVpnGatewayAttachment.NotFound":
+					return nil, "", nil
+				}
+			}
+
+			return nil, "", err
+		}
+
+		vgw := resp.GetVirtualGateways()[0]
+		if len(vgw.GetNetToVirtualGatewayLinks()) == 0 {
+			return vgw, "detached", nil
+		}
+
+		vga := oapiVpnGatewayGetLink(vgw)
+
+		log.Printf("[DEBUG] VPN Gateway %q attachment status: %s", vgwID, *vga.State)
+		return vgw, *vga.State, nil
+	}
+}

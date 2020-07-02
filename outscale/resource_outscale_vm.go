@@ -38,12 +38,14 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"block_device_mappings": {
 				Type:     schema.TypeList,
 				Optional: true,
+				//ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bsu": {
-							Type:     schema.TypeMap,
+							Type:     schema.TypeList,
 							Optional: true,
 							Computed: true,
+							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"delete_on_vm_deletion": {
@@ -53,18 +55,22 @@ func resourceOutscaleOApiVM() *schema.Resource {
 									"iops": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										ForceNew: true,
 									},
 									"snapshot_id": {
 										Type:     schema.TypeString,
 										Optional: true,
+										ForceNew: true,
 									},
 									"volume_size": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										ForceNew: true,
 									},
 									"volume_type": {
 										Type:     schema.TypeString,
 										Optional: true,
+										ForceNew: true,
 									},
 								},
 							},
@@ -72,14 +78,17 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"device_name": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 						"no_device": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 						"virtual_device_name": {
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -113,6 +122,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 				Set: func(v interface{}) int {
 					return v.(map[string]interface{})["device_number"].(int)
 				},
@@ -122,31 +132,37 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"description": {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"device_number": {
 							Type:     schema.TypeInt,
 							Required: true,
+							ForceNew: true,
 						},
 						"nic_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"private_ips": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"is_primary": {
 										Type:     schema.TypeBool,
 										Optional: true,
 										Computed: true,
+										ForceNew: true,
 									},
 									"link_public_ip": {
 										Type:     schema.TypeSet,
@@ -176,6 +192,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 										Type:     schema.TypeString,
 										Optional: true,
 										Computed: true,
+										ForceNew: true,
 									},
 								},
 							},
@@ -184,6 +201,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 						"account_id": {
 							Type:     schema.TypeString,
@@ -199,6 +217,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 							Optional: true,
+							ForceNew: true,
 						},
 						"link_nic": {
 							Type:     schema.TypeList,
@@ -261,6 +280,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 						"security_group_ids": {
 							Type:     schema.TypeList,
 							Optional: true,
+							ForceNew: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 						"security_groups": {
@@ -301,12 +321,12 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"security_group_ids": &schema.Schema{
+			"security_group_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"security_group_names": &schema.Schema{
+			"security_group_names": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -400,6 +420,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			"performance": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			"private_dns_name": {
 				Type:     schema.TypeString,
@@ -409,7 +430,7 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"product_codes": &schema.Schema{
+			"product_codes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -513,7 +534,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(vm.GetVmId())
 
 	if tags, ok := d.GetOk("tags"); ok {
-		err := assignTags(tags.([]interface{}), vm.GetVmId(), conn)
+		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
 		if err != nil {
 			return err
 		}
@@ -593,7 +614,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// If nothing was found, then return no state
-	if !resp.HasVms() {
+	if !resp.HasVms() || len(resp.GetVms()) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -640,7 +661,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
-		d.HasChange("bsu_optimized") && !d.IsNewResource() {
+		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
+		d.HasChange("performance") && !d.IsNewResource() {
 		if err := stopVM(id, conn); err != nil {
 			return err
 		}
@@ -667,6 +689,15 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("bsu_optimized") && !d.IsNewResource() {
 		opts := oscgo.UpdateVmRequest{VmId: id}
 		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
+
+		if err := updateVmAttr(conn, opts); err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("performance") && !d.IsNewResource() {
+		opts := oscgo.UpdateVmRequest{VmId: id}
+		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
 			return err
@@ -726,23 +757,37 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("block_device_mappings") && !d.IsNewResource() {
-		maps := d.Get("block_device_mappings").(*schema.Set).List()
+		maps := d.Get("block_device_mappings").([]interface{})
 		mappings := []oscgo.BlockDeviceMappingVmUpdate{}
 
 		for _, m := range maps {
 			f := m.(map[string]interface{})
 			mapping := oscgo.BlockDeviceMappingVmUpdate{}
-			mapping.SetDeviceName(f["device_name"].(string))
-			mapping.SetNoDevice(f["no_device"].(string))
-			mapping.SetVirtualDeviceName(f["virtual_device_name"].(string))
 
-			e := f["bsu"].(map[string]interface{})
-			bsu := oscgo.BsuToUpdateVm{}
+			if v, ok := f["device_name"]; ok && v.(string) != "" {
+				mapping.SetDeviceName(v.(string))
+			}
 
-			bsu.SetDeleteOnVmDeletion(e["delete_on_vm_deletion"].(bool))
-			bsu.SetVolumeId(e["volume_id"].(string))
+			if v, ok := f["no_device"]; ok && v.(string) != "" {
+				mapping.SetNoDevice(v.(string))
+			}
 
-			mapping.SetBsu(bsu)
+			if v, ok := f["virtual_device_name"]; ok && v.(string) != "" {
+				mapping.SetVirtualDeviceName(v.(string))
+			}
+
+			if bsuList, ok := f["bsu"].([]interface{}); ok && len(bsuList) > 0 {
+				bsu := oscgo.BsuToUpdateVm{}
+
+				if e, ok1 := bsuList[0].(map[string]interface{}); ok1 {
+					bsu.SetDeleteOnVmDeletion(cast.ToBool(e["delete_on_vm_deletion"]))
+
+					if v, ok := e["volume_id"]; ok {
+						bsu.SetVolumeId(v.(string))
+					}
+					mapping.SetBsu(bsu)
+				}
+			}
 
 			mappings = append(mappings, mapping)
 		}
@@ -752,7 +797,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetBlockDeviceMappings(mappings)
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			return utils.GetErrorResponse(err)
 		}
 	}
 
@@ -874,6 +919,10 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 		request.SetVmInitiatedShutdownBehavior(v.(string))
 	}
 
+	if v := d.Get("performance").(string); v != "" {
+		request.SetPerformance(v)
+	}
+
 	return request, nil
 }
 
@@ -886,17 +935,17 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 		blockDevice := oscgo.BlockDeviceMappingVmCreation{}
 
 		value := v.(map[string]interface{})
-		bsu := value["bsu"].(map[string]interface{})
+		if bsu, ok := value["bsu"].([]interface{}); ok && len(bsu) > 0 {
+			blockDevice.SetBsu(expandBlockDeviceBSU(bsu[0].(map[string]interface{})))
+		}
 
-		blockDevice.SetBsu(expandBlockDeviceBSU(bsu))
-
-		if deviceName, ok := value["device_name"]; ok {
+		if deviceName, ok := value["device_name"]; ok && deviceName != "" {
 			blockDevice.SetDeviceName(cast.ToString(deviceName))
 		}
-		if noDevice, ok := value["no_device"]; ok {
+		if noDevice, ok := value["no_device"]; ok && noDevice != "" {
 			blockDevice.SetNoDevice(cast.ToString(noDevice))
 		}
-		if virtualDeviceName, ok := value["virtual_device_name"]; ok {
+		if virtualDeviceName, ok := value["virtual_device_name"]; ok && virtualDeviceName != "" {
 			blockDevice.SetVirtualDeviceName(cast.ToString(virtualDeviceName))
 		}
 
@@ -908,21 +957,24 @@ func expandBlockDeviceOApiMappings(d *schema.ResourceData) []oscgo.BlockDeviceMa
 func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 	bsuToCreate := oscgo.BsuToCreate{}
 
-	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok {
+	if deleteOnVMDeletion, ok := bsu["delete_on_vm_deletion"]; ok && deleteOnVMDeletion != "" {
 		bsuToCreate.SetDeleteOnVmDeletion(cast.ToBool(deleteOnVMDeletion))
 	}
 
-	if iops, ok := bsu["iops"]; ok {
-		bsuToCreate.SetIops(cast.ToInt64(iops))
-	}
-	if snapshotID, ok := bsu["snapshot_id"]; ok {
+	if snapshotID, ok := bsu["snapshot_id"]; ok && snapshotID != "" {
 		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
 	}
-	if volumeSize, ok := bsu["volume_size"]; ok {
+	if volumeSize, ok := bsu["volume_size"]; ok && volumeSize != "" {
 		bsuToCreate.SetVolumeSize(cast.ToInt64(volumeSize))
 	}
-	if volumeType, ok := bsu["volume_type"]; ok {
-		bsuToCreate.SetVolumeType(cast.ToString(volumeType))
+	if volumeType, ok := bsu["volume_type"]; ok && volumeType != "" {
+
+		vType := cast.ToString(volumeType)
+		bsuToCreate.SetVolumeType(vType)
+
+		if iops, ok := bsu["iops"]; ok && vType == "io1" {
+			bsuToCreate.SetIops(cast.ToInt64(iops))
+		}
 	}
 
 	return bsuToCreate
@@ -963,7 +1015,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		}
 
 		if v, ok := d.GetOk("private_ip"); ok {
-			ni.SetPrivateIps([]oscgo.PrivateIpLight{oscgo.PrivateIpLight{
+			ni.SetPrivateIps([]oscgo.PrivateIpLight{{
 				PrivateIp: aws.String(v.(string)),
 			}})
 		}

@@ -115,7 +115,7 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	internetServiceID := d.Get("internet_service_id").(string)
+	internetServiceID := d.Id()
 	filterReq := &oscgo.ReadInternetServicesOpts{
 		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
 			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
@@ -137,18 +137,28 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 	}
 
 	resp := value.(oscgo.ReadInternetServicesResponse)
+	if !resp.HasInternetServices() || len(resp.GetInternetServices()) == 0 {
+		return fmt.Errorf("Error retrieving Internet Service Link: not found")
+	}
 	internetService := resp.GetInternetServices()[0]
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(internetService.GetInternetServiceId())
 
-		if err := set("state", internetService.State); err != nil {
+		if err := set("internet_service_id", internetService.GetInternetServiceId()); err != nil {
+			return err
+		}
+		if err := set("net_id", internetService.GetNetId()); err != nil {
+			return err
+		}
+		if err := set("state", internetService.GetState()); err != nil {
 			return err
 		}
 
 		if err := set("tags", getOapiTagSet(internetService.Tags)); err != nil {
 			return err
 		}
+
 		return d.Set("request_id", resp.ResponseContext.RequestId)
 	})
 }
@@ -156,7 +166,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	internetServiceID := d.Get("internet_service_id").(string)
+	internetServiceID := d.Id()
 	filterReq := &oscgo.ReadInternetServicesOpts{
 		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
 			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},

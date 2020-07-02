@@ -20,6 +20,8 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 	var a oscgo.PublicIp
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 	region := os.Getenv("OUTSCALE_REGION")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+	sgId := os.Getenv("OUTSCALE_SECURITYGROUPID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -27,7 +29,7 @@ func TestAccOutscaleOAPIPublicIPLink_basic(t *testing.T) {
 		CheckDestroy: testAccCheckOutscaleOAPIPublicIPLinkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "c4.large", region),
+				Config: testAccOutscaleOAPIPublicIPLinkConfig(omi, "tinav4.c2r2p2", region, keypair, sgId),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIPublicIPLExists(
 						"outscale_public_ip.ip", &a),
@@ -147,7 +149,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 		} else {
 			req := oscgo.ReadPublicIpsRequest{
 				Filters: &oscgo.FiltersPublicIp{
-					PublicIps: &[]string{rs.Primary.ID},
+					PublicIpIds: &[]string{rs.Primary.ID},
 				},
 			}
 
@@ -175,7 +177,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			}
 
 			if len(response.GetPublicIps()) != 1 ||
-				response.GetPublicIps()[0].GetPublicIp() != rs.Primary.ID {
+				response.GetPublicIps()[0].GetPublicIpId() != rs.Primary.ID {
 				return fmt.Errorf("PublicIP not found")
 			}
 			*res = response.GetPublicIps()[0]
@@ -185,14 +187,35 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 	}
 }
 
-func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
+func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region, keypair, sgId string) string {
 	return fmt.Sprintf(`
+		resource "outscale_net" "net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key = "Name"
+				value = "testacc-security-group-rs"
+			}
+		}
+
+		resource "outscale_security_group" "sg" {
+			security_group_name = "%[4]s"
+			description         = "Used in the terraform acceptance tests"
+
+			tags {
+				key   = "Name"
+				value = "tf-acc-test"
+			}
+
+			net_id = "${outscale_net.net.id}"
+		}
+
 		resource "outscale_vm" "vm" {
-			image_id                 = "%s"
-			vm_type                  = "%s"
-			keypair_name             = "terraform-basic"
-			security_group_ids       = ["sg-f4b1c2f8"]
-			placement_subregion_name = "%sb"
+			image_id                 = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name             = "%[4]s"
+			security_group_ids       = ["%[5]s"]
+			placement_subregion_name = "%[3]sa"
 		}
 		
 		resource "outscale_public_ip" "ip" {}
@@ -201,5 +224,5 @@ func testAccOutscaleOAPIPublicIPLinkConfig(omi, vmType, region string) string {
 			public_ip = "${outscale_public_ip.ip.public_ip}"
 			vm_id     = "${outscale_vm.vm.id}"
 		}
-	`, omi, vmType, region)
+	`, omi, vmType, region, keypair, sgId)
 }

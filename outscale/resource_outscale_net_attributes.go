@@ -39,6 +39,19 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"ip_range": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tenancy": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"tags": tagsOAPIListSchemaComputed(),
 		},
 	}
 }
@@ -46,19 +59,23 @@ func resourceOutscaleOAPILinAttributes() *schema.Resource {
 func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oscgo.UpdateNetRequest{}
+	req := oscgo.UpdateNetRequest{
+		NetId:            d.Get("net_id").(string),
+		DhcpOptionsSetId: "default",
+	}
 
-	req.SetNetId(d.Get("net_id").(string))
-
-	if c, ok := d.GetOk("dhcp_options_set_id"); ok {
-		req.SetDhcpOptionsSetId(c.(string))
+	if v, ok := d.GetOk("dhcp_options_set_id"); ok {
+		req.SetDhcpOptionsSetId(v.(string))
 	}
 
 	var err error
 	var resp oscgo.UpdateNetResponse
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{UpdateNetRequest: optional.NewInterface(req)})
-
+		resp, _, err = conn.NetApi.UpdateNet(context.Background(),
+			&oscgo.UpdateNetOpts{
+				UpdateNetRequest: optional.NewInterface(req),
+			},
+		)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -84,19 +101,16 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := oscgo.UpdateNetRequest{}
-
-	if d.HasChange("net_id") && !d.IsNewResource() {
-		req.SetNetId(d.Get("net_id").(string))
-	}
-	if d.HasChange("dhcp_options_set_id") && !d.IsNewResource() {
-		req.SetDhcpOptionsSetId(d.Get("dhcp_options_set_id").(string))
+	req := oscgo.UpdateNetRequest{
+		NetId:            d.Get("net_id").(string),
+		DhcpOptionsSetId: d.Get("dhcp_options_set_id").(string),
 	}
 
-	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{UpdateNetRequest: optional.NewInterface(req)})
-
+	if err := resource.Retry(120*time.Second, func() *resource.RetryError {
+		_, _, err := conn.NetApi.UpdateNet(context.Background(),
+			&oscgo.UpdateNetOpts{
+				UpdateNetRequest: optional.NewInterface(req),
+			})
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -104,11 +118,11 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 			return resource.NonRetryableError(err)
 		}
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		return fmt.Errorf("[DEBUG] Error creating lin (%s)", utils.GetErrorResponse(err))
-
 	}
+
+	d.SetId(d.Get("net_id").(string))
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
 }
@@ -116,18 +130,20 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filters := oscgo.FiltersNet{
-		NetIds: &[]string{d.Id()},
-	}
-
 	req := oscgo.ReadNetsRequest{
-		Filters: &filters,
+		Filters: &oscgo.FiltersNet{
+			NetIds: &[]string{d.Id()},
+		},
 	}
 
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NetApi.ReadNets(context.Background(),
+			&oscgo.ReadNetsOpts{
+				ReadNetsRequest: optional.NewInterface(req),
+			},
+		)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -135,7 +151,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 			}
 			return resource.NonRetryableError(err)
 		}
-		return resource.RetryableError(err)
+		return nil
 	})
 	if err != nil {
 		log.Printf("[DEBUG] Error reading lin (%s)", utils.GetErrorResponse(err))
@@ -152,7 +168,14 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 
-	return nil
+	d.Set("ip_range", resp.GetNets()[0].GetIpRange())
+	d.Set("tenancy", resp.GetNets()[0].Tenancy)
+	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
+	d.Set("net_id", resp.GetNets()[0].GetNetId())
+	d.Set("state", resp.GetNets()[0].GetState())
+	d.Set("request_id", resp.ResponseContext.GetRequestId())
+
+	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 
 func resourceOutscaleOAPILinAttrDelete(d *schema.ResourceData, meta interface{}) error {

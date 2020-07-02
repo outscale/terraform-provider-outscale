@@ -22,11 +22,17 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOAPILinkRouteTableDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPILinkRouteTableConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOAPILinkRouteTableExists(
 						"outscale_route_table_link.foo", &v),
+					resource.TestCheckResourceAttrSet(
+						"outscale_route_table_link.foo", "link_route_table_id"),
+					resource.TestCheckResourceAttrSet(
+						"outscale_route_table_link.foo", "main"),
+					resource.TestCheckResourceAttrSet(
+						"outscale_route_table_link.foo", "request_id"),
 				),
 			},
 		},

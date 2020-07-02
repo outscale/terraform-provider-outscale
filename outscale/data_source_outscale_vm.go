@@ -360,12 +360,12 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"security_group_ids": &schema.Schema{
+		"security_group_ids": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"security_group_names": &schema.Schema{
+		"security_group_names": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -587,7 +587,7 @@ func getOApiVMAttributesSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"product_codes": &schema.Schema{
+		"product_codes": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},

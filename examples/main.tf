@@ -106,13 +106,6 @@ resource "outscale_vm" "outscale_vm005" {
 
 #------------------------------------------------------------------------
 
-#---014------------------------------------------------------------------
-#TODO outscale_vm_attributes (merged in outscale_vm)
-
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-
 #---006------------------------------------------------------------------
 resource "outscale_vm" "vm006" {
   image_id     = var.image_id
@@ -387,7 +380,7 @@ resource "outscale_route_table_link" "outscale_route_table_link53" {
 }
 
 #------------------------------------------------------------------------
-#TODO outscale_route
+
 
 resource "outscale_internet_service" "outscale_internet_service54" {
 }
@@ -433,14 +426,29 @@ resource "outscale_net" "net025" {
   ip_range = "10.0.0.0/16"
 }
 
+resource "outscale_dhcp_option" "outscale_dhcp_option025" {
+domain_name= "test-outscale"
+ tags {
+  key ="Name"
+  value = "dhcp_option025"
+ }
+}
+
 resource "outscale_net_attributes" "net_attributes025" {
   net_id              = outscale_net.net025.net_id
-  dhcp_options_set_id = var.dhcp_options_set_id
+  dhcp_options_set_id = outscale_dhcp_option.outscale_dhcp_option025.dhcp_options_set_id
 }
 
 data "outscale_net_attributes" "net_attributes025d" {
   net_id = outscale_net.net025.net_id
 }
+
+data "outscale_dhcp_option" "outscale_dhcp_option025d" {
+filter {
+       name   = "dhcp_options_set_ids"
+       values = [outscale_dhcp_option.outscale_dhcp_option025.dhcp_options_set_id]
+    }
+}    
 
 #------------------------------------------------------------------------
 
@@ -465,7 +473,6 @@ resource "outscale_net_peering" "outscale_net_peering58" {
 }
 
 #---027------------------------------------------------------------------
-#TODO outscale_net_peering_acceptation (6)
 
 resource "outscale_net_peering_acceptation" "outscale_net_peering_acceptation58" {
   net_peering_id = outscale_net_peering.outscale_net_peering58.net_peering_id
@@ -633,7 +640,7 @@ resource "outscale_snapshot" "snapshot034" {
 resource "outscale_snapshot_attributes" "snapshot_attributes034" {
   snapshot_id = outscale_snapshot.snapshot034.snapshot_id
   permissions_to_create_volume_additions {
-    account_ids = ["<ACCOUNTNUMBER>"]
+    account_ids = [var.account_id]
   }
 }
 
@@ -705,7 +712,7 @@ resource "outscale_vm" "outscale_vm37" {
     keypair_name        = var.keypair_name
     block_device_mappings {
     device_name = "/dev/sda1"   # resizing bootdisk volume
-      bsu = {
+      bsu {
       volume_size = "100"
       volume_type = "gp2"
       delete_on_vm_deletion = "true"
@@ -713,7 +720,7 @@ resource "outscale_vm" "outscale_vm37" {
     }
     block_device_mappings {
      device_name = "/dev/sdb"
-     bsu = {
+     bsu {
          volume_size=30
          volume_type = "io1"
          iops      = 150
@@ -832,3 +839,118 @@ resource "outscale_security_group_rule" "outscale_security_group_rule39_2" {
        }
      }
 }
+
+#-------------------------
+
+#---040------------------------------------------------------------------
+
+
+
+resource "outscale_client_gateway" "outscale_client_gateway_040" {
+    bgp_asn     = 51
+    public_ip  = "192.168.0.1"
+    connection_type        = "ipsec.1"
+    tags {
+         key = "Name"
+         value = "client_gateway_040"
+    }
+}
+
+resource "outscale_virtual_gateway" "outscale_virtual_gateway_040" {
+ connection_type = "ipsec.1"
+ tags {
+  key = "Name"
+  value = "virtual_gateway_040"
+ }
+}
+
+
+resource "outscale_vpn_connection" "outscale_vpn_connection_40" {
+    client_gateway_id  = outscale_client_gateway.outscale_client_gateway_040.client_gateway_id
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
+    connection_type    = "ipsec.1"
+    static_routes_only = true
+  tags {
+        key   = "Name"
+        value = "vpn_connection_40"
+    }
+}
+
+resource "outscale_vpn_connection_route" "outscale_vpn_connection_route_040" {
+ vpn_connection_id  = outscale_vpn_connection.outscale_vpn_connection_40.vpn_connection_id
+ destination_ip_range = "30.0.0.0/16"
+ }
+ 
+data "outscale_client_gateway" "outscale_client_gateway_040d" {
+ filter {
+       name   = "client_gateway_ids"
+       values = [outscale_client_gateway.outscale_client_gateway_040.client_gateway_id]
+    }
+}
+
+data "outscale_vpn_connection" "outscale_vpn_connection_40d" {
+filter {
+       name   = "vpn_connection_ids"
+       values = [outscale_vpn_connection.outscale_vpn_connection_40.vpn_connection_id]
+    }
+}
+
+#-------------------------
+
+#---041------------------------------------------------------------------
+resource "outscale_net" "outscale_net_041" {
+   ip_range = "10.0.0.0/16"
+
+    tags {
+        key   = "Name"
+        value = "outscale_net_resource-041"
+    }
+}
+
+resource "outscale_virtual_gateway" "outscale_virtual_gateway_041" {
+ connection_type = "ipsec.1"
+ tags {
+  key = "Name"
+  value = "virtual_gateway_041"
+ }
+}
+
+resource "outscale_virtual_gateway_link" "outscale_virtual_gateway_link_041" {
+    virtual_gateway_id = outscale_virtual_gateway.outscale_virtual_gateway_040.virtual_gateway_id
+    net_id             = outscale_net.outscale_net_041.net_id
+}
+
+resource "outscale_route_table" "outscale_route_table_041" {
+    net_id = outscale_net.outscale_net_041.net_id
+    tags {
+     key = "Name"
+     value = "route_table_041"
+    }
+}
+
+resource "outscale_virtual_gateway_route_propagation" "outscale_virtual_gateway_route_propagation_041" {
+   enable = true
+   virtual_gateway_id = outscale_virtual_gateway_link.outscale_virtual_gateway_link_041.virtual_gateway_id
+    route_table_id  = outscale_route_table.outscale_route_table_041.route_table_id
+}
+
+data "outscale_virtual_gateway" "outscale_virtual_gateway_041d" {
+filter {
+        name   = "virtual_gateway_ids"
+        values = [outscale_virtual_gateway.outscale_virtual_gateway_041.virtual_gateway_id]
+ }
+}
+ #-------------------------
+ 
+ #---042------------------------------------------------------------------
+ resource "outscale_access_key" "outscale_access_key_042"{
+
+ }
+
+data "outscale_access_key" "outscale_access_key_042d"{
+ filter {
+         name ="access_key_ids"
+         values = [outscale_access_key.outscale_access_key_042.access_key_id]
+    }
+}
+ 

@@ -24,7 +24,7 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 		Providers:     testAccProviders,
 		CheckDestroy:  testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(
@@ -34,6 +34,38 @@ func TestAccOutscaleOAPILinPeeringConnection_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccOutscaleOAPILinPeeringConnection_importBasic(t *testing.T) {
+	resourceName := "outscale_net_peering.foo"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOAPIVpcPeeringConfig,
+			},
+			{
+				ResourceName:            resourceName,
+				ImportStateIdFunc:       testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceName),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
+			},
+		},
+	})
+}
+
+func testAccCheckOutscaleOAPILinkPeeeringConnectionImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return rs.Primary.ID, nil
+	}
 }
 
 func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
@@ -57,7 +89,7 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckOutscaleOAPILinPeeringConnectionDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccOAPIVpcPeeringConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILinPeeringConnectionExists(
