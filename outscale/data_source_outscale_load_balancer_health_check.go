@@ -18,31 +18,31 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
 		Read: dataSourceOutscaleOAPILoadBalancerHealthCheckRead,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"healthy_threshold": &schema.Schema{
+			"healthy_threshold": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"unhealthy_threshold": &schema.Schema{
+			"unhealthy_threshold": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"path": &schema.Schema{
+			"path": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"check_interval": &schema.Schema{
+			"check_interval": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"timeout": &schema.Schema{
+			"timeout": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

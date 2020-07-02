@@ -18,33 +18,33 @@ func dataSourceOutscaleOAPILoadBalancerAttr() *schema.Resource {
 		Read: dataSourceOutscaleOAPILoadBalancerAttrRead,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_name": &schema.Schema{
+			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"load_balancer_attributes": &schema.Schema{
+			"load_balancer_attributes": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_log": &schema.Schema{
+						"access_log": {
 							Type:     schema.TypeMap,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"publication_interval": &schema.Schema{
+									"publication_interval": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"is_enabled": &schema.Schema{
+									"is_enabled": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"osu_bucket_name": &schema.Schema{
+									"osu_bucket_name": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"osu_bucket_prefix": &schema.Schema{
+									"osu_bucket_prefix": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -54,7 +54,7 @@ func dataSourceOutscaleOAPILoadBalancerAttr() *schema.Resource {
 					},
 				},
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

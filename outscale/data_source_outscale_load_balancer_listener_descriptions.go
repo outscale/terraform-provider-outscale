@@ -18,45 +18,45 @@ func dataSourceOutscaleOAPILoadBalancerLDs() *schema.Resource {
 		Read: dataSourceOutscaleOAPILoadBalancerLDsRead,
 
 		Schema: map[string]*schema.Schema{
-			"load_balancer_names": &schema.Schema{
+			"load_balancer_names": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"listener": &schema.Schema{
+			"listener": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"listener": &schema.Schema{
+						"listener": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"backend_port": &schema.Schema{
+									"backend_port": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"backend_protocol": &schema.Schema{
+									"backend_protocol": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"load_balancer_port": &schema.Schema{
+									"load_balancer_port": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"load_balancer_protocol": &schema.Schema{
+									"load_balancer_protocol": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"server_certificate_id": &schema.Schema{
+									"server_certificate_id": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
-						"policy_name": &schema.Schema{
+						"policy_name": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
@@ -64,7 +64,7 @@ func dataSourceOutscaleOAPILoadBalancerLDs() *schema.Resource {
 					},
 				},
 			},
-			"request_id": &schema.Schema{
+			"request_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
