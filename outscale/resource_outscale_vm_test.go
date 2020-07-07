@@ -44,10 +44,13 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 }
 
 func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
-	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
-	keypair := os.Getenv("OUTSCALE_KEYPAIR")
-	resourceName := "outscale_vm.basic"
+	var (
+		server       oscgo.Vm
+		resourceName = "outscale_vm.basic"
+		omi          = os.Getenv("OUTSCALE_IMAGEID")
+		region       = fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
+		keypair      = os.Getenv("OUTSCALE_KEYPAIR")
+	)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -56,6 +59,15 @@ func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckOutscaleOAPIVMConfigBasic(omi, "tinav4.c2r2p2", region, keypair),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "image_id", omi),
+					resource.TestCheckResourceAttr(resourceName, "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(resourceName, "keypair_name", keypair),
+					resource.TestCheckResourceAttr(resourceName, "placement_subregion_name", region),
+					resource.TestCheckResourceAttr(resourceName, "private_ips.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+				),
 			},
 			{
 				ResourceName:            resourceName,
@@ -602,7 +614,7 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 			ip_range = "10.0.0.0/16"
 
 			tags {
-				key = "Name"
+				key   = "Name"
 				value = "testacc-vm-rs"
 			}
 		}
@@ -614,12 +626,17 @@ func testAccCheckOutscaleOAPIVMConfigBasic(omi, vmType, region, keypair string) 
 		}
 
 		resource "outscale_vm" "basic" {
-			image_id			     = "%[1]s"
+			image_id			           = "%[1]s"
 			vm_type                  = "%[2]s"
-			keypair_name	         = "%[4]s"
-			placement_subregion_name = "%[3]sa"
+			keypair_name	           = "%[4]s"
+			placement_subregion_name = "%[3]s"
 			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
 			private_ips              =  ["10.0.0.12"]
+
+			tags {
+				key   = "name"
+				value = "Terraform-VM"
+			}
 		}`, omi, vmType, region, keypair)
 }
 
