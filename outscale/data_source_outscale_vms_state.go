@@ -13,14 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPIVMSState() *schema.Resource {
+func dataSourceOutscaleOAPIVMStates() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceOutscaleOAPIVMSStateRead,
-		Schema: getOAPIVMSStateDataSourceSchema(),
+		Read:   dataSourceOutscaleOAPIVMStatesRead,
+		Schema: getOAPIVMStatesDataSourceSchema(),
 	}
 }
 
-func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
+func getOAPIVMStatesDataSourceSchema() map[string]*schema.Schema {
 	wholeSchema := map[string]*schema.Schema{
 		"filter": dataSourceFiltersSchema(),
 		"vm_ids": {
@@ -44,7 +44,7 @@ func getOAPIVMSStateDataSourceSchema() map[string]*schema.Schema {
 	return wholeSchema
 }
 
-func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceOutscaleOAPIVMStatesRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filters, filtersOk := d.GetOk("filter")
@@ -90,10 +90,10 @@ func dataSourceOutscaleOAPIVMSStateRead(d *schema.ResourceData, meta interface{}
 	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
-	return statusDescriptionOAPIVMSStateAttributes(d, filteredStates)
+	return statusDescriptionOAPIVMStatesAttributes(d, filteredStates)
 }
 
-func statusDescriptionOAPIVMSStateAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
+func statusDescriptionOAPIVMStatesAttributes(d *schema.ResourceData, status []oscgo.VmStates) error {
 	d.SetId(resource.UniqueId())
 
 	states := make([]map[string]interface{}, len(status))

@@ -99,7 +99,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_keypair":                             datasourceOutscaleOAPIKeyPair(),
 			"outscale_keypairs":                            datasourceOutscaleOAPIKeyPairs(),
 			"outscale_vm_state":                            dataSourceOutscaleOAPIVMState(),
-			"outscale_vms_state":                           dataSourceOutscaleOAPIVMSState(),
+			"outscale_vm_states":                           dataSourceOutscaleOAPIVMStates(),
 			"outscale_internet_service":                    datasourceOutscaleOAPIInternetService(),
 			"outscale_internet_services":                   datasourceOutscaleOAPIInternetServices(),
 			"outscale_subnet":                              dataSourceOutscaleOAPISubnet(),

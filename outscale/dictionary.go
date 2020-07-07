@@ -69,7 +69,7 @@ func init() {
 			"outscale_subnet":              dataSourceOutscaleOAPISubnet,
 			"outscale_subnets":             dataSourceOutscaleOAPISubnets,
 			"outscale_vm_state":            dataSourceOutscaleOAPIVMState,
-			"outscale_vms_state":           dataSourceOutscaleOAPIVMSState,
+			"outscale_vm_states":           dataSourceOutscaleOAPIVMStates,
 			"outscale_net":                 dataSourceOutscaleOAPIVpc,
 			"outscale_nets":                dataSourceOutscaleOAPIVpcs,
 			"outscale_net_attributes":      dataSourceOutscaleOAPIVpcAttr,

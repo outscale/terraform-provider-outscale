@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccDataSourceOutscaleOAPIVMSState(t *testing.T) {
+func TestAccDataSourceOutscaleOAPIVMStates(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
 
 	resource.Test(t, resource.TestCase{
@@ -16,13 +16,13 @@ func TestAccDataSourceOutscaleOAPIVMSState(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOutscaleOAPIVMSStateConfig(omi, "tinav4.c2r2p2"),
+				Config: testAccDataSourceOutscaleOAPIVMStatesConfig(omi, "tinav4.c2r2p2"),
 			},
 		},
 	})
 }
 
-func testAccDataSourceOutscaleOAPIVMSStateConfig(omi, vmType string) string {
+func testAccDataSourceOutscaleOAPIVMStatesConfig(omi, vmType string) string {
 	return fmt.Sprintf(`
 		resource "outscale_vm" "basic" {
 			image_id     = "%s"
@@ -30,7 +30,7 @@ func testAccDataSourceOutscaleOAPIVMSStateConfig(omi, vmType string) string {
 			keypair_name = "terraform-basic"
 		}
 
-		data "outscale_vms_state" "state" {
+		data "outscale_vm_states" "state" {
 			vm_ids = ["${outscale_vm.basic.id}"]
 		}
 	`, omi, vmType)
