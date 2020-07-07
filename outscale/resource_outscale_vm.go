@@ -109,9 +109,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			},
 			"image_id": {
 				Type:     schema.TypeString,
+				Required: true,
 				ForceNew: true,
-				Optional: true,
-				Computed: true,
 			},
 			"keypair_name": {
 				Type:     schema.TypeString,
