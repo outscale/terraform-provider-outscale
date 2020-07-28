@@ -84,4 +84,4 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 
 * `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
 
-* `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
+* `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available endpoints, see [Endpoints Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
