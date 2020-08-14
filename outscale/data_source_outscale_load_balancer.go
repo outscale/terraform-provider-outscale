@@ -75,17 +75,11 @@ func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"backend_vm_id": {
+			"backend_vm_ids": {
 				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"vm_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
+				ForceNew: true,
+				Required: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"listeners": {
 				Type:     schema.TypeList,
@@ -250,11 +244,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("public_dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
-	if lb.BackendVmIds != nil {
-		d.Set("backend_vm_id", lb.BackendVmIds)
-	} else {
-		d.Set("backend_vm_id", make([]map[string]interface{}, 0))
-	}
+	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 	if lb.Listeners != nil {
 		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
 			return err
