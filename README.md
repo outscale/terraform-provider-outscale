@@ -20,7 +20,7 @@ Installing The Provider on Linux
 Download the binary and install it in ~/.terraform.d/plugins/linux_amd64/.
 
 ```sh
-$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0/terraform-provider-outscale_linux_amd64_v0.1.0.zip
+$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/v0.1.0/terraform-provider-outscale_linux_amd64_v0.1.0.zip
 $ unzip terraform-provider-outscale_linux_amd64_v0.1.0.zip
 $ mv terraform-provider-outscale_v0.1.0 ~/.terraform.d/plugins/linux_amd64/.
 ```
@@ -31,7 +31,7 @@ Installing The Provider on MacOs
 Download the binary and install it in ~/.terraform/plugins/darwin_amd64/.
 
 ```sh
-$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0/terraform-provider-outscale_darwin_amd64_v0.1.0.zip
+$ wget https://github.com/outscale-dev/terraform-provider-outscale/releases/download/v0.1.0/terraform-provider-outscale_darwin_amd64_v0.1.0.zip
 $ unzip terraform-provider-outscale_darwin_amd64_v0.1.0.zip
 $ mv terraform-provider-outscale_v0.1.0 ~/.terraform.d/plugins/darwin_amd64/.
 ```
@@ -42,7 +42,7 @@ Installing The Provider on Windows
 Download the binary and install it in %APPDATA%\terraform.d\plugins
 
 ```sh
-$ download the plugin from https://github.com/outscale-dev/terraform-provider-outscale/releases/download/release-0.1.0/terraform-provider-outscale_windows_386_v0.1.0.zip
+$ download the plugin from https://github.com/outscale-dev/terraform-provider-outscale/releases/download/v0.1.0/terraform-provider-outscale_windows_386_v0.1.0.zip
 $ unzip terraform-provider-outscale_windows_386_v0.1.0.zip
 $ move terraform-provider-outscale_v0.1.0 %APPDATA%\terraform.d\plugins
 ```
@@ -55,7 +55,7 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch release-0.1.0 https://github.com/outscale-dev/terraform-provider-outscale
+$ git clone --branch v0.1.0 https://github.com/outscale-dev/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
