@@ -43,7 +43,7 @@ func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 			},
 			"tag": tagsSchema(),
 
-			"public_dns_name": {
+			"dns_name": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -241,7 +241,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	lb := lbs[0]
 
 	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
-	d.Set("public_dns_name", lb.DnsName)
+	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))

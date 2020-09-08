@@ -37,7 +37,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 							Computed: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
-						"public_dns_name": {
+						"dns_name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
