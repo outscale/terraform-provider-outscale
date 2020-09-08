@@ -103,33 +103,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"backend_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-						"backend_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"load_balancer_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-						"load_balancer_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"server_certificate_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"policy_name": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
-					},
+					Schema: lb_listener_schema(),
 				},
 			},
 			"source_security_group": {
@@ -370,6 +344,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
+	log.Printf("[DEBUG] read lb.Listeners %v", lb.Listeners)
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
 	policies := make(map[string]interface{})
@@ -424,6 +399,8 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	d.Partial(true)
 
+	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
+	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
 	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
 		d.HasChange("subnets") {
 		log.Printf("[INFO] update Load Balancer: %s", d.Id())
@@ -435,11 +412,13 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		return resourceOutscaleOAPILoadBalancerCreate_(d, meta, true)
 	}
 
+	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
 	if d.HasChange("listeners") {
 		o, n := d.GetChange("listeners")
 		os := o.(*schema.Set).List()
 		ns := n.(*schema.Set).List()
 
+		log.Printf("[DEBUG] it change !: %v %v", os, ns)
 		remove, _ := expandListeners(os)
 		add, _ := expandListenerForCreation(ns)
 
@@ -690,27 +669,6 @@ func expandInstanceString(list []interface{}) []string {
 	result := make([]string, 0, len(list))
 	for _, i := range list {
 		result = append(result, i.(string))
-	}
-	return result
-}
-
-// Flattens an array of Listeners into a []map[string]interface{}
-func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(*list))
-
-	for _, i := range *list {
-		listener := map[string]interface{}{
-			"backend_port":           int(*i.BackendPort),
-			"backend_protocol":       *i.BackendProtocol,
-			"load_balancer_port":     int(*i.LoadBalancerPort),
-			"load_balancer_protocol": *i.LoadBalancerProtocol,
-		}
-		if i.ServerCertificateId != nil {
-			listener["server_certificate_id"] =
-				*i.ServerCertificateId
-		}
-		listener["policy_name"] = flattenStringList(i.PolicyNames)
-		result = append(result, listener)
 	}
 	return result
 }

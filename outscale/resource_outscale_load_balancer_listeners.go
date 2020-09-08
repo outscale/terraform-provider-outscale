@@ -14,6 +14,39 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+func lb_listener_schema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"backend_port": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+		"backend_protocol": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+
+		"load_balancer_port": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+
+		"load_balancer_protocol": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"server_certificate_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"policy_names": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}
+
 func resourceOutscaleOAPILoadBalancerListeners() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILoadBalancerListenersCreate,
@@ -29,31 +62,7 @@ func resourceOutscaleOAPILoadBalancerListeners() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"backend_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-						"backend_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-
-						"load_balancer_port": {
-							Type:     schema.TypeInt,
-							Required: true,
-						},
-
-						"load_balancer_protocol": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"server_certificate_id": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-					},
+					Schema: lb_listener_schema(),
 				},
 			},
 			"load_balancer_name": {
@@ -61,12 +70,34 @@ func resourceOutscaleOAPILoadBalancerListeners() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			// "request_id": &schema.Schema{
-			// 	Type:     schema.TypeString,
-			// 	Computed: true,
-			// },
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
+}
+
+// Flattens an array of Listeners into a []map[string]interface{}
+func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(*list))
+
+	for _, i := range *list {
+		listener := map[string]interface{}{
+			"backend_port":           int(*i.BackendPort),
+			"backend_protocol":       *i.BackendProtocol,
+			"load_balancer_port":     int(*i.LoadBalancerPort),
+			"load_balancer_protocol": *i.LoadBalancerProtocol,
+		}
+		log.Printf("[DEBUG] read listener %v", listener, i.PolicyNames)
+		if i.ServerCertificateId != nil {
+			listener["server_certificate_id"] =
+				*i.ServerCertificateId
+		}
+		listener["policy_names"] = flattenStringList(i.PolicyNames)
+		result = append(result, listener)
+	}
+	return result
 }
 
 func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
@@ -86,7 +117,7 @@ func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
 			LoadBalancerProtocol: &lproto,
 		}
 
-		if v, ok := data["ssl_certificate_id"]; ok && v != "" {
+		if v, ok := data["server_certificate_id"]; ok && v != "" {
 			vs := v.(string)
 			l.ServerCertificateId = &vs
 		}
@@ -107,7 +138,7 @@ func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
 		if valid {
 			listeners = append(listeners, l)
 		} else {
-			return nil, fmt.Errorf("[ERR] ELB Listener: ssl_certificate_id may be set only when protocol is 'https' or 'ssl'")
+			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 		}
 	}
 
@@ -131,7 +162,7 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 			LoadBalancerProtocol: lproto,
 		}
 
-		if v, ok := data["ssl_certificate_id"]; ok && v != "" {
+		if v, ok := data["server_certificate_id"]; ok && v != "" {
 			vs := v.(string)
 			l.ServerCertificateId = &vs
 		}
@@ -152,7 +183,7 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 		if valid {
 			listeners = append(listeners, l)
 		} else {
-			return nil, fmt.Errorf("[ERR] ELB Listener: ssl_certificate_id may be set only when protocol is 'https' or 'ssl'")
+			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
 		}
 	}
 
@@ -211,123 +242,76 @@ func resourceOutscaleOAPILoadBalancerListenersCreate(d *schema.ResourceData, met
 }
 
 func resourceOutscaleOAPILoadBalancerListenersRead(d *schema.ResourceData, meta interface{}) error {
-	listener, err := expandListeners(d.Get("listeners").(*schema.Set).List())
-	if err != nil {
-		return err
+	conn := meta.(*OutscaleClient).OSCAPI
+	ename, ok := d.GetOk("load_balancer_name")
+
+	if !ok {
+		return fmt.Errorf("please provide the name of the load balancer")
 	}
 
-	result := make([]map[string]interface{}, 0, len(listener))
-	for _, i := range listener {
-		listener := map[string]interface{}{
-			"backend_port":           i.BackendPort,
-			"backend_protocol":       i.BackendProtocol,
-			"load_balancer_port":     i.LoadBalancerPort,
-			"load_balancer_protocol": i.LoadBalancerProtocol,
-			"server_certificate_id":  i.ServerCertificateId,
+	elbName := ename.(string)
+
+	// Retrieve the ELB properties for updating the state
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
+	}
+
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
 		}
-		result = append(result, listener)
-	}
-	if err := d.Set("listeners", result); err != nil {
-		return err
-	}
-	d.Set("load_balancer_name", d.Id())
+		return nil
+	})
 
-	// d.Set("request_id", describeResp.ResponseMetadata.RequestID)
+	if err != nil {
+		if isLoadBalancerNotFound(err) {
+			d.SetId("")
+			return nil
+		}
+
+		return fmt.Errorf("Error retrieving ELB: %s", err)
+	}
+
+	if resp.LoadBalancers == nil {
+		return fmt.Errorf("NO ELB FOUND")
+	}
+
+	if len(*resp.LoadBalancers) != 1 {
+		return fmt.Errorf("Unable to find ELB: %#v", resp.LoadBalancers)
+	}
+
+	lb := (*resp.LoadBalancers)[0]
+
+	log.Printf("[DEBUG] read lb.Listeners %v", lb.Listeners)
+	if lb.Listeners != nil {
+		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+			log.Printf("[DEBUG] out err %v", err)
+			return err
+		}
+	} else {
+		return fmt.Errorf("Something very wrong happen on Load Balancer: %s", elbName)
+	}
+
+	d.Set("load_balancer_name", *lb.LoadBalancerName)
+	d.Set("request_id", *resp.ResponseContext.RequestId)
 
 	return nil
-}
-
-func resourceOutscaleOAPILoadBalancerListenersUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
-
-	d.Partial(true)
-
-	if d.HasChange("listeners") {
-		o, n := d.GetChange("listeners")
-		os := o.(*schema.Set).List()
-		ns := n.(*schema.Set).List()
-
-		remove, _ := expandListeners(os)
-		add, _ := expandListenerForCreation(ns)
-
-		if len(remove) > 0 {
-			ports := make([]int64, 0, len(remove))
-			for _, listener := range remove {
-				ports = append(ports, *listener.LoadBalancerPort)
-			}
-
-			req := oscgo.DeleteLoadBalancerListenersRequest{
-				LoadBalancerName:  d.Id(),
-				LoadBalancerPorts: ports,
-			}
-
-			deleteListenersOpts := &oscgo.DeleteLoadBalancerListenersOpts{
-				optional.NewInterface(req),
-			}
-
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.ListenerApi.DeleteLoadBalancerListeners(
-					context.Background(), deleteListenersOpts)
-
-				if err != nil {
-					if strings.Contains(err.Error(), "Throttling:") {
-						return resource.RetryableError(err)
-					}
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-
-			if err != nil {
-				return fmt.Errorf("Failure removing outdated ELB listener: %s", err)
-			}
-		}
-
-		if len(add) > 0 {
-			req := oscgo.CreateLoadBalancerListenersRequest{
-				LoadBalancerName: d.Id(),
-				Listeners:        add,
-			}
-
-			createListenersOpts := &oscgo.CreateLoadBalancerListenersOpts{
-				optional.NewInterface(req),
-			}
-
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Load Balancer Create Listeners opts: %v", createListenersOpts)
-				_, _, err = conn.ListenerApi.CreateLoadBalancerListeners(
-					context.Background(), createListenersOpts)
-				if err != nil {
-					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
-						log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
-						return resource.RetryableError(err)
-					}
-					if strings.Contains(fmt.Sprint(err), "CertificateNotFound") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-						return resource.RetryableError(err)
-					}
-					if strings.Contains(fmt.Sprint(err), "Throttling") && strings.Contains(fmt.Sprint(err), "Server Certificate not found for the key: arn") {
-						log.Printf("[DEBUG] SSL Cert not found for given ARN, retrying")
-						return resource.RetryableError(err)
-					}
-
-					return resource.NonRetryableError(err)
-				}
-				return nil
-			})
-			if err != nil {
-				return fmt.Errorf("Failure adding new or updated ELB listener: %s", err)
-			}
-		}
-
-		d.SetPartial("listeners")
-	}
-
-	d.Partial(false)
-
-	return resourceOutscaleOAPILoadBalancerListenersRead(d, meta)
 }
 
 func resourceOutscaleOAPILoadBalancerListenersDelete(d *schema.ResourceData, meta interface{}) error {
