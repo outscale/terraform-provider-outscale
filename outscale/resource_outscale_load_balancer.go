@@ -681,7 +681,7 @@ func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 		chk["healthy_threshold"] = strconv.Itoa(int(check.HealthyThreshold))
 		chk["path"] = check.Path
 		chk["timeout"] = strconv.Itoa(int(check.Timeout))
-		chk["interval"] = strconv.Itoa(int(check.CheckInterval))
+		chk["check_interval"] = strconv.Itoa(int(check.CheckInterval))
 	}
 
 	return chk
