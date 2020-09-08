@@ -122,7 +122,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 					},
 				},
 			},
-			"vpc_id": {
+			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -388,7 +388,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	}
 	d.Set("source_security_group", ssg)
 	d.Set("subnets", flattenStringList(lb.Subnets))
-	d.Set("vpc_id", lb.NetId)
+	d.Set("net_id", lb.NetId)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
