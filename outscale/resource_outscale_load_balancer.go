@@ -399,8 +399,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	d.Partial(true)
 
-	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
-	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
 	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
 		d.HasChange("subnets") {
 		log.Printf("[INFO] update Load Balancer: %s", d.Id())
@@ -412,7 +410,6 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		return resourceOutscaleOAPILoadBalancerCreate_(d, meta, true)
 	}
 
-	log.Printf("[DEBUG] resourceOutscaleOAPILoadBalancerUpdate")
 	if d.HasChange("listeners") {
 		o, n := d.GetChange("listeners")
 		os := o.(*schema.Set).List()

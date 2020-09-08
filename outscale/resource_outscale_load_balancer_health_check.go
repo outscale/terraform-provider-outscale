@@ -80,6 +80,17 @@ func isLoadBalancerNotFound(err error) bool {
 	return strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound")
 }
 
+func lb_atoi_at(hc map[string]interface{}, el string) (int, bool) {
+	hc_el := hc[el]
+
+	if hc_el == nil {
+		return 0, false
+	}
+
+	r, err := strconv.Atoi(hc_el.(string))
+	return r, err == nil
+}
+
 func resourceOutscaleOAPILoadBalancerHealthCheckCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
@@ -96,29 +107,29 @@ func resourceOutscaleOAPILoadBalancerHealthCheckCreate(d *schema.ResourceData, m
 
 	check := hc.(map[string]interface{})
 
-	ht, hterr := strconv.Atoi(check["healthy_threshold"].(string))
-	ut, uterr := strconv.Atoi(check["unhealthy_threshold"].(string))
-	i, ierr := strconv.Atoi(check["check_interval"].(string))
-	t, terr := strconv.Atoi(check["timeout"].(string))
-	p, perr := strconv.Atoi(check["port"].(string))
-
-	if hterr != nil {
+	ht, ut, sucess := 0, 0, false
+	if ht, sucess = lb_atoi_at(check, "healthy_threshold"); sucess == false {
 		return fmt.Errorf("please provide an number in health_check.healthy_threshold argument")
+
 	}
 
-	if uterr != nil {
+	if ut, sucess = lb_atoi_at(check, "unhealthy_threshold"); sucess == false {
 		return fmt.Errorf("please provide an number in health_check.unhealthy_threshold argument")
 	}
 
-	if ierr != nil {
+	i, ierr := lb_atoi_at(check, "check_interval")
+	t, terr := lb_atoi_at(check, "timeout")
+	p, perr := lb_atoi_at(check, "port")
+
+	if ierr != true {
 		return fmt.Errorf("please provide an number in health_check.check_interval argument")
 	}
 
-	if terr != nil {
+	if terr != true {
 		return fmt.Errorf("please provide an number in health_check.timeout argument")
 	}
 
-	if perr != nil {
+	if perr != true {
 		return fmt.Errorf("please provide an number in health_check.port argument")
 	}
 
