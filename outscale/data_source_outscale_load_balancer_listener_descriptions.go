@@ -9,24 +9,25 @@ func dataSourceOutscaleOAPILoadBalancerLDs() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceOutscaleOAPILoadBalancerLDsRead,
 
-		Schema: map[string]*schema.Schema{
-			"load_balancer_names": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"listeners": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: lb_listener_schema(),
+		Schema: getDataSourceSchemas(
+			map[string]*schema.Schema{
+				"load_balancer_names": {
+					Type:     schema.TypeList,
+					Required: true,
+					Elem:     &schema.Schema{Type: schema.TypeString},
 				},
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+				"listeners": {
+					Type:     schema.TypeSet,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: lb_listener_schema(),
+					},
+				},
+				"request_id": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			}),
 	}
 }
 
