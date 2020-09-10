@@ -89,7 +89,6 @@ func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 			"load_balancer_port":     int(*i.LoadBalancerPort),
 			"load_balancer_protocol": *i.LoadBalancerProtocol,
 		}
-		log.Printf("[DEBUG] read listener %v", listener, i.PolicyNames)
 		if i.ServerCertificateId != nil {
 			listener["server_certificate_id"] =
 				*i.ServerCertificateId
