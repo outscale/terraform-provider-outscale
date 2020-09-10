@@ -205,14 +205,13 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalance
 	return filters
 }
 
-func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
 	ename, nameOk := d.GetOk("load_balancer_name")
 	filters, filtersOk := d.GetOk("filter")
 	filter := new(oscgo.FiltersLoadBalancer)
 
 	if !nameOk && !filtersOk {
-		return fmt.Errorf("One of filters, or load_balancer_name must be assigned")
+		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
 	}
 
 	if filtersOk {
@@ -252,12 +251,21 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		if isLoadBalancerNotFound(err) {
 			d.SetId("")
-			return nil
+			return nil, nil, fmt.Errorf("Unknow error")
 		}
 
-		return fmt.Errorf("Error retrieving ELB: %s", err)
+		return nil, nil, fmt.Errorf("Error retrieving ELB: %s", err)
 	}
+	return &resp, &elbName, nil
+}
 
+func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	resp, elbName, err := readLbs(conn, d)
+	if err != nil {
+		return err
+	}
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
 		return fmt.Errorf("Unable to find LBU: %s", elbName)

@@ -13,103 +13,40 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPILoadBalancerLD() *schema.Resource {
-	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancerLDRead,
-
-		Schema: map[string]*schema.Schema{
-			"load_balancer_name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"listener": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"backend_port": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"backend_protocol": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"load_balancer_port": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"load_balancer_protocol": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"server_certificate_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"policy_name": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
+func attrLBListenerDesc() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"load_balancer_name": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"listener": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: lb_listener_schema(),
 			},
 		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+}
+
+func dataSourceOutscaleOAPILoadBalancerLD() *schema.Resource {
+	return &schema.Resource{
+		Read:   dataSourceOutscaleOAPILoadBalancerRead,
+		Schema: getDataSourceSchemas(attrLBListenerDesc()),
 	}
 }
 
 func dataSourceOutscaleOAPILoadBalancerLDRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	ename, ok := d.GetOk("load_balancer_name")
 
-	if !ok {
-		return fmt.Errorf("please provide the name of the load balancer")
-	}
-
-	elbName := ename.(string)
-
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{elbName},
-	}
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
-	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	resp, elbName, err := readLbs(conn, d)
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving ELB: %s", err)
+		return err
 	}
-
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
 		return fmt.Errorf("Unable to find LBU: %s", elbName)
