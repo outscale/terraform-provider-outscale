@@ -29,7 +29,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
-
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {

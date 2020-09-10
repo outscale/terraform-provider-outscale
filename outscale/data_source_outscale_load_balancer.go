@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -13,192 +14,216 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
-	return &schema.Resource{
-		Read: dataSourceOutscaleOAPILoadBalancerRead,
+func attrLBSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"subregion_name": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"load_balancer_name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"load_balancer_type": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"security_groups_member": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"subnets_member": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"tag": tagsSchema(),
 
-		Schema: map[string]*schema.Schema{
-			"subregion_name": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"load_balancer_name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"load_balancer_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"security_groups_member": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"subnets_member": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"tag": tagsSchema(),
-
-			"dns_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"health_check": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"healthy_threshold": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"unhealthy_threshold": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"checked_vm": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"check_interval": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"timeout": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
+		"dns_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+			Optional: true,
+		},
+		"health_check": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"healthy_threshold": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"unhealthy_threshold": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"checked_vm": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"check_interval": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"timeout": {
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 				},
 			},
-			"backend_vm_ids": {
-				Type:     schema.TypeList,
-				ForceNew: true,
-				Required: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"backend_vm_ids": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"listeners": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: lb_listener_schema(),
 			},
-			"listeners": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"listener": {
-							Type:     schema.TypeMap,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"backend_port": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"backend_protocol": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"load_balancer_port": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"load_balancer_protocol": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"server_certificate_id": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
+		},
+		"firewall_rules_set_name": {
+			Type:     schema.TypeMap,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"firewall_rules_set_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"account_alias": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"net_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"policies": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"application_sticky_cookie_policy": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"cookie_name": {
+									Type:     schema.TypeString,
+									Computed: true,
+								},
+								"policy_name": {
+									Type:     schema.TypeString,
+									Computed: true,
 								},
 							},
 						},
-						"policy_name": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
-						},
 					},
-				},
-			},
-			"firewall_rules_set_name": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"firewall_rules_set_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"account_alias": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"net_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"policies": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"application_sticky_cookie_policy": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cookie_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"policy_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-						"load_balancer_sticky_cookie_policy": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"policy_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
+					"load_balancer_sticky_cookie_policy": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"policy_name": {
+									Type:     schema.TypeString,
+									Computed: true,
 								},
 							},
 						},
 					},
 				},
 			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
 
+func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*schema.Schema {
+	wholeSchema := map[string]*schema.Schema{
+		"filter": dataSourceFiltersSchema(),
+	}
+
+	for k, v := range attrsSchema {
+		wholeSchema[k] = v
+	}
+
+	wholeSchema["request_id"] = &schema.Schema{
+		Type:     schema.TypeString,
+		Computed: true,
+	}
+
+	return wholeSchema
+
+}
+
+func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
+	return &schema.Resource{
+		Read:   dataSourceOutscaleOAPILoadBalancerRead,
+		Schema: getDataSourceSchemas(attrLBSchema()),
+	}
+}
+
+func buildOutscaleDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalancer {
+	filters := new(oscgo.FiltersLoadBalancer)
+
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		filterValues := make([]string, 0)
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "load_balancer_name":
+			filters.LoadBalancerNames = &filterValues
+		default:
+			filters.LoadBalancerNames = &filterValues
+			log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
+		}
+	}
+	return filters
+}
+
 func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	ename, ok := d.GetOk("load_balancer_name")
+	ename, nameOk := d.GetOk("load_balancer_name")
+	filters, filtersOk := d.GetOk("filter")
+	filter := new(oscgo.FiltersLoadBalancer)
 
-	if !ok {
-		return fmt.Errorf("please provide the name of the load balancer")
+	if !nameOk && !filtersOk {
+		return fmt.Errorf("One of filters, or load_balancer_name must be assigned")
 	}
 
-	elbName := ename.(string)
-
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{elbName},
+	if filtersOk {
+		filter = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
+	} else {
+		elbName := ename.(string)
+		filter = &oscgo.FiltersLoadBalancer{
+			LoadBalancerNames: &[]string{elbName},
+		}
 	}
+	elbName := (*filter.LoadBalancerNames)[0]
 
 	req := oscgo.ReadLoadBalancersRequest{
 		Filters: filter,
