@@ -1,100 +1,57 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
-	"strings"
-	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
-
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func dataSourceOutscaleLoadBalancerAccessLogs() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceOutscaleLoadBalancerAccessLogsRead,
+		Read:   dataSourceOutscaleLoadBalancerAccessLogsRead,
+		Schema: getDataSourceSchemas(attrLBAccessLogsSchema()),
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"publication_interval": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"is_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"osu_bucket_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"osu_bucket_prefix": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"load_balancer_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"request_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
+func attrLBAccessLogsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"publication_interval": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"is_enabled": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+		"osu_bucket_name": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"osu_bucket_prefix": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"load_balancer_name": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+		},
+		"request_id": {
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }
 
 func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	elbName, ok1 := d.GetOk("load_balancer_name")
-
-	if !ok1 {
-		return fmt.Errorf("please provide the load_balancer_name required attribute")
-	}
-
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{elbName.(string)},
-	}
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
-	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	resp, elbName, err := readLbs(conn, d)
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving LBU Attr: %s", err)
+		return err
 	}
-
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
-		return fmt.Errorf("Unable to find LBU: %s", elbName.(string))
+		return fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
 
 	lb := (lbs)[0]
@@ -112,7 +69,7 @@ func dataSourceOutscaleLoadBalancerAccessLogsRead(d *schema.ResourceData, meta i
 	d.Set("osu_bucket_name", a.OsuBucketName)
 	d.Set("osu_bucket_prefix", a.OsuBucketPrefix)
 
-	d.SetId(elbName.(string))
+	d.SetId(*elbName)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil

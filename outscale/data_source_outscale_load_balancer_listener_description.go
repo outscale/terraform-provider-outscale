@@ -1,13 +1,7 @@
 package outscale
 
 import (
-	"context"
 	"fmt"
-	"strings"
-	"time"
-
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -49,7 +43,7 @@ func dataSourceOutscaleOAPILoadBalancerLDRead(d *schema.ResourceData, meta inter
 	}
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
-		return fmt.Errorf("Unable to find LBU: %s", elbName)
+		return fmt.Errorf("Unable to find LBU: %s", *elbName)
 	}
 
 	lb := (lbs)[0]
