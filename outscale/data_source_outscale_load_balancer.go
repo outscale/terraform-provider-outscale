@@ -259,19 +259,25 @@ func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBala
 	return &resp, &elbName, nil
 }
 
-func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
-
+func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
 	resp, elbName, err := readLbs(conn, d)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
-		return fmt.Errorf("Unable to find LBU: %s", elbName)
+		return nil, nil, fmt.Errorf("Unable to find LBU: %s", elbName)
 	}
+	return &lbs[0], resp, nil
+}
 
-	lb := lbs[0]
+func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	lb, resp, err := readLbs0(conn, d)
+	if err != nil {
+		return err
+	}
 
 	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
