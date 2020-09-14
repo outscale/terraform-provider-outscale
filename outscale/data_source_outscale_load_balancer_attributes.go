@@ -69,7 +69,7 @@ func dataSourceOutscaleOAPILoadBalancerAttrRead(d *schema.ResourceData, meta int
 
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
-		return fmt.Errorf("Unable to find LBU: %s", elbName)
+		return fmt.Errorf("Unable to find LBU: %s", *elbName)
 	}
 
 	lb := (lbs)[0]

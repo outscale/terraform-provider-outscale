@@ -266,7 +266,7 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 	}
 	lbs := *resp.LoadBalancers
 	if len(lbs) != 1 {
-		return nil, nil, fmt.Errorf("Unable to find LBU: %s", elbName)
+		return nil, nil, fmt.Errorf("Unable to find LBU: %s", *elbName)
 	}
 	return &lbs[0], resp, nil
 }
