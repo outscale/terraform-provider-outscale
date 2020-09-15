@@ -29,6 +29,7 @@ func (c *Config) Client() (*OutscaleClient, error) {
 	skipClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy:           http.ProxyFromEnvironment,
 		},
 	}
 
