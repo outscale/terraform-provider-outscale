@@ -84,6 +84,14 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"port": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"protocol": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"timeout": {
 							Type:     schema.TypeString,
 							Computed: true,

@@ -48,6 +48,16 @@ func resourceOutscaleOAPILoadBalancerHealthCheck() *schema.Resource {
 							Computed: true,
 							ForceNew: true,
 						},
+						"port": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"protocol": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
 						"check_interval": {
 							Type:     schema.TypeString,
 							Optional: true,
@@ -235,7 +245,9 @@ func resourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, met
 
 	h := ""
 	i := ""
-	t := ""
+	pa := ""
+	pr := ""
+	po := ""
 	ti := ""
 	u := ""
 
@@ -244,14 +256,18 @@ func resourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, met
 	if lb.HealthCheck.Path != "" {
 		h = strconv.FormatInt(lb.HealthCheck.HealthyThreshold, 10)
 		i = strconv.FormatInt(lb.HealthCheck.CheckInterval, 10)
-		t = lb.HealthCheck.Path
+		pa = lb.HealthCheck.Path
+		po = strconv.FormatInt(lb.HealthCheck.Port, 10)
+		pr = lb.HealthCheck.Protocol
 		ti = strconv.FormatInt(lb.HealthCheck.Timeout, 10)
 		u = strconv.FormatInt(lb.HealthCheck.UnhealthyThreshold, 10)
 	}
 
 	healthCheck["healthy_threshold"] = h
 	healthCheck["check_interval"] = i
-	healthCheck["path"] = t
+	healthCheck["path"] = pa
+	healthCheck["port"] = po
+	healthCheck["protocol"] = pr
 	healthCheck["timeout"] = ti
 	healthCheck["unhealthy_threshold"] = u
 

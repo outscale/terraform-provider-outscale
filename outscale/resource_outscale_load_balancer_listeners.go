@@ -24,12 +24,10 @@ func lb_listener_schema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Required: true,
 		},
-
 		"load_balancer_port": {
 			Type:     schema.TypeInt,
 			Required: true,
 		},
-
 		"load_balancer_protocol": {
 			Type:     schema.TypeString,
 			Required: true,
