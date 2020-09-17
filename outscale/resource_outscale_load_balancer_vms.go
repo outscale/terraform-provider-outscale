@@ -156,7 +156,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		d.SetId("")
 	}
 
-	return nil
+	return d.Set("request_id", *resp.ResponseContext.RequestId)
 }
 
 func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
