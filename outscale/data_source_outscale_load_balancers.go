@@ -263,7 +263,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		l := make(map[string]interface{})
 
 		l["subregion_names"] = v.SubregionNames
-		l["public_dns_name"] = v.DnsName
+		l["dns_name"] = v.DnsName
 		l["health_check"] = v.HealthCheck
 		l["backend_vm_id"] = v.BackendVmIds
 		l["listeners"] = flattenOAPIListeners(v.Listeners)
