@@ -281,6 +281,51 @@ func flattenStringList(list *[]string) []interface{} {
 	return vs
 }
 
+func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
+	filter := &oscgo.FiltersLoadBalancer{
+		LoadBalancerNames: &[]string{elbName},
+	}
+
+	req := oscgo.ReadLoadBalancersRequest{
+		Filters: filter,
+	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
+		ReadLoadBalancersRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancersResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
+			context.Background(),
+			describeElbOpts)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error retrieving Load Balancer: %s", err)
+	}
+
+	if resp.LoadBalancers == nil {
+		return nil, nil, fmt.Errorf("NO Load Balancer FOUND")
+	}
+
+	if len(*resp.LoadBalancers) != 1 {
+		return nil, nil, fmt.Errorf("Unable to find Load Balancer: %#v",
+			elbName)
+	}
+
+	lb := (*resp.LoadBalancers)[0]
+	return &lb, &resp, nil
+}
+
 func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
@@ -664,6 +709,22 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 
 	if needupdate {
 		d.SetId("")
+	}
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{"ready"},
+		Target:  []string{},
+		Refresh: func() (interface{}, string, error) {
+			lb, _, _ := readResourceLb(conn, d.Id())
+			if lb == nil {
+				return nil, "", nil
+			}
+			return lb, "ready", nil
+		},
+		Timeout: 5 * time.Minute,
+	}
+	if _, err := stateConf.WaitForState(); err != nil {
+		return fmt.Errorf("Error waiting for load balancer (%s) to become null: %s", d.Id(), err)
 	}
 
 	return nil
