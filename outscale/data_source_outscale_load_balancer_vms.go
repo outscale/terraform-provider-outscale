@@ -28,12 +28,12 @@ func dataSourceOutscaleLoadBalancerVmsRead(d *schema.ResourceData,
 	meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	lb, _, err := readLbs0(conn, d)
+	lb, resp, err := readLbs0(conn, d)
 	if err != nil {
 		return err
 	}
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
-
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
 }
