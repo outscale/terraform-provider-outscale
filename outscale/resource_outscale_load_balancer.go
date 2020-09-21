@@ -330,54 +330,10 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
-	// Retrieve the Load Balancer properties for updating the state
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{elbName},
-	}
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
-	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	lb, resp, err := readResourceLb(conn, elbName)
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving Load Balancer: %s", err)
+		return err
 	}
-
-	if resp.LoadBalancers == nil {
-		return fmt.Errorf("NO Load Balancer FOUND")
-	}
-
-	if len(*resp.LoadBalancers) != 1 {
-		return fmt.Errorf("Unable to find Load Balancer: %#v",
-			elbName)
-	}
-
-	lb := (*resp.LoadBalancers)[0]
-
 	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
