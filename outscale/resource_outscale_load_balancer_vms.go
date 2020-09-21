@@ -89,58 +89,14 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 
 func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
+	found := false
 	e := d.Get("load_balancer_name").(string)
+	lb, resp, err := readResourceLb(conn, e)
 	expected := d.Get("backend_vm_ids").([]interface{})
 
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{e},
-	}
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
-	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error, retrying: %s", err))
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
 	if err != nil {
-		/*
-			if isLoadBalancerNotFound(err) {
-				log.Printf("[ERROR] LBU %s not found", e)
-				d.SetId("")
-				return nil
-			}
-		*/
-		return fmt.Errorf("Error retrieving LBU: %s", err)
+		return err
 	}
-
-	found := false
-	lbs := *resp.LoadBalancers
-	if len(lbs) != 1 {
-		return fmt.Errorf("Unable to find LBU: %s", expected)
-	}
-
-	lb := (lbs)[0]
-
 	for _, v := range *lb.BackendVmIds {
 		for k1 := range expected {
 			sid := expected[k1].(string)

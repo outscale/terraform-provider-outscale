@@ -154,53 +154,11 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
-	// Retrieve the LBU Attr properties for updating the state
-	filter := &oscgo.FiltersLoadBalancer{
-		LoadBalancerNames: &[]string{elbName},
-	}
-
-	req := oscgo.ReadLoadBalancersRequest{
-		Filters: filter,
-	}
-
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
-	var resp oscgo.ReadLoadBalancersResponse
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
-				return resource.RetryableError(err)
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
+	lb_resp, resp, err := readResourceLb(conn, elbName)
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return nil
-		}
-
-		return fmt.Errorf("Error retrieving LBU Attr: %s", err)
+		return err
 	}
 
-	if resp.LoadBalancers == nil {
-		return fmt.Errorf("NO ELB FOUND")
-	}
-
-	if len(*resp.LoadBalancers) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", resp.LoadBalancers)
-	}
-
-	lb_resp := (*resp.LoadBalancers)[0]
 	if lb_resp.AccessLog == nil {
 		return fmt.Errorf("NO Attributes FOUND")
 	}
