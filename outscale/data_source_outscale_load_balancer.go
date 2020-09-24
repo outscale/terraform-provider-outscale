@@ -168,11 +168,6 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 		wholeSchema[k] = v
 	}
 
-	wholeSchema["request_id"] = &schema.Schema{
-		Type:     schema.TypeString,
-		Computed: true,
-	}
-
 	return wholeSchema
 
 }

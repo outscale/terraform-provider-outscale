@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -54,6 +55,10 @@ func dataSourceOutscaleLoadBalancerVmsHeals() *schema.Resource {
 					},
 				},
 			},
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		}),
 	}
 }
@@ -94,23 +99,36 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 			describeElbOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling:") {
+			log.Printf("[DEBUG] err: (%s)", err)
+			if strings.Contains(fmt.Sprint(err), "Throttling:") ||
+				strings.Contains(fmt.Sprint(err), "InvalidResource") ||
+				strings.Contains(fmt.Sprint(err), "Bad Request") {
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
 		}
 		return nil
 	})
-
 	if err != nil {
-		if isLoadBalancerNotFound(err) {
-			d.SetId("")
-			return fmt.Errorf("Unknow error")
-		}
-
-		return fmt.Errorf("Error retrieving ELB: %s", err)
+		return fmt.Errorf("Error retrieving Load Balacer Vms Heal: %s", err)
 	}
 
+	if resp.BackendVmHealth == nil {
+		return fmt.Errorf("lb.BackendVmHealth not found")
+	}
+	lbvh := make([]map[string]interface{}, len(*resp.BackendVmHealth))
+	for k, v := range *resp.BackendVmHealth {
+		a := make(map[string]interface{})
+		a["description"] = v.Description
+		a["state"] = v.State
+		a["state_reason"] = v.StateReason
+		a["vm_id"] = v.VmId
+		lbvh[k] = a
+	}
+	d.Set("backend_vm_health", lbvh)
 	d.Set("request_id", resp.ResponseContext.RequestId)
+	//  ename.(string) "-heal-" resource.UniqueId()
+	id := ename.(string) + "-heal-"
+	d.SetId(resource.PrefixedUniqueId(id))
 	return nil
 }
