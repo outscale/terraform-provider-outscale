@@ -183,6 +183,148 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 	}
 }
 
+// Flattens an array of Listeners into a []map[string]interface{}
+func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(*list))
+
+	for _, i := range *list {
+		listener := map[string]interface{}{
+			"backend_port":           int(*i.BackendPort),
+			"backend_protocol":       *i.BackendProtocol,
+			"load_balancer_port":     int(*i.LoadBalancerPort),
+			"load_balancer_protocol": *i.LoadBalancerProtocol,
+		}
+		if i.ServerCertificateId != nil {
+			listener["server_certificate_id"] =
+				*i.ServerCertificateId
+		}
+		listener["policy_names"] = flattenStringList(i.PolicyNames)
+		result = append(result, listener)
+	}
+	return result
+}
+
+func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
+	listeners := make([]*oscgo.Listener, 0, len(configured))
+
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+
+		ip := int64(data["backend_port"].(int))
+		lp := int64(data["load_balancer_port"].(int))
+		bproto := data["backend_protocol"].(string)
+		lproto := data["load_balancer_protocol"].(string)
+		l := &oscgo.Listener{
+			BackendPort:          &ip,
+			BackendProtocol:      &bproto,
+			LoadBalancerPort:     &lp,
+			LoadBalancerProtocol: &lproto,
+		}
+
+		if v, ok := data["server_certificate_id"]; ok && v != "" {
+			vs := v.(string)
+			l.ServerCertificateId = &vs
+		}
+
+		var valid bool
+		if l.ServerCertificateId != nil && *l.ServerCertificateId != "" {
+			// validate the protocol is correct
+			for _, p := range []string{"https", "ssl"} {
+				if (strings.ToLower(*l.BackendProtocol) == p) ||
+					(strings.ToLower(*l.LoadBalancerProtocol) == p) {
+					valid = true
+				}
+			}
+		} else {
+			valid = true
+		}
+
+		if valid {
+			listeners = append(listeners, l)
+		} else {
+			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
+		}
+	}
+
+	return listeners, nil
+}
+
+func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCreation, error) {
+	listeners := make([]oscgo.ListenerForCreation, 0, len(configured))
+
+	for _, lRaw := range configured {
+		data := lRaw.(map[string]interface{})
+
+		ip := int64(data["backend_port"].(int))
+		lp := int64(data["load_balancer_port"].(int))
+		bproto := data["backend_protocol"].(string)
+		lproto := data["load_balancer_protocol"].(string)
+		l := oscgo.ListenerForCreation{
+			BackendPort:          ip,
+			BackendProtocol:      &bproto,
+			LoadBalancerPort:     lp,
+			LoadBalancerProtocol: lproto,
+		}
+
+		if v, ok := data["server_certificate_id"]; ok && v != "" {
+			vs := v.(string)
+			l.ServerCertificateId = &vs
+		}
+
+		var valid bool
+		if l.ServerCertificateId != nil && *l.ServerCertificateId != "" {
+			// validate the protocol is correct
+			for _, p := range []string{"https", "ssl"} {
+				if (strings.ToLower(*l.BackendProtocol) == p) ||
+					(strings.ToLower(l.LoadBalancerProtocol) == p) {
+					valid = true
+				}
+			}
+		} else {
+			valid = true
+		}
+
+		if valid {
+			listeners = append(listeners, l)
+		} else {
+			return nil, fmt.Errorf("[ERR] ELB Listener: server_certificate_id may be set only when protocol is 'https' or 'ssl'")
+		}
+	}
+
+	return listeners, nil
+}
+
+func lb_listener_schema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"backend_port": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+		"backend_protocol": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"load_balancer_port": {
+			Type:     schema.TypeInt,
+			Required: true,
+		},
+		"load_balancer_protocol": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"server_certificate_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"policy_names": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}
+
 func resourceOutscaleOAPILoadBalancerCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceOutscaleOAPILoadBalancerCreate_(d, meta, false)
 }

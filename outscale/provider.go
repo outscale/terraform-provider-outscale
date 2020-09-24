@@ -78,7 +78,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer":                     resourceOutscaleOAPILoadBalancer(),
 			"outscale_load_balancer_cookiepolicy":        resourceOutscaleAppCookieStickinessPolicy(),
 			"outscale_load_balancer_vms":                 resourceOutscaleOAPILBUAttachment(),
-			"outscale_load_balancer_listeners":           resourceOutscaleOAPILoadBalancerListeners(),
 			"outscale_load_balancer_attributes":          resourceOutscaleOAPILoadBalancerAttributes(),
 			"outscale_load_balancer_health_check":        resourceOutscaleOAPILoadBalancerHealthCheck(),
 			"outscale_load_balancer_policy":              resourceOutscaleOAPILoadBalancerPolicy(),
