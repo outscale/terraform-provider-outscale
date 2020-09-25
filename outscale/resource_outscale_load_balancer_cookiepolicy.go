@@ -34,7 +34,11 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 					return
 				},
 			},
-
+			"policy_type": {
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -42,7 +46,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 			},
 			"cookie_name": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"request_id": {
@@ -58,17 +62,21 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 
 	l, lok := d.GetOk("load_balancer_name")
 	p, pok := d.GetOk("policy_name")
-	v, ok := d.GetOk("cookie_name")
+	v, cnok := d.GetOk("cookie_name")
+	pt, pok := d.GetOk("policy_type")
 
-	if !lok && !pok && !ok {
-		return fmt.Errorf("please provide the required attributes load_balancer_name, policy_name and cookie_name")
+	if !lok && !pok && !pok {
+		return fmt.Errorf("please provide the required attributes load_balancer_name, policy_name and policy_type")
 	}
 
 	vs := v.(string)
 	req := oscgo.CreateLoadBalancerPolicyRequest{
 		LoadBalancerName: l.(string),
 		PolicyName:       p.(string),
-		CookieName:       &vs,
+		PolicyType:       pt.(string),
+	}
+	if cnok {
+		req.CookieName = &vs
 	}
 	acspOpts := oscgo.CreateLoadBalancerPolicyOpts{
 		optional.NewInterface(req),
@@ -106,8 +114,10 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	d.SetId(resource.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", p.(string))
-	d.Set("cookie_name", v.(string))
-
+	d.Set("policy_type", pt.(string))
+	if cnok {
+		d.Set("cookie_name", v.(string))
+	}
 	return resourceOutscaleAppCookieStickinessPolicyRead(d, meta)
 }
 

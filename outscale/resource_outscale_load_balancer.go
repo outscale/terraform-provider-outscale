@@ -183,6 +183,15 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 	}
 }
 
+func expandStringList(ifs []interface{}) *[]string {
+	r := make([]string, len(ifs))
+
+	for k, v := range ifs {
+		r[k] = v.(string)
+	}
+	return &r
+}
+
 // Flattens an array of Listeners into a []map[string]interface{}
 func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
 	result := make([]map[string]interface{}, 0, len(*list))

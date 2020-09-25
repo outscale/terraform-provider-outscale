@@ -76,11 +76,10 @@ func Provider() terraform.ResourceProvider {
 			"outscale_vpn_connection_route":              resourceOutscaleVPNConnectionRoute(),
 			"outscale_access_key":                        resourceOutscaleAccessKey(),
 			"outscale_load_balancer":                     resourceOutscaleOAPILoadBalancer(),
-			"outscale_load_balancer_cookiepolicy":        resourceOutscaleAppCookieStickinessPolicy(),
+			"outscale_load_balancer_policy":              resourceOutscaleAppCookieStickinessPolicy(),
 			"outscale_load_balancer_vms":                 resourceOutscaleOAPILBUAttachment(),
 			"outscale_load_balancer_attributes":          resourceOutscaleOAPILoadBalancerAttributes(),
 			"outscale_load_balancer_health_check":        resourceOutscaleOAPILoadBalancerHealthCheck(),
-			"outscale_load_balancer_policy":              resourceOutscaleOAPILoadBalancerPolicy(),
 			"outscale_load_balancer_ssl_certificate":     resourceOutscaleOAPILoadBalancerSSLCertificate(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
