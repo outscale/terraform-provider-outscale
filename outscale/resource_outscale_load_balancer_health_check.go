@@ -238,7 +238,8 @@ func resourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, met
 	}
 
 	if len(*resp.LoadBalancers) != 1 {
-		return fmt.Errorf("Unable to find ELB: %#v", resp.LoadBalancers)
+		return fmt.Errorf("Unable to find ELB %s: %#v", elbName,
+			resp.LoadBalancers)
 	}
 
 	lb := (*resp.LoadBalancers)[0]
