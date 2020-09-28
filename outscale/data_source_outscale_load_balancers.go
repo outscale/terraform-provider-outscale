@@ -40,6 +40,30 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"access_log": {
+							Type:     schema.TypeMap,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"is_enabled": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"osu_bucket_name": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"osu_bucket_prefix": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"publication_interval": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+								},
+							},
+						},
 						"health_check": {
 							Type:     schema.TypeMap,
 							Computed: true,
@@ -58,6 +82,14 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 										Computed: true,
 									},
 									"check_interval": {
+										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"port": {
+										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"protocol": {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
@@ -259,6 +291,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 
 		l["subregion_names"] = v.SubregionNames
 		l["dns_name"] = v.DnsName
+		l["access_log"] = v.AccessLog
 		l["health_check"] = v.HealthCheck
 		l["backend_vm_id"] = v.BackendVmIds
 		l["listeners"] = flattenOAPIListeners(v.Listeners)

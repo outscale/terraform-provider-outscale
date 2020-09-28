@@ -62,6 +62,31 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"access_log": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"is_enabled": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"osu_bucket_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"osu_bucket_prefix": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"publication_interval": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"health_check": {
 				Type:     schema.TypeMap,
 				Computed: true,
@@ -133,43 +158,30 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"policies": {
+			"application_sticky_cookie_policies": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"application_sticky_cookie_policy": {
-							Type:     schema.TypeList,
+						"cookie_name": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"cookie_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"policy_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
-						"load_balancer_sticky_cookie_policy": {
-							Type:     schema.TypeList,
+						"policy_name": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"policy_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
-						"other_policy": {
-							Type:     schema.TypeList,
+					},
+				},
+			},
+			"load_balancer_sticky_cookie_policies": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_name": {
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem:     &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -421,7 +433,6 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	if err := d.Set("listeners", make([]map[string]interface{}, 0)); err != nil {
 		return err
 	}
-	d.Set("policies", make([]map[string]interface{}, 0))
 
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
@@ -486,9 +497,11 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	if err != nil {
 		return err
 	}
+
 	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(nil, lb.HealthCheck))
+	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
 	if lb.BackendVmIds != nil {
 		d.Set("backend_vm_ids", lb.BackendVmIds)
@@ -522,7 +535,6 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	}
 
-	policies := make(map[string]interface{})
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{},
 			len(*lb.ApplicationStickyCookiePolicies))
@@ -532,7 +544,9 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			a["policy_name"] = v.PolicyName
 			app[k] = a
 		}
-		policies["application_sticky_cookie_policy"] = app
+		d.Set("application_sticky_cookie_policies", app)
+	}
+	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]interface{},
 			len(*lb.LoadBalancerStickyCookiePolicies))
 		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
@@ -540,16 +554,9 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
 		}
-		policies["load_balancer_sticky_cookie_policy"] = lbc
-		// TODO: check this can be remove V
-		// policies["other_policy"] = flattenStringList(lb.Policies.OtherPolicies)
-	} else {
-		lbc := make([]map[string]interface{}, 0)
-		policies["load_balancer_sticky_cookie_policy"] = lbc
-		// TODO: check this can be remove V
-		// policies["other_policy"] = lbc
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
-	d.Set("policies", policies)
+
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
 		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
@@ -842,8 +849,53 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		}
 	}
 
+	if d.HasChange("access_log") {
+		acg := d.Get("access_log").([]interface{})
+		if len(acg) > 0 {
+
+			aclg := acg[0].(map[string]interface{})
+			isEnabled := aclg["is_enabled"].(bool)
+			osuBucketName := aclg["osu_bucket_name"].(string)
+			osuBucketPrefix := aclg["osu_bucket_prefix"].(string)
+			publicationInterval := int64(aclg["publication_interval"].(int64))
+			req := oscgo.UpdateLoadBalancerRequest{
+				LoadBalancerName: d.Id(),
+				AccessLog: &oscgo.AccessLog{
+					IsEnabled:           &isEnabled,
+					OsuBucketName:       &osuBucketName,
+					OsuBucketPrefix:     &osuBucketPrefix,
+					PublicationInterval: &publicationInterval,
+				},
+			}
+
+			configureAccessLogOpts := oscgo.UpdateLoadBalancerOpts{
+				optional.NewInterface(req),
+			}
+			var err error
+
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+					context.Background(), &configureAccessLogOpts)
+
+				if err != nil {
+					if strings.Contains(err.Error(), "Throttling:") {
+						return resource.RetryableError(err)
+					}
+					return resource.NonRetryableError(err)
+				}
+				return nil
+			})
+
+			if err != nil {
+				return fmt.Errorf("Failure configuring access log for Load Balancer: %s", err)
+			}
+			d.SetPartial("access_log")
+		}
+	}
+
 	d.SetPartial("listeners")
-	d.SetPartial("policies")
+	d.SetPartial("application_sticky_cookie_policies")
+	d.SetPartial("load_balancer_sticky_cookie_policies")
 
 	d.Partial(false)
 
@@ -943,4 +995,17 @@ func flattenOAPIHealthCheck(d *schema.ResourceData, check *oscgo.HealthCheck) ma
 	}
 
 	return chk
+}
+
+func flattenOAPIAccessLog(aclog *oscgo.AccessLog) map[string]interface{} {
+	accl := make(map[string]interface{})
+
+	if aclog != nil {
+		accl["is_enabled"] = strconv.FormatBool(*aclog.IsEnabled)
+		accl["osu_bucket_name"] = aclog.OsuBucketName
+		accl["osu_bucket_prefix"] = aclog.OsuBucketPrefix
+		accl["publication_interval"] = strconv.Itoa(int(*aclog.PublicationInterval))
+	}
+
+	return accl
 }
