@@ -64,11 +64,12 @@ func resourceOutscaleOAPILoadBalancerSSLCertificateCreate(d *schema.ResourceData
 	if !sok {
 		return fmt.Errorf("please provide server_certificate_id argument")
 	}
-	port_i := port.(int64)
+	port_i := port.(int)
+	port_i64 := int64(port_i)
 	ssl_s := ssl.(string)
 	req := oscgo.UpdateLoadBalancerRequest{
 		LoadBalancerName:    ename.(string),
-		LoadBalancerPort:    &port_i,
+		LoadBalancerPort:    &port_i64,
 		ServerCertificateId: &ssl_s,
 	}
 
