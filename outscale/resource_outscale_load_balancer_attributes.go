@@ -19,7 +19,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILoadBalancerAttributesCreate,
 		Read:   resourceOutscaleOAPILoadBalancerAttributesRead,
-		Update: resourceOutscaleOAPILoadBalancerAttributesUpdate,
 		Delete: resourceOutscaleOAPILoadBalancerAttributesDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -29,6 +28,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"publication_interval": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 			"load_balancer_port": {
 				Type:     schema.TypeInt,
@@ -38,10 +38,12 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"server_certificate_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 			"access_log": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"is_enabled": {
@@ -63,6 +65,12 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+			"policy_names": {
+				Type:     schema.TypeList,
+				ForceNew: true,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -89,9 +97,19 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		port_i := int64(port.(int))
 		req.LoadBalancerPort = &port_i
 	}
+
 	if ssl, sok := d.GetOk("server_certificate_id"); sok {
 		ssl_s := ssl.(string)
 		req.ServerCertificateId = &ssl_s
+	}
+
+	if pol_names, plnok := d.GetOk("policy_names"); plnok {
+		m := pol_names.([]interface{})
+		a := make([]string, len(m))
+		for k, v := range m {
+			a[k] = v.(string)
+		}
+		req.PolicyNames = &a
 	}
 
 	if al, alok := d.GetOk("access_log"); alok {
@@ -174,77 +192,6 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
-}
-
-func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
-
-	req := oscgo.UpdateLoadBalancerRequest{}
-	access := &oscgo.AccessLog{}
-	if d.HasChange("load_balancer_name") {
-		_, n := d.GetChange("load_balancer_name")
-
-		req.LoadBalancerName = n.(string)
-	}
-	if d.HasChange("is_enabled") {
-		_, n := d.GetChange("is_enabled")
-
-		b, err := strconv.ParseBool(n.(string))
-		if err != nil {
-			return err
-		}
-
-		access.IsEnabled = &b
-	}
-	if d.HasChange("publication_interval") {
-		_, n := d.GetChange("publication_interval")
-
-		i, err := strconv.Atoi(n.(string))
-		if err != nil {
-			return err
-		}
-		i64 := int64(i)
-		access.PublicationInterval = &i64
-	}
-	if d.HasChange("osu_bucket_name") {
-		_, n := d.GetChange("osu_bucket_name")
-
-		s := n.(string)
-		access.OsuBucketName = &s
-	}
-	if d.HasChange("osu_bucket_prefix") {
-		_, n := d.GetChange("osu_bucket_prefix")
-
-		s := n.(string)
-		access.OsuBucketPrefix = &s
-	}
-
-	req.AccessLog = access
-
-	elbOpts := &oscgo.UpdateLoadBalancerOpts{
-		optional.NewInterface(req),
-	}
-
-	var err error
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-			context.Background(), elbOpts)
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error, retrying: %s", err))
-			}
-			return resource.NonRetryableError(err)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
