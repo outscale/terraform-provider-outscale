@@ -80,7 +80,6 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_vms":                 resourceOutscaleOAPILBUAttachment(),
 			"outscale_load_balancer_attributes":          resourceOutscaleOAPILoadBalancerAttributes(),
 			"outscale_load_balancer_health_check":        resourceOutscaleOAPILoadBalancerHealthCheck(),
-			"outscale_load_balancer_ssl_certificate":     resourceOutscaleOAPILoadBalancerSSLCertificate(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                                  dataSourceOutscaleOAPIVM(),

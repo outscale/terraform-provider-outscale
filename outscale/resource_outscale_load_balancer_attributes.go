@@ -30,46 +30,31 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"is_enabled": {
-				Type:     schema.TypeBool,
-				Required: true,
+			"load_balancer_port": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
 			},
-			"osu_bucket_name": {
+			"server_certificate_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"osu_bucket_prefix": {
-				Type:     schema.TypeString,
+			"access_log": {
+				Type:     schema.TypeMap,
 				Optional: true,
-			},
-			"load_balancer_attributes": {
-				Type:     schema.TypeList,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_log": {
-							Type:     schema.TypeMap,
+						"is_enabled": {
+							Type:     schema.TypeBool,
 							Required: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"publication_interval": {
-										Type:     schema.TypeInt,
-										Computed: true,
-									},
-									"is_enabled": {
-										Type:     schema.TypeBool,
-										Computed: true,
-									},
-									"osu_bucket_name": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"osu_bucket_prefix": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
+						},
+						"osu_bucket_name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"osu_bucket_prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
@@ -90,36 +75,49 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	v, ok := d.GetOk("is_enabled")
-	v1, ok1 := d.GetOk("load_balancer_name")
+	ename, ok := d.GetOk("load_balancer_name")
 
-	if !ok && !ok1 {
+	if !ok {
 		return fmt.Errorf("please provide the is_enabled and load_balancer_name required attributes")
 	}
 
 	req := oscgo.UpdateLoadBalancerRequest{
-		LoadBalancerName: v1.(string),
+		LoadBalancerName: ename.(string),
 	}
 
-	is_enable := v.(bool)
-	access := &oscgo.AccessLog{
-		IsEnabled: &is_enable,
+	if port, pok := d.GetOk("load_balancer_port"); pok {
+		port_i := int64(port.(int))
+		req.LoadBalancerPort = &port_i
+	}
+	if ssl, sok := d.GetOk("server_certificate_id"); sok {
+		ssl_s := ssl.(string)
+		req.ServerCertificateId = &ssl_s
 	}
 
-	if v, ok := d.GetOk("publication_interval"); ok {
-		pi := int64(v.(int))
-		access.PublicationInterval = &pi
-	}
-	if v, ok := d.GetOk("osu_bucket_name"); ok {
-		obn := v.(string)
-		access.OsuBucketName = &obn
-	}
-	if v, ok := d.GetOk("osu_bucket_prefix"); ok {
-		obp := v.(string)
-		access.OsuBucketPrefix = &obp
-	}
+	if al, alok := d.GetOk("access_log"); alok {
+		dal := al.(map[string]interface{})
 
-	req.AccessLog = access
+		is_enable := dal["is_enable"].(bool)
+		access := &oscgo.AccessLog{
+			IsEnabled: &is_enable,
+		}
+
+		if v, ok := lb_atoi_at(dal, "publication_interval"); ok {
+			pi := int64(v)
+			access.PublicationInterval = &pi
+		}
+		obn := dal["osu_bucket_name"]
+		if obn != nil {
+			obn_s := obn.(string)
+			access.OsuBucketName = &obn_s
+		}
+		obp := dal["osu_bucket_prefix"]
+		if obp != nil {
+			obp_s := obp.(string)
+			access.OsuBucketPrefix = &obp_s
+		}
+		req.AccessLog = access
+	}
 
 	elbOpts := oscgo.UpdateLoadBalancerOpts{
 		optional.NewInterface(req),
@@ -165,20 +163,17 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 
 	a := lb_resp.AccessLog
 
-	access := make(map[string]string)
-	ac := make(map[string]interface{})
-	access["publication_interval"] = strconv.Itoa(int(*a.PublicationInterval))
-	access["is_enabled"] = strconv.FormatBool(*a.IsEnabled)
-	access["osu_bucket_name"] = *a.OsuBucketName
-	access["osu_bucket_prefix"] = *a.OsuBucketPrefix
-	ac["access_log"] = access
-
-	l := make([]map[string]interface{}, 1)
-	l[0] = ac
+	if a != nil {
+		access := make(map[string]string)
+		access["publication_interval"] = strconv.Itoa(int(*a.PublicationInterval))
+		access["is_enabled"] = strconv.FormatBool(*a.IsEnabled)
+		access["osu_bucket_name"] = *a.OsuBucketName
+		access["osu_bucket_prefix"] = *a.OsuBucketPrefix
+		d.Set("access_log", access)
+	}
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
-
-	return d.Set("load_balancer_attributes", l)
+	return nil
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData, meta interface{}) error {
