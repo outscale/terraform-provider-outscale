@@ -61,11 +61,11 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	l, lok := d.GetOk("load_balancer_name")
-	p, pok := d.GetOk("policy_name")
+	p, pon := d.GetOk("policy_name")
 	v, cnok := d.GetOk("cookie_name")
-	pt, pok := d.GetOk("policy_type")
+	pt, pot := d.GetOk("policy_type")
 
-	if !lok && !pok && !pok {
+	if !lok && !pon && !pot {
 		return fmt.Errorf("please provide the required attributes load_balancer_name, policy_name and policy_type")
 	}
 
