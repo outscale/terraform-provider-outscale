@@ -61,6 +61,55 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					},
 				},
 			},
+			"health_check": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"healthy_threshold": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"unhealthy_threshold": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"path": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"port": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"protocol": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"check_interval": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+						"timeout": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -78,6 +127,21 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			},
 		},
 	}
+}
+
+func isLoadBalancerNotFound(err error) bool {
+	return strings.Contains(fmt.Sprint(err), "LoadBalancerNotFound")
+}
+
+func lb_atoi_at(hc map[string]interface{}, el string) (int, bool) {
+	hc_el := hc[el]
+
+	if hc_el == nil {
+		return 0, false
+	}
+
+	r, err := strconv.Atoi(hc_el.(string))
+	return r, err == nil
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
@@ -137,6 +201,47 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		req.AccessLog = access
 	}
 
+	hc, hok := d.GetOk("health_check")
+	if hok {
+		check := hc.(map[string]interface{})
+
+		ht, ut, sucess := 0, 0, false
+		if ht, sucess = lb_atoi_at(check, "healthy_threshold"); sucess == false {
+			return fmt.Errorf("please provide an number in health_check.healthy_threshold argument")
+
+		}
+
+		if ut, sucess = lb_atoi_at(check, "unhealthy_threshold"); sucess == false {
+			return fmt.Errorf("please provide an number in health_check.unhealthy_threshold argument")
+		}
+
+		i, ierr := lb_atoi_at(check, "check_interval")
+		t, terr := lb_atoi_at(check, "timeout")
+		p, perr := lb_atoi_at(check, "port")
+
+		if ierr != true {
+			return fmt.Errorf("please provide an number in health_check.check_interval argument")
+		}
+
+		if terr != true {
+			return fmt.Errorf("please provide an number in health_check.timeout argument")
+		}
+
+		if perr != true {
+			return fmt.Errorf("please provide an number in health_check.port argument")
+		}
+
+		var hc_req oscgo.HealthCheck
+		hc_req.HealthyThreshold = int64(ht)
+		hc_req.UnhealthyThreshold = int64(ut)
+		hc_req.CheckInterval = int64(i)
+		hc_req.Protocol = check["protocol"].(string)
+		hc_req.Port = int64(p)
+		hc_req.Timeout = int64(t)
+		req.HealthCheck = &hc_req
+
+	}
+
 	elbOpts := oscgo.UpdateLoadBalancerOpts{
 		optional.NewInterface(req),
 	}
@@ -170,16 +275,16 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
-	lb_resp, resp, err := readResourceLb(conn, elbName)
+	lb, resp, err := readResourceLb(conn, elbName)
 	if err != nil {
 		return err
 	}
 
-	if lb_resp.AccessLog == nil {
+	if lb.AccessLog == nil {
 		return fmt.Errorf("NO Attributes FOUND")
 	}
 
-	a := lb_resp.AccessLog
+	a := lb.AccessLog
 
 	if a != nil {
 		access := make(map[string]string)
@@ -188,6 +293,28 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		access["osu_bucket_name"] = *a.OsuBucketName
 		access["osu_bucket_prefix"] = *a.OsuBucketPrefix
 		d.Set("access_log", access)
+	}
+
+	healthCheck := make(map[string]interface{})
+
+	if lb.HealthCheck.Path != "" {
+		h := strconv.FormatInt(lb.HealthCheck.HealthyThreshold, 10)
+		i := strconv.FormatInt(lb.HealthCheck.CheckInterval, 10)
+		pa := lb.HealthCheck.Path
+		po := strconv.FormatInt(lb.HealthCheck.Port, 10)
+		pr := lb.HealthCheck.Protocol
+		ti := strconv.FormatInt(lb.HealthCheck.Timeout, 10)
+		u := strconv.FormatInt(lb.HealthCheck.UnhealthyThreshold, 10)
+
+		healthCheck["healthy_threshold"] = h
+		healthCheck["check_interval"] = i
+		healthCheck["path"] = pa
+		healthCheck["port"] = po
+		healthCheck["protocol"] = pr
+		healthCheck["timeout"] = ti
+		healthCheck["unhealthy_threshold"] = u
+
+		d.Set("health_check", healthCheck)
 	}
 
 	d.Set("request_id", resp.ResponseContext.RequestId)
