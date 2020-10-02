@@ -1,3 +1,19 @@
+0.1.1 (October 02, 2020)
+========================
+
+BUG FIXES:
+----------
+
+* Support proxy for Outscale Terraform provider (TPD-1924)
+
+
+0.1.0 (August 07, 2020)
+========================
+
+NOTES:
+Rename of the previous release
+
+
 0.1.0RC9 (June 22, 2020)
 ========================
 
