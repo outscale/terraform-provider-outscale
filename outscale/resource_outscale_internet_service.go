@@ -103,6 +103,10 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
+	if len(resp.GetInternetServices()) == 0 {
+		d.SetId("")
+		return fmt.Errorf("InternetServices not found")
+	}
 	if err := d.Set("internet_service_id", resp.GetInternetServices()[0].GetInternetServiceId()); err != nil {
 		return err
 	}

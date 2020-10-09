@@ -199,6 +199,7 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error 
 	}
 	return d.Set("tags", tagsOSCAPIToMap(subnet.GetTags()))
 }
+
 func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		resp, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
