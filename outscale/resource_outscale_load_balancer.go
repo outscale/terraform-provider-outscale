@@ -45,7 +45,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				ForceNew: true,
 			},
 			"security_groups": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -187,6 +187,15 @@ func expandStringList(ifs []interface{}) *[]string {
 	r := make([]string, len(ifs))
 
 	for k, v := range ifs {
+		r[k] = v.(string)
+	}
+	return &r
+}
+
+func expandSetStringList(ifs *schema.Set) *[]string {
+	r := make([]string, ifs.Len())
+
+	for k, v := range ifs.List() {
 		r[k] = v.(string)
 	}
 	return &r
@@ -365,7 +374,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	}
 
 	if v, ok := d.GetOk("security_groups"); ok {
-		req.SecurityGroups = expandStringList(v.([]interface{}))
+		req.SecurityGroups = expandSetStringList(v.(*schema.Set))
 	}
 
 	v_sb, sb_ok := d.GetOk("subnets")
