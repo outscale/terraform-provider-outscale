@@ -185,22 +185,17 @@ func resourceOutscaleOAPIInternetServiceLinkDelete(d *schema.ResourceData, meta 
 		NetId:             internetService.GetNetId(),
 	}
 
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, res, err := conn.InternetServiceApi.UnlinkInternetService(context.Background()).UnlinkInternetServiceRequest(req).Execute()
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		_, _, err = conn.InternetServiceApi.UnlinkInternetService(
+			context.Background()).
+			UnlinkInternetServiceRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Failed Dependency") {
-				return resource.RetryableError(err) // retry
-			}
-			return resource.NonRetryableError(err)
-		}
-		if res != nil && res.StatusCode == 424 {
-			return resource.RetryableError(err) // retry
+			return resource.RetryableError(
+				fmt.Errorf("error unlink Internet Service (%s):  %s",
+					d.Id(), err))
 		}
 		return nil
 	})
-	if err != nil {
-		return fmt.Errorf("error unlink Internet Service (%s):  %s", d.Id(), err)
-	}
 
 	return nil
 }
