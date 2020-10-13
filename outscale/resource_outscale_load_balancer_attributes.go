@@ -43,6 +43,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"access_log": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -64,6 +65,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"health_check": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -236,6 +238,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		hc_req.UnhealthyThreshold = int64(ut)
 		hc_req.CheckInterval = int64(i)
 		hc_req.Protocol = check["protocol"].(string)
+		hc_req.Path = check["path"].(string)
 		hc_req.Port = int64(p)
 		hc_req.Timeout = int64(t)
 		req.HealthCheck = &hc_req
@@ -290,14 +293,18 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		access := make(map[string]string)
 		access["publication_interval"] = strconv.Itoa(int(*a.PublicationInterval))
 		access["is_enabled"] = strconv.FormatBool(*a.IsEnabled)
-		access["osu_bucket_name"] = *a.OsuBucketName
-		access["osu_bucket_prefix"] = *a.OsuBucketPrefix
+		if a.OsuBucketName != nil {
+			access["osu_bucket_name"] = *a.OsuBucketName
+		}
+		if a.OsuBucketPrefix != nil {
+			access["osu_bucket_prefix"] = *a.OsuBucketPrefix
+		}
 		d.Set("access_log", access)
 	}
 
 	healthCheck := make(map[string]interface{})
 
-	if lb.HealthCheck.Path != "" {
+	if lb.HealthCheck != nil {
 		h := strconv.FormatInt(lb.HealthCheck.HealthyThreshold, 10)
 		i := strconv.FormatInt(lb.HealthCheck.CheckInterval, 10)
 		pa := lb.HealthCheck.Path
