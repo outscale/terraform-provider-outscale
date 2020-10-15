@@ -496,7 +496,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	}
 	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+	d.Set("health_check", flattenOAPIHealthCheck(nil, lb.HealthCheck))
 
 	if lb.BackendVmIds != nil {
 		d.Set("backend_vm_ids", lb.BackendVmIds)
@@ -856,15 +856,28 @@ func expandInstanceString(list []interface{}) []string {
 	return result
 }
 
-func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
+func flattenOAPIHealthCheck(d *schema.ResourceData, check *oscgo.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
 
 	if check != nil {
-		chk["unhealthy_threshold"] = strconv.Itoa(int(check.UnhealthyThreshold))
-		chk["healthy_threshold"] = strconv.Itoa(int(check.HealthyThreshold))
-		chk["path"] = check.Path
-		chk["timeout"] = strconv.Itoa(int(check.Timeout))
-		chk["check_interval"] = strconv.Itoa(int(check.CheckInterval))
+		h := strconv.FormatInt(check.HealthyThreshold, 10)
+		i := strconv.FormatInt(check.CheckInterval, 10)
+		pa := check.Path
+		po := strconv.FormatInt(check.Port, 10)
+		pr := check.Protocol
+		ti := strconv.FormatInt(check.Timeout, 10)
+		u := strconv.FormatInt(check.UnhealthyThreshold, 10)
+
+		chk["healthy_threshold"] = h
+		chk["check_interval"] = i
+		chk["path"] = pa
+		chk["port"] = po
+		chk["protocol"] = pr
+		chk["timeout"] = ti
+		chk["unhealthy_threshold"] = u
+		if d != nil {
+			d.Set("health_check", chk)
+		}
 	}
 
 	return chk

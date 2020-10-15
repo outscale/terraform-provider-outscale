@@ -304,28 +304,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("access_log", access)
 	}
 
-	healthCheck := make(map[string]interface{})
-
-	if lb.HealthCheck != nil {
-		h := strconv.FormatInt(lb.HealthCheck.HealthyThreshold, 10)
-		i := strconv.FormatInt(lb.HealthCheck.CheckInterval, 10)
-		pa := lb.HealthCheck.Path
-		po := strconv.FormatInt(lb.HealthCheck.Port, 10)
-		pr := lb.HealthCheck.Protocol
-		ti := strconv.FormatInt(lb.HealthCheck.Timeout, 10)
-		u := strconv.FormatInt(lb.HealthCheck.UnhealthyThreshold, 10)
-
-		healthCheck["healthy_threshold"] = h
-		healthCheck["check_interval"] = i
-		healthCheck["path"] = pa
-		healthCheck["port"] = po
-		healthCheck["protocol"] = pr
-		healthCheck["timeout"] = ti
-		healthCheck["unhealthy_threshold"] = u
-
-		d.Set("health_check", healthCheck)
-	}
-
+	flattenOAPIHealthCheck(d, lb.HealthCheck)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
 }
