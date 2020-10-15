@@ -238,7 +238,9 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		hc_req.UnhealthyThreshold = int64(ut)
 		hc_req.CheckInterval = int64(i)
 		hc_req.Protocol = check["protocol"].(string)
-		hc_req.Path = check["path"].(string)
+		if check["path"] != nil {
+			hc_req.Path = check["path"].(string)
+		}
 		hc_req.Port = int64(p)
 		hc_req.Timeout = int64(t)
 		req.HealthCheck = &hc_req
@@ -255,11 +257,11 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 			context.Background(), &elbOpts)
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") {
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating LBU Attr Listener with SSL Cert, retrying: %s", err))
+			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
+				return resource.NonRetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return resource.RetryableError(
+				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
 		}
 		return nil
 	})
