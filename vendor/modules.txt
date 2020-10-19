@@ -16,7 +16,7 @@ github.com/apparentlymart/go-cidr/cidr
 github.com/apparentlymart/go-textseg/textseg
 # github.com/armon/go-radix v1.0.0
 github.com/armon/go-radix
-# github.com/aws/aws-sdk-go v1.31.10
+# github.com/aws/aws-sdk-go v1.34.14
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
@@ -222,6 +222,8 @@ github.com/mitchellh/reflectwalk
 github.com/oklog/run
 # github.com/openlyinc/pointy v1.1.2
 github.com/openlyinc/pointy
+# github.com/outscale/osc-sdk-go/osc v0.0.0-20201014193009-10509d4e084c
+github.com/outscale/osc-sdk-go/osc
 # github.com/posener/complete v1.2.1
 github.com/posener/complete
 github.com/posener/complete/cmd
