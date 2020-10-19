@@ -10,8 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/spf13/cast"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func resourceOutscaleVPNConnection() *schema.Resource {
@@ -105,10 +104,7 @@ func resourceOutscaleVPNConnectionCreate(d *schema.ResourceData, meta interface{
 		req.SetStaticRoutesOnly(cast.ToBool(staticRoutesOnly))
 	}
 
-	vpn, _, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background(),
-		&oscgo.CreateVpnConnectionOpts{
-			CreateVpnConnectionRequest: optional.NewInterface(req),
-		})
+	vpn, _, err := conn.VpnConnectionApi.CreateVpnConnection(context.Background()).CreateVpnConnectionRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VPN Conecction: %s", err)
 	}
@@ -205,9 +201,7 @@ func resourceOutscaleVPNConnectionDelete(d *schema.ResourceData, meta interface{
 		VpnConnectionId: vpnConnectionID,
 	}
 
-	_, _, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background(), &oscgo.DeleteVpnConnectionOpts{
-		DeleteVpnConnectionRequest: optional.NewInterface(req),
-	})
+	_, _, err := conn.VpnConnectionApi.DeleteVpnConnection(context.Background()).DeleteVpnConnectionRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -238,9 +232,7 @@ func vpnConnectionRefreshFunc(conn *oscgo.APIClient, vpnConnectionID *string) re
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
 			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):

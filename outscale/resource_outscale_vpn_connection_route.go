@@ -8,12 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func resourceOutscaleVPNConnectionRoute() *schema.Resource {
@@ -55,10 +53,7 @@ func resourceOutscaleVPNConnectionRouteCreate(d *schema.ResourceData, meta inter
 		VpnConnectionId:    vpnConnectionID,
 	}
 
-	_, _, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background(),
-		&oscgo.CreateVpnConnectionRouteOpts{
-			CreateVpnConnectionRouteRequest: optional.NewInterface(req),
-		})
+	_, _, err := conn.VpnConnectionApi.CreateVpnConnectionRoute(context.Background()).CreateVpnConnectionRouteRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error creating Outscale VPN Conecction Route: %s", err)
 	}
@@ -106,9 +101,7 @@ func resourceOutscaleVPNConnectionRouteDelete(d *schema.ResourceData, meta inter
 		VpnConnectionId:    vpnConnectionID,
 	}
 
-	_, _, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background(), &oscgo.DeleteVpnConnectionRouteOpts{
-		DeleteVpnConnectionRouteRequest: optional.NewInterface(req),
-	})
+	_, _, err := conn.VpnConnectionApi.DeleteVpnConnectionRoute(context.Background()).DeleteVpnConnectionRouteRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -140,9 +133,7 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil {
 			switch {
 			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):
@@ -161,7 +152,7 @@ func vpnConnectionRouteRefreshFunc(conn *oscgo.APIClient, destinationIPRange, vp
 
 		routes, ok := vpnConnection.GetRoutesOk()
 		if ok {
-			for _, route := range routes {
+			for _, route := range *routes {
 				if route.GetDestinationIpRange() == *destinationIPRange {
 					return resp, route.GetState(), nil
 				}

@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -136,7 +135,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 	var resp oscgo.CreateSecurityGroupResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SecurityGroupApi.CreateSecurityGroup(context.Background(), &oscgo.CreateSecurityGroupOpts{CreateSecurityGroupRequest: optional.NewInterface(securityGroupOpts)})
+		resp, _, err = conn.SecurityGroupApi.CreateSecurityGroup(context.Background()).CreateSecurityGroupRequest(securityGroupOpts).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -237,9 +236,9 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 	log.Printf("[DEBUG] Security Group destroy: %v", d.Id())
 	securityGroupID := d.Id()
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background(), &oscgo.DeleteSecurityGroupOpts{DeleteSecurityGroupRequest: optional.NewInterface(oscgo.DeleteSecurityGroupRequest{
+		_, _, err := conn.SecurityGroupApi.DeleteSecurityGroup(context.Background()).DeleteSecurityGroupRequest(oscgo.DeleteSecurityGroupRequest{
 			SecurityGroupId: &securityGroupID,
-		})})
+		}).Execute()
 
 		if err != nil {
 			var errString string
@@ -291,9 +290,7 @@ func readSecurityGroups(client *oscgo.APIClient, securityGroupID string) (*oscgo
 	var err error
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{
-			ReadSecurityGroupsRequest: optional.NewInterface(filters),
-		})
+		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

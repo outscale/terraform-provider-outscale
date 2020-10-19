@@ -14,8 +14,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -507,9 +506,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.CreateVmsResponse
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.VmApi.CreateVms(context.Background(), &oscgo.CreateVmsOpts{
-			CreateVmsRequest: optional.NewInterface(vmOpts),
-		})
+		resp, _, err = conn.VmApi.CreateVms(context.Background()).CreateVmsRequest(vmOpts).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -532,6 +529,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(vm.GetVmId())
 
+	log.Println("[DEBUG] imprimo log subnet")
 	if tags, ok := d.GetOk("tags"); ok {
 		err := assignTags(tags.(*schema.Set), vm.GetVmId(), conn)
 		if err != nil {
@@ -589,13 +587,11 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
-		r, _, err := conn.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
-			ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
-				Filters: &oscgo.FiltersVm{
-					VmIds: &[]string{d.Id()},
-				},
-			}),
-		})
+		r, _, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			Filters: &oscgo.FiltersVm{
+				VmIds: &[]string{d.Id()},
+			},
+		}).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -639,11 +635,7 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func getOAPIVMAdminPassword(VMID string, conn *oscgo.APIClient) (string, error) {
-	resp, _, err := conn.VmApi.ReadAdminPassword(context.Background(),
-		&oscgo.ReadAdminPasswordOpts{
-			ReadAdminPasswordRequest: optional.NewInterface(oscgo.ReadAdminPasswordRequest{VmId: VMID}),
-		},
-	)
+	resp, _, err := conn.VmApi.ReadAdminPassword(context.Background()).ReadAdminPasswordRequest(oscgo.ReadAdminPasswordRequest{VmId: VMID}).Execute()
 
 	if err != nil {
 		return "", fmt.Errorf("error reading the VM's password %s", err)
@@ -824,11 +816,9 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VmApi.DeleteVms(context.Background(), &oscgo.DeleteVmsOpts{
-			DeleteVmsRequest: optional.NewInterface(oscgo.DeleteVmsRequest{
-				VmIds: []string{id},
-			}),
-		})
+		_, _, err = conn.VmApi.DeleteVms(context.Background()).DeleteVmsRequest(oscgo.DeleteVmsRequest{
+			VmIds: []string{id},
+		}).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -868,8 +858,8 @@ func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.Crea
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
 		BsuOptimized:       oscgo.PtrBool(d.Get("bsu_optimized").(bool)),
-		MaxVmsCount:        oscgo.PtrInt64(1),
-		MinVmsCount:        oscgo.PtrInt64(1),
+		MaxVmsCount:        oscgo.PtrInt32(1),
+		MinVmsCount:        oscgo.PtrInt32(1),
 		ImageId:            d.Get("image_id").(string),
 		Placement:          expandPlacement(d),
 	}
@@ -964,7 +954,7 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 		bsuToCreate.SetSnapshotId(cast.ToString(snapshotID))
 	}
 	if volumeSize, ok := bsu["volume_size"]; ok && volumeSize != "" {
-		bsuToCreate.SetVolumeSize(cast.ToInt64(volumeSize))
+		bsuToCreate.SetVolumeSize(cast.ToInt32(volumeSize))
 	}
 	if volumeType, ok := bsu["volume_type"]; ok && volumeType != "" {
 
@@ -972,7 +962,7 @@ func expandBlockDeviceBSU(bsu map[string]interface{}) oscgo.BsuToCreate {
 		bsuToCreate.SetVolumeType(vType)
 
 		if iops, ok := bsu["iops"]; ok && vType == "io1" {
-			bsuToCreate.SetIops(cast.ToInt64(iops))
+			bsuToCreate.SetIops(cast.ToInt32(iops))
 		}
 	}
 
@@ -988,7 +978,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		nic := v.(map[string]interface{})
 
 		ni := oscgo.NicForVmCreation{
-			DeviceNumber: oscgo.PtrInt64(int64(nic["device_number"].(int))),
+			DeviceNumber: oscgo.PtrInt32(int32(nic["device_number"].(int))),
 		}
 
 		if v := nic["nic_id"].(string); v != "" {
@@ -996,7 +986,7 @@ func buildNetworkOApiInterfaceOpts(d *schema.ResourceData) []oscgo.NicForVmCreat
 		}
 
 		if v := nic["secondary_private_ip_count"].(int); v > 0 {
-			ni.SetSecondaryPrivateIpCount(int64(v))
+			ni.SetSecondaryPrivateIpCount(int32(v))
 		}
 
 		if delete, deleteOK := d.GetOk(fmt.Sprintf("nics.%d.delete_on_vm_deletion", i)); deleteOK {
@@ -1053,13 +1043,11 @@ func expandPlacement(d *schema.ResourceData) *oscgo.Placement {
 
 func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
-			ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
-				Filters: &oscgo.FiltersVm{
-					VmIds: &[]string{instanceID},
-				},
-			}),
-		})
+		resp, _, err := conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+			Filters: &oscgo.FiltersVm{
+				VmIds: &[]string{instanceID},
+			},
+		}).Execute()
 
 		if err != nil {
 			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)
@@ -1083,11 +1071,9 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 }
 
 func stopVM(vmID string, conn *oscgo.APIClient) error {
-	_, _, err := conn.VmApi.StopVms(context.Background(), &oscgo.StopVmsOpts{
-		StopVmsRequest: optional.NewInterface(oscgo.StopVmsRequest{
-			VmIds: []string{vmID},
-		}),
-	})
+	_, _, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+		VmIds: []string{vmID},
+	}).Execute()
 
 	if err != nil {
 		return fmt.Errorf("error stopping vms %s", err)
@@ -1111,11 +1097,9 @@ func stopVM(vmID string, conn *oscgo.APIClient) error {
 }
 
 func startVM(vmID string, conn *oscgo.APIClient) error {
-	_, _, err := conn.VmApi.StartVms(context.Background(), &oscgo.StartVmsOpts{
-		StartVmsRequest: optional.NewInterface(oscgo.StartVmsRequest{
-			VmIds: []string{vmID},
-		}),
-	})
+	_, _, err := conn.VmApi.StartVms(context.Background()).StartVmsRequest(oscgo.StartVmsRequest{
+		VmIds: []string{vmID},
+	}).Execute()
 
 	if err != nil {
 		return fmt.Errorf("error starting vm %s", err)
@@ -1138,9 +1122,7 @@ func startVM(vmID string, conn *oscgo.APIClient) error {
 }
 
 func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest) error {
-	if _, _, err := conn.VmApi.UpdateVm(context.Background(), &oscgo.UpdateVmOpts{
-		UpdateVmRequest: optional.NewInterface(instanceAttrOpts),
-	}); err != nil {
+	if _, _, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute(); err != nil {
 		return err
 	}
 	return nil

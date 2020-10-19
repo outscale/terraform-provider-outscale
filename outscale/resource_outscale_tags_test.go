@@ -8,10 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/go-test/deep"
 
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -85,11 +84,11 @@ func oapiTestAccCheckOutscaleVMExistsWithProviders(n string, i *oscgo.Vm, provid
 			var err error
 
 			for {
-				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: &oscgo.FiltersVm{
 						VmIds: &[]string{rs.Primary.ID},
 					},
-				})})
+				}).Execute()
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {

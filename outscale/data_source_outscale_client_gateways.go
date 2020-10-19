@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -87,9 +86,7 @@ func dataSourceOutscaleClientGatewaysRead(d *schema.ResourceData, meta interface
 	var resp oscgo.ReadClientGatewaysResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ClientGatewayApi.ReadClientGateways(context.Background(), &oscgo.ReadClientGatewaysOpts{
-			ReadClientGatewaysRequest: optional.NewInterface(params),
-		})
+		resp, _, err = conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

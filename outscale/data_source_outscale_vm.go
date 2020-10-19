@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func dataSourceOutscaleOAPIVM() *schema.Resource {
@@ -44,9 +43,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
-		r, _, err := client.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
-			ReadVmsRequest: optional.NewInterface(params),
-		})
+		r, _, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

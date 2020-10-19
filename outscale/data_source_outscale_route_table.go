@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -153,7 +152,7 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(params)})
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(params).Execute()
 		if err != nil && strings.Contains(err.Error(), "RequestLimitExceeded") {
 			return resource.RetryableError(err)
 		}

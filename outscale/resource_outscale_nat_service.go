@@ -7,8 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -73,14 +72,12 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	req := &oscgo.CreateNatServiceOpts{
-		CreateNatServiceRequest: optional.NewInterface(oscgo.CreateNatServiceRequest{
-			PublicIpId: d.Get("public_ip_id").(string),
-			SubnetId:   d.Get("subnet_id").(string),
-		}),
+	req := oscgo.CreateNatServiceRequest{
+		PublicIpId: d.Get("public_ip_id").(string),
+		SubnetId:   d.Get("subnet_id").(string),
 	}
 
-	resp, _, err := conn.NatServiceApi.CreateNatService(context.Background(), req)
+	resp, _, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error creating Nat Service: %s", err.Error())
 	}
@@ -97,10 +94,8 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	// Wait for the NAT Service to become available
 	log.Printf("\n\n[DEBUG] Waiting for NAT Service (%s) to become available", natService.GetNatServiceId())
 
-	filterReq := &oscgo.ReadNatServicesOpts{
-		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
-			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{natService.GetNatServiceId()}},
-		}),
+	filterReq := oscgo.ReadNatServicesRequest{
+		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{natService.GetNatServiceId()}},
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -132,10 +127,8 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	filterReq := &oscgo.ReadNatServicesOpts{
-		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
-			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
-		}),
+	filterReq := oscgo.ReadNatServicesRequest{
+		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -201,19 +194,15 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 	log.Printf("[INFO] Deleting NAT Service: %s\n", d.Id())
 
-	_, _, err := conn.NatServiceApi.DeleteNatService(context.Background(), &oscgo.DeleteNatServiceOpts{
-		DeleteNatServiceRequest: optional.NewInterface(oscgo.DeleteNatServiceRequest{
-			NatServiceId: d.Id(),
-		}),
-	})
+	_, _, err := conn.NatServiceApi.DeleteNatService(context.Background()).DeleteNatServiceRequest(oscgo.DeleteNatServiceRequest{
+		NatServiceId: d.Id(),
+	}).Execute()
 	if err != nil {
 		return fmt.Errorf("Error deleting Nat Service: %s", err)
 	}
 
-	filterReq := &oscgo.ReadNatServicesOpts{
-		ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
-			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
-		}),
+	filterReq := oscgo.ReadNatServicesRequest{
+		Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{d.Id()}},
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -235,9 +224,9 @@ func resourceOAPINatServiceDelete(d *schema.ResourceData, meta interface{}) erro
 
 // NGOAPIStateRefreshFunc returns a resource.StateRefreshFunc that is used to watch
 // a NAT Service.
-func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req *oscgo.ReadNatServicesOpts, failState string) resource.StateRefreshFunc {
+func NGOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadNatServicesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := client.NatServiceApi.ReadNatServices(context.Background(), req)
+		resp, _, err := client.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(req).Execute()
 		if err != nil {
 			return nil, "failed", err
 		}

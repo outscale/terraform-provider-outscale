@@ -6,8 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -74,7 +73,7 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(params)})
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(params).Execute()
 		return resource.RetryableError(err)
 	})
 

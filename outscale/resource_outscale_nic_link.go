@@ -9,8 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -74,7 +73,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	nicID := d.Get("nic_id").(string)
 
 	opts := oscgo.LinkNicRequest{
-		DeviceNumber: int64(di),
+		DeviceNumber: int32(di),
 		VmId:         vmID,
 		NicId:        nicID,
 	}
@@ -84,7 +83,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentCreate(d *schema.ResourceData
 	var resp oscgo.LinkNicResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.LinkNic(context.Background(), &oscgo.LinkNicOpts{LinkNicRequest: optional.NewInterface(opts)})
+		resp, _, err = conn.NicApi.LinkNic(context.Background()).LinkNicRequest(opts).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -155,11 +154,7 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentDelete(d *schema.ResourceData
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.UnlinkNic(context.Background(),
-			&oscgo.UnlinkNicOpts{
-				UnlinkNicRequest: optional.NewInterface(req),
-			},
-		)
+		_, _, err = conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -244,9 +239,7 @@ func nicLinkRefreshFunc(conn *oscgo.APIClient, nicID string) resource.StateRefre
 		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NicApi.ReadNics(context.Background(),
-				&oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)},
-			)
+			resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

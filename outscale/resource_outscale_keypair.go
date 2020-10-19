@@ -3,11 +3,11 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -57,7 +57,7 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.CreateKeypairResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.KeypairApi.CreateKeypair(context.Background(), &oscgo.CreateKeypairOpts{CreateKeypairRequest: optional.NewInterface(req)})
+		resp, _, err = conn.KeypairApi.CreateKeypair(context.Background()).CreateKeypairRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -69,7 +69,7 @@ func resourceOAPIKeyPairCreate(d *schema.ResourceData, meta interface{}) error {
 	})
 
 	var errString string
-
+	log.Printf("[DEBUG] resp keypair: %+v", resp)
 	if err != nil {
 		errString = err.Error()
 		return fmt.Errorf("Error creating OAPIKeyPair: %s", errString)
@@ -99,7 +99,7 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -150,7 +150,7 @@ func resourceOAPIKeyPairDelete(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		var err error
-		_, _, err = conn.KeypairApi.DeleteKeypair(context.Background(), &oscgo.DeleteKeypairOpts{DeleteKeypairRequest: optional.NewInterface(request)})
+		_, _, err = conn.KeypairApi.DeleteKeypair(context.Background()).DeleteKeypairRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -146,7 +145,7 @@ func testAccCheckOutscaleOAPIPublicIPDestroy(s *terraform.State) error {
 		var response oscgo.ReadPublicIpsResponse
 		err := resource.Retry(60*time.Second, func() *resource.RetryError {
 			var err error
-			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 			return resource.RetryableError(err)
 		})
 
@@ -220,7 +219,7 @@ func testAccCheckOutscaleOAPIPublicIPExists(n string, res *oscgo.PublicIp) resou
 		var response oscgo.ReadPublicIpsResponse
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
-			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+			response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 			if err != nil {
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidPublicIps.NotFound") {

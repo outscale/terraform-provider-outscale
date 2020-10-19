@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"log"
 	"strings"
 	"time"
@@ -56,11 +55,11 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	var resp oscgo.UpdateRoutePropagationResponse
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background(), &oscgo.UpdateRoutePropagationOpts{UpdateRoutePropagationRequest: optional.NewInterface(oscgo.UpdateRoutePropagationRequest{
+		resp, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
 			Enable:           enable,
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -92,11 +91,11 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationDisable(d *schema.ResourceDat
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background(), &oscgo.UpdateRoutePropagationOpts{UpdateRoutePropagationRequest: optional.NewInterface(oscgo.UpdateRoutePropagationRequest{
+		_, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
 			Enable:           enable,
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -123,9 +122,9 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationRead(d *schema.ResourceData, 
 	var resp oscgo.ReadRouteTablesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(), &oscgo.ReadRouteTablesOpts{ReadRouteTablesRequest: optional.NewInterface(oscgo.ReadRouteTablesRequest{
+		resp, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(oscgo.ReadRouteTablesRequest{
 			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{rtID}},
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

@@ -6,9 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/antihax/optional"
-
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/openlyinc/pointy"
 	"github.com/spf13/cast"
@@ -221,9 +219,7 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 		imageRequest.SetRootDeviceName(v)
 	}
 
-	resp, _, err := conn.ImageApi.CreateImage(context.Background(), &oscgo.CreateImageOpts{
-		CreateImageRequest: optional.NewInterface(imageRequest),
-	})
+	resp, _, err := conn.ImageApi.CreateImage(context.Background()).CreateImageRequest(imageRequest).Execute()
 	if err != nil {
 		return err
 	}
@@ -236,16 +232,12 @@ func resourceOAPIImageCreate(d *schema.ResourceData, meta interface{}) error {
 
 	log.Printf("[DEBUG] Waiting for OMI %s to become available...", *image.ImageId)
 
-	filterReq := &oscgo.ReadImagesOpts{
-		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{*image.ImageId}},
-		}),
-	}
+	req := oscgo.ReadImagesRequest{Filters: &oscgo.FiltersImage{ImageIds: &[]string{*image.ImageId}}}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"available"},
-		Refresh:    ImageOAPIStateRefreshFunc(conn, filterReq, "failed"),
+		Refresh:    ImageOAPIStateRefreshFunc(conn, req, "failed"),
 		Timeout:    10 * time.Minute,
 		MinTimeout: 30 * time.Second,
 		Delay:      1 * time.Minute,
@@ -272,13 +264,11 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	id := d.Id()
 
-	req := &oscgo.ReadImagesOpts{
-		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
-		}),
+	req := oscgo.ReadImagesRequest{
+		Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
 	}
 
-	resp, _, err := conn.ImageApi.ReadImages(context.Background(), req)
+	resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("Error reading for OMI (%s): %v", id, err)
 	}
@@ -376,11 +366,9 @@ func resourceOAPIImageUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	_, _, err := conn.ImageApi.DeleteImage(context.Background(), &oscgo.DeleteImageOpts{
-		DeleteImageRequest: optional.NewInterface(oscgo.DeleteImageRequest{
-			ImageId: d.Id(),
-		}),
-	})
+	_, _, err := conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(oscgo.DeleteImageRequest{
+		ImageId: d.Id(),
+	}).Execute()
 
 	if err != nil {
 		return fmt.Errorf("Error deleting the image")
@@ -397,10 +385,8 @@ func resourceOAPIImageDelete(d *schema.ResourceData, meta interface{}) error {
 func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) error {
 	log.Printf("[INFO] Waiting for OMI %s to be deleted...", id)
 
-	filterReq := &oscgo.ReadImagesOpts{
-		ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-			Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
-		}),
+	filterReq := oscgo.ReadImagesRequest{
+		Filters: &oscgo.FiltersImage{ImageIds: &[]string{id}},
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -420,9 +406,9 @@ func resourceOutscaleOAPIImageWaitForDestroy(id string, conn *oscgo.APIClient) e
 }
 
 // ImageOAPIStateRefreshFunc ...
-func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req *oscgo.ReadImagesOpts, failState string) resource.StateRefreshFunc {
+func ImageOAPIStateRefreshFunc(client *oscgo.APIClient, req oscgo.ReadImagesRequest, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := client.ImageApi.ReadImages(context.Background(), req)
+		resp, _, err := client.ImageApi.ReadImages(context.Background()).ReadImagesRequest(req).Execute()
 		if err != nil {
 			return nil, "failed", err
 		}

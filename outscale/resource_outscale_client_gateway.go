@@ -6,13 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func resourceOutscaleClientGateway() *schema.Resource {
@@ -62,15 +61,12 @@ func resourceOutscaleClientGatewayCreate(d *schema.ResourceData, meta interface{
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	req := oscgo.CreateClientGatewayRequest{
-		BgpAsn:         cast.ToInt64(d.Get("bgp_asn")),
+		BgpAsn:         cast.ToInt32(d.Get("bgp_asn")),
 		ConnectionType: d.Get("connection_type").(string),
 		PublicIp:       d.Get("public_ip").(string),
 	}
 
-	client, _, err := conn.ClientGatewayApi.CreateClientGateway(context.Background(),
-		&oscgo.CreateClientGatewayOpts{
-			CreateClientGatewayRequest: optional.NewInterface(req),
-		})
+	client, _, err := conn.ClientGatewayApi.CreateClientGateway(context.Background()).CreateClientGatewayRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -157,9 +153,7 @@ func resourceOutscaleClientGatewayDelete(d *schema.ResourceData, meta interface{
 		ClientGatewayId: gatewayID,
 	}
 
-	_, _, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background(), &oscgo.DeleteClientGatewayOpts{
-		DeleteClientGatewayRequest: optional.NewInterface(req),
-	})
+	_, _, err := conn.ClientGatewayApi.DeleteClientGateway(context.Background()).DeleteClientGatewayRequest(req).Execute()
 	if err != nil {
 		return err
 	}
@@ -190,9 +184,7 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 			},
 		}
 
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background(), &oscgo.ReadClientGatewaysOpts{
-			ReadClientGatewaysRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil {
 			switch {
 			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):

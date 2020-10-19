@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -71,11 +70,7 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 	var err error
 	var resp oscgo.UpdateNetResponse
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.UpdateNet(context.Background(),
-			&oscgo.UpdateNetOpts{
-				UpdateNetRequest: optional.NewInterface(req),
-			},
-		)
+		resp, _, err = conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -107,10 +102,7 @@ func resourceOutscaleOAPILinAttrUpdate(d *schema.ResourceData, meta interface{})
 	}
 
 	if err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err := conn.NetApi.UpdateNet(context.Background(),
-			&oscgo.UpdateNetOpts{
-				UpdateNetRequest: optional.NewInterface(req),
-			})
+		_, _, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -139,11 +131,7 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.ReadNets(context.Background(),
-			&oscgo.ReadNetsOpts{
-				ReadNetsRequest: optional.NewInterface(req),
-			},
-		)
+		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

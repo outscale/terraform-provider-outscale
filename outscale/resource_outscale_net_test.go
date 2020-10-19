@@ -7,8 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -71,9 +70,9 @@ func testAccCheckOutscaleOAPILinExists(n string, res *oscgo.Net) resource.TestCh
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.OSCAPI.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(oscgo.ReadNetsRequest{
+			resp, _, err = conn.OSCAPI.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
 				Filters: &oscgo.FiltersNet{NetIds: &[]string{rs.Primary.ID}},
-			})})
+			}).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

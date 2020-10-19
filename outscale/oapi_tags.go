@@ -8,10 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
@@ -25,10 +24,10 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		// Set tag
 		if len(remove) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, _, err := conn.TagApi.DeleteTags(context.Background(), &oscgo.DeleteTagsOpts{DeleteTagsRequest: optional.NewInterface(oscgo.DeleteTagsRequest{
+				_, _, err := conn.TagApi.DeleteTags(context.Background()).DeleteTagsRequest(oscgo.DeleteTagsRequest{
 					ResourceIds: []string{d.Id()},
 					Tags:        remove,
-				})})
+				}).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
@@ -43,10 +42,10 @@ func setOSCAPITags(conn *oscgo.APIClient, d *schema.ResourceData) error {
 		}
 		if len(create) > 0 {
 			err := resource.Retry(60*time.Second, func() *resource.RetryError {
-				_, _, err := conn.TagApi.CreateTags(context.Background(), &oscgo.CreateTagsOpts{CreateTagsRequest: optional.NewInterface(oscgo.CreateTagsRequest{
+				_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(oscgo.CreateTagsRequest{
 					ResourceIds: []string{d.Id()},
 					Tags:        create,
-				})})
+				}).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), ".NotFound") {
 						return resource.RetryableError(err) // retry
@@ -201,9 +200,7 @@ func assignTags(tag *schema.Set, resourceID string, conn *oscgo.APIClient) error
 	request.Tags = tagsFromSliceMap(tag)
 	request.ResourceIds = []string{resourceID}
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
-		_, _, err := conn.TagApi.CreateTags(context.Background(), &oscgo.CreateTagsOpts{
-			CreateTagsRequest: optional.NewInterface(request),
-		})
+		_, _, err := conn.TagApi.CreateTags(context.Background()).CreateTagsRequest(request).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "NotFound") {

@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -47,7 +46,7 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 	var resp oscgo.CreateNetResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.CreateNet(context.Background(), &oscgo.CreateNetOpts{CreateNetRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NetApi.CreateNet(context.Background()).CreateNetRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -91,7 +90,7 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -159,7 +158,7 @@ func resourceOutscaleOAPINetDelete(d *schema.ResourceData, meta interface{}) err
 		Pending: []string{"pending"},
 		Target:  []string{"deleted", "failed"},
 		Refresh: func() (interface{}, string, error) {
-			_, _, err := conn.NetApi.DeleteNet(context.Background(), &oscgo.DeleteNetOpts{DeleteNetRequest: optional.NewInterface(req)})
+			_, _, err := conn.NetApi.DeleteNet(context.Background()).DeleteNetRequest(req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return nil, "pending", nil

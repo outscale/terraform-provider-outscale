@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -457,9 +456,9 @@ func testAccCheckOAPIVMExistsWithProviders(n string, i *oscgo.Vm, providers *[]*
 			var resp oscgo.ReadVmsResponse
 			var err error
 			for {
-				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+				resp, _, err = client.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})})
+				}).Execute()
 				if err != nil {
 					time.Sleep(10 * time.Second)
 				} else {
@@ -516,9 +515,9 @@ func testAccCheckOutscaleOAPIVMDestroyWithProvider(s *terraform.State, provider 
 		var err error
 		for {
 			// Try to find the resource
-			resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+			resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 				Filters: getVMsFilterByVMID(rs.Primary.ID),
-			})})
+			}).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
 					time.Sleep(10 * time.Second)
@@ -574,9 +573,9 @@ func testAccCheckOutscaleOAPIVMExistsWithProviders(n string, i *oscgo.Vm, provid
 			var err error
 
 			for {
-				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{ReadVmsRequest: optional.NewInterface(oscgo.ReadVmsRequest{
+				resp, _, err = conn.OSCAPI.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
 					Filters: getVMsFilterByVMID(rs.Primary.ID),
-				})})
+				}).Execute()
 				if err != nil {
 					if oapiErr, ok := err.(awserr.Error); ok && oapiErr.Code() == "InvalidVmsID.NotFound" {
 						continue

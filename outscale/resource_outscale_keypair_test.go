@@ -7,8 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -98,9 +97,9 @@ func testAccCheckOutscaleOAPIKeyPairDestroy(s *terraform.State) error {
 		var resp oscgo.ReadKeypairsResponse
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(oscgo.ReadKeypairsRequest{
+			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
 				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
-			})})
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -156,9 +155,9 @@ func testAccCheckOutscaleOAPIKeyPairExists(n string, res *oscgo.Keypair) resourc
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(oscgo.ReadKeypairsRequest{
+			resp, _, err = conn.OSCAPI.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(oscgo.ReadKeypairsRequest{
 				Filters: &oscgo.FiltersKeypair{KeypairNames: &[]string{rs.Primary.ID}},
-			})})
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

@@ -6,8 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -93,9 +92,7 @@ func testAccOutscaleVPNConnectionRouteExists(resourceName string) resource.TestC
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 
 		vpnConnection := resp.GetVpnConnections()[0]
 
@@ -129,9 +126,7 @@ func testAccOutscaleVPNConnectionRouteDestroy(s *terraform.State) error {
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 
 		vpnConnection := resp.GetVpnConnections()[0]
 

@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/spf13/cast"
 
@@ -156,7 +155,7 @@ func resourceOutscaleOAPIImageLaunchPermissionCreate(d *schema.ResourceData, met
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		_, _, err = conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{UpdateImageRequest: optional.NewInterface(request)})
+		_, _, err = conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -185,11 +184,11 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 	var resp oscgo.ReadImagesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ImageApi.ReadImages(context.Background(), &oscgo.ReadImagesOpts{ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{d.Id()},
 			},
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -247,7 +246,7 @@ func resourceOutscaleOAPIImageLaunchPermissionDelete(d *schema.ResourceData, met
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			_, _, err = conn.ImageApi.UpdateImage(context.Background(), &oscgo.UpdateImageOpts{UpdateImageRequest: optional.NewInterface(request)})
+			_, _, err = conn.ImageApi.UpdateImage(context.Background()).UpdateImageRequest(request).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -274,11 +273,11 @@ func hasOAPILaunchPermission(conn *oscgo.APIClient, imageID string) (bool, error
 	var resp oscgo.ReadImagesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.ImageApi.ReadImages(context.Background(), &oscgo.ReadImagesOpts{ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
+		resp, _, err = conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(oscgo.ReadImagesRequest{
 			Filters: &oscgo.FiltersImage{
 				ImageIds: &[]string{imageID},
 			},
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

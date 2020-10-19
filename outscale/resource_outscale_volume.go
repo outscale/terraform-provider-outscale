@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -109,7 +108,7 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		SubregionName: d.Get("subregion_name").(string),
 	}
 	if value, ok := d.GetOk("size"); ok {
-		request.SetSize(int64(value.(int)))
+		request.SetSize(int32(value.(int)))
 	}
 	if value, ok := d.GetOk("snapshot_id"); ok {
 		request.SetSnapshotId(value.(string))
@@ -125,14 +124,14 @@ func resourceOAPIVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if t != "io1" && iops > 0 {
 		log.Printf("[WARN] IOPs is only valid for storate type io1 for EBS Volumes")
 	} else if t == "io1" {
-		request.SetIops(int64(iops))
+		request.SetIops(int32(iops))
 	}
 
 	var resp oscgo.CreateVolumeResponse
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VolumeApi.CreateVolume(context.Background(), &oscgo.CreateVolumeOpts{CreateVolumeRequest: optional.NewInterface(request)})
+		resp, _, err = conn.VolumeApi.CreateVolume(context.Background()).CreateVolumeRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -185,7 +184,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	var resp oscgo.ReadVolumesResponse
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		r, _, err := conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
+		r, _, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -245,7 +244,7 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 		request := oscgo.DeleteVolumeRequest{
 			VolumeId: d.Id(),
 		}
-		_, _, err := conn.VolumeApi.DeleteVolume(context.Background(), &oscgo.DeleteVolumeOpts{DeleteVolumeRequest: optional.NewInterface(request)})
+		_, _, err := conn.VolumeApi.DeleteVolume(context.Background()).DeleteVolumeRequest(request).Execute()
 		if err == nil {
 			return nil
 		}
@@ -262,11 +261,11 @@ func resourceOAPIVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 
 func volumeOAPIStateRefreshFunc(conn *oscgo.APIClient, volumeID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(oscgo.ReadVolumesRequest{
+		resp, _, err := conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(oscgo.ReadVolumesRequest{
 			Filters: &oscgo.FiltersVolume{
 				VolumeIds: &[]string{volumeID},
 			},
-		})})
+		}).Execute()
 
 		if err != nil {
 			if ec2err, ok := err.(awserr.Error); ok {

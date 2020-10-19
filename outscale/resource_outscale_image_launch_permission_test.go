@@ -9,8 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/aws/aws-sdk-go/aws"
 	r "github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -152,7 +151,7 @@ func testAccOutscaleOAPIImageDisappears(imageID *string) r.TestCheckFunc {
 
 		err := r.Retry(5*time.Minute, func() *r.RetryError {
 			var err error
-			_, _, err = conn.ImageApi.DeleteImage(context.Background(), &oscgo.DeleteImageOpts{DeleteImageRequest: optional.NewInterface(req)})
+			_, _, err = conn.ImageApi.DeleteImage(context.Background()).DeleteImageRequest(req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return r.RetryableError(err)

@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/openlyinc/pointy"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/spf13/cast"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -93,7 +92,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 	var vols oscgo.ReadVolumesResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
+		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -136,7 +135,7 @@ func resourceOAPIVolumeLinkCreate(d *schema.ResourceData, meta interface{}) erro
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			_, _, err = conn.VolumeApi.LinkVolume(context.Background(), &oscgo.LinkVolumeOpts{LinkVolumeRequest: optional.NewInterface(opts)})
+			_, _, err = conn.VolumeApi.LinkVolume(context.Background()).LinkVolumeRequest(opts).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -204,7 +203,7 @@ func volumeOAPIAttachmentStateRefreshFunc(conn *oscgo.APIClient, volumeID, insta
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
+			resp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -248,7 +247,7 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		var err error
-		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
+		vols, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -325,7 +324,7 @@ func resourceOAPIVolumeLinkDelete(d *schema.ResourceData, meta interface{}) erro
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.VolumeApi.UnlinkVolume(context.Background(), &oscgo.UnlinkVolumeOpts{UnlinkVolumeRequest: optional.NewInterface(opts)})
+		_, _, err = conn.VolumeApi.UnlinkVolume(context.Background()).UnlinkVolumeRequest(opts).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

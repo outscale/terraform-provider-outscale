@@ -8,10 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func TestAccOutscaleOAPISubNet_basic(t *testing.T) {
@@ -48,13 +47,11 @@ func testAccCheckOutscaleOAPISubNetExists(n string, res *oscgo.Subnet) resource.
 
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
-				ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
-					Filters: &oscgo.FiltersSubnet{
-						SubnetIds: &[]string{rs.Primary.ID},
-					},
-				}),
-			})
+			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+				Filters: &oscgo.FiltersSubnet{
+					SubnetIds: &[]string{rs.Primary.ID},
+				},
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -91,13 +88,11 @@ func testAccCheckOutscaleOAPISubNetDestroyed(s *terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		err := resource.Retry(30*time.Second, func() *resource.RetryError {
 			var err error
-			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
-				ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
-					Filters: &oscgo.FiltersSubnet{
-						SubnetIds: &[]string{rs.Primary.ID},
-					},
-				}),
-			})
+			resp, _, err = conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+				Filters: &oscgo.FiltersSubnet{
+					SubnetIds: &[]string{rs.Primary.ID},
+				},
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

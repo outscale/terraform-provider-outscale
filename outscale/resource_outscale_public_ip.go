@@ -7,11 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
@@ -40,7 +39,7 @@ func resourceOutscaleOAPIPublicIPCreate(d *schema.ResourceData, meta interface{}
 	allocOpts := oscgo.CreatePublicIpRequest{}
 
 	log.Printf("[DEBUG] EIP create configuration: %#v", allocOpts)
-	resp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background(), &oscgo.CreatePublicIpOpts{CreatePublicIpRequest: optional.NewInterface(allocOpts)})
+	resp, _, err := conn.PublicIpApi.CreatePublicIp(context.Background()).CreatePublicIpRequest(allocOpts).Execute()
 	if err != nil {
 		return fmt.Errorf("error creating EIP: %s", utils.GetErrorResponse(err))
 	}
@@ -72,7 +71,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		Filters: &oscgo.FiltersPublicIp{PublicIpIds: &[]string{id}},
 	}
 
-	response, _, err := conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+	response, _, err := conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 	if err != nil {
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
@@ -150,7 +149,7 @@ func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}
 
 		err := resource.Retry(120*time.Second, func() *resource.RetryError {
 			var err error
-			_, _, err = conn.PublicIpApi.LinkPublicIp(context.Background(), &oscgo.LinkPublicIpOpts{LinkPublicIpRequest: optional.NewInterface(assocOpts)})
+			_, _, err = conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(assocOpts).Execute()
 
 			if err != nil {
 				if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
@@ -206,14 +205,14 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 		switch resourceOutscaleOAPIPublicIPDomain(d) {
 		case "vpc":
 			lppiId := d.Get("link_public_ip_id").(string)
-			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
+			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
 				LinkPublicIpId: &lppiId,
-			})})
+			}).Execute()
 		case "standard":
 			pIP := d.Get("public_ip").(string)
-			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(oscgo.UnlinkPublicIpRequest{
+			_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(oscgo.UnlinkPublicIpRequest{
 				PublicIp: &pIP,
-			})})
+			}).Execute()
 		}
 
 		if err != nil {
@@ -229,9 +228,9 @@ func resourceOutscaleOAPIPublicIPDelete(d *schema.ResourceData, meta interface{}
 
 		idIP := d.Id()
 		log.Printf("[DEBUG] EIP release (destroy) address: %v", d.Id())
-		_, _, err = conn.PublicIpApi.DeletePublicIp(context.Background(), &oscgo.DeletePublicIpOpts{DeletePublicIpRequest: optional.NewInterface(oscgo.DeletePublicIpRequest{
+		_, _, err = conn.PublicIpApi.DeletePublicIp(context.Background()).DeletePublicIpRequest(oscgo.DeletePublicIpRequest{
 			PublicIpId: &idIP,
-		})})
+		}).Execute()
 
 		if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {
 			return nil

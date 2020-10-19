@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -116,8 +115,8 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	dhcps, ok := resp.GetDhcpOptionsSetsOk()
-	if !ok {
+	dhcps := resp.GetDhcpOptionsSets()
+	if len(dhcps) == 0 {
 		d.SetId("")
 		return nil
 	}
@@ -192,9 +191,7 @@ func createDhcpOption(conn *oscgo.APIClient, dhcp oscgo.CreateDhcpOptionsRequest
 	var resp oscgo.CreateDhcpOptionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background(), &oscgo.CreateDhcpOptionsOpts{
-			CreateDhcpOptionsRequest: optional.NewInterface(dhcp),
-		})
+		resp, _, err = conn.DhcpOptionApi.CreateDhcpOptions(context.Background()).CreateDhcpOptionsRequest(dhcp).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -218,9 +215,7 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 	var resp oscgo.ReadDhcpOptionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.DhcpOptionApi.ReadDhcpOptions(context.Background(), &oscgo.ReadDhcpOptionsOpts{
-			ReadDhcpOptionsRequest: optional.NewInterface(filterRequest),
-		})
+		resp, _, err = conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(filterRequest).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -233,8 +228,8 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 		return nil, &resp, err
 	}
 
-	dhcps, ok := resp.GetDhcpOptionsSetsOk()
-	if !ok || len(dhcps) == 0 {
+	dhcps := resp.GetDhcpOptionsSets()
+	if len(dhcps) == 0 {
 		return nil, &resp, fmt.Errorf("the Outscale DHCP Option is not found %s", dhcpID)
 	}
 
@@ -243,11 +238,9 @@ func readDhcpOption(conn *oscgo.APIClient, dhcpID string) (*oscgo.DhcpOptionsSet
 
 func deleteDhcpOptions(conn *oscgo.APIClient, dhcpID string) error {
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background(), &oscgo.DeleteDhcpOptionsOpts{
-			DeleteDhcpOptionsRequest: optional.NewInterface(oscgo.DeleteDhcpOptionsRequest{
-				DhcpOptionsSetId: dhcpID,
-			}),
-		})
+		_, _, err := conn.DhcpOptionApi.DeleteDhcpOptions(context.Background()).DeleteDhcpOptionsRequest(oscgo.DeleteDhcpOptionsRequest{
+			DhcpOptionsSetId: dhcpID,
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -264,14 +257,11 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.ReadNets(context.Background(),
-			&oscgo.ReadNetsOpts{
-				ReadNetsRequest: optional.NewInterface(oscgo.ReadNetsRequest{
-					Filters: &oscgo.FiltersNet{
-						DhcpOptionsSetIds: &[]string{dhcpID},
-					},
-				}),
-			})
+		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(oscgo.ReadNetsRequest{
+			Filters: &oscgo.FiltersNet{
+				DhcpOptionsSetIds: &[]string{dhcpID},
+			},
+		}).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -291,12 +281,10 @@ func getAttachedDHCPs(conn *oscgo.APIClient, dhcpID string) ([]oscgo.Net, error)
 func detachDHCPs(conn *oscgo.APIClient, nets []oscgo.Net) error {
 	// Detaching the dhcp of the nets
 	for _, net := range nets {
-		_, _, err := conn.NetApi.UpdateNet(context.Background(), &oscgo.UpdateNetOpts{
-			UpdateNetRequest: optional.NewInterface(oscgo.UpdateNetRequest{
-				DhcpOptionsSetId: "default",
-				NetId:            net.GetNetId(),
-			}),
-		})
+		_, _, err := conn.NetApi.UpdateNet(context.Background()).UpdateNetRequest(oscgo.UpdateNetRequest{
+			DhcpOptionsSetId: "default",
+			NetId:            net.GetNetId(),
+		}).Execute()
 		if err != nil {
 			return fmt.Errorf("Error updating net(%s) in DHCP Option resource: %s", net.GetNetId(), err)
 		}

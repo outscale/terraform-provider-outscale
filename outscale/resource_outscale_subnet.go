@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func resourceOutscaleOAPISubNet() *schema.Resource {
@@ -43,7 +42,7 @@ func resourceOutscaleOAPISubNetCreate(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.CreateSubnetResponse
 	var err error
 	err = resource.Retry(40*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.CreateSubnet(context.Background(), &oscgo.CreateSubnetOpts{CreateSubnetRequest: optional.NewInterface(req)})
+		r, _, err := conn.SubnetApi.CreateSubnet(context.Background()).CreateSubnetRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				fmt.Printf("[INFO] Request limit exceeded")
@@ -96,7 +95,7 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 	}
 	var resp oscgo.ReadSubnetsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
+		r, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -137,7 +136,7 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 	}
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background(), &oscgo.DeleteSubnetOpts{DeleteSubnetRequest: optional.NewInterface(req)})
+		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -198,13 +197,11 @@ func readOutscaleOAPISubNet(d *schema.ResourceData, subnet *oscgo.Subnet) error 
 }
 func SubnetStateOApiRefreshFunc(conn *oscgo.APIClient, subnetID string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{
-			ReadSubnetsRequest: optional.NewInterface(oscgo.ReadSubnetsRequest{
-				Filters: &oscgo.FiltersSubnet{
-					SubnetIds: &[]string{subnetID},
-				},
-			}),
-		})
+		resp, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(oscgo.ReadSubnetsRequest{
+			Filters: &oscgo.FiltersSubnet{
+				SubnetIds: &[]string{subnetID},
+			},
+		}).Execute()
 		if err != nil {
 			log.Printf("[ERROR] error on SubnetStateRefresh: %s", err)
 			return nil, "error", err

@@ -9,8 +9,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -78,7 +77,7 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadSubnetsResponse
 
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.SubnetApi.ReadSubnets(context.Background(), &oscgo.ReadSubnetsOpts{ReadSubnetsRequest: optional.NewInterface(req)})
+		r, _, err := conn.SubnetApi.ReadSubnets(context.Background()).ReadSubnetsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -143,10 +142,10 @@ func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSub
 	for _, v := range set.List() {
 		m := v.(map[string]interface{})
 		var filterValues []string
-		var availableIPsCounts []int64
+		var availableIPsCounts []int32
 		for _, e := range m["values"].([]interface{}) {
 			filterValues = append(filterValues, e.(string))
-			availableIPsCounts = append(availableIPsCounts, cast.ToInt64(e))
+			availableIPsCounts = append(availableIPsCounts, cast.ToInt32(e))
 		}
 
 		switch name := m["name"].(string); name {

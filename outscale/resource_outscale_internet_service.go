@@ -7,12 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 )
 
 func resourceOutscaleOAPIInternetService() *schema.Resource {
@@ -50,9 +49,7 @@ func resourceOutscaleOAPIInternetService() *schema.Resource {
 func resourceOutscaleOAPIInternetServiceCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background(), &oscgo.CreateInternetServiceOpts{
-		CreateInternetServiceRequest: optional.NewInterface(oscgo.CreateInternetServiceRequest{}),
-	})
+	resp, _, err := conn.InternetServiceApi.CreateInternetService(context.Background()).CreateInternetServiceRequest(oscgo.CreateInternetServiceRequest{}).Execute()
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error creating Internet Service: %s", utils.GetErrorResponse(err))
 	}
@@ -83,7 +80,7 @@ func resourceOutscaleOAPIInternetServiceRead(d *schema.ResourceData, meta interf
 	var resp oscgo.ReadInternetServicesResponse
 
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
-		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(req)})
+		r, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -140,10 +137,8 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	internetServiceID := d.Id()
-	filterReq := &oscgo.ReadInternetServicesOpts{
-		ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
-			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
-		}),
+	filterReq := oscgo.ReadInternetServicesRequest{
+		Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{internetServiceID}},
 	}
 
 	stateConf := &resource.StateChangeConf{
@@ -164,9 +159,7 @@ func resourceOutscaleOAPIInternetServiceDelete(d *schema.ResourceData, meta inte
 		InternetServiceId: internetServiceID,
 	}
 
-	_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background(), &oscgo.DeleteInternetServiceOpts{
-		DeleteInternetServiceRequest: optional.NewInterface(req),
-	})
+	_, _, err = conn.InternetServiceApi.DeleteInternetService(context.Background()).DeleteInternetServiceRequest(req).Execute()
 	if err != nil {
 		return fmt.Errorf("[DEBUG] Error deleting Internet Service id (%s)", err)
 	}

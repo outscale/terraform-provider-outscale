@@ -9,8 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/errwrap"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -91,7 +90,7 @@ func resourceOutscaleOAPILinPeeringCreate(d *schema.ResourceData, meta interface
 	var resp oscgo.CreateNetPeeringResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NetPeeringApi.CreateNetPeering(context.Background(), &oscgo.CreateNetPeeringOpts{CreateNetPeeringRequest: optional.NewInterface(createOpts)})
+		resp, _, err = conn.NetPeeringApi.CreateNetPeering(context.Background()).CreateNetPeeringRequest(createOpts).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -144,9 +143,9 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 			Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{d.Id()}},
-		})})
+		}).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -259,9 +258,9 @@ func resourceOutscaleOAPILinPeeringDelete(d *schema.ResourceData, meta interface
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NetPeeringApi.DeleteNetPeering(context.Background(), &oscgo.DeleteNetPeeringOpts{DeleteNetPeeringRequest: optional.NewInterface(oscgo.DeleteNetPeeringRequest{
+		_, _, err = conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
 			NetPeeringId: d.Id(),
-		})})
+		}).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -289,9 +288,9 @@ func resourceOutscaleOAPILinPeeringConnectionStateRefreshFunc(conn *oscgo.APICli
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{id}},
-			})})
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

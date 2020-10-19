@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -80,7 +79,7 @@ func resourceOutscaleOAPIVirtualGatewayLinkCreate(d *schema.ResourceData, meta i
 	var err error
 
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background(), &oscgo.LinkVirtualGatewayOpts{LinkVirtualGatewayRequest: optional.NewInterface(createOpts)})
+		_, _, err = conn.VirtualGatewayApi.LinkVirtualGateway(context.Background()).LinkVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidVirtualGatewayID.NotFound") {
 				return resource.RetryableError(
@@ -126,9 +125,9 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
+		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{vgwID}},
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -215,10 +214,10 @@ func resourceOutscaleOAPIVirtualGatewayLinkDelete(d *schema.ResourceData, meta i
 
 	var err error
 	err = resource.Retry(30*time.Second, func() *resource.RetryError {
-		_, _, err = conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background(), &oscgo.UnlinkVirtualGatewayOpts{UnlinkVirtualGatewayRequest: optional.NewInterface(oscgo.UnlinkVirtualGatewayRequest{
+		_, _, err = conn.VirtualGatewayApi.UnlinkVirtualGateway(context.Background()).UnlinkVirtualGatewayRequest(oscgo.UnlinkVirtualGatewayRequest{
 			VirtualGatewayId: d.Id(),
 			NetId:            netID.(string),
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
 				return resource.RetryableError(
@@ -269,11 +268,10 @@ func vpnGatewayLinkStateRefresh(conn *oscgo.APIClient, vpcID, vgwID string) reso
 		var err error
 		var resp oscgo.ReadVirtualGatewaysResponse
 		err = resource.Retry(30*time.Second, func() *resource.RetryError {
-			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(
-				oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
-					VirtualGatewayIds: &[]string{vgwID},
-					LinkNetIds:        &[]string{vpcID},
-				}})})
+			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{Filters: &oscgo.FiltersVirtualGateway{
+				VirtualGatewayIds: &[]string{vgwID},
+				LinkNetIds:        &[]string{vpcID},
+			}}).Execute()
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "InvalidVpnGatewayID.NotFound") {
 					return resource.RetryableError(
