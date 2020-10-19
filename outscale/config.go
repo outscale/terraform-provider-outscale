@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
@@ -36,9 +37,16 @@ func (c *Config) Client() (*OutscaleClient, error) {
 
 	skipClient.Transport = NewTransport(c.AccessKeyID, c.SecretKeyID, c.Region, skipClient.Transport)
 
+	basePath := fmt.Sprintf("api.%s.outscale.com", c.Region)
+	if endpoint, ok := c.Endpoints["api"]; ok {
+		basePath = endpoint.(string)
+	}
+
 	oscConfig := oscgo.NewConfiguration()
 	oscConfig.Debug = true
 	oscConfig.HTTPClient = skipClient
+	oscConfig.Host = basePath
+	oscConfig.UserAgent = "terraform-provider-outscale-dev"
 
 	oscClient := oscgo.NewAPIClient(oscConfig)
 
