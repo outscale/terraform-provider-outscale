@@ -136,7 +136,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("static_routes_only", vpnConnection.GetStaticRoutesOnly()); err != nil {
 		return err
 	}
-	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayId()); err != nil {
+	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayConfiguration()); err != nil {
 		return err
 	}
 	if err := d.Set("vpn_connection_id", vpnConnection.GetVpnConnectionId()); err != nil {
