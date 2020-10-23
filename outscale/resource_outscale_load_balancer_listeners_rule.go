@@ -235,14 +235,27 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if d.HasChange("listener_rule") {
-		_, n := d.GetChange("listener_rule")
+		n, ok := d.GetOk("listener_rule")
+
+		if ok != true {
+			return fmt.Errorf("can't get listener_rule")
+		}
+		//_, n := d.GetChange("listener_rule")
 		ns := n.(map[string]interface{})
 
 		req := oscgo.UpdateListenerRuleRequest{
 			ListenerRuleName: d.Id(),
 		}
-		req.SetHostPattern(ns["host_name_pattern"].(string))
-		req.SetListenerRuleName(ns["listener_rule_name"].(string))
+		if ns["host_name_pattern"] != nil {
+			req.SetHostPattern(ns["host_name_pattern"].(string))
+		} else {
+			req.SetHostPattern("")
+		}
+		if ns["listener_rule_name"] != nil {
+			req.SetListenerRuleName(ns["listener_rule_name"].(string))
+		} else {
+			req.SetListenerRuleName("")
+		}
 		elbOpts := &oscgo.UpdateListenerRuleOpts{
 			optional.NewInterface(req),
 		}

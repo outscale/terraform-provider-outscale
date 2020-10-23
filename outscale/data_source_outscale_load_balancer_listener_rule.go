@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -25,7 +26,8 @@ func attrLBListenerRule() map[string]*schema.Schema {
 		},
 		"listener_rule_name": {
 			Type:     schema.TypeString,
-			Required: true,
+			Optional: true,
+			Computed: true,
 		},
 		"path_pattern": {
 			Type:     schema.TypeString,
@@ -58,14 +60,38 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	lrNamei, nameOk := d.GetOk("listener_rule_name")
+	filters, filtersOk := d.GetOk("filter")
+	filter := &oscgo.FiltersListenerRule{}
 
-	lrName := lrNamei.(string)
-	if !nameOk {
+	if !nameOk && !filtersOk {
 		return fmt.Errorf("listener_rule_name must be assigned")
 	}
 
-	filter := &oscgo.FiltersListenerRule{
-		ListenerRuleNames: &[]string{lrName},
+	if filtersOk {
+		set := filters.(*schema.Set)
+
+		if set.Len() < 1 {
+			return fmt.Errorf("filter can't be empty")
+		}
+		for _, v := range set.List() {
+			m := v.(map[string]interface{})
+			filterValues := make([]string, 0)
+			for _, e := range m["values"].([]interface{}) {
+				filterValues = append(filterValues, e.(string))
+			}
+
+			switch name := m["name"].(string); name {
+			case "listener_rule_name":
+				filter.ListenerRuleNames = &filterValues
+			default:
+				filter.ListenerRuleNames = &filterValues
+				log.Printf("[Debug] Unknown Filter Name: %s. default to 'load_balancer_name'", name)
+			}
+		}
+	} else {
+		filter = &oscgo.FiltersListenerRule{
+			ListenerRuleNames: &[]string{lrNamei.(string)},
+		}
 	}
 
 	req := oscgo.ReadListenerRulesRequest{
