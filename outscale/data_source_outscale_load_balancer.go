@@ -212,22 +212,9 @@ func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBala
 	if filtersOk {
 		filter = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
 	} else {
-		switch ename.(type) {
-		case string:
-			elbName := ename.(string)
-			filter = &oscgo.FiltersLoadBalancer{
-				LoadBalancerNames: &[]string{elbName},
-			}
-
-		// for tags it's a list....
-		case []interface{}:
-			names := ename.([]interface{})
-			filter = &oscgo.FiltersLoadBalancer{
-				LoadBalancerNames: expandStringList(names),
-			}
-		default:
-			return nil, nil,
-				fmt.Errorf("wrong type to load_balancer_name")
+		elbName := ename.(string)
+		filter = &oscgo.FiltersLoadBalancer{
+			LoadBalancerNames: &[]string{elbName},
 		}
 	}
 	elbName := (*filter.LoadBalancerNames)[0]

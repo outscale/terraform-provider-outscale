@@ -1,6 +1,14 @@
 package outscale
 
 import (
+	"context"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/antihax/optional"
+	oscgo "github.com/marinsalinas/osc-sdk-go"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -16,26 +24,47 @@ func dataSourceOutscaleOAPILBUTags() *schema.Resource {
 func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := readLbs(conn, d)
-	if err != nil {
-		return err
+	ename, nameOk := d.GetOk("load_balancer_names")
+	if !nameOk {
+		return fmt.Errorf("load_balancer_names is required")
 	}
-	lbs := resp.LoadBalancers
-	l := 0
 
-	for _, v := range *lbs {
-		l += len(*v.Tags)
+	names := ename.([]interface{})
+
+	req := oscgo.ReadLoadBalancerTagsRequest{
+		LoadBalancerNames: *expandStringList(names),
 	}
+
+	describeElbOpts := &oscgo.ReadLoadBalancerTagsOpts{
+		ReadLoadBalancerTagsRequest: optional.NewInterface(req),
+	}
+
+	var resp oscgo.ReadLoadBalancerTagsResponse
+	var err error
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancerTags(
+			context.Background(),
+			describeElbOpts)
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Throttling:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	tags := *resp.Tags
+	l := len(*resp.Tags)
 
 	ta := make([]map[string]interface{}, l)
-	for _, v := range *lbs {
-		for k1, v1 := range *v.Tags {
-			t := make(map[string]interface{})
-			t["key"] = v1.Key
-			t["value"] = v1.Value
-			t["load_balancer_name"] = v.LoadBalancerName
-			ta[k1] = t
-		}
+	for k1, v1 := range tags {
+		t := make(map[string]interface{})
+		t["key"] = v1.Key
+		t["value"] = v1.Value
+		t["load_balancer_name"] = v1.LoadBalancerName
+		ta[k1] = t
 	}
 
 	d.Set("tags", ta)
@@ -46,7 +75,7 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 
 func getDSOAPILBUTagsSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"load_balancer_name": {
+		"load_balancer_names": {
 			Type:     schema.TypeList,
 			Optional: true,
 			Elem: &schema.Schema{
