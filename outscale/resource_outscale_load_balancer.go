@@ -513,8 +513,22 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 			return err
 		}
 	}
-	log.Printf("[DEBUG] read lb.Listeners %v", lb.Listeners)
 	d.Set("load_balancer_name", lb.LoadBalancerName)
+
+	if lb.Tags != nil {
+		ta := make([]map[string]interface{}, len(*lb.Tags))
+		for k1, v1 := range *lb.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			ta[k1] = t
+		}
+
+		d.Set("tags", ta)
+	} else {
+		d.Set("tags", make([]map[string]interface{}, 0))
+
+	}
 
 	policies := make(map[string]interface{})
 	if lb.ApplicationStickyCookiePolicies != nil {

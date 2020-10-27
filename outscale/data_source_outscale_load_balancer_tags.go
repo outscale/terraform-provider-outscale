@@ -16,28 +16,32 @@ func dataSourceOutscaleOAPILBUTags() *schema.Resource {
 func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	v, resp, err := readLbs0(conn, d)
+	resp, _, err := readLbs(conn, d)
 	if err != nil {
 		return err
 	}
+	lbs := resp.LoadBalancers
+	l := 0
 
-	t := make(map[string]interface{})
-	t["load_balancer_name"] = v.LoadBalancerName
-
-	ta := make([]map[string]interface{}, len(*v.Tags))
-	for k1, v1 := range *v.Tags {
-		t := make(map[string]interface{})
-		t["key"] = v1.Key
-		t["value"] = v1.Key
-		ta[k1] = t
+	for _, v := range *lbs {
+		l += len(*v.Tags)
 	}
 
-	t["tag"] = ta
+	ta := make([]map[string]interface{}, l)
+	for _, v := range *lbs {
+		for k1, v1 := range *v.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			t["load_balancer_name"] = v.LoadBalancerName
+			ta[k1] = t
+		}
+	}
 
+	d.Set("tags", ta)
 	d.SetId(resource.UniqueId())
 	d.Set("request_id", resp.ResponseContext.RequestId)
-
-	return d.Set("tag", t)
+	return nil
 }
 
 func getDSOAPILBUTagsSchema() map[string]*schema.Schema {
@@ -45,32 +49,26 @@ func getDSOAPILBUTagsSchema() map[string]*schema.Schema {
 		"load_balancer_name": {
 			Type:     schema.TypeList,
 			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
-		"tag": {
+		"tags": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 					"load_balancer_name": {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
-					"tag": {
-						Type:     schema.TypeList,
+					"value": {
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"key": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"value": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
 					},
 				},
 			},
