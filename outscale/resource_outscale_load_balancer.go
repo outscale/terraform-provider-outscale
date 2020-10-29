@@ -672,6 +672,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 	return resourceOutscaleOAPILoadBalancerRead(d, meta)
 }
+
 func resourceOutscaleOAPILoadBalancerDelete(d *schema.ResourceData, meta interface{}) error {
 	return resourceOutscaleOAPILoadBalancerDelete_(d, meta, true)
 }

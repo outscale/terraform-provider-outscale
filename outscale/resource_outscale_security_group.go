@@ -242,14 +242,14 @@ func resourceOutscaleOAPISecurityGroupDelete(d *schema.ResourceData, meta interf
 
 		if err != nil {
 			var errString string
-			if strings.Contains(err.Error(), "RequestLimitExceeded") || strings.Contains(err.Error(), "DependencyViolation") {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") ||
+				strings.Contains(err.Error(), "DependencyViolation") ||
+				strings.Contains(err.Error(), "Conflict") {
 				return resource.RetryableError(err)
-			} else if strings.Contains(err.Error(), "InvalidGroup.NotFound") {
-				return nil
+			} else if !strings.Contains(err.Error(), "InvalidGroup.NotFound") {
+				return resource.NonRetryableError(fmt.Errorf("Error on SGStateRefresh: %s", errString))
 			}
-			return resource.NonRetryableError(fmt.Errorf("Error on SGStateRefresh: %s", errString))
 		}
-
 		return nil
 	})
 }

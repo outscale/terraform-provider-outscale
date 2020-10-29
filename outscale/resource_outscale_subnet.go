@@ -135,10 +135,14 @@ func resourceOutscaleOAPISubNetDelete(d *schema.ResourceData, meta interface{}) 
 		SubnetId: id,
 	}
 	var err error
-	err = resource.Retry(120*time.Second, func() *resource.RetryError {
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.SubnetApi.DeleteSubnet(context.Background()).DeleteSubnetRequest(req).Execute()
 		if err != nil {
-			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+			if strings.Contains(err.Error(),
+				"RequestLimitExceeded:") ||
+				strings.Contains(err.Error(), "Conflict") {
+				log.Printf("[DEBUG] Subnet waiting delete: (%s)",
+					err)
 				return resource.RetryableError(err)
 			}
 			return resource.NonRetryableError(err)
