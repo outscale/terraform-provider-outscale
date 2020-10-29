@@ -580,6 +580,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
+	var err error
 	d.Partial(true)
 
 	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
@@ -591,6 +592,74 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			return e
 		}
 		return resourceOutscaleOAPILoadBalancerCreate_(d, meta, true)
+	}
+
+	if d.HasChange("tags") {
+		oraw, nraw := d.GetChange("tags")
+		o := oraw.(*schema.Set)
+		n := nraw.(*schema.Set)
+		create := tagsFromSliceMap(n)
+		var remove []oscgo.ResourceLoadBalancerTag
+		for _, t := range o.List() {
+			tag := t.(map[string]interface{})
+			s := tag["key"].(string)
+			remove = append(remove,
+				oscgo.ResourceLoadBalancerTag{
+					Key: &s,
+				})
+		}
+		if len(remove) < 1 {
+			goto skip_delete
+		}
+
+		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+			_, _, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
+				context.Background(),
+				&oscgo.DeleteLoadBalancerTagsOpts{
+					DeleteLoadBalancerTagsRequest: optional.NewInterface(
+						oscgo.DeleteLoadBalancerTagsRequest{
+							LoadBalancerNames: []string{d.Id()},
+							Tags:              remove,
+						})})
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), ".NotFound") {
+					return resource.RetryableError(err) // retry
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+	skip_delete:
+		if len(create) < 1 {
+			goto skip_create
+		}
+
+		err = resource.Retry(60*time.Second, func() *resource.RetryError {
+			_, _, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
+				context.Background(),
+				&oscgo.CreateLoadBalancerTagsOpts{
+					CreateLoadBalancerTagsRequest: optional.NewInterface(
+						oscgo.CreateLoadBalancerTagsRequest{
+							LoadBalancerNames: []string{d.Id()},
+							Tags:              create,
+						})})
+			if err != nil {
+				if strings.Contains(fmt.Sprint(err), ".NotFound") {
+					return resource.RetryableError(err) // retry
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
+	skip_create:
 	}
 
 	if d.HasChange("listeners") {
