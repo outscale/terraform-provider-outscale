@@ -1,4 +1,4 @@
-module github.com/outscale/osc-sdk-go/osc
+module github.com/outscale/osc-sdk-go/v2
 
 go 1.13
 

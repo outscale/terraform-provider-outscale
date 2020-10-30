@@ -14,7 +14,7 @@ import (
 
 	"github.com/spf13/cast"
 
-	oscgo "github.com/outscale/osc-sdk-go/osc"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
