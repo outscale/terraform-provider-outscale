@@ -2,7 +2,7 @@ package outscale
 
 import (
 	"fmt"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/osc"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
