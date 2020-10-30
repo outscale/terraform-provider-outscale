@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -103,7 +102,7 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 		if erratoi != nil {
 			return fmt.Errorf("can't convert load_balancer_port")
 		}
-		lbpi := int64(lbpii)
+		lbpi := int32(lbpii)
 		ll.SetLoadBalancerName(l["load_balancer_name"].(string))
 		ll.SetLoadBalancerPort(lbpi)
 		req.SetListener(ll)
@@ -133,21 +132,17 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 		if erratoi != nil {
 			return fmt.Errorf("can't convert priority")
 		}
-		lrfc.SetPriority(int64(p))
+		lrfc.SetPriority(int32(p))
 		req.SetListenerRule(lrfc)
 	} else {
 		return fmt.Errorf("expect listener rule")
-	}
-
-	elbOpts := &oscgo.CreateListenerRuleOpts{
-		optional.NewInterface(*req),
 	}
 
 	var err error
 	var resp oscgo.CreateListenerRuleResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.ListenerApi.CreateListenerRule(
-			context.Background(), elbOpts)
+			context.Background()).CreateListenerRuleRequest(*req).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
@@ -180,16 +175,12 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 		Filters: filter,
 	}
 
-	describeElbOpts := &oscgo.ReadListenerRulesOpts{
-		ReadListenerRulesRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.ListenerApi.ReadListenerRules(
-			context.Background(),
-			describeElbOpts)
+			context.Background()).ReadListenerRulesRequest(req).
+			Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
@@ -256,14 +247,13 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 		} else {
 			req.SetListenerRuleName("")
 		}
-		elbOpts := &oscgo.UpdateListenerRuleOpts{
-			optional.NewInterface(req),
-		}
+
 		var err error
 		var resp oscgo.UpdateListenerRuleResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			resp, _, err = conn.ListenerApi.UpdateListenerRule(
-				context.Background(), elbOpts)
+				context.Background()).UpdateListenerRuleRequest(req).
+				Execute()
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
@@ -293,14 +283,11 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 		ListenerRuleName: d.Id(),
 	}
 
-	deleteLrOpts := oscgo.DeleteListenerRuleOpts{
-		optional.NewInterface(req),
-	}
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.ListenerApi.DeleteListenerRule(
-			context.Background(), &deleteLrOpts)
+			context.Background()).DeleteListenerRuleRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
@@ -326,16 +313,12 @@ func resourceOutscaleLoadBalancerListenerRuleDelete(d *schema.ResourceData, meta
 				Filters: filter,
 			}
 
-			describeElbOpts := &oscgo.ReadListenerRulesOpts{
-				ReadListenerRulesRequest: optional.NewInterface(req),
-			}
-
 			var resp oscgo.ReadListenerRulesResponse
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				resp, _, err = conn.ListenerApi.ReadListenerRules(
-					context.Background(),
-					describeElbOpts)
+					context.Background()).
+					ReadListenerRulesRequest(req).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "Throttling:") {
 						return resource.RetryableError(err)

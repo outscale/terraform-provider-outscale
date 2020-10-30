@@ -61,19 +61,17 @@ func dataSourceOutscaleOAPILoadBalancerHealthCheckRead(d *schema.ResourceData, m
 		return fmt.Errorf("NO Attributes FOUND")
 	}
 
-	h := int64(0)
-	i := int64(0)
+	h := int32(0)
+	i := int32(0)
 	t := ""
-	ti := int64(0)
-	u := int64(0)
+	ti := int32(0)
+	u := int32(0)
 
-	if lb.HealthCheck.Path != "" {
-		h = lb.HealthCheck.HealthyThreshold
-		i = lb.HealthCheck.CheckInterval
-		t = lb.HealthCheck.Path
-		ti = lb.HealthCheck.Timeout
-		u = lb.HealthCheck.UnhealthyThreshold
-	}
+	h = lb.HealthCheck.HealthyThreshold
+	i = lb.HealthCheck.CheckInterval
+	t = *lb.HealthCheck.Path
+	ti = lb.HealthCheck.Timeout
+	u = lb.HealthCheck.UnhealthyThreshold
 
 	d.Set("healthy_threshold", h)
 	d.Set("check_interval", i)

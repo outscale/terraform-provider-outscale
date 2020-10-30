@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -160,7 +159,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 	}
 
 	if port, pok := d.GetOk("load_balancer_port"); pok {
-		port_i := int64(port.(int))
+		port_i := int32(port.(int))
 		req.LoadBalancerPort = &port_i
 	}
 
@@ -187,7 +186,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		}
 
 		if v, ok := lb_atoi_at(dal, "publication_interval"); ok {
-			pi := int64(v)
+			pi := int32(v)
 			access.PublicationInterval = &pi
 		}
 		obn := dal["osu_bucket_name"]
@@ -234,27 +233,24 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		}
 
 		var hc_req oscgo.HealthCheck
-		hc_req.HealthyThreshold = int64(ht)
-		hc_req.UnhealthyThreshold = int64(ut)
-		hc_req.CheckInterval = int64(i)
+		hc_req.HealthyThreshold = int32(ht)
+		hc_req.UnhealthyThreshold = int32(ut)
+		hc_req.CheckInterval = int32(i)
 		hc_req.Protocol = check["protocol"].(string)
 		if check["path"] != nil {
-			hc_req.Path = check["path"].(string)
+			p := check["path"].(string)
+			hc_req.Path = &p
 		}
-		hc_req.Port = int64(p)
-		hc_req.Timeout = int64(t)
+		hc_req.Port = int32(p)
+		hc_req.Timeout = int32(t)
 		req.HealthCheck = &hc_req
 
-	}
-
-	elbOpts := oscgo.UpdateLoadBalancerOpts{
-		optional.NewInterface(req),
 	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-			context.Background(), &elbOpts)
+			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {

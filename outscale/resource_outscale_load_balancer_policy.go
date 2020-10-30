@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -78,17 +77,14 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 	if cnok {
 		req.CookieName = &vs
 	}
-	acspOpts := oscgo.CreateLoadBalancerPolicyOpts{
-		optional.NewInterface(req),
-	}
 
 	var err error
 	var resp oscgo.CreateLoadBalancerPolicyResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.LoadBalancerPolicyApi.
 			CreateLoadBalancerPolicy(
-				context.Background(),
-				&acspOpts)
+				context.Background()).
+			CreateLoadBalancerPolicyRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -136,15 +132,12 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 		PolicyName:       p,
 	}
 
-	opts := &oscgo.DeleteLoadBalancerPolicyOpts{
-		optional.NewInterface(request),
-	}
-
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = elbconn.LoadBalancerPolicyApi.
 			DeleteLoadBalancerPolicy(
-				context.Background(), opts)
+				context.Background()).
+			DeleteLoadBalancerPolicyRequest(request).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {

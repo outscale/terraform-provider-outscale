@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -62,15 +61,12 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 		BackendVmIds:     a,
 	}
 
-	registerInstancesOpts := oscgo.RegisterVmsInLoadBalancerOpts{
-		optional.NewInterface(req),
-	}
-
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.
-			RegisterVmsInLoadBalancer(context.Background(),
-				&registerInstancesOpts)
+			RegisterVmsInLoadBalancer(context.Background()).
+			RegisterVmsInLoadBalancerRequest(req).
+			Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -134,15 +130,13 @@ func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interf
 		LoadBalancerName: e,
 		BackendVmIds:     lb,
 	}
-	deRegisterInstancesOpts := oscgo.DeregisterVmsInLoadBalancerOpts{
-		optional.NewInterface(req),
-	}
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err := conn.LoadBalancerApi.
-			DeregisterVmsInLoadBalancer(context.Background(),
-				&deRegisterInstancesOpts)
+			DeregisterVmsInLoadBalancer(context.Background()).
+			DeregisterVmsInLoadBalancerRequest(req).
+			Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling") {

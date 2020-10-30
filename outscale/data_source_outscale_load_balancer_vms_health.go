@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -87,16 +86,12 @@ func dataSourceOutscaleLoadBalancerVmsHealRead(d *schema.ResourceData,
 		req.BackendVmIds = &vm_ids_s
 	}
 
-	describeElbOpts := &oscgo.ReadVmsHealthOpts{
-		ReadVmsHealthRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadVmsHealthResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.LoadBalancerApi.ReadVmsHealth(
-			context.Background(),
-			describeElbOpts)
+			context.Background()).ReadVmsHealthRequest(req).
+			Execute()
 
 		if err != nil {
 			log.Printf("[DEBUG] err: (%s)", err)

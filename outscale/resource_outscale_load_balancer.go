@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -228,8 +227,8 @@ func expandListeners(configured []interface{}) ([]*oscgo.Listener, error) {
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int64(data["backend_port"].(int))
-		lp := int64(data["load_balancer_port"].(int))
+		ip := int32(data["backend_port"].(int))
+		lp := int32(data["load_balancer_port"].(int))
 		bproto := data["backend_protocol"].(string)
 		lproto := data["load_balancer_protocol"].(string)
 		l := &oscgo.Listener{
@@ -273,8 +272,8 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 	for _, lRaw := range configured {
 		data := lRaw.(map[string]interface{})
 
-		ip := int64(data["backend_port"].(int))
-		lp := int64(data["load_balancer_port"].(int))
+		ip := int32(data["backend_port"].(int))
+		lp := int32(data["load_balancer_port"].(int))
 		bproto := data["backend_protocol"].(string)
 		lproto := data["load_balancer_protocol"].(string)
 		l := oscgo.ListenerForCreation{
@@ -391,14 +390,11 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 		req.SubregionNames = expandStringList(v_srn.([]interface{}))
 	}
 
-	elbOpts := &oscgo.CreateLoadBalancerOpts{
-		optional.NewInterface(*req),
-	}
-
-	log.Printf("[DEBUG] Load Balancer create configuration: %#v", elbOpts)
+	log.Printf("[DEBUG] Load Balancer request configuration: %#v", *req)
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.CreateLoadBalancer(
-			context.Background(), elbOpts)
+			context.Background()).
+			CreateLoadBalancerRequest(*req).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "CertificateNotFound") {
@@ -450,16 +446,12 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 		Filters: filter,
 	}
 
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
+			context.Background()).
+			ReadLoadBalancersRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)
@@ -614,13 +606,12 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
 			_, _, err := conn.LoadBalancerApi.DeleteLoadBalancerTags(
-				context.Background(),
-				&oscgo.DeleteLoadBalancerTagsOpts{
-					DeleteLoadBalancerTagsRequest: optional.NewInterface(
-						oscgo.DeleteLoadBalancerTagsRequest{
-							LoadBalancerNames: []string{d.Id()},
-							Tags:              remove,
-						})})
+				context.Background()).
+				DeleteLoadBalancerTagsRequest(
+					oscgo.DeleteLoadBalancerTagsRequest{
+						LoadBalancerNames: []string{d.Id()},
+						Tags:              remove,
+					}).Execute()
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), ".NotFound") {
 					return resource.RetryableError(err) // retry
@@ -640,13 +631,12 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
 			_, _, err := conn.LoadBalancerApi.CreateLoadBalancerTags(
-				context.Background(),
-				&oscgo.CreateLoadBalancerTagsOpts{
-					CreateLoadBalancerTagsRequest: optional.NewInterface(
-						oscgo.CreateLoadBalancerTagsRequest{
-							LoadBalancerNames: []string{d.Id()},
-							Tags:              create,
-						})})
+				context.Background()).
+				CreateLoadBalancerTagsRequest(
+					oscgo.CreateLoadBalancerTagsRequest{
+						LoadBalancerNames: []string{d.Id()},
+						Tags:              create,
+					}).Execute()
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), ".NotFound") {
 					return resource.RetryableError(err) // retry
@@ -672,7 +662,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 		add, _ := expandListenerForCreation(ns)
 
 		if len(remove) > 0 {
-			ports := make([]int64, 0, len(remove))
+			ports := make([]int32, 0, len(remove))
 			for _, listener := range remove {
 				ports = append(ports, *listener.LoadBalancerPort)
 			}
@@ -682,16 +672,14 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				LoadBalancerPorts: ports,
 			}
 
-			deleteListenersOpts := &oscgo.DeleteLoadBalancerListenersOpts{
-				optional.NewInterface(req),
-			}
-
-			log.Printf("[DEBUG] Load Balancer Delete Listeners opts: %v", deleteListenersOpts)
+			log.Printf("[DEBUG] Load Balancer Delete Listeners")
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.ListenerApi.DeleteLoadBalancerListeners(
-					context.Background(), deleteListenersOpts)
+					context.Background()).
+					DeleteLoadBalancerListenersRequest(req).
+					Execute()
 
 				if err != nil {
 					if strings.Contains(err.Error(), "Throttling:") {
@@ -713,17 +701,13 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				Listeners:        add,
 			}
 
-			createListenersOpts := oscgo.CreateLoadBalancerListenersOpts{
-				optional.NewInterface(req),
-			}
-
 			// Occasionally AWS will error with a 'duplicate listener', without any
 			// other listeners on the Load Balancer. Retry here to eliminate that.
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				log.Printf("[DEBUG] Load Balancer Create Listeners opts: %v", createListenersOpts)
+				log.Printf("[DEBUG] Load Balancer Create Listeners")
 				_, _, err = conn.ListenerApi.CreateLoadBalancerListeners(
-					context.Background(), &createListenersOpts)
+					context.Background()).CreateLoadBalancerListenersRequest(req).Execute()
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "DuplicateListener") {
 						log.Printf("[DEBUG] Duplicate listener found for ELB (%s), retrying", d.Id())
@@ -764,15 +748,12 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				BackendVmIds:     add,
 			}
 
-			registerInstancesOpts := oscgo.RegisterVmsInLoadBalancerOpts{
-				optional.NewInterface(req),
-			}
-
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.LoadBalancerApi.
-					RegisterVmsInLoadBalancer(context.Background(),
-						&registerInstancesOpts)
+					RegisterVmsInLoadBalancer(context.Background()).
+					RegisterVmsInLoadBalancerRequest(req).
+					Execute()
 
 				if err != nil {
 					if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -792,16 +773,14 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				LoadBalancerName: d.Id(),
 				BackendVmIds:     remove,
 			}
-			deRegisterInstancesOpts := oscgo.DeregisterVmsInLoadBalancerOpts{
-				optional.NewInterface(req),
-			}
 
 			var err error
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err := conn.LoadBalancerApi.
 					DeregisterVmsInLoadBalancer(
-						context.Background(),
-						&deRegisterInstancesOpts)
+						context.Background()).
+					DeregisterVmsInLoadBalancerRequest(req).
+					Execute()
 
 				if err != nil {
 					if strings.Contains(err.Error(), "Throttling:") {
@@ -827,26 +806,25 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			req := oscgo.UpdateLoadBalancerRequest{
 				LoadBalancerName: d.Id(),
 				HealthCheck: &oscgo.HealthCheck{
-					HealthyThreshold:   int64(check["healthy_threshold"].(int)),
-					UnhealthyThreshold: int64(check["unhealthy_threshold"].(int)),
-					CheckInterval:      int64(check["check_interval"].(int)),
+					HealthyThreshold:   int32(check["healthy_threshold"].(int)),
+					UnhealthyThreshold: int32(check["unhealthy_threshold"].(int)),
+					CheckInterval:      int32(check["check_interval"].(int)),
 					Protocol:           check["protocol"].(string),
-					Port:               int64(check["port"].(int)),
-					Timeout:            int64(check["timeout"].(int)),
+					Port:               int32(check["port"].(int)),
+					Timeout:            int32(check["timeout"].(int)),
 				},
 			}
 			if check["path"] != nil {
-				req.HealthCheck.Path = check["path"].(string)
+				p := check["path"].(string)
+				req.HealthCheck.Path = &p
 			}
 
-			configureHealthCheckOpts := oscgo.UpdateLoadBalancerOpts{
-				optional.NewInterface(req),
-			}
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-					context.Background(), &configureHealthCheckOpts)
+					context.Background()).UpdateLoadBalancerRequest(req).
+					Execute()
 
 				if err != nil {
 					if strings.Contains(err.Error(), "Throttling:") {
@@ -886,14 +864,11 @@ func resourceOutscaleOAPILoadBalancerDelete_(d *schema.ResourceData, meta interf
 		LoadBalancerName: d.Id(),
 	}
 
-	deleteElbOpts := oscgo.DeleteLoadBalancerOpts{
-		optional.NewInterface(req),
-	}
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		_, _, err = conn.LoadBalancerApi.DeleteLoadBalancer(
-			context.Background(), &deleteElbOpts)
+			context.Background()).DeleteLoadBalancerRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "Throttling:") {
 				return resource.RetryableError(err)
@@ -939,17 +914,21 @@ func expandInstanceString(list []interface{}) []string {
 	return result
 }
 
+func formatInt32(n int32) string {
+	return strconv.FormatInt(int64(n), 10)
+}
+
 func flattenOAPIHealthCheck(d *schema.ResourceData, check *oscgo.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
 
 	if check != nil {
-		h := strconv.FormatInt(check.HealthyThreshold, 10)
-		i := strconv.FormatInt(check.CheckInterval, 10)
+		h := formatInt32(check.HealthyThreshold)
+		i := formatInt32(check.CheckInterval)
 		pa := check.Path
-		po := strconv.FormatInt(check.Port, 10)
+		po := formatInt32(check.Port)
 		pr := check.Protocol
-		ti := strconv.FormatInt(check.Timeout, 10)
-		u := strconv.FormatInt(check.UnhealthyThreshold, 10)
+		ti := formatInt32(check.Timeout)
+		u := formatInt32(check.UnhealthyThreshold)
 
 		chk["healthy_threshold"] = h
 		chk["check_interval"] = i

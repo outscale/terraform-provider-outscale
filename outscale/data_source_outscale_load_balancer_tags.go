@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -35,16 +34,12 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 		LoadBalancerNames: *expandStringList(names),
 	}
 
-	describeElbOpts := &oscgo.ReadLoadBalancerTagsOpts{
-		ReadLoadBalancerTagsRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadLoadBalancerTagsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancerTags(
-			context.Background(),
-			describeElbOpts)
+			context.Background()).
+			ReadLoadBalancerTagsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {

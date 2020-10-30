@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -98,16 +97,12 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 		Filters: filter,
 	}
 
-	describeElbOpts := &oscgo.ReadListenerRulesOpts{
-		ReadListenerRulesRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadListenerRulesResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 		resp, _, err = conn.ListenerApi.ReadListenerRules(
-			context.Background(),
-			describeElbOpts)
+			context.Background()).
+			ReadListenerRulesRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
 				return resource.RetryableError(err)

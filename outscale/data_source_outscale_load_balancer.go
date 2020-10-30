@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -223,16 +222,13 @@ func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBala
 		Filters: filter,
 	}
 
-	describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-		ReadLoadBalancersRequest: optional.NewInterface(req),
-	}
-
 	var resp oscgo.ReadLoadBalancersResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-			context.Background(),
-			describeElbOpts)
+		resp, _, err = conn.LoadBalancerApi.
+			ReadLoadBalancers(context.Background()).
+			ReadLoadBalancersRequest(req).
+			Execute()
 
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "Throttling:") {
