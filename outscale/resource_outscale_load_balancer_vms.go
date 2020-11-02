@@ -62,8 +62,9 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	}
 
 	var err error
+	var resp oscgo.RegisterVmsInLoadBalancerResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.
+		resp, _, err = conn.LoadBalancerApi.
 			RegisterVmsInLoadBalancer(context.Background()).
 			RegisterVmsInLoadBalancerRequest(req).
 			Execute()
@@ -83,15 +84,16 @@ func resourceOutscaleOAPILBUAttachmentCreate(d *schema.ResourceData, meta interf
 	}
 
 	d.SetId(resource.PrefixedUniqueId(fmt.Sprintf("%s-", e)))
+	d.Set("request_id", *resp.ResponseContext.RequestId)
 
-	return nil
+	return resourceOutscaleOAPILBUAttachmentRead(d, meta)
 }
 
 func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	found := false
 	e := d.Get("load_balancer_name").(string)
-	lb, resp, err := readResourceLb(conn, e)
+	lb, _, err := readResourceLb(conn, e)
 	expected := d.Get("backend_vm_ids").([]interface{})
 
 	if err != nil {
@@ -112,7 +114,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		d.SetId("")
 	}
 
-	return d.Set("request_id", *resp.ResponseContext.RequestId)
+	return nil
 }
 
 func resourceOutscaleOAPILBUAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
