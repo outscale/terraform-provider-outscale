@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -56,13 +55,10 @@ func TestAccOutscaleAppCookieStickinessPolicy_missingLB(t *testing.T) {
 			LoadBalancerName: lbName,
 		}
 
-		deleteElbOpts := oscgo.DeleteLoadBalancerOpts{
-			optional.NewInterface(request),
-		}
-
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.LoadBalancerApi.DeleteLoadBalancer(context.Background(), &deleteElbOpts)
+			_, _, err = conn.LoadBalancerApi.DeleteLoadBalancer(
+				context.Background()).DeleteLoadBalancerRequest(request).Execute()
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {

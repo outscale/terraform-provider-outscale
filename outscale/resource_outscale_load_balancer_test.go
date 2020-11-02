@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
 	oscgo "github.com/outscale/osc-sdk-go/osc"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -71,12 +70,8 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 				Filters: filter,
 			}
 
-			describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-				ReadLoadBalancersRequest: optional.NewInterface(req),
-			}
 			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-				context.Background(),
-				describeElbOpts)
+				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
@@ -171,13 +166,8 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 				Filters: filter,
 			}
 
-			describeElbOpts := &oscgo.ReadLoadBalancersOpts{
-				ReadLoadBalancersRequest: optional.NewInterface(req),
-			}
-
 			resp, _, err = conn.LoadBalancerApi.ReadLoadBalancers(
-				context.Background(),
-				describeElbOpts)
+				context.Background()).ReadLoadBalancersRequest(*req).Execute()
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "Throttling") {
