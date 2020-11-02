@@ -251,7 +251,8 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 			_, _, err = conn.ListenerApi.UpdateListenerRule(
-				context.Background(), elbOpts)
+				context.Background()).UpdateListenerRuleRequest(req).
+				Execute()
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {

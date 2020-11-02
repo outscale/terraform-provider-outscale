@@ -857,7 +857,7 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 			isEnabled := aclg["is_enabled"].(bool)
 			osuBucketName := aclg["osu_bucket_name"].(string)
 			osuBucketPrefix := aclg["osu_bucket_prefix"].(string)
-			publicationInterval := int64(aclg["publication_interval"].(int64))
+			publicationInterval := int32(aclg["publication_interval"].(int))
 			req := oscgo.UpdateLoadBalancerRequest{
 				LoadBalancerName: d.Id(),
 				AccessLog: &oscgo.AccessLog{
@@ -868,14 +868,11 @@ func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interfa
 				},
 			}
 
-			configureAccessLogOpts := oscgo.UpdateLoadBalancerOpts{
-				optional.NewInterface(req),
-			}
 			var err error
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 				_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-					context.Background(), &configureAccessLogOpts)
+					context.Background()).UpdateLoadBalancerRequest(req).Execute()
 
 				if err != nil {
 					if strings.Contains(err.Error(), "Throttling:") {
