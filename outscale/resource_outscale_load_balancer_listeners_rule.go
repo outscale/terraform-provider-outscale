@@ -249,11 +249,9 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 		}
 
 		var err error
-		var resp oscgo.UpdateListenerRuleResponse
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.ListenerApi.UpdateListenerRule(
-				context.Background()).UpdateListenerRuleRequest(req).
-				Execute()
+			_, _, err = conn.ListenerApi.UpdateListenerRule(
+				context.Background(), elbOpts)
 
 			if err != nil {
 				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
