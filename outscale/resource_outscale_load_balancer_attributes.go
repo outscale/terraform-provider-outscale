@@ -24,21 +24,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"publication_interval": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-			},
-			"load_balancer_port": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-			},
-			"server_certificate_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
 			"access_log": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -57,6 +42,10 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						"osu_bucket_prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
+						},
+						"publication_interval": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 					},
 				},
@@ -110,6 +99,16 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 					},
 				},
+			},
+			"load_balancer_port": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+			},
+			"server_certificate_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
 			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
@@ -179,8 +178,11 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 
 	if al, alok := d.GetOk("access_log"); alok {
 		dal := al.(map[string]interface{})
-
-		is_enable := dal["is_enable"].(bool)
+		check, _ := dal["is_enabled"]
+		is_enable := false
+		if check == "true" {
+			is_enable = true
+		}
 		access := &oscgo.AccessLog{
 			IsEnabled: &is_enable,
 		}
