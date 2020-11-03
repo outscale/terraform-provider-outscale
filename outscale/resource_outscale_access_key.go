@@ -59,7 +59,7 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	var res oscgo.CreateAccessKeyResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).Execute()
+		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(oscgo.CreateAccessKeyRequest{}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
