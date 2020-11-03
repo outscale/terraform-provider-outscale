@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func attrLBSchema() map[string]*schema.Schema {
+func attrLBchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"subregion_name": {
 			Type:     schema.TypeList,
@@ -174,7 +174,7 @@ func getDataSourceSchemas(attrsSchema map[string]*schema.Schema) map[string]*sch
 func dataSourceOutscaleOAPILoadBalancer() *schema.Resource {
 	return &schema.Resource{
 		Read:   dataSourceOutscaleOAPILoadBalancerRead,
-		Schema: getDataSourceSchemas(attrLBSchema()),
+		Schema: getDataSourceSchemas(attrLBchema()),
 	}
 }
 
@@ -256,7 +256,7 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 		return nil, nil, err
 	}
 	lbs := *resp.LoadBalancers
-	if len(lbs) != 1 {
+	if len(lbs) < 1 {
 		return nil, nil, fmt.Errorf("Unable to find LBU: %s", *elbName)
 	}
 	return &lbs[0], resp, nil

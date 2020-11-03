@@ -503,11 +503,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("health_check", flattenOAPIHealthCheck(nil, lb.HealthCheck))
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
-	if lb.BackendVmIds != nil {
-		d.Set("backend_vm_ids", lb.BackendVmIds)
-	} else {
-		d.Set("backend_vm_ids", make([]interface{}, 0))
-	}
+	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 	if lb.Listeners != nil {
 		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
 			log.Printf("[DEBUG] out err %v", err)

@@ -18,7 +18,6 @@ func attrLBListenerRules() map[string]*schema.Schema {
 		"listener_rules": {
 			Type:     schema.TypeList,
 			Computed: true,
-			ForceNew: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"action": {
