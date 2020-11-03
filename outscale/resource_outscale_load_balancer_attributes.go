@@ -100,6 +100,15 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					},
 				},
 			},
+			"listeners": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: lb_listener_schema(),
+				},
+			},
 			"load_balancer_port": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -302,6 +311,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("access_log", access)
 	}
 
+	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
 	flattenOAPIHealthCheck(d, lb.HealthCheck)
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
