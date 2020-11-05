@@ -109,8 +109,108 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					Schema: lb_listener_schema(),
 				},
 			},
-			"load_balancer_port": {
-				Type:     schema.TypeInt,
+			"source_security_group": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"security_group_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"security_group_account_id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"application_sticky_cookie_policies": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cookie_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"policy_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"load_balancer_sticky_cookie_policies": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"tags": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"security_groups": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"backend_vm_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"subnets": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"subregion_names": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"dns_name": {
+				Type:     schema.TypeString,
+				Computed: true,
 				Optional: true,
 				ForceNew: true,
 			},
@@ -121,14 +221,15 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			},
 			"load_balancer_name": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
-			"policy_names": {
-				Type:     schema.TypeList,
-				ForceNew: true,
+			"load_balancer_type": {
+				Type:     schema.TypeString,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+				ForceNew: true,
 			},
 			"request_id": {
 				Type:     schema.TypeString,
@@ -166,23 +267,9 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		LoadBalancerName: ename.(string),
 	}
 
-	if port, pok := d.GetOk("load_balancer_port"); pok {
-		port_i := int32(port.(int))
-		req.LoadBalancerPort = &port_i
-	}
-
 	if ssl, sok := d.GetOk("server_certificate_id"); sok {
 		ssl_s := ssl.(string)
 		req.ServerCertificateId = &ssl_s
-	}
-
-	if pol_names, plnok := d.GetOk("policy_names"); plnok {
-		m := pol_names.([]interface{})
-		a := make([]string, len(m))
-		for k, v := range m {
-			a[k] = v.(string)
-		}
-		req.PolicyNames = &a
 	}
 
 	if al, alok := d.GetOk("access_log"); alok {
@@ -311,8 +398,61 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("access_log", access)
 	}
 
+	if lb.Tags != nil {
+		ta := make([]map[string]interface{}, len(*lb.Tags))
+		for k1, v1 := range *lb.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			ta[k1] = t
+		}
+
+		d.Set("tags", ta)
+	} else {
+		d.Set("tags", make([]map[string]interface{}, 0))
+	}
+
+	if lb.ApplicationStickyCookiePolicies != nil {
+		app := make([]map[string]interface{},
+			len(*lb.ApplicationStickyCookiePolicies))
+		for k, v := range *lb.ApplicationStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["cookie_name"] = v.CookieName
+			a["policy_name"] = v.PolicyName
+			app[k] = a
+		}
+		d.Set("application_sticky_cookie_policies", app)
+	} else {
+		d.Set("application_sticky_cookie_policies", make([]map[string]interface{}, 0))
+	}
+
+	if lb.LoadBalancerStickyCookiePolicies == nil {
+		d.Set("load_balancer_sticky_cookie_policies", make([]map[string]interface{}, 0))
+	} else {
+		lbc := make([]map[string]interface{},
+			len(*lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["policy_name"] = v.PolicyName
+			lbc[k] = a
+		}
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
+	}
+
+	sgr := make(map[string]string)
+	if lb.SourceSecurityGroup != nil {
+		sgr["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
+		sgr["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
+	}
+	d.Set("source_security_group", sgr)
+	d.Set("dns_name", lb.DnsName)
+	d.Set("load_balancer_type", lb.LoadBalancerType)
+	d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
+	d.Set("subnets", flattenStringList(lb.Subnets))
+	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-	flattenOAPIHealthCheck(d, lb.HealthCheck)
+	d.Set("health_check", flattenOAPIHealthCheck(d, lb.HealthCheck))
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
 }
