@@ -114,39 +114,30 @@ func attrLBchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"policies": {
+		"application_sticky_cookie_policies": {
 			Type:     schema.TypeList,
-			Optional: true,
 			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"application_sticky_cookie_policy": {
-						Type:     schema.TypeList,
+					"cookie_name": {
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"cookie_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"policy_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
 					},
-					"load_balancer_sticky_cookie_policy": {
-						Type:     schema.TypeList,
+					"policy_name": {
+						Type:     schema.TypeString,
 						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"policy_name": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-							},
-						},
+					},
+				},
+			},
+		},
+		"load_balancer_sticky_cookie_policies": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"policy_name": {
+						Type:     schema.TypeString,
+						Computed: true,
 					},
 				},
 			},
@@ -286,7 +277,6 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
-	policies := make(map[string]interface{})
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{}, len(*lb.ApplicationStickyCookiePolicies))
 		for k, v := range *lb.ApplicationStickyCookiePolicies {
@@ -295,7 +285,10 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 			a["policy_name"] = v.PolicyName
 			app[k] = a
 		}
-		policies["application_sticky_cookie_policy"] = app
+		d.Set("application_sticky_cookie_policies", app)
+	} else {
+		app := make([]map[string]interface{}, 0)
+		d.Set("application_sticky_cookie_policies", app)
 	}
 	if lb.LoadBalancerStickyCookiePolicies != nil {
 		lbc := make([]map[string]interface{}, len(*lb.LoadBalancerStickyCookiePolicies))
@@ -304,12 +297,11 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 			a["policy_name"] = v.PolicyName
 			lbc[k] = a
 		}
-		policies["load_balancer_sticky_cookie_policy"] = lbc
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	} else {
 		lbc := make([]map[string]interface{}, 0)
-		policies["load_balancer_sticky_cookie_policy"] = lbc
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
-	d.Set("policies", policies)
 
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {

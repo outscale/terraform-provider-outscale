@@ -1,8 +1,6 @@
 package outscale
 
 import (
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -228,6 +226,9 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 				app[k] = a
 			}
 			l["application_sticky_cookie_policies"] = app
+		} else {
+			l["application_sticky_cookie_policies"] =
+				make([]map[string]interface{}, 0)
 		}
 
 		if v.LoadBalancerStickyCookiePolicies != nil {
@@ -239,6 +240,9 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 				vc[k] = a
 			}
 			l["load_balancer_sticky_cookie_policies"] = vc
+		} else {
+			l["load_balancer_sticky_cookie_policies"] =
+				make([]map[string]interface{}, 0)
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
