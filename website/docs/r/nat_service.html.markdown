@@ -9,7 +9,7 @@ description: |-
 # outscale_nat_service Resource
 
 Manages a NAT service.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Devices).
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Gateways).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-natservice).
 
 ## Example Usage
