@@ -25,7 +25,7 @@ For more information on this resource actions, see the [API documentation](https
 #}
 
 resource "outscale_route" "route01" {
-  gateway_id           = outscale_internet_service.internet_service01.id
+  gateway_id           = outscale_internet_service.internet_service01.internet_service_id
   destination_ip_range = "20.0.0.0/16"
   route_table_id       = outscale_route_table.route_table01.route_table_id
 }
