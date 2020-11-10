@@ -263,7 +263,7 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 
 	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(nil, lb.HealthCheck))
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 	if lb.Listeners != nil {

@@ -208,7 +208,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		l["subregion_names"] = v.SubregionNames
 		l["dns_name"] = *v.DnsName
 		l["access_log"] = flattenOAPIAccessLog(v.AccessLog)
-		l["health_check"] = flattenOAPIHealthCheck(nil, v.HealthCheck)
+		l["health_check"] = flattenOAPIHealthCheck(v.HealthCheck)
 		l["backend_vm_ids"] = flattenStringList(v.BackendVmIds)
 		if v.Listeners != nil {
 			l["listeners"] = flattenOAPIListeners(v.Listeners)

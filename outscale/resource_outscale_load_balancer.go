@@ -500,7 +500,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
-	d.Set("health_check", flattenOAPIHealthCheck(nil, lb.HealthCheck))
+	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
@@ -963,7 +963,7 @@ func formatInt32(n int32) string {
 	return strconv.FormatInt(int64(n), 10)
 }
 
-func flattenOAPIHealthCheck(d *schema.ResourceData, check *oscgo.HealthCheck) map[string]interface{} {
+func flattenOAPIHealthCheck(check *oscgo.HealthCheck) map[string]interface{} {
 	chk := make(map[string]interface{})
 
 	if check != nil {
@@ -982,9 +982,6 @@ func flattenOAPIHealthCheck(d *schema.ResourceData, check *oscgo.HealthCheck) ma
 		chk["protocol"] = pr
 		chk["timeout"] = ti
 		chk["unhealthy_threshold"] = u
-		if d != nil {
-			d.Set("health_check", chk)
-		}
 	}
 
 	return chk

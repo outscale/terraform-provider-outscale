@@ -33,14 +33,17 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"is_enabled": {
 							Type:     schema.TypeBool,
+							Computed: true,
 							Required: true,
 						},
 						"osu_bucket_name": {
 							Type:     schema.TypeString,
+							Computed: true,
 							Optional: true,
 						},
 						"osu_bucket_prefix": {
 							Type:     schema.TypeString,
+							Computed: true,
 							Optional: true,
 						},
 						"publication_interval": {
@@ -51,10 +54,11 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				},
 			},
 			"health_check": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"healthy_threshold": {
@@ -71,9 +75,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"path": {
 							Type:     schema.TypeString,
-							Optional: true,
 							Computed: true,
-							ForceNew: true,
+							Optional: true,
 						},
 						"port": {
 							Type:     schema.TypeString,
@@ -98,15 +101,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 							ForceNew: true,
 						},
 					},
-				},
-			},
-			"listeners": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: lb_listener_schema(),
 				},
 			},
 			"load_balancer_port": {
@@ -213,9 +207,10 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		req.AccessLog = access
 	}
 
-	hc, hok := d.GetOk("health_check")
+	hcs, hok := d.GetOk("health_check")
 	if hok {
-		check := hc.(map[string]interface{})
+		hc := hcs.([]interface{})
+		check := hc[0].(map[string]interface{})
 
 		ht, ut, sucess := 0, 0, false
 		if ht, sucess = lb_atoi_at(check, "healthy_threshold"); sucess == false {
@@ -250,7 +245,9 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		hc_req.Protocol = check["protocol"].(string)
 		if check["path"] != nil {
 			p := check["path"].(string)
-			hc_req.Path = &p
+			if p != "" {
+				hc_req.Path = &p
+			}
 		}
 		hc_req.Port = int32(p)
 		hc_req.Timeout = int32(t)
@@ -259,8 +256,9 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 	}
 
 	var err error
+	var resp oscgo.UpdateLoadBalancerResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 
 		if err != nil {
@@ -280,6 +278,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 	d.SetId(req.LoadBalancerName)
 	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
 
+	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
 }
 
@@ -287,13 +286,9 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
-	lb, resp, err := readResourceLb(conn, elbName)
+	lb, _, err := readResourceLb(conn, elbName)
 	if err != nil {
 		return err
-	}
-
-	if lb.AccessLog == nil {
-		return fmt.Errorf("NO Attributes FOUND")
 	}
 
 	a := lb.AccessLog
@@ -311,9 +306,9 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		d.Set("access_log", access)
 	}
 
-	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-	flattenOAPIHealthCheck(d, lb.HealthCheck)
-	d.Set("request_id", resp.ResponseContext.RequestId)
+	hls := make([]interface{}, 1)
+	hls[0] = flattenOAPIHealthCheck(lb.HealthCheck)
+	d.Set("health_check", hls)
 	return nil
 }
 
