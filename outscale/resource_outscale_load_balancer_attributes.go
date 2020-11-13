@@ -75,7 +75,13 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"path": {
 							Type:     schema.TypeString,
-							Computed: true,
+							ForceNew: true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								if new == "" && old == "/" {
+									return true
+								}
+								return old == new
+							},
 							Optional: true,
 						},
 						"port": {
