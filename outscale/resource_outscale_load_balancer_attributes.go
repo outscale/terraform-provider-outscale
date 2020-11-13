@@ -25,16 +25,16 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"access_log": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
-				ForceNew: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"is_enabled": {
 							Type:     schema.TypeBool,
+							Optional: true,
 							Computed: true,
-							Required: true,
 						},
 						"osu_bucket_name": {
 							Type:     schema.TypeString,
@@ -48,6 +48,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 						},
 						"publication_interval": {
 							Type:     schema.TypeInt,
+							Optional: true,
 							Computed: true,
 						},
 					},
@@ -186,7 +187,8 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 	}
 
 	if al, alok := d.GetOk("access_log"); alok {
-		dal := al.(map[string]interface{})
+		dals := al.([]interface{})
+		dal := dals[0].(map[string]interface{})
 		check, _ := dal["is_enabled"]
 		is_enable := false
 		if check == "true" {
@@ -300,6 +302,7 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	a := lb.AccessLog
 
 	if a != nil {
+		ac := make([]interface{}, 1)
 		access := make(map[string]string)
 		access["publication_interval"] = strconv.Itoa(int(*a.PublicationInterval))
 		access["is_enabled"] = strconv.FormatBool(*a.IsEnabled)
@@ -309,7 +312,8 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		if a.OsuBucketPrefix != nil {
 			access["osu_bucket_prefix"] = *a.OsuBucketPrefix
 		}
-		d.Set("access_log", access)
+		ac[0] = access
+		d.Set("access_log", ac)
 	}
 
 	hls := make([]interface{}, 1)
