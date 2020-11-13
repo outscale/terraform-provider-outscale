@@ -17,6 +17,8 @@ type Config struct {
 	Region      string
 	TokenID     string
 	Endpoints   map[string]interface{}
+	X509cert    string
+	X509key     string
 }
 
 //OutscaleClient client
@@ -26,9 +28,18 @@ type OutscaleClient struct {
 
 // Client ...
 func (c *Config) Client() (*OutscaleClient, error) {
+	tlsconfig := &tls.Config{InsecureSkipVerify: false}
+	cert, err := tls.LoadX509KeyPair(c.X509cert, c.X509key)
+	if err == nil {
+		tlsconfig = &tls.Config{
+			InsecureSkipVerify: false,
+			Certificates:       []tls.Certificate{cert},
+		}
+	}
+
 	skipClient := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: tlsconfig,
 			Proxy:           http.ProxyFromEnvironment,
 		},
 	}

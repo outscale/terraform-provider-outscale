@@ -36,6 +36,18 @@ func Provider() terraform.ResourceProvider {
 				Description: "The Region for API operations.",
 			},
 			"endpoints": endpointsSchema(),
+			"x509_cert_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_X509CERT", nil),
+				Description: "The path to your x509 cert",
+			},
+			"x509_key_path": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OUTSCALE_X509KEY", nil),
+				Description: "The path to your x509 key",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -143,6 +155,8 @@ func providerConfigureClient(d *schema.ResourceData) (interface{}, error) {
 		SecretKeyID: d.Get("secret_key_id").(string),
 		Region:      d.Get("region").(string),
 		Endpoints:   make(map[string]interface{}),
+		X509cert:    d.Get("x509_cert_path").(string),
+		X509key:     d.Get("x509_key_path").(string),
 	}
 
 	endpointsSet := d.Get("endpoints").(*schema.Set)
