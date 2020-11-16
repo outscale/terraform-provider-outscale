@@ -93,7 +93,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 	conn := meta.(*OutscaleClient).OSCAPI
 	found := false
 	e := d.Get("load_balancer_name").(string)
-	lb, _, err := readResourceLb(conn, e)
+	lb, resp, err := readResourceLb(conn, e)
 	expected := d.Get("backend_vm_ids").([]interface{})
 
 	if err != nil {
@@ -113,6 +113,7 @@ func resourceOutscaleOAPILBUAttachmentRead(d *schema.ResourceData, meta interfac
 		log.Printf("[WARN] i %s not found in lbu attachments", expected)
 		d.SetId("")
 	}
+	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }
