@@ -14,6 +14,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
+func lb_sg_schema() *schema.Schema {
+	return &schema.Schema{
+		Type:     schema.TypeMap,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"security_group_name": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"security_group_account_id": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
+	}
+}
+
 func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILoadBalancerCreate,
@@ -138,22 +157,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 					Schema: lb_listener_schema(),
 				},
 			},
-			"source_security_group": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"security_group_name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"security_group_account_id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
+			"source_security_group": lb_sg_schema(),
 			"net_id": {
 				Type:     schema.TypeString,
 				Computed: true,
