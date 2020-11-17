@@ -127,6 +127,24 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				ForceNew: true,
 			},
 
+			"tags": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 
 			"server_certificate_id": {
 				Type:     schema.TypeString,
@@ -371,6 +389,20 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		sgr["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 	}
 	d.Set("source_security_group", sgr)
+
+	if lb.Tags != nil {
+		ta := make([]map[string]interface{}, len(*lb.Tags))
+		for k1, v1 := range *lb.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			ta[k1] = t
+		}
+
+		d.Set("tags", ta)
+	} else {
+		d.Set("tags", make([]map[string]interface{}, 0))
+	}
 
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{},
