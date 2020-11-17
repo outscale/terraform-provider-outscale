@@ -115,7 +115,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			},
 			"listeners": {
 				Type:     schema.TypeSet,
-				Optional: true,
 				Computed: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
@@ -127,14 +126,51 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+
+
 			"server_certificate_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
+			"source_security_group": lb_sg_schema(),
+			"application_sticky_cookie_policies": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"cookie_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"policy_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"load_balancer_sticky_cookie_policies": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_name": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+
 			"load_balancer_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
+			},
+			"load_balancer_type": {
+				Type:     schema.TypeString,
+				Computed: true,
 				ForceNew: true,
 			},
 			"policy_names": {
@@ -327,6 +363,42 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 		}
 	} else {
 		d.Set("access_log", make([]interface{}, 0))
+	}
+
+	sgr := make(map[string]string)
+	if lb.SourceSecurityGroup != nil {
+		sgr["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
+		sgr["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
+	}
+	d.Set("source_security_group", sgr)
+
+	if lb.ApplicationStickyCookiePolicies != nil {
+		app := make([]map[string]interface{},
+			len(*lb.ApplicationStickyCookiePolicies))
+		for k, v := range *lb.ApplicationStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["cookie_name"] = v.CookieName
+			a["policy_name"] = v.PolicyName
+			app[k] = a
+		}
+		d.Set("application_sticky_cookie_policies", app)
+	} else {
+		d.Set("application_sticky_cookie_policies",
+			make([]map[string]interface{}, 0))
+	}
+
+	if lb.LoadBalancerStickyCookiePolicies == nil {
+		d.Set("load_balancer_sticky_cookie_policies",
+			make([]map[string]interface{}, 0))
+	} else {
+		lbc := make([]map[string]interface{},
+			len(*lb.LoadBalancerStickyCookiePolicies))
+		for k, v := range *lb.LoadBalancerStickyCookiePolicies {
+			a := make(map[string]interface{})
+			a["policy_name"] = v.PolicyName
+			lbc[k] = a
+		}
+		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
 
 	hls := make([]interface{}, 1)
