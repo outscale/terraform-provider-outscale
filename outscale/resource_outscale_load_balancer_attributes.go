@@ -121,6 +121,19 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					Schema: lb_listener_schema(),
 				},
 			},
+
+			"subnets": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
+			"subregion_names": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"load_balancer_port": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -130,8 +143,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"tags": {
 				Type:     schema.TypeSet,
 				Computed: true,
-				Optional: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
@@ -146,12 +157,33 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				},
 			},
 
+			"dns_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+
+			"security_groups": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+
 			"server_certificate_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
+
 			"source_security_group": lb_sg_schema(),
+
+			"backend_vm_ids": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+
 			"application_sticky_cookie_policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -168,6 +200,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 					},
 				},
 			},
+
 			"load_balancer_sticky_cookie_policies": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -390,6 +423,12 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	}
 	d.Set("source_security_group", sgr)
 
+	if lb.SecurityGroups != nil {
+		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
+	} else {
+		d.Set("security_groups", make([]map[string]interface{}, 0))
+	}
+
 	if lb.Tags != nil {
 		ta := make([]map[string]interface{}, len(*lb.Tags))
 		for k1, v1 := range *lb.Tags {
@@ -403,6 +442,12 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	} else {
 		d.Set("tags", make([]map[string]interface{}, 0))
 	}
+
+	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
+
+	d.Set("subnets", flattenStringList(lb.Subnets))
+
+	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 
 	if lb.ApplicationStickyCookiePolicies != nil {
 		app := make([]map[string]interface{},
@@ -437,6 +482,9 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	hls[0] = flattenOAPIHealthCheck(lb.HealthCheck)
 	d.Set("health_check", hls)
 	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
+
+	d.Set("dns_name", lb.DnsName)
+
 	return nil
 }
 
