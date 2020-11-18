@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"context"
+	"strings"
 
 	"fmt"
 	"log"
@@ -77,7 +78,23 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 		SubnetId:   d.Get("subnet_id").(string),
 	}
 
-	resp, _, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
+	var resp oscgo.CreateNatServiceResponse
+	var err error
+
+	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+		res, contex, err := conn.NatServiceApi.CreateNatService(context.Background()).CreateNatServiceRequest(req).Execute()
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "Conflict") {
+				return resource.RetryableError(err) // retry
+			}
+			return resource.NonRetryableError(err)
+		}
+		if contex != nil && contex.StatusCode == 409 {
+			return resource.RetryableError(err) // retry
+		}
+		resp = res
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("Error creating Nat Service: %s", err.Error())
 	}
