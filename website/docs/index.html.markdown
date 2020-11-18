@@ -41,7 +41,7 @@ The 3DS OUTSCALE provider supports different ways of providing credentials for a
 
 ### Static credentials
 
-!> **Warning**: Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
+!> **Warning:** Hard-coding credentials into any Terraform configuration is not recommended, and risks secret leakage should this file ever be committed to a public version control system.
 
 You can provide your credentials by specifying the `access_key_id` and `secret_key_id` attributes in the provider block:
 
