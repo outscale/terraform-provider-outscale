@@ -20,7 +20,7 @@ func dataSourceOutscaleOAPILoadBalancerLDs() *schema.Resource {
 					Type:     schema.TypeSet,
 					Computed: true,
 					Elem: &schema.Resource{
-						Schema: lb_listener_schema(),
+						Schema: lb_listener_schema(true),
 					},
 				},
 				"request_id": {

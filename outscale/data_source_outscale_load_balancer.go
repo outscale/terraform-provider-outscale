@@ -89,7 +89,7 @@ func attrLBchema() map[string]*schema.Schema {
 			Computed: true,
 			Optional: true,
 			Elem: &schema.Resource{
-				Schema: lb_listener_schema(),
+				Schema: lb_listener_schema(true),
 			},
 		},
 		"firewall_rules_set_name": {

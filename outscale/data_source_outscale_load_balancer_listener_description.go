@@ -17,7 +17,7 @@ func attrLBListenerDesc() map[string]*schema.Schema {
 			Type:     schema.TypeMap,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: lb_listener_schema(),
+				Schema: lb_listener_schema(true),
 			},
 		},
 		"request_id": {

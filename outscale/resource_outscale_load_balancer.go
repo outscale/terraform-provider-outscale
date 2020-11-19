@@ -75,7 +75,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"tags": tagsListOAPISchema(),
+			"tags": tagsListOAPISchema2(false),
 
 			"dns_name": {
 				Type:     schema.TypeString,
@@ -154,7 +154,7 @@ func resourceOutscaleOAPILoadBalancer() *schema.Resource {
 				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Resource{
-					Schema: lb_listener_schema(),
+					Schema: lb_listener_schema(false),
 				},
 			},
 			"source_security_group": lb_sg_schema(),
@@ -327,29 +327,38 @@ func expandListenerForCreation(configured []interface{}) ([]oscgo.ListenerForCre
 	return listeners, nil
 }
 
-func lb_listener_schema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"backend_port": {
-			Type:     schema.TypeInt,
-			Required: true,
-		},
-		"backend_protocol": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"load_balancer_port": {
-			Type:     schema.TypeInt,
-			Required: true,
-		},
-		"load_balancer_protocol": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"server_certificate_id": {
-			Type:     schema.TypeString,
-			Optional: true,
+func mk_elem(computed bool, required bool, optional bool,
+	t schema.ValueType) *schema.Schema {
+	if computed {
+		return &schema.Schema{
+			Type:     t,
 			Computed: true,
-		},
+		}
+	} else if required {
+		return &schema.Schema{
+			Type:     t,
+			Required: true,
+		}
+	} else {
+		return &schema.Schema{
+			Type:     t,
+			Optional: true,
+		}
+	}
+}
+
+func lb_listener_schema(computed bool) map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"backend_port": mk_elem(computed, !computed, false,
+			schema.TypeInt),
+		"backend_protocol": mk_elem(computed, !computed, false,
+			schema.TypeString),
+		"load_balancer_port": mk_elem(computed, !computed, false,
+			schema.TypeInt),
+		"load_balancer_protocol": mk_elem(computed, !computed, false,
+			schema.TypeString),
+		"server_certificate_id": mk_elem(computed, false, !computed,
+			schema.TypeString),
 		"policy_names": {
 			Type:     schema.TypeList,
 			Computed: true,

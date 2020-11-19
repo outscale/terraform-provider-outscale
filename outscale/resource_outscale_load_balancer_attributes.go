@@ -116,9 +116,8 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			"listeners": {
 				Type:     schema.TypeSet,
 				Computed: true,
-				ForceNew: true,
 				Elem: &schema.Resource{
-					Schema: lb_listener_schema(),
+					Schema: lb_listener_schema(true),
 				},
 			},
 
@@ -140,23 +139,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				ForceNew: true,
 			},
 
-			"tags": {
-				Type:     schema.TypeSet,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"value": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-					},
-				},
-			},
-
+			"tags": tagsListOAPISchema2(true),
 			"dns_name": {
 				Type:     schema.TypeString,
 				Computed: true,

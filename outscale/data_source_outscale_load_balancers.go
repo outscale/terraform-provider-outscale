@@ -106,7 +106,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeSet,
 						Required: true,
 						Elem: &schema.Resource{
-							Schema: lb_listener_schema(),
+							Schema: lb_listener_schema(true),
 						},
 					},
 					"application_sticky_cookie_policies": {
