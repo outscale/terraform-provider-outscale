@@ -218,6 +218,10 @@ func expandSetStringList(ifs *schema.Set) *[]string {
 
 // Flattens an array of Listeners into a []map[string]interface{}
 func flattenOAPIListeners(list *[]oscgo.Listener) []map[string]interface{} {
+	if list == nil {
+		return make([]map[string]interface{}, 0)
+	}
+
 	result := make([]map[string]interface{}, 0, len(*list))
 
 	for _, i := range *list {
@@ -517,15 +521,9 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
-	if lb.Listeners != nil {
-		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
-			log.Printf("[DEBUG] out err %v", err)
-			return err
-		}
-	} else {
-		if err := d.Set("listeners", make([]interface{}, 0)); err != nil {
-			return err
-		}
+	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+		log.Printf("[DEBUG] out err %v", err)
+		return err
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 

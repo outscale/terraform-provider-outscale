@@ -266,14 +266,8 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
-	if lb.Listeners != nil {
-		if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
-			return err
-		}
-	} else {
-		if err := d.Set("listeners", make([]map[string]interface{}, 0)); err != nil {
-			return err
-		}
+	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
+		return err
 	}
 	d.Set("load_balancer_name", lb.LoadBalancerName)
 
