@@ -20,6 +20,10 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 		Read:   resourceOutscaleLoadBalancerListenerRuleRead,
 		Update: resourceOutscaleLoadBalancerListenerRuleUpdate,
 		Delete: resourceOutscaleLoadBalancerListenerRuleDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
+
 		Schema: map[string]*schema.Schema{
 			"vm_ids": {
 				Type:     schema.TypeSet,
