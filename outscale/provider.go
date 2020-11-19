@@ -135,7 +135,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_listener_rules":        dataSourceOutscaleOAPILoadBalancerLDRules(),
 			"outscale_load_balancer_tags":                  dataSourceOutscaleOAPILBUTags(),
 			"outscale_load_balancer_vms":                   dataSourceOutscaleLoadBalancerVms(),
-			"outscale_load_balancer_vms_health":            dataSourceOutscaleLoadBalancerVmsHeals(),
+			"outscale_load_balancer_vm_health":             dataSourceOutscaleLoadBalancerVmsHeals(),
 			"outscale_load_balancers":                      dataSourceOutscaleOAPILoadBalancers(),
 		},
 
