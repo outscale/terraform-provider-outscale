@@ -272,25 +272,26 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		dals := al.([]interface{})
 		dal := dals[0].(map[string]interface{})
 		check, _ := dal["is_enabled"]
-		is_enable := false
-		if check == "true" {
-			is_enable = true
-		}
-		access := &oscgo.AccessLog{
-			IsEnabled: &is_enable,
+		access := &oscgo.AccessLog{}
+
+		if check != nil {
+			is_enable := check.(bool)
+			access.IsEnabled = &is_enable
 		}
 
-		if v, ok := lb_atoi_at(dal, "publication_interval"); ok {
-			pi := int32(v)
+		if v := dal["publication_interval"]; v != nil {
+			pi := int32(v.(int))
 			access.PublicationInterval = &pi
 		}
+
 		obn := dal["osu_bucket_name"]
-		if obn != nil {
+		if obn != nil && obn.(string) != "" {
 			obn_s := obn.(string)
 			access.OsuBucketName = &obn_s
 		}
+
 		obp := dal["osu_bucket_prefix"]
-		if obp != nil {
+		if obp != nil && obp.(string) != "" {
 			obp_s := obp.(string)
 			access.OsuBucketPrefix = &obp_s
 		}
