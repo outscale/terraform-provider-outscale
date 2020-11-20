@@ -21,12 +21,14 @@ The provider needs to be configured with the proper credentials before it can be
 
 ```hcl
 provider "outscale" {
-  access_key_id = "123456789ABCDEFGHIJK"
-  secret_key_id = "ABCDEFGHIJKLMNOPQRSTU1234567891011121314"
-  region        = "cn-southeast-1"
+  access_key_id  = var.access_key_id
+  secret_key_id  = var.secret_key_id
+  region         = "cn-southeast-1"
   endpoints {
     api  = "https://api.cn-southeast-1.outscale.hk/api/v1"
     }
+  x509_cert_path = "/tmp/client-certificate.pem"
+  x509_key_path  = "/tmp/key.pem"
 }
 ```
 
@@ -53,7 +55,7 @@ Example:
 provider "outscale" {
   access_key_id   = "myaccesskey"
   secret_key_id   = "mysecretkey"
-  region          = "regionname"
+  region          = "eu-west-2"
 }
 ```
 
@@ -72,7 +74,10 @@ Usage:
 ```bash
 $ export OUTSCALE_ACCESSKEYID="myaccesskey"
 $ export OUTSCALE_SECRETKEYID="mysecretkey"
-$ export OUTSCALE_REGION="regionname"
+$ export OUTSCALE_REGION="cloudgouv-eu-west-1"
+$ export OUTSCALE_X509CERT="~/certificate/certificate.crt"
+$ export OUTSCALE_X509KEY="~/certificate/certificate.key"
+
 $ terraform plan
 ```
 
@@ -87,3 +92,7 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 * `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
 
 * `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available endpoints, see [Endpoints Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
+
+* `x509_cert_path` - (Optional) The x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Acess Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
+
+* `x509_key_path` - (Optional) The private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Acess Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
