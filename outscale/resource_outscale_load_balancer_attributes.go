@@ -17,6 +17,7 @@ import (
 func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceOutscaleOAPILoadBalancerAttributesCreate,
+		Update: resourceOutscaleOAPILoadBalancerAttributesUpdate,
 		Read:   resourceOutscaleOAPILoadBalancerAttributesRead,
 		Delete: resourceOutscaleOAPILoadBalancerAttributesDelete,
 		Importer: &schema.ResourceImporter{
@@ -209,7 +210,6 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			},
 			"policy_names": {
 				Type:     schema.TypeList,
-				ForceNew: true,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -236,9 +236,46 @@ func lb_atoi_at(hc map[string]interface{}, el string) (int, bool) {
 	return r, err == nil
 }
 
-func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
-	conn := meta.(*OutscaleClient).OSCAPI
+func resourceOutscaleOAPILoadBalancerAttributesUpdate(d *schema.ResourceData,
+	meta interface{}) error {
+	return resourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, true)
+}
 
+func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, meta interface{}) error {
+	return resourceOutscaleOAPILoadBalancerAttributesCreate_(d, meta, false)
+}
+
+func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest) error {
+	conn := meta.(*OutscaleClient).OSCAPI
+	var err error
+	var resp oscgo.UpdateLoadBalancerResponse
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background()).UpdateLoadBalancerRequest(req).Execute()
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(
+				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	d.SetId(req.LoadBalancerName)
+	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
+
+	d.Set("request_id", resp.ResponseContext.RequestId)
+	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
+
+}
+
+func resourceOutscaleOAPILoadBalancerAttributesCreate_(d *schema.ResourceData, meta interface{}, isUpdate bool) error {
 	ename, ok := d.GetOk("load_balancer_name")
 
 	if !ok {
@@ -254,11 +291,6 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 		req.LoadBalancerPort = &port_i
 	}
 
-	if ssl, sok := d.GetOk("server_certificate_id"); sok {
-		ssl_s := ssl.(string)
-		req.ServerCertificateId = &ssl_s
-	}
-
 	if pol_names, plnok := d.GetOk("policy_names"); plnok {
 		m := pol_names.([]interface{})
 		a := make([]string, len(m))
@@ -266,6 +298,18 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 			a[k] = v.(string)
 		}
 		req.PolicyNames = &a
+	} else if isUpdate {
+		a := make([]string, 0)
+
+		req.PolicyNames = &a
+	}
+	if isUpdate {
+		return loadBalancerAttributesDoRequest(d, meta, req)
+	}
+
+	if ssl, sok := d.GetOk("server_certificate_id"); sok {
+		ssl_s := ssl.(string)
+		req.ServerCertificateId = &ssl_s
 	}
 
 	if al, alok := d.GetOk("access_log"); alok {
@@ -346,31 +390,7 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 
 	}
 
-	var err error
-	var resp oscgo.UpdateLoadBalancerResponse
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
-			context.Background()).UpdateLoadBalancerRequest(req).Execute()
-
-		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-				return resource.NonRetryableError(err)
-			}
-			return resource.RetryableError(
-				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
-		}
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	d.SetId(req.LoadBalancerName)
-	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
-
-	d.Set("request_id", resp.ResponseContext.RequestId)
-	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
+	return loadBalancerAttributesDoRequest(d, meta, req)
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta interface{}) error {
@@ -473,8 +493,52 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 }
 
 func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
+	var err error
+	var resp oscgo.UpdateLoadBalancerResponse
+
+	conn := meta.(*OutscaleClient).OSCAPI
+	ename, ok := d.GetOk("load_balancer_name")
+
+	if !ok {
+		return fmt.Errorf("required load_balancer_name attributes")
+	}
+
+	_, ok = d.GetOk("policy_names")
+	if !ok {
+		return nil
+	}
+	a := make([]string, 0)
+
+	p, pok := d.GetOk("load_balancer_port")
+	if !pok {
+		return fmt.Errorf("required load_balancer_port attributes")
+	}
+	p32 := int32(p.(int))
+
+	req := oscgo.UpdateLoadBalancerRequest{
+		LoadBalancerName: ename.(string),
+		PolicyNames:      &a,
+		LoadBalancerPort: &p32,
+	}
+
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+			context.Background()).UpdateLoadBalancerRequest(req).Execute()
+
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
+				return resource.NonRetryableError(err)
+			}
+			return resource.RetryableError(
+				fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
 
 	d.SetId("")
-
 	return nil
 }
