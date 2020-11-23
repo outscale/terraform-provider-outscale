@@ -70,6 +70,14 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
+						"listener_rule_id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"listener_id": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
 						"path_pattern": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -212,6 +220,12 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	}
 	if lr.ListenerRuleName != nil {
 		lrs["listener_rule_name"] = lr.ListenerRuleName
+	}
+	if lr.ListenerRuleId != nil {
+		lrs["listener_rule_id"] = lr.ListenerRuleId
+	}
+	if lr.ListenerId != nil {
+		lrs["listener_id"] = lr.ListenerId
 	}
 	if lr.PathPattern != nil {
 		lrs["path_pattern"] = lr.PathPattern
