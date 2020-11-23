@@ -494,7 +494,6 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 
 func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, meta interface{}) error {
 	var err error
-	var resp oscgo.UpdateLoadBalancerResponse
 
 	conn := meta.(*OutscaleClient).OSCAPI
 	ename, ok := d.GetOk("load_balancer_name")
@@ -522,7 +521,7 @@ func resourceOutscaleOAPILoadBalancerAttributesDelete(d *schema.ResourceData, me
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 
 		if err != nil {
