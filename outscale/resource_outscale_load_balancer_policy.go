@@ -366,7 +366,8 @@ func resourceOutscaleAppCookieStickinessPolicyDelete(d *schema.ResourceData, met
 			DeleteLoadBalancerPolicyRequest(request).Execute()
 
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "Throttling") {
+			if strings.Contains(fmt.Sprint(err), "Throttling") ||
+				strings.Contains(fmt.Sprint(err), "Conflict") {
 				return resource.RetryableError(
 					fmt.Errorf("[WARN] Error deleting App stickiness policy, retrying: %s", err))
 			}
