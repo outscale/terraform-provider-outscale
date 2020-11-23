@@ -115,7 +115,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 				},
 			},
 			"listeners": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: lb_listener_schema(true),
@@ -147,7 +147,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 			},
 
 			"security_groups": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -486,7 +486,6 @@ func resourceOutscaleOAPILoadBalancerAttributesRead(d *schema.ResourceData, meta
 	hls[0] = flattenOAPIHealthCheck(lb.HealthCheck)
 	d.Set("health_check", hls)
 	d.Set("listeners", flattenOAPIListeners(lb.Listeners))
-
 	d.Set("dns_name", lb.DnsName)
 
 	return nil

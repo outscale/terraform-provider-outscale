@@ -127,7 +127,7 @@ func resourceOutscaleAppCookieStickinessPolicy() *schema.Resource {
 				},
 			},
 			"listeners": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Computed: true,
 				ForceNew: true,
