@@ -231,7 +231,6 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	}
 	if lr.ListenerId != nil {
 		lrs["listener_id"] = lr.ListenerId
-		log.Printf("set listener_id")
 	}
 	if lr.PathPattern != nil {
 		lrs["path_pattern"] = lr.PathPattern
