@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -32,18 +31,21 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"listener": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
+				MaxItems: 1,
 				ForceNew: true,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"load_balancer_name": {
 							Type:     schema.TypeString,
-							Computed: true,
+							ForceNew: true,
+							Required: true,
 						},
 						"load_balancer_port": {
 							Type:     schema.TypeInt,
-							Computed: true,
+							ForceNew: true,
+							Required: true,
 						},
 					},
 				},
@@ -53,17 +55,20 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 				Computed: true,
 			},
 			"listener_rule": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeList,
 				Required: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
 							Type:     schema.TypeString,
+							Optional: true,
 							ForceNew: true,
 							Computed: true,
 						},
 						"host_name_pattern": {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
 						},
 						"listener_rule_name": {
@@ -80,6 +85,8 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 						},
 						"path_pattern": {
 							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
 							Computed: true,
 						},
 						"priority": {
@@ -105,15 +112,13 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	}
 
 	if li, lok := d.GetOk("listener"); lok {
-		l := li.(map[string]interface{})
+		ls := li.([]interface{})
+		l := ls[0].(map[string]interface{})
 		ll := oscgo.LoadBalancerLight{}
 		if l["load_balancer_name"] == nil || l["load_balancer_port"] == nil {
 			return fmt.Errorf("listener missing argument ")
 		}
-		lbpii, erratoi := strconv.Atoi(l["load_balancer_port"].(string))
-		if erratoi != nil {
-			return fmt.Errorf("can't convert load_balancer_port")
-		}
+		lbpii := l["load_balancer_port"].(int)
 		lbpi := int32(lbpii)
 		ll.SetLoadBalancerName(l["load_balancer_name"].(string))
 		ll.SetLoadBalancerPort(lbpi)
@@ -123,7 +128,9 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	}
 
 	if lri, lok := d.GetOk("listener_rule"); lok {
-		lr := lri.(map[string]interface{})
+		lrs := lri.([]interface{})
+		lr := lrs[0].(map[string]interface{})
+
 		lrfc := oscgo.ListenerRuleForCreation{}
 		if lr["priority"] == nil {
 			return fmt.Errorf("listener priority argument missing")
@@ -140,10 +147,7 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 		if lr["listener_rule_name"] != nil {
 			lrfc.SetListenerRuleName(lr["listener_rule_name"].(string))
 		}
-		p, erratoi := strconv.Atoi(lr["priority"].(string))
-		if erratoi != nil {
-			return fmt.Errorf("can't convert priority")
-		}
+		p := lr["priority"].(int)
 		lrfc.SetPriority(int32(p))
 		req.SetListenerRule(lrfc)
 	} else {
@@ -210,6 +214,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 		return fmt.Errorf("can't find listener rule")
 	}
 	lr := (*resp.ListenerRules)[0]
+	lrsl := make([]interface{}, 1)
 	lrs := make(map[string]interface{})
 
 	if lr.Action != nil {
@@ -226,6 +231,7 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	}
 	if lr.ListenerId != nil {
 		lrs["listener_id"] = lr.ListenerId
+		log.Printf("set listener_id")
 	}
 	if lr.PathPattern != nil {
 		lrs["path_pattern"] = lr.PathPattern
@@ -233,7 +239,11 @@ func resourceOutscaleLoadBalancerListenerRuleRead(d *schema.ResourceData, meta i
 	if lr.Priority != nil {
 		lrs["priority"] = lr.Priority
 	}
-	d.Set("listener_rule %p", lrs)
+	lrsl[0] = lrs
+	err = d.Set("listener_rule", lrsl)
+	if err != nil {
+		return err
+	}
 	if lr.VmIds != nil {
 		d.Set("vm_ids", flattenStringList(lr.VmIds))
 	}
