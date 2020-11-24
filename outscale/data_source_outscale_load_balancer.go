@@ -110,7 +110,7 @@ func attrLBchema() map[string]*schema.Schema {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"listeners": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Computed: true,
 			Optional: true,
 			Elem: &schema.Resource{

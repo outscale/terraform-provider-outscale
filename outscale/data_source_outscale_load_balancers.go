@@ -103,7 +103,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						},
 					},
 					"listeners": {
-						Type:     schema.TypeSet,
+						Type:     schema.TypeList,
 						Required: true,
 						Elem: &schema.Resource{
 							Schema: lb_listener_schema(true),
