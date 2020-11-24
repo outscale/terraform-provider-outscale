@@ -36,6 +36,14 @@ func attrLBListenerRule() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
+		"listener_rule_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"listener_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
 		"vm_ids": {
 			Type:     schema.TypeSet,
 			Computed: true,
@@ -131,6 +139,13 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 	}
 	if lr.PathPattern != nil {
 		d.Set("path_pattern", lr.PathPattern)
+	}
+
+	if lr.ListenerRuleId != nil {
+		d.Set("listener_rule_id", lr.ListenerRuleId)
+	}
+	if lr.ListenerId != nil {
+		d.Set("listener_id", lr.ListenerId)
 	}
 
 	if lr.Priority != nil {
