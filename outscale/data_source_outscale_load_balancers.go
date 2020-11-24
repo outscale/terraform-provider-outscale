@@ -141,6 +141,7 @@ func attrLBSchema() map[string]*schema.Schema {
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"tags": tagsListOAPISchema2(true),
 					"security_groups": {
 						Type:     schema.TypeList,
 						Computed: true,
@@ -243,6 +244,18 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 		} else {
 			l["load_balancer_sticky_cookie_policies"] =
 				make([]map[string]interface{}, 0)
+		}
+		if v.Tags != nil {
+			ta := make([]map[string]interface{}, len(*v.Tags))
+			for k1, v1 := range *v.Tags {
+				t := make(map[string]interface{})
+				t["key"] = v1.Key
+				t["value"] = v1.Value
+				ta[k1] = t
+			}
+			d.Set("tags", ta)
+		} else {
+			d.Set("tags", make([]map[string]interface{}, 0))
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
