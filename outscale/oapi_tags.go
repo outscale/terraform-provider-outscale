@@ -83,8 +83,14 @@ func tagsOAPIListSchemaComputed() *schema.Schema {
 }
 
 func tagsListOAPISchema2(computed bool) *schema.Schema {
+	stype := schema.TypeSet
+
+	if computed {
+		stype = schema.TypeList
+	}
+
 	return &schema.Schema{
-		Type: schema.TypeSet,
+		Type: stype,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": mk_elem(computed, false, !computed,
