@@ -15,7 +15,7 @@ import (
 
 func attrLBchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"subregion_name": {
+		"subregion_names": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
@@ -30,24 +30,49 @@ func attrLBchema() map[string]*schema.Schema {
 			Optional: true,
 			Computed: true,
 		},
-		"security_groups_member": {
+		"security_groups": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"subnets_member": {
+		"subnets": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
-		"tag": tagsSchema(),
-
+		"source_security_group": lb_sg_schema(),
+		"tag":                   tagsListOAPISchema2(true),
 		"dns_name": {
 			Type:     schema.TypeString,
 			Computed: true,
 			Optional: true,
+		},
+		"access_log": {
+			Type:     schema.TypeMap,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"is_enabled": {
+						Type:     schema.TypeBool,
+						Computed: true,
+					},
+					"osu_bucket_name": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"osu_bucket_prefix": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"publication_interval": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"health_check": {
 			Type:     schema.TypeMap,
@@ -92,27 +117,11 @@ func attrLBchema() map[string]*schema.Schema {
 				Schema: lb_listener_schema(true),
 			},
 		},
-		"firewall_rules_set_name": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"firewall_rules_set_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"account_alias": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
 		"net_id": {
 			Type:     schema.TypeString,
 			Optional: true,
 			Computed: true,
+			ForceNew: true,
 		},
 		"application_sticky_cookie_policies": {
 			Type:     schema.TypeList,
@@ -257,13 +266,15 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	lb, resp, err := readLbs0(conn, d)
+
 	if err != nil {
 		return err
 	}
 
-	d.Set("subregion_name", flattenStringList(lb.SubregionNames))
+	d.Set("subregion_names", flattenStringList(lb.SubregionNames))
 	d.Set("dns_name", lb.DnsName)
 	d.Set("health_check", flattenOAPIHealthCheck(lb.HealthCheck))
+	d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
 
 	d.Set("backend_vm_ids", flattenStringList(lb.BackendVmIds))
 	if err := d.Set("listeners", flattenOAPIListeners(lb.Listeners)); err != nil {
@@ -297,20 +308,33 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 		d.Set("load_balancer_sticky_cookie_policies", lbc)
 	}
 
+	if lb.Tags != nil {
+		ta := make([]map[string]interface{}, len(*lb.Tags))
+		for k1, v1 := range *lb.Tags {
+			t := make(map[string]interface{})
+			t["key"] = v1.Key
+			t["value"] = v1.Value
+			ta[k1] = t
+		}
+		d.Set("tags", ta)
+	} else {
+		d.Set("tags", make([]map[string]interface{}, 0))
+	}
 	d.Set("load_balancer_type", lb.LoadBalancerType)
 	if lb.SecurityGroups != nil {
-		d.Set("security_groups_member", flattenStringList(lb.SecurityGroups))
+		d.Set("security_groups", flattenStringList(lb.SecurityGroups))
 	} else {
-		d.Set("security_groups_member", make([]map[string]interface{}, 0))
+		d.Set("security_groups", make([]map[string]interface{}, 0))
 	}
 	ssg := make(map[string]string)
 	if lb.SourceSecurityGroup != nil {
 		ssg["security_group_account_id"] = *lb.SourceSecurityGroup.SecurityGroupAccountId
 		ssg["security_group_name"] = *lb.SourceSecurityGroup.SecurityGroupName
 	}
-	d.Set("firewall_rules_set_name", ssg)
-	d.Set("subnets_member", flattenStringList(lb.Subnets))
+
 	d.Set("net_id", lb.NetId)
+	d.Set("source_security_group", ssg)
+	d.Set("subnets", flattenStringList(lb.Subnets))
 	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(*lb.LoadBalancerName)
 
