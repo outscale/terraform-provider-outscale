@@ -253,7 +253,7 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 				t["value"] = v1.Value
 				ta[k1] = t
 			}
-			l["tags"] = ta;
+			l["tags"] = ta
 		}
 
 		l["load_balancer_type"] = v.LoadBalancerType
