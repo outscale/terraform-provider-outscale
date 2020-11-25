@@ -73,9 +73,9 @@ The following arguments are supported:
   * `ip_protocol` - (Optional) The IP protocol name (`tcp`, `udp`, `icmp`) or protocol number. By default, `-1`, which means all protocols.  
   * `ip_ranges` - (Optional) One or more IP ranges for the security group rules, in CIDR notation (for example, 10.0.0.0/16).  
   * `security_groups_members` - (Optional) Information about one or more members of a security group.  
-    * `account_id` - (Optional) The account ID of a user.  
-    * `security_group_id` - (Required) The ID of the security group.  
-    * `security_group_name` - (Optional) (Public Cloud only) The name of the security group.  
+     * `account_id` - (Optional) The account ID of a user.  
+     * `security_group_id` - (Required) The ID of the security group.  
+     * `security_group_name` - (Optional) (Public Cloud only) The name of the security group.  
   * `service_ids` - (Optional) One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).  
   * `to_port_range` - (Optional) The end of the port range for the TCP and UDP protocols, or an ICMP type number.  
 * `security_group_account_id_to_link` - (Optional) The account ID of the owner of the security group for which you want to create a rule.  
