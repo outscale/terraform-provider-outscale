@@ -185,11 +185,11 @@ func clientGatewayRefreshFunc(conn *oscgo.APIClient, gatewayID *string) resource
 		}
 
 		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
-		if err != nil {
+		if err != nil || len(resp.GetClientGateways()) == 0 {
 			switch {
 			case strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:"):
 				return nil, "pending", nil
-			case strings.Contains(fmt.Sprint(err), "404"):
+			case strings.Contains(fmt.Sprint(err), "404")  || len(resp.GetClientGateways()) == 0:
 				return nil, "deleted", nil
 			default:
 				return nil, "failed", fmt.Errorf("Error on clientGatewayRefresh: %s", err)
