@@ -132,14 +132,14 @@ resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
 	 availability_zones = ["eu-west-2a"]
   listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
+    backend_port = 8000
+    backend_protocol = "HTTP"
     load_balancer_port = 80
-    protocol = "HTTP"
+    load_balancer_protocol = "HTTP"
   }
 }
 
-resource "outscale_load_balancer_cookiepolicy" "foo" {
+resource "outscale_load_balancer_policy" "foo" {
 	policy_name = "foo-policy"
 	load_balancer_name = "${outscale_load_balancer.lb.id}"
 	cookie_name = "MyAppCookie"
@@ -153,10 +153,10 @@ resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
 	 availability_zones = ["eu-west-2a"]
   listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
+    backend_port = 8000
+    backend_protocol = "HTTP"
     load_balancer_port = 80
-    protocol = "HTTP"
+    load_balancer_protocol = "HTTP"
   }
 }
 
@@ -174,10 +174,10 @@ resource "outscale_load_balancer" "lb" {
 	load_balancer_name = "%s"
 	 availability_zones = ["eu-west-2a"]
   listeners {
-    instance_port = 8000
-    instance_protocol = "HTTP"
+    backend_port = 8000
+    backend_protocol = "HTTP"
     load_balancer_port = 80
-    protocol = "HTTP"
+    load_balancer_protocol = "HTTP"
   }
 }`, rName)
 }
