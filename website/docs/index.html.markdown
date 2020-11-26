@@ -93,6 +93,6 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 
 * `endpoints` - (Optional) The custom endpoint that will be used as default value for all resources. For more information on available endpoints, see [Endpoints Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
 
-* `x509_cert_path` - (Optional) The x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Acess Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
+* `x509_cert_path` - (Optional) The path to the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509CERT` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
 
-* `x509_key_path` - (Optional) The private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Acess Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
+* `x509_key_path` - (Optional) The path to the private key of the x509 Client Certificate. It can also be sourced from the `OUTSCALE_X509KEY` [environment variable](#environment-variables). For more information on the use of those certificates, see [About API Access Rules](https://wiki.outscale.net/display/EN/About+API+Access+Rules).
