@@ -14,7 +14,7 @@ The provider is based on our 3DS OUTSCALE API. For more information, see [APIs R
 
 The provider needs to be configured with the proper credentials before it can be used.  
 
--> **Note:** The 3DS OUTSCALE provider is compatible with Terraform 0.13. For more information on provider requirements, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html#v0-12-compatible-provider-requirements).
+-> **Note:** Since the release of Terraform 0.13, provider declaration has changed. For more information, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html).
 
 
 ## Example
