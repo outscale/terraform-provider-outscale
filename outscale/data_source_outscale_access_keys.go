@@ -126,7 +126,7 @@ func flattenAccessKeys(accessKeys []oscgo.AccessKey) []map[string]interface{} {
 			"access_key_id":          ak.GetAccessKeyId(),
 			"creation_date":          ak.GetCreationDate(),
 			"last_modification_date": ak.GetLastModificationDate(),
-			"state":                  ak.GetLastModificationDate(),
+			"state":                  ak.GetState(),
 		}
 	}
 	return accessKeysMap
