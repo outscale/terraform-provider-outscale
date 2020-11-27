@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_vm_state"
-sidebar_current: "outscale-vm-state"
+page_title: "3DS OUTSCALE: outscale_vm_states"
+sidebar_current: "outscale-vm-states"
 description: |-
   [Provides information about VM states.]
 ---
