@@ -2,6 +2,7 @@ package outscale
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -11,6 +12,8 @@ import (
 
 func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 	r := acctest.RandString(4)
+	region := os.Getenv("OUTSCALE_REGION")
+	zone := fmt.Sprintf("%sa", region)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -19,11 +22,11 @@ func TestAccOutscaleOAPIDSLoadBalancerTags_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r),
+				Config: getTestAccDSODSutscaleOAPILBUDSTagsConfig(r, zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckODSutscaleOAPILBUDSTagsExists("data.outscale_load_balancer_tags.testds"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer_tags.testds", "tag.#", "1"),
+						"data.outscale_load_balancer_tags.testds", "tags.#", "1"),
 				)},
 		},
 	})
@@ -44,10 +47,10 @@ func testAccCheckODSutscaleOAPILBUDSTagsExists(n string) resource.TestCheckFunc 
 	}
 }
 
-func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string) string {
+func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string, zone string) string {
 	return fmt.Sprintf(`
 		resource "outscale_load_balancer" "bar" {
-			subregion_names    = ["eu-west-2a"]
+			subregion_names    = ["%s"]
 			load_balancer_name = "foobar-terraform-elb-%s"
 		
 			listeners {
@@ -57,22 +60,15 @@ func getTestAccDSODSutscaleOAPILBUDSTagsConfig(r string) string {
 				load_balancer_protocol = "HTTP"
 			}
 		
-			tag {
-				bar = "baz"
+			tags {
+				key = "name"
+				value = "baz"
 			}
 		}
 		
-		resource "outscale_load_balancer_tags" "tags" {
-			load_balancer_name = ["${outscale_load_balancer.bar.id}"]
-		
-			tag = [{
-				key   = "bar2"
-				value = "baz2"
-			}]
-		}
 		
 		data "outscale_load_balancer_tags" "testds" {
-			load_balancer_name = ["${outscale_load_balancer.bar.id}"]
+			load_balancer_names = ["${outscale_load_balancer.bar.id}"]
 		}
-	`, r)
+	`, zone, r)
 }
