@@ -1,6 +1,8 @@
 package outscale
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -11,6 +13,8 @@ import (
 func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 
+	region := os.Getenv("OUTSCALE_REGION")
+	zone := fmt.Sprintf("%sa", region)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -23,11 +27,10 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 				Config: testAccDSOutscaleOAPILBUConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
-					testAccCheckOutscaleOAPILBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
 						"data.outscale_load_balancer.test", "sub_region_name.#", "1"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "sub_region_name.0", "eu-west-2a"),
+						"data.outscale_load_balancer.test", "sub_region_name.0", zone),
 				)},
 		},
 	})

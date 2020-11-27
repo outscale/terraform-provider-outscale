@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"reflect"
-	"sort"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -20,6 +19,8 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 	var conf oscgo.LoadBalancer
 
 	r := acctest.RandIntRange(0, 10)
+	region := os.Getenv("OUTSCALE_REGION")
+	zone := fmt.Sprintf("%sa", region)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -33,19 +34,13 @@ func TestAccOutscaleOAPILBUBasic(t *testing.T) {
 				Config: testAccOutscaleOAPILBUConfig(r),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
-					testAccCheckOutscaleOAPILBUAttributes(&conf),
 					resource.TestCheckResourceAttr(
 						"outscale_load_balancer.bar", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "subregion_names.0", "eu-west-2a"),
+						"outscale_load_balancer.bar", "subregion_names.0", zone),
 					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listener.0.backend_port", "8000"),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listener.0.backend_protocol", "HTTP"),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listener.0.load_balancer_port", "80"),
-					resource.TestCheckResourceAttr(
-						"outscale_load_balancer.bar", "listener.0.load_balancer_protocol", "HTTP"),
+						"outscale_load_balancer.bar",
+						"listeners.#", "1"),
 				)},
 		},
 	})
@@ -100,46 +95,6 @@ func testAccCheckOutscaleOAPILBUDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-
-func testAccCheckOutscaleOAPILBUAttributes(conf *oscgo.LoadBalancer) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		zones := []string{"eu-west-2a"}
-		azs := make([]string, 0, len(*conf.SubregionNames))
-		for _, x := range *conf.SubregionNames {
-			azs = append(azs, x)
-		}
-		sort.StringSlice(azs).Sort()
-		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad subregion_name")
-		}
-
-		if *conf.DnsName == "" {
-			return fmt.Errorf("empty dns_name")
-		}
-
-		return nil
-	}
-}
-
-func testAccCheckOutscaleOAPILBUAttributesHealthCheck(conf *oscgo.LoadBalancer) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		zones := []string{"eu-west-2a"}
-		azs := make([]string, 0, len(*conf.SubregionNames))
-		for _, x := range *conf.SubregionNames {
-			azs = append(azs, x)
-		}
-		sort.StringSlice(azs).Sort()
-		if !reflect.DeepEqual(azs, zones) {
-			return fmt.Errorf("bad subregion_name")
-		}
-
-		if *conf.DnsName == "" {
-			return fmt.Errorf("empty dns_name")
-		}
-
-		return nil
-	}
 }
 
 func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resource.TestCheckFunc {
@@ -203,7 +158,7 @@ func testAccCheckOutscaleOAPILBUExists(n string, res *oscgo.LoadBalancer) resour
 func testAccOutscaleOAPILBUConfig(r int) string {
 	return fmt.Sprintf(`
 resource "outscale_load_balancer" "bar" {
-  subregion_names = ["eu-west-2a"]
+  subregion_names = ["%sa"]
   load_balancer_name               = "foobar-terraform-elb-%d"
   listeners {
     backend_port = 8000
@@ -212,10 +167,11 @@ resource "outscale_load_balancer" "bar" {
     load_balancer_protocol = "HTTP"
   }
 
-	tag {
-		bar = "baz"
+	tags {
+		key = "name"
+		value = "baz"
 	}
 
 }
-`, r)
+`, os.Getenv("OUTSCALE_REGION"), r)
 }
