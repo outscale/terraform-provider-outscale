@@ -53,7 +53,7 @@ func resourceOutscaleOAPILoadBalancerAttributes() *schema.Resource {
 							Type:     schema.TypeInt,
 							Optional: true,
 							ForceNew: true,
-							Computed: true,
+							Default:  60,
 						},
 					},
 				},
