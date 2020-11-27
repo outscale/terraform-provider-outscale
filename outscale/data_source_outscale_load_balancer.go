@@ -200,6 +200,10 @@ func buildOutscaleDataSourceLBFilters(set *schema.Set) *oscgo.FiltersLoadBalance
 }
 
 func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBalancersResponse, *string, error) {
+	return readLbs_(conn, d, schema.TypeString)
+}
+
+func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType) (*oscgo.ReadLoadBalancersResponse, *string, error) {
 	ename, nameOk := d.GetOk("load_balancer_name")
 	filters, filtersOk := d.GetOk("filter")
 	filter := new(oscgo.FiltersLoadBalancer)
@@ -210,11 +214,16 @@ func readLbs(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.ReadLoadBala
 
 	if filtersOk {
 		filter = buildOutscaleDataSourceLBFilters(filters.(*schema.Set))
-	} else {
+	} else if t == schema.TypeString {
 		elbName := ename.(string)
 		filter = &oscgo.FiltersLoadBalancer{
 			LoadBalancerNames: &[]string{elbName},
 		}
+	} else { /* assuming typelist */
+		filter = &oscgo.FiltersLoadBalancer{
+			LoadBalancerNames: expandStringList(ename.([]interface{})),
+		}
+
 	}
 	elbName := (*filter.LoadBalancerNames)[0]
 

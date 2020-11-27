@@ -1,12 +1,17 @@
 package outscale
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
+	region := os.Getenv("OUTSCALE_REGION")
+	zone := fmt.Sprintf("%sa", region)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -16,34 +21,37 @@ func TestAccOutscaleOAPIDSLBSU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBsUConfig,
+				Config: testAccDSOutscaleOAPILBsUConfig(zone),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer_descriptions_member.#", "1"),
+					resource.TestCheckResourceAttr("data.outscale_load_balancers.test", "load_balancer.#", "1"),
 				)},
 		},
 	})
 }
 
-const testAccDSOutscaleOAPILBsUConfig = `
+func testAccDSOutscaleOAPILBsUConfig(zone string) string {
+	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bar" {
-		subregion_names = ["eu-west-2a"]
+		subregion_names = ["%s"]
 		load_balancer_name        = "foobar-terraform-elb"
 
-		listeners_member {
-			instance_port      = 8000
-			instance_protocol  = "HTTP"
+		listeners {
+			backend_port      = 8000
+			backend_protocol  = "HTTP"
 			load_balancer_port = 80
 
 			// Protocol should be case insensitive
-			protocol = "HTTP"
+			load_balancer_protocol = "HTTP"
 		}
 
-		tag {
-			bar = "baz"
+		tags {
+			key = "name"
+			value = "baz"
 		}
 	}
 
 	data "outscale_load_balancers" "test" {
 		load_balancer_name = ["${outscale_load_balancer.bar.id}"]
 	}
-`
+`, zone)
+}

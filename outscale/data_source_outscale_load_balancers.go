@@ -193,7 +193,7 @@ func dataSourceOutscaleOAPILoadBalancers() *schema.Resource {
 func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	resp, _, err := readLbs(conn, d)
+	resp, _, err := readLbs_(conn, d, schema.TypeList)
 	if err != nil {
 		return err
 	}
