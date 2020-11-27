@@ -60,13 +60,14 @@ resource "outscale_load_balancer" "bar" {
   }
 
 	tags {
-		bar = "baz"
+                key = "test_baz"
+                value = "baz"
 	}
 
 }
 
 resource "outscale_load_balancer_attributes" "bar2" {
-	"access_log" {
+	access_log {
 		is_enabled = "false"
 		osu_bucket_prefix = "donustestbucket"
 	}
