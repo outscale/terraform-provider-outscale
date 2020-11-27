@@ -24,36 +24,39 @@ func TestAccOutscaleOAPIDSLBU_basic(t *testing.T) {
 		CheckDestroy:  testAccCheckOutscaleOAPILBUDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDSOutscaleOAPILBUConfig,
+				Config: testAccDSOutscaleOAPILBUConfig(zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPILBUExists("outscale_load_balancer.bar", &conf),
 					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "sub_region_name.#", "1"),
+						"data.outscale_load_balancer.test", "subregion_names.#", "1"),
 					resource.TestCheckResourceAttr(
-						"data.outscale_load_balancer.test", "sub_region_name.0", zone),
+						"data.outscale_load_balancer.test", "subregion_names.0", zone),
 				)},
 		},
 	})
 }
 
-const testAccDSOutscaleOAPILBUConfig = `
+func testAccDSOutscaleOAPILBUConfig(zone string) string {
+	return fmt.Sprintf(`
 	resource "outscale_load_balancer" "bar" {
-		subregion_names    = ["eu-west-2a"]
+		subregion_names    = ["%s"]
 		load_balancer_name = "foobar-terraform-elb"
 
-		listener {
+		listeners {
 			backend_port           = 8000
 			backend_protocol       = "HTTP"
-			load_balancer_protocol = 80
+			load_balancer_port = 80
 			load_balancer_protocol = "HTTP"
 		}
 
-		tag {
-			bar = "baz"
+		tags {
+			key = "name"
+			value = "baz"
 		}
 	}
 
 	data "outscale_load_balancer" "test" {
 		load_balancer_name = "${outscale_load_balancer.bar.id}"
 	}
-`
+`, zone)
+}
