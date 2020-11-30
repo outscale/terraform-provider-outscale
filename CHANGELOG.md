@@ -1,3 +1,83 @@
+0.2.0 (November 30, 2020)
+========================
+
+FEATURES:
+---------
+
+* New Data Source: outscale_load_balancer
+* New Data Source: outscale_load_balancer_listener_rule
+* New Data Source: outscale_load_balancer_listener_rules
+* New Data Source: outscale_load_balancer_tags
+* New Data Source: outscale_load_balancer_vm_health
+* New Data Source: outscale_load_balancer_vms
+* New Data Source: outscale_load_balancers
+* New Data Source: outscale_vms_states is replaced by outscale_vm_state
+
+* New Resource: outscale_load_balancer
+* New Resource: outscale_load_balancer_attributes
+* New Resource: outscale_load_balancer_listener_rule
+* New Resource: outscale_load_balancer_policy
+* New Resource: outscale_load_balancer_vms
+
+BUG FIXES:
+----------
+
+* oAPI outscale_load_balancer resource is using fcu type call (TPD-1739)
+* Add "outscale_load_balancer" datasource and datasources (TPD-1906)
+* Wrong attributes for "outscale_load_balancer_vms" resource (TPD-1907)
+* "image_id" should be mandatory in "outscale_vm" resource (TPD-1911)
+* terraform crash when client gateway and vpn resources cannot be found (TPD-1914)
+* Change "outscale_vms_state" datasource name to "outscale_vm_states" (TPD-1915)
+* Issue with listeners on "outscale_load_balancer" (TPD-1916)
+* Wrong attributes for "outscale_load_balancer" resource (TPD-1917)
+* "outscale_load_balancer" resource: terraform destroy fails for private LBU (TPD-1918)
+* "outscale_load_balancer" resource: issue when creating a load balancer with multiple securtiy groups (TPD-1919)
+* "outscale_load_balancer_listeners" resource: "server_certificate_id" is not sent in the request (TPD-1920)
+* "outscale_load_balancer_listeners" resource: missing attributes in the state (TPD-1921)
+* Issue when creating a load balancer policy (TPD-1922)
+* Add "outscale_load_balancer_listener_rule" resource and datasource(s) (TPD-1925)
+* "outscale_load_balancer_vm_health" datasource(s) (TPD-1926)
+* Regressions on "refactor-osc-client" branch (TPD-1927)
+* Missing Health check attributes in "outscale_load_balancer" resource (TPD-1928)
+* Terraform crashes when creating "outscale_load_balancer_ssl_certificate" resource (TPD-1930)
+* "outscale_load_balancer_tags" datasources are not supported (TPD-1931)
+* Migrate all LBU attributes modifications to "outscale_load_balancer_attributes" (TPD-1932)
+* Issue on terraform refresh/destroy when using "outscale_nic" and "outscale_nic_private_ip" (TPD-1933)
+* Regression on ""outscale_vpn_connection"" on "refactor-osc-client" branch (TPD-1934)
+* x509 client certificate authentication (TPD-1936)
+
+
+NOTES:
+------
+
+**WARNING:** When creating access keys, the secret key is stored in the Terraform state. For security reasons, it is strongly recommended to create access keys using the API instead of the Terraform resource. For more information on how to create access keys using the API, see our [official API documentation](https://docs.outscale.com/api#3ds-outscale-api-accesskey).
+
+It is recommended to set tags inside the resources rather than using outscale_tag.
+
+
+0.1.2-beta (unpublished)
+========================
+
+BUG FIXES:
+----------
+
+* x509 client authentication support (TPD-1936)
+
+
+0.1.1 (October 02, 2020)
+========================
+
+BUG FIXES:
+----------
+
+* Support proxy for Outscale Terraform provider (TPD-1924)
+
+
+0.1.0 (August 07, 2020)
+========================
+
+NOTES: Rename of the previous release
+
 0.1.1 (October 02, 2020)
 ========================
 
