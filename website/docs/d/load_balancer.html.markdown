@@ -36,7 +36,7 @@ The following attributes are exported:
 
 * `load_balancers` - Information about one or more load balancers.
   * `access_log` - Information about access logs.
-     * `is_enabled` - If `true`, access logs are enabled for your load balancer. If `false`, they are not. If you set this to `true` in your request, the `OsuBucketName` parameter is required.
+     * `is_enabled` - If `true`, access logs are enabled for your load balancer. If `false`, they are not. If you set this to `true` in your request, the `osu_bucket_name` parameter is required.
      * `osu_bucket_name` - The name of the Object Storage Unit (OSU) bucket for the access logs.
      * `osu_bucket_prefix` - The path to the folder of the access logs in your Object Storage Unit (OSU) bucket (by default, the `root` level of your bucket).
      * `publication_interval` - The time interval for the publication of access logs in the Object Storage Unit (OSU) bucket, in minutes. This value can be either 5 or 60 (by default, 60).

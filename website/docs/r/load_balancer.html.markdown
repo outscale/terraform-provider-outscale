@@ -155,7 +155,7 @@ The following arguments are supported:
 * `load_balancer_type` - (Optional) The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
 * `security_groups` - (Optional) (Net only) One or more IDs of security groups you want to assign to the load balancer. If not specified, the default security group of the Net is assigned to the load balancer.
 * `subnets` - (Optional) One or more IDs of Subnets in your Net that you want to attach to the load balancer.
-* `subregion_names` - (Optional) One or more names of Subregions (currently, only one Subregion is supported). This parameter is not required if you create a load balancer in a Net. To create an internal load balancer, use the `LoadBalancerType` parameter.
+* `subregion_names` - (Optional) One or more names of Subregions (currently, only one Subregion is supported). This parameter is not required if you create a load balancer in a Net. To create an internal load balancer, use the `load_balancer_type` parameter.
 * `tags` - (Optional) One or more tags assigned to the load balancer.
   * `key` - (Optional) The key of the tag, with a minimum of 1 character.
   * `value` - (Optional) The value of the tag, between 0 and 255 characters.
@@ -166,7 +166,7 @@ The following attributes are exported:
 
 * `load_balancer` - Information about the load balancer.
   * `access_log` - Information about access logs.
-     * `is_enabled` - If `true`, access logs are enabled for your load balancer. If `false`, they are not. If you set this to `true` in your request, the `OsuBucketName` parameter is required.
+     * `is_enabled` - If `true`, access logs are enabled for your load balancer. If `false`, they are not. If you set this to `true` in your request, the `osu_bucket_name` parameter is required.
      * `osu_bucket_name` - The name of the Object Storage Unit (OSU) bucket for the access logs.
      * `osu_bucket_prefix` - The path to the folder of the access logs in your Object Storage Unit (OSU) bucket (by default, the `root` level of your bucket).
      * `publication_interval` - The time interval for the publication of access logs in the Object Storage Unit (OSU) bucket, in minutes. This value can be either 5 or 60 (by default, 60).
