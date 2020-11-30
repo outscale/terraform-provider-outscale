@@ -24,7 +24,7 @@ terraform {
   required_providers {
     outscale = {
       source = "outscale-dev/outscale"
-      version = "0.1.1"
+      version = "0.2.0"
     }
   }
 }
@@ -49,6 +49,32 @@ $ set HTTPS_PROXY=http://192.168.1.24:3128
 ```
 
 
+x509 client authentication, if any
+----------------------------------
+
+Add the following lines in the Terraform configuration to define certificate location:
+
+```sh
+terraform {
+  required_version = ">= 0.13"
+  required_providers {
+    outscale = {
+      source  = "hashicorp/outscale"
+      version = "0.2.0"
+    }
+  }
+}
+provider "outscale" {
+  access_key_id = var.access_key_id
+  secret_key_id = var.secret_key_id
+  region        = var.region
+  x509_cert_path      = "certificate/client_ca.crt"
+  x509_key_path       = "certificate/client_ca.key"
+}
+```
+
+
+
 
 Building The Provider
 ---------------------
@@ -57,23 +83,23 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch v0.1.1 https://github.com/outscale-dev/terraform-provider-outscale
+$ git clone --branch v0.2.0 https://github.com/outscale-dev/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.1.1
+$ go build -o terraform-provider-outscale_v0.2.0
 ```
 
 Using the provider
 ----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.1.0/linux_amd64/.
+2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.2.0/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.1.1 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.1.0/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.2.0 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.2.0/linux_amd64/.
 ```
 
 3. Execute `terraform init`
