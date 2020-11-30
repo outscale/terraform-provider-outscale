@@ -35,7 +35,7 @@ The following arguments are supported:
 
 * `description` - (Required) A description for the security group, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
 * `net_id` - (Optional) The ID of the Net for the security group.
-* `security_group_name` - (Required) (Public Cloud only) The name of the security group.<br />
+* `security_group_name` - (Required) The name of the security group.<br />
 This name must not start with `sg-`.</br>
 This name must be unique and contain between 1 and 255 ASCII characters. Accented letters are not allowed.
 * `tags` - One or more tags to add to this resource.
@@ -56,7 +56,7 @@ The following attributes are exported:
     * `security_groups_members` - Information about one or more members of a security group.
       * `account_id` - The account ID of a user.
       * `security_group_id` - The ID of the security group.
-      * `security_group_name` - (Public Cloud only) The name of the security group.
+      * `security_group_name` - The name of the security group.
     * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).
     * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `net_id` - The ID of the Net for the security group.
@@ -67,11 +67,11 @@ The following attributes are exported:
     * `security_groups_members` - Information about one or more members of a security group.
       * `account_id` - The account ID of a user.
       * `security_group_id` - The ID of the security group.
-      * `security_group_name` - (Public Cloud only) The name of the security group.
+      * `security_group_name` - The name of the security group.
     * `service_ids` - One or more service IDs to allow traffic from a Net to access the corresponding 3DS OUTSCALE services. For more information, see [ReadNetAccessPointServices](https://docs.outscale.com/api#readnetaccesspointservices).
     * `to_port_range` - The end of the port range for the TCP and UDP protocols, or an ICMP type number.
   * `security_group_id` - The ID of the security group.
-  * `security_group_name` - (Public Cloud only) The name of the security group.
+  * `security_group_name` - The name of the security group.
   * `tags` - One or more tags associated with the security group.
     * `key` - The key of the tag, with a minimum of 1 character.
     * `value` - The value of the tag, between 0 and 255 characters.

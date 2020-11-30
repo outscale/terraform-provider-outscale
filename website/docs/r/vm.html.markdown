@@ -186,7 +186,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
-* `performance` - (Optional) The performance of the VM (`standard` \| `high` \|  `highest`).
+* `performance` - (Optional) The performance of the VM (`medium` \| `high` \|  `highest`).
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
@@ -223,7 +223,7 @@ The following attributes are exported:
   * `keypair_name` - The name of the keypair used when launching the VM.
   * `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
   * `net_id` - The ID of the Net in which the VM is running.
-  * `nics` - The network interface cards (NICs) the VMs are attached to.
+  * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
     * `account_id` - The account ID of the owner of the NIC.
     * `description` - The description of the NIC.
     * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
@@ -250,11 +250,11 @@ The following attributes are exported:
       * `private_ip` - The private IP address.
     * `security_groups` - One or more IDs of security groups for the NIC.
       * `security_group_id` - The ID of the security group.
-      * `security_group_name` - (Public Cloud only) The name of the security group.
+      * `security_group_name` - The name of the security group.
     * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
     * `subnet_id` - The ID of the Subnet for the NIC.
   * `os_family` - Indicates the operating system (OS) of the VM.
-  * `performance` - The performance of the VM (`standard` \| `high` \|  `highest`).
+  * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
   * `placement` - Information about the placement of the VM.
     * `subregion_name` - The name of the Subregion.
     * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
@@ -268,7 +268,7 @@ The following attributes are exported:
   * `root_device_type` - The type of root device used by the VM (always `bsu`).
   * `security_groups` - One or more security groups associated with the VM.
     * `security_group_id` - The ID of the security group.
-    * `security_group_name` - (Public Cloud only) The name of the security group.
+    * `security_group_name` - The name of the security group.
   * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
   * `state_reason` - The reason explaining the current state of the VM.
   * `subnet_id` - The ID of the Subnet for the VM.

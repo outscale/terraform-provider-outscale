@@ -74,7 +74,7 @@ The following attributes are exported:
     * `private_ip` - The private IP address of the NIC.
   * `security_groups` - One or more IDs of security groups for the NIC.
     * `security_group_id` - The ID of the security group.
-    * `security_group_name` - (Public Cloud only) The name of the security group.
+    * `security_group_name` - The name of the security group.
   * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
   * `subnet_id` - The ID of the Subnet.
   * `subregion_name` - The Subregion in which the NIC is located.

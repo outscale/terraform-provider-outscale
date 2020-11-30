@@ -44,7 +44,7 @@ The following arguments are supported:
   * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
   * `volume_ids` - (Optional) The IDs of the volumes.
   * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
-  * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
   * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
 
 ## Attribute Reference
@@ -63,7 +63,7 @@ The following attributes are exported:
     * `volume_id` - The ID of the volume.
   * `size` - The size of the volume, in gibibytes (GiB).
   * `snapshot_id` - The snapshot from which the volume was created.
-  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
   * `subregion_name` - The Subregion in which the volume was created.
   * `tags` - One or more tags associated with the volume.
     * `key` - The key of the tag, with a minimum of 1 character.
