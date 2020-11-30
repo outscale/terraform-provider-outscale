@@ -27,8 +27,8 @@ resource "outscale_internet_service" "internet_service01" {
 The following arguments are supported:
 
 * `tags` - One or more tags to add to this resource.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Attribute Reference
 
@@ -39,8 +39,8 @@ The following attributes are exported:
   * `net_id` - The ID of the Net attached to the Internet service.
   * `state` - The state of the attachment of the Net to the Internet service (always `available`).
   * `tags` - One or more tags associated with the Internet service.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Import
 

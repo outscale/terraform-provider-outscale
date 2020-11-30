@@ -42,10 +42,10 @@ The following attributes are exported:
 
 * `vm_states` - Information about one or more VM states.
   * `maintenance_events` - One or more scheduled events associated with the VM.
-    * `code` - The code of the event (`system-reboot` \| `system-maintenance`).
-    * `description` - The description of the event.
-    * `not_after` - The latest scheduled end time for the event.
-    * `not_before` - The earliest scheduled start time for the event.
+      * `code` - The code of the event (`system-reboot` \| `system-maintenance`).
+      * `description` - The description of the event.
+      * `not_after` - The latest scheduled end time for the event.
+      * `not_before` - The earliest scheduled start time for the event.
   * `subregion_name` - The name of the Subregion of the VM.
   * `vm_id` - The ID of the VM.
   * `vm_state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).

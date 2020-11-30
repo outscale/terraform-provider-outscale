@@ -48,8 +48,8 @@ The following attributes are exported:
   * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).
   * `state` - The state of the client gateway (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tags` - One or more tags associated with the client gateway.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Import
 

@@ -36,8 +36,8 @@ The following arguments are supported:
 * `net_id` - (Required) The ID of the Net for which you want to create a Subnet.
 * `subregion_name` - (Optional) The name of the Subregion in which you want to create the Subnet.
 * `tags` - One or more tags to add to this resource.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
     
 ## Attribute Reference
 
@@ -52,8 +52,8 @@ The following attributes are exported:
   * `subnet_id` - The ID of the Subnet.
   * `subregion_name` - The name of the Subregion in which the Subnet is located.
   * `tags` - One or more tags associated with the Subnet.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Import
 

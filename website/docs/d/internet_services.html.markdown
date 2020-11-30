@@ -45,5 +45,5 @@ The following attributes are exported:
   * `net_id` - The ID of the Net attached to the Internet service.
   * `state` - The state of the attachment of the Net to the Internet service (always `available`).
   * `tags` - One or more tags associated with the Internet service.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.

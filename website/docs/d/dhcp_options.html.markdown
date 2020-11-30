@@ -49,6 +49,6 @@ The following attributes are exported:
   * `domain_name_servers` - One or more IP addresses for the domain name servers.
   * `ntp_servers` - One or more IP addresses for the NTP servers.
   * `tags` - One or more tags associated with the DHCP options set.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 

@@ -156,13 +156,13 @@ The following arguments are supported:
 
 * `block_device_mappings` - (Optional) One or more block device mappings.
   * `bsu` - Information about the BSU volume to create.
-    * `delete_on_vm_deletion` - (Optional) Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
-    * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
-    * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
-    * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
+      * `delete_on_vm_deletion` - (Optional) Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+      * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
+      * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
+      * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
 If you specify a snapshot ID, the volume size must be at least equal to the snapshot size.<br />
 If you specify a snapshot ID but no volume size, the volume is created with a size similar to the snapshot one.
-    * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
+      * `volume_type` - (Optional) The type of the volume (`standard` \| `io1` \| `gp2`). If not specified in the request, a `standard` volume is created.<br />
 For more information about volume types, see [Volume Types and IOPS](https://wiki.outscale.net/display/EN/About+Volumes#AboutVolumes-VolumeTypesVolumeTypesandIOPS).
   * `device_name` - (Optional) The name of the device.
   * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
@@ -181,8 +181,8 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `device_number` - (Optional) The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
   * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
   * `private_ips` - (Optional) One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
-    * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
-    * `private_ip` - (Optional) The private IP address of the NIC.
+      * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
+      * `private_ip` - (Optional) The private IP address of the NIC.
   * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
@@ -198,8 +198,8 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `vm_type` - (Optional) The type of VM (`t2.small` by default).<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
 * `tags` - One or more tags to add to this resource.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
     
 ## Attribute Reference
 
@@ -208,12 +208,12 @@ The following attributes are exported:
 * `vms` - Information about one or more created VMs.
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
-    * `bsu` - Information about the created BSU volume.
-      * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
-      * `link_date` - The time and date of attachment of the volume to the VM.
-      * `state` - The state of the volume.
-      * `volume_id` - The ID of the volume.
-    * `device_name` - The name of the device.
+      * `bsu` - Information about the created BSU volume.
+         * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+         * `link_date` - The time and date of attachment of the volume to the VM.
+         * `state` - The state of the volume.
+         * `volume_id` - The ID of the volume.
+      * `device_name` - The name of the device.
   * `bsu_optimized` - If `true`, the VM is optimized for BSU I/O.
   * `client_token` - The idempotency token provided when launching the VM.
   * `deletion_protection` - If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
@@ -224,40 +224,40 @@ The following attributes are exported:
   * `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
   * `net_id` - The ID of the Net in which the VM is running.
   * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
-    * `account_id` - The account ID of the owner of the NIC.
-    * `description` - The description of the NIC.
-    * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
-    * `link_nic` - Information about the network interface card (NIC).
-      * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
-      * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
-      * `link_nic_id` - The ID of the NIC to attach.
-      * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
-    * `link_public_ip` - Information about the EIP associated with the NIC.
-      * `public_dns_name` - The name of the public DNS.
-      * `public_ip` - The External IP address (EIP) associated with the NIC.
-      * `public_ip_account_id` - The account ID of the owner of the EIP.
-    * `mac_address` - The Media Access Control (MAC) address of the NIC.
-    * `net_id` - The ID of the Net for the NIC.
-    * `nic_id` - The ID of the NIC.
-    * `private_dns_name` - The name of the private DNS.
-    * `private_ips` - The private IP address or addresses of the NIC.
-      * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+      * `account_id` - The account ID of the owner of the NIC.
+      * `description` - The description of the NIC.
+      * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+      * `link_nic` - Information about the network interface card (NIC).
+         * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+         * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
+         * `link_nic_id` - The ID of the NIC to attach.
+         * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
       * `link_public_ip` - Information about the EIP associated with the NIC.
-        * `public_dns_name` - The name of the public DNS.
-        * `public_ip` - The External IP address (EIP) associated with the NIC.
-        * `public_ip_account_id` - The account ID of the owner of the EIP.
+         * `public_dns_name` - The name of the public DNS.
+         * `public_ip` - The External IP address (EIP) associated with the NIC.
+         * `public_ip_account_id` - The account ID of the owner of the EIP.
+      * `mac_address` - The Media Access Control (MAC) address of the NIC.
+      * `net_id` - The ID of the Net for the NIC.
+      * `nic_id` - The ID of the NIC.
       * `private_dns_name` - The name of the private DNS.
-      * `private_ip` - The private IP address.
-    * `security_groups` - One or more IDs of security groups for the NIC.
-      * `security_group_id` - The ID of the security group.
-      * `security_group_name` - The name of the security group.
-    * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
-    * `subnet_id` - The ID of the Subnet for the NIC.
+      * `private_ips` - The private IP address or addresses of the NIC.
+         * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+         * `link_public_ip` - Information about the EIP associated with the NIC.
+             * `public_dns_name` - The name of the public DNS.
+             * `public_ip` - The External IP address (EIP) associated with the NIC.
+             * `public_ip_account_id` - The account ID of the owner of the EIP.
+         * `private_dns_name` - The name of the private DNS.
+         * `private_ip` - The private IP address.
+      * `security_groups` - One or more IDs of security groups for the NIC.
+         * `security_group_id` - The ID of the security group.
+         * `security_group_name` - The name of the security group.
+      * `state` - The state of the NIC (`available` \| `attaching` \| `in-use` \| `detaching`).
+      * `subnet_id` - The ID of the Subnet for the NIC.
   * `os_family` - Indicates the operating system (OS) of the VM.
   * `performance` - The performance of the VM (`medium` \| `high` \|  `highest`).
   * `placement` - Information about the placement of the VM.
-    * `subregion_name` - The name of the Subregion.
-    * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
+      * `subregion_name` - The name of the Subregion.
+      * `tenancy` - The tenancy of the VM (`default` \| `dedicated`).
   * `private_dns_name` - The name of the private DNS.
   * `private_ip` - The primary private IP address of the VM.
   * `product_codes` - The product code associated with the OMI used to create the VM (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
@@ -267,14 +267,14 @@ The following attributes are exported:
   * `root_device_name` - The name of the root device for the VM (for example, /dev/vda1).
   * `root_device_type` - The type of root device used by the VM (always `bsu`).
   * `security_groups` - One or more security groups associated with the VM.
-    * `security_group_id` - The ID of the security group.
-    * `security_group_name` - The name of the security group.
+      * `security_group_id` - The ID of the security group.
+      * `security_group_name` - The name of the security group.
   * `state` - The state of the VM (`pending` \| `running` \| `stopping` \| `stopped` \| `shutting-down` \| `terminated` \| `quarantine`).
   * `state_reason` - The reason explaining the current state of the VM.
   * `subnet_id` - The ID of the Subnet for the VM.
   * `tags` - One or more tags associated with the VM.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
   * `user_data` - The Base64-encoded MIME user data.
   * `vm_id` - The ID of the VM.
   * `vm_initiated_shutdown_behavior` - The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is deleted.

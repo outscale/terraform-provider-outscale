@@ -44,11 +44,11 @@ The following attributes are exported:
 * `virtual_gateways` - Information about one or more virtual gateways.
   * `connection_type` - The type of VPN connection supported by the virtual gateway (only `ipsec.1` is supported).
   * `net_to_virtual_gateway_links` - The Net to which the virtual gateway is attached.
-    * `net_id` - The ID of the Net to which the virtual gateway is attached.
-    * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
+      * `net_id` - The ID of the Net to which the virtual gateway is attached.
+      * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
   * `state` - The state of the virtual gateway (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tags` - One or more tags associated with the virtual gateway.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
   * `virtual_gateway_id` - The ID of the virtual gateway.
 
