@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_load_balancer_vms"
 sidebar_current: "outscale-load-balancer-vms"
 description: |-
-  [Manages  a  load balancer VM.]
+  [Manages load balancer VMs.]
 ---
 
 # outscale_load_balancer_vms Resource
 
-Manages  a  load balancer VM.
+Manages load balancer VMs.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Load+Balancers).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#registervmsinloadbalancer).
 
