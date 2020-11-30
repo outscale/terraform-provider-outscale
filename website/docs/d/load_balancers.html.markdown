@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_load_balancer"
-sidebar_current: "outscale-load-balancer"
+page_title: "3DS OUTSCALE: outscale_load_balancers"
+sidebar_current: "outscale-load-balancers"
 description: |-
   [Provides information about load balancers.]
 ---
 
-# outscale_load_balancer Data Source
+# outscale_load_balancers Data Source
 
 Provides information about load balancers.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Load+Balancers).

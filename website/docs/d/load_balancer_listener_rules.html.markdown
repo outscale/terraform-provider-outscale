@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_load_balancer_listener_rule"
-sidebar_current: "outscale-load-balancer-listener-rule"
+page_title: "3DS OUTSCALE: outscale_load_balancer_listener_rules"
+sidebar_current: "outscale-load-balancer-listener-rules"
 description: |-
   [Provides information about load balancer listener rules.]
 ---
 
-# outscale_load_balancer_listener_rule Data Source
+# outscale_load_balancer_listener_rules Data Source
 
 Provides information about load balancer listener rules.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Load+Balancers).

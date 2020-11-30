@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_load_balancer_attributes"
 sidebar_current: "outscale-load-balancer-attributes"
 description: |-
-  [Manages  a load balancer attribute.]
+  [Manages load balancer attributes.]
 ---
 
 # outscale_load_balancer_attributes Resource
 
-Manages  a load balancer attribute.
+Manages load balancer attributes.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Load+Balancers).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updateloadbalancer).
 
