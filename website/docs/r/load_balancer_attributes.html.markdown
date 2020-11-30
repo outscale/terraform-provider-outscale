@@ -29,7 +29,7 @@ For more information on this resource actions, see the [API documentation](https
 #      backend_protocol       = "HTTPS"
 #      load_balancer_protocol = "HTTPS"
 #      load_balancer_port     = 8080
-#      server_certificate_id  = "arn:aws:iam::012345678901:server-certificate/Cockpit/Certificate"
+#      server_certificate_id  = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
 #  }
 #  listeners {
 #      backend_port           = 1024
@@ -50,7 +50,7 @@ For more information on this resource actions, see the [API documentation](https
 # Update health check
 
 resource "outscale_load_balancer_attributes" "attributes01" {
-   load_balancer_name       = outscale_load_balancer.load_balancer01.load_balancer_id
+   load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
    health_check  {
       healthy_threshold   = 10
       check_interval      = 30
@@ -65,9 +65,9 @@ resource "outscale_load_balancer_attributes" "attributes01" {
 # Update access log
 
 resource "outscale_load_balancer_attributes" "attributes02" {
-  load_balancer_name      = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
   access_log {
-      publication_interval  = 5
+      publication_interval = 5
       is_enabled           = true
       osu_bucket_name      = "terraform-access-logs"
       osu_bucket_prefix    = "access-logs-01234"
@@ -87,7 +87,7 @@ resource "outscale_load_balancer_attributes" "attributes03" {
 resource "outscale_load_balancer_attributes" "attributes04" {
   load_balancer_name    = outscale_load_balancer.load_balancer01.load_balancer_id
   load_balancer_port    = 8080
-  server_certificate_id = "arn:aws:iam::012345678901:server-certificate/Service/Name,Certificate"
+  server_certificate_id = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
 }
 
 ```
