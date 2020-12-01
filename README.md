@@ -68,16 +68,16 @@ provider "outscale" {
   access_key_id = var.access_key_id
   secret_key_id = var.secret_key_id
   region        = var.region
-  x509_cert_path      = "certificate/client_ca.crt"
-  x509_key_path       = "certificate/client_ca.key"
+  x509_cert_path      = "/myrepository/certificate/client_ca.crt"
+  x509_key_path       = "/myrepository/certificate/client_ca.key"
 }
 ```
 
 or set the following environment variables:
 
 ```sh
-export OUTSCALE_X509CERT=~/.terraform.d/plugins/certificate/client_ca.crt
-export OUTSCALE_X509KEY=~/.terraform.d/plugins/certificate/client_ca.key
+export OUTSCALE_X509CERT=/myrepository/certificate/client_ca.crt
+export OUTSCALE_X509KEY=/myrepository/certificate/client_ca.key
 ```
 
 Building The Provider
