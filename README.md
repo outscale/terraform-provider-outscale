@@ -59,7 +59,7 @@ terraform {
   required_version = ">= 0.13"
   required_providers {
     outscale = {
-      source  = "hashicorp/outscale"
+      source  = "outscale-dev/outscale"
       version = "0.2.0"
     }
   }
@@ -73,8 +73,12 @@ provider "outscale" {
 }
 ```
 
+or set the following environment variables:
 
-
+```sh
+export OUTSCALE_X509CERT=~/.terraform.d/plugins/certificate/client_ca.crt
+export OUTSCALE_X509KEY=~/.terraform.d/plugins/certificate/client_ca.key
+```
 
 Building The Provider
 ---------------------
