@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -56,13 +55,11 @@ func testAccCheckOAPINatGatewayDestroy(s *terraform.State) error {
 			continue
 		}
 
-		filterReq := &oscgo.ReadNatServicesOpts{
-			ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
-				Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadNatServicesRequest{
+			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background(), filterReq)
+		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetNatServices()) > 0 {
 			return fmt.Errorf("Nat Services still exists (%s)", rs.Primary.ID)
 		}
@@ -83,13 +80,11 @@ func testAccCheckOAPINatGatewayExists(n string, ns *oscgo.NatService) resource.T
 
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		filterReq := &oscgo.ReadNatServicesOpts{
-			ReadNatServicesRequest: optional.NewInterface(oscgo.ReadNatServicesRequest{
-				Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadNatServicesRequest{
+			Filters: &oscgo.FiltersNatService{NatServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background(), filterReq)
+		resp, _, err := conn.NatServiceApi.ReadNatServices(context.Background()).ReadNatServicesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetNatServices()) < 1 {
 			return fmt.Errorf("Nat Services not found (%s)", rs.Primary.ID)
 		}

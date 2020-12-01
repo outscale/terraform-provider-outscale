@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -102,9 +101,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	var resp oscgo.ReadVpnConnectionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(params),
-		})
+		resp, _, err = conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -139,7 +136,7 @@ func dataSourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("static_routes_only", vpnConnection.GetStaticRoutesOnly()); err != nil {
 		return err
 	}
-	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayId()); err != nil {
+	if err := d.Set("client_gateway_configuration", vpnConnection.GetClientGatewayConfiguration()); err != nil {
 		return err
 	}
 	if err := d.Set("vpn_connection_id", vpnConnection.GetVpnConnectionId()); err != nil {
@@ -172,9 +169,9 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.Filters
 			filterValues = append(filterValues, e.(string))
 		}
 
-		var filteBgpAsnsValues []int64
+		var filteBgpAsnsValues []int32
 		for _, e := range m["values"].([]interface{}) {
-			filteBgpAsnsValues = append(filteBgpAsnsValues, cast.ToInt64(e))
+			filteBgpAsnsValues = append(filteBgpAsnsValues, cast.ToInt32(e))
 		}
 
 		switch name := m["name"].(string); name {

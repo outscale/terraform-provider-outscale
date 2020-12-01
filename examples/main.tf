@@ -315,7 +315,7 @@ resource "outscale_route" "route019" {
 }
 
 resource "outscale_nat_service" "nat_service019" {
-  depends_on   = [outscale_route.route019]
+  depends_on   = [outscale_route.route019,outscale_route_table_link.route_table_link019]
   subnet_id    = outscale_subnet.subnet019.subnet_id
   public_ip_id = outscale_public_ip.public_ip019.public_ip_id
   tags {

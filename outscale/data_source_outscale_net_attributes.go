@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -64,7 +63,7 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 	var resp oscgo.ReadNetsResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.NetApi.ReadNets(context.Background(), &oscgo.ReadNetsOpts{ReadNetsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NetApi.ReadNets(context.Background()).ReadNetsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

@@ -6,12 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func resourceOutscaleAccessKey() *schema.Resource {
@@ -61,7 +59,7 @@ func resourceOutscaleAccessKeyCreate(d *schema.ResourceData, meta interface{}) e
 	var res oscgo.CreateAccessKeyResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background())
+		res, _, err = conn.AccessKeyApi.CreateAccessKey(context.Background()).CreateAccessKeyRequest(oscgo.CreateAccessKeyRequest{}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -92,9 +90,7 @@ func resourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) err
 		AccessKeyId: d.Id(),
 	}
 
-	resp, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background(), &oscgo.ReadSecretAccessKeyOpts{
-		ReadSecretAccessKeyRequest: optional.NewInterface(filter),
-	})
+	resp, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 	if err != nil {
 		return err
 	}
@@ -148,9 +144,7 @@ func resourceOutscaleAccessKeyDelete(d *schema.ResourceData, meta interface{}) e
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.AccessKeyApi.DeleteAccessKey(context.Background(), &oscgo.DeleteAccessKeyOpts{
-			DeleteAccessKeyRequest: optional.NewInterface(req),
-		})
+		_, _, err = conn.AccessKeyApi.DeleteAccessKey(context.Background()).DeleteAccessKeyRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -172,9 +166,7 @@ func updateAccessKey(conn *oscgo.APIClient, id, state string) error {
 		State:       state,
 	}
 
-	_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background(), &oscgo.UpdateAccessKeyOpts{
-		UpdateAccessKeyRequest: optional.NewInterface(req),
-	})
+	_, _, err := conn.AccessKeyApi.UpdateAccessKey(context.Background()).UpdateAccessKeyRequest(req).Execute()
 	if err != nil {
 		return err
 	}

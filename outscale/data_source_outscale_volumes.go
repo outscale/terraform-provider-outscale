@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -124,7 +123,7 @@ func datasourceOAPIVolumesRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(params)})
+		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -85,7 +84,7 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 	var resp oscgo.ReadInternetServicesResponse
 	var err error
 	err = resource.Retry(120*time.Second, func() *resource.RetryError {
-		resp, _, err = conn.InternetServiceApi.ReadInternetServices(context.Background(), &oscgo.ReadInternetServicesOpts{ReadInternetServicesRequest: optional.NewInterface(params)})
+		resp, _, err = conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(params).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
 	"reflect"
 	"strings"
@@ -68,7 +67,7 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	var resp oscgo.ReadNetPeeringsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

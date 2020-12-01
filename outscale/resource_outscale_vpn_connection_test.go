@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -173,9 +172,7 @@ func testAccOutscaleVPNConnectionExists(resourceName string) resource.TestCheckF
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil || len(resp.GetVpnConnections()) < 1 {
 			return fmt.Errorf("Outscale VPN Connection not found (%s)", rs.Primary.ID)
 		}
@@ -196,9 +193,7 @@ func testAccOutscaleVPNConnectionDestroy(s *terraform.State) error {
 			},
 		}
 
-		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(filter).Execute()
 		if err != nil ||
 			len(resp.GetVpnConnections()) > 0 && resp.GetVpnConnections()[0].GetState() != "deleted" {
 			return fmt.Errorf("Outscale VPN Connection still exists (%s): %s", rs.Primary.ID, err)

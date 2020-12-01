@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func TestAccOutscaleAccessKey_basic(t *testing.T) {
@@ -139,9 +138,7 @@ func testAccCheckOutscaleAccessKeyExists(resourceName string) resource.TestCheck
 			AccessKeyId: rs.Primary.ID,
 		}
 
-		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background(), &oscgo.ReadSecretAccessKeyOpts{
-			ReadSecretAccessKeyRequest: optional.NewInterface(filter),
-		})
+		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 		if err != nil {
 			return fmt.Errorf("Outscale Access Key not found (%s)", rs.Primary.ID)
 		}
@@ -161,9 +158,7 @@ func testAccCheckOutscaleAccessKeyDestroy(s *terraform.State) error {
 			AccessKeyId: rs.Primary.ID,
 		}
 
-		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background(), &oscgo.ReadSecretAccessKeyOpts{
-			ReadSecretAccessKeyRequest: optional.NewInterface(filter),
-		})
+		_, _, err := conn.AccessKeyApi.ReadSecretAccessKey(context.Background()).ReadSecretAccessKeyRequest(filter).Execute()
 		if err != nil {
 			return fmt.Errorf("Outscale Access Key still exists (%s)", rs.Primary.ID)
 		}

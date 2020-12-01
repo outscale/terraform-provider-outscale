@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
 	"strings"
 	"time"
@@ -84,7 +83,7 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(params)})
+		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

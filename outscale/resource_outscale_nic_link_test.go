@@ -11,8 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -101,7 +100,7 @@ func testAccCheckOutscaleNicLinkDestroy(s *terraform.State) error {
 		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
+			resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

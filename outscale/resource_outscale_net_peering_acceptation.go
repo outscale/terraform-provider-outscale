@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -78,7 +77,7 @@ func resourceOutscaleOAPILinPeeringAccepterCreate(d *schema.ResourceData, meta i
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NetPeeringApi.AcceptNetPeering(context.Background(), &oscgo.AcceptNetPeeringOpts{AcceptNetPeeringRequest: optional.NewInterface(req)})
+		_, _, err = conn.NetPeeringApi.AcceptNetPeering(context.Background()).AcceptNetPeeringRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -137,7 +136,7 @@ func dataSourceOutscaleOAPISnapshotsRead(d *schema.ResourceData, meta interface{
 	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(params)})
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {

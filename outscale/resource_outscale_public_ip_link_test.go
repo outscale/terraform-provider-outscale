@@ -9,8 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -59,7 +58,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkExists(name string, res *oscgo.PublicIp
 				LinkPublicIpIds: &[]string{res.GetLinkPublicIpId()},
 			},
 		}
-		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
+		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 
 		if err != nil {
 			log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkExists (%s)", err)
@@ -99,7 +98,7 @@ func testAccCheckOutscaleOAPIPublicIPLinkDestroy(s *terraform.State) error {
 				LinkPublicIpIds: &[]string{id},
 			},
 		}
-		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
+		response, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 
 		log.Printf("[DEBUG] ERROR testAccCheckOutscaleOAPIPublicIPLinkDestroy (%s)", err)
 
@@ -134,7 +133,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 					LinkPublicIpIds: &[]string{rs.Primary.ID},
 				},
 			}
-			resp, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+			resp, _, err := conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 			if err != nil {
 				return err
@@ -156,7 +155,7 @@ func testAccCheckOutscaleOAPIPublicIPLExists(n string, res *oscgo.PublicIp) reso
 			var response oscgo.ReadPublicIpsResponse
 			err := resource.Retry(120*time.Second, func() *resource.RetryError {
 				var err error
-				response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+				response, _, err = conn.OSCAPI.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 
 				if err != nil {
 					if e := fmt.Sprint(err); strings.Contains(e, "InvalidAllocationID.NotFound") || strings.Contains(e, "InvalidAddress.NotFound") {

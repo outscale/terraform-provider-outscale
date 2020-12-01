@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -152,7 +151,7 @@ func resourceOutscaleOAPISnapshotCreate(d *schema.ResourceData, meta interface{}
 	var resp oscgo.CreateSnapshotResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SnapshotApi.CreateSnapshot(context.Background(), &oscgo.CreateSnapshotOpts{CreateSnapshotRequest: optional.NewInterface(request)})
+		resp, _, err = conn.SnapshotApi.CreateSnapshot(context.Background()).CreateSnapshotRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -203,7 +202,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -281,7 +280,7 @@ func resourceOutscaleOAPISnapshotDelete(d *schema.ResourceData, meta interface{}
 		request := oscgo.DeleteSnapshotRequest{SnapshotId: d.Id()}
 
 		err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background(), &oscgo.DeleteSnapshotOpts{DeleteSnapshotRequest: optional.NewInterface(request)})
+			_, _, err := conn.SnapshotApi.DeleteSnapshot(context.Background()).DeleteSnapshotRequest(request).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -320,9 +319,9 @@ func SnapshotOAPIStateRefreshFunc(client *oscgo.APIClient, id string) resource.S
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = client.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(oscgo.ReadSnapshotsRequest{
+			resp, _, err = client.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(oscgo.ReadSnapshotsRequest{
 				Filters: &oscgo.FiltersSnapshot{SnapshotIds: &[]string{id}},
-			})})
+			}).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

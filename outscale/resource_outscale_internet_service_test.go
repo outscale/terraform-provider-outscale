@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -47,13 +46,11 @@ func testAccCheckOutscaleInternetServiceExists(n string) resource.TestCheckFunc 
 			return fmt.Errorf("No internet gateway id is set")
 		}
 
-		filterReq := &oscgo.ReadInternetServicesOpts{
-			ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
-				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), filterReq)
+		resp, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetInternetServices()) < 1 {
 			return fmt.Errorf("Internet Service Link not found (%s)", rs.Primary.ID)
 		}
@@ -69,13 +66,11 @@ func testAccCheckOutscaleInternetServiceDestroyed(s *terraform.State) error {
 			continue
 		}
 
-		filterReq := &oscgo.ReadInternetServicesOpts{
-			ReadInternetServicesRequest: optional.NewInterface(oscgo.ReadInternetServicesRequest{
-				Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadInternetServicesRequest{
+			Filters: &oscgo.FiltersInternetService{InternetServiceIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background(), filterReq)
+		resp, _, err := conn.InternetServiceApi.ReadInternetServices(context.Background()).ReadInternetServicesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetInternetServices()) > 0 {
 			return fmt.Errorf("Internet Service Link still exists (%s)", rs.Primary.ID)
 		}

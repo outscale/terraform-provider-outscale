@@ -41,7 +41,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `bgp_asn` - An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network.
+* `bgp_asn` - An Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
 * `client_gateway_id` - The ID of the client gateway.
 * `connection_type` - The type of communication tunnel used by the client gateway (only `ipsec.1` is supported).
 * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).

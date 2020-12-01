@@ -10,8 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -266,7 +265,7 @@ func resourceOutscaleOAPINicCreate(d *schema.ResourceData, meta interface{}) err
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.CreateNic(context.Background(), &oscgo.CreateNicOpts{CreateNicRequest: optional.NewInterface(request)})
+		resp, _, err = conn.NicApi.CreateNic(context.Background()).CreateNicRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -316,7 +315,7 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
 
-		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
+		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -474,7 +473,7 @@ func resourceOutscaleOAPINicDelete(d *schema.ResourceData, meta interface{}) err
 	}
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.DeleteNic(context.Background(), &oscgo.DeleteNicOpts{DeleteNicRequest: optional.NewInterface(deleteEniOpts)})
+		_, _, err = conn.NicApi.DeleteNic(context.Background()).DeleteNicRequest(deleteEniOpts).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -519,11 +518,7 @@ func resourceOutscaleOAPINicDetach(meta interface{}, nicID string) error {
 		}
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.NicApi.UnlinkNic(context.Background(),
-				&oscgo.UnlinkNicOpts{
-					UnlinkNicRequest: optional.NewInterface(req),
-				},
-			)
+			_, _, err = conn.NicApi.UnlinkNic(context.Background()).UnlinkNicRequest(req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -561,13 +556,13 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			na := na.([]interface{})[0].(map[string]interface{})
 			di := na["device_number"].(int)
 			ar := oscgo.LinkNicRequest{
-				DeviceNumber: int64(di),
+				DeviceNumber: int32(di),
 				VmId:         na["instance"].(string),
 				NicId:        d.Id(),
 			}
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.NicApi.LinkNic(context.Background(), &oscgo.LinkNicOpts{LinkNicRequest: optional.NewInterface(ar)})
+				_, _, err = conn.NicApi.LinkNic(context.Background()).LinkNicRequest(ar).Execute()
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -597,7 +592,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 
 			err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
+				_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -621,7 +616,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 			}
 
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
+				_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 				if err != nil {
 					if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 						return resource.RetryableError(err)
@@ -659,13 +654,13 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				dif := int32(diff)
 				input := oscgo.LinkPrivateIpsRequest{
 					NicId:                   d.Id(),
-					SecondaryPrivateIpCount: pointy.Int64(int64(dif)),
+					SecondaryPrivateIpCount: pointy.Int32(dif),
 				}
 				// _, err := conn.VM.AssignPrivateIpAddresses(input)
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
 					var err error
-					_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
+					_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -686,7 +681,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 				}
 
 				err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
+					_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 					if err != nil {
 						if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 							return resource.RetryableError(err)
@@ -713,7 +708,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 		}
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
+			_, _, err = conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -738,7 +733,7 @@ func resourceOutscaleOAPINicUpdate(d *schema.ResourceData, meta interface{}) err
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.NicApi.UpdateNic(context.Background(), &oscgo.UpdateNicOpts{UpdateNicRequest: optional.NewInterface(request)})
+			_, _, err = conn.NicApi.UpdateNic(context.Background()).UpdateNicRequest(request).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

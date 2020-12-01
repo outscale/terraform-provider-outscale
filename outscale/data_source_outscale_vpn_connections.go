@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func dataSourceOutscaleVPNConnections() *schema.Resource {
@@ -115,9 +114,7 @@ func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	var resp oscgo.ReadVpnConnectionsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VpnConnectionApi.ReadVpnConnections(context.Background(), &oscgo.ReadVpnConnectionsOpts{
-			ReadVpnConnectionsRequest: optional.NewInterface(params),
-		})
+		resp, _, err = conn.VpnConnectionApi.ReadVpnConnections(context.Background()).ReadVpnConnectionsRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

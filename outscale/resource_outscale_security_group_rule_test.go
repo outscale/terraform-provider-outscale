@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -80,8 +79,8 @@ func testAccCheckOutscaleOAPIRuleAttributes(n string, group *oscgo.SecurityGroup
 		}
 
 		if p == nil {
-			fromPortRange := int64(443)
-			toPortRange := int64(443)
+			fromPortRange := int32(443)
+			toPortRange := int32(443)
 			ipProtocol := "tcp"
 			p = &oscgo.SecurityGroupRule{
 				FromPortRange: &fromPortRange,
@@ -187,7 +186,7 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) re
 		var resp oscgo.ReadSecurityGroupsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
+			resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded") {

@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -122,7 +121,7 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 	var resp oscgo.ReadSnapshotsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background(), &oscgo.ReadSnapshotsOpts{ReadSnapshotsRequest: optional.NewInterface(params)})
+		resp, _, err = conn.SnapshotApi.ReadSnapshots(context.Background()).ReadSnapshotsRequest(params).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
@@ -221,7 +220,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			filter.SetPermissionsToCreateVolumeGlobalPermission(boolean)
 
 		case "progresses":
-			filter.SetProgresses(utils.StringSliceToInt64Slice(values))
+			filter.SetProgresses(utils.StringSliceToInt32Slice(values))
 
 		case "snapshot_ids":
 			filter.SetSnapshotIds(values)
@@ -242,7 +241,7 @@ func buildOutscaleOapiSnapshootDataSourceFilters(set *schema.Set, filter *oscgo.
 			filter.SetVolumeIds(values)
 
 		case "volume_sizes":
-			filter.SetVolumeSizes(utils.StringSliceToInt64Slice(values))
+			filter.SetVolumeSizes(utils.StringSliceToInt32Slice(values))
 
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)

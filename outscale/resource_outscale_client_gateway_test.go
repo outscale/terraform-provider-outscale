@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antihax/optional"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 )
 
@@ -102,9 +101,7 @@ func testAccCheckClientGatewayExists(resourceName string) resource.TestCheckFunc
 			},
 		}
 
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background(), &oscgo.ReadClientGatewaysOpts{
-			ReadClientGatewaysRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil || len(resp.GetClientGateways()) < 1 {
 			return fmt.Errorf("Outscale Client Gateway not found (%s)", rs.Primary.ID)
 		}
@@ -126,9 +123,7 @@ func testAccCheckClientGatewayDestroy(s *terraform.State) error {
 			},
 		}
 
-		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background(), &oscgo.ReadClientGatewaysOpts{
-			ReadClientGatewaysRequest: optional.NewInterface(filter),
-		})
+		resp, _, err := conn.ClientGatewayApi.ReadClientGateways(context.Background()).ReadClientGatewaysRequest(filter).Execute()
 		if err != nil ||
 			len(resp.GetClientGateways()) > 0 && resp.GetClientGateways()[0].GetState() != "deleted" {
 			return fmt.Errorf("Outscale Client Gateway still exists (%s): %s", rs.Primary.ID, err)

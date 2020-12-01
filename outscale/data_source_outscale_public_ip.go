@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -84,7 +83,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	var response oscgo.ReadPublicIpsResponse
 	err := resource.Retry(60*time.Second, func() *resource.RetryError {
 		var err error
-		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(req)})
+		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

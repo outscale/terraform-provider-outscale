@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"strings"
 	"testing"
 	"time"
@@ -50,9 +49,9 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = oscapi.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
+			resp, _, err = oscapi.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{rs.Primary.Attributes["gateway_id"]}},
-			})})
+			}).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -68,9 +67,9 @@ func testAccCheckOAPIVirtualRoutePropagationDestroy(s *terraform.State) error {
 
 		if len(resp.GetVirtualGateways()) > 0 {
 			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err := oscapi.VirtualGatewayApi.DeleteVirtualGateway(context.Background(), &oscgo.DeleteVirtualGatewayOpts{DeleteVirtualGatewayRequest: optional.NewInterface(&oscgo.DeleteVirtualGatewayRequest{
+				_, _, err := oscapi.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
 					VirtualGatewayId: resp.GetVirtualGateways()[0].GetVirtualGatewayId(),
-				})})
+				}).Execute()
 				if err == nil {
 					return nil
 				}

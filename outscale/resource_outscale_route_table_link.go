@@ -8,8 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -67,7 +66,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 	var resp oscgo.LinkRouteTableResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.RouteTableApi.LinkRouteTable(context.Background(), &oscgo.LinkRouteTableOpts{LinkRouteTableRequest: optional.NewInterface(linkRouteTableOpts)})
+		resp, _, err = conn.RouteTableApi.LinkRouteTable(context.Background()).LinkRouteTableRequest(linkRouteTableOpts).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "InvalidRouteTableID.NotFound") {
 				return resource.RetryableError(err)
@@ -122,9 +121,9 @@ func resourceOutscaleOAPILinkRouteTableDelete(d *schema.ResourceData, meta inter
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.RouteTableApi.UnlinkRouteTable(context.Background(), &oscgo.UnlinkRouteTableOpts{UnlinkRouteTableRequest: optional.NewInterface(oscgo.UnlinkRouteTableRequest{
+		_, _, err = conn.RouteTableApi.UnlinkRouteTable(context.Background()).UnlinkRouteTableRequest(oscgo.UnlinkRouteTableRequest{
 			LinkRouteTableId: d.Id(),
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -177,12 +176,9 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 	var err error
 
 	err = resource.Retry(15*time.Minute, func() *resource.RetryError {
-		rt, _, err = conn.RouteTableApi.ReadRouteTables(context.Background(),
-			&oscgo.ReadRouteTablesOpts{
-				ReadRouteTablesRequest: optional.NewInterface(oscgo.ReadRouteTablesRequest{
-					Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}},
-				}),
-			})
+		rt, _, err = conn.RouteTableApi.ReadRouteTables(context.Background()).ReadRouteTablesRequest(oscgo.ReadRouteTablesRequest{
+			Filters: &oscgo.FiltersRouteTable{RouteTableIds: &[]string{routeTableID}},
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

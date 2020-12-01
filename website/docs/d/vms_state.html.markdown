@@ -6,7 +6,7 @@ description: |-
   [Provides information about VM states.]
 ---
 
-# outscale_vms_state Data Source
+# outscale_vm_states Data Source
 
 Provides information about VM states.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instance+Lifecycle).
@@ -16,7 +16,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 
-data "outscale_vms_state" "vm_states01" {
+data "outscale_vm_states" "vm_states01" {
   filter {
     name   = "vm_ids"
     values = ["i-12345678", "i-12345679"]

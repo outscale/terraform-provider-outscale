@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -75,9 +74,9 @@ func TestAccOutscaleOAPILinPeeringConnection_plan(t *testing.T) {
 	testDestroy := func(*terraform.State) error {
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 		log.Printf("[DEBUG] Test deleting the Net Peering.")
-		_, _, err := conn.NetPeeringApi.DeleteNetPeering(context.Background(), &oscgo.DeleteNetPeeringOpts{DeleteNetPeeringRequest: optional.NewInterface(oscgo.DeleteNetPeeringRequest{
+		_, _, err := conn.NetPeeringApi.DeleteNetPeering(context.Background()).DeleteNetPeeringRequest(oscgo.DeleteNetPeeringRequest{
 			NetPeeringId: connection.GetNetPeeringId(),
-		})})
+		}).Execute()
 		if err != nil {
 			return err
 		}
@@ -114,9 +113,9 @@ func testAccCheckOutscaleOAPILinPeeringConnectionDestroy(s *terraform.State) err
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
-			})})
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -176,9 +175,9 @@ func testAccCheckOutscaleOAPILinPeeringConnectionExists(n string, connection *os
 		var resp oscgo.ReadNetPeeringsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background(), &oscgo.ReadNetPeeringsOpts{ReadNetPeeringsRequest: optional.NewInterface(oscgo.ReadNetPeeringsRequest{
+			resp, _, err = conn.NetPeeringApi.ReadNetPeerings(context.Background()).ReadNetPeeringsRequest(oscgo.ReadNetPeeringsRequest{
 				Filters: &oscgo.FiltersNetPeering{NetPeeringIds: &[]string{rs.Primary.ID}},
-			})})
+			}).Execute()
 
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {

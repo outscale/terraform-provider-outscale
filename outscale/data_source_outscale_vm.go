@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func dataSourceOutscaleOAPIVM() *schema.Resource {
@@ -30,7 +29,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	if !filtersOk && !instanceIDOk {
 		return fmt.Errorf("One of filters, or instance_id must be assigned")
 	}
-
 	// Build up search parameters
 	params := oscgo.ReadVmsRequest{}
 	if filtersOk {
@@ -44,9 +42,7 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	var resp oscgo.ReadVmsResponse
 	err := resource.Retry(30*time.Second, func() *resource.RetryError {
-		r, _, err := client.VmApi.ReadVms(context.Background(), &oscgo.ReadVmsOpts{
-			ReadVmsRequest: optional.NewInterface(params),
-		})
+		r, _, err := client.VmApi.ReadVms(context.Background()).ReadVmsRequest(params).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
@@ -94,9 +90,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())
-		if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
-			return err
-		}
 		return oapiVMDescriptionAttributes(set, &vm)
 	})
 }
@@ -200,6 +193,9 @@ func oapiVMDescriptionAttributes(set AttributeSetter, vm *oscgo.Vm) error {
 		return err
 	}
 	if err := set("vm_initiated_shutdown_behavior", vm.GetVmInitiatedShutdownBehavior()); err != nil {
+		return err
+	}
+	if err := set("tags", getOscAPITagSet(vm.GetTags())); err != nil {
 		return err
 	}
 

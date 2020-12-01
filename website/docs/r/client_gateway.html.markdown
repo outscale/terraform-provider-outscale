@@ -30,7 +30,7 @@ resource "outscale_client_gateway" "client_gateway01" {
 
 The following arguments are supported:
 
-* `bgp_asn` - (Required) An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network. The integer must be within the [0;4294967295] range. By default, 65000.
+* `bgp_asn` - (Required) An Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
 * `connection_type` - (Required) The communication protocol used to establish tunnel with your client gateway (only `ipsec.1` is supported).
 * `public_ip` - (Required) The public fixed IPv4 address of your client gateway.
 * `tags` - One or more tags to add to this resource.
@@ -42,14 +42,14 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `client_gateway` - Information about the client gateway.
-  * `bgp_asn` - An unsigned 32-bits Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find out the path to your client gateway through the Internet network.
+  * `bgp_asn` - An Autonomous System Number (ASN) used by the Border Gateway Protocol (BGP) to find the path to your client gateway through the Internet.
   * `client_gateway_id` - The ID of the client gateway.
   * `connection_type` - The type of communication tunnel used by the client gateway (only `ipsec.1` is supported).
   * `public_ip` - The public IPv4 address of the client gateway (must be a fixed address into a NATed network).
   * `state` - The state of the client gateway (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tags` - One or more tags associated with the client gateway.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Import
 

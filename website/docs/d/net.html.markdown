@@ -49,6 +49,6 @@ The following attributes are exported:
   * `net_id` - The ID of the Net.
   * `state` - The state of the Net (`pending` \| `available`).
   * `tags` - One or more tags associated with the Net.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
   * `tenancy` - The VM tenancy in a Net.

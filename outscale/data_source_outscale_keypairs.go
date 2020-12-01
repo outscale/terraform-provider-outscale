@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -41,7 +40,7 @@ func datasourceOutscaleOAPiKeyPairsRead(d *schema.ResourceData, meta interface{}
 	var resp oscgo.ReadKeypairsResponse
 	err := resource.Retry(120*time.Second, func() *resource.RetryError {
 		var err error
-		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background(), &oscgo.ReadKeypairsOpts{ReadKeypairsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.KeypairApi.ReadKeypairs(context.Background()).ReadKeypairsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {

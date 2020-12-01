@@ -3,8 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"log"
 	"strings"
 	"time"
@@ -80,7 +79,7 @@ func resourceOutscaleOAPIVirtualGatewayCreate(d *schema.ResourceData, meta inter
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.CreateVirtualGateway(context.Background(), &oscgo.CreateVirtualGatewayOpts{CreateVirtualGatewayRequest: optional.NewInterface(createOpts)})
+		resp, _, err = conn.VirtualGatewayApi.CreateVirtualGateway(context.Background()).CreateVirtualGatewayRequest(createOpts).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -128,9 +127,9 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
+		resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 			Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{d.Id()}},
-		})})
+		}).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -201,9 +200,9 @@ func resourceOutscaleOAPIVirtualGatewayDelete(d *schema.ResourceData, meta inter
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	return resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background(), &oscgo.DeleteVirtualGatewayOpts{DeleteVirtualGatewayRequest: optional.NewInterface(oscgo.DeleteVirtualGatewayRequest{
+		_, _, err := conn.VirtualGatewayApi.DeleteVirtualGateway(context.Background()).DeleteVirtualGatewayRequest(oscgo.DeleteVirtualGatewayRequest{
 			VirtualGatewayId: d.Id(),
-		})})
+		}).Execute()
 		if err == nil {
 			return nil
 		}
@@ -232,9 +231,9 @@ func vpnGatewayAttachStateRefreshFunc(conn *oscgo.APIClient, id string, expected
 		var err error
 
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
+			resp, _, err = conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
 				Filters: &oscgo.FiltersVirtualGateway{VirtualGatewayIds: &[]string{id}},
-			})})
+			}).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -278,13 +277,11 @@ func oapiVpnGatewayGetLink(vgw oscgo.VirtualGateway) *oscgo.NetToVirtualGatewayL
 
 func virtualGatewayStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		resp, _, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background(), &oscgo.ReadVirtualGatewaysOpts{
-			ReadVirtualGatewaysRequest: optional.NewInterface(oscgo.ReadVirtualGatewaysRequest{
-				Filters: &oscgo.FiltersVirtualGateway{
-					VirtualGatewayIds: &[]string{instanceID},
-				},
-			}),
-		})
+		resp, _, err := conn.VirtualGatewayApi.ReadVirtualGateways(context.Background()).ReadVirtualGatewaysRequest(oscgo.ReadVirtualGatewaysRequest{
+			Filters: &oscgo.FiltersVirtualGateway{
+				VirtualGatewayIds: &[]string{instanceID},
+			},
+		}).Execute()
 
 		if err != nil {
 			log.Printf("[ERROR] error on InstanceStateRefresh: %s", err)

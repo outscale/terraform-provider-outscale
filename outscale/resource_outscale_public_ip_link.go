@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -64,7 +63,7 @@ func resourceOutscaleOAPIPublicIPLinkCreate(d *schema.ResourceData, meta interfa
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		resp, _, err = conn.PublicIpApi.LinkPublicIp(context.Background(), &oscgo.LinkPublicIpOpts{LinkPublicIpRequest: optional.NewInterface(request)})
+		resp, _, err = conn.PublicIpApi.LinkPublicIp(context.Background()).LinkPublicIpRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -114,7 +113,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background(), &oscgo.ReadPublicIpsOpts{ReadPublicIpsRequest: optional.NewInterface(request)})
+		response, _, err = conn.PublicIpApi.ReadPublicIps(context.Background()).ReadPublicIpsRequest(request).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -156,7 +155,7 @@ func resourceOutscaleOAPIPublicIPLinkDelete(d *schema.ResourceData, meta interfa
 
 	err = resource.Retry(60*time.Second, func() *resource.RetryError {
 
-		_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background(), &oscgo.UnlinkPublicIpOpts{UnlinkPublicIpRequest: optional.NewInterface(opts)})
+		_, _, err = conn.PublicIpApi.UnlinkPublicIp(context.Background()).UnlinkPublicIpRequest(opts).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)

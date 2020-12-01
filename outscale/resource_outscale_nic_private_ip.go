@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -69,7 +68,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 	}
 
 	if v, ok := d.GetOk("secondary_private_ip_count"); ok {
-		input.SetSecondaryPrivateIpCount(int64(v.(int) - 1))
+		input.SetSecondaryPrivateIpCount(int32(v.(int) - 1))
 	}
 
 	if v, ok := d.GetOk("private_ips"); ok {
@@ -78,7 +77,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPCreate(d *schema.ResourceData,
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.LinkPrivateIps(context.Background(), &oscgo.LinkPrivateIpsOpts{LinkPrivateIpsRequest: optional.NewInterface(input)})
+		_, _, err = conn.NicApi.LinkPrivateIps(context.Background()).LinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -109,7 +108,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	var resp oscgo.ReadNicsResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -191,7 +190,7 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPDelete(d *schema.ResourceData,
 
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background(), &oscgo.UnlinkPrivateIpsOpts{UnlinkPrivateIpsRequest: optional.NewInterface(input)})
+		_, _, err = conn.NicApi.UnlinkPrivateIps(context.Background()).UnlinkPrivateIpsRequest(input).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)

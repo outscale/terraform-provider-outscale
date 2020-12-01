@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -89,11 +88,9 @@ func dataSourceOutscaleAccessKeysRead(d *schema.ResourceData, meta interface{}) 
 	var resp oscgo.ReadAccessKeysResponse
 	var err error
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.AccessKeyApi.ReadAccessKeys(context.Background(), &oscgo.ReadAccessKeysOpts{
-			ReadAccessKeysRequest: optional.NewInterface(oscgo.ReadAccessKeysRequest{
-				Filters: filterReq,
-			}),
-		})
+		resp, _, err = conn.AccessKeyApi.ReadAccessKeys(context.Background()).ReadAccessKeysRequest(oscgo.ReadAccessKeysRequest{
+			Filters: filterReq,
+		}).Execute()
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -129,7 +126,7 @@ func flattenAccessKeys(accessKeys []oscgo.AccessKey) []map[string]interface{} {
 			"access_key_id":          ak.GetAccessKeyId(),
 			"creation_date":          ak.GetCreationDate(),
 			"last_modification_date": ak.GetLastModificationDate(),
-			"state":                  ak.GetLastModificationDate(),
+			"state":                  ak.GetState(),
 		}
 	}
 	return accessKeysMap

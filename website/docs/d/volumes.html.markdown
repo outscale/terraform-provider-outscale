@@ -44,7 +44,7 @@ The following arguments are supported:
   * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
   * `volume_ids` - (Optional) The IDs of the volumes.
   * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
-  * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
   * `volume_types` - (Optional) The types of the volumes (`standard` \| `gp2` \| `io1`).
 
 ## Attribute Reference
@@ -56,17 +56,17 @@ The following attributes are exported:
     For `io1` volumes, the number of provisioned IOPS.  
     For `gp2` volumes, the baseline performance of the volume.
   * `linked_volumes` - Information about your volume attachment.
-    * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
-    * `device_name` - The name of the device.
-    * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
-    * `vm_id` - The ID of the VM.
-    * `volume_id` - The ID of the volume.
+      * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+      * `device_name` - The name of the device.
+      * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
+      * `vm_id` - The ID of the VM.
+      * `volume_id` - The ID of the volume.
   * `size` - The size of the volume, in gibibytes (GiB).
   * `snapshot_id` - The snapshot from which the volume was created.
-  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `deleting` \| `error`).
+  * `state` - The state of the volume (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).
   * `subregion_name` - The Subregion in which the volume was created.
   * `tags` - One or more tags associated with the volume.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
   * `volume_id` - The ID of the volume.
   * `volume_type` - The type of the volume (`standard` \| `gp2` \| `io1`).

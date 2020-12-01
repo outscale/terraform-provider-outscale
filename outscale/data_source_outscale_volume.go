@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
 	"github.com/davecgh/go-spew/spew"
@@ -111,7 +110,7 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(params)})
+		resp, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(params).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 				return resource.RetryableError(err)
@@ -237,7 +236,7 @@ func buildOutscaleOSCAPIDataSourceVolumesFilters(set *schema.Set) oscgo.FiltersV
 		case "volume_ids":
 			filters.SetVolumeIds(filterValues)
 		case "volume_sizes":
-			filters.SetVolumeSizes(utils.StringSliceToInt64Slice(filterValues))
+			filters.SetVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
 		case "volume_types":
 			filters.SetVolumeTypes(filterValues)
 		case "link_volume_vm_ids":

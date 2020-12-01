@@ -6,9 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
 	"github.com/openlyinc/pointy"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 	"github.com/terraform-providers/terraform-provider-outscale/utils"
 
@@ -95,10 +94,10 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
-		req.FromPortRange = pointy.Int64(cast.ToInt64(v))
+		req.FromPortRange = pointy.Int32(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOkExists("to_port_range"); ok {
-		req.ToPortRange = pointy.Int64(cast.ToInt64(v))
+		req.ToPortRange = pointy.Int32(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
 		req.IpProtocol = pointy.String(v.(string))
@@ -116,10 +115,7 @@ func resourceOutscaleOAPIOutboundRuleCreate(d *schema.ResourceData, meta interfa
 	var err error
 	var resp oscgo.CreateSecurityGroupRuleResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SecurityGroupRuleApi.CreateSecurityGroupRule(context.Background(),
-			&oscgo.CreateSecurityGroupRuleOpts{
-				CreateSecurityGroupRuleRequest: optional.NewInterface(req),
-			})
+		resp, _, err = conn.SecurityGroupRuleApi.CreateSecurityGroupRule(context.Background()).CreateSecurityGroupRuleRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -175,10 +171,10 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	}
 
 	if v, ok := d.GetOkExists("from_port_range"); ok {
-		req.FromPortRange = pointy.Int64(cast.ToInt64(v))
+		req.FromPortRange = pointy.Int32(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOkExists("to_port_range"); ok {
-		req.ToPortRange = pointy.Int64(cast.ToInt64(v))
+		req.ToPortRange = pointy.Int32(cast.ToInt32(v))
 	}
 	if v, ok := d.GetOk("ip_protocol"); ok {
 		req.IpProtocol = pointy.String(v.(string))
@@ -188,10 +184,7 @@ func resourceOutscaleOAPIOutboundRuleDelete(d *schema.ResourceData, meta interfa
 	}
 
 	err := resource.Retry(5*time.Minute, func() *resource.RetryError {
-		_, _, err := conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background(),
-			&oscgo.DeleteSecurityGroupRuleOpts{
-				DeleteSecurityGroupRuleRequest: optional.NewInterface(req),
-			})
+		_, _, err := conn.SecurityGroupRuleApi.DeleteSecurityGroupRule(context.Background()).DeleteSecurityGroupRuleRequest(req).Execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {
 				return resource.RetryableError(err)
@@ -226,13 +219,13 @@ func expandRules(d *schema.ResourceData) *[]oscgo.SecurityGroupRule {
 				rules[i].ServiceIds = expandStringValueListPointer(r["service_ids"].([]interface{}))
 			}
 			if v, ok := r["from_port_range"]; ok {
-				rules[i].FromPortRange = pointy.Int64(cast.ToInt64(v))
+				rules[i].FromPortRange = pointy.Int32(cast.ToInt32(v))
 			}
 			if v, ok := r["ip_protocol"]; ok && v != "" {
 				rules[i].IpProtocol = pointy.String(cast.ToString(v))
 			}
 			if v, ok := r["to_port_range"]; ok {
-				rules[i].ToPortRange = pointy.Int64(cast.ToInt64(v))
+				rules[i].ToPortRange = pointy.Int32(cast.ToInt32(v))
 			}
 		}
 		return &rules

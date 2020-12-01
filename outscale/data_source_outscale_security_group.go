@@ -7,8 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -183,7 +182,7 @@ func dataSourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interf
 	var err error
 	var resp oscgo.ReadSecurityGroupsResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background(), &oscgo.ReadSecurityGroupsOpts{ReadSecurityGroupsRequest: optional.NewInterface(req)})
+		resp, _, err = conn.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(req).Execute()
 
 		if err != nil {
 			if strings.Contains(err.Error(), "RequestLimitExceeded") {

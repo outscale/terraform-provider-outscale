@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -111,7 +110,7 @@ func testAccCheckOAPIVolumeExists(n string, v *oscgo.Volume) resource.TestCheckF
 		var response oscgo.ReadVolumesResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			response, _, err = conn.VolumeApi.ReadVolumes(context.Background(), &oscgo.ReadVolumesOpts{ReadVolumesRequest: optional.NewInterface(request)})
+			response, _, err = conn.VolumeApi.ReadVolumes(context.Background()).ReadVolumesRequest(request).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

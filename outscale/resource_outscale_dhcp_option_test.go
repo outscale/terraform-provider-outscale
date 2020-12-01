@@ -6,13 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/antihax/optional"
 	"github.com/openlyinc/pointy"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hashicorp/terraform/helper/acctest"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 )
 
 func TestAccOutscaleOAPIDhcpOptional_basic(t *testing.T) {
@@ -204,11 +203,9 @@ func testAccCheckOutscaleDHCPOptionExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No DHCP Option id is set")
 		}
 
-		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background(), &oscgo.ReadDhcpOptionsOpts{
-			ReadDhcpOptionsRequest: optional.NewInterface(oscgo.ReadDhcpOptionsRequest{
-				Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
-			}),
-		})
+		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
+			Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
+		}).Execute()
 		if err != nil || len(resp.GetDhcpOptionsSets()) < 1 {
 			return fmt.Errorf("DHCP Option is not found (%s)", rs.Primary.ID)
 		}
@@ -224,11 +221,9 @@ func testAccCheckOAPIDHCPOptionDestroy(s *terraform.State) error {
 			continue
 		}
 
-		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background(), &oscgo.ReadDhcpOptionsOpts{
-			ReadDhcpOptionsRequest: optional.NewInterface(oscgo.ReadDhcpOptionsRequest{
-				Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
-			}),
-		})
+		resp, _, err := conn.DhcpOptionApi.ReadDhcpOptions(context.Background()).ReadDhcpOptionsRequest(oscgo.ReadDhcpOptionsRequest{
+			Filters: &oscgo.FiltersDhcpOptions{DhcpOptionsSetIds: &[]string{rs.Primary.ID}},
+		}).Execute()
 		if strings.Contains(fmt.Sprint(err), "InvalidDhcpID.NotFound") {
 			continue
 		}

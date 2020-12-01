@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 	"github.com/spf13/cast"
 
 	"github.com/aws/aws-sdk-go/aws"

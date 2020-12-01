@@ -10,6 +10,8 @@ import (
 
 func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 	omi := os.Getenv("OUTSCALE_IMAGEID")
+	datasourcceName := "data.outscale_vm.basic_web"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -17,10 +19,9 @@ func TestAccOutscaleOAPIVMDataSource_basic(t *testing.T) {
 			{
 				Config: testAccOAPIVMDataSourceConfig(omi, "tinav4.c2r2p2"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vm", "image_id", omi),
-					resource.TestCheckResourceAttr(
-						"outscale_vm.outscale_vm", "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(datasourcceName, "image_id", omi),
+					resource.TestCheckResourceAttr(datasourcceName, "vm_type", "tinav4.c2r2p2"),
+					resource.TestCheckResourceAttr(datasourcceName, "tags.#", "1"),
 				),
 			},
 		},
@@ -36,21 +37,26 @@ func testAccOAPIVMDataSourceConfig(omi, vmType string) string {
 				key = "Name"
 				value = "testacc-vm-ds"
 			}
-		}	
-		 
+		}
+
  		resource "outscale_subnet" "outscale_subnet" {
 			net_id         = "${outscale_net.outscale_net.net_id}"
 			ip_range       = "10.0.0.0/24"
 			subregion_name = "eu-west-2a"
 		}
-		 
+
  		resource "outscale_vm" "outscale_vm" {
 			image_id     = "%s"
 			vm_type      = "%s"
 			keypair_name = "terraform-basic"
 			subnet_id    = "${outscale_subnet.outscale_subnet.subnet_id}"
+
+			tags {
+				key   = "name"
+				value = "Terraform-VM"
+			}
 		}
-		 
+
     data "outscale_vm" "basic_web" {
 		 filter {
 				name   = "vm_ids"

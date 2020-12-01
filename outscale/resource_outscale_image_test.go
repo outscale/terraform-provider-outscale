@@ -6,8 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -52,13 +51,11 @@ func testAccCheckOAPIImageDestroy(s *terraform.State) error {
 			continue
 		}
 
-		filterReq := &oscgo.ReadImagesOpts{
-			ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-				Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.ImageApi.ReadImages(context.Background(), filterReq)
+		resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetImages()) > 0 {
 			return fmt.Errorf("Image still exists (%s)", rs.Primary.ID)
 		}
@@ -79,13 +76,11 @@ func testAccCheckOAPIImageExists(n string, ami *oscgo.Image) resource.TestCheckF
 
 		conn := testAccProvider.Meta().(*OutscaleClient).OSCAPI
 
-		filterReq := &oscgo.ReadImagesOpts{
-			ReadImagesRequest: optional.NewInterface(oscgo.ReadImagesRequest{
-				Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
-			}),
+		filterReq := oscgo.ReadImagesRequest{
+			Filters: &oscgo.FiltersImage{ImageIds: &[]string{rs.Primary.ID}},
 		}
 
-		resp, _, err := conn.ImageApi.ReadImages(context.Background(), filterReq)
+		resp, _, err := conn.ImageApi.ReadImages(context.Background()).ReadImagesRequest(filterReq).Execute()
 		if err != nil || len(resp.GetImages()) < 1 {
 			return fmt.Errorf("Image not found (%s)", rs.Primary.ID)
 		}

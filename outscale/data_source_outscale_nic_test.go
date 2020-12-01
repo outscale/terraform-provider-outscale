@@ -6,8 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"testing"
 	"time"
@@ -76,7 +75,7 @@ func testAccCheckOutscaleOAPIENIDestroy(s *terraform.State) error {
 
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(req)})
+			resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -111,7 +110,7 @@ func testAccCheckOutscaleOAPINICDestroy(s *terraform.State) error {
 		var resp oscgo.ReadNicsResponse
 		var err error
 		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(dnir)})
+			resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(dnir).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)

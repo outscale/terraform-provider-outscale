@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/antihax/optional"
-	oscgo "github.com/marinsalinas/osc-sdk-go"
+	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -239,7 +238,7 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 	var err error
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.NicApi.ReadNics(context.Background(), &oscgo.ReadNicsOpts{ReadNicsRequest: optional.NewInterface(params)})
+		resp, _, err = conn.NicApi.ReadNics(context.Background()).ReadNicsRequest(params).Execute()
 		return resource.RetryableError(err)
 	})
 
