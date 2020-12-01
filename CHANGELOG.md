@@ -9,15 +9,16 @@ FEATURES:
 * New Data Source: outscale_load_balancer_listener_rules
 * New Data Source: outscale_load_balancer_tags
 * New Data Source: outscale_load_balancer_vm_health
-* New Data Source: outscale_load_balancer_vms
 * New Data Source: outscale_load_balancers
-* New Data Source: outscale_vms_states is replaced by outscale_vm_state
+
+* Changed Data Source: outscale_vms_states is replaced by outscale_vm_state
 
 * New Resource: outscale_load_balancer
 * New Resource: outscale_load_balancer_attributes
 * New Resource: outscale_load_balancer_listener_rule
 * New Resource: outscale_load_balancer_policy
 * New Resource: outscale_load_balancer_vms
+
 
 BUG FIXES:
 ----------
@@ -45,6 +46,16 @@ BUG FIXES:
 * Issue on terraform refresh/destroy when using "outscale_nic" and "outscale_nic_private_ip" (TPD-1933)
 * Regression on ""outscale_vpn_connection"" on "refactor-osc-client" branch (TPD-1934)
 * x509 client certificate authentication (TPD-1936)
+* Issue with custom endpoints (TPD-1938)
+* Regression on "outscale_access_keys" datasource on develop-oapi (TPD-1939)
+* Issue when deactivating LBU access logs (TPD-1940)
+
+
+KNOWN INCOMPATIBILITIES:
+------------------------
+
+* outscale_load_balancer datasource: When applying the same configuration file twice in a row (with non change), terraform asks fo the user confirmation to read the datasource again (TPD-1942).
+* outscale_load_balancer_listener_rule: The resource cannot be imported correctly because of listener block (TPD-1941).
 
 
 NOTES:
