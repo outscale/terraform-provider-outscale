@@ -76,6 +76,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_image_launch_permission":           resourceOutscaleOAPIImageLaunchPermission(),
 			"outscale_net_peering":                       resourceOutscaleOAPILinPeeringConnection(),
 			"outscale_net_peering_acceptation":           resourceOutscaleOAPILinPeeringConnectionAccepter(),
+			"outscale_net_access_point":                  resourceOutscaleNetAccessPoint(),
 			"outscale_nic_link":                          resourceOutscaleOAPINetworkInterfaceAttachment(),
 			"outscale_nic_private_ip":                    resourceOutscaleOAPINetworkInterfacePrivateIP(),
 			"outscale_snapshot_attributes":               resourcedOutscaleOAPISnapshotAttributes(),
@@ -144,6 +145,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_vm_health":      dataSourceOutscaleLoadBalancerVmsHeals(),
 			"outscale_load_balancers":               dataSourceOutscaleOAPILoadBalancers(),
 			"outscale_vm_types":                     dataSourceOutscaleOAPIVMTypes(),
+			"outscale_net_access_point":             dataSourceOutscaleNetAccessPoint(),
+			"outscale_net_access_points":            dataSourceOutscaleNetAccessPoints(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
