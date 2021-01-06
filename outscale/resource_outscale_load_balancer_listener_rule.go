@@ -74,6 +74,7 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 						"listener_rule_name": {
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"listener_rule_id": {
 							Type:     schema.TypeInt,
@@ -253,48 +254,48 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if d.HasChange("listener_rule") {
-		n, ok := d.GetOk("listener_rule")
+		nw := d.Get("listener_rule").([]interface{})
+		if len(nw) > 0 {
+			check := nw[0].(map[string]interface{})
+			req := oscgo.UpdateListenerRuleRequest{
+				ListenerRuleName: d.Id(),
+			}
+			if check["host_name_pattern"] != nil {
+				req.SetHostPattern(check["host_name_pattern"].(string))
+			} else {
+				req.SetHostPattern("")
+			}
+			if check["listener_rule_name"] != nil {
+				req.SetListenerRuleName(check["listener_rule_name"].(string))
+			} else {
+				req.SetListenerRuleName("")
+			}
+			if check["path_pattern"] != nil {
+				req.SetPathPattern(check["path_pattern"].(string))
+			} else {
+				req.SetPathPattern("")
+			}
 
-		if ok != true {
-			return fmt.Errorf("can't get listener_rule")
-		}
-		//_, n := d.GetChange("listener_rule")
-		ns := n.(map[string]interface{})
+			var err error
+			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+				_, _, err = conn.ListenerApi.UpdateListenerRule(
+					context.Background()).UpdateListenerRuleRequest(req).
+					Execute()
 
-		req := oscgo.UpdateListenerRuleRequest{
-			ListenerRuleName: d.Id(),
-		}
-		if ns["host_name_pattern"] != nil {
-			req.SetHostPattern(ns["host_name_pattern"].(string))
-		} else {
-			req.SetHostPattern("")
-		}
-		if ns["listener_rule_name"] != nil {
-			req.SetListenerRuleName(ns["listener_rule_name"].(string))
-		} else {
-			req.SetListenerRuleName("")
-		}
-
-		var err error
-		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-			_, _, err = conn.ListenerApi.UpdateListenerRule(
-				context.Background()).UpdateListenerRuleRequest(req).
-				Execute()
+				if err != nil {
+					if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
+						return resource.NonRetryableError(err)
+					}
+					return resource.RetryableError(
+						fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+				}
+				return nil
+			})
 
 			if err != nil {
-				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-					return resource.NonRetryableError(err)
-				}
-				return resource.RetryableError(
-					fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
+				return err
 			}
-			return nil
-		})
-
-		if err != nil {
-			return err
 		}
-
 	}
 	return resourceOutscaleLoadBalancerListenerRuleRead(d, meta)
 }
