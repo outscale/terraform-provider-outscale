@@ -59,3 +59,11 @@ func StringSliceToInt32Slice(src []string) (res []int32) {
 	}
 	return
 }
+
+// StringSliceToFloat32Slice converts []string to []float32 ...
+func StringSliceToFloat32Slice(src []string) (res []float32) {
+	for _, str := range src {
+		res = append(res, cast.ToFloat32(str))
+	}
+	return
+}
