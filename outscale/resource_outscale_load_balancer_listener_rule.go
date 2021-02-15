@@ -33,18 +33,15 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 			"listener": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				ForceNew: true,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"load_balancer_name": {
 							Type:     schema.TypeString,
-							ForceNew: true,
 							Required: true,
 						},
 						"load_balancer_port": {
 							Type:     schema.TypeInt,
-							ForceNew: true,
 							Required: true,
 						},
 					},
@@ -63,7 +60,6 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 						"action": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 							Computed: true,
 						},
 						"host_name_pattern": {
@@ -87,7 +83,6 @@ func resourceOutscaleLoadBalancerListenerRule() *schema.Resource {
 						"path_pattern": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 							Computed: true,
 						},
 						"priority": {
