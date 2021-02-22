@@ -23,9 +23,9 @@ The provider needs to be configured with the proper credentials before it can be
 provider "outscale" {
   access_key_id  = var.access_key_id
   secret_key_id  = var.secret_key_id
-  region         = "cn-southeast-1"
+  region         = "eu-west-2"
   endpoints {
-    api  = "api.cn-southeast-1.outscale.hk"
+    api  = "api.eu-west-2.outscale.com"
     }
   x509_cert_path = "/tmp/client-certificate.pem"
   x509_key_path  = "/tmp/key.pem"
@@ -40,8 +40,12 @@ To retrieve your access keys, see [Getting Information About Your Access Keys](h
 
 The 3DS OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
 
-1. [Static credentials](#static-credentials)
-2. [Environment variables](#environment-variables)
+- [3DS OUTSCALE Provider](#3ds-outscale-provider)
+  - [Example](#example)
+  - [Authentication](#authentication)
+    - [Static credentials](#static-credentials)
+    - [Environment variables](#environment-variables)
+  - [Arguments Reference](#arguments-reference)
 
 ### Static credentials
 
