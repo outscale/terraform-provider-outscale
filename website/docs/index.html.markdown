@@ -40,12 +40,8 @@ To retrieve your access keys, see [Getting Information About Your Access Keys](h
 
 The 3DS OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
 
-- [3DS OUTSCALE Provider](#3ds-outscale-provider)
-  - [Example](#example)
-  - [Authentication](#authentication)
-    - [Static credentials](#static-credentials)
-    - [Environment variables](#environment-variables)
-  - [Arguments Reference](#arguments-reference)
+1. [Static credentials](#static-credentials)
+2. [Environment variables](#environment-variables)
 
 ### Static credentials
 
