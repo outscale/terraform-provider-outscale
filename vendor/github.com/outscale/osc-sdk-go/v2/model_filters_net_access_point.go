@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -21,7 +21,7 @@ type FiltersNetAccessPoint struct {
 	NetAccessPointIds *[]string `json:"NetAccessPointIds,omitempty"`
 	// The IDs of the Nets.
 	NetIds *[]string `json:"NetIds,omitempty"`
-	// The names of the prefix lists corresponding to the services. For more information, see [DescribePrefixLists](#describeprefixlists)
+	// The names of the services. For more information, see [ReadNetAccessPointServices](#readnetaccesspointservices).
 	ServiceNames *[]string `json:"ServiceNames,omitempty"`
 	// The states of the Net access points (`pending` \\| `available` \\| `deleting` \\| `deleted`).
 	States *[]string `json:"States,omitempty"`
@@ -335,5 +335,3 @@ func (v *NullableFiltersNetAccessPoint) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,9 +17,9 @@ import (
 
 // CreateListenerRuleRequest struct for CreateListenerRuleRequest
 type CreateListenerRuleRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
-	DryRun *bool `json:"DryRun,omitempty"`
-	Listener LoadBalancerLight `json:"Listener"`
+	// If true, checks whether you have the required permissions to perform the action.
+	DryRun       *bool                   `json:"DryRun,omitempty"`
+	Listener     LoadBalancerLight       `json:"Listener"`
 	ListenerRule ListenerRuleForCreation `json:"ListenerRule"`
 	// The IDs of the backend VMs.
 	VmIds []string `json:"VmIds"`
@@ -29,7 +29,7 @@ type CreateListenerRuleRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateListenerRuleRequest(listener LoadBalancerLight, listenerRule ListenerRuleForCreation, vmIds []string, ) *CreateListenerRuleRequest {
+func NewCreateListenerRuleRequest(listener LoadBalancerLight, listenerRule ListenerRuleForCreation, vmIds []string) *CreateListenerRuleRequest {
 	this := CreateListenerRuleRequest{}
 	this.Listener = listener
 	this.ListenerRule = listenerRule
@@ -79,7 +79,7 @@ func (o *CreateListenerRuleRequest) SetDryRun(v bool) {
 
 // GetListener returns the Listener field value
 func (o *CreateListenerRuleRequest) GetListener() LoadBalancerLight {
-	if o == nil  {
+	if o == nil {
 		var ret LoadBalancerLight
 		return ret
 	}
@@ -90,7 +90,7 @@ func (o *CreateListenerRuleRequest) GetListener() LoadBalancerLight {
 // GetListenerOk returns a tuple with the Listener field value
 // and a boolean to check if the value has been set.
 func (o *CreateListenerRuleRequest) GetListenerOk() (*LoadBalancerLight, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Listener, true
@@ -103,7 +103,7 @@ func (o *CreateListenerRuleRequest) SetListener(v LoadBalancerLight) {
 
 // GetListenerRule returns the ListenerRule field value
 func (o *CreateListenerRuleRequest) GetListenerRule() ListenerRuleForCreation {
-	if o == nil  {
+	if o == nil {
 		var ret ListenerRuleForCreation
 		return ret
 	}
@@ -114,7 +114,7 @@ func (o *CreateListenerRuleRequest) GetListenerRule() ListenerRuleForCreation {
 // GetListenerRuleOk returns a tuple with the ListenerRule field value
 // and a boolean to check if the value has been set.
 func (o *CreateListenerRuleRequest) GetListenerRuleOk() (*ListenerRuleForCreation, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ListenerRule, true
@@ -127,7 +127,7 @@ func (o *CreateListenerRuleRequest) SetListenerRule(v ListenerRuleForCreation) {
 
 // GetVmIds returns the VmIds field value
 func (o *CreateListenerRuleRequest) GetVmIds() []string {
-	if o == nil  {
+	if o == nil {
 		var ret []string
 		return ret
 	}
@@ -138,7 +138,7 @@ func (o *CreateListenerRuleRequest) GetVmIds() []string {
 // GetVmIdsOk returns a tuple with the VmIds field value
 // and a boolean to check if the value has been set.
 func (o *CreateListenerRuleRequest) GetVmIdsOk() (*[]string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VmIds, true
@@ -201,5 +201,3 @@ func (v *NullableCreateListenerRuleRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

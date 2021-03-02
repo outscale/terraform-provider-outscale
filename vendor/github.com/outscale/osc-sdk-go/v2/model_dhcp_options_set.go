@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,10 +17,8 @@ import (
 
 // DhcpOptionsSet Information about the DHCP options set.
 type DhcpOptionsSet struct {
-	// If `true`, the DHCP options set is a default one. If `false`, it is not.
+	// If true, the DHCP options set is a default one. If false, it is not.
 	Default *bool `json:"Default,omitempty"`
-	// The name of the DHCP options set.
-	DhcpOptionsName *string `json:"DhcpOptionsName,omitempty"`
 	// The ID of the DHCP options set.
 	DhcpOptionsSetId *string `json:"DhcpOptionsSetId,omitempty"`
 	// The domain name.
@@ -80,38 +78,6 @@ func (o *DhcpOptionsSet) HasDefault() bool {
 // SetDefault gets a reference to the given bool and assigns it to the Default field.
 func (o *DhcpOptionsSet) SetDefault(v bool) {
 	o.Default = &v
-}
-
-// GetDhcpOptionsName returns the DhcpOptionsName field value if set, zero value otherwise.
-func (o *DhcpOptionsSet) GetDhcpOptionsName() string {
-	if o == nil || o.DhcpOptionsName == nil {
-		var ret string
-		return ret
-	}
-	return *o.DhcpOptionsName
-}
-
-// GetDhcpOptionsNameOk returns a tuple with the DhcpOptionsName field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *DhcpOptionsSet) GetDhcpOptionsNameOk() (*string, bool) {
-	if o == nil || o.DhcpOptionsName == nil {
-		return nil, false
-	}
-	return o.DhcpOptionsName, true
-}
-
-// HasDhcpOptionsName returns a boolean if a field has been set.
-func (o *DhcpOptionsSet) HasDhcpOptionsName() bool {
-	if o != nil && o.DhcpOptionsName != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetDhcpOptionsName gets a reference to the given string and assigns it to the DhcpOptionsName field.
-func (o *DhcpOptionsSet) SetDhcpOptionsName(v string) {
-	o.DhcpOptionsName = &v
 }
 
 // GetDhcpOptionsSetId returns the DhcpOptionsSetId field value if set, zero value otherwise.
@@ -279,9 +245,6 @@ func (o DhcpOptionsSet) MarshalJSON() ([]byte, error) {
 	if o.Default != nil {
 		toSerialize["Default"] = o.Default
 	}
-	if o.DhcpOptionsName != nil {
-		toSerialize["DhcpOptionsName"] = o.DhcpOptionsName
-	}
 	if o.DhcpOptionsSetId != nil {
 		toSerialize["DhcpOptionsSetId"] = o.DhcpOptionsSetId
 	}
@@ -335,5 +298,3 @@ func (v *NullableDhcpOptionsSet) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

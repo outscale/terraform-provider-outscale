@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // CreateSecurityGroupRuleRequest struct for CreateSecurityGroupRuleRequest
 type CreateSecurityGroupRuleRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The direction of the flow: `Inbound` or `Outbound`. You can specify `Outbound` for Nets only.
 	Flow string `json:"Flow"`
@@ -43,7 +43,7 @@ type CreateSecurityGroupRuleRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateSecurityGroupRuleRequest(flow string, securityGroupId string, ) *CreateSecurityGroupRuleRequest {
+func NewCreateSecurityGroupRuleRequest(flow string, securityGroupId string) *CreateSecurityGroupRuleRequest {
 	this := CreateSecurityGroupRuleRequest{}
 	this.Flow = flow
 	this.SecurityGroupId = securityGroupId
@@ -92,7 +92,7 @@ func (o *CreateSecurityGroupRuleRequest) SetDryRun(v bool) {
 
 // GetFlow returns the Flow field value
 func (o *CreateSecurityGroupRuleRequest) GetFlow() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -103,7 +103,7 @@ func (o *CreateSecurityGroupRuleRequest) GetFlow() string {
 // GetFlowOk returns a tuple with the Flow field value
 // and a boolean to check if the value has been set.
 func (o *CreateSecurityGroupRuleRequest) GetFlowOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Flow, true
@@ -276,7 +276,7 @@ func (o *CreateSecurityGroupRuleRequest) SetSecurityGroupAccountIdToLink(v strin
 
 // GetSecurityGroupId returns the SecurityGroupId field value
 func (o *CreateSecurityGroupRuleRequest) GetSecurityGroupId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -287,7 +287,7 @@ func (o *CreateSecurityGroupRuleRequest) GetSecurityGroupId() string {
 // GetSecurityGroupIdOk returns a tuple with the SecurityGroupId field value
 // and a boolean to check if the value has been set.
 func (o *CreateSecurityGroupRuleRequest) GetSecurityGroupIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.SecurityGroupId, true
@@ -432,5 +432,3 @@ func (v *NullableCreateSecurityGroupRuleRequest) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

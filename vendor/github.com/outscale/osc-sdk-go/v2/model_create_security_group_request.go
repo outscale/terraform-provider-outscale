@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type CreateSecurityGroupRequest struct {
 	// A description for the security group, with a maximum length of 255 [ASCII printable characters](https://en.wikipedia.org/wiki/ASCII#Printable_characters).
 	Description string `json:"Description"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the Net for the security group.
 	NetId *string `json:"NetId,omitempty"`
@@ -31,7 +31,7 @@ type CreateSecurityGroupRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateSecurityGroupRequest(description string, securityGroupName string, ) *CreateSecurityGroupRequest {
+func NewCreateSecurityGroupRequest(description string, securityGroupName string) *CreateSecurityGroupRequest {
 	this := CreateSecurityGroupRequest{}
 	this.Description = description
 	this.SecurityGroupName = securityGroupName
@@ -48,7 +48,7 @@ func NewCreateSecurityGroupRequestWithDefaults() *CreateSecurityGroupRequest {
 
 // GetDescription returns the Description field value
 func (o *CreateSecurityGroupRequest) GetDescription() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -59,7 +59,7 @@ func (o *CreateSecurityGroupRequest) GetDescription() string {
 // GetDescriptionOk returns a tuple with the Description field value
 // and a boolean to check if the value has been set.
 func (o *CreateSecurityGroupRequest) GetDescriptionOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Description, true
@@ -136,7 +136,7 @@ func (o *CreateSecurityGroupRequest) SetNetId(v string) {
 
 // GetSecurityGroupName returns the SecurityGroupName field value
 func (o *CreateSecurityGroupRequest) GetSecurityGroupName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -147,7 +147,7 @@ func (o *CreateSecurityGroupRequest) GetSecurityGroupName() string {
 // GetSecurityGroupNameOk returns a tuple with the SecurityGroupName field value
 // and a boolean to check if the value has been set.
 func (o *CreateSecurityGroupRequest) GetSecurityGroupNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.SecurityGroupName, true
@@ -210,5 +210,3 @@ func (v *NullableCreateSecurityGroupRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

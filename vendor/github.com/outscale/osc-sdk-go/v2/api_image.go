@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type ImageApiService service
 
 type ApiCreateImageRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx                _context.Context
+	ApiService         *ImageApiService
 	createImageRequest *CreateImageRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateImageRequest) Execute() (CreateImageResponse, *_nethttp.Respons
 func (a *ImageApiService) CreateImage(ctx _context.Context) ApiCreateImageRequest {
 	return ApiCreateImageRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *ImageApiService) CreateImageExecute(r ApiCreateImageRequest) (CreateIma
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *ImageApiService) CreateImageExecute(r ApiCreateImageRequest) (CreateIma
 }
 
 type ApiCreateImageExportTaskRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx                          _context.Context
+	ApiService                   *ImageApiService
 	createImageExportTaskRequest *CreateImageExportTaskRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiCreateImageExportTaskRequest) Execute() (CreateImageExportTaskRespons
 func (a *ImageApiService) CreateImageExportTask(ctx _context.Context) ApiCreateImageExportTaskRequest {
 	return ApiCreateImageExportTaskRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *ImageApiService) CreateImageExportTaskExecute(r ApiCreateImageExportTas
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -298,8 +301,8 @@ func (a *ImageApiService) CreateImageExportTaskExecute(r ApiCreateImageExportTas
 }
 
 type ApiDeleteImageRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx                _context.Context
+	ApiService         *ImageApiService
 	deleteImageRequest *DeleteImageRequest
 }
 
@@ -320,7 +323,7 @@ func (r ApiDeleteImageRequest) Execute() (DeleteImageResponse, *_nethttp.Respons
 func (a *ImageApiService) DeleteImage(ctx _context.Context) ApiDeleteImageRequest {
 	return ApiDeleteImageRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -394,6 +397,7 @@ func (a *ImageApiService) DeleteImageExecute(r ApiDeleteImageRequest) (DeleteIma
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -448,8 +452,8 @@ func (a *ImageApiService) DeleteImageExecute(r ApiDeleteImageRequest) (DeleteIma
 }
 
 type ApiReadImageExportTasksRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx                         _context.Context
+	ApiService                  *ImageApiService
 	readImageExportTasksRequest *ReadImageExportTasksRequest
 }
 
@@ -470,7 +474,7 @@ func (r ApiReadImageExportTasksRequest) Execute() (ReadImageExportTasksResponse,
 func (a *ImageApiService) ReadImageExportTasks(ctx _context.Context) ApiReadImageExportTasksRequest {
 	return ApiReadImageExportTasksRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -544,6 +548,7 @@ func (a *ImageApiService) ReadImageExportTasksExecute(r ApiReadImageExportTasksR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -569,8 +574,8 @@ func (a *ImageApiService) ReadImageExportTasksExecute(r ApiReadImageExportTasksR
 }
 
 type ApiReadImagesRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx               _context.Context
+	ApiService        *ImageApiService
 	readImagesRequest *ReadImagesRequest
 }
 
@@ -591,7 +596,7 @@ func (r ApiReadImagesRequest) Execute() (ReadImagesResponse, *_nethttp.Response,
 func (a *ImageApiService) ReadImages(ctx _context.Context) ApiReadImagesRequest {
 	return ApiReadImagesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -665,6 +670,7 @@ func (a *ImageApiService) ReadImagesExecute(r ApiReadImagesRequest) (ReadImagesR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -719,8 +725,8 @@ func (a *ImageApiService) ReadImagesExecute(r ApiReadImagesRequest) (ReadImagesR
 }
 
 type ApiUpdateImageRequest struct {
-	ctx _context.Context
-	ApiService *ImageApiService
+	ctx                _context.Context
+	ApiService         *ImageApiService
 	updateImageRequest *UpdateImageRequest
 }
 
@@ -741,7 +747,7 @@ func (r ApiUpdateImageRequest) Execute() (UpdateImageResponse, *_nethttp.Respons
 func (a *ImageApiService) UpdateImage(ctx _context.Context) ApiUpdateImageRequest {
 	return ApiUpdateImageRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -815,6 +821,7 @@ func (a *ImageApiService) UpdateImageExecute(r ApiUpdateImageRequest) (UpdateIma
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

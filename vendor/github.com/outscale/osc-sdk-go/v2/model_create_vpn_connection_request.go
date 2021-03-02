@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -21,9 +21,9 @@ type CreateVpnConnectionRequest struct {
 	ClientGatewayId string `json:"ClientGatewayId"`
 	// The type of VPN connection (only `ipsec.1` is supported).
 	ConnectionType string `json:"ConnectionType"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
-	// If `false`, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If `true`, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](#createvpnconnectionroute) and [DeleteVpnConnectionRoute](#deletevpnconnectionroute).
+	// If false, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If true, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](#createvpnconnectionroute) and [DeleteVpnConnectionRoute](#deletevpnconnectionroute).
 	StaticRoutesOnly *bool `json:"StaticRoutesOnly,omitempty"`
 	// The ID of the virtual gateway.
 	VirtualGatewayId string `json:"VirtualGatewayId"`
@@ -33,7 +33,7 @@ type CreateVpnConnectionRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateVpnConnectionRequest(clientGatewayId string, connectionType string, virtualGatewayId string, ) *CreateVpnConnectionRequest {
+func NewCreateVpnConnectionRequest(clientGatewayId string, connectionType string, virtualGatewayId string) *CreateVpnConnectionRequest {
 	this := CreateVpnConnectionRequest{}
 	this.ClientGatewayId = clientGatewayId
 	this.ConnectionType = connectionType
@@ -51,7 +51,7 @@ func NewCreateVpnConnectionRequestWithDefaults() *CreateVpnConnectionRequest {
 
 // GetClientGatewayId returns the ClientGatewayId field value
 func (o *CreateVpnConnectionRequest) GetClientGatewayId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -62,7 +62,7 @@ func (o *CreateVpnConnectionRequest) GetClientGatewayId() string {
 // GetClientGatewayIdOk returns a tuple with the ClientGatewayId field value
 // and a boolean to check if the value has been set.
 func (o *CreateVpnConnectionRequest) GetClientGatewayIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ClientGatewayId, true
@@ -75,7 +75,7 @@ func (o *CreateVpnConnectionRequest) SetClientGatewayId(v string) {
 
 // GetConnectionType returns the ConnectionType field value
 func (o *CreateVpnConnectionRequest) GetConnectionType() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -86,7 +86,7 @@ func (o *CreateVpnConnectionRequest) GetConnectionType() string {
 // GetConnectionTypeOk returns a tuple with the ConnectionType field value
 // and a boolean to check if the value has been set.
 func (o *CreateVpnConnectionRequest) GetConnectionTypeOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ConnectionType, true
@@ -163,7 +163,7 @@ func (o *CreateVpnConnectionRequest) SetStaticRoutesOnly(v bool) {
 
 // GetVirtualGatewayId returns the VirtualGatewayId field value
 func (o *CreateVpnConnectionRequest) GetVirtualGatewayId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -174,7 +174,7 @@ func (o *CreateVpnConnectionRequest) GetVirtualGatewayId() string {
 // GetVirtualGatewayIdOk returns a tuple with the VirtualGatewayId field value
 // and a boolean to check if the value has been set.
 func (o *CreateVpnConnectionRequest) GetVirtualGatewayIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VirtualGatewayId, true
@@ -240,5 +240,3 @@ func (v *NullableCreateVpnConnectionRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

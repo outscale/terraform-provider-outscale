@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,15 +19,15 @@ import (
 type CreateVmsRequest struct {
 	// One or more block device mappings.
 	BlockDeviceMappings *[]BlockDeviceMappingVmCreation `json:"BlockDeviceMappings,omitempty"`
-	// By default or if `true`, the VM is started on creation. If `false`, the VM is stopped on creation.
+	// By default or if true, the VM is started on creation. If false, the VM is stopped on creation.
 	BootOnCreation *bool `json:"BootOnCreation,omitempty"`
-	// If `true`, the VM is created with optimized BSU I/O.
+	// If true, the VM is created with optimized BSU I/O.
 	BsuOptimized *bool `json:"BsuOptimized,omitempty"`
 	// A unique identifier which enables you to manage the idempotency.
 	ClientToken *string `json:"ClientToken,omitempty"`
-	// If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
+	// If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
 	DeletionProtection *bool `json:"DeletionProtection,omitempty"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](#readimages) method.
 	ImageId string `json:"ImageId"`
@@ -39,9 +39,9 @@ type CreateVmsRequest struct {
 	MinVmsCount *int32 `json:"MinVmsCount,omitempty"`
 	// One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
 	Nics *[]NicForVmCreation `json:"Nics,omitempty"`
-	// The performance of the VM (`standard` \\| `high` \\|  `highest`).
-	Performance *string `json:"Performance,omitempty"`
-	Placement *Placement `json:"Placement,omitempty"`
+	// The performance of the VM (`medium` \\| `high` \\|  `highest`).
+	Performance *string    `json:"Performance,omitempty"`
+	Placement   *Placement `json:"Placement,omitempty"`
 	// One or more private IP addresses of the VM.
 	PrivateIps *[]string `json:"PrivateIps,omitempty"`
 	// One or more IDs of security group for the VMs.
@@ -62,7 +62,7 @@ type CreateVmsRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateVmsRequest(imageId string, ) *CreateVmsRequest {
+func NewCreateVmsRequest(imageId string) *CreateVmsRequest {
 	this := CreateVmsRequest{}
 	this.ImageId = imageId
 	var performance string = "high"
@@ -274,7 +274,7 @@ func (o *CreateVmsRequest) SetDryRun(v bool) {
 
 // GetImageId returns the ImageId field value
 func (o *CreateVmsRequest) GetImageId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -285,7 +285,7 @@ func (o *CreateVmsRequest) GetImageId() string {
 // GetImageIdOk returns a tuple with the ImageId field value
 // and a boolean to check if the value has been set.
 func (o *CreateVmsRequest) GetImageIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ImageId, true
@@ -812,5 +812,3 @@ func (v *NullableCreateVmsRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

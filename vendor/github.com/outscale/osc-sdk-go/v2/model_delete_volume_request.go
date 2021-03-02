@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // DeleteVolumeRequest struct for DeleteVolumeRequest
 type DeleteVolumeRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the volume you want to delete.
 	VolumeId string `json:"VolumeId"`
@@ -27,7 +27,7 @@ type DeleteVolumeRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDeleteVolumeRequest(volumeId string, ) *DeleteVolumeRequest {
+func NewDeleteVolumeRequest(volumeId string) *DeleteVolumeRequest {
 	this := DeleteVolumeRequest{}
 	this.VolumeId = volumeId
 	return &this
@@ -75,7 +75,7 @@ func (o *DeleteVolumeRequest) SetDryRun(v bool) {
 
 // GetVolumeId returns the VolumeId field value
 func (o *DeleteVolumeRequest) GetVolumeId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -86,7 +86,7 @@ func (o *DeleteVolumeRequest) GetVolumeId() string {
 // GetVolumeIdOk returns a tuple with the VolumeId field value
 // and a boolean to check if the value has been set.
 func (o *DeleteVolumeRequest) GetVolumeIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VolumeId, true
@@ -143,5 +143,3 @@ func (v *NullableDeleteVolumeRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

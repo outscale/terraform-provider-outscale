@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type UpdateAccessKeyRequest struct {
 	// The ID of the access key.
 	AccessKeyId string `json:"AccessKeyId"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The new state for the access key (`ACTIVE` \\| `INACTIVE`).
 	State string `json:"State"`
@@ -29,7 +29,7 @@ type UpdateAccessKeyRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateAccessKeyRequest(accessKeyId string, state string, ) *UpdateAccessKeyRequest {
+func NewUpdateAccessKeyRequest(accessKeyId string, state string) *UpdateAccessKeyRequest {
 	this := UpdateAccessKeyRequest{}
 	this.AccessKeyId = accessKeyId
 	this.State = state
@@ -46,7 +46,7 @@ func NewUpdateAccessKeyRequestWithDefaults() *UpdateAccessKeyRequest {
 
 // GetAccessKeyId returns the AccessKeyId field value
 func (o *UpdateAccessKeyRequest) GetAccessKeyId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -57,7 +57,7 @@ func (o *UpdateAccessKeyRequest) GetAccessKeyId() string {
 // GetAccessKeyIdOk returns a tuple with the AccessKeyId field value
 // and a boolean to check if the value has been set.
 func (o *UpdateAccessKeyRequest) GetAccessKeyIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.AccessKeyId, true
@@ -102,7 +102,7 @@ func (o *UpdateAccessKeyRequest) SetDryRun(v bool) {
 
 // GetState returns the State field value
 func (o *UpdateAccessKeyRequest) GetState() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *UpdateAccessKeyRequest) GetState() string {
 // GetStateOk returns a tuple with the State field value
 // and a boolean to check if the value has been set.
 func (o *UpdateAccessKeyRequest) GetStateOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.State, true
@@ -173,5 +173,3 @@ func (v *NullableUpdateAccessKeyRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

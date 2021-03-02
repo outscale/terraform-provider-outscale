@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -32,7 +32,7 @@ type ConsumptionEntry struct {
 	// The type of resource, depending on the API call.
 	Type *string `json:"Type,omitempty"`
 	// The consumed amount for the resource. The unit depends on the resource type. For more information, see the `Title` element.
-	Value *string `json:"Value,omitempty"`
+	Value *float64 `json:"Value,omitempty"`
 }
 
 // NewConsumptionEntry instantiates a new ConsumptionEntry object
@@ -277,9 +277,9 @@ func (o *ConsumptionEntry) SetType(v string) {
 }
 
 // GetValue returns the Value field value if set, zero value otherwise.
-func (o *ConsumptionEntry) GetValue() string {
+func (o *ConsumptionEntry) GetValue() float64 {
 	if o == nil || o.Value == nil {
-		var ret string
+		var ret float64
 		return ret
 	}
 	return *o.Value
@@ -287,7 +287,7 @@ func (o *ConsumptionEntry) GetValue() string {
 
 // GetValueOk returns a tuple with the Value field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ConsumptionEntry) GetValueOk() (*string, bool) {
+func (o *ConsumptionEntry) GetValueOk() (*float64, bool) {
 	if o == nil || o.Value == nil {
 		return nil, false
 	}
@@ -303,8 +303,8 @@ func (o *ConsumptionEntry) HasValue() bool {
 	return false
 }
 
-// SetValue gets a reference to the given string and assigns it to the Value field.
-func (o *ConsumptionEntry) SetValue(v string) {
+// SetValue gets a reference to the given float64 and assigns it to the Value field.
+func (o *ConsumptionEntry) SetValue(v float64) {
 	o.Value = &v
 }
 
@@ -372,5 +372,3 @@ func (v *NullableConsumptionEntry) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

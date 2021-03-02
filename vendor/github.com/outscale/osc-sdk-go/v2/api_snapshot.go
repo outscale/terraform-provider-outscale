@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type SnapshotApiService service
 
 type ApiCreateSnapshotRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                   _context.Context
+	ApiService            *SnapshotApiService
 	createSnapshotRequest *CreateSnapshotRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateSnapshotRequest) Execute() (CreateSnapshotResponse, *_nethttp.R
 func (a *SnapshotApiService) CreateSnapshot(ctx _context.Context) ApiCreateSnapshotRequest {
 	return ApiCreateSnapshotRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *SnapshotApiService) CreateSnapshotExecute(r ApiCreateSnapshotRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *SnapshotApiService) CreateSnapshotExecute(r ApiCreateSnapshotRequest) (
 }
 
 type ApiCreateSnapshotExportTaskRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                             _context.Context
+	ApiService                      *SnapshotApiService
 	createSnapshotExportTaskRequest *CreateSnapshotExportTaskRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiCreateSnapshotExportTaskRequest) Execute() (CreateSnapshotExportTaskR
 func (a *SnapshotApiService) CreateSnapshotExportTask(ctx _context.Context) ApiCreateSnapshotExportTaskRequest {
 	return ApiCreateSnapshotExportTaskRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *SnapshotApiService) CreateSnapshotExportTaskExecute(r ApiCreateSnapshot
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -298,8 +301,8 @@ func (a *SnapshotApiService) CreateSnapshotExportTaskExecute(r ApiCreateSnapshot
 }
 
 type ApiDeleteSnapshotRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                   _context.Context
+	ApiService            *SnapshotApiService
 	deleteSnapshotRequest *DeleteSnapshotRequest
 }
 
@@ -320,7 +323,7 @@ func (r ApiDeleteSnapshotRequest) Execute() (DeleteSnapshotResponse, *_nethttp.R
 func (a *SnapshotApiService) DeleteSnapshot(ctx _context.Context) ApiDeleteSnapshotRequest {
 	return ApiDeleteSnapshotRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -394,6 +397,7 @@ func (a *SnapshotApiService) DeleteSnapshotExecute(r ApiDeleteSnapshotRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -448,8 +452,8 @@ func (a *SnapshotApiService) DeleteSnapshotExecute(r ApiDeleteSnapshotRequest) (
 }
 
 type ApiReadSnapshotExportTasksRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                            _context.Context
+	ApiService                     *SnapshotApiService
 	readSnapshotExportTasksRequest *ReadSnapshotExportTasksRequest
 }
 
@@ -470,7 +474,7 @@ func (r ApiReadSnapshotExportTasksRequest) Execute() (ReadSnapshotExportTasksRes
 func (a *SnapshotApiService) ReadSnapshotExportTasks(ctx _context.Context) ApiReadSnapshotExportTasksRequest {
 	return ApiReadSnapshotExportTasksRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -544,6 +548,7 @@ func (a *SnapshotApiService) ReadSnapshotExportTasksExecute(r ApiReadSnapshotExp
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -569,8 +574,8 @@ func (a *SnapshotApiService) ReadSnapshotExportTasksExecute(r ApiReadSnapshotExp
 }
 
 type ApiReadSnapshotsRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                  _context.Context
+	ApiService           *SnapshotApiService
 	readSnapshotsRequest *ReadSnapshotsRequest
 }
 
@@ -591,7 +596,7 @@ func (r ApiReadSnapshotsRequest) Execute() (ReadSnapshotsResponse, *_nethttp.Res
 func (a *SnapshotApiService) ReadSnapshots(ctx _context.Context) ApiReadSnapshotsRequest {
 	return ApiReadSnapshotsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -665,6 +670,7 @@ func (a *SnapshotApiService) ReadSnapshotsExecute(r ApiReadSnapshotsRequest) (Re
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -719,8 +725,8 @@ func (a *SnapshotApiService) ReadSnapshotsExecute(r ApiReadSnapshotsRequest) (Re
 }
 
 type ApiUpdateSnapshotRequest struct {
-	ctx _context.Context
-	ApiService *SnapshotApiService
+	ctx                   _context.Context
+	ApiService            *SnapshotApiService
 	updateSnapshotRequest *UpdateSnapshotRequest
 }
 
@@ -741,7 +747,7 @@ func (r ApiUpdateSnapshotRequest) Execute() (UpdateSnapshotResponse, *_nethttp.R
 func (a *SnapshotApiService) UpdateSnapshot(ctx _context.Context) ApiUpdateSnapshotRequest {
 	return ApiUpdateSnapshotRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -815,6 +821,7 @@ func (a *SnapshotApiService) UpdateSnapshotExecute(r ApiUpdateSnapshotRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

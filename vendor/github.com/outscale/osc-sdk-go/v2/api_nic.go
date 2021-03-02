@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type NicApiService service
 
 type ApiCreateNicRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx              _context.Context
+	ApiService       *NicApiService
 	createNicRequest *CreateNicRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateNicRequest) Execute() (CreateNicResponse, *_nethttp.Response, e
 func (a *NicApiService) CreateNic(ctx _context.Context) ApiCreateNicRequest {
 	return ApiCreateNicRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *NicApiService) CreateNicExecute(r ApiCreateNicRequest) (CreateNicRespon
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *NicApiService) CreateNicExecute(r ApiCreateNicRequest) (CreateNicRespon
 }
 
 type ApiDeleteNicRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx              _context.Context
+	ApiService       *NicApiService
 	deleteNicRequest *DeleteNicRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteNicRequest) Execute() (DeleteNicResponse, *_nethttp.Response, e
 func (a *NicApiService) DeleteNic(ctx _context.Context) ApiDeleteNicRequest {
 	return ApiDeleteNicRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *NicApiService) DeleteNicExecute(r ApiDeleteNicRequest) (DeleteNicRespon
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *NicApiService) DeleteNicExecute(r ApiDeleteNicRequest) (DeleteNicRespon
 }
 
 type ApiLinkNicRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx            _context.Context
+	ApiService     *NicApiService
 	linkNicRequest *LinkNicRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiLinkNicRequest) Execute() (LinkNicResponse, *_nethttp.Response, error
 func (a *NicApiService) LinkNic(ctx _context.Context) ApiLinkNicRequest {
 	return ApiLinkNicRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *NicApiService) LinkNicExecute(r ApiLinkNicRequest) (LinkNicResponse, *_
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *NicApiService) LinkNicExecute(r ApiLinkNicRequest) (LinkNicResponse, *_
 }
 
 type ApiLinkPrivateIpsRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx                   _context.Context
+	ApiService            *NicApiService
 	linkPrivateIpsRequest *LinkPrivateIpsRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiLinkPrivateIpsRequest) Execute() (LinkPrivateIpsResponse, *_nethttp.R
 func (a *NicApiService) LinkPrivateIps(ctx _context.Context) ApiLinkPrivateIpsRequest {
 	return ApiLinkPrivateIpsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -573,6 +577,7 @@ func (a *NicApiService) LinkPrivateIpsExecute(r ApiLinkPrivateIpsRequest) (LinkP
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -627,8 +632,8 @@ func (a *NicApiService) LinkPrivateIpsExecute(r ApiLinkPrivateIpsRequest) (LinkP
 }
 
 type ApiReadNicsRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx             _context.Context
+	ApiService      *NicApiService
 	readNicsRequest *ReadNicsRequest
 }
 
@@ -649,7 +654,7 @@ func (r ApiReadNicsRequest) Execute() (ReadNicsResponse, *_nethttp.Response, err
 func (a *NicApiService) ReadNics(ctx _context.Context) ApiReadNicsRequest {
 	return ApiReadNicsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -723,6 +728,7 @@ func (a *NicApiService) ReadNicsExecute(r ApiReadNicsRequest) (ReadNicsResponse,
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -777,8 +783,8 @@ func (a *NicApiService) ReadNicsExecute(r ApiReadNicsRequest) (ReadNicsResponse,
 }
 
 type ApiUnlinkNicRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx              _context.Context
+	ApiService       *NicApiService
 	unlinkNicRequest *UnlinkNicRequest
 }
 
@@ -799,7 +805,7 @@ func (r ApiUnlinkNicRequest) Execute() (UnlinkNicResponse, *_nethttp.Response, e
 func (a *NicApiService) UnlinkNic(ctx _context.Context) ApiUnlinkNicRequest {
 	return ApiUnlinkNicRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -873,6 +879,7 @@ func (a *NicApiService) UnlinkNicExecute(r ApiUnlinkNicRequest) (UnlinkNicRespon
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -927,8 +934,8 @@ func (a *NicApiService) UnlinkNicExecute(r ApiUnlinkNicRequest) (UnlinkNicRespon
 }
 
 type ApiUnlinkPrivateIpsRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx                     _context.Context
+	ApiService              *NicApiService
 	unlinkPrivateIpsRequest *UnlinkPrivateIpsRequest
 }
 
@@ -949,7 +956,7 @@ func (r ApiUnlinkPrivateIpsRequest) Execute() (UnlinkPrivateIpsResponse, *_netht
 func (a *NicApiService) UnlinkPrivateIps(ctx _context.Context) ApiUnlinkPrivateIpsRequest {
 	return ApiUnlinkPrivateIpsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1023,6 +1030,7 @@ func (a *NicApiService) UnlinkPrivateIpsExecute(r ApiUnlinkPrivateIpsRequest) (U
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1077,8 +1085,8 @@ func (a *NicApiService) UnlinkPrivateIpsExecute(r ApiUnlinkPrivateIpsRequest) (U
 }
 
 type ApiUpdateNicRequest struct {
-	ctx _context.Context
-	ApiService *NicApiService
+	ctx              _context.Context
+	ApiService       *NicApiService
 	updateNicRequest *UpdateNicRequest
 }
 
@@ -1099,7 +1107,7 @@ func (r ApiUpdateNicRequest) Execute() (UpdateNicResponse, *_nethttp.Response, e
 func (a *NicApiService) UpdateNic(ctx _context.Context) ApiUpdateNicRequest {
 	return ApiUpdateNicRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1173,6 +1181,7 @@ func (a *NicApiService) UpdateNicExecute(r ApiUpdateNicRequest) (UpdateNicRespon
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // CreateTagsRequest struct for CreateTagsRequest
 type CreateTagsRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// One or more resource IDs.
 	ResourceIds []string `json:"ResourceIds"`
@@ -29,7 +29,7 @@ type CreateTagsRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateTagsRequest(resourceIds []string, tags []ResourceTag, ) *CreateTagsRequest {
+func NewCreateTagsRequest(resourceIds []string, tags []ResourceTag) *CreateTagsRequest {
 	this := CreateTagsRequest{}
 	this.ResourceIds = resourceIds
 	this.Tags = tags
@@ -78,7 +78,7 @@ func (o *CreateTagsRequest) SetDryRun(v bool) {
 
 // GetResourceIds returns the ResourceIds field value
 func (o *CreateTagsRequest) GetResourceIds() []string {
-	if o == nil  {
+	if o == nil {
 		var ret []string
 		return ret
 	}
@@ -89,7 +89,7 @@ func (o *CreateTagsRequest) GetResourceIds() []string {
 // GetResourceIdsOk returns a tuple with the ResourceIds field value
 // and a boolean to check if the value has been set.
 func (o *CreateTagsRequest) GetResourceIdsOk() (*[]string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ResourceIds, true
@@ -102,7 +102,7 @@ func (o *CreateTagsRequest) SetResourceIds(v []string) {
 
 // GetTags returns the Tags field value
 func (o *CreateTagsRequest) GetTags() []ResourceTag {
-	if o == nil  {
+	if o == nil {
 		var ret []ResourceTag
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *CreateTagsRequest) GetTags() []ResourceTag {
 // GetTagsOk returns a tuple with the Tags field value
 // and a boolean to check if the value has been set.
 func (o *CreateTagsRequest) GetTagsOk() (*[]ResourceTag, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Tags, true
@@ -173,5 +173,3 @@ func (v *NullableCreateTagsRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

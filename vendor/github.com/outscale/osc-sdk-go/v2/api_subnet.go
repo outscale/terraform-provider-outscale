@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type SubnetApiService service
 
 type ApiCreateSubnetRequest struct {
-	ctx _context.Context
-	ApiService *SubnetApiService
+	ctx                 _context.Context
+	ApiService          *SubnetApiService
 	createSubnetRequest *CreateSubnetRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateSubnetRequest) Execute() (CreateSubnetResponse, *_nethttp.Respo
 func (a *SubnetApiService) CreateSubnet(ctx _context.Context) ApiCreateSubnetRequest {
 	return ApiCreateSubnetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *SubnetApiService) CreateSubnetExecute(r ApiCreateSubnetRequest) (Create
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -187,8 +189,8 @@ func (a *SubnetApiService) CreateSubnetExecute(r ApiCreateSubnetRequest) (Create
 }
 
 type ApiDeleteSubnetRequest struct {
-	ctx _context.Context
-	ApiService *SubnetApiService
+	ctx                 _context.Context
+	ApiService          *SubnetApiService
 	deleteSubnetRequest *DeleteSubnetRequest
 }
 
@@ -209,7 +211,7 @@ func (r ApiDeleteSubnetRequest) Execute() (DeleteSubnetResponse, *_nethttp.Respo
 func (a *SubnetApiService) DeleteSubnet(ctx _context.Context) ApiDeleteSubnetRequest {
 	return ApiDeleteSubnetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -283,6 +285,7 @@ func (a *SubnetApiService) DeleteSubnetExecute(r ApiDeleteSubnetRequest) (Delete
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -337,8 +340,8 @@ func (a *SubnetApiService) DeleteSubnetExecute(r ApiDeleteSubnetRequest) (Delete
 }
 
 type ApiReadSubnetsRequest struct {
-	ctx _context.Context
-	ApiService *SubnetApiService
+	ctx                _context.Context
+	ApiService         *SubnetApiService
 	readSubnetsRequest *ReadSubnetsRequest
 }
 
@@ -359,7 +362,7 @@ func (r ApiReadSubnetsRequest) Execute() (ReadSubnetsResponse, *_nethttp.Respons
 func (a *SubnetApiService) ReadSubnets(ctx _context.Context) ApiReadSubnetsRequest {
 	return ApiReadSubnetsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -433,6 +436,7 @@ func (a *SubnetApiService) ReadSubnetsExecute(r ApiReadSubnetsRequest) (ReadSubn
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -487,8 +491,8 @@ func (a *SubnetApiService) ReadSubnetsExecute(r ApiReadSubnetsRequest) (ReadSubn
 }
 
 type ApiUpdateSubnetRequest struct {
-	ctx _context.Context
-	ApiService *SubnetApiService
+	ctx                 _context.Context
+	ApiService          *SubnetApiService
 	updateSubnetRequest *UpdateSubnetRequest
 }
 
@@ -509,7 +513,7 @@ func (r ApiUpdateSubnetRequest) Execute() (UpdateSubnetResponse, *_nethttp.Respo
 func (a *SubnetApiService) UpdateSubnet(ctx _context.Context) ApiUpdateSubnetRequest {
 	return ApiUpdateSubnetRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -583,6 +587,7 @@ func (a *SubnetApiService) UpdateSubnetExecute(r ApiUpdateSubnetRequest) (Update
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
