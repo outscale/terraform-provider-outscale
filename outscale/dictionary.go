@@ -87,6 +87,7 @@ func init() {
 			"outscale_nat_service":         dataSourceOutscaleOAPINatService,
 			"outscale_nat_services":        dataSourceOutscaleOAPINatServices,
 			"outscale_subregions":          dataSourceOutscaleOAPISubregions,
+			"outscale_regions":             dataSourceOutscaleOAPIRegions,
 		},
 	}
 }
