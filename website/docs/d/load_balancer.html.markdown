@@ -59,7 +59,7 @@ The following attributes are exported:
      * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
      * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
      * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-     * `server_certificate_id` - The ID of the server certificate.
+     * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate.
   * `load_balancer_name` - The name of the load balancer.
   * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
      * `policy_name` - The name of the stickiness policy.
