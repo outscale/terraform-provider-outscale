@@ -86,7 +86,6 @@ func init() {
 			"outscale_public_ips":          dataSourceOutscaleOAPIPublicIPS,
 			"outscale_nat_service":         dataSourceOutscaleOAPINatService,
 			"outscale_nat_services":        dataSourceOutscaleOAPINatServices,
-			"outscale_subregion":           dataSourceOutscaleOAPISubregion,
 			"outscale_subregions":          dataSourceOutscaleOAPISubregions,
 		},
 	}
