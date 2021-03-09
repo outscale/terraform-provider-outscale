@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -21,7 +21,7 @@ type CreateServerCertificateRequest struct {
 	Body string `json:"Body"`
 	// The PEM-encoded intermediate certification authorities.
 	Chain *string `json:"Chain,omitempty"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// A unique name for the certificate. Constraints: 1-128 alphanumeric characters, pluses (+), equals (=), commas (,), periods (.), at signs (@), minuses (-), or underscores (_).
 	Name string `json:"Name"`
@@ -35,7 +35,7 @@ type CreateServerCertificateRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateServerCertificateRequest(body string, name string, privateKey string, ) *CreateServerCertificateRequest {
+func NewCreateServerCertificateRequest(body string, name string, privateKey string) *CreateServerCertificateRequest {
 	this := CreateServerCertificateRequest{}
 	this.Body = body
 	this.Name = name
@@ -53,7 +53,7 @@ func NewCreateServerCertificateRequestWithDefaults() *CreateServerCertificateReq
 
 // GetBody returns the Body field value
 func (o *CreateServerCertificateRequest) GetBody() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -64,7 +64,7 @@ func (o *CreateServerCertificateRequest) GetBody() string {
 // GetBodyOk returns a tuple with the Body field value
 // and a boolean to check if the value has been set.
 func (o *CreateServerCertificateRequest) GetBodyOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Body, true
@@ -141,7 +141,7 @@ func (o *CreateServerCertificateRequest) SetDryRun(v bool) {
 
 // GetName returns the Name field value
 func (o *CreateServerCertificateRequest) GetName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -152,7 +152,7 @@ func (o *CreateServerCertificateRequest) GetName() string {
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
 func (o *CreateServerCertificateRequest) GetNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Name, true
@@ -197,7 +197,7 @@ func (o *CreateServerCertificateRequest) SetPath(v string) {
 
 // GetPrivateKey returns the PrivateKey field value
 func (o *CreateServerCertificateRequest) GetPrivateKey() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -208,7 +208,7 @@ func (o *CreateServerCertificateRequest) GetPrivateKey() string {
 // GetPrivateKeyOk returns a tuple with the PrivateKey field value
 // and a boolean to check if the value has been set.
 func (o *CreateServerCertificateRequest) GetPrivateKeyOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.PrivateKey, true
@@ -277,5 +277,3 @@ func (v *NullableCreateServerCertificateRequest) UnmarshalJSON(src []byte) error
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

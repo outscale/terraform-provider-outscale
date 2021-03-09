@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type VmApiService service
 
 type ApiCreateVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx              _context.Context
+	ApiService       *VmApiService
 	createVmsRequest *CreateVmsRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateVmsRequest) Execute() (CreateVmsResponse, *_nethttp.Response, e
 func (a *VmApiService) CreateVms(ctx _context.Context) ApiCreateVmsRequest {
 	return ApiCreateVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *VmApiService) CreateVmsExecute(r ApiCreateVmsRequest) (CreateVmsRespons
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *VmApiService) CreateVmsExecute(r ApiCreateVmsRequest) (CreateVmsRespons
 }
 
 type ApiDeleteVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx              _context.Context
+	ApiService       *VmApiService
 	deleteVmsRequest *DeleteVmsRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteVmsRequest) Execute() (DeleteVmsResponse, *_nethttp.Response, e
 func (a *VmApiService) DeleteVms(ctx _context.Context) ApiDeleteVmsRequest {
 	return ApiDeleteVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *VmApiService) DeleteVmsExecute(r ApiDeleteVmsRequest) (DeleteVmsRespons
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *VmApiService) DeleteVmsExecute(r ApiDeleteVmsRequest) (DeleteVmsRespons
 }
 
 type ApiReadAdminPasswordRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx                      _context.Context
+	ApiService               *VmApiService
 	readAdminPasswordRequest *ReadAdminPasswordRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiReadAdminPasswordRequest) Execute() (ReadAdminPasswordResponse, *_net
 func (a *VmApiService) ReadAdminPassword(ctx _context.Context) ApiReadAdminPasswordRequest {
 	return ApiReadAdminPasswordRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *VmApiService) ReadAdminPasswordExecute(r ApiReadAdminPasswordRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *VmApiService) ReadAdminPasswordExecute(r ApiReadAdminPasswordRequest) (
 }
 
 type ApiReadConsoleOutputRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx                      _context.Context
+	ApiService               *VmApiService
 	readConsoleOutputRequest *ReadConsoleOutputRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiReadConsoleOutputRequest) Execute() (ReadConsoleOutputResponse, *_net
 func (a *VmApiService) ReadConsoleOutput(ctx _context.Context) ApiReadConsoleOutputRequest {
 	return ApiReadConsoleOutputRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -573,6 +577,7 @@ func (a *VmApiService) ReadConsoleOutputExecute(r ApiReadConsoleOutputRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -627,8 +632,8 @@ func (a *VmApiService) ReadConsoleOutputExecute(r ApiReadConsoleOutputRequest) (
 }
 
 type ApiReadVmTypesRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx                _context.Context
+	ApiService         *VmApiService
 	readVmTypesRequest *ReadVmTypesRequest
 }
 
@@ -649,7 +654,7 @@ func (r ApiReadVmTypesRequest) Execute() (ReadVmTypesResponse, *_nethttp.Respons
 func (a *VmApiService) ReadVmTypes(ctx _context.Context) ApiReadVmTypesRequest {
 	return ApiReadVmTypesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -709,6 +714,7 @@ func (a *VmApiService) ReadVmTypesExecute(r ApiReadVmTypesRequest) (ReadVmTypesR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -734,8 +740,8 @@ func (a *VmApiService) ReadVmTypesExecute(r ApiReadVmTypesRequest) (ReadVmTypesR
 }
 
 type ApiReadVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx            _context.Context
+	ApiService     *VmApiService
 	readVmsRequest *ReadVmsRequest
 }
 
@@ -756,7 +762,7 @@ func (r ApiReadVmsRequest) Execute() (ReadVmsResponse, *_nethttp.Response, error
 func (a *VmApiService) ReadVms(ctx _context.Context) ApiReadVmsRequest {
 	return ApiReadVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -830,6 +836,7 @@ func (a *VmApiService) ReadVmsExecute(r ApiReadVmsRequest) (ReadVmsResponse, *_n
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -884,8 +891,8 @@ func (a *VmApiService) ReadVmsExecute(r ApiReadVmsRequest) (ReadVmsResponse, *_n
 }
 
 type ApiReadVmsStateRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx                 _context.Context
+	ApiService          *VmApiService
 	readVmsStateRequest *ReadVmsStateRequest
 }
 
@@ -906,7 +913,7 @@ func (r ApiReadVmsStateRequest) Execute() (ReadVmsStateResponse, *_nethttp.Respo
 func (a *VmApiService) ReadVmsState(ctx _context.Context) ApiReadVmsStateRequest {
 	return ApiReadVmsStateRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -980,6 +987,7 @@ func (a *VmApiService) ReadVmsStateExecute(r ApiReadVmsStateRequest) (ReadVmsSta
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1034,8 +1042,8 @@ func (a *VmApiService) ReadVmsStateExecute(r ApiReadVmsStateRequest) (ReadVmsSta
 }
 
 type ApiRebootVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx              _context.Context
+	ApiService       *VmApiService
 	rebootVmsRequest *RebootVmsRequest
 }
 
@@ -1056,7 +1064,7 @@ func (r ApiRebootVmsRequest) Execute() (RebootVmsResponse, *_nethttp.Response, e
 func (a *VmApiService) RebootVms(ctx _context.Context) ApiRebootVmsRequest {
 	return ApiRebootVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1130,6 +1138,7 @@ func (a *VmApiService) RebootVmsExecute(r ApiRebootVmsRequest) (RebootVmsRespons
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1184,8 +1193,8 @@ func (a *VmApiService) RebootVmsExecute(r ApiRebootVmsRequest) (RebootVmsRespons
 }
 
 type ApiStartVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx             _context.Context
+	ApiService      *VmApiService
 	startVmsRequest *StartVmsRequest
 }
 
@@ -1206,7 +1215,7 @@ func (r ApiStartVmsRequest) Execute() (StartVmsResponse, *_nethttp.Response, err
 func (a *VmApiService) StartVms(ctx _context.Context) ApiStartVmsRequest {
 	return ApiStartVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1280,6 +1289,7 @@ func (a *VmApiService) StartVmsExecute(r ApiStartVmsRequest) (StartVmsResponse, 
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1334,8 +1344,8 @@ func (a *VmApiService) StartVmsExecute(r ApiStartVmsRequest) (StartVmsResponse, 
 }
 
 type ApiStopVmsRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx            _context.Context
+	ApiService     *VmApiService
 	stopVmsRequest *StopVmsRequest
 }
 
@@ -1356,7 +1366,7 @@ func (r ApiStopVmsRequest) Execute() (StopVmsResponse, *_nethttp.Response, error
 func (a *VmApiService) StopVms(ctx _context.Context) ApiStopVmsRequest {
 	return ApiStopVmsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1430,6 +1440,7 @@ func (a *VmApiService) StopVmsExecute(r ApiStopVmsRequest) (StopVmsResponse, *_n
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1484,8 +1495,8 @@ func (a *VmApiService) StopVmsExecute(r ApiStopVmsRequest) (StopVmsResponse, *_n
 }
 
 type ApiUpdateVmRequest struct {
-	ctx _context.Context
-	ApiService *VmApiService
+	ctx             _context.Context
+	ApiService      *VmApiService
 	updateVmRequest *UpdateVmRequest
 }
 
@@ -1506,7 +1517,7 @@ func (r ApiUpdateVmRequest) Execute() (UpdateVmResponse, *_nethttp.Response, err
 func (a *VmApiService) UpdateVm(ctx _context.Context) ApiUpdateVmRequest {
 	return ApiUpdateVmRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1580,6 +1591,7 @@ func (a *VmApiService) UpdateVmExecute(r ApiUpdateVmRequest) (UpdateVmResponse, 
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

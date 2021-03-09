@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,9 +17,9 @@ import (
 
 // UpdateSubnetRequest struct for UpdateSubnetRequest
 type UpdateSubnetRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
-	// If `true`, a public IP address is assigned to the network interface cards (NICs) created in the specified Subnet.
+	// If true, a public IP address is assigned to the network interface cards (NICs) created in the specified Subnet.
 	MapPublicIpOnLaunch bool `json:"MapPublicIpOnLaunch"`
 	// The ID of the Subnet.
 	SubnetId string `json:"SubnetId"`
@@ -29,7 +29,7 @@ type UpdateSubnetRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdateSubnetRequest(mapPublicIpOnLaunch bool, subnetId string, ) *UpdateSubnetRequest {
+func NewUpdateSubnetRequest(mapPublicIpOnLaunch bool, subnetId string) *UpdateSubnetRequest {
 	this := UpdateSubnetRequest{}
 	this.MapPublicIpOnLaunch = mapPublicIpOnLaunch
 	this.SubnetId = subnetId
@@ -78,7 +78,7 @@ func (o *UpdateSubnetRequest) SetDryRun(v bool) {
 
 // GetMapPublicIpOnLaunch returns the MapPublicIpOnLaunch field value
 func (o *UpdateSubnetRequest) GetMapPublicIpOnLaunch() bool {
-	if o == nil  {
+	if o == nil {
 		var ret bool
 		return ret
 	}
@@ -89,7 +89,7 @@ func (o *UpdateSubnetRequest) GetMapPublicIpOnLaunch() bool {
 // GetMapPublicIpOnLaunchOk returns a tuple with the MapPublicIpOnLaunch field value
 // and a boolean to check if the value has been set.
 func (o *UpdateSubnetRequest) GetMapPublicIpOnLaunchOk() (*bool, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.MapPublicIpOnLaunch, true
@@ -102,7 +102,7 @@ func (o *UpdateSubnetRequest) SetMapPublicIpOnLaunch(v bool) {
 
 // GetSubnetId returns the SubnetId field value
 func (o *UpdateSubnetRequest) GetSubnetId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *UpdateSubnetRequest) GetSubnetId() string {
 // GetSubnetIdOk returns a tuple with the SubnetId field value
 // and a boolean to check if the value has been set.
 func (o *UpdateSubnetRequest) GetSubnetIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.SubnetId, true
@@ -173,5 +173,3 @@ func (v *NullableUpdateSubnetRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

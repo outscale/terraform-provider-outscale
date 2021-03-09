@@ -134,9 +134,6 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	if err := d.Set("default", dhcp.GetDefault()); err != nil {
 		return err
 	}
-	if err := d.Set("dhcp_options_name", dhcp.GetDhcpOptionsName()); err != nil {
-		return err
-	}
 	if err := d.Set("dhcp_options_set_id", dhcp.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}

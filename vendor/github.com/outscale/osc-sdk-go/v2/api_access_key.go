@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type AccessKeyApiService service
 
 type ApiCreateAccessKeyRequest struct {
-	ctx _context.Context
-	ApiService *AccessKeyApiService
+	ctx                    _context.Context
+	ApiService             *AccessKeyApiService
 	createAccessKeyRequest *CreateAccessKeyRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateAccessKeyRequest) Execute() (CreateAccessKeyResponse, *_nethttp
 func (a *AccessKeyApiService) CreateAccessKey(ctx _context.Context) ApiCreateAccessKeyRequest {
 	return ApiCreateAccessKeyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *AccessKeyApiService) CreateAccessKeyExecute(r ApiCreateAccessKeyRequest
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *AccessKeyApiService) CreateAccessKeyExecute(r ApiCreateAccessKeyRequest
 }
 
 type ApiDeleteAccessKeyRequest struct {
-	ctx _context.Context
-	ApiService *AccessKeyApiService
+	ctx                    _context.Context
+	ApiService             *AccessKeyApiService
 	deleteAccessKeyRequest *DeleteAccessKeyRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiDeleteAccessKeyRequest) Execute() (DeleteAccessKeyResponse, *_nethttp
 func (a *AccessKeyApiService) DeleteAccessKey(ctx _context.Context) ApiDeleteAccessKeyRequest {
 	return ApiDeleteAccessKeyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *AccessKeyApiService) DeleteAccessKeyExecute(r ApiDeleteAccessKeyRequest
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *AccessKeyApiService) DeleteAccessKeyExecute(r ApiDeleteAccessKeyRequest
 }
 
 type ApiReadAccessKeysRequest struct {
-	ctx _context.Context
-	ApiService *AccessKeyApiService
+	ctx                   _context.Context
+	ApiService            *AccessKeyApiService
 	readAccessKeysRequest *ReadAccessKeysRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiReadAccessKeysRequest) Execute() (ReadAccessKeysResponse, *_nethttp.R
 func (a *AccessKeyApiService) ReadAccessKeys(ctx _context.Context) ApiReadAccessKeysRequest {
 	return ApiReadAccessKeysRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *AccessKeyApiService) ReadAccessKeysExecute(r ApiReadAccessKeysRequest) 
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -390,8 +394,8 @@ func (a *AccessKeyApiService) ReadAccessKeysExecute(r ApiReadAccessKeysRequest) 
 }
 
 type ApiReadSecretAccessKeyRequest struct {
-	ctx _context.Context
-	ApiService *AccessKeyApiService
+	ctx                        _context.Context
+	ApiService                 *AccessKeyApiService
 	readSecretAccessKeyRequest *ReadSecretAccessKeyRequest
 }
 
@@ -412,7 +416,7 @@ func (r ApiReadSecretAccessKeyRequest) Execute() (ReadSecretAccessKeyResponse, *
 func (a *AccessKeyApiService) ReadSecretAccessKey(ctx _context.Context) ApiReadSecretAccessKeyRequest {
 	return ApiReadSecretAccessKeyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -486,6 +490,7 @@ func (a *AccessKeyApiService) ReadSecretAccessKeyExecute(r ApiReadSecretAccessKe
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -511,8 +516,8 @@ func (a *AccessKeyApiService) ReadSecretAccessKeyExecute(r ApiReadSecretAccessKe
 }
 
 type ApiUpdateAccessKeyRequest struct {
-	ctx _context.Context
-	ApiService *AccessKeyApiService
+	ctx                    _context.Context
+	ApiService             *AccessKeyApiService
 	updateAccessKeyRequest *UpdateAccessKeyRequest
 }
 
@@ -533,7 +538,7 @@ func (r ApiUpdateAccessKeyRequest) Execute() (UpdateAccessKeyResponse, *_nethttp
 func (a *AccessKeyApiService) UpdateAccessKey(ctx _context.Context) ApiUpdateAccessKeyRequest {
 	return ApiUpdateAccessKeyRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -607,6 +612,7 @@ func (a *AccessKeyApiService) UpdateAccessKeyExecute(r ApiUpdateAccessKeyRequest
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

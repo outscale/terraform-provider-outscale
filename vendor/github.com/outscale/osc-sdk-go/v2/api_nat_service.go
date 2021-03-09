@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type NatServiceApiService service
 
 type ApiCreateNatServiceRequest struct {
-	ctx _context.Context
-	ApiService *NatServiceApiService
+	ctx                     _context.Context
+	ApiService              *NatServiceApiService
 	createNatServiceRequest *CreateNatServiceRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateNatServiceRequest) Execute() (CreateNatServiceResponse, *_netht
 func (a *NatServiceApiService) CreateNatService(ctx _context.Context) ApiCreateNatServiceRequest {
 	return ApiCreateNatServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *NatServiceApiService) CreateNatServiceExecute(r ApiCreateNatServiceRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *NatServiceApiService) CreateNatServiceExecute(r ApiCreateNatServiceRequ
 }
 
 type ApiDeleteNatServiceRequest struct {
-	ctx _context.Context
-	ApiService *NatServiceApiService
+	ctx                     _context.Context
+	ApiService              *NatServiceApiService
 	deleteNatServiceRequest *DeleteNatServiceRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteNatServiceRequest) Execute() (DeleteNatServiceResponse, *_netht
 func (a *NatServiceApiService) DeleteNatService(ctx _context.Context) ApiDeleteNatServiceRequest {
 	return ApiDeleteNatServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *NatServiceApiService) DeleteNatServiceExecute(r ApiDeleteNatServiceRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *NatServiceApiService) DeleteNatServiceExecute(r ApiDeleteNatServiceRequ
 }
 
 type ApiReadNatServicesRequest struct {
-	ctx _context.Context
-	ApiService *NatServiceApiService
+	ctx                    _context.Context
+	ApiService             *NatServiceApiService
 	readNatServicesRequest *ReadNatServicesRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiReadNatServicesRequest) Execute() (ReadNatServicesResponse, *_nethttp
 func (a *NatServiceApiService) ReadNatServices(ctx _context.Context) ApiReadNatServicesRequest {
 	return ApiReadNatServicesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *NatServiceApiService) ReadNatServicesExecute(r ApiReadNatServicesReques
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

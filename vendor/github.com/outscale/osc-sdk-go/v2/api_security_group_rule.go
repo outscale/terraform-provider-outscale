@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type SecurityGroupRuleApiService service
 
 type ApiCreateSecurityGroupRuleRequest struct {
-	ctx _context.Context
-	ApiService *SecurityGroupRuleApiService
+	ctx                            _context.Context
+	ApiService                     *SecurityGroupRuleApiService
 	createSecurityGroupRuleRequest *CreateSecurityGroupRuleRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateSecurityGroupRuleRequest) Execute() (CreateSecurityGroupRuleRes
 func (a *SecurityGroupRuleApiService) CreateSecurityGroupRule(ctx _context.Context) ApiCreateSecurityGroupRuleRequest {
 	return ApiCreateSecurityGroupRuleRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *SecurityGroupRuleApiService) CreateSecurityGroupRuleExecute(r ApiCreate
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *SecurityGroupRuleApiService) CreateSecurityGroupRuleExecute(r ApiCreate
 }
 
 type ApiDeleteSecurityGroupRuleRequest struct {
-	ctx _context.Context
-	ApiService *SecurityGroupRuleApiService
+	ctx                            _context.Context
+	ApiService                     *SecurityGroupRuleApiService
 	deleteSecurityGroupRuleRequest *DeleteSecurityGroupRuleRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteSecurityGroupRuleRequest) Execute() (DeleteSecurityGroupRuleRes
 func (a *SecurityGroupRuleApiService) DeleteSecurityGroupRule(ctx _context.Context) ApiDeleteSecurityGroupRuleRequest {
 	return ApiDeleteSecurityGroupRuleRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *SecurityGroupRuleApiService) DeleteSecurityGroupRuleExecute(r ApiDelete
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

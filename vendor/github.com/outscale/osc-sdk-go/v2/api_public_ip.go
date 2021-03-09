@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type PublicIpApiService service
 
 type ApiCreatePublicIpRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                   _context.Context
+	ApiService            *PublicIpApiService
 	createPublicIpRequest *CreatePublicIpRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreatePublicIpRequest) Execute() (CreatePublicIpResponse, *_nethttp.R
 func (a *PublicIpApiService) CreatePublicIp(ctx _context.Context) ApiCreatePublicIpRequest {
 	return ApiCreatePublicIpRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *PublicIpApiService) CreatePublicIpExecute(r ApiCreatePublicIpRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *PublicIpApiService) CreatePublicIpExecute(r ApiCreatePublicIpRequest) (
 }
 
 type ApiDeletePublicIpRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                   _context.Context
+	ApiService            *PublicIpApiService
 	deletePublicIpRequest *DeletePublicIpRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeletePublicIpRequest) Execute() (DeletePublicIpResponse, *_nethttp.R
 func (a *PublicIpApiService) DeletePublicIp(ctx _context.Context) ApiDeletePublicIpRequest {
 	return ApiDeletePublicIpRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *PublicIpApiService) DeletePublicIpExecute(r ApiDeletePublicIpRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *PublicIpApiService) DeletePublicIpExecute(r ApiDeletePublicIpRequest) (
 }
 
 type ApiLinkPublicIpRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                 _context.Context
+	ApiService          *PublicIpApiService
 	linkPublicIpRequest *LinkPublicIpRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiLinkPublicIpRequest) Execute() (LinkPublicIpResponse, *_nethttp.Respo
 func (a *PublicIpApiService) LinkPublicIp(ctx _context.Context) ApiLinkPublicIpRequest {
 	return ApiLinkPublicIpRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *PublicIpApiService) LinkPublicIpExecute(r ApiLinkPublicIpRequest) (Link
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *PublicIpApiService) LinkPublicIpExecute(r ApiLinkPublicIpRequest) (Link
 }
 
 type ApiReadPublicIpRangesRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                       _context.Context
+	ApiService                *PublicIpApiService
 	readPublicIpRangesRequest *ReadPublicIpRangesRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiReadPublicIpRangesRequest) Execute() (ReadPublicIpRangesResponse, *_n
 func (a *PublicIpApiService) ReadPublicIpRanges(ctx _context.Context) ApiReadPublicIpRangesRequest {
 	return ApiReadPublicIpRangesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -559,6 +563,7 @@ func (a *PublicIpApiService) ReadPublicIpRangesExecute(r ApiReadPublicIpRangesRe
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -584,8 +589,8 @@ func (a *PublicIpApiService) ReadPublicIpRangesExecute(r ApiReadPublicIpRangesRe
 }
 
 type ApiReadPublicIpsRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                  _context.Context
+	ApiService           *PublicIpApiService
 	readPublicIpsRequest *ReadPublicIpsRequest
 }
 
@@ -606,7 +611,7 @@ func (r ApiReadPublicIpsRequest) Execute() (ReadPublicIpsResponse, *_nethttp.Res
 func (a *PublicIpApiService) ReadPublicIps(ctx _context.Context) ApiReadPublicIpsRequest {
 	return ApiReadPublicIpsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -680,6 +685,7 @@ func (a *PublicIpApiService) ReadPublicIpsExecute(r ApiReadPublicIpsRequest) (Re
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -734,8 +740,8 @@ func (a *PublicIpApiService) ReadPublicIpsExecute(r ApiReadPublicIpsRequest) (Re
 }
 
 type ApiUnlinkPublicIpRequest struct {
-	ctx _context.Context
-	ApiService *PublicIpApiService
+	ctx                   _context.Context
+	ApiService            *PublicIpApiService
 	unlinkPublicIpRequest *UnlinkPublicIpRequest
 }
 
@@ -756,7 +762,7 @@ func (r ApiUnlinkPublicIpRequest) Execute() (UnlinkPublicIpResponse, *_nethttp.R
 func (a *PublicIpApiService) UnlinkPublicIp(ctx _context.Context) ApiUnlinkPublicIpRequest {
 	return ApiUnlinkPublicIpRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -830,6 +836,7 @@ func (a *PublicIpApiService) UnlinkPublicIpExecute(r ApiUnlinkPublicIpRequest) (
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

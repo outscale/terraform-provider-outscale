@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -27,7 +27,7 @@ type ResourceTag struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewResourceTag(key string, value string, ) *ResourceTag {
+func NewResourceTag(key string, value string) *ResourceTag {
 	this := ResourceTag{}
 	this.Key = key
 	this.Value = value
@@ -44,7 +44,7 @@ func NewResourceTagWithDefaults() *ResourceTag {
 
 // GetKey returns the Key field value
 func (o *ResourceTag) GetKey() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -55,7 +55,7 @@ func (o *ResourceTag) GetKey() string {
 // GetKeyOk returns a tuple with the Key field value
 // and a boolean to check if the value has been set.
 func (o *ResourceTag) GetKeyOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Key, true
@@ -68,7 +68,7 @@ func (o *ResourceTag) SetKey(v string) {
 
 // GetValue returns the Value field value
 func (o *ResourceTag) GetValue() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -79,7 +79,7 @@ func (o *ResourceTag) GetValue() string {
 // GetValueOk returns a tuple with the Value field value
 // and a boolean to check if the value has been set.
 func (o *ResourceTag) GetValueOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Value, true
@@ -136,5 +136,3 @@ func (v *NullableResourceTag) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type FlexibleGpuApiService service
 
 type ApiCreateFlexibleGpuRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                      _context.Context
+	ApiService               *FlexibleGpuApiService
 	createFlexibleGpuRequest *CreateFlexibleGpuRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateFlexibleGpuRequest) Execute() (CreateFlexibleGpuResponse, *_net
 func (a *FlexibleGpuApiService) CreateFlexibleGpu(ctx _context.Context) ApiCreateFlexibleGpuRequest {
 	return ApiCreateFlexibleGpuRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *FlexibleGpuApiService) CreateFlexibleGpuExecute(r ApiCreateFlexibleGpuR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *FlexibleGpuApiService) CreateFlexibleGpuExecute(r ApiCreateFlexibleGpuR
 }
 
 type ApiDeleteFlexibleGpuRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                      _context.Context
+	ApiService               *FlexibleGpuApiService
 	deleteFlexibleGpuRequest *DeleteFlexibleGpuRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiDeleteFlexibleGpuRequest) Execute() (DeleteFlexibleGpuResponse, *_net
 func (a *FlexibleGpuApiService) DeleteFlexibleGpu(ctx _context.Context) ApiDeleteFlexibleGpuRequest {
 	return ApiDeleteFlexibleGpuRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *FlexibleGpuApiService) DeleteFlexibleGpuExecute(r ApiDeleteFlexibleGpuR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *FlexibleGpuApiService) DeleteFlexibleGpuExecute(r ApiDeleteFlexibleGpuR
 }
 
 type ApiLinkFlexibleGpuRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                    _context.Context
+	ApiService             *FlexibleGpuApiService
 	linkFlexibleGpuRequest *LinkFlexibleGpuRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiLinkFlexibleGpuRequest) Execute() (LinkFlexibleGpuResponse, *_nethttp
 func (a *FlexibleGpuApiService) LinkFlexibleGpu(ctx _context.Context) ApiLinkFlexibleGpuRequest {
 	return ApiLinkFlexibleGpuRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *FlexibleGpuApiService) LinkFlexibleGpuExecute(r ApiLinkFlexibleGpuReque
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -390,8 +394,8 @@ func (a *FlexibleGpuApiService) LinkFlexibleGpuExecute(r ApiLinkFlexibleGpuReque
 }
 
 type ApiReadFlexibleGpuCatalogRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                           _context.Context
+	ApiService                    *FlexibleGpuApiService
 	readFlexibleGpuCatalogRequest *ReadFlexibleGpuCatalogRequest
 }
 
@@ -412,7 +416,7 @@ func (r ApiReadFlexibleGpuCatalogRequest) Execute() (ReadFlexibleGpuCatalogRespo
 func (a *FlexibleGpuApiService) ReadFlexibleGpuCatalog(ctx _context.Context) ApiReadFlexibleGpuCatalogRequest {
 	return ApiReadFlexibleGpuCatalogRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -472,6 +476,7 @@ func (a *FlexibleGpuApiService) ReadFlexibleGpuCatalogExecute(r ApiReadFlexibleG
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -497,8 +502,8 @@ func (a *FlexibleGpuApiService) ReadFlexibleGpuCatalogExecute(r ApiReadFlexibleG
 }
 
 type ApiReadFlexibleGpusRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                     _context.Context
+	ApiService              *FlexibleGpuApiService
 	readFlexibleGpusRequest *ReadFlexibleGpusRequest
 }
 
@@ -519,7 +524,7 @@ func (r ApiReadFlexibleGpusRequest) Execute() (ReadFlexibleGpusResponse, *_netht
 func (a *FlexibleGpuApiService) ReadFlexibleGpus(ctx _context.Context) ApiReadFlexibleGpusRequest {
 	return ApiReadFlexibleGpusRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -593,6 +598,7 @@ func (a *FlexibleGpuApiService) ReadFlexibleGpusExecute(r ApiReadFlexibleGpusReq
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -618,8 +624,8 @@ func (a *FlexibleGpuApiService) ReadFlexibleGpusExecute(r ApiReadFlexibleGpusReq
 }
 
 type ApiUnlinkFlexibleGpuRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                      _context.Context
+	ApiService               *FlexibleGpuApiService
 	unlinkFlexibleGpuRequest *UnlinkFlexibleGpuRequest
 }
 
@@ -640,7 +646,7 @@ func (r ApiUnlinkFlexibleGpuRequest) Execute() (UnlinkFlexibleGpuResponse, *_net
 func (a *FlexibleGpuApiService) UnlinkFlexibleGpu(ctx _context.Context) ApiUnlinkFlexibleGpuRequest {
 	return ApiUnlinkFlexibleGpuRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -714,6 +720,7 @@ func (a *FlexibleGpuApiService) UnlinkFlexibleGpuExecute(r ApiUnlinkFlexibleGpuR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -739,8 +746,8 @@ func (a *FlexibleGpuApiService) UnlinkFlexibleGpuExecute(r ApiUnlinkFlexibleGpuR
 }
 
 type ApiUpdateFlexibleGpuRequest struct {
-	ctx _context.Context
-	ApiService *FlexibleGpuApiService
+	ctx                      _context.Context
+	ApiService               *FlexibleGpuApiService
 	updateFlexibleGpuRequest *UpdateFlexibleGpuRequest
 }
 
@@ -761,7 +768,7 @@ func (r ApiUpdateFlexibleGpuRequest) Execute() (UpdateFlexibleGpuResponse, *_net
 func (a *FlexibleGpuApiService) UpdateFlexibleGpu(ctx _context.Context) ApiUpdateFlexibleGpuRequest {
 	return ApiUpdateFlexibleGpuRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -835,6 +842,7 @@ func (a *FlexibleGpuApiService) UpdateFlexibleGpuExecute(r ApiUpdateFlexibleGpuR
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
