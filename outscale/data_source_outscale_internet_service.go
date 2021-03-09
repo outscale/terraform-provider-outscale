@@ -125,7 +125,17 @@ func buildOutscaleOSCAPIDataSourceInternetServiceFilters(set *schema.Set) *oscgo
 
 		switch name := m["name"].(string); name {
 		case "internet_service_ids":
-			filters.InternetServiceIds = &filterValues
+			filters.SetInternetServiceIds(filterValues)
+		case "link_net_ids":
+			filters.SetLinkNetIds(filterValues)
+		case "link_states":
+			filters.SetLinkStates(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
