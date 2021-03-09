@@ -167,6 +167,10 @@ func resourceOutscaleOAPILinPeeringRead(d *schema.ResourceData, meta interface{}
 		return fmt.Errorf("Error reading Net Peering details: %s", errString)
 	}
 
+	if len(resp.GetNetPeerings()) == 0 {
+		d.SetId("")
+		return fmt.Errorf("oAPI network peering not found")
+	}
 	pc := resp.GetNetPeerings()[0]
 
 	// The failed status is a status that we can assume just means the
