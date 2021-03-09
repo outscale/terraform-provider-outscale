@@ -150,6 +150,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_net_access_points":            dataSourceOutscaleNetAccessPoints(),
 			"outscale_flexible_gpu":                 dataSourceOutscaleOAPIFlexibleGpu(),
 			"outscale_flexible_gpus":                dataSourceOutscaleOAPIFlexibleGpus(),
+			"outscale_subregions":                   dataSourceOutscaleOAPISubregions(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
