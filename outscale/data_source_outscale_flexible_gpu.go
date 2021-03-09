@@ -1,0 +1,163 @@
+package outscale
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	oscgo "github.com/outscale/osc-sdk-go/v2"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/spf13/cast"
+)
+
+func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
+	return &schema.Resource{
+		Read: dataSourceOutscaleOAPIFlexibleGpuRead,
+		Schema: map[string]*schema.Schema{
+			"filter": dataSourceFiltersSchema(),
+			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"delete_on_vm_deletion": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"model_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"generation": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"subregion_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"state": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"vm_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"flexible_gpu_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{}) error {
+
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	filters, filtersOk := d.GetOk("filter")
+	flexID, IDOk := d.GetOk("flexible_gpu_id")
+
+	if !filtersOk && !IDOk {
+		return fmt.Errorf("One of filters, or flexible_gpu_id must be assigned")
+	}
+
+	req := oscgo.ReadFlexibleGpusRequest{}
+
+	req.Filters = &oscgo.FiltersFlexibleGpu{
+		FlexibleGpuIds: &[]string{flexID.(string)},
+	}
+
+	req.SetFilters(buildOutscaleOAPIDataSourceFlexibleGpuFilters(filters.(*schema.Set)))
+
+	var resp oscgo.ReadFlexibleGpusResponse
+	var err error
+
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
+		resp, _, err = conn.FlexibleGpuApi.ReadFlexibleGpus(
+			context.Background()).ReadFlexibleGpusRequest(req).Execute()
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded:") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if len(resp.GetFlexibleGpus()) == 0 {
+		return fmt.Errorf("NO Flexible GPU FOUND")
+	}
+
+	if len(resp.GetFlexibleGpus()) > 1 {
+		return fmt.Errorf("Multiple Flexible GPU matched; use additional constraints to reduce matches to a single Flexible GPU")
+	}
+
+	fg := (*resp.FlexibleGpus)[0]
+
+	if err := d.Set("delete_on_vm_deletion", fg.GetDeleteOnVmDeletion()); err != nil {
+		return err
+	}
+	if err := d.Set("subregion_name", fg.GetSubregionName()); err != nil {
+		return err
+	}
+	if err := d.Set("generation", fg.GetGeneration()); err != nil {
+		return err
+	}
+	if err := d.Set("flexible_gpu_id", fg.GetFlexibleGpuId()); err != nil {
+		return err
+	}
+	if err := d.Set("vm_id", fg.GetVmId()); err != nil {
+		return err
+	}
+	if err := d.Set("model_name", fg.GetModelName()); err != nil {
+		return err
+	}
+	if err := d.Set("state", fg.GetState()); err != nil {
+		return err
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return err
+	}
+	d.SetId(fg.GetFlexibleGpuId())
+	return nil
+}
+
+func buildOutscaleOAPIDataSourceFlexibleGpuFilters(set *schema.Set) oscgo.FiltersFlexibleGpu {
+	var filters oscgo.FiltersFlexibleGpu
+	for _, v := range set.List() {
+		m := v.(map[string]interface{})
+		var filterValues []string
+		for _, e := range m["values"].([]interface{}) {
+			filterValues = append(filterValues, e.(string))
+		}
+
+		switch name := m["name"].(string); name {
+		case "delete_on_vm_deletion":
+			filters.SetDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+		case "flexible_gpu_ids":
+			filters.SetFlexibleGpuIds(filterValues)
+		case "generations":
+			filters.SetGenerations(filterValues)
+		case "model_names":
+			filters.SetModelNames(filterValues)
+		case "states":
+			filters.SetStates(filterValues)
+		case "subregion_names":
+			filters.SetSubregionNames(filterValues)
+		case "vm_ids":
+			filters.SetVmIds(filterValues)
+		default:
+			log.Printf("[Debug] Unknown Filter Name: %s.", name)
+		}
+	}
+	return filters
+}
