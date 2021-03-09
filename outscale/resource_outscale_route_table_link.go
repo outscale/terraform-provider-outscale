@@ -191,6 +191,9 @@ func readOutscaleLinkRouteTable(meta *OutscaleClient, routeTableID, linkRouteTab
 		return nil, rt.ResponseContext.GetRequestId(), err
 	}
 
+	if len(rt.GetRouteTables()) == 0 {
+		return nil, "", fmt.Errorf("oAPI route tables for get link table not found")
+	}
 	return getLinkRouteTable(linkRouteTableID, rt.GetRouteTables()[0].GetLinkRouteTables()), rt.ResponseContext.GetRequestId(), nil
 }
 
