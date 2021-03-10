@@ -94,6 +94,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_attributes":          resourceOutscaleOAPILoadBalancerAttributes(),
 			"outscale_load_balancer_listener_rule":       resourceOutscaleLoadBalancerListenerRule(),
 			"outscale_flexible_gpu":                      resourceOutscaleOAPIFlexibleGpu(),
+			"outscale_flexible_gpu_link":                 resourceOutscaleOAPIFlexibleGpuLink(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"outscale_vm":                           dataSourceOutscaleOAPIVM(),

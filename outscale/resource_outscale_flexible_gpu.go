@@ -25,6 +25,7 @@ func resourceOutscaleOAPIFlexibleGpu() *schema.Resource {
 			"delete_on_vm_deletion": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Computed: true,
 			},
 			"model_name": {
 				Type:     schema.TypeString,
@@ -173,13 +174,11 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 func resourceOutscaleOAPIFlexibleGpuUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
+	v := d.Get("delete_on_vm_deletion")
 	req := &oscgo.UpdateFlexibleGpuRequest{
 		FlexibleGpuId: d.Id(),
 	}
-
-	if v, ok := d.GetOk("delete_on_vm_deletion"); ok {
-		req.SetDeleteOnVmDeletion(v.(bool))
-	}
+	req.SetDeleteOnVmDeletion(v.(bool))
 
 	var err error
 
