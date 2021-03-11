@@ -68,21 +68,16 @@ func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{})
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	filter, filterOk := d.GetOk("filter")
-	_, instanceIDOk := d.GetOk("vm_id")
-
-	if !filterOk && !instanceIDOk {
-		return fmt.Errorf("One of filters, or instance_id must be assigned")
-	}
-
-	req := oscgo.ReadVmTypesRequest{}
+	filtersReq := oscgo.FiltersVmType{}
 
 	if filterOk {
-		req.SetFilters(buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set)))
+		filtersReq = buildOutscaleOAPIDataSourceVMTypesFilters(filter.(*schema.Set))
 	}
+	req := oscgo.ReadVmTypesRequest{Filters: &filtersReq}
 
 	var resp oscgo.ReadVmTypesResponse
 	var err error
-	err = resource.Retry(60*time.Second, func() *resource.RetryError {
+	err = resource.Retry(30*time.Second, func() *resource.RetryError {
 		var err error
 		resp, _, err = conn.VmApi.ReadVmTypes(context.Background()).ReadVmTypesRequest(req).Execute()
 		if err != nil {
