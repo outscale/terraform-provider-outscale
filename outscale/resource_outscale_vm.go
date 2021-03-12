@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -1071,7 +1072,23 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 }
 
 func stopVM(vmID string, conn *oscgo.APIClient) error {
-	_, _, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+	vmResp, _, err := readVM(vmID, conn)
+	if err != nil {
+		return err
+	}
+	shutdownBehaviorOriginal := ""
+	if len(vmResp.GetVms()) > 0 {
+		if vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior() != "stop" {
+			shutdownBehaviorOriginal = vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior()
+			opts := oscgo.UpdateVmRequest{VmId: vmID}
+			opts.SetVmInitiatedShutdownBehavior("stop")
+			if err = updateVmAttr(conn, opts); err != nil {
+				return err
+			}
+		}
+	}
+
+	_, _, err = conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
 		VmIds: []string{vmID},
 	}).Execute()
 
@@ -1091,6 +1108,14 @@ func stopVM(vmID string, conn *oscgo.APIClient) error {
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("Error waiting for instance (%s) to stop: %s", vmID, err)
+	}
+
+	if shutdownBehaviorOriginal != "" {
+		opts := oscgo.UpdateVmRequest{VmId: vmID}
+		opts.SetVmInitiatedShutdownBehavior(shutdownBehaviorOriginal)
+		if err = updateVmAttr(conn, opts); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -1126,6 +1151,14 @@ func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest)
 		return err
 	}
 	return nil
+}
+
+func readVM(vmID string, conn *oscgo.APIClient) (oscgo.ReadVmsResponse, *http.Response, error) {
+	return conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+		Filters: &oscgo.FiltersVm{
+			VmIds: &[]string{vmID},
+		},
+	}).Execute()
 }
 
 // AttributeSetter you can use this function to set the attributes

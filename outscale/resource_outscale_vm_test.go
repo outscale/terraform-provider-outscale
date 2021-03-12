@@ -42,6 +42,43 @@ func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIVMBehavior_Basic(t *testing.T) {
+	var server oscgo.Vm
+	omi := os.Getenv("OUTSCALE_IMAGEID")
+	region := os.Getenv("OUTSCALE_REGION")
+	keypair := os.Getenv("OUTSCALE_KEYPAIR")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOutscaleOAPIVMDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "high", "stop"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
+				),
+			},
+			{
+				Config: testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, "tinav4.c2r2p2", region, keypair, "highest", "restart"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIVMExists("outscale_vm.basic", &server),
+					testAccCheckOutscaleOAPIVMAttributes(t, &server, omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "image_id", omi),
+					resource.TestCheckResourceAttr(
+						"outscale_vm.basic", "vm_type", "tinav4.c2r2p2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccOutscaleOAPIVM_importBasic(t *testing.T) {
 	var (
 		server       oscgo.Vm
@@ -980,4 +1017,38 @@ func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
 	if a != b {
 		t.Fatalf(message+"Expected: %s, actual: %s", a, b)
 	}
+}
+
+func testAccCheckOutscaleOAPIVMBehaviorConfigBasic(omi, vmType, region, keypair, perfomance, vmBehavior string) string {
+	return fmt.Sprintf(`
+		resource "outscale_net" "outscale_net" {
+			ip_range = "10.0.0.0/16"
+
+			tags {
+				key   = "Name"
+				value = "testacc-vm-rs"
+			}
+		}
+
+		resource "outscale_subnet" "outscale_subnet" {
+			net_id              = "${outscale_net.outscale_net.net_id}"
+			ip_range            = "10.0.0.0/24"
+			subregion_name      = "eu-west-2a"
+		}
+
+		resource "outscale_vm" "basic" {
+			image_id			           = "%[1]s"
+			vm_type                  = "%[2]s"
+			keypair_name	           = "%[4]s"
+			#placement_subregion_name = "%[3]s"
+			subnet_id                = "${outscale_subnet.outscale_subnet.subnet_id}"
+			private_ips              =  ["10.0.0.12"]
+			vm_initiated_shutdown_behavior = "%[6]s"
+
+			performance	           = "%[5]s"
+			tags {
+				key   = "name"
+				value = "Terraform-VM"
+			}
+		}`, omi, vmType, region, keypair, perfomance, vmBehavior)
 }
