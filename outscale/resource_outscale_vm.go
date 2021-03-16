@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -665,7 +666,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetVmType(d.Get("vm_type").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			if !strings.Contains(err.Error(), "InvalidParameterValue") {
+				return err
+			}
+			fmt.Printf("[ERROR] %s", err)
 		}
 	}
 
@@ -674,7 +678,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetUserData(d.Get("user_data").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			if !strings.Contains(err.Error(), "InvalidParameterValue") {
+				return err
+			}
+			fmt.Printf("[ERROR] %s", err)
 		}
 	}
 
@@ -683,7 +690,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			if !strings.Contains(err.Error(), "InvalidParameterValue") {
+				return err
+			}
+			fmt.Printf("[ERROR] %s", err)
 		}
 	}
 
@@ -692,7 +702,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			return err
+			if !strings.Contains(err.Error(), "InvalidParameterValue") {
+				return err
+			}
+			fmt.Printf("[ERROR] %s", err)
 		}
 	}
 
@@ -1147,8 +1160,12 @@ func startVM(vmID string, conn *oscgo.APIClient) error {
 }
 
 func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest) error {
-	if _, _, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute(); err != nil {
-		return err
+	if _, httpResp, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute(); err != nil {
+		bodyBytes, errBody := ioutil.ReadAll(httpResp.Body)
+		if errBody != nil {
+			fmt.Println(errBody)
+		}
+		return fmt.Errorf("%s %s", err, string(bodyBytes))
 	}
 	return nil
 }
