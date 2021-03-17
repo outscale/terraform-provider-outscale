@@ -168,7 +168,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
   * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
 * `boot_on_creation` - (Optional) By default or if `true`, the VM is started on creation. If `false`, the VM is stopped on creation.
-* `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O.
+* `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
@@ -186,7 +186,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
-* `performance` - (Optional) The performance of the VM (`medium` \| `high` \|  `highest`).
+* `performance` - (Optional) The performance of the VM (`medium` \| `high` \|  `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
