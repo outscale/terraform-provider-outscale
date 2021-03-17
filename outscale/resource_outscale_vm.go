@@ -651,6 +651,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	d.Partial(true)
 
 	id := d.Get("vm_id").(string)
+	flagError := false
+	var errFlag error
 
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
@@ -670,6 +672,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			fmt.Printf("[ERROR] %s", err)
+			errFlag = err
+			flagError = true
 		}
 	}
 
@@ -682,6 +686,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			fmt.Printf("[ERROR] %s", err)
+			errFlag = err
+			flagError = true
 		}
 	}
 
@@ -694,6 +700,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			fmt.Printf("[ERROR] %s", err)
+			errFlag = err
 		}
 	}
 
@@ -706,6 +713,8 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 				return err
 			}
 			fmt.Printf("[ERROR] %s", err)
+			errFlag = err
+			flagError = true
 		}
 	}
 
@@ -816,6 +825,10 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if err := startVM(id, conn); err != nil {
 		return err
+	}
+
+	if flagError {
+		return errFlag
 	}
 
 	return resourceOAPIVMRead(d, meta)
