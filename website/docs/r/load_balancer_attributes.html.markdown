@@ -50,7 +50,7 @@ For more information on this resource actions, see the [API documentation](https
 # Update health check
 
 resource "outscale_load_balancer_attributes" "attributes01" {
-   load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+   load_balancer_name = outscale_load_balancer.load_balancer01.id
    health_check  {
       healthy_threshold   = 10
       check_interval      = 30
@@ -65,7 +65,7 @@ resource "outscale_load_balancer_attributes" "attributes01" {
 # Update access log
 
 resource "outscale_load_balancer_attributes" "attributes02" {
-  load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name = outscale_load_balancer.load_balancer01.id
   access_log {
       publication_interval = 5
       is_enabled           = true
@@ -77,7 +77,7 @@ resource "outscale_load_balancer_attributes" "attributes02" {
 # Update policies
 
 resource "outscale_load_balancer_attributes" "attributes03" {
-  load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name = outscale_load_balancer.load_balancer01.id
   load_balancer_port = 80
   policy_names       = ["policy-name-01"]
 }
@@ -85,7 +85,7 @@ resource "outscale_load_balancer_attributes" "attributes03" {
 # Update SSL certificate
 
 resource "outscale_load_balancer_attributes" "attributes04" {
-  load_balancer_name    = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name    = outscale_load_balancer.load_balancer01.id
   load_balancer_port    = 8080
   server_certificate_id = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
 }
@@ -148,8 +148,8 @@ The following attributes are exported:
   * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
       * `policy_name` - The name of the stickiness policy.
   * `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
-If `LoadBalancerType` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br />
-If `LoadBalancerType` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
+If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br />
+If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
   * `net_id` - The ID of the Net for the load balancer.
   * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
   * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
@@ -161,4 +161,3 @@ To only allow traffic from load balancers, add a security group rule that specif
   * `tags` - One or more tags associated with the load balancer.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
-
