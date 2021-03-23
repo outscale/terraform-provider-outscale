@@ -61,4 +61,18 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test
+# In order to test examples, you will need to set
+# - TF_VAR_access_key_id
+# - TF_VAR_secret_key_id
+# - TF_VAR_region
+examples-test:
+	find ./examples -mindepth 1 -maxdepth 1 -type d | \
+	while read example; do \
+		cd "$$example"; \
+		terraform init; \
+		terraform apply -auto-approve; \
+		terraform destroy -auto-approve; \
+		cd ../..; \
+	done\
+
+.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test
