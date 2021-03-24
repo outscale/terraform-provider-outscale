@@ -651,8 +651,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 	d.Partial(true)
 
 	id := d.Get("vm_id").(string)
-	flagError := false
-	var errFlag error
 
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
@@ -668,12 +666,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetVmType(d.Get("vm_type").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			if !strings.Contains(err.Error(), "InvalidParameterValue") {
-				return err
-			}
-			fmt.Printf("[ERROR] %s", err)
-			errFlag = err
-			flagError = true
+			return err
 		}
 	}
 
@@ -682,12 +675,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetUserData(d.Get("user_data").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			if !strings.Contains(err.Error(), "InvalidParameterValue") {
-				return err
-			}
-			fmt.Printf("[ERROR] %s", err)
-			errFlag = err
-			flagError = true
+			return err
 		}
 	}
 
@@ -696,11 +684,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetBsuOptimized(d.Get("bsu_optimized").(bool))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			if !strings.Contains(err.Error(), "InvalidParameterValue") {
-				return err
-			}
-			fmt.Printf("[ERROR] %s", err)
-			errFlag = err
+			return err
 		}
 	}
 
@@ -709,12 +693,7 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 		opts.SetPerformance(d.Get("performance").(string))
 
 		if err := updateVmAttr(conn, opts); err != nil {
-			if !strings.Contains(err.Error(), "InvalidParameterValue") {
-				return err
-			}
-			fmt.Printf("[ERROR] %s", err)
-			errFlag = err
-			flagError = true
+			return err
 		}
 	}
 
@@ -825,10 +804,6 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if err := startVM(id, conn); err != nil {
 		return err
-	}
-
-	if flagError {
-		return errFlag
 	}
 
 	return resourceOAPIVMRead(d, meta)
