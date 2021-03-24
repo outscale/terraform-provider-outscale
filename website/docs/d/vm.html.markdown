@@ -41,6 +41,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `vms` - Information about one or more VMs.
+  * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encoded in Base64 and encrypted with the keypair of the VM. This attribute appears about 10 minutes after the VM is created, and only during the first boot. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://wiki.outscale.net/display/EN/Accessing+a+Windows+Instance).
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
       * `bsu` - Information about the created BSU volume.
