@@ -168,7 +168,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
   * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
 * `boot_on_creation` - (Optional) By default or if `true`, the VM is started on creation. If `false`, the VM is stopped on creation.
-* `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O. Specifying this parameter will restart the VM.
+* `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
@@ -186,16 +186,16 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
   * `subnet_id` - (Optional) The ID of the Subnet for the NIC, if you create a NIC when creating a VM.
-* `performance` - (Optional) The performance of the VM (`medium` \| `high` \|  `highest`). Specifying this parameter will restart the VM.
+* `performance` - (Optional) The performance of the VM (`medium` \| `high` \|  `highest`). Updating this parameter will trigger a stop/start of the VM.
 * `placement_subregion_name` - (Optional) The name of the Subregion where the VM is placed.
 * `placement_tenancy` - (Optional) The tenancy of the VM (`default` | `dedicated`).      
 * `private_ips` - (Optional) One or more private IP addresses of the VM.
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Specifying this parameter will restart the VM.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
-* `vm_type` - (Optional) The type of VM (`t2.small` by default). Specifying this parameter will restart the VM.<br />
+* `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
 * `tags` - One or more tags to add to this resource.
       * `key` - The key of the tag, with a minimum of 1 character.
