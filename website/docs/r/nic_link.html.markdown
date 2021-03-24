@@ -59,3 +59,13 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `link_nic_id` - The ID of the NIC attachment.
+
+## Import
+
+A NIC link can be imported using the NIC ID. For example:
+
+```
+
+$ terraform import outscale_nic_link.ImportedNicLink eni-12345678
+
+```
