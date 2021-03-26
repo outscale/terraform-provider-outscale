@@ -203,7 +203,7 @@ For more information, see [Instance Types](https://wiki.outscale.net/display/EN/
 The following attributes are exported:
 
 * `vms` - Information about one or more created VMs.
-  * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encoded in Base64 and encrypted with the keypair of the VM. This attribute appears about 10 minutes after the VM is created, and only during the first boot. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://wiki.outscale.net/display/EN/Accessing+a+Windows+Instance).
+  * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair of the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this attribute. Once the password is ready, this attribute will appear in the Terraform state after the next refresh or apply command. Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://wiki.outscale.net/display/EN/Accessing+a+Windows+Instance).
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
       * `bsu` - Information about the created BSU volume.
