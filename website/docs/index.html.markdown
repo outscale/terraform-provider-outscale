@@ -61,6 +61,8 @@ provider "outscale" {
 
 ### Environment variables
 
+-> **Note:** To configure a proxy, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#configuring-the-proxy-on-linuxmac-os-if-any).
+
 You can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
 
 Example:
