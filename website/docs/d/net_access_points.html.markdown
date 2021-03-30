@@ -64,5 +64,5 @@ The following attributes are exported:
   * `service_name` - The name of the service with which the Net access point is associated.
   * `state` - The state of the Net access point (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tags` - One or more tags associated with the Net access point.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.

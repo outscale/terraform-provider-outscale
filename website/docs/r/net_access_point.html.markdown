@@ -14,6 +14,7 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+```hcl
 #resource "outscale_net" "net01" { 
 #  ip_range = "10.0.0.0/16"
 #}
@@ -22,7 +23,6 @@ For more information on this resource actions, see the [API documentation](https
 #  net_id = outscale_net.net01.net_id
 #}
 
-```hcl
 resource "outscale_net_access_point" "net_access_point01" {
    net_id          = outscale_net.net01.net_id
    route_table_ids = [outscale_route_table.route_table01.route_table_id]
@@ -56,8 +56,8 @@ The following attributes are exported:
   * `service_name` - The name of the service with which the Net access point is associated.
   * `state` - The state of the Net access point (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tags` - One or more tags associated with the Net access point.
-    * `key` - The key of the tag, with a minimum of 1 character.
-    * `value` - The value of the tag, between 0 and 255 characters.
+      * `key` - The key of the tag, with a minimum of 1 character.
+      * `value` - The value of the tag, between 0 and 255 characters.
 
 ## Import
 
