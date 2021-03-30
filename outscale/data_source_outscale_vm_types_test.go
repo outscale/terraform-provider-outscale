@@ -38,5 +38,7 @@ func testAccDataSourceOutscaleOAPIVMTypesConfig(omi, vmType string) string {
 				values = ["true"]
 			}
 		}
+
+		data "outscale_vm_types" "all-types" { }
 	`, omi, vmType)
 }
