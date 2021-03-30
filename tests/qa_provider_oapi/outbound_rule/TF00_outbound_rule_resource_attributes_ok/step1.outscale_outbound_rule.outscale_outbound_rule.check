@@ -1,0 +1,14 @@
+outbound_rules.#
+outbound_rules.0.firewall_rules_set_members.#
+outbound_rules.0.firewall_rules_set_members.0.account_id
+outbound_rules.0.firewall_rules_set_members.0.firewall_rules_set_id
+outbound_rules.0.firewall_rules_set_members.0.name
+outbound_rules.0.from_port_range
+outbound_rules.0.ip_protocol
+outbound_rules.0.ip_ranges
+outbound_rules.0.prefix_list_ids.#
+outbound_rules.0.prefix_list_ids.0
+outbound_rules.0.to_port_range
+request_id
+# correctives
+id

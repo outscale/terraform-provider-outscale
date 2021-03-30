@@ -1,0 +1,4 @@
+
+python file: provider_outscale_oapi/test//outscale_volumes/test_outscale_volumes_datasource_attributes_ok3.py
+tf file: provider_outscale_oapi/config/outscale_volumes/config_outscale_volumes_datasource_attributes_ok3
+check file: provider_outscale_oapi/test/outscale_volumes/outscale_volumes_datasource_attributes.txt

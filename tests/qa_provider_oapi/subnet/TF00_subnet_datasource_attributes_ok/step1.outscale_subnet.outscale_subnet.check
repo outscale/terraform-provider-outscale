@@ -1,0 +1,12 @@
+available_ips_count
+ip_range
+net_id
+state
+subnet_id
+subregion_name
+tags.#
+tags.0.key
+tags.0.value
+request_id
+# correctives below
+id

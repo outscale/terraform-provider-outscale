@@ -1,0 +1,11 @@
+maintenance_events
+#maintenance_events.0.code
+#maintenance_events.0.description
+#maintenance_events.0.not_after
+#maintenance_events.0.not_before
+subregion_name
+vm_id
+vm_state
+request_id
+#correctives below
+id
