@@ -14,8 +14,9 @@ The provider is based on our 3DS OUTSCALE API. For more information, see [APIs R
 
 The provider needs to be configured with the proper credentials before it can be used.  
 
--> **Note:** Since the release of Terraform 0.13, provider declaration has changed. For more information, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html).
+~> **Important:** Since the release of Terraform 0.13, provider declaration has changed. For more information, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html).
 
+-> **Note:** To configure a proxy, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#configuring-the-proxy-on-linuxmac-os-if-any).
 
 ## Example
 
@@ -60,8 +61,6 @@ provider "outscale" {
 ```
 
 ### Environment variables
-
--> **Note:** To configure a proxy, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#configuring-the-proxy-on-linuxmac-os-if-any).
 
 You can provide your credentials with the `OUTSCALE_ACCESSKEYID` and `OUTSCALE_SECRETKEYID` environment variables:
 
