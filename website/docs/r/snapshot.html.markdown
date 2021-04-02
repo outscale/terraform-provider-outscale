@@ -44,7 +44,7 @@ The following arguments are supported:
 
 * `description` - (Optional) A description for the snapshot.
 * `file_location` - (Optional) The pre-signed URL of the snapshot you want to import from the OSU bucket.
-* `snapshot_size` - (Optional) The size of the snapshot created in your account, in bytes. This size must be exactly the same as the source snapshot one.
+* `snapshot_size` - (Optional) The size of the snapshot you want to create in your account, in bytes. This size must be greater than or equal to the size of the original, uncompressed snapshot.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `source_snapshot_id` - (Optional) The ID of the snapshot you want to copy.
 * `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.

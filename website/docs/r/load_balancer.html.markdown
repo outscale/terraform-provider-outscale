@@ -147,10 +147,10 @@ The following arguments are supported:
 
 * `listeners` - (Required) One or more listeners to create.
   * `backend_port` - (Optional) The port on which the back-end VM is listening (between `1` and `65535`, both included).
-  * `backend_protocol` - (Optional) The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
-  * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included).
-  * `load_balancer_protocol` - (Optional) The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
-  * `server_certificate_id` - (Optional) The ID of the server certificate.
+  * `backend_protocol` - (Optional) The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+  * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included). This parameter is required if you want to update the server certificate.
+  * `load_balancer_protocol` - (Optional) The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+  * `server_certificate_id` - (Optional) The OUTSCALE Resource Name (ORN) of the server certificate. If this parameter is specified, you must also specify the `load_balancer_port` parameter.
 * `load_balancer_name` - (Required) The unique name of the load balancer (32 alphanumeric or hyphen characters maximum, but cannot start or end with a hyphen).
 * `load_balancer_type` - (Optional) The type of load balancer: `internet-facing` or `internal`. Use this parameter only for load balancers in a Net.
 * `security_groups` - (Optional) (Net only) One or more IDs of security groups you want to assign to the load balancer. If not specified, the default security group of the Net is assigned to the load balancer.
@@ -180,16 +180,16 @@ The following attributes are exported:
      * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
      * `path` - The path for HTTP or HTTPS requests.
      * `port` - The port number (between `1` and `65535`, both included).
-     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+     * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
      * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
      * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
   * `listeners` - The listeners for the load balancer.
      * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
-     * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+     * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
      * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
-     * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+     * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
      * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-     * `server_certificate_id` - The ID of the server certificate.
+     * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate.
   * `load_balancer_name` - The name of the load balancer.
   * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
      * `policy_name` - The name of the stickiness policy.
