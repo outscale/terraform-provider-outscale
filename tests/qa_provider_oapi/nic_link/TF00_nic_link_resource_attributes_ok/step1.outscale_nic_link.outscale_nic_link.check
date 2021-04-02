@@ -1,0 +1,10 @@
+#delete_on_vm_deletion
+device_number
+link_nic_id
+state
+vm_account_id
+vm_id
+nic_id
+request_id
+# correctives below
+id

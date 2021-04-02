@@ -1,0 +1,13 @@
+dhcp_options_set_id
+ip_range
+net_id
+state
+tags.#
+tags.0.key
+tags.0.value
+tags.1.key
+tags.1.value
+tenancy
+request_id
+# correctives below
+id

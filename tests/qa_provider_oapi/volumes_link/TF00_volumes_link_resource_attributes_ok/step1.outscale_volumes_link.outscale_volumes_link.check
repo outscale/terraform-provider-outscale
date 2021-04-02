@@ -1,0 +1,8 @@
+#delete_on_vm_deletion
+device_name
+#state
+vm_id
+volume_id
+request_id
+# correctives below
+id

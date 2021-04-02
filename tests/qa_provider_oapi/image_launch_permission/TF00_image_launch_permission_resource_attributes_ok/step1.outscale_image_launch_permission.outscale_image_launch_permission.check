@@ -1,0 +1,12 @@
+image_id
+description
+#permissions_to_launch.%
+#permissions_to_launch.account_ids.#
+#permissions_to_launch.global_permission
+permissions_to_launch.#
+permissions_to_launch.0.account_ids.#
+permissions_to_launch.0.account_ids.0
+permissions_to_launch.0.global_permission
+request_id
+# correctives below
+id

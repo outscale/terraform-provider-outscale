@@ -1,0 +1,3 @@
+python file: new test
+tf file:  step1.vm_resource_public_with_multiple_BDM_ok.tf
+check file: step1.outscale_vm.outscale_vm.check
