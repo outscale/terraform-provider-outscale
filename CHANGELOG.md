@@ -42,6 +42,7 @@ Filters should not be mandatory in "outscale_vm_types" datasource in oAPI client
 "dhcp_options_set_id" attribute is missing in "outscale_dhcp_option" datasource(s) (TPD-1969)
 Examples rework (TPD-1970)
 Add CONTRIBUTING.md (TPD-1971)
+Integrate QA tests (TPD-1973)
 
 
 KNOWN INCOMPATIBILITIES:
