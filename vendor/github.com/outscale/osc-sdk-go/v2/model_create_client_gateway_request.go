@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -21,7 +21,7 @@ type CreateClientGatewayRequest struct {
 	BgpAsn int32 `json:"BgpAsn"`
 	// The communication protocol used to establish tunnel with your client gateway (only `ipsec.1` is supported).
 	ConnectionType string `json:"ConnectionType"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The public fixed IPv4 address of your client gateway.
 	PublicIp string `json:"PublicIp"`
@@ -31,7 +31,7 @@ type CreateClientGatewayRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateClientGatewayRequest(bgpAsn int32, connectionType string, publicIp string, ) *CreateClientGatewayRequest {
+func NewCreateClientGatewayRequest(bgpAsn int32, connectionType string, publicIp string) *CreateClientGatewayRequest {
 	this := CreateClientGatewayRequest{}
 	this.BgpAsn = bgpAsn
 	this.ConnectionType = connectionType
@@ -49,7 +49,7 @@ func NewCreateClientGatewayRequestWithDefaults() *CreateClientGatewayRequest {
 
 // GetBgpAsn returns the BgpAsn field value
 func (o *CreateClientGatewayRequest) GetBgpAsn() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -60,7 +60,7 @@ func (o *CreateClientGatewayRequest) GetBgpAsn() int32 {
 // GetBgpAsnOk returns a tuple with the BgpAsn field value
 // and a boolean to check if the value has been set.
 func (o *CreateClientGatewayRequest) GetBgpAsnOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.BgpAsn, true
@@ -73,7 +73,7 @@ func (o *CreateClientGatewayRequest) SetBgpAsn(v int32) {
 
 // GetConnectionType returns the ConnectionType field value
 func (o *CreateClientGatewayRequest) GetConnectionType() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -84,7 +84,7 @@ func (o *CreateClientGatewayRequest) GetConnectionType() string {
 // GetConnectionTypeOk returns a tuple with the ConnectionType field value
 // and a boolean to check if the value has been set.
 func (o *CreateClientGatewayRequest) GetConnectionTypeOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ConnectionType, true
@@ -129,7 +129,7 @@ func (o *CreateClientGatewayRequest) SetDryRun(v bool) {
 
 // GetPublicIp returns the PublicIp field value
 func (o *CreateClientGatewayRequest) GetPublicIp() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -140,7 +140,7 @@ func (o *CreateClientGatewayRequest) GetPublicIp() string {
 // GetPublicIpOk returns a tuple with the PublicIp field value
 // and a boolean to check if the value has been set.
 func (o *CreateClientGatewayRequest) GetPublicIpOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.PublicIp, true
@@ -203,5 +203,3 @@ func (v *NullableCreateClientGatewayRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

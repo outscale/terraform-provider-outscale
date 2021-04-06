@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -33,9 +33,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"golang.org/x/oauth2"
-	awsv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	awsv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -43,7 +43,7 @@ var (
 	xmlCheck  = regexp.MustCompile(`(?i:(?:application|text)/xml)`)
 )
 
-// APIClient manages communication with the 3DS OUTSCALE API API v1.4
+// APIClient manages communication with the 3DS OUTSCALE API API v1.7
 // In most cases there should be only one, shared, APIClient.
 type APIClient struct {
 	cfg    *Configuration
@@ -55,7 +55,11 @@ type APIClient struct {
 
 	AccountApi *AccountApiService
 
+	ApiAccessRuleApi *ApiAccessRuleApiService
+
 	ApiLogApi *ApiLogApiService
+
+	CaApi *CaApiService
 
 	ClientGatewayApi *ClientGatewayApiService
 
@@ -146,7 +150,9 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	// API Services
 	c.AccessKeyApi = (*AccessKeyApiService)(&c.common)
 	c.AccountApi = (*AccountApiService)(&c.common)
+	c.ApiAccessRuleApi = (*ApiAccessRuleApiService)(&c.common)
 	c.ApiLogApi = (*ApiLogApiService)(&c.common)
+	c.CaApi = (*CaApiService)(&c.common)
 	c.ClientGatewayApi = (*ClientGatewayApiService)(&c.common)
 	c.DhcpOptionApi = (*DhcpOptionApiService)(&c.common)
 	c.DirectLinkApi = (*DirectLinkApiService)(&c.common)
@@ -270,7 +276,6 @@ func parameterToJson(obj interface{}) (string, error) {
 	}
 	return string(jsonBuf), err
 }
-
 
 // callAPI do the request.
 func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
@@ -497,13 +502,13 @@ func (c *APIClient) decode(v interface{}, b []byte, contentType string) (err err
 		return nil
 	}
 	if jsonCheck.MatchString(contentType) {
-		if actualObj, ok := v.(interface{GetActualInstance() interface{}}); ok { // oneOf, anyOf schemas
-			if unmarshalObj, ok := actualObj.(interface{UnmarshalJSON([]byte) error}); ok { // make sure it has UnmarshalJSON defined
-				if err = unmarshalObj.UnmarshalJSON(b); err!= nil {
+		if actualObj, ok := v.(interface{ GetActualInstance() interface{} }); ok { // oneOf, anyOf schemas
+			if unmarshalObj, ok := actualObj.(interface{ UnmarshalJSON([]byte) error }); ok { // make sure it has UnmarshalJSON defined
+				if err = unmarshalObj.UnmarshalJSON(b); err != nil {
 					return err
 				}
 			} else {
-				errors.New("Unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
+				return errors.New("Unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
 			}
 		} else if err = json.Unmarshal(b, v); err != nil { // simple model
 			return err

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type InternetServiceApiService service
 
 type ApiCreateInternetServiceRequest struct {
-	ctx _context.Context
-	ApiService *InternetServiceApiService
+	ctx                          _context.Context
+	ApiService                   *InternetServiceApiService
 	createInternetServiceRequest *CreateInternetServiceRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateInternetServiceRequest) Execute() (CreateInternetServiceRespons
 func (a *InternetServiceApiService) CreateInternetService(ctx _context.Context) ApiCreateInternetServiceRequest {
 	return ApiCreateInternetServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *InternetServiceApiService) CreateInternetServiceExecute(r ApiCreateInte
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *InternetServiceApiService) CreateInternetServiceExecute(r ApiCreateInte
 }
 
 type ApiDeleteInternetServiceRequest struct {
-	ctx _context.Context
-	ApiService *InternetServiceApiService
+	ctx                          _context.Context
+	ApiService                   *InternetServiceApiService
 	deleteInternetServiceRequest *DeleteInternetServiceRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteInternetServiceRequest) Execute() (DeleteInternetServiceRespons
 func (a *InternetServiceApiService) DeleteInternetService(ctx _context.Context) ApiDeleteInternetServiceRequest {
 	return ApiDeleteInternetServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *InternetServiceApiService) DeleteInternetServiceExecute(r ApiDeleteInte
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *InternetServiceApiService) DeleteInternetServiceExecute(r ApiDeleteInte
 }
 
 type ApiLinkInternetServiceRequest struct {
-	ctx _context.Context
-	ApiService *InternetServiceApiService
+	ctx                        _context.Context
+	ApiService                 *InternetServiceApiService
 	linkInternetServiceRequest *LinkInternetServiceRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiLinkInternetServiceRequest) Execute() (LinkInternetServiceResponse, *
 func (a *InternetServiceApiService) LinkInternetService(ctx _context.Context) ApiLinkInternetServiceRequest {
 	return ApiLinkInternetServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *InternetServiceApiService) LinkInternetServiceExecute(r ApiLinkInternet
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *InternetServiceApiService) LinkInternetServiceExecute(r ApiLinkInternet
 }
 
 type ApiReadInternetServicesRequest struct {
-	ctx _context.Context
-	ApiService *InternetServiceApiService
+	ctx                         _context.Context
+	ApiService                  *InternetServiceApiService
 	readInternetServicesRequest *ReadInternetServicesRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiReadInternetServicesRequest) Execute() (ReadInternetServicesResponse,
 func (a *InternetServiceApiService) ReadInternetServices(ctx _context.Context) ApiReadInternetServicesRequest {
 	return ApiReadInternetServicesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -573,6 +577,7 @@ func (a *InternetServiceApiService) ReadInternetServicesExecute(r ApiReadInterne
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -627,8 +632,8 @@ func (a *InternetServiceApiService) ReadInternetServicesExecute(r ApiReadInterne
 }
 
 type ApiUnlinkInternetServiceRequest struct {
-	ctx _context.Context
-	ApiService *InternetServiceApiService
+	ctx                          _context.Context
+	ApiService                   *InternetServiceApiService
 	unlinkInternetServiceRequest *UnlinkInternetServiceRequest
 }
 
@@ -649,7 +654,7 @@ func (r ApiUnlinkInternetServiceRequest) Execute() (UnlinkInternetServiceRespons
 func (a *InternetServiceApiService) UnlinkInternetService(ctx _context.Context) ApiUnlinkInternetServiceRequest {
 	return ApiUnlinkInternetServiceRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -723,6 +728,7 @@ func (a *InternetServiceApiService) UnlinkInternetServiceExecute(r ApiUnlinkInte
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

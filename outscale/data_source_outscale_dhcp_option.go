@@ -22,7 +22,7 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 			"filter": dataSourceFiltersSchema(),
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"domain_name": {
 				Type:     schema.TypeString,
@@ -44,10 +44,6 @@ func dataSourceOutscaleDHCPOption() *schema.Resource {
 			},
 			"default": {
 				Type:     schema.TypeBool,
-				Computed: true,
-			},
-			"dhcp_options_name": {
-				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"tags": dataSourceTagsSchema(),
@@ -116,7 +112,7 @@ func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("default", dhcpOption.GetDefault()); err != nil {
 		return err
 	}
-	if err := d.Set("dhcp_options_name", dhcpOption.GetDhcpOptionsName()); err != nil {
+	if err := d.Set("dhcp_options_set_id", dhcpOption.GetDhcpOptionsSetId()); err != nil {
 		return err
 	}
 	if err := d.Set("tags", tagsOSCAPIToMap(dhcpOption.GetTags())); err != nil {

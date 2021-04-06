@@ -3,6 +3,7 @@ package outscale
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/cast"
 	"log"
 	"strings"
 	"time"
@@ -204,9 +205,38 @@ func buildOutscaleOAPIDataSourceRouteTableFilters(set *schema.Set) *oscgo.Filter
 		switch name := m["name"].(string); name {
 		case "route_table_ids":
 			filters.SetRouteTableIds(filterValues)
-		case "link_route_table_ids":
+		case "link_route_table_link_route_table_ids":
 			filters.SetLinkRouteTableLinkRouteTableIds(filterValues)
-
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+		case "link_route_table_ids":
+			filters.SetLinkRouteTableIds(filterValues)
+		case "link_route_table_main":
+			filters.SetLinkRouteTableMain(cast.ToBool(filterValues[0]))
+		case "link_subnet_ids":
+			filters.SetLinkSubnetIds(filterValues)
+		case "net_ids":
+			filters.SetNetIds(filterValues)
+		case "route_creation_methods":
+			filters.SetRouteCreationMethods(filterValues)
+		case "route_destination_ip_ranges":
+			filters.SetRouteDestinationIpRanges(filterValues)
+		case "route_destination_service_ids":
+			filters.SetRouteDestinationServiceIds(filterValues)
+		case "route_gateway_ids":
+			filters.SetRouteGatewayIds(filterValues)
+		case "route_nat_service_ids":
+			filters.SetRouteNatServiceIds(filterValues)
+		case "route_net_peering_ids":
+			filters.SetRouteNetPeeringIds(filterValues)
+		case "route_states":
+			filters.SetRouteStates(filterValues)
+		case "route_vm_ids":
+			filters.SetRouteVmIds(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type DeleteRouteRequest struct {
 	// The exact IP range for the route.
 	DestinationIpRange string `json:"DestinationIpRange"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the route table from which you want to delete a route.
 	RouteTableId string `json:"RouteTableId"`
@@ -29,7 +29,7 @@ type DeleteRouteRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDeleteRouteRequest(destinationIpRange string, routeTableId string, ) *DeleteRouteRequest {
+func NewDeleteRouteRequest(destinationIpRange string, routeTableId string) *DeleteRouteRequest {
 	this := DeleteRouteRequest{}
 	this.DestinationIpRange = destinationIpRange
 	this.RouteTableId = routeTableId
@@ -46,7 +46,7 @@ func NewDeleteRouteRequestWithDefaults() *DeleteRouteRequest {
 
 // GetDestinationIpRange returns the DestinationIpRange field value
 func (o *DeleteRouteRequest) GetDestinationIpRange() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -57,7 +57,7 @@ func (o *DeleteRouteRequest) GetDestinationIpRange() string {
 // GetDestinationIpRangeOk returns a tuple with the DestinationIpRange field value
 // and a boolean to check if the value has been set.
 func (o *DeleteRouteRequest) GetDestinationIpRangeOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.DestinationIpRange, true
@@ -102,7 +102,7 @@ func (o *DeleteRouteRequest) SetDryRun(v bool) {
 
 // GetRouteTableId returns the RouteTableId field value
 func (o *DeleteRouteRequest) GetRouteTableId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *DeleteRouteRequest) GetRouteTableId() string {
 // GetRouteTableIdOk returns a tuple with the RouteTableId field value
 // and a boolean to check if the value has been set.
 func (o *DeleteRouteRequest) GetRouteTableIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.RouteTableId, true
@@ -173,5 +173,3 @@ func (v *NullableDeleteRouteRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

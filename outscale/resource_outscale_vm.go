@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
@@ -1071,7 +1073,23 @@ func vmStateRefreshFunc(conn *oscgo.APIClient, instanceID, failState string) res
 }
 
 func stopVM(vmID string, conn *oscgo.APIClient) error {
-	_, _, err := conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
+	vmResp, _, err := readVM(vmID, conn)
+	if err != nil {
+		return err
+	}
+	shutdownBehaviorOriginal := ""
+	if len(vmResp.GetVms()) > 0 {
+		if vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior() != "stop" {
+			shutdownBehaviorOriginal = vmResp.GetVms()[0].GetVmInitiatedShutdownBehavior()
+			opts := oscgo.UpdateVmRequest{VmId: vmID}
+			opts.SetVmInitiatedShutdownBehavior("stop")
+			if err = updateVmAttr(conn, opts); err != nil {
+				return err
+			}
+		}
+	}
+
+	_, _, err = conn.VmApi.StopVms(context.Background()).StopVmsRequest(oscgo.StopVmsRequest{
 		VmIds: []string{vmID},
 	}).Execute()
 
@@ -1091,6 +1109,14 @@ func stopVM(vmID string, conn *oscgo.APIClient) error {
 	_, err = stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("Error waiting for instance (%s) to stop: %s", vmID, err)
+	}
+
+	if shutdownBehaviorOriginal != "" {
+		opts := oscgo.UpdateVmRequest{VmId: vmID}
+		opts.SetVmInitiatedShutdownBehavior(shutdownBehaviorOriginal)
+		if err = updateVmAttr(conn, opts); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -1122,10 +1148,22 @@ func startVM(vmID string, conn *oscgo.APIClient) error {
 }
 
 func updateVmAttr(conn *oscgo.APIClient, instanceAttrOpts oscgo.UpdateVmRequest) error {
-	if _, _, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute(); err != nil {
-		return err
+	if _, httpResp, err := conn.VmApi.UpdateVm(context.Background()).UpdateVmRequest(instanceAttrOpts).Execute(); err != nil {
+		bodyBytes, errBody := ioutil.ReadAll(httpResp.Body)
+		if errBody != nil {
+			fmt.Println(errBody)
+		}
+		return fmt.Errorf("%s %s", err, string(bodyBytes))
 	}
 	return nil
+}
+
+func readVM(vmID string, conn *oscgo.APIClient) (oscgo.ReadVmsResponse, *http.Response, error) {
+	return conn.VmApi.ReadVms(context.Background()).ReadVmsRequest(oscgo.ReadVmsRequest{
+		Filters: &oscgo.FiltersVm{
+			VmIds: &[]string{vmID},
+		},
+	}).Execute()
 }
 
 // AttributeSetter you can use this function to set the attributes

@@ -1,3 +1,64 @@
+0.3.0 (April 06, 2021)
+========================
+
+FEATURES:
+---------
+
+* New Data Source: outscale_flexible_gpu
+* New Data Source: outscale_flexible_gpu_catalog
+* New Data Source: outscale_flexible_gpus
+* New Data Source: outscale_net_access_point
+* New Data Source: outscale_net_access_points
+* New Data Source: outscale_net_access_point_services
+* New Data Source: outscale_regions
+* New Data Source: outscale_subregion
+* New Data Source: outscale_subregions
+* New Data Source: outscale_vm_types
+
+* New Resource: outscale_net_access_point
+* New Resource: outscale_flexible_gpu
+* New Resource: outscale_flexible_gpu_link
+
+BUG FIXES:
+----------
+
+* Issue when importing the resource "outscale_load_balancer_listener_rule" (TPD-1941)
+* terraform crash when "outscale_net_peering" resource cannot be found (TPD-1943)
+* Create "outscale_net_access_point" resource and datasource(s) in oAPI client (TPD-1945)
+* Create "outscale_flexible_gpu" resource and datasource(s) in oAPI client (TPD-1946)
+* Create "outscale_flexible_gpu_link" resource in oAPI client (TPD-1947)
+* Create "outscale_flexible_gpu_catalog" datasource in oAPI client (TPD-1948)
+* Create "outscale_vm_types" datasource in oAPI client (TPD-1949)
+* Add "outscale_regions" datasource in oAPI client (TPD-1950)
+* Add "outscale_subregion" and "outscale_subregions" datasource in oAPI client (TPD-1951)
+* Create "outscale_net_access_point_services" datasource in oAPI client (TPD-1952)
+* "outscale_load_balancer_listener_rule" cannot be updated (TPD-1953)
+* Terraform hangs when changing instance type on VMs with shutdown behaviour set to "restart" (TPD-1954)
+* Terraform crash when "outscale_route_table" resource cannot be found (TPD-1960)
+* "outscale_route_table" datasource(s) is not sending all filters (TPD-1961)
+* terraform crash when "outscale_nat_service" resource cannot be found (TPD-1962)
+* "outscale_internet_service" datasource(s) is not sending all filters (TPD-1964)
+* Filters should not be mandatory in "outscale_vm_types" datasource in oAPI client (TPD-1968)
+* "dhcp_options_set_id" attribute is missing in "outscale_dhcp_option" datasource(s) (TPD-1969)
+* Examples rework (TPD-1970)
+* Add CONTRIBUTING.md (TPD-1971)
+* Integrate QA tests (TPD-1973)
+
+
+KNOWN INCOMPATIBILITIES:
+------------------------
+
+* outscale_load_balancer datasource: When applying the same configuration file twice in a row (with non change), terraform asks fo the user confirmation to read the datasource again (TPD-1942).
+
+
+NOTES:
+------
+
+**WARNING:** When creating access keys, the secret key is stored in the Terraform state. For security reasons, it is strongly recommended to create access keys using the API instead of the Terraform resource. For more information on how to create access keys using the API, see our [official API documentation](https://docs.outscale.com/api#3ds-outscale-api-accesskey).
+
+It is recommended to set tags inside the resources rather than using outscale_tag.
+
+
 0.2.0 (November 30, 2020)
 ========================
 

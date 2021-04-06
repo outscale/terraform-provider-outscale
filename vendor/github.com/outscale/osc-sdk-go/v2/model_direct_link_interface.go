@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -37,7 +37,7 @@ type DirectLinkInterface struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDirectLinkInterface(bgpAsn int32, directLinkInterfaceName string, virtualGatewayId string, vlan int32, ) *DirectLinkInterface {
+func NewDirectLinkInterface(bgpAsn int32, directLinkInterfaceName string, virtualGatewayId string, vlan int32) *DirectLinkInterface {
 	this := DirectLinkInterface{}
 	this.BgpAsn = bgpAsn
 	this.DirectLinkInterfaceName = directLinkInterfaceName
@@ -56,7 +56,7 @@ func NewDirectLinkInterfaceWithDefaults() *DirectLinkInterface {
 
 // GetBgpAsn returns the BgpAsn field value
 func (o *DirectLinkInterface) GetBgpAsn() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -67,7 +67,7 @@ func (o *DirectLinkInterface) GetBgpAsn() int32 {
 // GetBgpAsnOk returns a tuple with the BgpAsn field value
 // and a boolean to check if the value has been set.
 func (o *DirectLinkInterface) GetBgpAsnOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.BgpAsn, true
@@ -144,7 +144,7 @@ func (o *DirectLinkInterface) SetClientPrivateIp(v string) {
 
 // GetDirectLinkInterfaceName returns the DirectLinkInterfaceName field value
 func (o *DirectLinkInterface) GetDirectLinkInterfaceName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -155,7 +155,7 @@ func (o *DirectLinkInterface) GetDirectLinkInterfaceName() string {
 // GetDirectLinkInterfaceNameOk returns a tuple with the DirectLinkInterfaceName field value
 // and a boolean to check if the value has been set.
 func (o *DirectLinkInterface) GetDirectLinkInterfaceNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.DirectLinkInterfaceName, true
@@ -200,7 +200,7 @@ func (o *DirectLinkInterface) SetOutscalePrivateIp(v string) {
 
 // GetVirtualGatewayId returns the VirtualGatewayId field value
 func (o *DirectLinkInterface) GetVirtualGatewayId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -211,7 +211,7 @@ func (o *DirectLinkInterface) GetVirtualGatewayId() string {
 // GetVirtualGatewayIdOk returns a tuple with the VirtualGatewayId field value
 // and a boolean to check if the value has been set.
 func (o *DirectLinkInterface) GetVirtualGatewayIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VirtualGatewayId, true
@@ -224,7 +224,7 @@ func (o *DirectLinkInterface) SetVirtualGatewayId(v string) {
 
 // GetVlan returns the Vlan field value
 func (o *DirectLinkInterface) GetVlan() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -235,7 +235,7 @@ func (o *DirectLinkInterface) GetVlan() int32 {
 // GetVlanOk returns a tuple with the Vlan field value
 // and a boolean to check if the value has been set.
 func (o *DirectLinkInterface) GetVlanOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Vlan, true
@@ -307,5 +307,3 @@ func (v *NullableDirectLinkInterface) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

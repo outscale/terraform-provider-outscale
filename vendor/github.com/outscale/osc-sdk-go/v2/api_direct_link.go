@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type DirectLinkApiService service
 
 type ApiCreateDirectLinkRequest struct {
-	ctx _context.Context
-	ApiService *DirectLinkApiService
+	ctx                     _context.Context
+	ApiService              *DirectLinkApiService
 	createDirectLinkRequest *CreateDirectLinkRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateDirectLinkRequest) Execute() (CreateDirectLinkResponse, *_netht
 func (a *DirectLinkApiService) CreateDirectLink(ctx _context.Context) ApiCreateDirectLinkRequest {
 	return ApiCreateDirectLinkRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *DirectLinkApiService) CreateDirectLinkExecute(r ApiCreateDirectLinkRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *DirectLinkApiService) CreateDirectLinkExecute(r ApiCreateDirectLinkRequ
 }
 
 type ApiDeleteDirectLinkRequest struct {
-	ctx _context.Context
-	ApiService *DirectLinkApiService
+	ctx                     _context.Context
+	ApiService              *DirectLinkApiService
 	deleteDirectLinkRequest *DeleteDirectLinkRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiDeleteDirectLinkRequest) Execute() (DeleteDirectLinkResponse, *_netht
 func (a *DirectLinkApiService) DeleteDirectLink(ctx _context.Context) ApiDeleteDirectLinkRequest {
 	return ApiDeleteDirectLinkRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *DirectLinkApiService) DeleteDirectLinkExecute(r ApiDeleteDirectLinkRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *DirectLinkApiService) DeleteDirectLinkExecute(r ApiDeleteDirectLinkRequ
 }
 
 type ApiReadDirectLinksRequest struct {
-	ctx _context.Context
-	ApiService *DirectLinkApiService
+	ctx                    _context.Context
+	ApiService             *DirectLinkApiService
 	readDirectLinksRequest *ReadDirectLinksRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiReadDirectLinksRequest) Execute() (ReadDirectLinksResponse, *_nethttp
 func (a *DirectLinkApiService) ReadDirectLinks(ctx _context.Context) ApiReadDirectLinksRequest {
 	return ApiReadDirectLinksRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *DirectLinkApiService) ReadDirectLinksExecute(r ApiReadDirectLinksReques
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

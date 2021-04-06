@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // SendResetPasswordEmailRequest struct for SendResetPasswordEmailRequest
 type SendResetPasswordEmailRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The email address provided for the account.
 	Email string `json:"Email"`
@@ -27,7 +27,7 @@ type SendResetPasswordEmailRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSendResetPasswordEmailRequest(email string, ) *SendResetPasswordEmailRequest {
+func NewSendResetPasswordEmailRequest(email string) *SendResetPasswordEmailRequest {
 	this := SendResetPasswordEmailRequest{}
 	this.Email = email
 	return &this
@@ -75,7 +75,7 @@ func (o *SendResetPasswordEmailRequest) SetDryRun(v bool) {
 
 // GetEmail returns the Email field value
 func (o *SendResetPasswordEmailRequest) GetEmail() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -86,7 +86,7 @@ func (o *SendResetPasswordEmailRequest) GetEmail() string {
 // GetEmailOk returns a tuple with the Email field value
 // and a boolean to check if the value has been set.
 func (o *SendResetPasswordEmailRequest) GetEmailOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Email, true
@@ -143,5 +143,3 @@ func (v *NullableSendResetPasswordEmailRequest) UnmarshalJSON(src []byte) error 
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

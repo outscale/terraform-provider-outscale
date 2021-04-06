@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -37,7 +37,7 @@ type HealthCheck struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewHealthCheck(checkInterval int32, healthyThreshold int32, port int32, protocol string, timeout int32, unhealthyThreshold int32, ) *HealthCheck {
+func NewHealthCheck(checkInterval int32, healthyThreshold int32, port int32, protocol string, timeout int32, unhealthyThreshold int32) *HealthCheck {
 	this := HealthCheck{}
 	this.CheckInterval = checkInterval
 	this.HealthyThreshold = healthyThreshold
@@ -58,7 +58,7 @@ func NewHealthCheckWithDefaults() *HealthCheck {
 
 // GetCheckInterval returns the CheckInterval field value
 func (o *HealthCheck) GetCheckInterval() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -69,7 +69,7 @@ func (o *HealthCheck) GetCheckInterval() int32 {
 // GetCheckIntervalOk returns a tuple with the CheckInterval field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetCheckIntervalOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.CheckInterval, true
@@ -82,7 +82,7 @@ func (o *HealthCheck) SetCheckInterval(v int32) {
 
 // GetHealthyThreshold returns the HealthyThreshold field value
 func (o *HealthCheck) GetHealthyThreshold() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -93,7 +93,7 @@ func (o *HealthCheck) GetHealthyThreshold() int32 {
 // GetHealthyThresholdOk returns a tuple with the HealthyThreshold field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetHealthyThresholdOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.HealthyThreshold, true
@@ -138,7 +138,7 @@ func (o *HealthCheck) SetPath(v string) {
 
 // GetPort returns the Port field value
 func (o *HealthCheck) GetPort() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -149,7 +149,7 @@ func (o *HealthCheck) GetPort() int32 {
 // GetPortOk returns a tuple with the Port field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetPortOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Port, true
@@ -162,7 +162,7 @@ func (o *HealthCheck) SetPort(v int32) {
 
 // GetProtocol returns the Protocol field value
 func (o *HealthCheck) GetProtocol() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -173,7 +173,7 @@ func (o *HealthCheck) GetProtocol() string {
 // GetProtocolOk returns a tuple with the Protocol field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetProtocolOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Protocol, true
@@ -186,7 +186,7 @@ func (o *HealthCheck) SetProtocol(v string) {
 
 // GetTimeout returns the Timeout field value
 func (o *HealthCheck) GetTimeout() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -197,7 +197,7 @@ func (o *HealthCheck) GetTimeout() int32 {
 // GetTimeoutOk returns a tuple with the Timeout field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetTimeoutOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Timeout, true
@@ -210,7 +210,7 @@ func (o *HealthCheck) SetTimeout(v int32) {
 
 // GetUnhealthyThreshold returns the UnhealthyThreshold field value
 func (o *HealthCheck) GetUnhealthyThreshold() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -221,7 +221,7 @@ func (o *HealthCheck) GetUnhealthyThreshold() int32 {
 // GetUnhealthyThresholdOk returns a tuple with the UnhealthyThreshold field value
 // and a boolean to check if the value has been set.
 func (o *HealthCheck) GetUnhealthyThresholdOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.UnhealthyThreshold, true
@@ -293,5 +293,3 @@ func (v *NullableHealthCheck) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

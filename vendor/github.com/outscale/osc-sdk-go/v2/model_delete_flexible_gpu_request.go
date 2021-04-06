@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // DeleteFlexibleGpuRequest struct for DeleteFlexibleGpuRequest
 type DeleteFlexibleGpuRequest struct {
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the fGPU you want to delete.
 	FlexibleGpuId string `json:"FlexibleGpuId"`
@@ -27,7 +27,7 @@ type DeleteFlexibleGpuRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDeleteFlexibleGpuRequest(flexibleGpuId string, ) *DeleteFlexibleGpuRequest {
+func NewDeleteFlexibleGpuRequest(flexibleGpuId string) *DeleteFlexibleGpuRequest {
 	this := DeleteFlexibleGpuRequest{}
 	this.FlexibleGpuId = flexibleGpuId
 	return &this
@@ -75,7 +75,7 @@ func (o *DeleteFlexibleGpuRequest) SetDryRun(v bool) {
 
 // GetFlexibleGpuId returns the FlexibleGpuId field value
 func (o *DeleteFlexibleGpuRequest) GetFlexibleGpuId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -86,7 +86,7 @@ func (o *DeleteFlexibleGpuRequest) GetFlexibleGpuId() string {
 // GetFlexibleGpuIdOk returns a tuple with the FlexibleGpuId field value
 // and a boolean to check if the value has been set.
 func (o *DeleteFlexibleGpuRequest) GetFlexibleGpuIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.FlexibleGpuId, true
@@ -143,5 +143,3 @@ func (v *NullableDeleteFlexibleGpuRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

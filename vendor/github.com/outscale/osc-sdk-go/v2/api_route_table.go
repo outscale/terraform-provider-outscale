@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type RouteTableApiService service
 
 type ApiCreateRouteTableRequest struct {
-	ctx _context.Context
-	ApiService *RouteTableApiService
+	ctx                     _context.Context
+	ApiService              *RouteTableApiService
 	createRouteTableRequest *CreateRouteTableRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateRouteTableRequest) Execute() (CreateRouteTableResponse, *_netht
 func (a *RouteTableApiService) CreateRouteTable(ctx _context.Context) ApiCreateRouteTableRequest {
 	return ApiCreateRouteTableRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *RouteTableApiService) CreateRouteTableExecute(r ApiCreateRouteTableRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *RouteTableApiService) CreateRouteTableExecute(r ApiCreateRouteTableRequ
 }
 
 type ApiDeleteRouteTableRequest struct {
-	ctx _context.Context
-	ApiService *RouteTableApiService
+	ctx                     _context.Context
+	ApiService              *RouteTableApiService
 	deleteRouteTableRequest *DeleteRouteTableRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteRouteTableRequest) Execute() (DeleteRouteTableResponse, *_netht
 func (a *RouteTableApiService) DeleteRouteTable(ctx _context.Context) ApiDeleteRouteTableRequest {
 	return ApiDeleteRouteTableRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *RouteTableApiService) DeleteRouteTableExecute(r ApiDeleteRouteTableRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *RouteTableApiService) DeleteRouteTableExecute(r ApiDeleteRouteTableRequ
 }
 
 type ApiLinkRouteTableRequest struct {
-	ctx _context.Context
-	ApiService *RouteTableApiService
+	ctx                   _context.Context
+	ApiService            *RouteTableApiService
 	linkRouteTableRequest *LinkRouteTableRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiLinkRouteTableRequest) Execute() (LinkRouteTableResponse, *_nethttp.R
 func (a *RouteTableApiService) LinkRouteTable(ctx _context.Context) ApiLinkRouteTableRequest {
 	return ApiLinkRouteTableRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *RouteTableApiService) LinkRouteTableExecute(r ApiLinkRouteTableRequest)
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *RouteTableApiService) LinkRouteTableExecute(r ApiLinkRouteTableRequest)
 }
 
 type ApiReadRouteTablesRequest struct {
-	ctx _context.Context
-	ApiService *RouteTableApiService
+	ctx                    _context.Context
+	ApiService             *RouteTableApiService
 	readRouteTablesRequest *ReadRouteTablesRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiReadRouteTablesRequest) Execute() (ReadRouteTablesResponse, *_nethttp
 func (a *RouteTableApiService) ReadRouteTables(ctx _context.Context) ApiReadRouteTablesRequest {
 	return ApiReadRouteTablesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -573,6 +577,7 @@ func (a *RouteTableApiService) ReadRouteTablesExecute(r ApiReadRouteTablesReques
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -627,8 +632,8 @@ func (a *RouteTableApiService) ReadRouteTablesExecute(r ApiReadRouteTablesReques
 }
 
 type ApiUnlinkRouteTableRequest struct {
-	ctx _context.Context
-	ApiService *RouteTableApiService
+	ctx                     _context.Context
+	ApiService              *RouteTableApiService
 	unlinkRouteTableRequest *UnlinkRouteTableRequest
 }
 
@@ -649,7 +654,7 @@ func (r ApiUnlinkRouteTableRequest) Execute() (UnlinkRouteTableResponse, *_netht
 func (a *RouteTableApiService) UnlinkRouteTable(ctx _context.Context) ApiUnlinkRouteTableRequest {
 	return ApiUnlinkRouteTableRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -723,6 +728,7 @@ func (a *RouteTableApiService) UnlinkRouteTableExecute(r ApiUnlinkRouteTableRequ
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

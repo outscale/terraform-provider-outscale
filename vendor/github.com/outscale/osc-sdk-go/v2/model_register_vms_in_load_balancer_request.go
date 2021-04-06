@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type RegisterVmsInLoadBalancerRequest struct {
 	// One or more IDs of back-end VMs.<br /> Specifying the same ID several times has no effect as each back-end VM has equal weight.
 	BackendVmIds []string `json:"BackendVmIds"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The name of the load balancer.
 	LoadBalancerName string `json:"LoadBalancerName"`
@@ -29,7 +29,7 @@ type RegisterVmsInLoadBalancerRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRegisterVmsInLoadBalancerRequest(backendVmIds []string, loadBalancerName string, ) *RegisterVmsInLoadBalancerRequest {
+func NewRegisterVmsInLoadBalancerRequest(backendVmIds []string, loadBalancerName string) *RegisterVmsInLoadBalancerRequest {
 	this := RegisterVmsInLoadBalancerRequest{}
 	this.BackendVmIds = backendVmIds
 	this.LoadBalancerName = loadBalancerName
@@ -46,7 +46,7 @@ func NewRegisterVmsInLoadBalancerRequestWithDefaults() *RegisterVmsInLoadBalance
 
 // GetBackendVmIds returns the BackendVmIds field value
 func (o *RegisterVmsInLoadBalancerRequest) GetBackendVmIds() []string {
-	if o == nil  {
+	if o == nil {
 		var ret []string
 		return ret
 	}
@@ -57,7 +57,7 @@ func (o *RegisterVmsInLoadBalancerRequest) GetBackendVmIds() []string {
 // GetBackendVmIdsOk returns a tuple with the BackendVmIds field value
 // and a boolean to check if the value has been set.
 func (o *RegisterVmsInLoadBalancerRequest) GetBackendVmIdsOk() (*[]string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.BackendVmIds, true
@@ -102,7 +102,7 @@ func (o *RegisterVmsInLoadBalancerRequest) SetDryRun(v bool) {
 
 // GetLoadBalancerName returns the LoadBalancerName field value
 func (o *RegisterVmsInLoadBalancerRequest) GetLoadBalancerName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *RegisterVmsInLoadBalancerRequest) GetLoadBalancerName() string {
 // GetLoadBalancerNameOk returns a tuple with the LoadBalancerName field value
 // and a boolean to check if the value has been set.
 func (o *RegisterVmsInLoadBalancerRequest) GetLoadBalancerNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.LoadBalancerName, true
@@ -173,5 +173,3 @@ func (v *NullableRegisterVmsInLoadBalancerRequest) UnmarshalJSON(src []byte) err
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,12 +19,10 @@ import (
 type ListenerRuleForCreation struct {
 	// The type of action for the rule (always `forward`).
 	Action *string `json:"Action,omitempty"`
-	// A host-name pattern for the rule, with a maximum length of 128 characters. This host-name pattern supports maximum three wildcards, and must not contain any special characters except [-.?]. 
+	// A host-name pattern for the rule, with a maximum length of 128 characters. This host-name pattern supports maximum three wildcards, and must not contain any special characters except [-.?].
 	HostNamePattern *string `json:"HostNamePattern,omitempty"`
-	// The ID of the listener.
-	ListenerRuleId *string `json:"ListenerRuleId,omitempty"`
 	// A human-readable name for the listener rule.
-	ListenerRuleName *string `json:"ListenerRuleName,omitempty"`
+	ListenerRuleName string `json:"ListenerRuleName"`
 	// A path pattern for the rule, with a maximum length of 128 characters. This path pattern supports maximum three wildcards, and must not contain any special characters except [_-.$/~\"'@:+?].
 	PathPattern *string `json:"PathPattern,omitempty"`
 	// The priority level of the listener rule, between `1` and `19999` both included. Each rule must have a unique priority level. Otherwise, an error is returned.
@@ -35,8 +33,9 @@ type ListenerRuleForCreation struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewListenerRuleForCreation(priority int32, ) *ListenerRuleForCreation {
+func NewListenerRuleForCreation(listenerRuleName string, priority int32) *ListenerRuleForCreation {
 	this := ListenerRuleForCreation{}
+	this.ListenerRuleName = listenerRuleName
 	this.Priority = priority
 	return &this
 }
@@ -113,68 +112,28 @@ func (o *ListenerRuleForCreation) SetHostNamePattern(v string) {
 	o.HostNamePattern = &v
 }
 
-// GetListenerRuleId returns the ListenerRuleId field value if set, zero value otherwise.
-func (o *ListenerRuleForCreation) GetListenerRuleId() string {
-	if o == nil || o.ListenerRuleId == nil {
-		var ret string
-		return ret
-	}
-	return *o.ListenerRuleId
-}
-
-// GetListenerRuleIdOk returns a tuple with the ListenerRuleId field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *ListenerRuleForCreation) GetListenerRuleIdOk() (*string, bool) {
-	if o == nil || o.ListenerRuleId == nil {
-		return nil, false
-	}
-	return o.ListenerRuleId, true
-}
-
-// HasListenerRuleId returns a boolean if a field has been set.
-func (o *ListenerRuleForCreation) HasListenerRuleId() bool {
-	if o != nil && o.ListenerRuleId != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetListenerRuleId gets a reference to the given string and assigns it to the ListenerRuleId field.
-func (o *ListenerRuleForCreation) SetListenerRuleId(v string) {
-	o.ListenerRuleId = &v
-}
-
-// GetListenerRuleName returns the ListenerRuleName field value if set, zero value otherwise.
+// GetListenerRuleName returns the ListenerRuleName field value
 func (o *ListenerRuleForCreation) GetListenerRuleName() string {
-	if o == nil || o.ListenerRuleName == nil {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.ListenerRuleName
+
+	return o.ListenerRuleName
 }
 
-// GetListenerRuleNameOk returns a tuple with the ListenerRuleName field value if set, nil otherwise
+// GetListenerRuleNameOk returns a tuple with the ListenerRuleName field value
 // and a boolean to check if the value has been set.
 func (o *ListenerRuleForCreation) GetListenerRuleNameOk() (*string, bool) {
-	if o == nil || o.ListenerRuleName == nil {
+	if o == nil {
 		return nil, false
 	}
-	return o.ListenerRuleName, true
+	return &o.ListenerRuleName, true
 }
 
-// HasListenerRuleName returns a boolean if a field has been set.
-func (o *ListenerRuleForCreation) HasListenerRuleName() bool {
-	if o != nil && o.ListenerRuleName != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetListenerRuleName gets a reference to the given string and assigns it to the ListenerRuleName field.
+// SetListenerRuleName sets field value
 func (o *ListenerRuleForCreation) SetListenerRuleName(v string) {
-	o.ListenerRuleName = &v
+	o.ListenerRuleName = v
 }
 
 // GetPathPattern returns the PathPattern field value if set, zero value otherwise.
@@ -211,7 +170,7 @@ func (o *ListenerRuleForCreation) SetPathPattern(v string) {
 
 // GetPriority returns the Priority field value
 func (o *ListenerRuleForCreation) GetPriority() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -222,7 +181,7 @@ func (o *ListenerRuleForCreation) GetPriority() int32 {
 // GetPriorityOk returns a tuple with the Priority field value
 // and a boolean to check if the value has been set.
 func (o *ListenerRuleForCreation) GetPriorityOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Priority, true
@@ -241,10 +200,7 @@ func (o ListenerRuleForCreation) MarshalJSON() ([]byte, error) {
 	if o.HostNamePattern != nil {
 		toSerialize["HostNamePattern"] = o.HostNamePattern
 	}
-	if o.ListenerRuleId != nil {
-		toSerialize["ListenerRuleId"] = o.ListenerRuleId
-	}
-	if o.ListenerRuleName != nil {
+	if true {
 		toSerialize["ListenerRuleName"] = o.ListenerRuleName
 	}
 	if o.PathPattern != nil {
@@ -291,5 +247,3 @@ func (v *NullableListenerRuleForCreation) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type CreateVpnConnectionRouteRequest struct {
 	// The network prefix of the route, in CIDR notation (for example, 10.12.0.0/16).
 	DestinationIpRange string `json:"DestinationIpRange"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the target VPN connection of the static route.
 	VpnConnectionId string `json:"VpnConnectionId"`
@@ -29,7 +29,7 @@ type CreateVpnConnectionRouteRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateVpnConnectionRouteRequest(destinationIpRange string, vpnConnectionId string, ) *CreateVpnConnectionRouteRequest {
+func NewCreateVpnConnectionRouteRequest(destinationIpRange string, vpnConnectionId string) *CreateVpnConnectionRouteRequest {
 	this := CreateVpnConnectionRouteRequest{}
 	this.DestinationIpRange = destinationIpRange
 	this.VpnConnectionId = vpnConnectionId
@@ -46,7 +46,7 @@ func NewCreateVpnConnectionRouteRequestWithDefaults() *CreateVpnConnectionRouteR
 
 // GetDestinationIpRange returns the DestinationIpRange field value
 func (o *CreateVpnConnectionRouteRequest) GetDestinationIpRange() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -57,7 +57,7 @@ func (o *CreateVpnConnectionRouteRequest) GetDestinationIpRange() string {
 // GetDestinationIpRangeOk returns a tuple with the DestinationIpRange field value
 // and a boolean to check if the value has been set.
 func (o *CreateVpnConnectionRouteRequest) GetDestinationIpRangeOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.DestinationIpRange, true
@@ -102,7 +102,7 @@ func (o *CreateVpnConnectionRouteRequest) SetDryRun(v bool) {
 
 // GetVpnConnectionId returns the VpnConnectionId field value
 func (o *CreateVpnConnectionRouteRequest) GetVpnConnectionId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -113,7 +113,7 @@ func (o *CreateVpnConnectionRouteRequest) GetVpnConnectionId() string {
 // GetVpnConnectionIdOk returns a tuple with the VpnConnectionId field value
 // and a boolean to check if the value has been set.
 func (o *CreateVpnConnectionRouteRequest) GetVpnConnectionIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VpnConnectionId, true
@@ -173,5 +173,3 @@ func (v *NullableCreateVpnConnectionRouteRequest) UnmarshalJSON(src []byte) erro
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

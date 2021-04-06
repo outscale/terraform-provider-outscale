@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type VirtualGatewayApiService service
 
 type ApiCreateVirtualGatewayRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                         _context.Context
+	ApiService                  *VirtualGatewayApiService
 	createVirtualGatewayRequest *CreateVirtualGatewayRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateVirtualGatewayRequest) Execute() (CreateVirtualGatewayResponse,
 func (a *VirtualGatewayApiService) CreateVirtualGateway(ctx _context.Context) ApiCreateVirtualGatewayRequest {
 	return ApiCreateVirtualGatewayRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *VirtualGatewayApiService) CreateVirtualGatewayExecute(r ApiCreateVirtua
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *VirtualGatewayApiService) CreateVirtualGatewayExecute(r ApiCreateVirtua
 }
 
 type ApiDeleteVirtualGatewayRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                         _context.Context
+	ApiService                  *VirtualGatewayApiService
 	deleteVirtualGatewayRequest *DeleteVirtualGatewayRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiDeleteVirtualGatewayRequest) Execute() (DeleteVirtualGatewayResponse,
 func (a *VirtualGatewayApiService) DeleteVirtualGateway(ctx _context.Context) ApiDeleteVirtualGatewayRequest {
 	return ApiDeleteVirtualGatewayRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *VirtualGatewayApiService) DeleteVirtualGatewayExecute(r ApiDeleteVirtua
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *VirtualGatewayApiService) DeleteVirtualGatewayExecute(r ApiDeleteVirtua
 }
 
 type ApiLinkVirtualGatewayRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                       _context.Context
+	ApiService                *VirtualGatewayApiService
 	linkVirtualGatewayRequest *LinkVirtualGatewayRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiLinkVirtualGatewayRequest) Execute() (LinkVirtualGatewayResponse, *_n
 func (a *VirtualGatewayApiService) LinkVirtualGateway(ctx _context.Context) ApiLinkVirtualGatewayRequest {
 	return ApiLinkVirtualGatewayRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *VirtualGatewayApiService) LinkVirtualGatewayExecute(r ApiLinkVirtualGat
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -390,8 +394,8 @@ func (a *VirtualGatewayApiService) LinkVirtualGatewayExecute(r ApiLinkVirtualGat
 }
 
 type ApiReadVirtualGatewaysRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                        _context.Context
+	ApiService                 *VirtualGatewayApiService
 	readVirtualGatewaysRequest *ReadVirtualGatewaysRequest
 }
 
@@ -412,7 +416,7 @@ func (r ApiReadVirtualGatewaysRequest) Execute() (ReadVirtualGatewaysResponse, *
 func (a *VirtualGatewayApiService) ReadVirtualGateways(ctx _context.Context) ApiReadVirtualGatewaysRequest {
 	return ApiReadVirtualGatewaysRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -486,6 +490,7 @@ func (a *VirtualGatewayApiService) ReadVirtualGatewaysExecute(r ApiReadVirtualGa
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -511,8 +516,8 @@ func (a *VirtualGatewayApiService) ReadVirtualGatewaysExecute(r ApiReadVirtualGa
 }
 
 type ApiUnlinkVirtualGatewayRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                         _context.Context
+	ApiService                  *VirtualGatewayApiService
 	unlinkVirtualGatewayRequest *UnlinkVirtualGatewayRequest
 }
 
@@ -533,7 +538,7 @@ func (r ApiUnlinkVirtualGatewayRequest) Execute() (UnlinkVirtualGatewayResponse,
 func (a *VirtualGatewayApiService) UnlinkVirtualGateway(ctx _context.Context) ApiUnlinkVirtualGatewayRequest {
 	return ApiUnlinkVirtualGatewayRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -607,6 +612,7 @@ func (a *VirtualGatewayApiService) UnlinkVirtualGatewayExecute(r ApiUnlinkVirtua
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -632,8 +638,8 @@ func (a *VirtualGatewayApiService) UnlinkVirtualGatewayExecute(r ApiUnlinkVirtua
 }
 
 type ApiUpdateRoutePropagationRequest struct {
-	ctx _context.Context
-	ApiService *VirtualGatewayApiService
+	ctx                           _context.Context
+	ApiService                    *VirtualGatewayApiService
 	updateRoutePropagationRequest *UpdateRoutePropagationRequest
 }
 
@@ -654,7 +660,7 @@ func (r ApiUpdateRoutePropagationRequest) Execute() (UpdateRoutePropagationRespo
 func (a *VirtualGatewayApiService) UpdateRoutePropagation(ctx _context.Context) ApiUpdateRoutePropagationRequest {
 	return ApiUpdateRoutePropagationRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -728,6 +734,7 @@ func (a *VirtualGatewayApiService) UpdateRoutePropagationExecute(r ApiUpdateRout
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

@@ -50,7 +50,7 @@ For more information on this resource actions, see the [API documentation](https
 # Update health check
 
 resource "outscale_load_balancer_attributes" "attributes01" {
-   load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+   load_balancer_name = outscale_load_balancer.load_balancer01.id
    health_check  {
       healthy_threshold   = 10
       check_interval      = 30
@@ -65,7 +65,7 @@ resource "outscale_load_balancer_attributes" "attributes01" {
 # Update access log
 
 resource "outscale_load_balancer_attributes" "attributes02" {
-  load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name = outscale_load_balancer.load_balancer01.id
   access_log {
       publication_interval = 5
       is_enabled           = true
@@ -77,7 +77,7 @@ resource "outscale_load_balancer_attributes" "attributes02" {
 # Update policies
 
 resource "outscale_load_balancer_attributes" "attributes03" {
-  load_balancer_name = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name = outscale_load_balancer.load_balancer01.id
   load_balancer_port = 80
   policy_names       = ["policy-name-01"]
 }
@@ -85,7 +85,7 @@ resource "outscale_load_balancer_attributes" "attributes03" {
 # Update SSL certificate
 
 resource "outscale_load_balancer_attributes" "attributes04" {
-  load_balancer_name    = outscale_load_balancer.load_balancer01.load_balancer_id
+  load_balancer_name    = outscale_load_balancer.load_balancer01.id
   load_balancer_port    = 8080
   server_certificate_id = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
 }
@@ -106,7 +106,7 @@ The following arguments are supported:
   * `healthy_threshold` - (Optional) The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
   * `path` - (Optional) The path for HTTP or HTTPS requests.
   * `port` - (Optional) The port number (between `1` and `65535`, both included).
-  * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+  * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
   * `timeout` - (Optional) The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
   * `unhealthy_threshold` - (Optional) The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
 * `load_balancer_name` - (Required) The name of the load balancer.
@@ -134,22 +134,22 @@ The following attributes are exported:
       * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
       * `path` - The path for HTTP or HTTPS requests.
       * `port` - The port number (between `1` and `65535`, both included).
-      * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+      * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
       * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
       * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
   * `listeners` - The listeners for the load balancer.
       * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
-      * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+      * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
       * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
-      * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL` \| `UDP`).
+      * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
       * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-      * `server_certificate_id` - The ID of the server certificate.
+      * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate.
   * `load_balancer_name` - The name of the load balancer.
   * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
       * `policy_name` - The name of the stickiness policy.
   * `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
-If `LoadBalancerType` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br />
-If `LoadBalancerType` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
+If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br />
+If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
   * `net_id` - The ID of the Net for the load balancer.
   * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
   * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
@@ -161,4 +161,3 @@ To only allow traffic from load balancers, add a security group rule that specif
   * `tags` - One or more tags associated with the load balancer.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
-

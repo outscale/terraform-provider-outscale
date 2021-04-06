@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type NetAccessPointApiService service
 
 type ApiCreateNetAccessPointRequest struct {
-	ctx _context.Context
-	ApiService *NetAccessPointApiService
+	ctx                         _context.Context
+	ApiService                  *NetAccessPointApiService
 	createNetAccessPointRequest *CreateNetAccessPointRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateNetAccessPointRequest) Execute() (CreateNetAccessPointResponse,
 func (a *NetAccessPointApiService) CreateNetAccessPoint(ctx _context.Context) ApiCreateNetAccessPointRequest {
 	return ApiCreateNetAccessPointRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *NetAccessPointApiService) CreateNetAccessPointExecute(r ApiCreateNetAcc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *NetAccessPointApiService) CreateNetAccessPointExecute(r ApiCreateNetAcc
 }
 
 type ApiDeleteNetAccessPointRequest struct {
-	ctx _context.Context
-	ApiService *NetAccessPointApiService
+	ctx                         _context.Context
+	ApiService                  *NetAccessPointApiService
 	deleteNetAccessPointRequest *DeleteNetAccessPointRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiDeleteNetAccessPointRequest) Execute() (DeleteNetAccessPointResponse,
 func (a *NetAccessPointApiService) DeleteNetAccessPoint(ctx _context.Context) ApiDeleteNetAccessPointRequest {
 	return ApiDeleteNetAccessPointRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *NetAccessPointApiService) DeleteNetAccessPointExecute(r ApiDeleteNetAcc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *NetAccessPointApiService) DeleteNetAccessPointExecute(r ApiDeleteNetAcc
 }
 
 type ApiReadNetAccessPointServicesRequest struct {
-	ctx _context.Context
-	ApiService *NetAccessPointApiService
+	ctx                               _context.Context
+	ApiService                        *NetAccessPointApiService
 	readNetAccessPointServicesRequest *ReadNetAccessPointServicesRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiReadNetAccessPointServicesRequest) Execute() (ReadNetAccessPointServi
 func (a *NetAccessPointApiService) ReadNetAccessPointServices(ctx _context.Context) ApiReadNetAccessPointServicesRequest {
 	return ApiReadNetAccessPointServicesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -351,6 +354,7 @@ func (a *NetAccessPointApiService) ReadNetAccessPointServicesExecute(r ApiReadNe
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -376,8 +380,8 @@ func (a *NetAccessPointApiService) ReadNetAccessPointServicesExecute(r ApiReadNe
 }
 
 type ApiReadNetAccessPointsRequest struct {
-	ctx _context.Context
-	ApiService *NetAccessPointApiService
+	ctx                        _context.Context
+	ApiService                 *NetAccessPointApiService
 	readNetAccessPointsRequest *ReadNetAccessPointsRequest
 }
 
@@ -398,7 +402,7 @@ func (r ApiReadNetAccessPointsRequest) Execute() (ReadNetAccessPointsResponse, *
 func (a *NetAccessPointApiService) ReadNetAccessPoints(ctx _context.Context) ApiReadNetAccessPointsRequest {
 	return ApiReadNetAccessPointsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -472,6 +476,7 @@ func (a *NetAccessPointApiService) ReadNetAccessPointsExecute(r ApiReadNetAccess
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -497,8 +502,8 @@ func (a *NetAccessPointApiService) ReadNetAccessPointsExecute(r ApiReadNetAccess
 }
 
 type ApiUpdateNetAccessPointRequest struct {
-	ctx _context.Context
-	ApiService *NetAccessPointApiService
+	ctx                         _context.Context
+	ApiService                  *NetAccessPointApiService
 	updateNetAccessPointRequest *UpdateNetAccessPointRequest
 }
 
@@ -519,7 +524,7 @@ func (r ApiUpdateNetAccessPointRequest) Execute() (UpdateNetAccessPointResponse,
 func (a *NetAccessPointApiService) UpdateNetAccessPoint(ctx _context.Context) ApiUpdateNetAccessPointRequest {
 	return ApiUpdateNetAccessPointRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -593,6 +598,7 @@ func (a *NetAccessPointApiService) UpdateNetAccessPointExecute(r ApiUpdateNetAcc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

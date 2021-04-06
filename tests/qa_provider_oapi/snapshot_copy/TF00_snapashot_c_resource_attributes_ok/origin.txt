@@ -1,0 +1,4 @@
+
+python file: provider_outscale_oapi/test//outscale_snapshot_copy/test_outscale_snapashot_copy_resource_attributes_ok.py
+tf file: provider_outscale_oapi/config/outscale_snapshot_copy/config_outscale_snapshot_copy_resource_attributes_ok
+check file: provider_outscale_oapi/test/outscale_snapshot_copy/outscale_snapshot_copy_resource_attributes.txt

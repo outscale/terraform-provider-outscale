@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type LoadBalancerApiService service
 
 type ApiCreateLoadBalancerRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                       _context.Context
+	ApiService                *LoadBalancerApiService
 	createLoadBalancerRequest *CreateLoadBalancerRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateLoadBalancerRequest) Execute() (CreateLoadBalancerResponse, *_n
 func (a *LoadBalancerApiService) CreateLoadBalancer(ctx _context.Context) ApiCreateLoadBalancerRequest {
 	return ApiCreateLoadBalancerRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *LoadBalancerApiService) CreateLoadBalancerExecute(r ApiCreateLoadBalanc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *LoadBalancerApiService) CreateLoadBalancerExecute(r ApiCreateLoadBalanc
 }
 
 type ApiCreateLoadBalancerTagsRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                           _context.Context
+	ApiService                    *LoadBalancerApiService
 	createLoadBalancerTagsRequest *CreateLoadBalancerTagsRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiCreateLoadBalancerTagsRequest) Execute() (CreateLoadBalancerTagsRespo
 func (a *LoadBalancerApiService) CreateLoadBalancerTags(ctx _context.Context) ApiCreateLoadBalancerTagsRequest {
 	return ApiCreateLoadBalancerTagsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *LoadBalancerApiService) CreateLoadBalancerTagsExecute(r ApiCreateLoadBa
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *LoadBalancerApiService) CreateLoadBalancerTagsExecute(r ApiCreateLoadBa
 }
 
 type ApiDeleteLoadBalancerRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                       _context.Context
+	ApiService                *LoadBalancerApiService
 	deleteLoadBalancerRequest *DeleteLoadBalancerRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiDeleteLoadBalancerRequest) Execute() (DeleteLoadBalancerResponse, *_n
 func (a *LoadBalancerApiService) DeleteLoadBalancer(ctx _context.Context) ApiDeleteLoadBalancerRequest {
 	return ApiDeleteLoadBalancerRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *LoadBalancerApiService) DeleteLoadBalancerExecute(r ApiDeleteLoadBalanc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -390,8 +394,8 @@ func (a *LoadBalancerApiService) DeleteLoadBalancerExecute(r ApiDeleteLoadBalanc
 }
 
 type ApiDeleteLoadBalancerTagsRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                           _context.Context
+	ApiService                    *LoadBalancerApiService
 	deleteLoadBalancerTagsRequest *DeleteLoadBalancerTagsRequest
 }
 
@@ -412,7 +416,7 @@ func (r ApiDeleteLoadBalancerTagsRequest) Execute() (DeleteLoadBalancerTagsRespo
 func (a *LoadBalancerApiService) DeleteLoadBalancerTags(ctx _context.Context) ApiDeleteLoadBalancerTagsRequest {
 	return ApiDeleteLoadBalancerTagsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -486,6 +490,7 @@ func (a *LoadBalancerApiService) DeleteLoadBalancerTagsExecute(r ApiDeleteLoadBa
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -511,8 +516,8 @@ func (a *LoadBalancerApiService) DeleteLoadBalancerTagsExecute(r ApiDeleteLoadBa
 }
 
 type ApiDeregisterVmsInLoadBalancerRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                                _context.Context
+	ApiService                         *LoadBalancerApiService
 	deregisterVmsInLoadBalancerRequest *DeregisterVmsInLoadBalancerRequest
 }
 
@@ -533,7 +538,7 @@ func (r ApiDeregisterVmsInLoadBalancerRequest) Execute() (DeregisterVmsInLoadBal
 func (a *LoadBalancerApiService) DeregisterVmsInLoadBalancer(ctx _context.Context) ApiDeregisterVmsInLoadBalancerRequest {
 	return ApiDeregisterVmsInLoadBalancerRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -607,6 +612,7 @@ func (a *LoadBalancerApiService) DeregisterVmsInLoadBalancerExecute(r ApiDeregis
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -632,8 +638,8 @@ func (a *LoadBalancerApiService) DeregisterVmsInLoadBalancerExecute(r ApiDeregis
 }
 
 type ApiReadLoadBalancerTagsRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                         _context.Context
+	ApiService                  *LoadBalancerApiService
 	readLoadBalancerTagsRequest *ReadLoadBalancerTagsRequest
 }
 
@@ -654,7 +660,7 @@ func (r ApiReadLoadBalancerTagsRequest) Execute() (ReadLoadBalancerTagsResponse,
 func (a *LoadBalancerApiService) ReadLoadBalancerTags(ctx _context.Context) ApiReadLoadBalancerTagsRequest {
 	return ApiReadLoadBalancerTagsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -728,6 +734,7 @@ func (a *LoadBalancerApiService) ReadLoadBalancerTagsExecute(r ApiReadLoadBalanc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -753,8 +760,8 @@ func (a *LoadBalancerApiService) ReadLoadBalancerTagsExecute(r ApiReadLoadBalanc
 }
 
 type ApiReadLoadBalancersRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                      _context.Context
+	ApiService               *LoadBalancerApiService
 	readLoadBalancersRequest *ReadLoadBalancersRequest
 }
 
@@ -775,7 +782,7 @@ func (r ApiReadLoadBalancersRequest) Execute() (ReadLoadBalancersResponse, *_net
 func (a *LoadBalancerApiService) ReadLoadBalancers(ctx _context.Context) ApiReadLoadBalancersRequest {
 	return ApiReadLoadBalancersRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -849,6 +856,7 @@ func (a *LoadBalancerApiService) ReadLoadBalancersExecute(r ApiReadLoadBalancers
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -874,8 +882,8 @@ func (a *LoadBalancerApiService) ReadLoadBalancersExecute(r ApiReadLoadBalancers
 }
 
 type ApiReadVmsHealthRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                  _context.Context
+	ApiService           *LoadBalancerApiService
 	readVmsHealthRequest *ReadVmsHealthRequest
 }
 
@@ -896,7 +904,7 @@ func (r ApiReadVmsHealthRequest) Execute() (ReadVmsHealthResponse, *_nethttp.Res
 func (a *LoadBalancerApiService) ReadVmsHealth(ctx _context.Context) ApiReadVmsHealthRequest {
 	return ApiReadVmsHealthRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -970,6 +978,7 @@ func (a *LoadBalancerApiService) ReadVmsHealthExecute(r ApiReadVmsHealthRequest)
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -995,8 +1004,8 @@ func (a *LoadBalancerApiService) ReadVmsHealthExecute(r ApiReadVmsHealthRequest)
 }
 
 type ApiRegisterVmsInLoadBalancerRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                              _context.Context
+	ApiService                       *LoadBalancerApiService
 	registerVmsInLoadBalancerRequest *RegisterVmsInLoadBalancerRequest
 }
 
@@ -1017,7 +1026,7 @@ func (r ApiRegisterVmsInLoadBalancerRequest) Execute() (RegisterVmsInLoadBalance
 func (a *LoadBalancerApiService) RegisterVmsInLoadBalancer(ctx _context.Context) ApiRegisterVmsInLoadBalancerRequest {
 	return ApiRegisterVmsInLoadBalancerRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1091,6 +1100,7 @@ func (a *LoadBalancerApiService) RegisterVmsInLoadBalancerExecute(r ApiRegisterV
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -1116,8 +1126,8 @@ func (a *LoadBalancerApiService) RegisterVmsInLoadBalancerExecute(r ApiRegisterV
 }
 
 type ApiUpdateLoadBalancerRequest struct {
-	ctx _context.Context
-	ApiService *LoadBalancerApiService
+	ctx                       _context.Context
+	ApiService                *LoadBalancerApiService
 	updateLoadBalancerRequest *UpdateLoadBalancerRequest
 }
 
@@ -1138,7 +1148,7 @@ func (r ApiUpdateLoadBalancerRequest) Execute() (UpdateLoadBalancerResponse, *_n
 func (a *LoadBalancerApiService) UpdateLoadBalancer(ctx _context.Context) ApiUpdateLoadBalancerRequest {
 	return ApiUpdateLoadBalancerRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -1212,6 +1222,7 @@ func (a *LoadBalancerApiService) UpdateLoadBalancerExecute(r ApiUpdateLoadBalanc
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type VpnConnectionApiService service
 
 type ApiCreateVpnConnectionRequest struct {
-	ctx _context.Context
-	ApiService *VpnConnectionApiService
+	ctx                        _context.Context
+	ApiService                 *VpnConnectionApiService
 	createVpnConnectionRequest *CreateVpnConnectionRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateVpnConnectionRequest) Execute() (CreateVpnConnectionResponse, *
 func (a *VpnConnectionApiService) CreateVpnConnection(ctx _context.Context) ApiCreateVpnConnectionRequest {
 	return ApiCreateVpnConnectionRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *VpnConnectionApiService) CreateVpnConnectionExecute(r ApiCreateVpnConne
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -148,8 +150,8 @@ func (a *VpnConnectionApiService) CreateVpnConnectionExecute(r ApiCreateVpnConne
 }
 
 type ApiCreateVpnConnectionRouteRequest struct {
-	ctx _context.Context
-	ApiService *VpnConnectionApiService
+	ctx                             _context.Context
+	ApiService                      *VpnConnectionApiService
 	createVpnConnectionRouteRequest *CreateVpnConnectionRouteRequest
 }
 
@@ -170,7 +172,7 @@ func (r ApiCreateVpnConnectionRouteRequest) Execute() (CreateVpnConnectionRouteR
 func (a *VpnConnectionApiService) CreateVpnConnectionRoute(ctx _context.Context) ApiCreateVpnConnectionRouteRequest {
 	return ApiCreateVpnConnectionRouteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -244,6 +246,7 @@ func (a *VpnConnectionApiService) CreateVpnConnectionRouteExecute(r ApiCreateVpn
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -269,8 +272,8 @@ func (a *VpnConnectionApiService) CreateVpnConnectionRouteExecute(r ApiCreateVpn
 }
 
 type ApiDeleteVpnConnectionRequest struct {
-	ctx _context.Context
-	ApiService *VpnConnectionApiService
+	ctx                        _context.Context
+	ApiService                 *VpnConnectionApiService
 	deleteVpnConnectionRequest *DeleteVpnConnectionRequest
 }
 
@@ -291,7 +294,7 @@ func (r ApiDeleteVpnConnectionRequest) Execute() (DeleteVpnConnectionResponse, *
 func (a *VpnConnectionApiService) DeleteVpnConnection(ctx _context.Context) ApiDeleteVpnConnectionRequest {
 	return ApiDeleteVpnConnectionRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -365,6 +368,7 @@ func (a *VpnConnectionApiService) DeleteVpnConnectionExecute(r ApiDeleteVpnConne
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -390,8 +394,8 @@ func (a *VpnConnectionApiService) DeleteVpnConnectionExecute(r ApiDeleteVpnConne
 }
 
 type ApiDeleteVpnConnectionRouteRequest struct {
-	ctx _context.Context
-	ApiService *VpnConnectionApiService
+	ctx                             _context.Context
+	ApiService                      *VpnConnectionApiService
 	deleteVpnConnectionRouteRequest *DeleteVpnConnectionRouteRequest
 }
 
@@ -412,7 +416,7 @@ func (r ApiDeleteVpnConnectionRouteRequest) Execute() (DeleteVpnConnectionRouteR
 func (a *VpnConnectionApiService) DeleteVpnConnectionRoute(ctx _context.Context) ApiDeleteVpnConnectionRouteRequest {
 	return ApiDeleteVpnConnectionRouteRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -486,6 +490,7 @@ func (a *VpnConnectionApiService) DeleteVpnConnectionRouteExecute(r ApiDeleteVpn
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -511,8 +516,8 @@ func (a *VpnConnectionApiService) DeleteVpnConnectionRouteExecute(r ApiDeleteVpn
 }
 
 type ApiReadVpnConnectionsRequest struct {
-	ctx _context.Context
-	ApiService *VpnConnectionApiService
+	ctx                       _context.Context
+	ApiService                *VpnConnectionApiService
 	readVpnConnectionsRequest *ReadVpnConnectionsRequest
 }
 
@@ -533,7 +538,7 @@ func (r ApiReadVpnConnectionsRequest) Execute() (ReadVpnConnectionsResponse, *_n
 func (a *VpnConnectionApiService) ReadVpnConnections(ctx _context.Context) ApiReadVpnConnectionsRequest {
 	return ApiReadVpnConnectionsRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -607,6 +612,7 @@ func (a *VpnConnectionApiService) ReadVpnConnectionsExecute(r ApiReadVpnConnecti
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}

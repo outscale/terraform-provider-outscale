@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -25,7 +25,7 @@ type CreateAccountRequest struct {
 	Country string `json:"Country"`
 	// The ID of the customer. It must be 8 digits.
 	CustomerId string `json:"CustomerId"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The email address for the account.
 	Email string `json:"Email"`
@@ -51,7 +51,7 @@ type CreateAccountRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreateAccountRequest(city string, companyName string, country string, customerId string, email string, firstName string, lastName string, zipCode string, ) *CreateAccountRequest {
+func NewCreateAccountRequest(city string, companyName string, country string, customerId string, email string, firstName string, lastName string, zipCode string) *CreateAccountRequest {
 	this := CreateAccountRequest{}
 	this.City = city
 	this.CompanyName = companyName
@@ -74,7 +74,7 @@ func NewCreateAccountRequestWithDefaults() *CreateAccountRequest {
 
 // GetCity returns the City field value
 func (o *CreateAccountRequest) GetCity() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -85,7 +85,7 @@ func (o *CreateAccountRequest) GetCity() string {
 // GetCityOk returns a tuple with the City field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetCityOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.City, true
@@ -98,7 +98,7 @@ func (o *CreateAccountRequest) SetCity(v string) {
 
 // GetCompanyName returns the CompanyName field value
 func (o *CreateAccountRequest) GetCompanyName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -109,7 +109,7 @@ func (o *CreateAccountRequest) GetCompanyName() string {
 // GetCompanyNameOk returns a tuple with the CompanyName field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetCompanyNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.CompanyName, true
@@ -122,7 +122,7 @@ func (o *CreateAccountRequest) SetCompanyName(v string) {
 
 // GetCountry returns the Country field value
 func (o *CreateAccountRequest) GetCountry() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -133,7 +133,7 @@ func (o *CreateAccountRequest) GetCountry() string {
 // GetCountryOk returns a tuple with the Country field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetCountryOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Country, true
@@ -146,7 +146,7 @@ func (o *CreateAccountRequest) SetCountry(v string) {
 
 // GetCustomerId returns the CustomerId field value
 func (o *CreateAccountRequest) GetCustomerId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -157,7 +157,7 @@ func (o *CreateAccountRequest) GetCustomerId() string {
 // GetCustomerIdOk returns a tuple with the CustomerId field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetCustomerIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.CustomerId, true
@@ -202,7 +202,7 @@ func (o *CreateAccountRequest) SetDryRun(v bool) {
 
 // GetEmail returns the Email field value
 func (o *CreateAccountRequest) GetEmail() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -213,7 +213,7 @@ func (o *CreateAccountRequest) GetEmail() string {
 // GetEmailOk returns a tuple with the Email field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetEmailOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Email, true
@@ -226,7 +226,7 @@ func (o *CreateAccountRequest) SetEmail(v string) {
 
 // GetFirstName returns the FirstName field value
 func (o *CreateAccountRequest) GetFirstName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -237,7 +237,7 @@ func (o *CreateAccountRequest) GetFirstName() string {
 // GetFirstNameOk returns a tuple with the FirstName field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetFirstNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.FirstName, true
@@ -282,7 +282,7 @@ func (o *CreateAccountRequest) SetJobTitle(v string) {
 
 // GetLastName returns the LastName field value
 func (o *CreateAccountRequest) GetLastName() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -293,7 +293,7 @@ func (o *CreateAccountRequest) GetLastName() string {
 // GetLastNameOk returns a tuple with the LastName field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetLastNameOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.LastName, true
@@ -434,7 +434,7 @@ func (o *CreateAccountRequest) SetVatNumber(v string) {
 
 // GetZipCode returns the ZipCode field value
 func (o *CreateAccountRequest) GetZipCode() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -445,7 +445,7 @@ func (o *CreateAccountRequest) GetZipCode() string {
 // GetZipCodeOk returns a tuple with the ZipCode field value
 // and a boolean to check if the value has been set.
 func (o *CreateAccountRequest) GetZipCodeOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.ZipCode, true
@@ -538,5 +538,3 @@ func (v *NullableCreateAccountRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

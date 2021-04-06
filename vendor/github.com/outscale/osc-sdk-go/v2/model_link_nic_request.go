@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -19,7 +19,7 @@ import (
 type LinkNicRequest struct {
 	// The index of the VM device for the NIC attachment (between 1 and 7, both included).
 	DeviceNumber int32 `json:"DeviceNumber"`
-	// If `true`, checks whether you have the required permissions to perform the action.
+	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The ID of the NIC you want to attach.
 	NicId string `json:"NicId"`
@@ -31,7 +31,7 @@ type LinkNicRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewLinkNicRequest(deviceNumber int32, nicId string, vmId string, ) *LinkNicRequest {
+func NewLinkNicRequest(deviceNumber int32, nicId string, vmId string) *LinkNicRequest {
 	this := LinkNicRequest{}
 	this.DeviceNumber = deviceNumber
 	this.NicId = nicId
@@ -49,7 +49,7 @@ func NewLinkNicRequestWithDefaults() *LinkNicRequest {
 
 // GetDeviceNumber returns the DeviceNumber field value
 func (o *LinkNicRequest) GetDeviceNumber() int32 {
-	if o == nil  {
+	if o == nil {
 		var ret int32
 		return ret
 	}
@@ -60,7 +60,7 @@ func (o *LinkNicRequest) GetDeviceNumber() int32 {
 // GetDeviceNumberOk returns a tuple with the DeviceNumber field value
 // and a boolean to check if the value has been set.
 func (o *LinkNicRequest) GetDeviceNumberOk() (*int32, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.DeviceNumber, true
@@ -105,7 +105,7 @@ func (o *LinkNicRequest) SetDryRun(v bool) {
 
 // GetNicId returns the NicId field value
 func (o *LinkNicRequest) GetNicId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -116,7 +116,7 @@ func (o *LinkNicRequest) GetNicId() string {
 // GetNicIdOk returns a tuple with the NicId field value
 // and a boolean to check if the value has been set.
 func (o *LinkNicRequest) GetNicIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.NicId, true
@@ -129,7 +129,7 @@ func (o *LinkNicRequest) SetNicId(v string) {
 
 // GetVmId returns the VmId field value
 func (o *LinkNicRequest) GetVmId() string {
-	if o == nil  {
+	if o == nil {
 		var ret string
 		return ret
 	}
@@ -140,7 +140,7 @@ func (o *LinkNicRequest) GetVmId() string {
 // GetVmIdOk returns a tuple with the VmId field value
 // and a boolean to check if the value has been set.
 func (o *LinkNicRequest) GetVmIdOk() (*string, bool) {
-	if o == nil  {
+	if o == nil {
 		return nil, false
 	}
 	return &o.VmId, true
@@ -203,5 +203,3 @@ func (v *NullableLinkNicRequest) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
-
-

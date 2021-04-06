@@ -24,7 +24,7 @@ terraform {
   required_providers {
     outscale = {
       source = "outscale-dev/outscale"
-      version = "0.2.0"
+      version = "0.3.0"
     }
   }
 }
@@ -60,7 +60,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale-dev/outscale"
-      version = "0.2.0"
+      version = "0.3.0"
     }
   }
 }
@@ -87,64 +87,29 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch v0.2.0 https://github.com/outscale-dev/terraform-provider-outscale
+$ git clone --branch v0.3.0 https://github.com/outscale-dev/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.2.0
+$ go build -o terraform-provider-outscale_v0.3.0
 ```
 
 Using the provider
 ----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.2.0/linux_amd64/.
+2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.3.0/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.2.0 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.2.0/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.3.0 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.3.0/linux_amd64/.
 ```
 
 3. Execute `terraform init`
 4. Execute `terraform plan`
 
+Issues and contributions
+------------------------
 
-
-Developing the Provider
----------------------------
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.8+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
-
-To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
-
-```sh
-$ make build
-...
-$ $GOPATH/bin/terraform-provider-outscale
-...
-```
-
-In order to test the provider, you can simply run `make test`.
-
-```sh
-$ make test
-```
-
-In order to run the full suite of Acceptance tests, run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-*Note:* The following environment variables must be set prior to run Acceptance Tests
-
-```sh
-$ export OUTSCALE_IMAGEID="ami-xxxxxxxx"    # i.e. "ami-4a7bf2b3"
-$ export OUTSCALE_ACCESSKEYID="<ACCESSKEY>" # i.e. "XXXXXXXXXXXXXXXXXXXX"
-$ export OUTSCALE_SECRETKEYID="<SECRETKEY>" # i.e. "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
-$ export OUTSCALE_REGION="<REGION>"         # i.e. "eu-west-2"
-$ export OUTSCALE_ACCOUNT="<ACCOUNTPID>"    # i.e. "XXXXXXXXXXXX"
-```
-
-```sh
-$ make testacc
-```
+Check [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.

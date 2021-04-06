@@ -3,7 +3,7 @@
  *
  * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.4
+ * API version: 1.7
  * Contact: support@outscale.com
  */
 
@@ -12,6 +12,7 @@
 package osc
 
 import (
+	"bytes"
 	_context "context"
 	_ioutil "io/ioutil"
 	_nethttp "net/http"
@@ -27,8 +28,8 @@ var (
 type VolumeApiService service
 
 type ApiCreateVolumeRequest struct {
-	ctx _context.Context
-	ApiService *VolumeApiService
+	ctx                 _context.Context
+	ApiService          *VolumeApiService
 	createVolumeRequest *CreateVolumeRequest
 }
 
@@ -49,7 +50,7 @@ func (r ApiCreateVolumeRequest) Execute() (CreateVolumeResponse, *_nethttp.Respo
 func (a *VolumeApiService) CreateVolume(ctx _context.Context) ApiCreateVolumeRequest {
 	return ApiCreateVolumeRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -123,6 +124,7 @@ func (a *VolumeApiService) CreateVolumeExecute(r ApiCreateVolumeRequest) (Create
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -177,8 +179,8 @@ func (a *VolumeApiService) CreateVolumeExecute(r ApiCreateVolumeRequest) (Create
 }
 
 type ApiDeleteVolumeRequest struct {
-	ctx _context.Context
-	ApiService *VolumeApiService
+	ctx                 _context.Context
+	ApiService          *VolumeApiService
 	deleteVolumeRequest *DeleteVolumeRequest
 }
 
@@ -199,7 +201,7 @@ func (r ApiDeleteVolumeRequest) Execute() (DeleteVolumeResponse, *_nethttp.Respo
 func (a *VolumeApiService) DeleteVolume(ctx _context.Context) ApiDeleteVolumeRequest {
 	return ApiDeleteVolumeRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -273,6 +275,7 @@ func (a *VolumeApiService) DeleteVolumeExecute(r ApiDeleteVolumeRequest) (Delete
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -327,8 +330,8 @@ func (a *VolumeApiService) DeleteVolumeExecute(r ApiDeleteVolumeRequest) (Delete
 }
 
 type ApiLinkVolumeRequest struct {
-	ctx _context.Context
-	ApiService *VolumeApiService
+	ctx               _context.Context
+	ApiService        *VolumeApiService
 	linkVolumeRequest *LinkVolumeRequest
 }
 
@@ -349,7 +352,7 @@ func (r ApiLinkVolumeRequest) Execute() (LinkVolumeResponse, *_nethttp.Response,
 func (a *VolumeApiService) LinkVolume(ctx _context.Context) ApiLinkVolumeRequest {
 	return ApiLinkVolumeRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -423,6 +426,7 @@ func (a *VolumeApiService) LinkVolumeExecute(r ApiLinkVolumeRequest) (LinkVolume
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -477,8 +481,8 @@ func (a *VolumeApiService) LinkVolumeExecute(r ApiLinkVolumeRequest) (LinkVolume
 }
 
 type ApiReadVolumesRequest struct {
-	ctx _context.Context
-	ApiService *VolumeApiService
+	ctx                _context.Context
+	ApiService         *VolumeApiService
 	readVolumesRequest *ReadVolumesRequest
 }
 
@@ -499,7 +503,7 @@ func (r ApiReadVolumesRequest) Execute() (ReadVolumesResponse, *_nethttp.Respons
 func (a *VolumeApiService) ReadVolumes(ctx _context.Context) ApiReadVolumesRequest {
 	return ApiReadVolumesRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -573,6 +577,7 @@ func (a *VolumeApiService) ReadVolumesExecute(r ApiReadVolumesRequest) (ReadVolu
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
@@ -627,8 +632,8 @@ func (a *VolumeApiService) ReadVolumesExecute(r ApiReadVolumesRequest) (ReadVolu
 }
 
 type ApiUnlinkVolumeRequest struct {
-	ctx _context.Context
-	ApiService *VolumeApiService
+	ctx                 _context.Context
+	ApiService          *VolumeApiService
 	unlinkVolumeRequest *UnlinkVolumeRequest
 }
 
@@ -649,7 +654,7 @@ func (r ApiUnlinkVolumeRequest) Execute() (UnlinkVolumeResponse, *_nethttp.Respo
 func (a *VolumeApiService) UnlinkVolume(ctx _context.Context) ApiUnlinkVolumeRequest {
 	return ApiUnlinkVolumeRequest{
 		ApiService: a,
-		ctx: ctx,
+		ctx:        ctx,
 	}
 }
 
@@ -723,6 +728,158 @@ func (a *VolumeApiService) UnlinkVolumeExecute(r ApiUnlinkVolumeRequest) (Unlink
 
 	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
 	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 401 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v ErrorResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateVolumeRequest struct {
+	ctx                 _context.Context
+	ApiService          *VolumeApiService
+	updateVolumeRequest *UpdateVolumeRequest
+}
+
+func (r ApiUpdateVolumeRequest) UpdateVolumeRequest(updateVolumeRequest UpdateVolumeRequest) ApiUpdateVolumeRequest {
+	r.updateVolumeRequest = &updateVolumeRequest
+	return r
+}
+
+func (r ApiUpdateVolumeRequest) Execute() (UpdateVolumeResponse, *_nethttp.Response, error) {
+	return r.ApiService.UpdateVolumeExecute(r)
+}
+
+/*
+ * UpdateVolume Method for UpdateVolume
+ * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ * @return ApiUpdateVolumeRequest
+ */
+func (a *VolumeApiService) UpdateVolume(ctx _context.Context) ApiUpdateVolumeRequest {
+	return ApiUpdateVolumeRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+/*
+ * Execute executes the request
+ * @return UpdateVolumeResponse
+ */
+func (a *VolumeApiService) UpdateVolumeExecute(r ApiUpdateVolumeRequest) (UpdateVolumeResponse, *_nethttp.Response, error) {
+	var (
+		localVarHTTPMethod   = _nethttp.MethodPost
+		localVarPostBody     interface{}
+		localVarFormFileName string
+		localVarFileName     string
+		localVarFileBytes    []byte
+		localVarReturnValue  UpdateVolumeResponse
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "VolumeApiService.UpdateVolume")
+	if err != nil {
+		return localVarReturnValue, nil, GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/UpdateVolume"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := _neturl.Values{}
+	localVarFormParams := _neturl.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateVolumeRequest
+	if r.ctx != nil {
+		// API Key Authentication
+		if auth, ok := r.ctx.Value(ContextAPIKeys).(map[string]APIKey); ok {
+			if apiKey, ok := auth["ApiKeyAuth"]; ok {
+				var key string
+				if apiKey.Prefix != "" {
+					key = apiKey.Prefix + " " + apiKey.Key
+				} else {
+					key = apiKey.Key
+				}
+				localVarHeaderParams["Authorization"] = key
+			}
+		}
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, localVarFormFileName, localVarFileName, localVarFileBytes)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := _ioutil.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = _ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {
 		return localVarReturnValue, localVarHTTPResponse, err
 	}
