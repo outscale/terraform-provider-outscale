@@ -249,47 +249,47 @@ func resourceOutscaleLoadBalancerListenerRuleUpdate(d *schema.ResourceData, meta
 	conn := meta.(*OutscaleClient).OSCAPI
 
 	if d.HasChange("listener_rule") {
+		var err error
 		nw := d.Get("listener_rule").([]interface{})
-		if len(nw) > 0 {
-			check := nw[0].(map[string]interface{})
-			req := oscgo.UpdateListenerRuleRequest{
-				ListenerRuleName: d.Id(),
-			}
-			if check["host_name_pattern"] != nil {
-				req.SetHostPattern(check["host_name_pattern"].(string))
-			} else {
-				req.SetHostPattern("")
-			}
-			if check["listener_rule_name"] != nil {
-				req.SetListenerRuleName(check["listener_rule_name"].(string))
-			} else {
-				req.SetListenerRuleName("")
-			}
-			if check["path_pattern"] != nil {
-				req.SetPathPattern(check["path_pattern"].(string))
-			} else {
-				req.SetPathPattern("")
-			}
+		if len(nw) != 1 {
+			return fmt.Errorf("Error Multiple listener_rule matched or empty: %s", err)
+		}
+		check := nw[0].(map[string]interface{})
+		req := oscgo.UpdateListenerRuleRequest{
+			ListenerRuleName: d.Id(),
+		}
+		if check["host_name_pattern"] != nil {
+			req.SetHostPattern(check["host_name_pattern"].(string))
+		} else {
+			req.SetHostPattern("")
+		}
+		if check["listener_rule_name"] != nil {
+			req.SetListenerRuleName(check["listener_rule_name"].(string))
+		} else {
+			req.SetListenerRuleName("")
+		}
+		if check["path_pattern"] != nil {
+			req.SetPathPattern(check["path_pattern"].(string))
+		} else {
+			req.SetPathPattern("")
+		}
 
-			var err error
-			err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-				_, _, err = conn.ListenerApi.UpdateListenerRule(
-					context.Background()).UpdateListenerRuleRequest(req).
-					Execute()
-
-				if err != nil {
-					if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
-						return resource.NonRetryableError(err)
-					}
-					return resource.RetryableError(
-						fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
-				}
-				return nil
-			})
-
+		err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.ListenerApi.UpdateListenerRule(
+				context.Background()).UpdateListenerRuleRequest(req).
+				Execute()
 			if err != nil {
-				return err
+				if strings.Contains(fmt.Sprint(err), "400 Bad Request") {
+					return resource.NonRetryableError(err)
+				}
+				return resource.RetryableError(
+					fmt.Errorf("[WARN] Error creating LBU Attr: %s", err))
 			}
+			return nil
+		})
+
+		if err != nil {
+			return err
 		}
 	}
 	return resourceOutscaleLoadBalancerListenerRuleRead(d, meta)
