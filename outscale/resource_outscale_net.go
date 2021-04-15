@@ -71,7 +71,19 @@ func resourceOutscaleOAPINetCreate(d *schema.ResourceData, meta interface{}) err
 
 	d.SetId(resp.Net.GetNetId())
 
-	return resourceOutscaleOAPINetRead(d, meta)
+	return resource.Retry(120*time.Second, func() *resource.RetryError {
+		err = resourceOutscaleOAPINetRead(d, meta)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		if c, ok := d.GetOk("state"); ok {
+			state := c.(string)
+			if strings.Compare(state, "available") != 0 {
+				return resource.RetryableError(fmt.Errorf("Expected Net to be available but was in state %s", state))
+			}
+		}
+		return nil
+	})
 }
 
 func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error {
