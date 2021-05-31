@@ -37,7 +37,7 @@ The following arguments are supported:
   * `states` - (Optional) The states of the Nets (`pending` \| `available`).
   * `tag_keys` - (Optional) The keys of the tags associated with the Nets.
   * `tag_values` - (Optional) The values of the tags associated with the Nets.
-  * `tags` - (Optional) The key/value combination of the tags associated with the Nets, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the Nets, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

@@ -41,7 +41,7 @@ The following arguments are supported:
   * `states` - (Optional) The states of the snapshots (`in-queue` \| `completed` \| `error`).
   * `tag_keys` - (Optional) The keys of the tags associated with the snapshots.
   * `tag_values` - (Optional) The values of the tags associated with the snapshots.
-  * `tags` - (Optional) The key/value combination of the tags associated with the snapshots, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the snapshots, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
   * `volume_ids` - (Optional) The IDs of the volumes used to create the snapshots.
   * `volume_sizes` - (Optional) The sizes of the volumes used to create the snapshots, in gibibytes (GiB).
 

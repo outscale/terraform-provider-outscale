@@ -40,7 +40,7 @@ The following arguments are supported:
   * `public_ips` - (Optional) The External IP addresses (EIPs).
   * `tag_keys` - (Optional) The keys of the tags associated with the EIPs.
   * `tag_values` - (Optional) The values of the tags associated with the EIPs.
-  * `tags` - (Optional) The key/value combination of the tags associated with the EIPs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the EIPs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
   * `vm_ids` - (Optional) The IDs of the VMs.
 
 ## Attribute Reference

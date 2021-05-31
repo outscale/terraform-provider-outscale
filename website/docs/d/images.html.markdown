@@ -50,7 +50,7 @@ The following arguments are supported:
   * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
   * `tag_keys` - (Optional) The keys of the tags associated with the OMIs.
   * `tag_values` - (Optional) The values of the tags associated with the OMIs.
-  * `tags` - (Optional) The key/value combination of the tags associated with the OMIs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the OMIs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
   * `virtualization_types` - (Optional) The virtualization types (always `hvm`).
 
 ## Attribute Reference

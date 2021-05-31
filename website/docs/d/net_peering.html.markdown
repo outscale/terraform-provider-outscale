@@ -42,7 +42,7 @@ The following arguments are supported:
   * `state_names` - (Optional) The states of the Net peering connections (`pending-acceptance` \| `active` \| `rejected` \| `failed` \| `expired` \| `deleted`).
   * `tag_keys` - (Optional) The keys of the tags associated with the Net peering connections.
   * `tag_values` - (Optional) The values of the tags associated with the Net peering connections.
-  * `tags` - (Optional) The key/value combination of the tags associated with the Net peering connections, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the Net peering connections, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

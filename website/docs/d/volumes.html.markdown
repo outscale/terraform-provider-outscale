@@ -41,7 +41,7 @@ The following arguments are supported:
   * `subregion_names` - (Optional) The names of the Subregions in which the volumes were created.
   * `tag_keys` - (Optional) The keys of the tags associated with the volumes.
   * `tag_values` - (Optional) The values of the tags associated with the volumes.
-  * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the volumes, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
   * `volume_ids` - (Optional) The IDs of the volumes.
   * `volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
   * `volume_states` - (Optional) The states of the volumes (`creating` \| `available` \| `in-use` \| `updating` \| `deleting` \| `error`).

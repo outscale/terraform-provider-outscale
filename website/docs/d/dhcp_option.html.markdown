@@ -35,7 +35,7 @@ The following arguments are supported:
   * `ntp_servers` - (Optional) The Network Time Protocol (NTP) servers used for the DHCP options sets.
   * `tag_keys` - (Optional) The keys of the tags associated with the DHCP options sets.
   * `tag_values` - (Optional) The values of the tags associated with the DHCP options sets.
-  * `tags` - (Optional) The key/value combination of the tags associated with the DHCP options sets, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the DHCP options sets, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

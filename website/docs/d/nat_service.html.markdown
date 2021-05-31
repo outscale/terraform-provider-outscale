@@ -37,7 +37,7 @@ The following arguments are supported:
   * `subnet_ids` - (Optional) The IDs of the Subnets in which the NAT services are.
   * `tag_keys` - (Optional) The keys of the tags associated with the NAT services.
   * `tag_values` - (Optional) The values of the tags associated with the NAT services.
-  * `tags` - (Optional) The key/value combination of the tags associated with the NAT services, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the NAT services, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

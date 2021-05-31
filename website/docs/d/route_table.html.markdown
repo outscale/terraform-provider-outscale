@@ -44,7 +44,7 @@ The following arguments are supported:
   * `route_vm_ids` - (Optional) The IDs of the VMs specified in routes in the tables.
   * `tag_keys` - (Optional) The keys of the tags associated with the route tables.
   * `tag_values` - (Optional) The values of the tags associated with the route tables.
-  * `tags` - (Optional) The key/value combination of the tags associated with the route tables, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the route tables, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

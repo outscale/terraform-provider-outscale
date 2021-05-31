@@ -35,7 +35,7 @@ The following arguments are supported:
   * `states` - (Optional) The states of the client gateways (`pending` \| `available` \| `deleting` \| `deleted`).
   * `tag_keys` - (Optional) The keys of the tags associated with the client gateways.
   * `tag_values` - (Optional) The values of the tags associated with the client gateways.
-  * `tags` - (Optional) The key/value combination of the tags associated with the client gateways, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the client gateways, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 

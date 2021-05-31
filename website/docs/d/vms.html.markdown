@@ -33,7 +33,7 @@ The following arguments are supported:
 * `filter` - One or more filters.
   * `tag_keys` - (Optional) The keys of the tags associated with the VMs.
   * `tag_values` - (Optional) The values of the tags associated with the VMs.
-  * `tags` - (Optional) The key/value combination of the tags associated with the VMs, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the VMs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
   * `vm_ids` - (Optional) One or more IDs of VMs.
 
 ## Attribute Reference

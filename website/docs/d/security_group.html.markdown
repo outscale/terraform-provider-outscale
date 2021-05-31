@@ -36,7 +36,7 @@ The following arguments are supported:
   * `security_group_names` - (Optional) The names of the security groups.
   * `tag_keys` - (Optional) The keys of the tags associated with the security groups.
   * `tag_values` - (Optional) The values of the tags associated with the security groups.
-  * `tags` - (Optional) The key/value combination of the tags associated with the security groups, in the following format: "Filters":{"Tags":["TAGKEY=TAGVALUE"]}.
+  * `tags` - (Optional) The key/value combination of the tags associated with the security groups, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 
