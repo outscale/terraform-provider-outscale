@@ -136,7 +136,7 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 	filter := new(oscgo.FiltersNetAccessPoint)
 
 	if !napidOk && !filtersOk {
-		return fmt.Errorf("One of filters, or listener_rule_name must be assigned")
+		return fmt.Errorf("One of filters, or net_access_point_ids must be assigned")
 	}
 
 	if filtersOk {

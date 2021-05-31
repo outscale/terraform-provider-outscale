@@ -209,7 +209,7 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 	filter := new(oscgo.FiltersLoadBalancer)
 
 	if !nameOk && !filtersOk {
-		return nil, nil, fmt.Errorf("One of filters, or listener_rule_name must be assigned")
+		return nil, nil, fmt.Errorf("One of filters, or load_balancer_name must be assigned")
 	}
 
 	if filtersOk {
