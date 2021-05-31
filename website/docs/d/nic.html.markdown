@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_nic"
 sidebar_current: "outscale-nic"
 description: |-
-  [Provides information about a specific NIC.]
+  [Provides information about a specific network interface card (NIC).]
 ---
 
 # outscale_nic Data Source
 
-Provides information about a specific NIC.
+Provides information about a specific network interface card (NIC).
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-nic).
 
