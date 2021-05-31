@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_snapshot"
-sidebar_current: "outscale-snapshot"
+page_title: "3DS OUTSCALE: outscale_snapshots"
+sidebar_current: "outscale-snapshots"
 description: |-
   [Provides information about snapshots.]
 ---
 
-# outscale_snapshot Data Source
+# outscale_snapshots Data Source
 
 Provides information about snapshots.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).

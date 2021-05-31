@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_keypair"
-sidebar_current: "outscale-keypair"
+page_title: "3DS OUTSCALE: outscale_keypairs"
+sidebar_current: "outscale-keypairs"
 description: |-
   [Provides information about keypairs.]
 ---
 
-# outscale_keypair Data Source
+# outscale_keypairs Data Source
 
 Provides information about keypairs.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Keypairs).

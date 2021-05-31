@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_nat_service"
-sidebar_current: "outscale-nat-service"
+page_title: "3DS OUTSCALE: outscale_nat_services"
+sidebar_current: "outscale-nat-services"
 description: |-
   [Provides information about NAT services.]
 ---
 
-# outscale_nat_service Data Source
+# outscale_nat_services Data Source
 
 Provides information about NAT services.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+NAT+Devices).

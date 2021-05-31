@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_internet_service"
-sidebar_current: "outscale-internet-service"
+page_title: "3DS OUTSCALE: outscale_internet_services"
+sidebar_current: "outscale-internet-services"
 description: |-
   [Provides information about Internet services.]
 ---
 
-# outscale_internet_service Data Source
+# outscale_internet_services Data Source
 
 Provides information about Internet services.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Internet+Gateways).

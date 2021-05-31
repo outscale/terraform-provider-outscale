@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_security_group"
-sidebar_current: "outscale-security-group"
+page_title: "3DS OUTSCALE: outscale_security_groups"
+sidebar_current: "outscale-security-groups"
 description: |-
   [Provides information about security groups.]
 ---
 
-# outscale_security_group Data Source
+# outscale_security_groups Data Source
 
 Provides information about security groups.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Security+Groups).

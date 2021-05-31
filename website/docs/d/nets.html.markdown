@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_net"
-sidebar_current: "outscale-net"
+page_title: "3DS OUTSCALE: outscale_nets"
+sidebar_current: "outscale-nets"
 description: |-
   [Provides information about Nets.]
 ---
 
-# outscale_net Data Source
+# outscale_nets Data Source
 
 Provides information about Nets.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).

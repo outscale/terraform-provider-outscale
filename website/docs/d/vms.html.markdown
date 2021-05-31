@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_vm"
-sidebar_current: "outscale-vm"
+page_title: "3DS OUTSCALE: outscale_vms"
+sidebar_current: "outscale-vms"
 description: |-
   [Provides information about virtual machines (VMs).]
 ---
 
-# outscale_vm Data Source
+# outscale_vms Data Source
 
 Provides information about virtual machines (VMs).
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Instances).

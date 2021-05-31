@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_net_peering"
-sidebar_current: "outscale-net-peering"
+page_title: "3DS OUTSCALE: outscale_net_peerings"
+sidebar_current: "outscale-net-peerings"
 description: |-
   [Provides information about Net peerings.]
 ---
 
-# outscale_net_peering Data Source
+# outscale_net_peerings Data Source
 
 Provides information about Net peerings.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPC+Peering+Connections).

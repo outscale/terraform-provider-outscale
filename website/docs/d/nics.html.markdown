@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_nic"
-sidebar_current: "outscale-nic"
+page_title: "3DS OUTSCALE: outscale_nics"
+sidebar_current: "outscale-nics"
 description: |-
   [Provides information about NICs.]
 ---
 
-# outscale_nic Data Source
+# outscale_nics Data Source
 
 Provides information about NICs.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs).

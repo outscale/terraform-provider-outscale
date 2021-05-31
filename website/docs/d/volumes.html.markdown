@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_volume"
-sidebar_current: "outscale-volume"
+page_title: "3DS OUTSCALE: outscale_volumes"
+sidebar_current: "outscale-volumes"
 description: |-
   [Provides information about volumes.]
 ---
 
-# outscale_volume Data Source
+# outscale_volumes Data Source
 
 Provides information about volumes.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Volumes).

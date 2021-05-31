@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_image"
-sidebar_current: "outscale-image"
+page_title: "3DS OUTSCALE: outscale_images"
+sidebar_current: "outscale-images"
 description: |-
   [Provides information about images.]
 ---
 
-# outscale_image Data Source
+# outscale_images Data Source
 
 Provides information about images.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+OMIs).

@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_route_table"
-sidebar_current: "outscale-route-table"
+page_title: "3DS OUTSCALE: outscale_route_tables"
+sidebar_current: "outscale-route-tables"
 description: |-
   [Provides information about route tables.]
 ---
 
-# outscale_route_table Data Source
+# outscale_route_tables Data Source
 
 Provides information about route tables.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Route+Tables).

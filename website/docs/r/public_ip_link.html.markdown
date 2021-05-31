@@ -1,7 +1,7 @@
 ---
 layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_public_ip_link"
-sidebar_current: "outscale-public-ip_link"
+sidebar_current: "outscale-public-ip-link"
 description: |-
   [Manages a public IP link.]
 ---

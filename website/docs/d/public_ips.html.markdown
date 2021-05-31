@@ -1,12 +1,12 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_public_ip"
-sidebar_current: "outscale-public-ip"
+page_title: "3DS OUTSCALE: outscale_public_ips"
+sidebar_current: "outscale-public-ips"
 description: |-
   [Provides information about public IPs.]
 ---
 
-# outscale_public_ip Data Source
+# outscale_public_ips Data Source
 
 Provides information about public IPs.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+EIPs).
