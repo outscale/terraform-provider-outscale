@@ -35,7 +35,7 @@ The following arguments are supported:
   * `account_ids` - (Optional) The account IDs of the owners of the snapshots.
   * `descriptions` - (Optional) The descriptions of the snapshots.
   * `permissions_to_create_volume_account_ids` - (Optional) The account IDs of one or more users who have permissions to create volumes.
-  * `permissions_to_create_volume_global_permission` - (Optional) If `true`, lists all public volumes. If `false`, lists all private volumes.
+  * `permissions_to_create_volume_global_permission` - (Optional) If true, lists all public volumes. If false, lists all private volumes.
   * `progresses` - (Optional) The progresses of the snapshots, as a percentage.
   * `snapshot_ids` - (Optional) The IDs of the snapshots.
   * `states` - (Optional) The states of the snapshots (`in-queue` \| `completed` \| `error`).
@@ -55,7 +55,7 @@ The following attributes are exported:
   * `description` - The description of the snapshot.
   * `permissions_to_create_volume` - Information about the users who have permissions for the resource.
       * `account_ids` - The account ID of one or more users who have permissions for the resource.
-      * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+      * `global_permission` - If true, the resource is public. If false, the resource is private.
   * `progress` - The progress of the snapshot, as a percentage.
   * `snapshot_id` - The ID of the snapshot.
   * `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).

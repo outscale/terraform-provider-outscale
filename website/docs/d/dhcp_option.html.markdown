@@ -28,7 +28,7 @@ data "outscale_dhcp_option" "data_dhcp_option" {
 The following arguments are supported:
 
 * `filter` - One or more filters.
-  * `default` - (Optional) If `true`, lists all default DHCP options set. If `false`, lists all non-default DHCP options set.
+  * `default` - (Optional) If true, lists all default DHCP options set. If false, lists all non-default DHCP options set.
   * `dhcp_options_set_ids` - (Optional) The IDs of the DHCP options sets.
   * `domain_name_servers` - (Optional) The domain name servers used for the DHCP options sets.
   * `domain_names` - (Optional) The domain names used for the DHCP options sets.
@@ -41,7 +41,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `default` - If `true`, the DHCP options set is a default one. If `false`, it is not.
+* `default` - If true, the DHCP options set is a default one. If false, it is not.
 * `dhcp_options_name` - The name of the DHCP options set.
 * `dhcp_options_set_id` - The ID of the DHCP options set.
 * `domain_name` - The domain name.

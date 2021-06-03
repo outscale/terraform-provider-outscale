@@ -44,9 +44,9 @@ The following attributes are exported:
 * `nics` - Information about one or more NICs.
   * `account_id` - The account ID of the owner of the NIC.
   * `description` - The description of the NIC.
-  * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+  * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
   * `link_nic` - Information about the NIC attachment.
-      * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+      * `delete_on_vm_deletion` - If true, the volume is deleted when the VM is terminated.
       * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
       * `link_nic_id` - The ID of the NIC to attach.
       * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
@@ -63,7 +63,7 @@ The following attributes are exported:
   * `nic_id` - The ID of the NIC.
   * `private_dns_name` - The name of the private DNS.
   * `private_ips` - The private IP addresses of the NIC.
-      * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+      * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
       * `link_public_ip` - Information about the EIP association.
          * `link_public_ip_id` - (Required in a Net) The ID representing the association of the EIP with the VM or the NIC.
          * `public_dns_name` - The name of the public DNS.

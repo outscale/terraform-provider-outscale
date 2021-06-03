@@ -30,7 +30,7 @@ data "outscale_vm_states" "vm_states01" {
 
 The following arguments are supported:
 
-* `all_vms` - (Optional) If `true`, includes the status of all VMs. By default or if set to `false`, only includes the status of running VMs.
+* `all_vms` - (Optional) If true, includes the status of all VMs. By default or if set to false, only includes the status of running VMs.
 * `filter` - One or more filters.
   * `subregion_names` - (Optional) The names of the Subregions of the VMs.
   * `vm_ids` - (Optional) One or more IDs of VMs.

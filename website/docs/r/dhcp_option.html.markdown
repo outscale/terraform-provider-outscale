@@ -50,7 +50,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `dhcp_options_set` - Information about the DHCP options set.
-  * `default` - If `true`, the DHCP options set is a default one. If `false`, it is not.
+  * `default` - If true, the DHCP options set is a default one. If false, it is not.
   * `dhcp_options_name` - The name of the DHCP options set.
   * `dhcp_options_set_id` - The ID of the DHCP options set.
   * `domain_name` - The domain name.

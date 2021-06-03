@@ -44,7 +44,7 @@ The following arguments are supported:
   * `image_ids` - (Optional) The IDs of the OMIs.
   * `image_names` - (Optional) The names of the OMIs, provided when they were created.
   * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
-  * `permissions_to_launch_global_permission` - (Optional) If `true`, lists all public OMIs. If `false`, lists all private OMIs.
+  * `permissions_to_launch_global_permission` - (Optional) If true, lists all public OMIs. If false, lists all private OMIs.
   * `root_device_names` - (Optional) The device names of the root devices (for example, `/dev/sda1`).
   * `root_device_types` - (Optional) The types of root device used by the OMIs (always `bsu`).
   * `states` - (Optional) The states of the OMIs (`pending` \| `available` \| `failed`).
@@ -63,7 +63,7 @@ The following attributes are exported:
   * `architecture` - The architecture of the OMI (by default, `i386`).
   * `block_device_mappings` - One or more block device mappings.
       * `bsu` - Information about the BSU volume to create.
-         * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
          * `iops` - The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
          * `snapshot_id` - The ID of the snapshot used to create the volume.
          * `volume_size` - The size of the volume, in gibibytes (GiB).<br />
@@ -81,7 +81,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `image_type` - The type of the OMI.
   * `permissions_to_launch` - Information about the users who have permissions for the resource.
       * `account_ids` - The account ID of one or more users who have permissions for the resource.
-      * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+      * `global_permission` - If true, the resource is public. If false, the resource is private.
   * `product_codes` - The product code associated with the OMI (`0001` Linux/Unix \| `0002` Windows \| `0004` Linux/Oracle \| `0005` Windows 10).
   * `root_device_name` - The name of the root device.
   * `root_device_type` - The type of root device used by the OMI (always `bsu`).

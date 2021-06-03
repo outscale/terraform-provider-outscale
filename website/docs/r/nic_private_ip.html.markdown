@@ -46,7 +46,7 @@ resource "outscale_nic_private_ip" "nic_private_ip02" {
 
 The following arguments are supported:
 
-* `allow_relink` - (Optional) If `true`, allows an IP address that is already assigned to another NIC in the same Subnet to be assigned to the NIC you specified.
+* `allow_relink` - (Optional) If true, allows an IP address that is already assigned to another NIC in the same Subnet to be assigned to the NIC you specified.
 * `nic_id` - (Required) The ID of the NIC.
 * `private_ips` - (Optional) The secondary private IP address or addresses you want to assign to the NIC within the IP address range of the Subnet.
 * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses to assign to the NIC.

@@ -38,9 +38,9 @@ resource "outscale_public_ip_link" "public_ip_link01" {
 
 The following arguments are supported:
 
-* `allow_relink` - (Optional) (By default, `true` in the public Cloud, `false` in a Net.)  
-  If `true`, allows the EIP to be associated with the VM or NIC that you specify even if it is already associated with another VM or NIC.  
-  If `false`, prevents the EIP from being associated with the VM or NIC that you specify if it is already associated with another VM or NIC.
+* `allow_relink` - (Optional) (By default, true in the public Cloud, false in a Net.)  
+  If true, allows the EIP to be associated with the VM or NIC that you specify even if it is already associated with another VM or NIC.  
+  If false, prevents the EIP from being associated with the VM or NIC that you specify if it is already associated with another VM or NIC.
 * `nic_id` - (Optional) (Net only) The ID of the NIC. This parameter is required if the VM has more than one NIC attached. Otherwise, you need to specify the `vm_id` parameter instead. You cannot specify both parameters at the same time.
 * `private_ip` - (Optional) (Net only) The primary or secondary private IP address of the specified NIC. By default, the primary private IP address.
 * `public_ip` - (Optional) The EIP. In the public Cloud, this parameter is required.

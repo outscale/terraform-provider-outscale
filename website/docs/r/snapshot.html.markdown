@@ -62,7 +62,7 @@ The following attributes are exported:
   * `description` - The description of the snapshot.
   * `permissions_to_create_volume` - Information about the users who have permissions for the resource.
       * `account_ids` - The account ID of one or more users who have permissions for the resource.
-      * `global_permission` - If `true`, the resource is public. If `false`, the resource is private.
+      * `global_permission` - If true, the resource is public. If false, the resource is private.
   * `progress` - The progress of the snapshot, as a percentage.
   * `snapshot_id` - The ID of the snapshot.
   * `state` - The state of the snapshot (`in-queue` \| `completed` \| `error`).

@@ -156,7 +156,7 @@ The following arguments are supported:
 
 * `block_device_mappings` - (Optional) One or more block device mappings.
   * `bsu` - Information about the BSU volume to create.
-      * `delete_on_vm_deletion` - (Optional) Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+      * `delete_on_vm_deletion` - (Optional) Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
       * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
       * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
       * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
@@ -167,18 +167,18 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `device_name` - (Optional) The name of the device.
   * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
   * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
-* `bsu_optimized` - (Optional) If `true`, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
+* `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O. Updating this parameter will trigger a stop/start of the VM.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
-* `deletion_protection` - (Optional) If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
+* `deletion_protection` - (Optional) If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nics` - (Optional) One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
-  * `delete_on_vm_deletion` - (Optional) If `true`, the NIC is deleted when the VM is terminated. You can specify `true` only if you create a NIC when creating a VM.
+  * `delete_on_vm_deletion` - (Optional) If true, the NIC is deleted when the VM is terminated. You can specify true only if you create a NIC when creating a VM.
   * `description` - (Optional) The description of the NIC, if you are creating a NIC when creating the VM.
   * `device_number` - (Optional) The index of the VM device for the NIC attachment (between 0 and 7, both included). This parameter is required if you create a NIC when creating the VM.
   * `nic_id` - (Optional) The ID of the NIC, if you are attaching an existing NIC when creating a VM.
   * `private_ips` - (Optional) One or more private IP addresses to assign to the NIC, if you create a NIC when creating a VM. Only one private IP address can be the primary private IP address.
-      * `is_primary` - (Optional) If `true`, the IP address is the primary private IP address of the NIC.
+      * `is_primary` - (Optional) If true, the IP address is the primary private IP address of the NIC.
       * `private_ip` - (Optional) The private IP address of the NIC.
   * `secondary_private_ip_count` - (Optional) The number of secondary private IP addresses, if you create a NIC when creating a VM. This parameter cannot be specified if you specified more than one private IP address in the `private_ips` parameter.
   * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC, if you acreate a NIC when creating a VM.
@@ -207,26 +207,26 @@ The following attributes are exported:
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
       * `bsu` - Information about the created BSU volume.
-         * `delete_on_vm_deletion` - Set to `true` by default, which means that the volume is deleted when the VM is terminated. If set to `false`, the volume is not deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
          * `link_date` - The time and date of attachment of the volume to the VM.
          * `state` - The state of the volume.
          * `volume_id` - The ID of the volume.
       * `device_name` - The name of the device.
-  * `bsu_optimized` - If `true`, the VM is optimized for BSU I/O.
+  * `bsu_optimized` - If true, the VM is optimized for BSU I/O.
   * `client_token` - The idempotency token provided when launching the VM.
-  * `deletion_protection` - If `true`, you cannot terminate the VM using Cockpit, the CLI or the API. If `false`, you can.
+  * `deletion_protection` - If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
   * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
   * `image_id` - The ID of the OMI used to create the VM.
-  * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+  * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
   * `keypair_name` - The name of the keypair used when launching the VM.
   * `launch_number` - The number for the VM when launching a group of several VMs (for example, 0, 1, 2, and so on).
   * `net_id` - The ID of the Net in which the VM is running.
   * `nics` - (Net only) The network interface cards (NICs) the VMs are attached to.
       * `account_id` - The account ID of the owner of the NIC.
       * `description` - The description of the NIC.
-      * `is_source_dest_checked` - (Net only) If `true`, the source/destination check is enabled. If `false`, it is disabled. This value must be `false` for a NAT VM to perform network address translation (NAT) in a Net.
+      * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
       * `link_nic` - Information about the network interface card (NIC).
-         * `delete_on_vm_deletion` - If `true`, the volume is deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - If true, the volume is deleted when the VM is terminated.
          * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
          * `link_nic_id` - The ID of the NIC to attach.
          * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).
@@ -239,7 +239,7 @@ The following attributes are exported:
       * `nic_id` - The ID of the NIC.
       * `private_dns_name` - The name of the private DNS.
       * `private_ips` - The private IP address or addresses of the NIC.
-         * `is_primary` - If `true`, the IP address is the primary private IP address of the NIC.
+         * `is_primary` - If true, the IP address is the primary private IP address of the NIC.
          * `link_public_ip` - Information about the EIP associated with the NIC.
              * `public_dns_name` - The name of the public DNS.
              * `public_ip` - The External IP address (EIP) associated with the NIC.
