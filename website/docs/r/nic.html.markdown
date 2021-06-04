@@ -38,9 +38,10 @@ resource "outscale_nic" "nic01" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the NIC.
-* `private_ips` - (Optional) The primary private IP address for the NIC.  
-  This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.  
-  If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
+* `private_ips` - (Optional) The primary private IP address for the NIC.<br /><br />
+
+This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.<br />
+If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
   * `is_primary` - (Optional) If true, the IP address is the primary private IP address of the NIC.
   * `private_ip` - (Optional) The private IP address of the NIC.
 * `security_group_ids` - (Optional) One or more IDs of security groups for the NIC.
@@ -58,7 +59,7 @@ The following attributes are exported:
   * `description` - The description of the NIC.
   * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
   * `link_nic` - Information about the NIC attachment.
-      * `delete_on_vm_deletion` - If true, the volume is deleted when the VM is terminated.
+      * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
       * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
       * `link_nic_id` - The ID of the NIC to attach.
       * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).

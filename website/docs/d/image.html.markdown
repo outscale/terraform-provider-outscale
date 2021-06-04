@@ -34,13 +34,13 @@ The following arguments are supported:
   * `account_aliases` - (Optional) The account aliases of the owners of the OMIs.
   * `account_ids` - (Optional) The account IDs of the owners of the OMIs. By default, all the OMIs for which you have launch permissions are described.
   * `architectures` - (Optional) The architectures of the OMIs (`i386` \| `x86_64`).
-  * `block_device_mapping_delete_on_vm_deletion` - (Optional) Indicates whether the block device mapping is deleted when terminating the VM.
+  * `block_device_mapping_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VM.
   * `block_device_mapping_device_names` - (Optional) The device names for the volumes.
   * `block_device_mapping_snapshot_ids` - (Optional) The IDs of the snapshots used to create the volumes.
   * `block_device_mapping_volume_sizes` - (Optional) The sizes of the volumes, in gibibytes (GiB).
   * `block_device_mapping_volume_types` - (Optional) The types of volumes (`standard` \| `gp2` \| `io1`).
   * `descriptions` - (Optional) The descriptions of the OMIs, provided when they were created.
-  * `file_locations` - (Optional) The locations where the OMI files are stored on Object Storage Unit (OSU).
+  * `file_locations` - (Optional) The locations of the buckets where the OMI files are stored.
   * `image_ids` - (Optional) The IDs of the OMIs.
   * `image_names` - (Optional) The names of the OMIs, provided when they were created.
   * `permissions_to_launch_account_ids` - (Optional) The account IDs of the users who have launch permissions for the OMIs.
@@ -63,7 +63,7 @@ The following attributes are exported:
   * `architecture` - The architecture of the OMI (by default, `i386`).
   * `block_device_mappings` - One or more block device mappings.
       * `bsu` - Information about the BSU volume to create.
-         * `delete_on_vm_deletion` - Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
          * `iops` - The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
          * `snapshot_id` - The ID of the snapshot used to create the volume.
          * `volume_size` - The size of the volume, in gibibytes (GiB).<br />
@@ -75,7 +75,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
       * `virtual_device_name` - The name of the virtual device (ephemeralN).
   * `creation_date` - The date and time at which the OMI was created.
   * `description` - The description of the OMI.
-  * `file_location` - The location where the OMI file is stored on Object Storage Unit (OSU).
+  * `file_location` - The location of the bucket where the OMI files are stored.
   * `image_id` - The ID of the OMI.
   * `image_name` - The name of the OMI.
   * `image_type` - The type of the OMI.

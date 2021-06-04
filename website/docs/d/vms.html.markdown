@@ -45,7 +45,7 @@ The following attributes are exported:
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
       * `bsu` - Information about the created BSU volume.
-         * `delete_on_vm_deletion` - Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
          * `link_date` - The time and date of attachment of the volume to the VM.
          * `state` - The state of the volume.
          * `volume_id` - The ID of the volume.
@@ -64,7 +64,7 @@ The following attributes are exported:
       * `description` - The description of the NIC.
       * `is_source_dest_checked` - (Net only) If true, the source/destination check is enabled. If false, it is disabled. This value must be false for a NAT VM to perform network address translation (NAT) in a Net.
       * `link_nic` - Information about the network interface card (NIC).
-         * `delete_on_vm_deletion` - If true, the volume is deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - If true, the NIC is deleted when the VM is terminated.
          * `device_number` - The device index for the NIC attachment (between 1 and 7, both included).
          * `link_nic_id` - The ID of the NIC to attach.
          * `state` - The state of the attachment (`attaching` \| `attached` \| `detaching` \| `detached`).

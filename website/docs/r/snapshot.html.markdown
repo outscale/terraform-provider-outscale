@@ -43,15 +43,15 @@ resource "outscale_snapshot" "snapshot02" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the snapshot.
-* `file_location` - (Optional) The pre-signed URL of the snapshot you want to import from the OSU bucket.
+* `file_location` - (Optional) The pre-signed URL of the snapshot you want to import from the bucket.
 * `snapshot_size` - (Optional) The size of the snapshot you want to create in your account, in bytes. This size must be greater than or equal to the size of the original, uncompressed snapshot.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
 * `source_snapshot_id` - (Optional) The ID of the snapshot you want to copy.
-* `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.
 * `tags` - One or more tags to add to this resource.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
-    
+* `volume_id` - (Optional) The ID of the volume you want to create a snapshot of.
+
 ## Attribute Reference
 
 The following attributes are exported:
@@ -71,3 +71,4 @@ The following attributes are exported:
       * `value` - The value of the tag, between 0 and 255 characters.
   * `volume_id` - The ID of the volume used to create the snapshot.
   * `volume_size` - The size of the volume used to create the snapshot, in gibibytes (GiB).
+

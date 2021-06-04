@@ -54,19 +54,20 @@ resource "outscale_snapshot_attributes" "snapshot_attributes02" {
 
 The following arguments are supported:
 
-* `snapshot_id` - (Required) The ID of the snapshot.
 * `permissions_to_create_volume_additions` - (Optional) Information about the users you want to give permissions for the resource.
   * `account_ids` - (Optional) The account ID of one or more users you want to give permissions to.
   * `global_permission` - (Optional) If true, the resource is public. If false, the resource is private.
 * `permissions_to_create_volume_removals` - (Optional) Information about the users you want to remove permissions for the resource.
   * `account_ids` - (Optional) The account ID of one or more users you want to remove permissions from.
   * `global_permission` - (Optional) If true, the resource is public. If false, the resource is private.
+* `snapshot_id` - (Required) The ID of the snapshot.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
-* `snapshot_id` - The ID of the snapshot.
 * `permissions_to_create_volume_additions` - Information about the permissions for the resource.
   * `account_ids` - The account ID of one or more users who have permissions for the resource.
   * `global_permission` - If true, the resource is public. If false, the resource is private.
+* `snapshot_id` - The ID of the snapshot.
+

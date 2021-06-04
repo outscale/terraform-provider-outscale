@@ -52,7 +52,7 @@ The following arguments are supported:
 * `architecture` - (Optional) The architecture of the OMI (by default, `i386`).
 * `block_device_mappings` - (Optional) One or more block device mappings.
   * `bsu` - Information about the BSU volume to create.
-      * `delete_on_vm_deletion` - (Optional) Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
+      * `delete_on_vm_deletion` - (Optional) By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
       * `iops` - (Optional) The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
       * `snapshot_id` - (Optional) The ID of the snapshot used to create the volume.
       * `volume_size` - (Optional) The size of the volume, in gibibytes (GiB).<br />
@@ -63,17 +63,17 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `device_name` - (Optional) The name of the device.
   * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
 * `description` - (Optional) A description for the new OMI.
-* `file_location` - (Optional) The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in an OSU bucket. If you specify this parameter, a copy of the OMI is created in your account.
+* `file_location` - (Optional) The pre-signed URL of the OMI manifest file, or the full path to the OMI stored in a bucket. If you specify this parameter, a copy of the OMI is created in your account.
 * `image_name` - (Optional) A unique name for the new OMI.<br />
 Constraints: 3-128 alphanumeric characters, underscores (_), spaces ( ), parentheses (()), slashes (/), periods (.), or dashes (-).
 * `no_reboot` - (Optional) If false, the VM shuts down before creating the OMI and then reboots. If true, the VM does not.
 * `root_device_name` - (Optional) The name of the root device.
 * `source_image_id` - (Optional) The ID of the OMI you want to copy.
 * `source_region_name` - (Optional) The name of the source Region, which must be the same as the Region of your account.
-* `vm_id` - (Optional) The ID of the VM from which you want to create the OMI.
 * `tags` - One or more tags to add to this resource.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
+* `vm_id` - (Optional) The ID of the VM from which you want to create the OMI.
 
 ## Attribute Reference
 
@@ -85,7 +85,7 @@ The following attributes are exported:
   * `architecture` - The architecture of the OMI (by default, `i386`).
   * `block_device_mappings` - One or more block device mappings.
       * `bsu` - Information about the BSU volume to create.
-         * `delete_on_vm_deletion` - Set to true by default, which means that the volume is deleted when the VM is terminated. If set to false, the volume is not deleted when the VM is terminated.
+         * `delete_on_vm_deletion` - By default or if set to true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
          * `iops` - The number of I/O operations per second (IOPS). This parameter must be specified only if you create an `io1` volume. The maximum number of IOPS allowed for `io1` volumes is `13000`.
          * `snapshot_id` - The ID of the snapshot used to create the volume.
          * `volume_size` - The size of the volume, in gibibytes (GiB).<br />
@@ -97,7 +97,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
       * `virtual_device_name` - The name of the virtual device (ephemeralN).
   * `creation_date` - The date and time at which the OMI was created.
   * `description` - The description of the OMI.
-  * `file_location` - The location where the OMI file is stored on Object Storage Unit (OSU).
+  * `file_location` - The location of the bucket where the OMI files are stored.
   * `image_id` - The ID of the OMI.
   * `image_name` - The name of the OMI.
   * `image_type` - The type of the OMI.
@@ -114,7 +114,6 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `tags` - One or more tags associated with the OMI.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
-
 
 ## Import
 

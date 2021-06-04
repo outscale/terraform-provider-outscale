@@ -38,4 +38,3 @@ The following attributes are exported:
   * `state_reason` - Information about the cause of `OutOfService` VMs.<br />
 Specifically, whether the cause is Elastic Load Balancing or the VM (`ELB` \| `Instance` \| `N/A`).
   * `vm_id` - The ID of the back-end VM.
-

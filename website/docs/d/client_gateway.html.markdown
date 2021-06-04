@@ -49,4 +49,3 @@ The following attributes are exported:
 * `tags` - One or more tags associated with the client gateway.
   * `key` - The key of the tag, with a minimum of 1 character.
   * `value` - The value of the tag, between 0 and 255 characters.
-

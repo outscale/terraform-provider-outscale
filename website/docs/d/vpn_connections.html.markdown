@@ -42,7 +42,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `vpn_connections` - Information about one or more VPN connections.
-  * `client_gateway_configuration` - The configuration to apply to the client gateway to establish the VPN connection, in XML format.
+  * `client_gateway_configuration` - Example configuration for the client gateway.
   * `client_gateway_id` - The ID of the client gateway used on the client end of the connection.
   * `connection_type` - The type of VPN connection (always `ipsec.1`).
   * `routes` - Information about one or more static routes associated with the VPN connection, if any.

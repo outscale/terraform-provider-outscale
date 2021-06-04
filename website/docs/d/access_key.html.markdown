@@ -39,4 +39,3 @@ The following attributes are exported:
 * `creation_date` - The date and time of creation of the access key.
 * `last_modification_date` - The date and time of the last modification of the access key.
 * `state` - The state of the access key (`ACTIVE` if the key is valid for API calls, or `INACTIVE` if not).
-

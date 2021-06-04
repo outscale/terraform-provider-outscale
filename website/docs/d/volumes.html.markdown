@@ -32,7 +32,7 @@ The following arguments are supported:
 
 * `filter` - One or more filters.
   * `creation_dates` - (Optional) The dates and times at which the volumes were created.
-  * `link_volume_delete_on_vm_deletion` - (Optional) Indicates whether the volumes are deleted when terminating the VMs.
+* `link_volume_delete_on_vm_deletion` - (Optional) Whether the volumes are deleted or not when terminating the VMs.
   * `link_volume_device_names` - (Optional) The VM device names.
   * `link_volume_link_dates` - (Optional) The dates and times at which the volumes were created.
   * `link_volume_link_states` - (Optional) The attachment states of the volumes (`attaching` \| `detaching` \| `attached` \| `detached`).
@@ -56,8 +56,7 @@ The following attributes are exported:
     For `io1` volumes, the number of provisioned IOPS.  
     For `gp2` volumes, the baseline performance of the volume.
   * `linked_volumes` - Information about your volume attachment.
-      * `delete_on_vm_deletion` - If true, the volume is deleted when the VM is terminated.
-      * `device_name` - The name of the device.
+      * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
       * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
       * `vm_id` - The ID of the VM.
       * `volume_id` - The ID of the volume.

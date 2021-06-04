@@ -34,17 +34,17 @@ The following arguments are supported:
 * `client_gateway_id` - (Required) The ID of the client gateway.
 * `connection_type` - (Required) The type of VPN connection (only `ipsec.1` is supported).
 * `static_routes_only` - (Optional) If false, the VPN connection uses dynamic routing with Border Gateway Protocol (BGP). If true, routing is controlled using static routes. For more information about how to create and delete static routes, see [CreateVpnConnectionRoute](https://docs.outscale.com/api#createvpnconnectionroute) and [DeleteVpnConnectionRoute](https://docs.outscale.com/api#deletevpnconnectionroute).
-* `virtual_gateway_id` - (Required) The ID of the virtual gateway.
 * `tags` - One or more tags to add to this resource.
   * `key` - The key of the tag, with a minimum of 1 character.
   * `value` - The value of the tag, between 0 and 255 characters.
+* `virtual_gateway_id` - (Required) The ID of the virtual gateway.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `vpn_connection` - Information about a VPN connection.
-  * `client_gateway_configuration` - The configuration to apply to the client gateway to establish the VPN connection, in XML format.
+  * `client_gateway_configuration` - Example configuration for the client gateway.
   * `client_gateway_id` - The ID of the client gateway used on the client end of the connection.
   * `connection_type` - The type of VPN connection (always `ipsec.1`).
   * `routes` - Information about one or more static routes associated with the VPN connection, if any.
