@@ -31,11 +31,14 @@ data "outscale_route_tables" "route_tables01" {
 The following arguments are supported:
 
 * `filter` - One or more filters.
+  * `link_route_table_ids` - (Optional) The IDs of the route tables involved in the associations.
   * `link_route_table_link_route_table_ids` - (Optional) The IDs of the associations between the route tables and the Subnets.
+  * `link_route_table_main` - (Optional) If true, the route tables are the main ones for their Nets.
   * `link_subnet_ids` - (Optional) The IDs of the Subnets involved in the associations.
   * `net_ids` - (Optional) The IDs of the Nets for the route tables.
   * `route_creation_methods` - (Optional) The methods used to create a route.
   * `route_destination_ip_ranges` - (Optional) The IP ranges specified in routes in the tables.
+  * `route_destination_service_ids` - (Optional) The service IDs specified in routes in the tables.
   * `route_gateway_ids` - (Optional) The IDs of the gateways specified in routes in the tables.
   * `route_nat_service_ids` - (Optional) The IDs of the NAT services specified in routes in the tables.
   * `route_net_peering_ids` - (Optional) The IDs of the Net peering connections specified in routes in the tables.

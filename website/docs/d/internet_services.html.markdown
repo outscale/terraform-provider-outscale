@@ -32,6 +32,8 @@ The following arguments are supported:
 
 * `filter` - One or more filters.
   * `internet_service_ids` - (Optional) The IDs of the Internet services.
+  * `link_net_ids` - (Optional) The IDs of the Nets the Internet services are attached to.
+  * `link_states` - (Optional) The current states of the attachments between the Internet services and the Nets (only `available`, if the Internet gateway is attached to a VPC).
   * `tag_keys` - (Optional) The keys of the tags associated with the Internet services.
   * `tag_values` - (Optional) The values of the tags associated with the Internet services.
   * `tags` - (Optional) The key/value combination of the tags associated with the Internet services, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.

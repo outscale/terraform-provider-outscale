@@ -31,7 +31,6 @@ data "outscale_nic" "nic01" {
 The following arguments are supported:
 
 * `filter` - One or more filters.
-  * `link_nic_sort_numbers` - (Optional) The device numbers the NICs are attached to.
   * `link_nic_vm_ids` - (Optional) The IDs of the VMs the NICs are attached to.
   * `nic_ids` - (Optional) The IDs of the NICs.
   * `private_ips_private_ips` - (Optional) The private IP addresses of the NICs.
