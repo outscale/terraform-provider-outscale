@@ -56,7 +56,7 @@ The following attributes are exported:
   * `tags` - One or more tags associated with the VPN connection.
       * `key` - The key of the tag, with a minimum of 1 character.
       * `value` - The value of the tag, between 0 and 255 characters.
-  * `virtual_gateway_id` - The ID of the virtual gateway used on the 3DS OUTSCALE end of the connection.
+  * `virtual_gateway_id` - The ID of the virtual gateway used on the OUTSCALE end of the connection.
   * `vpn_connection_id` - The ID of the VPN connection.
 
 ## Import

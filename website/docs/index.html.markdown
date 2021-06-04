@@ -2,15 +2,15 @@
 layout: "outscale"
 page_title: "Provider: 3DS OUTSCALE"
 description: |-
-  The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources. The provider needs to be configured with the proper credentials before it can be used.
+  The OUTSCALE provider is used to manage OUTSCALE Cloud resources. The provider needs to be configured with the proper credentials before it can be used.
 ---
 
-# 3DS OUTSCALE Provider
+# OUTSCALE Provider
 
-The 3DS OUTSCALE provider is used to manage 3DS OUTSCALE Cloud resources.  
+The OUTSCALE provider is used to manage OUTSCALE Cloud resources.  
 Use the navigation to the left to read about the available resources. For more information on our resources, see the [User Guide](https://wiki.outscale.net/display/EN#).
 
-The provider is based on our 3DS OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs.outscale.com/api#3ds-outscale-api).  
+The provider is based on our OUTSCALE API. For more information, see [APIs Reference](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference) and the [API Documentation](https://docs.outscale.com/api#3ds-outscale-api).  
 
 The provider needs to be configured with the proper credentials before it can be used.  
 
@@ -35,11 +35,11 @@ provider "outscale" {
 
 ## Authentication
 
-3DS OUTSCALE authentication is based on access keys composed of an **access key ID** and a **secret key**.
+OUTSCALE authentication is based on access keys composed of an **access key ID** and a **secret key**.
 For more information on access keys, see [About Access Keys](https://wiki.outscale.net/display/EN/About+Access+Keys).
 To retrieve your access keys, see [Getting Information About Your Access Keys](https://wiki.outscale.net/display/EN/Getting+Information+About+Your+Access+Keys).
 
-The 3DS OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
+The OUTSCALE provider supports different ways of providing credentials for authentication. The following methods are supported:
 
 1. [Static credentials](#static-credentials)
 2. [Environment variables](#environment-variables)
@@ -84,11 +84,11 @@ $ terraform plan
 
 ## Arguments Reference
 
-In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the 3DS OUTSCALE provider block:
+In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html), the following arguments are supported in the OUTSCALE provider block:
 
-* `access_key_id` - (Optional) The ID of the 3DS OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
+* `access_key_id` - (Optional) The ID of the OUTSCALE access key. It must be provided, but it can also be sourced from the `OUTSCALE_ACCESSKEYID` [environment variable](#environment-variables).
 
-* `secret_key_id` - (Optional) The 3DS OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
+* `secret_key_id` - (Optional) The OUTSCALE secret key. It must be provided, but it can also be sourced from the `OUTSCALE_SECRETKEYID` [environment variable](#environment-variables).
 
 * `region` - (Optional) The Region that will be used as default value for all resources. It can also be sourced from the `OUTSCALE_REGION` [environment variable](#environment-variables). For more information on available Regions, see [Regions Reference](https://wiki.outscale.net/display/EN/Regions%2C+Endpoints+and+Availability+Zones+Reference).
 
