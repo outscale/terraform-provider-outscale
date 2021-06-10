@@ -78,6 +78,11 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"await_active_state": {
+				Type:     schema.TypeBool,
+				Default:  true,
+				Optional: true,
+			},
 			"vm_account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -101,6 +106,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	numTargets, target := getTarget(d)
+	awaitActiveState := d.Get("await_active_state").(bool)
 
 	if numTargets > 1 {
 		return errOAPIRoute
@@ -156,6 +162,11 @@ func resourceOutscaleOAPIRouteCreate(d *schema.ResourceData, meta interface{}) e
 	if v, ok := d.GetOk("destination_ip_range"); ok {
 		err = resource.Retry(2*time.Minute, func() *resource.RetryError {
 			route, requestID, err = findResourceOAPIRoute(conn, d.Get("route_table_id").(string), v.(string))
+			if awaitActiveState && err == nil {
+				if route.GetState() != "active" {
+					return resource.RetryableError(fmt.Errorf("still await route to be active"))
+				}
+			}
 			return resource.RetryableError(err)
 		})
 		if err != nil {
