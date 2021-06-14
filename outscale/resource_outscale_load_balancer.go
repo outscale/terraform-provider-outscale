@@ -411,7 +411,7 @@ func resourceOutscaleOAPILoadBalancerCreate_(d *schema.ResourceData, meta interf
 	}
 
 	v_srn, srn_ok := d.GetOk("subregion_names")
-	if isUpdate && sb_ok && srn_ok {
+	if sb_ok && srn_ok {
 		return fmt.Errorf("can't use both 'subregion_names' and 'subnets'")
 	}
 
@@ -585,19 +585,33 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 
 func resourceOutscaleOAPILoadBalancerUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-
 	var err error
 	d.Partial(true)
 
-	if d.HasChange("security_groups") || d.HasChange("subregion_names") ||
-		d.HasChange("subnets") {
-		log.Printf("[INFO] update Load Balancer: %s", d.Id())
-		e := resourceOutscaleOAPILoadBalancerDelete_(d, meta, false)
-
-		if e != nil {
-			return e
+	if d.HasChange("security_groups") {
+		req := oscgo.UpdateLoadBalancerRequest{
+			LoadBalancerName: d.Id(),
 		}
-		return resourceOutscaleOAPILoadBalancerCreate_(d, meta, true)
+		nSg, _ := d.GetOk("security_groups")
+		req.SecurityGroups = expandSetStringList(nSg.(*schema.Set))
+
+		var err error
+		err = resource.Retry(1*time.Minute, func() *resource.RetryError {
+			_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+				context.Background()).UpdateLoadBalancerRequest(req).Execute()
+			if err != nil {
+				if strings.Contains(err.Error(), "Throttling:") {
+					return resource.RetryableError(err)
+				}
+				return resource.NonRetryableError(err)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("Failure updating SecurityGroups: %s", err)
+		}
+		d.SetPartial("security_groups")
 	}
 
 	if d.HasChange("tags") {
