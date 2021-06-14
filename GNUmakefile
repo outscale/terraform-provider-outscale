@@ -50,6 +50,9 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
+website-local:
+	@sh -c "'$(CURDIR)/scripts/test-doc.sh'"
+
 website-lint:
 	@echo "==> Checking website against linters..."
 	@misspell -error -source=text website/
@@ -75,4 +78,4 @@ examples-test:
 		cd ../..; \
 	done\
 
-.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test
+.PHONY: build test testacc fmt fmtcheck lint tools test-compile website website-lint website-test examples-test website-local
