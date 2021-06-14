@@ -491,6 +491,10 @@ func resourceOutscaleOApiVM() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"get_admin_password": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"tags": tagsListOAPISchema(),
 		},
 	}
@@ -530,6 +534,20 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	vm := resp.GetVms()[0]
 
 	d.SetId(vm.GetVmId())
+
+	if get_psswd := d.Get("get_admin_password").(bool); get_psswd {
+		psswd_err := resource.Retry(2500*time.Second, func() *resource.RetryError {
+
+			psswd, err := getOAPIVMAdminPassword(vm.GetVmId(), conn)
+			if err != nil || len(psswd) < 1 {
+				return resource.RetryableError(errors.New("timeout awaiting windows password"))
+			}
+			return nil
+		})
+		if psswd_err != nil {
+			return psswd_err
+		}
+	}
 
 	log.Println("[DEBUG] imprimo log subnet")
 	if tags, ok := d.GetOk("tags"); ok {
