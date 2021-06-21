@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -17,8 +17,8 @@ import (
 
 // FiltersServerCertificate One or more filters.
 type FiltersServerCertificate struct {
-	// The path to the server certificate.
-	Paths *string `json:"Paths,omitempty"`
+	// The paths to the server certificates.
+	Paths *[]string `json:"Paths,omitempty"`
 }
 
 // NewFiltersServerCertificate instantiates a new FiltersServerCertificate object
@@ -39,9 +39,9 @@ func NewFiltersServerCertificateWithDefaults() *FiltersServerCertificate {
 }
 
 // GetPaths returns the Paths field value if set, zero value otherwise.
-func (o *FiltersServerCertificate) GetPaths() string {
+func (o *FiltersServerCertificate) GetPaths() []string {
 	if o == nil || o.Paths == nil {
-		var ret string
+		var ret []string
 		return ret
 	}
 	return *o.Paths
@@ -49,7 +49,7 @@ func (o *FiltersServerCertificate) GetPaths() string {
 
 // GetPathsOk returns a tuple with the Paths field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *FiltersServerCertificate) GetPathsOk() (*string, bool) {
+func (o *FiltersServerCertificate) GetPathsOk() (*[]string, bool) {
 	if o == nil || o.Paths == nil {
 		return nil, false
 	}
@@ -65,8 +65,8 @@ func (o *FiltersServerCertificate) HasPaths() bool {
 	return false
 }
 
-// SetPaths gets a reference to the given string and assigns it to the Paths field.
-func (o *FiltersServerCertificate) SetPaths(v string) {
+// SetPaths gets a reference to the given []string and assigns it to the Paths field.
+func (o *FiltersServerCertificate) SetPaths(v []string) {
 	o.Paths = &v
 }
 

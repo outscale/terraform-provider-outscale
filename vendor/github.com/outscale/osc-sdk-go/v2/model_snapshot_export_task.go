@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -18,8 +18,8 @@ import (
 // SnapshotExportTask Information about the snapshot export task.
 type SnapshotExportTask struct {
 	// If the snapshot export task fails, an error message appears.
-	Comment   *string    `json:"Comment,omitempty"`
-	OsuExport *OsuExport `json:"OsuExport,omitempty"`
+	Comment   *string                      `json:"Comment,omitempty"`
+	OsuExport *OsuExportSnapshotExportTask `json:"OsuExport,omitempty"`
 	// The progress of the snapshot export task, as a percentage.
 	Progress *int32 `json:"Progress,omitempty"`
 	// The ID of the snapshot to be exported.
@@ -82,9 +82,9 @@ func (o *SnapshotExportTask) SetComment(v string) {
 }
 
 // GetOsuExport returns the OsuExport field value if set, zero value otherwise.
-func (o *SnapshotExportTask) GetOsuExport() OsuExport {
+func (o *SnapshotExportTask) GetOsuExport() OsuExportSnapshotExportTask {
 	if o == nil || o.OsuExport == nil {
-		var ret OsuExport
+		var ret OsuExportSnapshotExportTask
 		return ret
 	}
 	return *o.OsuExport
@@ -92,7 +92,7 @@ func (o *SnapshotExportTask) GetOsuExport() OsuExport {
 
 // GetOsuExportOk returns a tuple with the OsuExport field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SnapshotExportTask) GetOsuExportOk() (*OsuExport, bool) {
+func (o *SnapshotExportTask) GetOsuExportOk() (*OsuExportSnapshotExportTask, bool) {
 	if o == nil || o.OsuExport == nil {
 		return nil, false
 	}
@@ -108,8 +108,8 @@ func (o *SnapshotExportTask) HasOsuExport() bool {
 	return false
 }
 
-// SetOsuExport gets a reference to the given OsuExport and assigns it to the OsuExport field.
-func (o *SnapshotExportTask) SetOsuExport(v OsuExport) {
+// SetOsuExport gets a reference to the given OsuExportSnapshotExportTask and assigns it to the OsuExport field.
+func (o *SnapshotExportTask) SetOsuExport(v OsuExportSnapshotExportTask) {
 	o.OsuExport = &v
 }
 

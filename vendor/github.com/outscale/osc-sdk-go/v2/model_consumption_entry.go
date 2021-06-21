@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -17,14 +17,20 @@ import (
 
 // ConsumptionEntry Information about the resources consumed during the specified time period.
 type ConsumptionEntry struct {
+	// The ID of your TINA account.
+	AccountId *string `json:"AccountId,omitempty"`
 	// The category of the resource (for example, `network`).
 	Category *string `json:"Category,omitempty"`
 	// The beginning of the time period.
 	FromDate *string `json:"FromDate,omitempty"`
 	// The API call that triggered the resource consumption (for example, `RunInstances` or `CreateVolume`).
 	Operation *string `json:"Operation,omitempty"`
-	// The service of the API call (`TinaOS-FCU`, `TinaOS-LBU`, `TinaOS-OSU` or `TinaOS-DirectLink`).
+	// The ID of the TINA account which is billed for your consumption. It can be different from your account in the `AccountId` parameter.
+	PayingAccountId *string `json:"PayingAccountId,omitempty"`
+	// The service of the API call (`TinaOS-FCU`, `TinaOS-LBU`, `TinaOS-DirectLink`, `TinaOS-OOS`, or `TinaOS-OSU`).
 	Service *string `json:"Service,omitempty"`
+	// The name of the Subregion.
+	SubregionName *string `json:"SubregionName,omitempty"`
 	// A description of the consumed resource.
 	Title *string `json:"Title,omitempty"`
 	// The end of the time period.
@@ -50,6 +56,38 @@ func NewConsumptionEntry() *ConsumptionEntry {
 func NewConsumptionEntryWithDefaults() *ConsumptionEntry {
 	this := ConsumptionEntry{}
 	return &this
+}
+
+// GetAccountId returns the AccountId field value if set, zero value otherwise.
+func (o *ConsumptionEntry) GetAccountId() string {
+	if o == nil || o.AccountId == nil {
+		var ret string
+		return ret
+	}
+	return *o.AccountId
+}
+
+// GetAccountIdOk returns a tuple with the AccountId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ConsumptionEntry) GetAccountIdOk() (*string, bool) {
+	if o == nil || o.AccountId == nil {
+		return nil, false
+	}
+	return o.AccountId, true
+}
+
+// HasAccountId returns a boolean if a field has been set.
+func (o *ConsumptionEntry) HasAccountId() bool {
+	if o != nil && o.AccountId != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetAccountId gets a reference to the given string and assigns it to the AccountId field.
+func (o *ConsumptionEntry) SetAccountId(v string) {
+	o.AccountId = &v
 }
 
 // GetCategory returns the Category field value if set, zero value otherwise.
@@ -148,6 +186,38 @@ func (o *ConsumptionEntry) SetOperation(v string) {
 	o.Operation = &v
 }
 
+// GetPayingAccountId returns the PayingAccountId field value if set, zero value otherwise.
+func (o *ConsumptionEntry) GetPayingAccountId() string {
+	if o == nil || o.PayingAccountId == nil {
+		var ret string
+		return ret
+	}
+	return *o.PayingAccountId
+}
+
+// GetPayingAccountIdOk returns a tuple with the PayingAccountId field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ConsumptionEntry) GetPayingAccountIdOk() (*string, bool) {
+	if o == nil || o.PayingAccountId == nil {
+		return nil, false
+	}
+	return o.PayingAccountId, true
+}
+
+// HasPayingAccountId returns a boolean if a field has been set.
+func (o *ConsumptionEntry) HasPayingAccountId() bool {
+	if o != nil && o.PayingAccountId != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetPayingAccountId gets a reference to the given string and assigns it to the PayingAccountId field.
+func (o *ConsumptionEntry) SetPayingAccountId(v string) {
+	o.PayingAccountId = &v
+}
+
 // GetService returns the Service field value if set, zero value otherwise.
 func (o *ConsumptionEntry) GetService() string {
 	if o == nil || o.Service == nil {
@@ -178,6 +248,38 @@ func (o *ConsumptionEntry) HasService() bool {
 // SetService gets a reference to the given string and assigns it to the Service field.
 func (o *ConsumptionEntry) SetService(v string) {
 	o.Service = &v
+}
+
+// GetSubregionName returns the SubregionName field value if set, zero value otherwise.
+func (o *ConsumptionEntry) GetSubregionName() string {
+	if o == nil || o.SubregionName == nil {
+		var ret string
+		return ret
+	}
+	return *o.SubregionName
+}
+
+// GetSubregionNameOk returns a tuple with the SubregionName field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *ConsumptionEntry) GetSubregionNameOk() (*string, bool) {
+	if o == nil || o.SubregionName == nil {
+		return nil, false
+	}
+	return o.SubregionName, true
+}
+
+// HasSubregionName returns a boolean if a field has been set.
+func (o *ConsumptionEntry) HasSubregionName() bool {
+	if o != nil && o.SubregionName != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetSubregionName gets a reference to the given string and assigns it to the SubregionName field.
+func (o *ConsumptionEntry) SetSubregionName(v string) {
+	o.SubregionName = &v
 }
 
 // GetTitle returns the Title field value if set, zero value otherwise.
@@ -310,6 +412,9 @@ func (o *ConsumptionEntry) SetValue(v float64) {
 
 func (o ConsumptionEntry) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
+	if o.AccountId != nil {
+		toSerialize["AccountId"] = o.AccountId
+	}
 	if o.Category != nil {
 		toSerialize["Category"] = o.Category
 	}
@@ -319,8 +424,14 @@ func (o ConsumptionEntry) MarshalJSON() ([]byte, error) {
 	if o.Operation != nil {
 		toSerialize["Operation"] = o.Operation
 	}
+	if o.PayingAccountId != nil {
+		toSerialize["PayingAccountId"] = o.PayingAccountId
+	}
 	if o.Service != nil {
 		toSerialize["Service"] = o.Service
+	}
+	if o.SubregionName != nil {
+		toSerialize["SubregionName"] = o.SubregionName
 	}
 	if o.Title != nil {
 		toSerialize["Title"] = o.Title

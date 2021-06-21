@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -15,40 +15,39 @@ import (
 	"encoding/json"
 )
 
-// OsuExport Information about the OSU export.
-type OsuExport struct {
+// OsuExportImageExportTask Information about the OMI export task.
+type OsuExportImageExportTask struct {
 	// The format of the export disk (`qcow2` \\| `raw`).
-	DiskImageFormat string     `json:"DiskImageFormat"`
-	OsuApiKey       *OsuApiKey `json:"OsuApiKey,omitempty"`
-	// The name of the OSU bucket where you want to export the object.
+	DiskImageFormat string `json:"DiskImageFormat"`
+	// The name of the OOS bucket the OMI is exported to.
 	OsuBucket string `json:"OsuBucket"`
 	// The URL of the manifest file.
 	OsuManifestUrl *string `json:"OsuManifestUrl,omitempty"`
-	// The prefix for the key of the OSU object.
+	// The prefix for the key of the OOS object corresponding to the image.
 	OsuPrefix *string `json:"OsuPrefix,omitempty"`
 }
 
-// NewOsuExport instantiates a new OsuExport object
+// NewOsuExportImageExportTask instantiates a new OsuExportImageExportTask object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewOsuExport(diskImageFormat string, osuBucket string) *OsuExport {
-	this := OsuExport{}
+func NewOsuExportImageExportTask(diskImageFormat string, osuBucket string) *OsuExportImageExportTask {
+	this := OsuExportImageExportTask{}
 	this.DiskImageFormat = diskImageFormat
 	this.OsuBucket = osuBucket
 	return &this
 }
 
-// NewOsuExportWithDefaults instantiates a new OsuExport object
+// NewOsuExportImageExportTaskWithDefaults instantiates a new OsuExportImageExportTask object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewOsuExportWithDefaults() *OsuExport {
-	this := OsuExport{}
+func NewOsuExportImageExportTaskWithDefaults() *OsuExportImageExportTask {
+	this := OsuExportImageExportTask{}
 	return &this
 }
 
 // GetDiskImageFormat returns the DiskImageFormat field value
-func (o *OsuExport) GetDiskImageFormat() string {
+func (o *OsuExportImageExportTask) GetDiskImageFormat() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -59,7 +58,7 @@ func (o *OsuExport) GetDiskImageFormat() string {
 
 // GetDiskImageFormatOk returns a tuple with the DiskImageFormat field value
 // and a boolean to check if the value has been set.
-func (o *OsuExport) GetDiskImageFormatOk() (*string, bool) {
+func (o *OsuExportImageExportTask) GetDiskImageFormatOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -67,44 +66,12 @@ func (o *OsuExport) GetDiskImageFormatOk() (*string, bool) {
 }
 
 // SetDiskImageFormat sets field value
-func (o *OsuExport) SetDiskImageFormat(v string) {
+func (o *OsuExportImageExportTask) SetDiskImageFormat(v string) {
 	o.DiskImageFormat = v
 }
 
-// GetOsuApiKey returns the OsuApiKey field value if set, zero value otherwise.
-func (o *OsuExport) GetOsuApiKey() OsuApiKey {
-	if o == nil || o.OsuApiKey == nil {
-		var ret OsuApiKey
-		return ret
-	}
-	return *o.OsuApiKey
-}
-
-// GetOsuApiKeyOk returns a tuple with the OsuApiKey field value if set, nil otherwise
-// and a boolean to check if the value has been set.
-func (o *OsuExport) GetOsuApiKeyOk() (*OsuApiKey, bool) {
-	if o == nil || o.OsuApiKey == nil {
-		return nil, false
-	}
-	return o.OsuApiKey, true
-}
-
-// HasOsuApiKey returns a boolean if a field has been set.
-func (o *OsuExport) HasOsuApiKey() bool {
-	if o != nil && o.OsuApiKey != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetOsuApiKey gets a reference to the given OsuApiKey and assigns it to the OsuApiKey field.
-func (o *OsuExport) SetOsuApiKey(v OsuApiKey) {
-	o.OsuApiKey = &v
-}
-
 // GetOsuBucket returns the OsuBucket field value
-func (o *OsuExport) GetOsuBucket() string {
+func (o *OsuExportImageExportTask) GetOsuBucket() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -115,7 +82,7 @@ func (o *OsuExport) GetOsuBucket() string {
 
 // GetOsuBucketOk returns a tuple with the OsuBucket field value
 // and a boolean to check if the value has been set.
-func (o *OsuExport) GetOsuBucketOk() (*string, bool) {
+func (o *OsuExportImageExportTask) GetOsuBucketOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -123,12 +90,12 @@ func (o *OsuExport) GetOsuBucketOk() (*string, bool) {
 }
 
 // SetOsuBucket sets field value
-func (o *OsuExport) SetOsuBucket(v string) {
+func (o *OsuExportImageExportTask) SetOsuBucket(v string) {
 	o.OsuBucket = v
 }
 
 // GetOsuManifestUrl returns the OsuManifestUrl field value if set, zero value otherwise.
-func (o *OsuExport) GetOsuManifestUrl() string {
+func (o *OsuExportImageExportTask) GetOsuManifestUrl() string {
 	if o == nil || o.OsuManifestUrl == nil {
 		var ret string
 		return ret
@@ -138,7 +105,7 @@ func (o *OsuExport) GetOsuManifestUrl() string {
 
 // GetOsuManifestUrlOk returns a tuple with the OsuManifestUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *OsuExport) GetOsuManifestUrlOk() (*string, bool) {
+func (o *OsuExportImageExportTask) GetOsuManifestUrlOk() (*string, bool) {
 	if o == nil || o.OsuManifestUrl == nil {
 		return nil, false
 	}
@@ -146,7 +113,7 @@ func (o *OsuExport) GetOsuManifestUrlOk() (*string, bool) {
 }
 
 // HasOsuManifestUrl returns a boolean if a field has been set.
-func (o *OsuExport) HasOsuManifestUrl() bool {
+func (o *OsuExportImageExportTask) HasOsuManifestUrl() bool {
 	if o != nil && o.OsuManifestUrl != nil {
 		return true
 	}
@@ -155,12 +122,12 @@ func (o *OsuExport) HasOsuManifestUrl() bool {
 }
 
 // SetOsuManifestUrl gets a reference to the given string and assigns it to the OsuManifestUrl field.
-func (o *OsuExport) SetOsuManifestUrl(v string) {
+func (o *OsuExportImageExportTask) SetOsuManifestUrl(v string) {
 	o.OsuManifestUrl = &v
 }
 
 // GetOsuPrefix returns the OsuPrefix field value if set, zero value otherwise.
-func (o *OsuExport) GetOsuPrefix() string {
+func (o *OsuExportImageExportTask) GetOsuPrefix() string {
 	if o == nil || o.OsuPrefix == nil {
 		var ret string
 		return ret
@@ -170,7 +137,7 @@ func (o *OsuExport) GetOsuPrefix() string {
 
 // GetOsuPrefixOk returns a tuple with the OsuPrefix field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *OsuExport) GetOsuPrefixOk() (*string, bool) {
+func (o *OsuExportImageExportTask) GetOsuPrefixOk() (*string, bool) {
 	if o == nil || o.OsuPrefix == nil {
 		return nil, false
 	}
@@ -178,7 +145,7 @@ func (o *OsuExport) GetOsuPrefixOk() (*string, bool) {
 }
 
 // HasOsuPrefix returns a boolean if a field has been set.
-func (o *OsuExport) HasOsuPrefix() bool {
+func (o *OsuExportImageExportTask) HasOsuPrefix() bool {
 	if o != nil && o.OsuPrefix != nil {
 		return true
 	}
@@ -187,17 +154,14 @@ func (o *OsuExport) HasOsuPrefix() bool {
 }
 
 // SetOsuPrefix gets a reference to the given string and assigns it to the OsuPrefix field.
-func (o *OsuExport) SetOsuPrefix(v string) {
+func (o *OsuExportImageExportTask) SetOsuPrefix(v string) {
 	o.OsuPrefix = &v
 }
 
-func (o OsuExport) MarshalJSON() ([]byte, error) {
+func (o OsuExportImageExportTask) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["DiskImageFormat"] = o.DiskImageFormat
-	}
-	if o.OsuApiKey != nil {
-		toSerialize["OsuApiKey"] = o.OsuApiKey
 	}
 	if true {
 		toSerialize["OsuBucket"] = o.OsuBucket
@@ -211,38 +175,38 @@ func (o OsuExport) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-type NullableOsuExport struct {
-	value *OsuExport
+type NullableOsuExportImageExportTask struct {
+	value *OsuExportImageExportTask
 	isSet bool
 }
 
-func (v NullableOsuExport) Get() *OsuExport {
+func (v NullableOsuExportImageExportTask) Get() *OsuExportImageExportTask {
 	return v.value
 }
 
-func (v *NullableOsuExport) Set(val *OsuExport) {
+func (v *NullableOsuExportImageExportTask) Set(val *OsuExportImageExportTask) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableOsuExport) IsSet() bool {
+func (v NullableOsuExportImageExportTask) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableOsuExport) Unset() {
+func (v *NullableOsuExportImageExportTask) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableOsuExport(val *OsuExport) *NullableOsuExport {
-	return &NullableOsuExport{value: val, isSet: true}
+func NewNullableOsuExportImageExportTask(val *OsuExportImageExportTask) *NullableOsuExportImageExportTask {
+	return &NullableOsuExportImageExportTask{value: val, isSet: true}
 }
 
-func (v NullableOsuExport) MarshalJSON() ([]byte, error) {
+func (v NullableOsuExportImageExportTask) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableOsuExport) UnmarshalJSON(src []byte) error {
+func (v *NullableOsuExportImageExportTask) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

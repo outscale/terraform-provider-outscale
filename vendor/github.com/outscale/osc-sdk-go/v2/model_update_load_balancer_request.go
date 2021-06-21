@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -23,11 +23,13 @@ type UpdateLoadBalancerRequest struct {
 	HealthCheck *HealthCheck `json:"HealthCheck,omitempty"`
 	// The name of the load balancer.
 	LoadBalancerName string `json:"LoadBalancerName"`
-	// The port on which the load balancer is listening (between `1` and `65535`, both included).
+	// The port on which the load balancer is listening (between `1` and `65535`, both included). This parameter is required if you want to update the server certificate.
 	LoadBalancerPort *int32 `json:"LoadBalancerPort,omitempty"`
-	// The list of policy names (must contain all the policies to be enabled).
+	// The name of the policy you want to enable for the listener.
 	PolicyNames *[]string `json:"PolicyNames,omitempty"`
-	// The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat).
+	// (Net only) One or more IDs of security groups you want to assign to the load balancer. You need to specify the already assigned security groups that you want to keep along with the new ones you are assigning. If the list is empty, the default security group of the Net is assigned to the load balancer.
+	SecurityGroups *[]string `json:"SecurityGroups,omitempty"`
+	// The Outscale Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > Outscale Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat). If this parameter is specified, you must also specify the `LoadBalancerPort` parameter.
 	ServerCertificateId *string `json:"ServerCertificateId,omitempty"`
 }
 
@@ -233,6 +235,38 @@ func (o *UpdateLoadBalancerRequest) SetPolicyNames(v []string) {
 	o.PolicyNames = &v
 }
 
+// GetSecurityGroups returns the SecurityGroups field value if set, zero value otherwise.
+func (o *UpdateLoadBalancerRequest) GetSecurityGroups() []string {
+	if o == nil || o.SecurityGroups == nil {
+		var ret []string
+		return ret
+	}
+	return *o.SecurityGroups
+}
+
+// GetSecurityGroupsOk returns a tuple with the SecurityGroups field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *UpdateLoadBalancerRequest) GetSecurityGroupsOk() (*[]string, bool) {
+	if o == nil || o.SecurityGroups == nil {
+		return nil, false
+	}
+	return o.SecurityGroups, true
+}
+
+// HasSecurityGroups returns a boolean if a field has been set.
+func (o *UpdateLoadBalancerRequest) HasSecurityGroups() bool {
+	if o != nil && o.SecurityGroups != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetSecurityGroups gets a reference to the given []string and assigns it to the SecurityGroups field.
+func (o *UpdateLoadBalancerRequest) SetSecurityGroups(v []string) {
+	o.SecurityGroups = &v
+}
+
 // GetServerCertificateId returns the ServerCertificateId field value if set, zero value otherwise.
 func (o *UpdateLoadBalancerRequest) GetServerCertificateId() string {
 	if o == nil || o.ServerCertificateId == nil {
@@ -284,6 +318,9 @@ func (o UpdateLoadBalancerRequest) MarshalJSON() ([]byte, error) {
 	}
 	if o.PolicyNames != nil {
 		toSerialize["PolicyNames"] = o.PolicyNames
+	}
+	if o.SecurityGroups != nil {
+		toSerialize["SecurityGroups"] = o.SecurityGroups
 	}
 	if o.ServerCertificateId != nil {
 		toSerialize["ServerCertificateId"] = o.ServerCertificateId

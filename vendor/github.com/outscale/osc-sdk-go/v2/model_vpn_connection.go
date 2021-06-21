@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -17,7 +17,7 @@ import (
 
 // VpnConnection Information about a VPN connection.
 type VpnConnection struct {
-	// The configuration to apply to the client gateway to establish the VPN connection, in XML format.
+	// Example configuration for the client gateway.
 	ClientGatewayConfiguration *string `json:"ClientGatewayConfiguration,omitempty"`
 	// The ID of the client gateway used on the client end of the connection.
 	ClientGatewayId *string `json:"ClientGatewayId,omitempty"`
@@ -31,10 +31,11 @@ type VpnConnection struct {
 	StaticRoutesOnly *bool `json:"StaticRoutesOnly,omitempty"`
 	// One or more tags associated with the VPN connection.
 	Tags *[]ResourceTag `json:"Tags,omitempty"`
-	// The ID of the virtual gateway used on the 3DS OUTSCALE end of the connection.
+	// The ID of the virtual gateway used on the OUTSCALE end of the connection.
 	VirtualGatewayId *string `json:"VirtualGatewayId,omitempty"`
 	// The ID of the VPN connection.
-	VpnConnectionId *string `json:"VpnConnectionId,omitempty"`
+	VpnConnectionId *string     `json:"VpnConnectionId,omitempty"`
+	VpnOptions      *VpnOptions `json:"VpnOptions,omitempty"`
 }
 
 // NewVpnConnection instantiates a new VpnConnection object
@@ -342,6 +343,38 @@ func (o *VpnConnection) SetVpnConnectionId(v string) {
 	o.VpnConnectionId = &v
 }
 
+// GetVpnOptions returns the VpnOptions field value if set, zero value otherwise.
+func (o *VpnConnection) GetVpnOptions() VpnOptions {
+	if o == nil || o.VpnOptions == nil {
+		var ret VpnOptions
+		return ret
+	}
+	return *o.VpnOptions
+}
+
+// GetVpnOptionsOk returns a tuple with the VpnOptions field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *VpnConnection) GetVpnOptionsOk() (*VpnOptions, bool) {
+	if o == nil || o.VpnOptions == nil {
+		return nil, false
+	}
+	return o.VpnOptions, true
+}
+
+// HasVpnOptions returns a boolean if a field has been set.
+func (o *VpnConnection) HasVpnOptions() bool {
+	if o != nil && o.VpnOptions != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetVpnOptions gets a reference to the given VpnOptions and assigns it to the VpnOptions field.
+func (o *VpnConnection) SetVpnOptions(v VpnOptions) {
+	o.VpnOptions = &v
+}
+
 func (o VpnConnection) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.ClientGatewayConfiguration != nil {
@@ -370,6 +403,9 @@ func (o VpnConnection) MarshalJSON() ([]byte, error) {
 	}
 	if o.VpnConnectionId != nil {
 		toSerialize["VpnConnectionId"] = o.VpnConnectionId
+	}
+	if o.VpnOptions != nil {
+		toSerialize["VpnOptions"] = o.VpnOptions
 	}
 	return json.Marshal(toSerialize)
 }

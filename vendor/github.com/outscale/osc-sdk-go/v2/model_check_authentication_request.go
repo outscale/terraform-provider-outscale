@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -20,17 +20,19 @@ type CheckAuthenticationRequest struct {
 	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// The email address of the account.
-	Login *string `json:"Login,omitempty"`
+	Login string `json:"Login"`
 	// The password of the account.
-	Password *string `json:"Password,omitempty"`
+	Password string `json:"Password"`
 }
 
 // NewCheckAuthenticationRequest instantiates a new CheckAuthenticationRequest object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCheckAuthenticationRequest() *CheckAuthenticationRequest {
+func NewCheckAuthenticationRequest(login string, password string) *CheckAuthenticationRequest {
 	this := CheckAuthenticationRequest{}
+	this.Login = login
+	this.Password = password
 	return &this
 }
 
@@ -74,68 +76,52 @@ func (o *CheckAuthenticationRequest) SetDryRun(v bool) {
 	o.DryRun = &v
 }
 
-// GetLogin returns the Login field value if set, zero value otherwise.
+// GetLogin returns the Login field value
 func (o *CheckAuthenticationRequest) GetLogin() string {
-	if o == nil || o.Login == nil {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Login
+
+	return o.Login
 }
 
-// GetLoginOk returns a tuple with the Login field value if set, nil otherwise
+// GetLoginOk returns a tuple with the Login field value
 // and a boolean to check if the value has been set.
 func (o *CheckAuthenticationRequest) GetLoginOk() (*string, bool) {
-	if o == nil || o.Login == nil {
+	if o == nil {
 		return nil, false
 	}
-	return o.Login, true
+	return &o.Login, true
 }
 
-// HasLogin returns a boolean if a field has been set.
-func (o *CheckAuthenticationRequest) HasLogin() bool {
-	if o != nil && o.Login != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetLogin gets a reference to the given string and assigns it to the Login field.
+// SetLogin sets field value
 func (o *CheckAuthenticationRequest) SetLogin(v string) {
-	o.Login = &v
+	o.Login = v
 }
 
-// GetPassword returns the Password field value if set, zero value otherwise.
+// GetPassword returns the Password field value
 func (o *CheckAuthenticationRequest) GetPassword() string {
-	if o == nil || o.Password == nil {
+	if o == nil {
 		var ret string
 		return ret
 	}
-	return *o.Password
+
+	return o.Password
 }
 
-// GetPasswordOk returns a tuple with the Password field value if set, nil otherwise
+// GetPasswordOk returns a tuple with the Password field value
 // and a boolean to check if the value has been set.
 func (o *CheckAuthenticationRequest) GetPasswordOk() (*string, bool) {
-	if o == nil || o.Password == nil {
+	if o == nil {
 		return nil, false
 	}
-	return o.Password, true
+	return &o.Password, true
 }
 
-// HasPassword returns a boolean if a field has been set.
-func (o *CheckAuthenticationRequest) HasPassword() bool {
-	if o != nil && o.Password != nil {
-		return true
-	}
-
-	return false
-}
-
-// SetPassword gets a reference to the given string and assigns it to the Password field.
+// SetPassword sets field value
 func (o *CheckAuthenticationRequest) SetPassword(v string) {
-	o.Password = &v
+	o.Password = v
 }
 
 func (o CheckAuthenticationRequest) MarshalJSON() ([]byte, error) {
@@ -143,10 +129,10 @@ func (o CheckAuthenticationRequest) MarshalJSON() ([]byte, error) {
 	if o.DryRun != nil {
 		toSerialize["DryRun"] = o.DryRun
 	}
-	if o.Login != nil {
+	if true {
 		toSerialize["Login"] = o.Login
 	}
-	if o.Password != nil {
+	if true {
 		toSerialize["Password"] = o.Password
 	}
 	return json.Marshal(toSerialize)

@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -25,9 +25,9 @@ type LinkPublicIpRequest struct {
 	NicId *string `json:"NicId,omitempty"`
 	// (Net only) The primary or secondary private IP address of the specified NIC. By default, the primary private IP address.
 	PrivateIp *string `json:"PrivateIp,omitempty"`
-	// The EIP. In the public Cloud, this parameter is required.
+	// The EIP. This parameter is required unless you use the `PublicIpId` parameter.
 	PublicIp *string `json:"PublicIp,omitempty"`
-	// The allocation ID of the EIP. In a Net, this parameter is required.
+	// The allocation ID of the EIP. This parameter is required unless you use the `PublicIp` parameter.
 	PublicIpId *string `json:"PublicIpId,omitempty"`
 	// The ID of the VM.<br /> - In the public Cloud, this parameter is required.<br /> - In a Net, this parameter is required if the VM has only one NIC. Otherwise, you need to specify the `NicId` parameter instead. You cannot specify both parameters at the same time.
 	VmId *string `json:"VmId,omitempty"`

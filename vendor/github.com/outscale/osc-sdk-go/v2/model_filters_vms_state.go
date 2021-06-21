@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -17,6 +17,14 @@ import (
 
 // FiltersVmsState One or more filters.
 type FiltersVmsState struct {
+	// The code for the scheduled event (`system-reboot` | `system-maintenance`).
+	MaintenanceEventCodes *[]string `json:"MaintenanceEventCodes,omitempty"`
+	// The description of the scheduled event.
+	MaintenanceEventDescriptions *[]string `json:"MaintenanceEventDescriptions,omitempty"`
+	// The latest time the event can end.
+	MaintenanceEventsNotAfter *[]string `json:"MaintenanceEventsNotAfter,omitempty"`
+	// The earliest time the event can start.
+	MaintenanceEventsNotBefore *[]string `json:"MaintenanceEventsNotBefore,omitempty"`
 	// The names of the Subregions of the VMs.
 	SubregionNames *[]string `json:"SubregionNames,omitempty"`
 	// One or more IDs of VMs.
@@ -40,6 +48,134 @@ func NewFiltersVmsState() *FiltersVmsState {
 func NewFiltersVmsStateWithDefaults() *FiltersVmsState {
 	this := FiltersVmsState{}
 	return &this
+}
+
+// GetMaintenanceEventCodes returns the MaintenanceEventCodes field value if set, zero value otherwise.
+func (o *FiltersVmsState) GetMaintenanceEventCodes() []string {
+	if o == nil || o.MaintenanceEventCodes == nil {
+		var ret []string
+		return ret
+	}
+	return *o.MaintenanceEventCodes
+}
+
+// GetMaintenanceEventCodesOk returns a tuple with the MaintenanceEventCodes field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersVmsState) GetMaintenanceEventCodesOk() (*[]string, bool) {
+	if o == nil || o.MaintenanceEventCodes == nil {
+		return nil, false
+	}
+	return o.MaintenanceEventCodes, true
+}
+
+// HasMaintenanceEventCodes returns a boolean if a field has been set.
+func (o *FiltersVmsState) HasMaintenanceEventCodes() bool {
+	if o != nil && o.MaintenanceEventCodes != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetMaintenanceEventCodes gets a reference to the given []string and assigns it to the MaintenanceEventCodes field.
+func (o *FiltersVmsState) SetMaintenanceEventCodes(v []string) {
+	o.MaintenanceEventCodes = &v
+}
+
+// GetMaintenanceEventDescriptions returns the MaintenanceEventDescriptions field value if set, zero value otherwise.
+func (o *FiltersVmsState) GetMaintenanceEventDescriptions() []string {
+	if o == nil || o.MaintenanceEventDescriptions == nil {
+		var ret []string
+		return ret
+	}
+	return *o.MaintenanceEventDescriptions
+}
+
+// GetMaintenanceEventDescriptionsOk returns a tuple with the MaintenanceEventDescriptions field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersVmsState) GetMaintenanceEventDescriptionsOk() (*[]string, bool) {
+	if o == nil || o.MaintenanceEventDescriptions == nil {
+		return nil, false
+	}
+	return o.MaintenanceEventDescriptions, true
+}
+
+// HasMaintenanceEventDescriptions returns a boolean if a field has been set.
+func (o *FiltersVmsState) HasMaintenanceEventDescriptions() bool {
+	if o != nil && o.MaintenanceEventDescriptions != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetMaintenanceEventDescriptions gets a reference to the given []string and assigns it to the MaintenanceEventDescriptions field.
+func (o *FiltersVmsState) SetMaintenanceEventDescriptions(v []string) {
+	o.MaintenanceEventDescriptions = &v
+}
+
+// GetMaintenanceEventsNotAfter returns the MaintenanceEventsNotAfter field value if set, zero value otherwise.
+func (o *FiltersVmsState) GetMaintenanceEventsNotAfter() []string {
+	if o == nil || o.MaintenanceEventsNotAfter == nil {
+		var ret []string
+		return ret
+	}
+	return *o.MaintenanceEventsNotAfter
+}
+
+// GetMaintenanceEventsNotAfterOk returns a tuple with the MaintenanceEventsNotAfter field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersVmsState) GetMaintenanceEventsNotAfterOk() (*[]string, bool) {
+	if o == nil || o.MaintenanceEventsNotAfter == nil {
+		return nil, false
+	}
+	return o.MaintenanceEventsNotAfter, true
+}
+
+// HasMaintenanceEventsNotAfter returns a boolean if a field has been set.
+func (o *FiltersVmsState) HasMaintenanceEventsNotAfter() bool {
+	if o != nil && o.MaintenanceEventsNotAfter != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetMaintenanceEventsNotAfter gets a reference to the given []string and assigns it to the MaintenanceEventsNotAfter field.
+func (o *FiltersVmsState) SetMaintenanceEventsNotAfter(v []string) {
+	o.MaintenanceEventsNotAfter = &v
+}
+
+// GetMaintenanceEventsNotBefore returns the MaintenanceEventsNotBefore field value if set, zero value otherwise.
+func (o *FiltersVmsState) GetMaintenanceEventsNotBefore() []string {
+	if o == nil || o.MaintenanceEventsNotBefore == nil {
+		var ret []string
+		return ret
+	}
+	return *o.MaintenanceEventsNotBefore
+}
+
+// GetMaintenanceEventsNotBeforeOk returns a tuple with the MaintenanceEventsNotBefore field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersVmsState) GetMaintenanceEventsNotBeforeOk() (*[]string, bool) {
+	if o == nil || o.MaintenanceEventsNotBefore == nil {
+		return nil, false
+	}
+	return o.MaintenanceEventsNotBefore, true
+}
+
+// HasMaintenanceEventsNotBefore returns a boolean if a field has been set.
+func (o *FiltersVmsState) HasMaintenanceEventsNotBefore() bool {
+	if o != nil && o.MaintenanceEventsNotBefore != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetMaintenanceEventsNotBefore gets a reference to the given []string and assigns it to the MaintenanceEventsNotBefore field.
+func (o *FiltersVmsState) SetMaintenanceEventsNotBefore(v []string) {
+	o.MaintenanceEventsNotBefore = &v
 }
 
 // GetSubregionNames returns the SubregionNames field value if set, zero value otherwise.
@@ -140,6 +276,18 @@ func (o *FiltersVmsState) SetVmStates(v []string) {
 
 func (o FiltersVmsState) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
+	if o.MaintenanceEventCodes != nil {
+		toSerialize["MaintenanceEventCodes"] = o.MaintenanceEventCodes
+	}
+	if o.MaintenanceEventDescriptions != nil {
+		toSerialize["MaintenanceEventDescriptions"] = o.MaintenanceEventDescriptions
+	}
+	if o.MaintenanceEventsNotAfter != nil {
+		toSerialize["MaintenanceEventsNotAfter"] = o.MaintenanceEventsNotAfter
+	}
+	if o.MaintenanceEventsNotBefore != nil {
+		toSerialize["MaintenanceEventsNotBefore"] = o.MaintenanceEventsNotBefore
+	}
 	if o.SubregionNames != nil {
 		toSerialize["SubregionNames"] = o.SubregionNames
 	}

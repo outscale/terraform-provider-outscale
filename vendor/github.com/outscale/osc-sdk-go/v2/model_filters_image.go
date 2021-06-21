@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -23,7 +23,7 @@ type FiltersImage struct {
 	AccountIds *[]string `json:"AccountIds,omitempty"`
 	// The architectures of the OMIs (`i386` \\| `x86_64`).
 	Architectures *[]string `json:"Architectures,omitempty"`
-	// Indicates whether the block device mapping is deleted when terminating the VM.
+	// Whether the volumes are deleted or not when terminating the VM.
 	BlockDeviceMappingDeleteOnVmDeletion *bool `json:"BlockDeviceMappingDeleteOnVmDeletion,omitempty"`
 	// The device names for the volumes.
 	BlockDeviceMappingDeviceNames *[]string `json:"BlockDeviceMappingDeviceNames,omitempty"`
@@ -35,8 +35,10 @@ type FiltersImage struct {
 	BlockDeviceMappingVolumeTypes *[]string `json:"BlockDeviceMappingVolumeTypes,omitempty"`
 	// The descriptions of the OMIs, provided when they were created.
 	Descriptions *[]string `json:"Descriptions,omitempty"`
-	// The locations where the OMI files are stored on Object Storage Unit (OSU).
+	// The locations of the buckets where the OMI files are stored.
 	FileLocations *[]string `json:"FileLocations,omitempty"`
+	// The hypervisor type of the OMI (always `xen`).
+	Hypervisors *[]string `json:"Hypervisors,omitempty"`
 	// The IDs of the OMIs.
 	ImageIds *[]string `json:"ImageIds,omitempty"`
 	// The names of the OMIs, provided when they were created.
@@ -45,6 +47,8 @@ type FiltersImage struct {
 	PermissionsToLaunchAccountIds *[]string `json:"PermissionsToLaunchAccountIds,omitempty"`
 	// If true, lists all public OMIs. If false, lists all private OMIs.
 	PermissionsToLaunchGlobalPermission *bool `json:"PermissionsToLaunchGlobalPermission,omitempty"`
+	// The product code associated with the OMI (`0001` Linux/Unix \\| `0002` Windows \\| `0004` Linux/Oracle \\| `0005` Windows 10).
+	ProductCodes *[]string `json:"ProductCodes,omitempty"`
 	// The device names of the root devices (for example, `/dev/sda1`).
 	RootDeviceNames *[]string `json:"RootDeviceNames,omitempty"`
 	// The types of root device used by the OMIs (always `bsu`).
@@ -55,7 +59,7 @@ type FiltersImage struct {
 	TagKeys *[]string `json:"TagKeys,omitempty"`
 	// The values of the tags associated with the OMIs.
 	TagValues *[]string `json:"TagValues,omitempty"`
-	// The key/value combination of the tags associated with the OMIs, in the following format: \"Filters\":{\"Tags\":[\"TAGKEY=TAGVALUE\"]}.
+	// The key/value combination of the tags associated with the OMIs, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 	Tags *[]string `json:"Tags,omitempty"`
 	// The virtualization types (always `hvm`).
 	VirtualizationTypes *[]string `json:"VirtualizationTypes,omitempty"`
@@ -398,6 +402,38 @@ func (o *FiltersImage) SetFileLocations(v []string) {
 	o.FileLocations = &v
 }
 
+// GetHypervisors returns the Hypervisors field value if set, zero value otherwise.
+func (o *FiltersImage) GetHypervisors() []string {
+	if o == nil || o.Hypervisors == nil {
+		var ret []string
+		return ret
+	}
+	return *o.Hypervisors
+}
+
+// GetHypervisorsOk returns a tuple with the Hypervisors field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersImage) GetHypervisorsOk() (*[]string, bool) {
+	if o == nil || o.Hypervisors == nil {
+		return nil, false
+	}
+	return o.Hypervisors, true
+}
+
+// HasHypervisors returns a boolean if a field has been set.
+func (o *FiltersImage) HasHypervisors() bool {
+	if o != nil && o.Hypervisors != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetHypervisors gets a reference to the given []string and assigns it to the Hypervisors field.
+func (o *FiltersImage) SetHypervisors(v []string) {
+	o.Hypervisors = &v
+}
+
 // GetImageIds returns the ImageIds field value if set, zero value otherwise.
 func (o *FiltersImage) GetImageIds() []string {
 	if o == nil || o.ImageIds == nil {
@@ -524,6 +560,38 @@ func (o *FiltersImage) HasPermissionsToLaunchGlobalPermission() bool {
 // SetPermissionsToLaunchGlobalPermission gets a reference to the given bool and assigns it to the PermissionsToLaunchGlobalPermission field.
 func (o *FiltersImage) SetPermissionsToLaunchGlobalPermission(v bool) {
 	o.PermissionsToLaunchGlobalPermission = &v
+}
+
+// GetProductCodes returns the ProductCodes field value if set, zero value otherwise.
+func (o *FiltersImage) GetProductCodes() []string {
+	if o == nil || o.ProductCodes == nil {
+		var ret []string
+		return ret
+	}
+	return *o.ProductCodes
+}
+
+// GetProductCodesOk returns a tuple with the ProductCodes field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *FiltersImage) GetProductCodesOk() (*[]string, bool) {
+	if o == nil || o.ProductCodes == nil {
+		return nil, false
+	}
+	return o.ProductCodes, true
+}
+
+// HasProductCodes returns a boolean if a field has been set.
+func (o *FiltersImage) HasProductCodes() bool {
+	if o != nil && o.ProductCodes != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetProductCodes gets a reference to the given []string and assigns it to the ProductCodes field.
+func (o *FiltersImage) SetProductCodes(v []string) {
+	o.ProductCodes = &v
 }
 
 // GetRootDeviceNames returns the RootDeviceNames field value if set, zero value otherwise.
@@ -782,6 +850,9 @@ func (o FiltersImage) MarshalJSON() ([]byte, error) {
 	if o.FileLocations != nil {
 		toSerialize["FileLocations"] = o.FileLocations
 	}
+	if o.Hypervisors != nil {
+		toSerialize["Hypervisors"] = o.Hypervisors
+	}
 	if o.ImageIds != nil {
 		toSerialize["ImageIds"] = o.ImageIds
 	}
@@ -793,6 +864,9 @@ func (o FiltersImage) MarshalJSON() ([]byte, error) {
 	}
 	if o.PermissionsToLaunchGlobalPermission != nil {
 		toSerialize["PermissionsToLaunchGlobalPermission"] = o.PermissionsToLaunchGlobalPermission
+	}
+	if o.ProductCodes != nil {
+		toSerialize["ProductCodes"] = o.ProductCodes
 	}
 	if o.RootDeviceNames != nil {
 		toSerialize["RootDeviceNames"] = o.RootDeviceNames

@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the 3DS OUTSCALE's API documentation.<br /><br />  The 3DS OUTSCALE API enables you to manage your resources in the 3DS OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the 3DS OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the 3DS OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
+ * Welcome to the OUTSCALE API documentation.<br /><br />  The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br />  Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but some resources have different names in AWS than in the OUTSCALE API. You can find a list of the differences [here](https://wiki.outscale.net/display/EN/3DS+OUTSCALE+APIs+Reference).<br /><br />  You can also manage your resources using the [Cockpit](https://wiki.outscale.net/display/EN/About+Cockpit) web interface.
  *
- * API version: 1.7
+ * API version: 1.10
  * Contact: support@outscale.com
  */
 
@@ -20,11 +20,11 @@ type UpdateListenerRuleRequest struct {
 	// If true, checks whether you have the required permissions to perform the action.
 	DryRun *bool `json:"DryRun,omitempty"`
 	// A host-name pattern for the rule, with a maximum length of 128 characters. This host-name pattern supports maximum three wildcards, and must not contain any special characters except [-.?].
-	HostPattern *string `json:"HostPattern,omitempty"`
+	HostPattern NullableString `json:"HostPattern,omitempty"`
 	// The name of the listener rule.
 	ListenerRuleName string `json:"ListenerRuleName"`
-	// A path pattern for the rule, with a maximum length of 128 characters. This path pattern supports maximum three wildcards, and must not contain any special characters except [_-.$/~\"'@:+?].
-	PathPattern *string `json:"PathPattern,omitempty"`
+	// A path pattern for the rule, with a maximum length of 128 characters. This path pattern supports maximum three wildcards, and must not contain any special characters except [_-.$/~&quot;'@:+?].
+	PathPattern NullableString `json:"PathPattern,omitempty"`
 }
 
 // NewUpdateListenerRuleRequest instantiates a new UpdateListenerRuleRequest object
@@ -77,36 +77,47 @@ func (o *UpdateListenerRuleRequest) SetDryRun(v bool) {
 	o.DryRun = &v
 }
 
-// GetHostPattern returns the HostPattern field value if set, zero value otherwise.
+// GetHostPattern returns the HostPattern field value if set, zero value otherwise (both if not set or set to explicit null).
 func (o *UpdateListenerRuleRequest) GetHostPattern() string {
-	if o == nil || o.HostPattern == nil {
+	if o == nil || o.HostPattern.Get() == nil {
 		var ret string
 		return ret
 	}
-	return *o.HostPattern
+	return *o.HostPattern.Get()
 }
 
 // GetHostPatternOk returns a tuple with the HostPattern field value if set, nil otherwise
 // and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *UpdateListenerRuleRequest) GetHostPatternOk() (*string, bool) {
-	if o == nil || o.HostPattern == nil {
+	if o == nil {
 		return nil, false
 	}
-	return o.HostPattern, true
+	return o.HostPattern.Get(), o.HostPattern.IsSet()
 }
 
 // HasHostPattern returns a boolean if a field has been set.
 func (o *UpdateListenerRuleRequest) HasHostPattern() bool {
-	if o != nil && o.HostPattern != nil {
+	if o != nil && o.HostPattern.IsSet() {
 		return true
 	}
 
 	return false
 }
 
-// SetHostPattern gets a reference to the given string and assigns it to the HostPattern field.
+// SetHostPattern gets a reference to the given NullableString and assigns it to the HostPattern field.
 func (o *UpdateListenerRuleRequest) SetHostPattern(v string) {
-	o.HostPattern = &v
+	o.HostPattern.Set(&v)
+}
+
+// SetHostPatternNil sets the value for HostPattern to be an explicit nil
+func (o *UpdateListenerRuleRequest) SetHostPatternNil() {
+	o.HostPattern.Set(nil)
+}
+
+// UnsetHostPattern ensures that no value is present for HostPattern, not even an explicit nil
+func (o *UpdateListenerRuleRequest) UnsetHostPattern() {
+	o.HostPattern.Unset()
 }
 
 // GetListenerRuleName returns the ListenerRuleName field value
@@ -133,36 +144,47 @@ func (o *UpdateListenerRuleRequest) SetListenerRuleName(v string) {
 	o.ListenerRuleName = v
 }
 
-// GetPathPattern returns the PathPattern field value if set, zero value otherwise.
+// GetPathPattern returns the PathPattern field value if set, zero value otherwise (both if not set or set to explicit null).
 func (o *UpdateListenerRuleRequest) GetPathPattern() string {
-	if o == nil || o.PathPattern == nil {
+	if o == nil || o.PathPattern.Get() == nil {
 		var ret string
 		return ret
 	}
-	return *o.PathPattern
+	return *o.PathPattern.Get()
 }
 
 // GetPathPatternOk returns a tuple with the PathPattern field value if set, nil otherwise
 // and a boolean to check if the value has been set.
+// NOTE: If the value is an explicit nil, `nil, true` will be returned
 func (o *UpdateListenerRuleRequest) GetPathPatternOk() (*string, bool) {
-	if o == nil || o.PathPattern == nil {
+	if o == nil {
 		return nil, false
 	}
-	return o.PathPattern, true
+	return o.PathPattern.Get(), o.PathPattern.IsSet()
 }
 
 // HasPathPattern returns a boolean if a field has been set.
 func (o *UpdateListenerRuleRequest) HasPathPattern() bool {
-	if o != nil && o.PathPattern != nil {
+	if o != nil && o.PathPattern.IsSet() {
 		return true
 	}
 
 	return false
 }
 
-// SetPathPattern gets a reference to the given string and assigns it to the PathPattern field.
+// SetPathPattern gets a reference to the given NullableString and assigns it to the PathPattern field.
 func (o *UpdateListenerRuleRequest) SetPathPattern(v string) {
-	o.PathPattern = &v
+	o.PathPattern.Set(&v)
+}
+
+// SetPathPatternNil sets the value for PathPattern to be an explicit nil
+func (o *UpdateListenerRuleRequest) SetPathPatternNil() {
+	o.PathPattern.Set(nil)
+}
+
+// UnsetPathPattern ensures that no value is present for PathPattern, not even an explicit nil
+func (o *UpdateListenerRuleRequest) UnsetPathPattern() {
+	o.PathPattern.Unset()
 }
 
 func (o UpdateListenerRuleRequest) MarshalJSON() ([]byte, error) {
@@ -170,14 +192,14 @@ func (o UpdateListenerRuleRequest) MarshalJSON() ([]byte, error) {
 	if o.DryRun != nil {
 		toSerialize["DryRun"] = o.DryRun
 	}
-	if o.HostPattern != nil {
-		toSerialize["HostPattern"] = o.HostPattern
+	if o.HostPattern.IsSet() {
+		toSerialize["HostPattern"] = o.HostPattern.Get()
 	}
 	if true {
 		toSerialize["ListenerRuleName"] = o.ListenerRuleName
 	}
-	if o.PathPattern != nil {
-		toSerialize["PathPattern"] = o.PathPattern
+	if o.PathPattern.IsSet() {
+		toSerialize["PathPattern"] = o.PathPattern.Get()
 	}
 	return json.Marshal(toSerialize)
 }
