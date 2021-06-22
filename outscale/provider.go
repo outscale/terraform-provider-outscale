@@ -157,6 +157,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_flexible_gpu_catalog":         dataSourceOutscaleOAPIFlexibleGpuCatalog(),
 			"outscale_product_type":                 dataSourceOutscaleOAPIProductType(),
 			"outscale_product_types":                dataSourceOutscaleOAPIProductTypes(),
+			"outscale_quota":                        dataSourceOutscaleOAPIQuota(),
+			"outscale_quotas":                       dataSourceOutscaleOAPIQuotas(),
 		},
 
 		ConfigureFunc: providerConfigureClient,
