@@ -72,7 +72,7 @@ provider "outscale" {}
 
 Usage:
 
-```bash
+```console
 $ export OUTSCALE_ACCESSKEYID="myaccesskey"
 $ export OUTSCALE_SECRETKEYID="mysecretkey"
 $ export OUTSCALE_REGION="cloudgouv-eu-west-1"
