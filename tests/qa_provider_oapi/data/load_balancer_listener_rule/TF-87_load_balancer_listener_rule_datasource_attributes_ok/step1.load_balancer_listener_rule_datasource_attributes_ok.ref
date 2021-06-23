@@ -1,0 +1,301 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "outscale_load_balancer_listener_rule",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "action": "forward",
+                        "filter": "########",
+                        "host_name_pattern": "*.abc.-.abc.*.com",
+                        "id": "##id-0##",
+                        "listener_id": "##id-1##",
+                        "listener_rule_id": "##id-2##",
+                        "listener_rule_name": "listener-rule-2",
+                        "path_pattern": "",
+                        "priority": 1,
+                        "request_id": "########",
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "my_keypair",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-4##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "KP-TF87",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "false",
+                            "osu_bucket_name": "",
+                            "osu_bucket_prefix": "",
+                            "publication_interval": "60"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-5##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-87",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-6##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "listener-rule"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "rule-1",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-7##",
+                        "listener": [
+                            {
+                                "load_balancer_name": "lbu-TF-87",
+                                "load_balancer_port": 80
+                            }
+                        ],
+                        "listener_rule": [
+                            {
+                                "action": "forward",
+                                "host_name_pattern": "",
+                                "listener_id": "##id-1##",
+                                "listener_rule_id": "##id-8##",
+                                "listener_rule_name": "listener-rule-1",
+                                "path_pattern": "*.abc.*.abc.*.com",
+                                "priority": 10
+                            }
+                        ],
+                        "request_id": "########",
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_vm.public_vm_1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_listener_rule",
+            "name": "rule-2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-9##",
+                        "listener": [
+                            {
+                                "load_balancer_name": "lbu-TF-87",
+                                "load_balancer_port": 80
+                            }
+                        ],
+                        "listener_rule": [
+                            {
+                                "action": "forward",
+                                "host_name_pattern": "*.abc.-.abc.*.com",
+                                "listener_id": "##id-1##",
+                                "listener_rule_id": "##id-2##",
+                                "listener_rule_name": "listener-rule-2",
+                                "path_pattern": "",
+                                "priority": 1
+                            }
+                        ],
+                        "request_id": "########",
+                        "vm_ids": [
+                            "##id-3##"
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_vm.public_vm_1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_vms",
+            "name": "outscale_load_balancer_vms",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "backend_vm_ids": [
+                            "##id-3##"
+                        ],
+                        "id": "##id-10##",
+                        "load_balancer_name": "lbu-TF-87",
+                        "request_id": "########"
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_load_balancer.public_lbu2",
+                        "outscale_vm.public_vm_1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "public_vm_1",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-11##"
+                                },
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "deletion_protection": false,
+                        "hypervisor": "xen",
+                        "id": "##id-3##",
+                        "image_id": "##id-12##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "KP-TF87",
+                        "launch_number": 0,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "###region###a",
+                        "placement_tenancy": "default",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-13##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": null,
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-14##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-3##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair"
+                    ]
+                }
+            ]
+        }
+    ]
+}

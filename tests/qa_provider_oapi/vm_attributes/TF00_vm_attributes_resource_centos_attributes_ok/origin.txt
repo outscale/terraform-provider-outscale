@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_vm_attributes/test_outscale_vm_attributes_resource_centos_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_vm_attributes/config_outscale_vm_attributes_resource_centos_attributes_ok
-check file: provider_outscale_oapi/test/outscale_vm_attributes/outscale_vm_attributes_resource_centos_attributes.txt

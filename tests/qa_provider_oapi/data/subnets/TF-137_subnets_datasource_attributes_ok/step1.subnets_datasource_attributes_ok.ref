@@ -1,0 +1,192 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_subnets",
+            "name": "outscale_subnets",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "request_id": "########",
+                        "subnet_ids": null,
+                        "subnets": [
+                            {
+                                "available_ips_count": 251,
+                                "ip_range": "10.0.10.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-2##",
+                                "subregion_name": "###region###a",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name",
+                                        "value": "subnet-tags-1"
+                                    }
+                                ]
+                            },
+                            {
+                                "available_ips_count": 251,
+                                "ip_range": "10.0.20.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-3##",
+                                "subregion_name": "###region###a",
+                                "tags": [
+                                    {
+                                        "key": "name",
+                                        "value": "subnet-tags-2"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "data",
+            "type": "outscale_subnets",
+            "name": "outscale_subnets-2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-4##",
+                        "request_id": "########",
+                        "subnet_ids": null,
+                        "subnets": [
+                            {
+                                "available_ips_count": 251,
+                                "ip_range": "10.0.10.0/24",
+                                "map_public_ip_on_launch": false,
+                                "net_id": "##id-1##",
+                                "state": "available",
+                                "subnet_id": "##id-2##",
+                                "subregion_name": "###region###a",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name",
+                                        "value": "subnet-tags-1"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-5##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "outscale_subnet",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": 251,
+                        "id": "##id-2##",
+                        "ip_range": "10.0.10.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-2##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "subnet-tags-1"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "outscale_subnet2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": 251,
+                        "id": "##id-3##",
+                        "ip_range": "10.0.20.0/24",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-3##",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "subnet-tags-2"
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,45 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_vm_types",
+            "name": "vm_types_7",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "request_id": "########",
+                        "vm_types": [
+                            {
+                                "bsu_optimized": true,
+                                "max_private_ips": 15,
+                                "memory_size": 15,
+                                "vcore_count": 4,
+                                "vm_type_name": "mv3.xlarge",
+                                "volume_count": 2,
+                                "volume_size": 40
+                            },
+                            {
+                                "bsu_optimized": true,
+                                "max_private_ips": 15,
+                                "memory_size": 15,
+                                "vcore_count": 4,
+                                "vm_type_name": "m3.xlarge",
+                                "volume_count": 2,
+                                "volume_size": 40
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

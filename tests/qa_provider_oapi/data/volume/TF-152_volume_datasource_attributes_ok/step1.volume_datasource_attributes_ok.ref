@@ -1,0 +1,77 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_volume",
+            "name": "outscale_volume",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "iops": 140,
+                        "linked_volumes": [],
+                        "request_id": "########",
+                        "size": 14,
+                        "snapshot_id": "",
+                        "state": "available",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "test-Volume"
+                            }
+                        ],
+                        "volume_id": "##id-0##",
+                        "volume_type": "io1"
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume",
+            "name": "outscale_volume",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-0##",
+                        "iops": 140,
+                        "linked_volumes": [],
+                        "request_id": "########",
+                        "size": 14,
+                        "snapshot_id": "",
+                        "state": "available",
+                        "subregion_name": "###region###a",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "test-Volume"
+                            }
+                        ],
+                        "volume_id": "##id-0##",
+                        "volume_type": "io1"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

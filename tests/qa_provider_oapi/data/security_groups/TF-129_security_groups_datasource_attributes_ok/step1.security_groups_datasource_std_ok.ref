@@ -1,0 +1,117 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_security_groups",
+            "name": "outscale_security_groups",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "request_id": "########",
+                        "security_group_ids": null,
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "account_id": "##id-1##",
+                                "description": "test group",
+                                "inbound_rules": [],
+                                "net_id": "",
+                                "outbound_rules": [],
+                                "security_group_id": "##id-2##",
+                                "security_group_name": "sg1-test-group_test-r2",
+                                "tags": []
+                            },
+                            {
+                                "account_id": "##id-1##",
+                                "description": "test group",
+                                "inbound_rules": [],
+                                "net_id": "",
+                                "outbound_rules": [],
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "sg1-test-group_test-r",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Key-2",
+                                        "value": "value-tags-2"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test group",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "sg1-test-group_test-r",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Key-2",
+                                "value": "value-tags-2"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-1##",
+                        "description": "test group",
+                        "id": "##id-2##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "request_id": "########",
+                        "security_group_id": "##id-2##",
+                        "security_group_name": "sg1-test-group_test-r2",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

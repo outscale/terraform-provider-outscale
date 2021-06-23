@@ -1,0 +1,39 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_virtual_gateway",
+            "name": "outscale_virtual_gateway",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "connection_type": "ipsec.1",
+                        "id": "##id-0##",
+                        "net_to_virtual_gateway_links": [],
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "Project",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name",
+                                "value": "test-VGW-1"
+                            }
+                        ],
+                        "virtual_gateway_id": "##id-0##"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,128 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-0##",
+                        "id": "##id-1##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "tenancy": "default"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_route_table",
+            "name": "outscale_route_table",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-2##",
+                        "link_route_tables": [],
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "route_propagating_virtual_gateways": [],
+                        "route_table_id": "##id-2##",
+                        "routes": [
+                            {
+                                "creation_method": "CreateRouteTable",
+                                "destination_ip_range": "10.0.0.0/16",
+                                "destination_service_id": "",
+                                "gateway_id": "",
+                                "nat_service_id": "",
+                                "net_access_point_id": "",
+                                "net_peering_id": "",
+                                "nic_id": "",
+                                "state": "active",
+                                "vm_account_id": "",
+                                "vm_id": ""
+                            }
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "terraform-RT"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_route_table_link",
+            "name": "outscale_route_table_link",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-3##",
+                        "link_route_table_id": "##id-3##",
+                        "main": false,
+                        "request_id": "########",
+                        "route_table_id": "##id-2##",
+                        "subnet_id": "##id-4##"
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net",
+                        "outscale_route_table.outscale_route_table",
+                        "outscale_subnet.outscale_subnet"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_subnet",
+            "name": "outscale_subnet",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "available_ips_count": 16379,
+                        "id": "##id-4##",
+                        "ip_range": "10.0.0.0/18",
+                        "map_public_ip_on_launch": false,
+                        "net_id": "##id-1##",
+                        "request_id": "########",
+                        "state": "available",
+                        "subnet_id": "##id-4##",
+                        "subregion_name": "###region###a",
+                        "tags": [],
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        }
+    ]
+}

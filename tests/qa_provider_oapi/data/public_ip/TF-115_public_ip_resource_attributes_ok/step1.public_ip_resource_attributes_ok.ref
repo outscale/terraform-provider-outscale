@@ -1,0 +1,39 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_public_ip",
+            "name": "outscale_public_ip",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-0##",
+                        "link_public_ip_id": "",
+                        "nic_account_id": "",
+                        "nic_id": "",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-0##",
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "Public_ip"
+                            }
+                        ],
+                        "timeouts": null,
+                        "vm_id": ""
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        }
+    ]
+}

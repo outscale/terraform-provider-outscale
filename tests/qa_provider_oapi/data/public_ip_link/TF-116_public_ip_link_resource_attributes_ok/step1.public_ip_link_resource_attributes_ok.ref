@@ -1,0 +1,171 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "my_keypair",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-0##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "KP-TF116",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_public_ip",
+            "name": "outscale_public_ip",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "link_public_ip_id": "",
+                        "nic_account_id": "",
+                        "nic_id": "",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-1##",
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_ip"
+                            }
+                        ],
+                        "timeouts": null,
+                        "vm_id": ""
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjE4MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_public_ip_link",
+            "name": "outscale_public_ip_link",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "allow_relink": null,
+                        "id": "##id-2##",
+                        "link_public_ip_id": "##id-2##",
+                        "nic_account_id": "##id-3##",
+                        "nic_id": "##id-4##",
+                        "private_ip": "########",
+                        "public_ip": "########",
+                        "public_ip_id": "##id-1##",
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_ip"
+                            }
+                        ],
+                        "timeouts": null,
+                        "vm_id": "##id-5##"
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwfX0=",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair",
+                        "outscale_public_ip.outscale_public_ip",
+                        "outscale_vm.outscale_vm"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "outscale_vm",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-6##"
+                                },
+                                "device_name": "/dev/sda1"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "deletion_protection": false,
+                        "hypervisor": "xen",
+                        "id": "##id-5##",
+                        "image_id": "##id-7##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "KP-TF116",
+                        "launch_number": 0,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "###region###a",
+                        "placement_tenancy": "default",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-8##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": null,
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-9##",
+                                "security_group_name": "default"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-5##",
+                        "vm_initiated_shutdown_behavior": "stop",
+                        "vm_type": "###vm_type###"
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_keypair.my_keypair"
+                    ]
+                }
+            ]
+        }
+    ]
+}

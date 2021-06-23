@@ -1,0 +1,113 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_client_gateway",
+            "name": "My_CGW",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 65000,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_client_gateway",
+            "name": "My_CGW_2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 63000,
+                        "client_gateway_id": "##id-1##",
+                        "connection_type": "ipsec.1",
+                        "id": "##id-1##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_virtual_gateway",
+            "name": "My_VGW",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "connection_type": "ipsec.1",
+                        "id": "##id-2##",
+                        "net_to_virtual_gateway_links": [],
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [],
+                        "virtual_gateway_id": "##id-2##"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vpn_connection",
+            "name": "dynamic_vpn_connection",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "client_gateway_configuration": "########",
+                        "client_gateway_id": "##id-1##",
+                        "connection_type": "ipsec.1",
+                        "id": "##id-3##",
+                        "request_id": "########",
+                        "routes": [],
+                        "state": "available",
+                        "static_routes_only": false,
+                        "tags": [
+                            {
+                                "key": "Project",
+                                "value": "Terraform"
+                            },
+                            {
+                                "key": "Type",
+                                "value": "Dynamic"
+                            }
+                        ],
+                        "timeouts": null,
+                        "virtual_gateway_id": "##id-2##",
+                        "vpn_connection_id": "##id-3##"
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_client_gateway.My_CGW_2",
+                        "outscale_virtual_gateway.My_VGW"
+                    ]
+                }
+            ]
+        }
+    ]
+}

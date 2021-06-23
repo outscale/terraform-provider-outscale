@@ -1,0 +1,108 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_internet_services",
+            "name": "outscale_internet_services",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "internet_service_ids": null,
+                        "internet_services": [
+                            {
+                                "internet_service_id": "##id-1##",
+                                "net_id": "",
+                                "state": "",
+                                "tags": [
+                                    {
+                                        "key": "name",
+                                        "value": "Internet-service-2"
+                                    }
+                                ]
+                            },
+                            {
+                                "internet_service_id": "##id-2##",
+                                "net_id": "",
+                                "state": "",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "name",
+                                        "value": "Internet-service-1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "request_id": "########"
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_internet_service",
+            "name": "outscale_internet_service",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-2##",
+                        "internet_service_id": "##id-2##",
+                        "net_id": "",
+                        "request_id": "########",
+                        "state": "",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "name",
+                                "value": "Internet-service-1"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_internet_service",
+            "name": "outscale_internet_service2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "internet_service_id": "##id-1##",
+                        "net_id": "",
+                        "request_id": "########",
+                        "state": "",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "Internet-service-2"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

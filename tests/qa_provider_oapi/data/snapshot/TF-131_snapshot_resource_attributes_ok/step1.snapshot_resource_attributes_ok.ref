@@ -1,0 +1,111 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_snapshot",
+            "name": "outscale_snapshot",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "description": "",
+                        "file_location": null,
+                        "id": "##id-1##",
+                        "permissions_to_create_volume": [],
+                        "progress": 100,
+                        "request_id": "########",
+                        "snapshot_id": "##id-1##",
+                        "snapshot_size": null,
+                        "source_region_name": null,
+                        "source_snapshot_id": null,
+                        "state": "completed",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "Snapsho_Creation_test"
+                            }
+                        ],
+                        "volume_id": "##id-2##",
+                        "volume_size": 40
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_volume.outscale_volume_snap"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_snapshot",
+            "name": "outscale_snapshot_2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_alias": "",
+                        "account_id": "##id-0##",
+                        "description": "Test-copy-snapshot",
+                        "file_location": null,
+                        "id": "##id-3##",
+                        "permissions_to_create_volume": [],
+                        "progress": 100,
+                        "request_id": "########",
+                        "snapshot_id": "##id-3##",
+                        "snapshot_size": null,
+                        "source_region_name": "###region###",
+                        "source_snapshot_id": "##id-1##",
+                        "state": "completed",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "Snapsho_Copy_test"
+                            }
+                        ],
+                        "volume_id": "",
+                        "volume_size": 40
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_snapshot.outscale_snapshot",
+                        "outscale_volume.outscale_volume_snap"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_volume",
+            "name": "outscale_volume_snap",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-2##",
+                        "iops": 0,
+                        "linked_volumes": [],
+                        "request_id": "########",
+                        "size": 40,
+                        "snapshot_id": "",
+                        "state": "available",
+                        "subregion_name": "###region###a",
+                        "tags": [],
+                        "volume_id": "##id-2##",
+                        "volume_type": "standard"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

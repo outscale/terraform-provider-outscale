@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_nat_service/test_outscale_nat_service_resource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_nat_service/config_outscale_nat_service_resource_attributes_ok
-check file: provider_outscale_oapi/test/outscale_nat_service/outscale_nat_service_resource_attributes.txt

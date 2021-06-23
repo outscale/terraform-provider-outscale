@@ -1,0 +1,78 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_keypairs",
+            "name": "outscale_keypairs",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "keypair_names": null,
+                        "keypairs": [
+                            {
+                                "keypair_fingerprint": "########",
+                                "keypair_name": "keyname_test_"
+                            },
+                            {
+                                "keypair_fingerprint": "########",
+                                "keypair_name": "keyname_test_2"
+                            }
+                        ],
+                        "request_id": "########"
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "outscale_keypair",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "keyname_test_",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "outscale_keypair2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-2##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "keyname_test_2",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,194 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_load_balancer_tags",
+            "name": "test-tags",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "load_balancer_names": [
+                            "lbu-TF-91",
+                            "lbu-TF-91-2"
+                        ],
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "name",
+                                "load_balancer_name": "lbu-TF-91",
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "User",
+                                "load_balancer_name": "lbu-TF-91",
+                                "value": "mzi"
+                            },
+                            {
+                                "key": "Platfotm",
+                                "load_balancer_name": "lbu-TF-91",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name",
+                                "load_balancer_name": "lbu-TF-91-2",
+                                "value": "public_lbu2"
+                            },
+                            {
+                                "key": "Platfotm",
+                                "load_balancer_name": "lbu-TF-91-2",
+                                "value": "terraform"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu1",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "false",
+                            "osu_bucket_name": "",
+                            "osu_bucket_prefix": "",
+                            "publication_interval": "60"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-1##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-91",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-2##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "Platfotm",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "User",
+                                "value": "mzi"
+                            },
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "false",
+                            "osu_bucket_name": "",
+                            "osu_bucket_prefix": "",
+                            "publication_interval": "60"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-3##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-91-2",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-2##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "Platfotm",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "name",
+                                "value": "public_lbu2"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

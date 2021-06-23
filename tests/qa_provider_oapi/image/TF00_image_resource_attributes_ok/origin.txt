@@ -1,4 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_image/test_outscale_image_resource_attributes_ok.py
-tf file: provider_outscale_oapi/config/outscale_image/config_outscale_image_no-reboot_resource_std_attributes_ok
-check file: provider_outscale_oapi/test/outscale_image/outscale_image_resource_attributes.txt

@@ -1,0 +1,123 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_security_group",
+            "name": "outscale_security_groupd",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group",
+                        "filter": "########",
+                        "id": "##id-1##",
+                        "inbound_rules": [],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": [
+                                    "0.0.0.0/0"
+                                ],
+                                "prefix_list_ids": [],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "sg1-test-group_test-d",
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_security_group_net"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-3##",
+                        "id": "##id-2##",
+                        "ip_range": "10.0.0.0/16",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource2"
+                            }
+                        ],
+                        "tenancy": "default"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group",
+                        "id": "##id-1##",
+                        "inbound_rules": [],
+                        "net_id": "##id-2##",
+                        "outbound_rules": [
+                            {
+                                "from_port_range": -1,
+                                "ip_protocol": "-1",
+                                "ip_ranges": [
+                                    "0.0.0.0/0"
+                                ],
+                                "security_groups_members": [],
+                                "to_port_range": -1
+                            }
+                        ],
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "sg1-test-group_test-d",
+                        "tag": null,
+                        "tags": [
+                            {
+                                "key": "Name",
+                                "value": "outscale_security_group_net"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_net.outscale_net"
+                    ]
+                }
+            ]
+        }
+    ]
+}

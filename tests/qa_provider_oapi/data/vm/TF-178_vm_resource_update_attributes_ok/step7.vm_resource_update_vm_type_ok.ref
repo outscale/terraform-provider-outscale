@@ -1,0 +1,196 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_keypair",
+            "name": "keypair-TF66",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "index_key": 0,
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-0##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "keyname_TF66-0",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "id": "##id-1##",
+                        "keypair_fingerprint": "########",
+                        "keypair_name": "keyname_TF66-1",
+                        "private_key": "########",
+                        "public_key": null,
+                        "request_id": "########",
+                        "timeouts": null
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJyZWFkIjo2MDAwMDAwMDAwMDB9fQ=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "security_group_TF66",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "index_key": 0,
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test-terraform-TF66",
+                        "id": "##id-3##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "request_id": "########",
+                        "security_group_id": "##id-3##",
+                        "security_group_name": "terraform-sg-TF66-0",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                },
+                {
+                    "index_key": 1,
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-2##",
+                        "description": "test-terraform-TF66",
+                        "id": "##id-4##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "request_id": "########",
+                        "security_group_id": "##id-4##",
+                        "security_group_name": "terraform-sg-TF66-1",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_vm",
+            "name": "outscale_vm-TF66",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "admin_password": "",
+                        "architecture": "x86_64",
+                        "block_device_mappings": [
+                            {
+                                "bsu": [
+                                    {
+                                        "delete_on_vm_deletion": true,
+                                        "iops": 0,
+                                        "snapshot_id": "",
+                                        "volume_size": 20,
+                                        "volume_type": "gp2"
+                                    }
+                                ],
+                                "device_name": "/dev/sdb",
+                                "no_device": "",
+                                "virtual_device_name": ""
+                            }
+                        ],
+                        "block_device_mappings_created": [
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-5##"
+                                },
+                                "device_name": "/dev/sda1"
+                            },
+                            {
+                                "bsu": {
+                                    "delete_on_vm_deletion": "true",
+                                    "link_date": "########",
+                                    "state": "attached",
+                                    "volume_id": "##id-6##"
+                                },
+                                "device_name": "/dev/sdb"
+                            }
+                        ],
+                        "bsu_optimized": false,
+                        "client_token": "",
+                        "deletion_protection": false,
+                        "hypervisor": "xen",
+                        "id": "##id-7##",
+                        "image_id": "##id-8##",
+                        "is_source_dest_checked": true,
+                        "keypair_name": "keyname_TF66-1",
+                        "launch_number": 0,
+                        "net_id": "",
+                        "nics": [],
+                        "os_family": "",
+                        "performance": "high",
+                        "placement_subregion_name": "###region###a",
+                        "placement_tenancy": "default",
+                        "private_dns_name": "########",
+                        "private_ip": "########",
+                        "private_ips": null,
+                        "product_codes": [
+                            "0001"
+                        ],
+                        "public_dns_name": "########",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "reservation_id": "##id-9##",
+                        "root_device_name": "/dev/sda1",
+                        "root_device_type": "ebs",
+                        "security_group_ids": [
+                            "##id-3##",
+                            "##id-4##"
+                        ],
+                        "security_group_names": null,
+                        "security_groups": [
+                            {
+                                "security_group_id": "##id-3##",
+                                "security_group_name": "terraform-sg-TF66-0"
+                            },
+                            {
+                                "security_group_id": "##id-4##",
+                                "security_group_name": "terraform-sg-TF66-1"
+                            }
+                        ],
+                        "state": "running",
+                        "state_reason": "",
+                        "subnet_id": "",
+                        "tags": [],
+                        "timeouts": null,
+                        "user_data": "",
+                        "vm_id": "##id-7##",
+                        "vm_initiated_shutdown_behavior": "restart",
+                        "vm_type": "tinav4.c3r3"
+                    },
+                    "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+                    "dependencies": [
+                        "outscale_keypair.keypair-TF66",
+                        "outscale_security_group.security_group_TF66"
+                    ]
+                }
+            ]
+        }
+    ]
+}

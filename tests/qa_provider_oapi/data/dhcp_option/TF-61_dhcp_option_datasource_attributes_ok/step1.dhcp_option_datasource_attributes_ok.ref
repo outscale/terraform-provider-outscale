@@ -1,0 +1,84 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_dhcp_option",
+            "name": "outscale_dhcp_option",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "default": false,
+                        "dhcp_options_set_id": "##id-0##",
+                        "domain_name": "test234.fr",
+                        "domain_name_servers": [
+                            "192.168.12.12",
+                            "192.168.12.132"
+                        ],
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "ntp_servers": [
+                            "192.0.0.2",
+                            "192.168.12.242"
+                        ],
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "Project",
+                                "value": "terraform"
+                            },
+                            {
+                                "key": "Name-1",
+                                "value": "test-MZI-3"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_dhcp_option",
+            "name": "outscale_dhcp_option",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "default": false,
+                        "dhcp_options_name": null,
+                        "dhcp_options_set_id": "##id-0##",
+                        "domain_name": "test234.fr",
+                        "domain_name_servers": [
+                            "192.168.12.12",
+                            "192.168.12.132"
+                        ],
+                        "id": "##id-0##",
+                        "ntp_servers": [
+                            "192.0.0.2",
+                            "192.168.12.242"
+                        ],
+                        "request_id": "########",
+                        "tags": [
+                            {
+                                "key": "Name-1",
+                                "value": "test-MZI-3"
+                            },
+                            {
+                                "key": "Project",
+                                "value": "terraform"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

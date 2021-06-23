@@ -1,0 +1,35 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_security_group",
+            "name": "outscale_security_group",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "index_key": 0,
+                    "schema_version": 0,
+                    "attributes": {
+                        "account_id": "##id-0##",
+                        "description": "test group",
+                        "id": "##id-1##",
+                        "inbound_rules": [],
+                        "net_id": "",
+                        "outbound_rules": [],
+                        "request_id": "########",
+                        "security_group_id": "##id-1##",
+                        "security_group_name": "sg1-test-group_test-r",
+                        "tag": null,
+                        "tags": []
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

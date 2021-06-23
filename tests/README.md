@@ -26,6 +26,7 @@ TODO: Template....
 ### Execute tests
 
 ```bash
+cd qa_provider_oapi
 pytest [-s] [-k <test_name>] -v ./test_provider_oapi.py
 ```
 * use '-s' for more detailed log in console

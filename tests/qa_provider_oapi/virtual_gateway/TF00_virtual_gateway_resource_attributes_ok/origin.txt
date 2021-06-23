@@ -1,3 +1,0 @@
-python file: new test
-tf file:  s step1.virtual_gateway_resource_attributes_ok.tf 
-check file: step1.outscale_virtual_gateway.outscale_virtual_gateway.check

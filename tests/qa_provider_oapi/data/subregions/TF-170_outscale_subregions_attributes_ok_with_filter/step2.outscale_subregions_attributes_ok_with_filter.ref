@@ -1,0 +1,37 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_subregions",
+            "name": "subregion-2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "request_id": "########",
+                        "subregions": [
+                            {
+                                "region_name": "###region###",
+                                "state": "available",
+                                "subregion_name": "###region###a"
+                            },
+                            {
+                                "region_name": "###region###",
+                                "state": "available",
+                                "subregion_name": "###region###b"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,56 @@
+resource "outscale_keypair" "my_keypair" {
+ keypair_name = "KP-TF151"
+}
+resource "outscale_vm" "outscale_vm_centos" {
+    count = 2                                             # plus testWebsite one already created
+
+     image_id               = var.image_id
+     vm_type                = var.vm_type
+     keypair_name           = outscale_keypair.my_keypair.keypair_name 
+}
+
+data "outscale_vms" "outscale_vms" {
+   depends_on =[outscale_vm.outscale_vm_centos]
+   
+   filter {
+      name  = "vm_ids"
+      values = [outscale_vm.outscale_vm_centos.0.vm_id,outscale_vm.outscale_vm_centos.1.vm_id]
+   }  
+}
+
+resource "outscale_vm" "outscale_vm_tags" {
+
+     image_id               = var.image_id
+     vm_type                = var.vm_type
+     keypair_name           = outscale_keypair.my_keypair.keypair_name
+    tags {
+      key = "name-B"
+      value = "test-B"  
+  }
+    tags {
+      key = "Key"
+      value = "value-tags"
+     }
+}
+
+data "outscale_vms" "outscale_vms-2" {
+filter {
+  name   = "tags"
+  values = ["name-B=test-B"]
+ }
+}
+
+data "outscale_vms" "outscale_vms-3" {
+
+filter {
+  name   = "tag_keys"
+  values = ["name-B"]
+ }
+}
+
+data "outscale_vms" "outscale_vms-4" {
+filter {
+  name   = "tag_values"
+  values = ["test-B"]
+ }
+}

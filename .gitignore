@@ -5,7 +5,6 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 .terraform.tfstate.lock.info
 
-test/
 .vscode/
 log.txt
 terraform-provider-outscale
@@ -14,3 +13,23 @@ terraform-provider-outscale
 log.*
 .DS_Store
 *~
+
+# /tests
+
+.venv/
+__pycache__/
+conf/provider.auto.tfvars
+terraform
+terraformStatePull.json
+*.dump
+*.out
+/tests/.project
+/tests/.pydevproject
+/tests/.cache/
+/tests/.pytest_cache/
+/tests/.settings/
+/tests/provider.auto.tfvars.template.cpgz
+/tests/resources.auto.tfvars.template.cpgz
+/tests/test.tf
+/tests/old.py
+/tests/tmp.txt

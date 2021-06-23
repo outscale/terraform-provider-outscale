@@ -1,0 +1,262 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer",
+            "name": "public_lbu1",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "false",
+                            "osu_bucket_name": "",
+                            "osu_bucket_prefix": "",
+                            "publication_interval": "60"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-0##",
+                        "listeners": [
+                            {
+                                "backend_port": 1024,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 1024,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-85",
+                        "load_balancer_sticky_cookie_policies": [],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-1##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "test",
+                                "value": "tags"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_attributes",
+            "name": "attributes-policy",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": [
+                            {
+                                "is_enabled": false,
+                                "osu_bucket_name": "",
+                                "osu_bucket_prefix": "",
+                                "publication_interval": 60
+                            }
+                        ],
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "dns_name": "########",
+                        "health_check": [
+                            {
+                                "check_interval": "30",
+                                "healthy_threshold": "10",
+                                "path": "",
+                                "port": "80",
+                                "protocol": "TCP",
+                                "timeout": "5",
+                                "unhealthy_threshold": "2"
+                            }
+                        ],
+                        "id": "##id-0##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [
+                                    "policy-lbu-terraform-2"
+                                ],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 1024,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 1024,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-85",
+                        "load_balancer_port": 80,
+                        "load_balancer_sticky_cookie_policies": [
+                            {
+                                "policy_name": "policy-lbu-terraform-2"
+                            }
+                        ],
+                        "load_balancer_type": null,
+                        "policy_names": [
+                            "policy-lbu-terraform-2"
+                        ],
+                        "request_id": "########",
+                        "security_groups": [],
+                        "server_certificate_id": null,
+                        "source_security_group": {
+                            "security_group_account_id": "##id-1##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "test",
+                                "value": "tags"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_load_balancer.public_lbu1",
+                        "outscale_load_balancer_policy.policy-1"
+                    ]
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_load_balancer_policy",
+            "name": "policy-1",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "access_log": {
+                            "is_enabled": "false",
+                            "osu_bucket_name": "",
+                            "osu_bucket_prefix": "",
+                            "publication_interval": "60"
+                        },
+                        "application_sticky_cookie_policies": [],
+                        "backend_vm_ids": [],
+                        "cookie_name": "########",
+                        "dns_name": "########",
+                        "health_check": {
+                            "check_interval": "30",
+                            "healthy_threshold": "10",
+                            "path": "",
+                            "port": "80",
+                            "protocol": "TCP",
+                            "timeout": "5",
+                            "unhealthy_threshold": "2"
+                        },
+                        "id": "##id-2##",
+                        "listeners": [
+                            {
+                                "backend_port": 80,
+                                "backend_protocol": "HTTP",
+                                "load_balancer_port": 80,
+                                "load_balancer_protocol": "HTTP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            },
+                            {
+                                "backend_port": 1024,
+                                "backend_protocol": "TCP",
+                                "load_balancer_port": 1024,
+                                "load_balancer_protocol": "TCP",
+                                "policy_names": [],
+                                "server_certificate_id": ""
+                            }
+                        ],
+                        "load_balancer_name": "lbu-TF-85",
+                        "load_balancer_sticky_cookie_policies": [
+                            {
+                                "policy_name": "policy-lbu-terraform-2"
+                            }
+                        ],
+                        "load_balancer_type": "internet-facing",
+                        "net_id": "",
+                        "policy_name": "policy-lbu-terraform-2",
+                        "policy_type": "load_balancer",
+                        "request_id": "########",
+                        "security_groups": [],
+                        "source_security_group": {
+                            "security_group_account_id": "##id-1##",
+                            "security_group_name": "outscale-elb-sg"
+                        },
+                        "subnets": [],
+                        "subregion_names": [
+                            "###region###a"
+                        ],
+                        "tags": [
+                            {
+                                "key": "name",
+                                "value": "public_lbu1"
+                            },
+                            {
+                                "key": "test",
+                                "value": "tags"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA==",
+                    "dependencies": [
+                        "outscale_load_balancer.public_lbu1"
+                    ]
+                }
+            ]
+        }
+    ]
+}

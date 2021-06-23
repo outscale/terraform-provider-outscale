@@ -1,0 +1,71 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_client_gateway",
+            "name": "outscale_client_gateway_2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 571,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "name-mzi",
+                                "value": "CGW_1_mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_client_gateway",
+            "name": "outscale_client_gateway",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "bgp_asn": 571,
+                        "client_gateway_id": "##id-0##",
+                        "connection_type": "ipsec.1",
+                        "id": "##id-0##",
+                        "public_ip": "########",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "name-mzi",
+                                "value": "CGW_1_mzi"
+                            },
+                            {
+                                "key": "project",
+                                "value": "terraform"
+                            }
+                        ]
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

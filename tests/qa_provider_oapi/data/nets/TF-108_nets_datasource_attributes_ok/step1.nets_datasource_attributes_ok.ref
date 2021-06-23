@@ -1,0 +1,116 @@
+{
+    "version": "########",
+    "terraform_version": "########",
+    "serial": "########",
+    "lineage": "########",
+    "outputs": {},
+    "resources": [
+        {
+            "mode": "data",
+            "type": "outscale_nets",
+            "name": "outscale_nets",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "filter": "########",
+                        "id": "##id-0##",
+                        "net_id": null,
+                        "nets": [
+                            {
+                                "dhcp_options_set_id": "##id-1##",
+                                "ip_range": "10.2.0.0/17",
+                                "net_id": "##id-2##",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "Name-net-2",
+                                        "value": "outscale_net_resource2"
+                                    }
+                                ],
+                                "tenancy": "default"
+                            },
+                            {
+                                "dhcp_options_set_id": "##id-1##",
+                                "ip_range": "10.0.0.0/17",
+                                "net_id": "##id-3##",
+                                "state": "available",
+                                "tags": [
+                                    {
+                                        "key": "Key",
+                                        "value": "value-tags"
+                                    },
+                                    {
+                                        "key": "Name",
+                                        "value": "outscale_net_resource"
+                                    }
+                                ],
+                                "tenancy": "default"
+                            }
+                        ],
+                        "request_id": "########"
+                    }
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-1##",
+                        "id": "##id-3##",
+                        "ip_range": "10.0.0.0/17",
+                        "net_id": "##id-3##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "Key",
+                                "value": "value-tags"
+                            },
+                            {
+                                "key": "Name",
+                                "value": "outscale_net_resource"
+                            }
+                        ],
+                        "tenancy": "default"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        },
+        {
+            "mode": "managed",
+            "type": "outscale_net",
+            "name": "outscale_net2",
+            "provider": "provider[\"registry.terraform.io/outscale-dev/outscale\"]",
+            "instances": [
+                {
+                    "schema_version": 0,
+                    "attributes": {
+                        "dhcp_options_set_id": "##id-1##",
+                        "id": "##id-2##",
+                        "ip_range": "10.2.0.0/17",
+                        "net_id": "##id-2##",
+                        "request_id": "########",
+                        "state": "available",
+                        "tags": [
+                            {
+                                "key": "Name-net-2",
+                                "value": "outscale_net_resource2"
+                            }
+                        ],
+                        "tenancy": "default"
+                    },
+                    "private": "bnVsbA=="
+                }
+            ]
+        }
+    ]
+}

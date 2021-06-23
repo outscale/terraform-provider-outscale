@@ -1,5 +1,0 @@
-
-python file: provider_outscale_oapi/test//outscale_nat_service/test_outscale_nat_gateway_datasource_ok.py
-tf file: provider_outscale_oapi/config/outscale_nat_service/config_outscale_nat_gateway_datasource_ok
-WARNING: No check file !!!
-WARNING: tf file not found 'provider_outscale_oapi/config/outscale_nat_service/config_outscale_public_ip_datasource_std_ok3'
