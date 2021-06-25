@@ -102,13 +102,13 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 	quotas := make([]map[string]interface{}, 0)
 
 	for _, quotaType := range resp.GetQuotaTypes() {
-		quotaMap := make(map[string]interface{})
 
 		if len(quotaType.GetQuotas()) == 0 {
 			return fmt.Errorf("no matching quotas found")
 		}
 
 		for _, quota := range quotaType.GetQuotas() {
+			quotaMap := make(map[string]interface{})
 			if quota.GetName() != "" {
 				quotaMap["name"] = quota.GetName()
 			}
