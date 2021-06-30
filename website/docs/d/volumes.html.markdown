@@ -57,6 +57,7 @@ The following attributes are exported:
     For `gp2` volumes, the baseline performance of the volume.
   * `linked_volumes` - Information about your volume attachment.
       * `delete_on_vm_deletion` - If true, the volume is deleted when terminating the VM. If false, the volume is not deleted when terminating the VM.
+      * `device_name` - The name of the device.
       * `state` - The state of the attachment of the volume (`attaching` \| `detaching` \| `attached` \| `detached`).
       * `vm_id` - The ID of the VM.
       * `volume_id` - The ID of the volume.
