@@ -249,6 +249,26 @@ func getTarget(d *schema.ResourceData) (n int, target string) {
 func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	numTargets, target := getTarget(d)
+	nothingToDo := true
+	o, n := d.GetChange("")
+	os := o.(map[string]interface{})
+	ns := n.(map[string]interface{})
+
+	for k, _ := range os {
+		if d.HasChange(k) && k != "await_active_state" {
+			nothingToDo = false
+		}
+	}
+
+	for k, _ := range ns {
+		if d.HasChange(k) && k != "await_active_state" {
+			nothingToDo = false
+		}
+	}
+
+	if nothingToDo == true {
+		return nil
+	}
 
 	replaceOpts := oscgo.UpdateRouteRequest{}
 
