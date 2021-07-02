@@ -670,6 +670,27 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Get("vm_id").(string)
 
+	nothingToDo := true
+	o, n := d.GetChange("")
+	os := o.(map[string]interface{})
+	ns := n.(map[string]interface{})
+
+	for k := range os {
+		if d.HasChange(k) && k != "get_admin_password" {
+			nothingToDo = false
+		}
+	}
+
+	for k := range ns {
+		if d.HasChange(k) && k != "get_admin_password" {
+			nothingToDo = false
+		}
+	}
+
+	if nothingToDo == true {
+		return nil
+	}
+
 	if d.HasChange("vm_type") && !d.IsNewResource() ||
 		d.HasChange("user_data") && !d.IsNewResource() ||
 		d.HasChange("bsu_optimized") && !d.IsNewResource() ||
