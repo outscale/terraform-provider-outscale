@@ -10,7 +10,7 @@ description: |-
 
 Manages a snapshot export task.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#createsnapshotexporttask).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-snapshot).
 
 ## Example Usage
 
@@ -22,12 +22,12 @@ resource "outscale_snapshot_export_task" "snapshot_export_task01" {
         osu_bucket        = "terraform-bucket"
         osu_prefix        = "new-export"
         osu_api_key {
-            api_key_id      = "XXXXXXXXXXXXXX"
-            secret_key      = "XXXXXXXXXXXXXX"
+            api_key_id = var.access_key_id
+            secret_key = var.secret_key_id
         }
     }
     tags {
-        key = "Name"
+        key   = "Name"
         value = "terraform-snapshot-export-task"
     }
 }

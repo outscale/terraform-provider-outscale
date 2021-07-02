@@ -10,27 +10,24 @@ description: |-
 
 Provides information about snapshot export tasks.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Snapshots).
-For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#createsnapshotexporttask).
+For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#3ds-outscale-api-snapshot).
 
 ## Example Usage
 
 ```hcl
-
 data "outscale_snapshot_export_tasks" "snapshot_export_tasks01" {
   filter {
     name   = "task_ids"
     values = ["snap-export-12345678", "snap-export-12345679"]
   }
 }
-
-
 ```
 
 ## Argument Reference
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
     * `task_ids` - (Optional) The IDs of the export tasks.
 
 ## Attribute Reference
