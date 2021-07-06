@@ -190,11 +190,10 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `security_group_ids` - (Optional) One or more IDs of security group for the VMs.
 * `security_group_names` - (Optional) One or more names of security groups for the VMs.
 * `subnet_id` - (Optional) The ID of the Subnet in which you want to create the VM.
-* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
 * `tags` - A tag to add to this resource. You can specify this argument several times.
   * `key` - The key of the tag, with a minimum of 1 character.
   * `value` - The value of the tag, between 0 and 255 characters.
-* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded.
+* `user_data` - (Optional) Data or script used to add a specific configuration to the VM. It must be base64-encoded, either directly or using the [base64encode](https://www.terraform.io/docs/configuration/functions/base64encode.html) Terraform function. For multiline strings, use a [heredoc syntax](https://www.terraform.io/docs/configuration/expressions.html#string-literals). Updating this parameter will trigger a stop/start of the VM.
 * `vm_initiated_shutdown_behavior` - (Optional) The VM behavior when you stop it. By default or if set to `stop`, the VM stops. If set to `restart`, the VM stops then automatically restarts. If set to `terminate`, the VM stops and is terminated.
 * `vm_type` - (Optional) The type of VM (`t2.small` by default). Updating this parameter will trigger a stop/start of the VM.<br />
 For more information, see [Instance Types](https://wiki.outscale.net/display/EN/Instance+Types).
@@ -213,7 +212,7 @@ The following attributes are exported:
          * `state` - The state of the volume.
          * `volume_id` - The ID of the volume.
       * `device_name` - The name of the device.
-  * `bsu_optimized` - If true, the VM is optimized for BSU I/O.
+  * `bsu_optimized` - If true, the VM is optimized for BSU I/O. Updating this parameter will trigger a stop/start of the 
   * `client_token` - The idempotency token provided when launching the VM.
   * `deletion_protection` - If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
   * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).

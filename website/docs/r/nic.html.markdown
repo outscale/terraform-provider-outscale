@@ -66,8 +66,7 @@ resource "outscale_nic" "nic02" {
 The following arguments are supported:
 
 * `description` - (Optional) A description for the NIC.
-* `private_ips` - (Optional) The primary private IP address for the NIC.<br /><br />
-
+* `private_ips` - (Optional) The primary private IP address for the NIC.<br />
 This IP address must be within the IP address range of the Subnet that you specify with the `subnet_id` attribute.<br />
 If you do not specify this attribute, a random private IP address is selected within the IP address range of the Subnet.
   * `is_primary` - (Optional) If true, the IP address is the primary private IP address of the NIC.
