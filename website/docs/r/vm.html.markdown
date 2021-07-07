@@ -170,6 +170,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
 * `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
+* `get_admin_password`- (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
 * `image_id` - (Required) The ID of the OMI used to create the VM. You can find the list of OMIs by calling the [ReadImages](https://docs.outscale.com/api#readimages) method.
 * `keypair_name` - (Optional) The name of the keypair.
 * `nics` - (Optional) One or more NICs. If you specify this parameter, you must define one NIC as the primary network interface of the VM with `0` as its device number.
@@ -203,7 +204,10 @@ For more information, see [Instance Types](https://wiki.outscale.net/display/EN/
 The following attributes are exported:
 
 * `vms` - Information about one or more created VMs.
-  * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair of the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this attribute. Once the password is ready, this attribute will appear in the Terraform state after the next refresh or apply command. Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://wiki.outscale.net/display/EN/Accessing+a+Windows+Instance).
+  * `admin_password` - (Windows VM only) The administrator password of the VM. This password is encrypted with the keypair you specified when launching the VM and encoded in Base64. You need to wait about 10 minutes after launching the VM to be able to retrieve this password.<br />
+  If `get_admin_password` is false or not specified, the VM resource is created without the `admin_password` attribute. Once `admin_password` is available, it will appear in the Terraform state after the next **refresh** or **apply** command.<br /> 
+  If `get_admin_password` is true, the VM resource itself is not considered created until the `admin_password` attribute is available.<br /> 
+  Note also that after the first reboot of the VM, this attribute can no longer be retrieved. For more information on how to use this password to connect to the VM, see [Accessing a Windows Instance](https://wiki.outscale.net/display/EN/Accessing+a+Windows+Instance).
   * `architecture` - The architecture of the VM (`i386` \| `x86_64`).
   * `block_device_mappings_created` - The block device mapping of the VM.
       * `bsu` - Information about the created BSU volume.
