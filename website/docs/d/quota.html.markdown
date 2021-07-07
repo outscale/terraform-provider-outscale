@@ -39,7 +39,7 @@ data "outscale_quota" "load_balancer_listeners_quota01" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
   * `collections` - (Optional) The group names of the quotas.
   * `quota_names` - (Optional) The names of the quotas.
   * `quota_types` - (Optional) The resource IDs if these are resource-specific quotas, `global` if they are not.

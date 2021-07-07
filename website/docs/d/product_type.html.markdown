@@ -27,7 +27,7 @@ data "outscale_product_type" "product_type01" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
   * `product_type_ids` - (Optional) The IDs of the product types.
 
 ## Attribute Reference
