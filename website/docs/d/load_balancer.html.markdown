@@ -41,7 +41,7 @@ The following attributes are exported:
      * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
      * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
      * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
-    * `cookie_name` - The name of the application cookie used for stickiness.
+     * `cookie_name` - The name of the application cookie used for stickiness.
      * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
   * `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
   * `dns_name` - The DNS name of the load balancer.

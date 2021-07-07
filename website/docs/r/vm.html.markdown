@@ -167,7 +167,7 @@ For more information about volume types, see [Volume Types and IOPS](https://wik
   * `device_name` - (Optional) The name of the device.
   * `no_device` - (Optional) Removes the device which is included in the block device mapping of the OMI.
   * `virtual_device_name` - (Optional) The name of the virtual device (ephemeralN).
-* `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O.
+* `bsu_optimized` - (Optional) If true, the VM is created with optimized BSU I/O.  Updating this parameter will trigger a stop/start of the VM.
 * `client_token` - (Optional) A unique identifier which enables you to manage the idempotency.
 * `deletion_protection` - (Optional) If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
 * `get_admin_password`- (Optional) (Windows VM only) If true, waits for the administrator password of the VM to become available in order to retrieve the VM. The password is exported to the `admin_password` attribute.
@@ -216,7 +216,7 @@ The following attributes are exported:
          * `state` - The state of the volume.
          * `volume_id` - The ID of the volume.
       * `device_name` - The name of the device.
-  * `bsu_optimized` - If true, the VM is optimized for BSU I/O. Updating this parameter will trigger a stop/start of the 
+  * `bsu_optimized` - If true, the VM is optimized for BSU I/O.
   * `client_token` - The idempotency token provided when launching the VM.
   * `deletion_protection` - If true, you cannot terminate the VM using Cockpit, the CLI or the API. If false, you can.
   * `hypervisor` - The hypervisor type of the VMs (`ovm` \| `xen`).
