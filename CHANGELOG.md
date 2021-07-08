@@ -1,3 +1,36 @@
+0.4.0 (july 9, 2021)
+========================
+
+FEATURES:
+---------
+
+* New Data Source: outscale_product_type
+* New Data Source: outscale_product_types
+* New Data Source: outscale_quota
+* New Data Source: outscale_quotas
+
+BUG FIXES:
+----------
+
+* Create Dockerfile to build documentation (TPD-1978)
+* Create "outscale_quota" and "outscale_quotas" datasource in oAPI client (TPD-1980)
+* Create "outscale_product_type" and "outscale_product_types" datasource in oAPI client (TPD-1981)
+* Update osc-sdk-go (TPD-1982)
+* Check route state after creation (TPD-1983)
+* Check Windows admin password (TPD-1984)
+* "load_balancer" resource: SecurityGroups can now be updated (TPD-2000)
+* LBU getting deleted while adding a second SG (TPD-2004)
+* "outscale_route" unnecessary Update action when updating "await_active_state" parameter (TPD-2005)
+* "outscale_vm" unnecessary StartVms action when updating "get_admin_password" parameter (TPD-2006)
+
+
+NOTES:
+------
+
+**WARNING:** When creating access keys, the secret key is stored in the Terraform state. For security reasons, it is strongly recommended to create access keys using the API instead of the Terraform resource. For more information on how to create access keys using the API, see our [official API documentation](https://docs.outscale.com/api#3ds-outscale-api-accesskey).
+
+It is recommended to set tags inside the resources rather than using outscale_tag.
+
 0.3.1 (April 16, 2021)
 ========================
 
