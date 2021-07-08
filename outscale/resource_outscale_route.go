@@ -254,13 +254,13 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 	os := o.(map[string]interface{})
 	ns := n.(map[string]interface{})
 
-	for k, _ := range os {
+	for k := range os {
 		if d.HasChange(k) && k != "await_active_state" {
 			nothingToDo = false
 		}
 	}
 
-	for k, _ := range ns {
+	for k := range ns {
 		if d.HasChange(k) && k != "await_active_state" {
 			nothingToDo = false
 		}
