@@ -9,18 +9,20 @@ description: |-
 # outscale_quotas Data Source
 
 Provides information about quotas.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Your+3DS+OUTSCALE+Account).
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+Your+Account).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#readquotas).
 
 ## Example Usage
 
 ### Read specific quotas
+```hcl
 data "outscale_quotas" "vpc_quotas01" {
   filter {
     name     = "collections"
     values   = ["VPC"]
   }
 }
+```
 
 ### Read all quotas
 ```hcl
