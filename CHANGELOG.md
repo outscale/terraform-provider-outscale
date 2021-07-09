@@ -13,7 +13,7 @@ BUG FIXES:
 ----------
 
 * Create Dockerfile to build documentation (TPD-1978)
-* Create "outscale_quota" and "outscale_quotas" datasource in oAPI client (TPD-1980)
+* Create "outscale_quota" and "outscale_quotas" datasources in oAPI client (TPD-1980)
 * Create "outscale_product_type" and "outscale_product_types" datasource in oAPI client (TPD-1981)
 * Update osc-sdk-go (TPD-1982)
 * Check route state after creation (TPD-1983)
@@ -129,7 +129,7 @@ BUG FIXES:
 * Wrong attributes for "outscale_load_balancer_vms" resource (TPD-1907)
 * "image_id" should be mandatory in "outscale_vm" resource (TPD-1911)
 * terraform crash when client gateway and vpn resources cannot be found (TPD-1914)
-* Change "outscale_vms_state" datasource name to "outscale_vm_states" (TPD-1915)
+* Changed Data Source: "outscale_vms_state" is replaced by "outscale_vm_states" (TPD-1915)
 * Issue with listeners on "outscale_load_balancer" (TPD-1916)
 * Wrong attributes for "outscale_load_balancer" resource (TPD-1917)
 * "outscale_load_balancer" resource: terraform destroy fails for private LBU (TPD-1918)
