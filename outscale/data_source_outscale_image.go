@@ -8,8 +8,6 @@ import (
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
-	"github.com/spf13/cast"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -125,7 +123,7 @@ func dataSourceOutscaleOAPIImage() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 						"account_id": {
@@ -271,7 +269,7 @@ func omiOAPIPermissionToLuch(p *oscgo.PermissionsOnResource) (res []map[string]i
 	for _, v := range *p.AccountIds {
 		res = append(res, map[string]interface{}{
 			"account_id":        v,
-			"global_permission": cast.ToString(p.GlobalPermission),
+			"global_permission": p.GetGlobalPermission(),
 		})
 	}
 	return

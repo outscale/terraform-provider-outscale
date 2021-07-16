@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIImages() *schema.Resource {
@@ -114,7 +115,7 @@ func dataSourceOutscaleOAPIImages() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"global_permission": {
-										Type:     schema.TypeString,
+										Type:     schema.TypeBool,
 										Computed: true,
 									},
 									"account_id": {
@@ -260,31 +261,35 @@ func buildOutscaleOAPIDataSourceImagesFilters(set *schema.Set) *oscgo.FiltersIma
 		case "architectures":
 			filters.SetArchitectures(filterValues)
 		case "block_device_mapping_delete_on_vm_deletion":
-			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
 		case "block_device_mapping_device_names":
-			filters.SetBlockDeviceMappingDeleteOnVmDeletion(cast.ToBool(filterValues))
+			filters.SetBlockDeviceMappingDeviceNames(filterValues)
 		case "block_device_mapping_snapshot_ids":
 			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
 		case "block_device_mapping_volume_sizes":
-			filters.SetBlockDeviceMappingSnapshotIds(filterValues)
-		case "block_device_mapping_volume_type":
+			filters.SetBlockDeviceMappingVolumeSizes(utils.StringSliceToInt32Slice(filterValues))
+		case "block_device_mapping_volume_types":
 			filters.SetBlockDeviceMappingVolumeTypes(filterValues)
-		case "description":
+		case "descriptions":
 			filters.SetDescriptions(filterValues)
 		case "file_locations":
 			filters.SetFileLocations(filterValues)
+		case "hypervisors":
+			filters.SetHypervisors(filterValues)
 		case "image_ids":
 			filters.SetImageIds(filterValues)
+		case "image_names":
+			filters.SetImageNames(filterValues)
 		case "permissions_to_launch_account_ids":
 			filters.SetPermissionsToLaunchAccountIds(filterValues)
 		case "permissions_to_launch_global_permission":
-			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues))
+			filters.SetPermissionsToLaunchGlobalPermission(cast.ToBool(filterValues[0]))
+		case "product_codes":
+			filters.SetProductCodes(filterValues)
 		case "root_device_names":
 			filters.SetRootDeviceNames(filterValues)
 		case "root_device_types":
 			filters.SetRootDeviceTypes(filterValues)
-		case "image_names":
-			filters.SetImageNames(filterValues)
 		case "states":
 			filters.SetStates(filterValues)
 		case "tag_keys":
