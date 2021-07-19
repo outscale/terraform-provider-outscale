@@ -24,7 +24,7 @@ terraform {
   required_providers {
     outscale = {
       source = "outscale-dev/outscale"
-      version = "0.4.0"
+      version = "0.4.1"
     }
   }
 }
@@ -60,7 +60,7 @@ terraform {
   required_providers {
     outscale = {
       source  = "outscale-dev/outscale"
-      version = "0.4.0"
+      version = "0.4.1"
     }
   }
 }
@@ -87,23 +87,23 @@ Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provi
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone --branch v0.4.0 https://github.com/outscale-dev/terraform-provider-outscale
+$ git clone --branch v0.4.1 https://github.com/outscale-dev/terraform-provider-outscale
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
 $ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-outscale
-$ go build -o terraform-provider-outscale_v0.4.0
+$ go build -o terraform-provider-outscale_v0.4.1
 ```
 
 Using the provider
 ----------------------
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
-2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.4.0/linux_amd64/.
+2. Move the plugin to the repository ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.4.1/linux_amd64/.
 
 ```shell
-  $ mv terraform-provider-outscale_v0.4.0 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.4.0/linux_amd64/.
+  $ mv terraform-provider-outscale_v0.4.1 ~/.terraform/plugins/registry.terraform.io/outscale-dev/outscale/0.4.1/linux_amd64/.
 ```
 
 3. Execute `terraform init`
