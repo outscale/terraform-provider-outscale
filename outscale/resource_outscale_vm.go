@@ -457,7 +457,8 @@ func resourceOutscaleOApiVM() *schema.Resource {
 			},
 			"state": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
+				Default:  "running",
 			},
 			"state_reason": {
 				Type:     schema.TypeString,
@@ -506,6 +507,16 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 	vmOpts, err := buildCreateVmsRequest(d, meta)
 	if err != nil {
 		return err
+	}
+
+	vState := d.Get("state").(string)
+	if vState != "stopped" && vState != "running" {
+		return fmt.Errorf("Error: state should be `stopped or running`")
+	}
+	vmStateTarget := []string{"running"}
+	if vState == "stopped" {
+		vmStateTarget[0] = "stopped"
+		vmOpts.BootOnCreation = oscgo.PtrBool(false)
 	}
 
 	// Create the vm
@@ -559,7 +570,7 @@ func resourceOAPIVMCreate(d *schema.ResourceData, meta interface{}) error {
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"pending", "ending/wait"},
-		Target:     []string{"running"},
+		Target:     vmStateTarget,
 		Refresh:    vmStateRefreshFunc(conn, vm.GetVmId(), "terminated"),
 		Timeout:    d.Timeout(schema.TimeoutCreate),
 		Delay:      10 * time.Second,
@@ -841,8 +852,24 @@ func resourceOAPIVMUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	d.Partial(false)
 
-	if err := startVM(id, conn); err != nil {
-		return err
+	if d.HasChange("state") && !d.IsNewResource() {
+		upState := d.Get("state").(string)
+		if upState != "stopped" && upState != "running" {
+			return fmt.Errorf("Error: state should be `stopped or running`")
+		}
+		if upState == "stopped" {
+			if err := stopVM(id, conn); err != nil {
+				return err
+			}
+		} else {
+			if err := startVM(id, conn); err != nil {
+				return err
+			}
+		}
+	} else {
+		if err := startVM(id, conn); err != nil {
+			return err
+		}
 	}
 
 	return resourceOAPIVMRead(d, meta)
@@ -898,6 +925,7 @@ func resourceOAPIVMDelete(d *schema.ResourceData, meta interface{}) error {
 func buildCreateVmsRequest(d *schema.ResourceData, meta interface{}) (oscgo.CreateVmsRequest, error) {
 	request := oscgo.CreateVmsRequest{
 		DeletionProtection: oscgo.PtrBool(d.Get("deletion_protection").(bool)),
+		BootOnCreation:     oscgo.PtrBool(true),
 		BsuOptimized:       oscgo.PtrBool(d.Get("bsu_optimized").(bool)),
 		MaxVmsCount:        oscgo.PtrInt32(1),
 		MinVmsCount:        oscgo.PtrInt32(1),
