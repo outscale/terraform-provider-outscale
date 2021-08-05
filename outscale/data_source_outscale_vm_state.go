@@ -191,13 +191,13 @@ func buildOutscaleOAPIDataSourceVMStateFilters(set *schema.Set) oscgo.FiltersVms
 
 		switch name := m["name"].(string); name {
 		case "maintenance_event_codes":
-			//filters.MaintenanceEventCodes = filterValues
+			filters.SetMaintenanceEventCodes(filterValues)
 		case "maintenance_event_descriptions":
-			//filters.MaintenanceEventDescriptions = filterValues
+			filters.SetMaintenanceEventDescriptions(filterValues)
 		case "maintenance_events_not_after":
-			//filters.MaintenanceEventsNotAfter = filterValues
+			filters.SetMaintenanceEventsNotAfter(filterValues)
 		case "maintenance_events_not_before":
-			//filters.MaintenanceEventsNotBefore = filterValues
+			filters.SetMaintenanceEventsNotBefore(filterValues)
 		case "subregion_names":
 			filters.SetSubregionNames(filterValues)
 		case "vm_ids":
