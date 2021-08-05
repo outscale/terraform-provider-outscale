@@ -50,10 +50,6 @@ func resourceOutscaleDHCPOption() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"dhcp_options_name": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"dhcp_options_set_id": {
 				Type:     schema.TypeString,
 				Computed: true,
