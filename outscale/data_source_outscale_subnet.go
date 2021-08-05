@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISubnet() *schema.Resource {
@@ -150,17 +151,24 @@ func buildOutscaleOAPISubnetDataSourceFilters(set *schema.Set) *oscgo.FiltersSub
 
 		switch name := m["name"].(string); name {
 		case "available_ips_counts":
-			filters.AvailableIpsCounts = &availableIPsCounts
+			filters.SetAvailableIpsCounts(utils.StringSliceToInt32Slice(filterValues))
 		case "ip_ranges":
-			filters.IpRanges = &filterValues
+			filters.SetIpRanges(filterValues)
 		case "net_ids":
-			filters.NetIds = &filterValues
+			filters.SetNetIds(filterValues)
 		case "states":
-			filters.States = &filterValues
+			filters.SetStates(filterValues)
 		case "subnet_ids":
-			filters.SubnetIds = &filterValues
+			filters.SetSubnetIds(filterValues)
 		case "subregion_names":
-			filters.SubregionNames = &filterValues
+			filters.SetSubregionNames(filterValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
+
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
