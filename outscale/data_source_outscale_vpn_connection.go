@@ -191,6 +191,12 @@ func buildOutscaleDataSourceVPNConnectionFilters(set *schema.Set) *oscgo.Filters
 			filters.SetStaticRoutesOnly(cast.ToBool(filterValues[0]))
 		case "bgp_asns":
 			filters.SetBgpAsns(filteBgpAsnsValues)
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}
