@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleClientGateway() *schema.Resource {
@@ -133,6 +134,8 @@ func buildOutscaleDataSourceClientGatewayFilters(set *schema.Set) *oscgo.Filters
 		}
 
 		switch name := m["name"].(string); name {
+		case "bgp_asns":
+			filters.SetBgpAsns(utils.StringSliceToInt32Slice(filterValues))
 		case "client_gateway_ids":
 			filters.SetClientGatewayIds(filterValues)
 		case "connection_types":
