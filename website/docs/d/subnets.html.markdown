@@ -37,6 +37,9 @@ The following arguments are supported:
   * `states` - (Optional) The states of the Subnets (`pending` \| `available`).
   * `subnet_ids` - (Optional) The IDs of the Subnets.
   * `subregion_names` - (Optional) The names of the Subregions in which the Subnets are located.
+  * `tag_keys` - (Optional) The keys of the tags associated with the Subnets.
+  * `tag_values` - (Optional) The values of the tags associated with the Subnets.
+  * `tags` - (Optional) The key/value combination of the tags associated with the Subnets, in the following format: &quot;Filters&quot;:{&quot;Tags&quot;:[&quot;TAGKEY=TAGVALUE&quot;]}.
 
 ## Attribute Reference
 
