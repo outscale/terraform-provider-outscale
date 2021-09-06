@@ -62,6 +62,7 @@ func dataSourceOutscaleOAPINatServices() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"tags": dataSourceTagsSchema(),
 					},
 				},
 			},
@@ -165,6 +166,9 @@ func ngsOAPIDescriptionAttributes(d *schema.ResourceData, ngs []oscgo.NatService
 		}
 		if v.GetNetId() != "" {
 			addng["net_id"] = v.GetNetId()
+		}
+		if v.GetTags() != nil {
+			addng["tags"] = tagsOSCAPIToMap(v.GetTags())
 		}
 
 		addngs[k] = addng
