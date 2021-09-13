@@ -2,6 +2,6 @@
 #secret_key_id       = "MySecretKey"
 #region              = "eu-west-2"
 
-image_id = "ami-cdfcddb7" # Ubuntu-20.04-2021.02.10-5 on eu-west-2
+image_id = "ami-19c942b5" # Ubuntu-20.04-2021.02.10-5 on eu-west-2
 vm_type  = "tinav4.c1r1p2"
 vm_count = 2
