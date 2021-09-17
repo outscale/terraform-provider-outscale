@@ -3,12 +3,12 @@ layout: "outscale"
 page_title: "3DS OUTSCALE: outscale_nic_private_ip"
 sidebar_current: "outscale-nic-private-ip"
 description: |-
-  [Manages a NIC private IP.]
+  [Manages a NIC private IPs.]
 ---
 
 # outscale_nic_private_ip Resource
 
-Manages a NIC private IP.
+Manages a NIC private IPs.
 For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+FNIs#AboutFNIs-FNIsAttributes).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#linkprivateips).
 
