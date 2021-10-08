@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/openlyinc/pointy"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 // Creates a network interface in the specified subnet
@@ -339,8 +340,9 @@ func resourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) error
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(resp.GetNics()) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", resp.GetNics())
+
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
+		return err
 	}
 
 	eni := resp.GetNics()[0]

@@ -264,8 +264,9 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 
 		return fmt.Errorf("Error retrieving ENI: %s", err)
 	}
-	if len(resp.GetNics()) != 1 {
-		return fmt.Errorf("Unable to find ENI: %#v", resp.GetNics())
+
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNics()), "Nic"); err != nil {
+		return err
 	}
 
 	eni := resp.GetNics()[0]

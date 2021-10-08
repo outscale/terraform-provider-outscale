@@ -82,13 +82,8 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error retrieving EIP: %s", utils.GetErrorResponse(err))
 	}
 
-	if len(response.GetPublicIps()) == 0 {
-		return fmt.Errorf("Error retrieving EIP: not found")
-	}
-
-	if len(response.GetPublicIps()) != 1 ||
-		response.GetPublicIps()[0].GetPublicIpId() != id {
-		return fmt.Errorf("Unable to find EIP: %#v", response.GetPublicIps())
+	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "PublicIp"); err != nil {
+		return err
 	}
 
 	publicIP := response.GetPublicIps()[0]
