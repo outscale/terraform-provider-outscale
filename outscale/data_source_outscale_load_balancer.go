@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func attrLBchema() map[string]*schema.Schema {
@@ -260,14 +261,16 @@ func readLbs_(conn *oscgo.APIClient, d *schema.ResourceData, t schema.ValueType)
 }
 
 func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalancer, *oscgo.ReadLoadBalancersResponse, error) {
-	resp, elbName, err := readLbs(conn, d)
+	resp, _, err := readLbs(conn, d)
 	if err != nil {
 		return nil, nil, err
 	}
-	lbs := *resp.LoadBalancers
-	if len(lbs) < 1 {
-		return nil, nil, fmt.Errorf("Unable to find LBU: %s", *elbName)
+
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetLoadBalancers()), "LoadBalancer"); err != nil {
+		return nil, nil, err
 	}
+
+	lbs := *resp.LoadBalancers
 	return &lbs[0], resp, nil
 }
 

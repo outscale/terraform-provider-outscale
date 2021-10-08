@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIPublicIP() *schema.Resource {
@@ -103,12 +104,8 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 	}
 
 	// Verify Outscale returned our EIP
-	if len(response.GetPublicIps()) == 0 {
-		return fmt.Errorf("Unable to find Public IP: %#v", req)
-	}
-
-	if len(response.GetPublicIps()) > 1 {
-		return fmt.Errorf("multiple Public IPs matched; you can either use additional constraints to reduce matches to a single Public IP or use public_ips data source instead.")
+	if err := utils.IsResponseEmptyOrMutiple(len(response.GetPublicIps()), "PublicIp"); err != nil {
+		return err
 	}
 
 	address := response.GetPublicIps()[0]

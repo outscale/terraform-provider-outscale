@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleNetAccessPoint() *schema.Resource {
@@ -248,12 +249,8 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	if resp.NetAccessPoints == nil {
-		return fmt.Errorf("NO Net Access Point FOUND")
-	}
-
-	if len(*resp.NetAccessPoints) != 1 {
-		return fmt.Errorf("Unable to find Net Access Point: %#v", napid)
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNetAccessPoints()), "NetAccessPoint"); err != nil {
+		return err
 	}
 
 	nap := (*resp.NetAccessPoints)[0]

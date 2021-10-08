@@ -2,13 +2,13 @@ package outscale
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIFlexibleGpu() *schema.Resource {
@@ -134,12 +134,8 @@ func resourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if resp.FlexibleGpus == nil {
-		return fmt.Errorf("NO Net Access Point FOUND")
-	}
-
-	if len(*resp.FlexibleGpus) != 1 {
-		return fmt.Errorf("Unable to find Flexible GPU: %#v", napid)
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
+		return err
 	}
 
 	fg := (*resp.FlexibleGpus)[0]

@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func napdSchema() map[string]*schema.Schema {
@@ -107,13 +108,11 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	naps := *resp.NetAccessPoints
-	nap_len := len(naps)
-
-	if naps == nil || nap_len != 1 {
-		return fmt.Errorf("Error retrieving Net Access Point")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetNetAccessPoints()), "NetAccessPoint"); err != nil {
+		return err
 	}
-	nap := naps[0]
+
+	nap := resp.GetNetAccessPoints()[0]
 
 	d.Set("net_access_point_id", nap.NetAccessPointId)
 	d.Set("route_table_ids", flattenStringList(nap.RouteTableIds))
