@@ -14,9 +14,9 @@ The provider is based on our OUTSCALE API. For more information, see [APIs Refer
 
 The provider needs to be configured with the proper credentials before it can be used.  
 
-~> **Important:** Since the release of Terraform 0.13, provider declaration has changed. For more information, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html).
-
--> **Note:** To configure a proxy, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#configuring-the-proxy-on-linuxmac-os-if-any).
+~> **Note:** 
+To configure the provider, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#using-the-provider) and the [Terraform documentation](https://www.terraform.io/docs/configuration/provider-requirements.html). <br />
+To configure a proxy, see our [README](https://github.com/outscale-dev/terraform-provider-outscale#configuring-the-proxy-on-linuxmac-os-if-any).
 
 ## Example
 
