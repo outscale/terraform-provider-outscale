@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPISecurityGroup() *schema.Resource {
@@ -260,37 +261,37 @@ func buildOutscaleOAPIDataSourceSecurityGroupFilters(set *schema.Set) oscgo.Filt
 		case "account_ids":
 			filters.SetAccountIds(filterValues)
 		case "descriptions":
-			//filters.Descriptions = filterValues
+			filters.SetDescriptions(filterValues)
 		case "inbound_rule_account_ids":
-			//sfilters.InboundRuleAccountIds = filterValues
-		//case "inbound-rule-from-port-ranges-ids":
-		//	filters.InboundRuleFromPortRanges = filterValues
+			filters.SetInboundRuleAccountIds(filterValues)
+		case "inbound_rule_from_port_ranges":
+			filters.SetInboundRuleFromPortRanges(utils.StringSliceToInt32Slice(filterValues))
 		case "inbound_rule_ip_ranges":
-			//filters.InboundRuleIpRanges = filterValues
+			filters.SetInboundRuleIpRanges(filterValues)
 		case "inbound_rule_protocols":
-			//filters.InboundRuleProtocols = filterValues
+			filters.SetInboundRuleProtocols(filterValues)
 		case "inbound_rule_security_group_ids":
-			//filters.InboundRuleSecurityGroupIds = filterValues
+			filters.SetInboundRuleSecurityGroupIds(filterValues)
 		case "inbound_rule_security_group_names":
-			//filters.InboundRuleSecurityGroupNames = filterValues
-		// case "InboundRuleToPortRanges":
-		// 	filters.InboundRuleToPortRanges = filterValues
+			filters.SetInboundRuleSecurityGroupNames(filterValues)
+		case "inbound_rule_to_port_ranges":
+			filters.SetInboundRuleToPortRanges(utils.StringSliceToInt32Slice(filterValues))
 		case "net_ids":
-			//filters.NetIds = filterValues
+			filters.SetNetIds(filterValues)
 		case "outbound_rule_account_ids":
-			//filters.OutboundRuleAccountIds = filterValues
-		// case "OutboundRuleFromPortRanges":
-		// 	filters.OutboundRuleFromPortRanges = filterValues
+			filters.SetOutboundRuleAccountIds(filterValues)
+		case "outbound_rule_from_port_ranges":
+			filters.SetOutboundRuleFromPortRanges(utils.StringSliceToInt32Slice(filterValues))
 		case "outbound_rule_ip_ranges":
-			//filters.OutboundRuleIpRanges = filterValues
+			filters.SetOutboundRuleIpRanges(filterValues)
 		case "outbound_rule_protocols":
-			//filters.OutboundRuleProtocols = filterValues
+			filters.SetOutboundRuleProtocols(filterValues)
 		case "outbound_rule_security_group_ids":
-			//filters.OutboundRuleSecurityGroupIds = filterValues
-		case "outbound_rule_recurity_group_names":
-			//filters.OutboundRuleSecurityGroupNames = filterValues
-		// case "OutboundRuleToPortRanges":
-		// 	filters.OutboundRuleToPortRanges = filterValues
+			filters.SetOutboundRuleSecurityGroupIds(filterValues)
+		case "outbound_rule_security_group_names":
+			filters.SetOutboundRuleSecurityGroupNames(filterValues)
+		case "outbound_rule_to_port_ranges":
+			filters.SetOutboundRuleToPortRanges(utils.StringSliceToInt32Slice(filterValues))
 		case "security_group_ids":
 			filters.SetSecurityGroupIds(filterValues)
 		case "security_group_names":
