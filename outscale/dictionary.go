@@ -46,6 +46,7 @@ func init() {
 			"outscale_nic":                     resourceOutscaleOAPINic,
 			"outscale_snapshot_attributes":     resourcedOutscaleOAPISnapshotAttributes,
 			"outscale_net_peering_acceptation": resourceOutscaleOAPILinPeeringConnectionAccepter,
+			"outscale_image_export_task":       resourceOutscaleOAPIIMageExportTask,
 		},
 	}
 
@@ -88,6 +89,8 @@ func init() {
 			"outscale_nat_services":        dataSourceOutscaleOAPINatServices,
 			"outscale_subregions":          dataSourceOutscaleOAPISubregions,
 			"outscale_regions":             dataSourceOutscaleOAPIRegions,
+			"outscale_image_export_task":   dataSourceOutscaleOAPIImageExportTask,
+			"outscale_image_export_tasks":  dataSourceOutscaleOAPIImageExportTasks,
 		},
 	}
 }
