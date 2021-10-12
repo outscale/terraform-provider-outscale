@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 // Creates a network interface in the specified subnet
@@ -393,28 +395,62 @@ func buildOutscaleOAPIDataSourceNicFilters(set *schema.Set) oscgo.FiltersNic {
 		}
 
 		switch name := m["name"].(string); name {
+		case "descriptions":
+			filters.SetDescriptions(filterValues)
+		case "is_source_dest_check":
+			filters.SetIsSourceDestCheck(cast.ToBool(filterValues[0]))
+		case "link_nic_delete_on_vm_deletion":
+			filters.SetLinkNicDeleteOnVmDeletion(cast.ToBool(filterValues[0]))
+		case "link_nic_device_numbers":
+			filters.SetLinkNicDeviceNumbers(utils.StringSliceToInt32Slice(filterValues))
+		case "link_nic_link_nic_ids":
+			filters.SetLinkNicLinkNicIds(filterValues)
+		case "link_nic_states":
+			filters.SetLinkNicStates(filterValues)
+		case "link_nic_vm_account_ids":
+			filters.SetLinkNicVmAccountIds(filterValues)
+		case "link_nic_vm_ids":
+			filters.SetLinkNicVmIds(filterValues)
+		case "link_public_ip_account_ids":
+			filters.SetLinkPublicIpAccountIds(filterValues)
+		case "link_public_ip_link_public_ip_ids":
+			filters.SetLinkPublicIpLinkPublicIpIds(filterValues)
+		case "link_public_ip_public_ip_ids":
+			filters.SetLinkPublicIpPublicIpIds(filterValues)
+		case "link_public_ip_public_ips":
+			filters.SetLinkPublicIpPublicIps(filterValues)
+		case "mac_addresses":
+			filters.SetMacAddresses(filterValues)
+		case "private_ips_primary_ip":
+			filters.SetPrivateIpsPrimaryIp(cast.ToBool(filterValues[0]))
+		case "tag_keys":
+			filters.SetTagKeys(filterValues)
+		case "tag_values":
+			filters.SetTagValues(filterValues)
+		case "tags":
+			filters.SetTags(filterValues)
 		case "net_ids":
-			//filters.NetIds =
+			filters.SetNetIds(filterValues)
 		case "nic_ids":
 			filters.SetNicIds(filterValues)
 		case "private_dns_names":
-			//filters.PrivateDnsNames = filterValues
+			filters.SetPrivateDnsNames(filterValues)
 		case "private_ips_link_public_ip_account_ids":
-			//filters.PrivateIpsLinkPublicIpAccountIds = filterValues
+			filters.SetPrivateIpsLinkPublicIpAccountIds(filterValues)
 		case "private_ips_link_public_ip_public_ips":
-			//filters.PrivateIpsLinkPublicIpPublicIps = filterValues
+			filters.SetPrivateIpsLinkPublicIpPublicIps(filterValues)
 		case "private_ips_private_ips":
 			filters.SetPrivateIpsPrivateIps(filterValues)
 		case "security_group_ids":
-			//filters.SecurityGroupIds = filterValues
+			filters.SetSecurityGroupIds(filterValues)
 		case "security_group_names":
-			//filters.SecurityGroupNames = filterValues
+			filters.SetSecurityGroupNames(filterValues)
 		case "states":
-			//filters.States = filterValues
+			filters.SetStates(filterValues)
 		case "subnet_ids":
 			filters.SetSubnetIds(filterValues)
 		case "subregion_names":
-			//filters.SubregionNames = filterValues
+			filters.SetSubregionNames(filterValues)
 		default:
 			log.Printf("[Debug] Unknown Filter Name: %s.", name)
 		}

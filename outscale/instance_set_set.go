@@ -151,7 +151,7 @@ func getOAPIVMNetworkInterfaceLightSet(nics []oscgo.NicLight) (res []map[string]
 
 func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{}) {
 	for _, nic := range nics {
-		//securityGroups, _ := getOAPISecurityGroups(nic.SecurityGroups)
+		securityGroups, _ := getOAPISecurityGroups(*nic.SecurityGroups)
 		res = append(res, map[string]interface{}{
 			"account_id":             nic.GetAccountId(),
 			"description":            nic.GetDescription(),
@@ -163,11 +163,11 @@ func getOAPIVMNetworkInterfaceSet(nics []oscgo.Nic) (res []map[string]interface{
 			"nic_id":                 nic.GetNicId(),
 			"private_dns_name":       nic.GetPrivateDnsName(),
 			"private_ips":            getOAPIPrivateIPs(nic.GetPrivateIps()),
-			//"security_groups":        securityGroups,
-			"state":          nic.GetState(),
-			"subnet_id":      nic.GetSubnetId(),
-			"subregion_name": nic.GetSubregionName(),
-			// "tags":           getOapiTagSet(nic.Tags),
+			"security_groups":        securityGroups,
+			"state":                  nic.GetState(),
+			"subnet_id":              nic.GetSubnetId(),
+			"subregion_name":         nic.GetSubregionName(),
+			"tags":                   getOapiTagSet(nic.Tags),
 		})
 	}
 	return
