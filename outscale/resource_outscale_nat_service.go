@@ -27,10 +27,12 @@ func resourceOutscaleOAPINatService() *schema.Resource {
 			"public_ip_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"nat_service_id": {
