@@ -95,6 +95,7 @@ func Provider() terraform.ResourceProvider {
 			"outscale_load_balancer_listener_rule":       resourceOutscaleLoadBalancerListenerRule(),
 			"outscale_flexible_gpu":                      resourceOutscaleOAPIFlexibleGpu(),
 			"outscale_flexible_gpu_link":                 resourceOutscaleOAPIFlexibleGpuLink(),
+			"outscale_image_export_task":                 resourceOutscaleOAPIIMageExportTask(),
 			"outscale_server_certificate":                resourceOutscaleOAPIServerCertificate(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -160,6 +161,8 @@ func Provider() terraform.ResourceProvider {
 			"outscale_product_types":                dataSourceOutscaleOAPIProductTypes(),
 			"outscale_quota":                        dataSourceOutscaleOAPIQuota(),
 			"outscale_quotas":                       dataSourceOutscaleOAPIQuotas(),
+			"outscale_image_export_task":            dataSourceOutscaleOAPIImageExportTask(),
+			"outscale_image_export_tasks":           dataSourceOutscaleOAPIImageExportTasks(),
 			"outscale_server_certificate":           datasourceOutscaleOAPIServerCertificate(),
 			"outscale_server_certificates":          datasourceOutscaleOAPIServerCertificates(),
 		},
