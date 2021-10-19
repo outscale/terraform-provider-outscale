@@ -1,0 +1,6 @@
+[submodule "docs/osc-api"]
+	path = docs/osc-api
+	url = https://github.com/outscale/osc-api
+[submodule "docs/doc-terraform-template"]
+	path = docs/doc-terraform-template
+	url = https://gitlab.outscale.internal/rd/doc-terraform-template.git

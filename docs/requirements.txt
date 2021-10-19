@@ -1,0 +1,3 @@
+prance
+pyyaml
+openapi-spec-validator

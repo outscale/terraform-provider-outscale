@@ -33,3 +33,7 @@ terraformStatePull.json
 /tests/test.tf
 /tests/old.py
 /tests/tmp.txt
+
+# docs
+docs/generation_log.txt
+docs/.venv
