@@ -67,3 +67,13 @@ func StringSliceToFloat32Slice(src []string) (res []float32) {
 	}
 	return
 }
+
+func IsResponseEmptyOrMutiple(rLen int, resName string) error {
+	if rLen == 0 {
+		return fmt.Errorf("Unable to find %v", resName)
+	}
+	if rLen > 1 {
+		return fmt.Errorf("Multiple %vs matched; use additional constraints to reduce matches to a single %v", resName, resName)
+	}
+	return nil
+}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func resourceOutscaleOAPIFlexibleGpuLink() *schema.Resource {
@@ -73,9 +74,10 @@ func resourceOutscaleOAPIFlexibleGpuLinkCreate(d *schema.ResourceData, meta inte
 		return fmt.Errorf("error reading the FlexibleGpu %s", err)
 	}
 
-	if len(*respGpu.FlexibleGpus) != 1 {
-		return fmt.Errorf("Unable to find Flexible GPU")
+	if err := utils.IsResponseEmptyOrMutiple(len(respGpu.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
+		return err
 	}
+
 	if (*respGpu.FlexibleGpus)[0].GetState() != "attaching" {
 		return fmt.Errorf("Unable to link Flexible GPU")
 	}
@@ -116,8 +118,8 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 		return err
 	}
 
-	if len(*resp.FlexibleGpus) != 1 {
-		return fmt.Errorf("Unable to find Flexible GPU")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
+		return err
 	}
 
 	fg := (*resp.FlexibleGpus)[0]

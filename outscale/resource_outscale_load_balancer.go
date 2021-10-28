@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func lb_sg_schema() *schema.Schema {
@@ -493,13 +494,8 @@ func readResourceLb(conn *oscgo.APIClient, elbName string) (*oscgo.LoadBalancer,
 		return nil, nil, fmt.Errorf("Error retrieving Load Balancer: %s", err)
 	}
 
-	if resp.LoadBalancers == nil {
-		return nil, nil, fmt.Errorf("NO Load Balancer FOUND")
-	}
-
-	if len(*resp.LoadBalancers) != 1 {
-		return nil, nil, fmt.Errorf("Unable to find Load Balancer: %#v",
-			elbName)
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetLoadBalancers()), "LoadBalancer"); err != nil {
+		return nil, nil, err
 	}
 
 	lb := (*resp.LoadBalancers)[0]

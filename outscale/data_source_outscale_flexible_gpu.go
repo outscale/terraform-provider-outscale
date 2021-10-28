@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/spf13/cast"
+	"github.com/terraform-providers/terraform-provider-outscale/utils"
 )
 
 func dataSourceOutscaleOAPIFlexibleGpu() *schema.Resource {
@@ -93,12 +94,8 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	if len(resp.GetFlexibleGpus()) == 0 {
-		return fmt.Errorf("NO Flexible GPU FOUND")
-	}
-
-	if len(resp.GetFlexibleGpus()) > 1 {
-		return fmt.Errorf("Multiple Flexible GPU matched; use additional constraints to reduce matches to a single Flexible GPU")
+	if err := utils.IsResponseEmptyOrMutiple(len(resp.GetFlexibleGpus()), "FlexibleGpu"); err != nil {
+		return err
 	}
 
 	fg := (*resp.FlexibleGpus)[0]
