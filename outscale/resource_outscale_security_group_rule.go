@@ -2,7 +2,9 @@ package outscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,6 +23,9 @@ func resourceOutscaleOAPIOutboundRule() *schema.Resource {
 		Create: resourceOutscaleOAPIOutboundRuleCreate,
 		Read:   resourceOutscaleOAPIOutboundRuleRead,
 		Delete: resourceOutscaleOAPIOutboundRuleDelete,
+		Importer: &schema.ResourceImporter{
+			State: resourceOutscaleOAPISecurityGroupRuleImportState,
+		},
 		Schema: map[string]*schema.Schema{
 			"flow": {
 				Type:         schema.TypeString,
@@ -353,5 +358,202 @@ func getRulesSchema(isForAttr bool) *schema.Schema {
 				},
 			},
 		},
+	}
+}
+
+func resourceOutscaleOAPISecurityGroupRuleImportState(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	// example: sg-53173ec7_inbound_tcp_80_80_80.14.129.222/32
+	// example: sg-53173ec7_inbound_tcp_80_80_sg-53173ec7
+
+	conn := meta.(*OutscaleClient).OSCAPI
+
+	parts := strings.SplitN(d.Id(), "_", 6)
+	if len(parts) != 6 {
+		return nil, errors.New("import format error: to import a Outscale Security Group Rule, use the format {id}_{flow}_{protocol}_{fromPort}_{toPort}_{ip range or id}")
+	}
+
+	sgID := parts[0]
+	ruleType := parts[1]
+	protocol := parts[2]
+	fromPort := parts[3]
+	toPort := parts[4]
+	sources := parts[5]
+	sourcesValidation := parts[5:]
+
+	//Validations
+	if !strings.EqualFold(ruleType, "inbound") && !strings.EqualFold(ruleType, "outbound") {
+		return nil, errors.New("flow must be inbound or outbound")
+	}
+
+	if _, ok := sgProtocolIntegers()[protocol]; !ok {
+		if _, err := strconv.Atoi(protocol); err != nil {
+			return nil, errors.New("protocol must be tcp/udp/icmp/all or a number")
+		}
+	}
+
+	if p1, err := strconv.Atoi(fromPort); err != nil {
+		return nil, errors.New("invalid from port")
+	} else if p2, err := strconv.Atoi(toPort); err != nil || p2 < p1 {
+		return nil, errors.New("invalid to port")
+	}
+
+	isSGID := false
+	for _, source := range sourcesValidation {
+		// will be properly validated later
+		if !strings.Contains(source, "sg-") && !strings.Contains(source, "pl-") && !strings.Contains(source, ":") && !strings.Contains(source, ".") {
+			return nil, errors.New("source must be cidr, ipv6cidr, or a sg ID")
+		}
+
+		if strings.Contains(source, "sg-") || strings.Contains(source, "pl-") {
+			isSGID = true
+		}
+	}
+
+	filter := &oscgo.FiltersSecurityGroup{
+		SecurityGroupIds: &[]string{sgID},
+	}
+
+	if strings.EqualFold(ruleType, "inbound") {
+		filter.InboundRuleProtocols = &[]string{protocol}
+		filter.InboundRuleFromPortRanges = &[]int32{cast.ToInt32(fromPort)}
+		filter.InboundRuleToPortRanges = &[]int32{cast.ToInt32(toPort)}
+		if isSGID {
+			filter.InboundRuleSecurityGroupIds = &[]string{sources}
+		} else {
+			filter.InboundRuleIpRanges = &[]string{sources}
+		}
+	}
+	if strings.EqualFold(ruleType, "outbound") {
+		filter.OutboundRuleProtocols = &[]string{protocol}
+		filter.OutboundRuleFromPortRanges = &[]int32{cast.ToInt32(fromPort)}
+		filter.OutboundRuleToPortRanges = &[]int32{cast.ToInt32(toPort)}
+		if isSGID {
+			filter.OutboundRuleSecurityGroupIds = &[]string{sources}
+		} else {
+			filter.OutboundRuleIpRanges = &[]string{sources}
+		}
+	}
+
+	sg, resp, err := readSecurityGroupsWithFilter(conn, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	resultInbound := []oscgo.SecurityGroupRule{}
+	resultOutbound := []oscgo.SecurityGroupRule{}
+
+	var ipRange, ipProtocol, fromRange, toRange string
+
+	if strings.EqualFold(ruleType, "inbound") {
+		for _, inbound := range sg.GetInboundRules() {
+			if inbound.GetIpProtocol() == protocol && inbound.GetFromPortRange() == cast.ToInt32(fromPort) && inbound.GetToPortRange() == cast.ToInt32(toPort) {
+				for _, ip := range inbound.GetIpRanges() {
+					if ip == sources {
+						ipRange = ip
+						ipProtocol = protocol
+						fromRange = fromPort
+						toRange = toPort
+						resultInbound = append(resultInbound, inbound)
+					}
+				}
+			}
+		}
+	}
+
+	if strings.EqualFold(ruleType, "outbound") {
+		for _, outbound := range sg.GetOutboundRules() {
+			if outbound.GetIpProtocol() == protocol && outbound.GetFromPortRange() == cast.ToInt32(fromPort) && outbound.GetToPortRange() == cast.ToInt32(toPort) {
+				for _, ip := range outbound.GetIpRanges() {
+					if ip == sources {
+						ipRange = ip
+						ipProtocol = protocol
+						fromRange = fromPort
+						toRange = toPort
+						resultOutbound = append(resultOutbound, outbound)
+					}
+				}
+			}
+		}
+	}
+
+	if err := d.Set("inbound_rules", flattenRules(resultInbound)); err != nil {
+		return nil, fmt.Errorf("error setting `inbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("outbound_rules", flattenRules(resultOutbound)); err != nil {
+		return nil, fmt.Errorf("error setting `outbound_rules` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("security_group_name", sg.GetSecurityGroupName()); err != nil {
+		return nil, fmt.Errorf("error setting `security_group_name` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("net_id", sg.GetNetId()); err != nil {
+		return nil, fmt.Errorf("error setting `net_id` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if ruleType == "inbound" {
+		if err := d.Set("flow", "Inbound"); err != nil {
+			return nil, fmt.Errorf("error setting `flow` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+		}
+	} else {
+		if err := d.Set("flow", "Outbound"); err != nil {
+			return nil, fmt.Errorf("error setting `flow` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+		}
+	}
+	if err := d.Set("from_port_range", cast.ToInt32(fromRange)); err != nil {
+		return nil, fmt.Errorf("error setting `from_port_range` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("to_port_range", cast.ToInt32(toRange)); err != nil {
+		return nil, fmt.Errorf("error setting `to_port_range` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("ip_protocol", ipProtocol); err != nil {
+		return nil, fmt.Errorf("error setting `ip_protocol` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("ip_range", ipRange); err != nil {
+		return nil, fmt.Errorf("error setting `ip_range` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("security_group_id", sg.GetSecurityGroupId()); err != nil {
+		return nil, fmt.Errorf("error setting `security_group_id` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
+		return nil, fmt.Errorf("error setting `request_id` for Outscale Security Group Rule(%s): %s", d.Id(), err)
+	}
+
+	d.SetId(sg.GetSecurityGroupId())
+
+	return []*schema.ResourceData{d}, nil
+}
+
+func readSecurityGroupsWithFilter(client *oscgo.APIClient, filter *oscgo.FiltersSecurityGroup) (*oscgo.SecurityGroup, *oscgo.ReadSecurityGroupsResponse, error) {
+	filters := oscgo.ReadSecurityGroupsRequest{
+		Filters: filter,
+	}
+
+	var err error
+	var resp oscgo.ReadSecurityGroupsResponse
+	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+		resp, _, err = client.SecurityGroupApi.ReadSecurityGroups(context.Background()).ReadSecurityGroupsRequest(filters).Execute()
+		if err != nil {
+			if strings.Contains(err.Error(), "RequestLimitExceeded") {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("error reading the Outscale Security Group(%s): %s", cast.ToString(filter.GetSecurityGroupIds()[0]), err)
+	}
+
+	if len(*resp.SecurityGroups) == 0 {
+		return nil, nil, fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
+	}
+
+	return &resp.GetSecurityGroups()[0], &resp, nil
+}
+
+func sgProtocolIntegers() map[string]int {
+	return map[string]int{
+		"udp":  17,
+		"tcp":  6,
+		"icmp": 1,
+		"all":  -1,
 	}
 }

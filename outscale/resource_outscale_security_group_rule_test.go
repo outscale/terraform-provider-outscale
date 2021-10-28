@@ -16,6 +16,8 @@ import (
 )
 
 func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
+	resourceName := "outscale_security_group_rule.outscale_security_group_rule_https"
+
 	var group oscgo.SecurityGroup
 	rInt := acctest.RandInt()
 
@@ -27,9 +29,16 @@ func TestAccOutscaleSecurityGroupRule_basic(t *testing.T) {
 			{
 				Config: testAccOutscaleOAPISecurityGroupRuleEgressConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckOutscaleOAPIRuleExists("outscale_security_group.outscale_security_group", &group),
-					testAccCheckOutscaleOAPIRuleAttributes("outscale_security_group_rule.outscale_security_group_rule_https", &group, nil, "Inbound"),
+					testAccCheckOutscaleOAPIRuleExists(resourceName, &group),
+					testAccCheckOutscaleOAPIRuleAttributes(resourceName, &group, nil, "Inbound"),
 				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateIdFunc:       testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"request_id"},
 			},
 		},
 	})
@@ -209,6 +218,16 @@ func testAccCheckOutscaleOAPIRuleExists(n string, group *oscgo.SecurityGroup) re
 		}
 
 		return fmt.Errorf("Security Group not found")
+	}
+}
+
+func testAccCheckOutscaleOAPIRuleImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+		return fmt.Sprintf("%s_%s_%s_%s_%s_%s", rs.Primary.ID, rs.Primary.Attributes["flow"], rs.Primary.Attributes["ip_protocol"], rs.Primary.Attributes["from_port_range"], rs.Primary.Attributes["to_port_range"], rs.Primary.Attributes["ip_range"]), nil
 	}
 }
 
