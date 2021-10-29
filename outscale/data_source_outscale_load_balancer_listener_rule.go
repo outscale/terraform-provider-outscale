@@ -160,7 +160,6 @@ func dataSourceOutscaleOAPILoadBalancerLDRuleRead(d *schema.ResourceData, meta i
 		fmt.Errorf("Malformated listener rule")
 	}
 
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return nil

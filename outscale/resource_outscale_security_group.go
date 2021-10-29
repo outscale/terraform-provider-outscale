@@ -188,7 +188,7 @@ func resourceOutscaleOAPISecurityGroupCreate(d *schema.ResourceData, meta interf
 func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	sg, resp, err := readSecurityGroups(conn, d.Id())
+	sg, _, err := readSecurityGroups(conn, d.Id())
 	if err != nil {
 		return err
 	}
@@ -215,9 +215,6 @@ func resourceOutscaleOAPISecurityGroupRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 	if err := d.Set("tags", tagsOSCAPIToMap(sg.GetTags())); err != nil {
-		return err
-	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
 		return err
 	}
 

@@ -176,7 +176,6 @@ func dataSourceOutscaleOAPILoadBalancerLDRulesRead(d *schema.ResourceData, meta 
 	}
 
 	d.Set("listener_rules", lrs_ret)
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return nil

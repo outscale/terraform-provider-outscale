@@ -275,7 +275,6 @@ func dataSourceOutscaleOAPILoadBalancersRead(d *schema.ResourceData, meta interf
 	if err != nil {
 		return err
 	}
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return nil

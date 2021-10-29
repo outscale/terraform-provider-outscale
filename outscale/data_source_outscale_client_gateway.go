@@ -114,9 +114,6 @@ func dataSourceOutscaleClientGatewayRead(d *schema.ResourceData, meta interface{
 	if err := d.Set("tags", tagsOSCAPIToMap(clientGateway.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(clientGateway.GetClientGatewayId())
 

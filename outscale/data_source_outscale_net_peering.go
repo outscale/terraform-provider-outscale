@@ -145,9 +145,6 @@ func dataSourceOutscaleOAPILinPeeringConnectionRead(d *schema.ResourceData, meta
 	if err := d.Set("tags", tagsOSCAPIToMap(netPeering.GetTags())); err != nil {
 		return errwrap.Wrapf("Error setting Net Peering tags: {{err}}", err)
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(netPeering.GetNetPeeringId())
 

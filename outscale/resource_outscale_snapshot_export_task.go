@@ -262,9 +262,6 @@ func resourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface{}
 	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
 		return err
 	}
-	if err = d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -306,9 +303,6 @@ func resourceOutscaleSnapshotTaskWaitForAvailable(id string, client *oscgo.APICl
 func resourceOAPISnapshotExportTaskDelete(d *schema.ResourceData, meta interface{}) error {
 	d.SetId("")
 	if err := d.Set("osu_export", nil); err != nil {
-		return err
-	}
-	if err := d.Set("request_id", nil); err != nil {
 		return err
 	}
 

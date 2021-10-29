@@ -159,9 +159,5 @@ func dataSourceOAPIImageExportTasksRead(d *schema.ResourceData, meta interface{}
 
 	d.SetId(resource.UniqueId())
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return d.Set("image_export_tasks", snapshots)
 }

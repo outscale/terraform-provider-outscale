@@ -182,9 +182,6 @@ func dataSourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface
 	if err := d.Set("tags", tagsOSCAPIToMap(rt.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	if err := d.Set("routes", setOSCAPIRoutes(rt.GetRoutes())); err != nil {
 		return err
 	}

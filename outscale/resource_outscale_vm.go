@@ -654,9 +654,6 @@ func resourceOAPIVMRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
-		if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
-			return err
-		}
 		if err := d.Set("admin_password", adminPassword); err != nil {
 			return err
 		}

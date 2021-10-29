@@ -263,10 +263,6 @@ func dataSourceOutscaleOAPISecurityGroupsRead(d *schema.ResourceData, meta inter
 
 	d.SetId(resource.UniqueId())
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	err = d.Set("security_groups", sg)
 
 	return err

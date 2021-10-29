@@ -170,9 +170,6 @@ func resourceOutscaleOAPINetworkInterfacePrivateIPRead(d *schema.ResourceData, m
 	if err := d.Set("primary_private_ip", primaryPrivateID); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }

@@ -135,9 +135,5 @@ func dataSourceOutscaleOAPIVpcsRead(d *schema.ResourceData, meta interface{}) er
 		return err
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return nil
 }

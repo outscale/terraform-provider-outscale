@@ -228,9 +228,7 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *osc
 	if err := d.Set("state", route.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", requestID); err != nil {
-		return err
-	}
+
 	return nil
 }
 

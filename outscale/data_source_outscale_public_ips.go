@@ -119,9 +119,5 @@ func dataSourceOutscalePublicIPSRead(d *schema.ResourceData, meta interface{}) e
 
 	d.SetId(resource.UniqueId())
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return d.Set("public_ips", address)
 }

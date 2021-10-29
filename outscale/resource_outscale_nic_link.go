@@ -136,9 +136,6 @@ func resourceOutscaleOAPINetworkInterfaceAttachmentRead(d *schema.ResourceData, 
 	if err := d.Set("link_nic_id", linkNic.GetLinkNicId()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", r.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }

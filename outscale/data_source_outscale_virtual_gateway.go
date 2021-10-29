@@ -121,7 +121,6 @@ func dataSourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta inter
 	d.Set("state", aws.StringValue(vgw.State))
 	d.Set("connection_type", vgw.ConnectionType)
 	d.Set("tags", tagsOSCAPIToMap(vgw.GetTags()))
-	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }

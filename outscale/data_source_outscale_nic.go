@@ -366,9 +366,6 @@ func dataSourceOutscaleOAPINicRead(d *schema.ResourceData, meta interface{}) err
 		return err
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	if err := d.Set("is_source_dest_checked", eni.GetIsSourceDestChecked()); err != nil {
 		return err
 	}

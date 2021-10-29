@@ -136,9 +136,6 @@ func resourceOAPINatServiceCreate(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	d.SetId(natService.GetNatServiceId())
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return resourceOAPINatServiceRead(d, meta)
 }
@@ -195,7 +192,7 @@ func resourceOAPINatServiceRead(d *schema.ResourceData, meta interface{}) error 
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
-		return d.Set("request_id", resp.ResponseContext.RequestId)
+		return nil
 	})
 }
 

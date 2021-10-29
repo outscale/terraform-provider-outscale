@@ -91,9 +91,6 @@ func dataSourceOutscaleOAPIFlexibleGpuCatalogRead(d *schema.ResourceData, meta i
 		return err
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
-		return err
-	}
 	d.SetId(resource.UniqueId())
 
 	return nil

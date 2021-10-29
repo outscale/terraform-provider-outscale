@@ -84,10 +84,6 @@ func resourceOutscaleOAPILinAttrCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[DEBUG] Error creating net attribute. Details: %s", utils.GetErrorResponse(err))
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	d.SetId(resp.Net.GetNetId())
 
 	return resourceOutscaleOAPILinAttrRead(d, meta)
@@ -161,7 +157,6 @@ func resourceOutscaleOAPILinAttrRead(d *schema.ResourceData, meta interface{}) e
 	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
 	d.Set("state", resp.GetNets()[0].GetState())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }

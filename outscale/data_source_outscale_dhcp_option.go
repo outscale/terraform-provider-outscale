@@ -118,9 +118,6 @@ func dataSourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("tags", tagsOSCAPIToMap(dhcpOption.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(dhcpOption.GetDhcpOptionsSetId())
 

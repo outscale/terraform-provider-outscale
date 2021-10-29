@@ -171,7 +171,7 @@ func resourceOutscaleLoadBalancerListenerRuleCreate(d *schema.ResourceData, meta
 	}
 
 	d.SetId(*resp.ListenerRule.ListenerRuleName)
-	d.Set("request_id", resp.ResponseContext.RequestId)
+
 	return resourceOutscaleLoadBalancerListenerRuleRead(d, meta)
 }
 

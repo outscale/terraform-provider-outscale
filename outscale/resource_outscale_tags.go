@@ -124,15 +124,8 @@ func resourceOutscaleOAPITagsRead(d *schema.ResourceData, meta interface{}) erro
 		return err
 	}
 
-	if err := d.Set("request_id", resp.GetResponseContext().RequestId); err != nil {
-		return err
-	}
 	tg := oapiTagsDescToList(resp.GetTags())
 	if err := d.Set("tags", tg); err != nil {
-		return err
-	}
-
-	if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
 		return err
 	}
 

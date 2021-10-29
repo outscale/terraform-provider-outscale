@@ -179,7 +179,6 @@ func resourceOutscaleOAPIVirtualGatewayRead(d *schema.ResourceData, meta interfa
 	d.Set("net_to_virtual_gateway_links", vs)
 	d.Set("state", virtualGateway.State)
 	d.Set("tags", tagsOSCAPIToMap(virtualGateway.GetTags()))
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }

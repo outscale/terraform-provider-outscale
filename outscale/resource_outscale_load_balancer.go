@@ -506,7 +506,7 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	conn := meta.(*OutscaleClient).OSCAPI
 	elbName := d.Id()
 
-	lb, resp, err := readResourceLb(conn, elbName)
+	lb, _, err := readResourceLb(conn, elbName)
 	if err != nil {
 		return err
 	}
@@ -574,7 +574,6 @@ func resourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface
 	d.Set("source_security_group", ssg)
 	d.Set("subnets", flattenStringList(lb.Subnets))
 	d.Set("net_id", lb.NetId)
-	d.Set("request_id", resp.ResponseContext.RequestId)
 
 	return nil
 }

@@ -191,10 +191,7 @@ func dataSourceOutscaleNetAccessPointsRead(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
-	d.Set("request_id", resp.ResponseContext.RequestId)
-	if err != nil {
-		return err
-	}
+
 	d.SetId(resource.UniqueId())
 
 	return nil

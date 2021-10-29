@@ -134,9 +134,6 @@ func dataSourceOutscaleOAPIVMStateRead(d *schema.ResourceData, meta interface{})
 	state = filteredStates[0]
 
 	log.Printf("[DEBUG] outscale_oapi_vm_state - Single State found: %s", state.GetVmId())
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	return vmStateDataAttrSetter(d, &state)
 }
 

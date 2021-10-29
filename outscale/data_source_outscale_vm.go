@@ -84,9 +84,6 @@ func dataSourceOutscaleOAPIVMRead(d *schema.ResourceData, meta interface{}) erro
 
 	vm = filteredVms[0]
 
-	if err := d.Set("request_id", resp.GetResponseContext().RequestId); err != nil {
-		return err
-	}
 	// Populate vm attribute fields with the returned vm
 	return resourceDataAttrSetter(d, func(set AttributeSetter) error {
 		d.SetId(vm.GetVmId())

@@ -210,9 +210,5 @@ func dataSourceOutscaleOAPIRouteTablesRead(d *schema.ResourceData, meta interfac
 
 	d.SetId(resource.UniqueId())
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return d.Set("route_tables", routeTables)
 }

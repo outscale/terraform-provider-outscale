@@ -131,10 +131,6 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
-	if err := d.Set("request_id", response.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	if err := d.Set("public_ip_id", address.GetPublicIpId()); err != nil {
 		return err
 	}
@@ -147,7 +143,7 @@ func dataSourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}
 
 	d.SetId(address.GetPublicIp())
 
-	return d.Set("request_id", response.ResponseContext.GetRequestId())
+	return nil
 }
 
 func buildOutscaleOAPIDataSourcePublicIpsFilters(set *schema.Set) *oscgo.FiltersPublicIp {

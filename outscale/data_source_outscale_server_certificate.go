@@ -95,7 +95,6 @@ func datasourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta in
 	d.Set("expiration_date", result.GetExpirationDate())
 	d.Set("name", result.GetName())
 	d.Set("path", result.GetPath())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	d.SetId(result.GetId())
 

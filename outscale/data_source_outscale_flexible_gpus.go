@@ -101,9 +101,6 @@ func dataSourceOutscaleOAPIFlexibleGpusRead(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	d.SetId(resource.UniqueId())
 
 	return setOAPIFlexibleGpuAttributes(d, flexgps)

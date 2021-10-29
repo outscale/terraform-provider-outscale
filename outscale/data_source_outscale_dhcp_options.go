@@ -109,9 +109,6 @@ func dataSourceOutscaleDHCPOptionsRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("dhcp_options", flattenDHCPOption(resp.GetDhcpOptionsSets())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(resource.UniqueId())
 

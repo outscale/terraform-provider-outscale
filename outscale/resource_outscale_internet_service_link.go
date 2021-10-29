@@ -98,9 +98,6 @@ func resourceOutscaleOAPIInternetServiceLinkCreate(d *schema.ResourceData, meta 
 	}
 
 	d.SetId(internetServiceID)
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return resourceOutscaleOAPIInternetServiceLinkRead(d, meta)
 }
@@ -150,7 +147,7 @@ func resourceOutscaleOAPIInternetServiceLinkRead(d *schema.ResourceData, meta in
 			return err
 		}
 
-		return d.Set("request_id", resp.ResponseContext.RequestId)
+		return nil
 	})
 }
 

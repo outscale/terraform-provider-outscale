@@ -118,7 +118,7 @@ func resourceOutscaleOAPIPublicIPRead(d *schema.ResourceData, meta interface{}) 
 
 	d.SetId(publicIP.GetPublicIpId())
 
-	return d.Set("request_id", response.ResponseContext.GetRequestId())
+	return nil
 }
 
 func resourceOutscaleOAPIPublicIPUpdate(d *schema.ResourceData, meta interface{}) error {

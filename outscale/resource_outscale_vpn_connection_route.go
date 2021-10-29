@@ -77,15 +77,9 @@ func resourceOutscaleVPNConnectionRouteRead(d *schema.ResourceData, meta interfa
 		MinTimeout: 3 * time.Second,
 	}
 
-	r, err := stateConf.WaitForState()
+	_, err := stateConf.WaitForState()
 	if err != nil {
 		return fmt.Errorf("Error waiting for Outscale VPN Connection Route(%s) to become ready: %s", d.Id(), err)
-	}
-
-	resp := r.(oscgo.ReadVpnConnectionsResponse)
-
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
 	}
 
 	return nil

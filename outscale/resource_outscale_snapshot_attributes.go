@@ -198,9 +198,6 @@ func resourcedOutscaleOAPISnapshotAttributesRead(d *schema.ResourceData, meta in
 	if err := d.Set("account_id", resp.GetSnapshots()[0].GetAccountId()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }

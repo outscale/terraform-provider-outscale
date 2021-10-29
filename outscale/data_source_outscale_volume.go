@@ -140,9 +140,6 @@ func datasourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	// Query returned single result.
 	volume = filteredVolumes[0]
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	log.Printf("[DEBUG] outscale_volume - Single Volume found: %s", volume.GetVolumeId())
 	return volumeOAPIDescriptionAttributes(d, &volume)
 

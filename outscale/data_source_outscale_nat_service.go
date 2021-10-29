@@ -113,10 +113,6 @@ func dataSourceOutscaleOAPINatServiceRead(d *schema.ResourceData, meta interface
 			"specific search criteria")
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return ngOAPIDescriptionAttributes(d, resp.GetNatServices()[0])
 }
 

@@ -94,7 +94,7 @@ func dataSourceOutscaleOAPILinPeeringsConnectionRead(d *schema.ResourceData, met
 			log.Printf("[DEBUG] Net Peerings ERR %+v", err)
 			return err
 		}
-		return d.Set("request_id", resp.ResponseContext.GetRequestId())
+		return nil
 	})
 }
 

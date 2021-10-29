@@ -137,9 +137,7 @@ func resourceOutscaleOAPIPublicIPLinkRead(d *schema.ResourceData, meta interface
 	if err := d.Set("tags", getOapiTagSet(response.GetPublicIps()[0].Tags)); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", response.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
+
 	return readOutscaleOAPIPublicIPLink(d, &response.GetPublicIps()[0])
 }
 

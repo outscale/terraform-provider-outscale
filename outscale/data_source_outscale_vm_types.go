@@ -99,9 +99,6 @@ func dataSourceOutscaleOAPIVMTypesRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Your query returned no results. Please change your search criteria and try again")
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	return statusDescriptionOAPIVMTypesAttributes(d, filteredTypes)
 
 }

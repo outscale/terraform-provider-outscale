@@ -131,9 +131,6 @@ func dataSourceOutscaleOAPISubnetRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("available_ips_count", subnet.GetAvailableIpsCount()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }

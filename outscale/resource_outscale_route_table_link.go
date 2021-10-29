@@ -93,7 +93,7 @@ func resourceOutscaleOAPILinkRouteTableCreate(d *schema.ResourceData, meta inter
 }
 
 func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	routeTable, requestID, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), d.Get("route_table_id").(string), d.Id())
+	routeTable, _, err := readOutscaleLinkRouteTable(meta.(*OutscaleClient), d.Get("route_table_id").(string), d.Id())
 	if err != nil {
 		return err
 	}
@@ -106,9 +106,6 @@ func resourceOutscaleOAPILinkRouteTableRead(d *schema.ResourceData, meta interfa
 	}
 	if err := d.Set("main", routeTable.GetMain()); err != nil {
 		return fmt.Errorf(errorLinkRouteTableSetting, "main", routeTable.GetLinkRouteTableId(), err)
-	}
-	if err := d.Set("request_id", requestID); err != nil {
-		return fmt.Errorf(errorLinkRouteTableSetting, "request_id", routeTable.GetLinkRouteTableId(), err)
 	}
 
 	return nil

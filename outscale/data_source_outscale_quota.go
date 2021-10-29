@@ -129,9 +129,6 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 	if err := d.Set("short_description", quota.GetShortDescription()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return nil
 }
