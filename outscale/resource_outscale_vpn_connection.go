@@ -170,9 +170,7 @@ func resourceOutscaleVPNConnectionRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("tags", tagsOSCAPIToMap(vpnConnection.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
+
 	return nil
 }
 

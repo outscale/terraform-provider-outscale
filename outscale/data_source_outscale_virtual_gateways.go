@@ -127,7 +127,6 @@ func dataSourceOutscaleOAPIVirtualGatewaysRead(d *schema.ResourceData, meta inte
 		vpns[k] = vpn
 	}
 	d.Set("virtual_gateways", vpns)
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(resource.UniqueId())
 
 	return nil

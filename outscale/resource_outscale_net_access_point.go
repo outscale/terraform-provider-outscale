@@ -101,11 +101,10 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 			NetAccessPointId:    d.Id(),
 		}
 
-		var resp oscgo.UpdateNetAccessPointResponse
 		var err error
 
 		err = resource.Retry(60*time.Second, func() *resource.RetryError {
-			resp, _, err = conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
+			_, _, err = conn.NetAccessPointApi.UpdateNetAccessPoint(context.Background()).UpdateNetAccessPointRequest(*req).Execute()
 			if err != nil {
 				if strings.Contains(err.Error(), "RequestLimitExceeded:") {
 					return resource.RetryableError(err)
@@ -114,7 +113,6 @@ func resourceOutscaleNetAccessPointUpdate(d *schema.ResourceData, meta interface
 			}
 			return nil
 		})
-		d.Set("request_id", resp.ResponseContext.RequestId)
 	}
 
 	if d.HasChange("tags") {
@@ -212,7 +210,6 @@ func resourceOutscaleNetAccessPointCreate(d *schema.ResourceData, meta interface
 		return fmt.Errorf("Error waiting for instance (%s) to become ready: %s", id, err)
 	}
 
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.Set("net_access_point_id", id)
 	d.SetId(id)
 
@@ -261,9 +258,6 @@ func resourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface{}
 	d.Set("state", nap.State)
 	d.Set("tags", tagsOSCAPIToMap(nap.GetTags()))
 	d.Set("net_access_point_id", nap.GetNetAccessPointId())
-	if _, ok := d.GetOk("request_id"); ok == false {
-		d.Set("request_id", resp.ResponseContext.GetRequestId())
-	}
 
 	return nil
 }

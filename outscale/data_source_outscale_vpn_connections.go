@@ -133,9 +133,6 @@ func dataSourceOutscaleVPNConnectionsRead(d *schema.ResourceData, meta interface
 	if err := d.Set("vpn_connections", flattenVPNConnections(resp.GetVpnConnections())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(resource.UniqueId())
 	return nil

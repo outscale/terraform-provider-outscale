@@ -121,7 +121,6 @@ func dataSourceOutscaleNetAccessPointRead(d *schema.ResourceData, meta interface
 	d.Set("state", nap.State)
 	d.Set("tags", tagsOSCAPIToMap(nap.GetTags()))
 
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	id := *nap.NetAccessPointId
 	d.SetId(id)
 

@@ -109,9 +109,6 @@ func resourceOutscaleOAPISubNetRead(d *schema.ResourceData, meta interface{}) er
 		errString := err.Error()
 		return fmt.Errorf("[DEBUG] Error reading Subnet (%s)", errString)
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	if len(resp.GetSubnets()) > 0 {
 		return readOutscaleOAPISubNet(d, &resp.GetSubnets()[0])
 	}

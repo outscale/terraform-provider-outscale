@@ -122,10 +122,6 @@ func resourceOAPIKeyPairRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error retrieving OAPIKeyPair: %s", errString)
 	}
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	for _, keyPair := range resp.GetKeypairs() {
 		if keyPair.GetKeypairName() == d.Id() {
 			if err := d.Set("keypair_name", keyPair.GetKeypairName()); err != nil {

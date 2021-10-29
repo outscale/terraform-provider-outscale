@@ -254,7 +254,7 @@ func resourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}) 
 		if err := set("volume_size", snapshot.GetVolumeSize()); err != nil {
 			return err
 		}
-		return set("request_id", resp.ResponseContext.GetRequestId())
+		return nil
 	})
 }
 

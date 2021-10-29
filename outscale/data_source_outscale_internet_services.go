@@ -105,10 +105,6 @@ func datasourceOutscaleOAPIInternetServicesRead(d *schema.ResourceData, meta int
 
 	log.Printf("[DEBUG] Setting OAPI LIN Internet Gateways id (%s)", err)
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	d.SetId(resource.UniqueId())
 
 	result := resp.GetInternetServices()

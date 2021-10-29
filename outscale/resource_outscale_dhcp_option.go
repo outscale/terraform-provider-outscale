@@ -136,9 +136,7 @@ func resourceOutscaleDHCPOptionRead(d *schema.ResourceData, meta interface{}) er
 	if err := d.Set("tags", tagsOSCAPIToMap(dhcp.GetTags())); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
+
 	return nil
 }
 

@@ -263,6 +263,6 @@ func dataSourceOutscaleOAPINicsRead(d *schema.ResourceData, meta interface{}) er
 			return err
 		}
 
-		return d.Set("request_id", resp.ResponseContext.GetRequestId())
+		return nil
 	})
 }

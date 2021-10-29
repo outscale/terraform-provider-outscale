@@ -89,7 +89,6 @@ func dataSourceOutscaleOAPIVpcAttrRead(d *schema.ResourceData, meta interface{})
 	d.Set("dhcp_options_set_id", resp.GetNets()[0].GetDhcpOptionsSetId())
 	d.Set("net_id", resp.GetNets()[0].GetNetId())
 	d.Set("state", resp.GetNets()[0].GetState())
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }

@@ -336,7 +336,7 @@ func resourceOAPIImageRead(d *schema.ResourceData, meta interface{}) error {
 			fmt.Printf("[WARN] ERROR TAGS PROBLEME (%s)", err)
 		}
 
-		return d.Set("request_id", resp.ResponseContext.RequestId)
+		return nil
 	})
 }
 

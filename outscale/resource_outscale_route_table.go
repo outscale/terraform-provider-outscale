@@ -199,7 +199,7 @@ func resourceOutscaleOAPIRouteTableCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}) error {
-	rtRaw, requestID, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
+	rtRaw, _, err := readOAPIRouteTable(meta.(*OutscaleClient).OSCAPI, d.Id())
 	if err != nil {
 		return err
 	}
@@ -209,9 +209,6 @@ func resourceOutscaleOAPIRouteTableRead(d *schema.ResourceData, meta interface{}
 	}
 
 	rt := rtRaw.(oscgo.RouteTable)
-	if err := d.Set("request_id", requestID); err != nil {
-		return err
-	}
 	if err := d.Set("route_table_id", rt.GetRouteTableId()); err != nil {
 		return err
 	}

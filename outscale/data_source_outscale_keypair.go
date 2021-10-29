@@ -66,12 +66,6 @@ func datasourceOutscaleOApiKeyPairRead(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("Found to many key pairs, please provide a better query criteria ")
 	}
 
-	if resp.ResponseContext.GetRequestId() != "" {
-		if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-			return err
-		}
-	}
-
 	keypair := resp.GetKeypairs()[0]
 	if err := d.Set("keypair_name", keypair.GetKeypairName()); err != nil {
 		return err

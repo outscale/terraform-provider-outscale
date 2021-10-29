@@ -110,9 +110,6 @@ func dataSourceOutscaleOAPIVpcRead(d *schema.ResourceData, meta interface{}) err
 	if err := d.Set("state", net.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	return d.Set("tags", tagsOSCAPIToMap(net.GetTags()))
 }

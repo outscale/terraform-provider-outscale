@@ -136,9 +136,7 @@ func resourceOutscaleOAPINetRead(d *schema.ResourceData, meta interface{}) error
 	if err := d.Set("state", resp.GetNets()[0].GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
+
 	return d.Set("tags", tagsOSCAPIToMap(resp.GetNets()[0].GetTags()))
 }
 

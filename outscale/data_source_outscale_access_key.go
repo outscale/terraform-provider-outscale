@@ -104,9 +104,6 @@ func dataSourceOutscaleAccessKeyRead(d *schema.ResourceData, meta interface{}) e
 	if err := d.Set("state", accessKey.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(accessKey.GetAccessKeyId())
 

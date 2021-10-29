@@ -277,7 +277,7 @@ func readLbs0(conn *oscgo.APIClient, d *schema.ResourceData) (*oscgo.LoadBalance
 func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 
-	lb, resp, err := readLbs0(conn, d)
+	lb, _, err := readLbs0(conn, d)
 
 	if err != nil {
 		return err
@@ -347,7 +347,6 @@ func dataSourceOutscaleOAPILoadBalancerRead(d *schema.ResourceData, meta interfa
 	d.Set("net_id", lb.NetId)
 	d.Set("source_security_group", ssg)
 	d.Set("subnets", flattenStringList(lb.Subnets))
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	d.SetId(*lb.LoadBalancerName)
 
 	return nil

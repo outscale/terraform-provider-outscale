@@ -170,9 +170,6 @@ func resourceOutscaleOAPIVirtualGatewayLinkRead(d *schema.ResourceData, meta int
 		if err := d.Set("net_to_virtual_gateway_links", flattenNetToVirtualGatewayLinks(vgw.NetToVirtualGatewayLinks)); err != nil {
 			return err
 		}
-		if err := d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
-			return err
-		}
 	}
 
 	return nil

@@ -129,10 +129,8 @@ func resourceOutscaleOAPIFlexibleGpuLinkRead(d *schema.ResourceData, meta interf
 	if err := d.Set("vm_id", fg.GetVmId()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	d.SetId(fg.GetFlexibleGpuId())
+
 	return nil
 }
 

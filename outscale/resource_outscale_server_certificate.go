@@ -144,7 +144,6 @@ func resourceOutscaleOAPIServerCertificateRead(d *schema.ResourceData, meta inte
 	d.Set("expiration_date", server.ExpirationDate)
 	d.Set("name", server.Name)
 	d.Set("path", server.Path)
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 	d.Set("upload_date", server.UploadDate)
 
 	return nil

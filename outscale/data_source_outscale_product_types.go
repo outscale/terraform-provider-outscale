@@ -106,9 +106,5 @@ func dataSourceOutscaleOAPIProductTypesRead(d *schema.ResourceData, meta interfa
 	}
 	d.SetId(resource.UniqueId())
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	return nil
 }

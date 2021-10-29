@@ -89,10 +89,6 @@ func datasourceOutscaleOAPIServerCertificatesRead(d *schema.ResourceData, meta i
 
 	log.Printf("[DEBUG] Setting Server Certificates id (%s)", err)
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	d.Set("server_certificates", flattenServerCertificates(resp.GetServerCertificates()))
 
 	d.SetId(resource.UniqueId())

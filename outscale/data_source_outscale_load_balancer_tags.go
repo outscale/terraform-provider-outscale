@@ -64,7 +64,6 @@ func dataSourceOutscaleOAPILBUTagsRead(d *schema.ResourceData, meta interface{})
 
 	d.Set("tags", ta)
 	d.SetId(resource.UniqueId())
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	return nil
 }
 

@@ -52,10 +52,9 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	log.Printf("\n\n[INFO] Enabling virtual gateway route propagation from %s to %s", gwID, rtID)
 
 	var err error
-	var resp oscgo.UpdateRoutePropagationResponse
 
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
+		_, _, err = conn.VirtualGatewayApi.UpdateRoutePropagation(context.Background()).UpdateRoutePropagationRequest(oscgo.UpdateRoutePropagationRequest{
 			VirtualGatewayId: gwID,
 			RouteTableId:     rtID,
 			Enable:           enable,
@@ -74,7 +73,6 @@ func resourceOutscaleOAPIVpnGatewayRoutePropagationEnable(d *schema.ResourceData
 	}
 
 	d.SetId(fmt.Sprintf("%s_%s", gwID, rtID))
-	d.Set("request_id", resp.ResponseContext.GetRequestId())
 
 	return nil
 }

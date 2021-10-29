@@ -214,9 +214,6 @@ func resourceOutscaleOAPIImageLaunchPermissionRead(d *schema.ResourceData, meta 
 
 	result := resp.GetImages()[0]
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	if err := d.Set("description", result.Description); err != nil {
 		return err
 	}

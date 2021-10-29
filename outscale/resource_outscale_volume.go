@@ -202,9 +202,7 @@ func resourceOAPIVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return fmt.Errorf("Error reading Outscale volume %s: %s", d.Id(), err)
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
+
 	return readOAPIVolume(d, resp.GetVolumes()[0])
 }
 

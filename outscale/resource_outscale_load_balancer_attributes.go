@@ -248,9 +248,8 @@ func resourceOutscaleOAPILoadBalancerAttributesCreate(d *schema.ResourceData, me
 func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, req oscgo.UpdateLoadBalancerRequest) error {
 	conn := meta.(*OutscaleClient).OSCAPI
 	var err error
-	var resp oscgo.UpdateLoadBalancerResponse
 	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
-		resp, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
+		_, _, err = conn.LoadBalancerApi.UpdateLoadBalancer(
 			context.Background()).UpdateLoadBalancerRequest(req).Execute()
 
 		if err != nil {
@@ -270,7 +269,6 @@ func loadBalancerAttributesDoRequest(d *schema.ResourceData, meta interface{}, r
 	d.SetId(req.LoadBalancerName)
 	log.Printf("[INFO] LBU Attr ID: %s", d.Id())
 
-	d.Set("request_id", resp.ResponseContext.RequestId)
 	return resourceOutscaleOAPILoadBalancerAttributesRead(d, meta)
 
 }

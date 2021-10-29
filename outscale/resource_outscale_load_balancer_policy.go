@@ -267,13 +267,6 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		return fmt.Errorf("Error creating AppCookieStickinessPolicy: %s", err)
 	}
 
-	//utils.PrintToJSON(resp, "RESPONSECookie")
-
-	reqID := ""
-	if resp.ResponseContext != nil {
-		reqID = *resp.ResponseContext.RequestId
-	}
-
 	if resp.LoadBalancer != nil {
 		lb := resp.LoadBalancer
 		d.Set("access_log", flattenOAPIAccessLog(lb.AccessLog))
@@ -331,7 +324,6 @@ func resourceOutscaleAppCookieStickinessPolicyCreate(d *schema.ResourceData, met
 		d.Set("net_id", lb.NetId)
 	}
 
-	d.Set("request_id", reqID)
 	d.SetId(resource.UniqueId())
 	d.Set("load_balancer_name", l.(string))
 	d.Set("policy_name", p.(string))

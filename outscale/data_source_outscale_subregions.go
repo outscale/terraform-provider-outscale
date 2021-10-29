@@ -91,10 +91,6 @@ func dataSourceOutscaleOAPISubregionsRead(d *schema.ResourceData, meta interface
 			}
 		}
 
-		if err = d.Set("request_id", resp.ResponseContext.RequestId); err != nil {
-			return err
-		}
-
 		return set("subregions", subs)
 	})
 }

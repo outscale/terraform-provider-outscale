@@ -145,9 +145,6 @@ func dataSourceOAPISnapshotExportTaskRead(d *schema.ResourceData, meta interface
 	if err = d.Set("tags", tagsOSCAPIToMap(v.GetTags())); err != nil {
 		return err
 	}
-	if err = d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 
 	d.SetId(v.GetTaskId())
 

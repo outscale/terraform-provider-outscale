@@ -285,10 +285,6 @@ func resourceOAPIVolumeLinkRead(d *schema.ResourceData, meta interface{}) error 
 	if err := d.Set("state", linkedVolume.GetState()); err != nil {
 		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `state`, linkedVolume.GetVolumeId(), err)
 	}
-	if err := d.Set("request_id", vols.ResponseContext.GetRequestId()); err != nil {
-		return fmt.Errorf("error sertting %s in Volume Link(%s): %s", `request_id`, linkedVolume.GetVolumeId(), err)
-	}
-
 	if len(vols.GetVolumes()) == 0 || vols.GetVolumes()[0].GetState() == "available" || isElegibleToLink(vols.GetVolumes(), d.Get("vm_id").(string)) {
 		log.Printf("[DEBUG] Volume Attachment (%s) not found, removing from state", d.Id())
 		d.SetId("")

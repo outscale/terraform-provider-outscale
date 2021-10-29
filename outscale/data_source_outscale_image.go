@@ -263,7 +263,7 @@ func dataSourceOutscaleOAPIImageRead(d *schema.ResourceData, meta interface{}) e
 			return err
 		}
 
-		return d.Set("request_id", resp.ResponseContext.RequestId)
+		return nil
 	})
 }
 

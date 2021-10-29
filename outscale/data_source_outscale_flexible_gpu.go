@@ -121,9 +121,6 @@ func dataSourceOutscaleOAPIFlexibleGpuRead(d *schema.ResourceData, meta interfac
 	if err := d.Set("state", fg.GetState()); err != nil {
 		return err
 	}
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
 	d.SetId(fg.GetFlexibleGpuId())
 	return nil
 }

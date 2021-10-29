@@ -145,10 +145,6 @@ func dataSourceOutscaleOAPISnapshotRead(d *schema.ResourceData, meta interface{}
 
 	snapshot := resp.GetSnapshots()[0]
 
-	if err := d.Set("request_id", resp.ResponseContext.GetRequestId()); err != nil {
-		return err
-	}
-
 	//Single Snapshot found so set to state
 	return snapshotOAPIDescriptionAttributes(d, &snapshot)
 }
