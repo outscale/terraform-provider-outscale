@@ -83,6 +83,33 @@ func TestAccOutscaleOAPIRoute_importWithNatService(t *testing.T) {
 	})
 }
 
+func TestAccOutscaleOAPIRoute_changeTarget(t *testing.T) {
+	var route oscgo.Route
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: computeConfigTestChangeTarget("nat_service_id"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
+				),
+			},
+			{
+				Config: computeConfigTestChangeTarget("gateway_id"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -241,3 +268,113 @@ var testAccOutscaleOAPIRouteWithNatService = fmt.Sprint(`
 		route_table_id       = "${outscale_route_table.outscale_route_table.route_table_id}"
 	}
 `)
+
+func computeConfigTestChangeTarget(target string) string {
+	var extra_config string
+	switch target {
+	case "nat_service_id":
+		extra_config = "nat_service_id = outscale_nat_service.nat.nat_service_id"
+	case "gateway_id":
+		extra_config = "gateway_id = outscale_internet_service.igw.internet_service_id"
+	default:
+		extra_config = ""
+	}
+
+	return fmt.Sprintf(testAccOutscaleOAPIRouteTemplateChangeTarget, extra_config)
+}
+
+var testAccOutscaleOAPIRouteTemplateChangeTarget = `
+resource "outscale_net" "net" {
+    ip_range = "10.0.0.0/16"
+  tags {
+     key = "name"
+     value = "netdemo"
+    }
+
+}
+resource "outscale_internet_service" "igw" {
+  tags {
+     key = "name"
+     value = "igwdemo"
+    }
+}
+
+resource "outscale_internet_service_link" "igwl" {
+    internet_service_id = outscale_internet_service.igw.internet_service_id
+    net_id = outscale_net.net.net_id
+}
+
+resource "outscale_public_ip" "pub" {
+  tags {
+     key = "name"
+     value = "eipdemo"
+    }
+}
+
+
+resource "outscale_route_table" "rtpub" {
+  net_id = outscale_net.net.net_id
+  tags {
+     key = "name"
+     value = "rtpub"
+    }
+}
+resource "outscale_route_table" "rtnat" {
+  net_id = outscale_net.net.net_id
+  tags {
+     key = "name"
+     value = "rtnat"
+    }
+}
+
+resource "outscale_subnet" "subnet-pub" {
+  net_id   = outscale_net.net.net_id
+  ip_range = "10.0.0.0/24"
+  tags {
+        key   = "Name"
+        value = "subnet-pub"
+    }
+}
+
+# Bind the route table to the public subnet
+resource "outscale_route_table_link" "rtblpub" {
+	route_table_id = outscale_route_table.rtpub.route_table_id
+	subnet_id = outscale_subnet.subnet-pub.subnet_id
+}
+
+resource "outscale_route" "rtpubdef" {
+	route_table_id = outscale_route_table.rtpub.route_table_id
+	 gateway_id = outscale_internet_service.igw.internet_service_id
+	destination_ip_range = "0.0.0.0/0"
+}
+
+resource "outscale_subnet" "subnet-nat" {
+  net_id   = outscale_net.net.net_id
+  ip_range = "10.0.1.0/24"
+  tags {
+        key   = "Name"
+        value = "subnet-nat"
+    }
+}
+
+# Bind the route table to the nat subnet
+resource "outscale_route_table_link" "rtblnat" {
+	route_table_id = outscale_route_table.rtnat.route_table_id
+	subnet_id = outscale_subnet.subnet-nat.subnet_id
+}
+
+
+# Create the NAT gateway once the IGW is bound.
+resource "outscale_nat_service" "nat" {
+	subnet_id = outscale_subnet.subnet-pub.subnet_id
+	public_ip_id = outscale_public_ip.pub.public_ip_id
+  depends_on=[outscale_route.rtpubdef, outscale_route_table_link.rtblpub]
+}
+
+# Create a NAT route via the NAT gateway
+resource "outscale_route" "rtnatdef" {
+	route_table_id = outscale_route_table.rtnat.route_table_id
+	%v
+	destination_ip_range = "0.0.0.0/0"
+}
+`
