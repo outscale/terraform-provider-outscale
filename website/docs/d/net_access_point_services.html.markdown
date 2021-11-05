@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_net_access_point_services"
+page_title: "OUTSCALE: outscale_net_access_point_services"
 sidebar_current: "outscale-net-access-point-services"
 description: |-
   [Provides information about Net access point services.]
@@ -47,15 +47,15 @@ data "outscale_net_access_point_services" "services02" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
-  * `service_ids` - (Optional) The IDs of the services.
-  * `service_names` - (Optional) The names of the services.
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
+    * `service_ids` - (Optional) The IDs of the services.
+    * `service_names` - (Optional) The names of the services.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `services` - The names of the services you can use for Net access points.
-  * `ip_ranges` - The list of network prefixes used by the service, in CIDR notation.
-  * `service_id` - The ID of the service.
-  * `service_name` - The name of the service.
+    * `ip_ranges` - The list of network prefixes used by the service, in CIDR notation.
+    * `service_id` - The ID of the service.
+    * `service_name` - The name of the service.

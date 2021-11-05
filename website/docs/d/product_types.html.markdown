@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_product_types"
+page_title: "OUTSCALE: outscale_product_types"
 sidebar_current: "outscale-product-types"
 description: |-
   [Provides information about product types.]
@@ -36,13 +36,13 @@ data "outscale_product_types" "all_product_types" {
 The following arguments are supported:
 
 * `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
-  * `product_type_ids` - (Optional) The IDs of the product types.
+    * `product_type_ids` - (Optional) The IDs of the product types.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `product_types` - Information about one or more product types.
-  * `description` - The description of the product type.
-  * `product_type_id` - The ID of the product type.
-  * `vendor` - The vendor of the product type.
+    * `description` - The description of the product type.
+    * `product_type_id` - The ID of the product type.
+    * `vendor` - The vendor of the product type.

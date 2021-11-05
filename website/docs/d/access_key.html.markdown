@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_access_key"
+page_title: "OUTSCALE: outscale_access_key"
 sidebar_current: "outscale-access-key"
 description: |-
   [Provides information about a specific access key.]
@@ -16,10 +16,10 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_access_key" "access_key01" { 
-  filter {
-    name  = "access_key_ids"
-    value = ["ABCDEFGHIJ0123456789"]
-  }
+    filter {
+        name   = "access_key_ids"
+        values = ["ABCDEFGHIJ0123456789"]
+    }
 }
 ```
 
@@ -27,9 +27,9 @@ data "outscale_access_key" "access_key01" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
-  * `access_key_ids` - (Optional) The IDs of the access keys.
-  * `states` - (Optional) The states of the access keys (`ACTIVE` \| `INACTIVE`).
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
+    * `access_key_ids` - (Optional) The IDs of the access keys.
+    * `states` - (Optional) The states of the access keys (`ACTIVE` \| `INACTIVE`).
 
 ## Attribute Reference
 

@@ -1,26 +1,23 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_net_attributes"
+page_title: "OUTSCALE: outscale_net_attributes"
 sidebar_current: "outscale-net-attributes"
 description: |-
-  [Provides information about Net attributes.]
+  [Provides information about a specific Net attributes.]
 ---
 
 # outscale_net_attributes Data Source
 
-Provides information about Net attributes.
-For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+VPCs).
+Provides information about a specific Net attributes.
+For more information on this resource, see the [User Guide](https://wiki.outscale.net/display/EN/About+DHCP+Options).
 For more information on this resource actions, see the [API documentation](https://docs.outscale.com/api#updatenet).
 
 ## Example Usage
 
 ```hcl
-
 data "outscale_net_attributes" "net_attributes01" {
   net_id = "vpc-12345678"
 }
-
-
 ```
 
 ## Argument Reference
@@ -38,6 +35,6 @@ The following attributes are exported:
 * `net_id` - The ID of the Net.
 * `state` - The state of the Net (`pending` \| `available`).
 * `tags` - One or more tags associated with the Net.
-  * `key` - The key of the tag, with a minimum of 1 character.
-  * `value` - The value of the tag, between 0 and 255 characters.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 * `tenancy` - The VM tenancy in a Net.

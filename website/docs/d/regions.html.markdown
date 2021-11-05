@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_regions"
+page_title: "OUTSCALE: outscale_regions"
 sidebar_current: "outscale-regions"
 description: |-
   [Provides information about Regions.]
@@ -29,5 +29,5 @@ No argument is supported.
 The following attributes are exported:
 
 * `regions` - Information about one or more Regions.
-  * `endpoint` - The hostname of the gateway to access the Region.
-  * `region_name` - The administrative name of the Region.
+    * `endpoint` - The hostname of the gateway to access the Region.
+    * `region_name` - The administrative name of the Region.

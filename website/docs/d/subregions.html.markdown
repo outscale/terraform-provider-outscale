@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_subregions"
+page_title: "OUTSCALE: outscale_subregions"
 sidebar_current: "outscale-subregions"
 description: |-
   [Provides information about subregions.]
@@ -46,14 +46,14 @@ data "outscale_subregions" "all-subregions" {
 
 The following arguments are supported:
 
-* `filter` - One or more filters.
-  * `subregion_names` - (Optional) The names of the Subregions.
+* `filter` - (Optional) A combination of a filter name and one or more filter values. You can specify this argument for as many filter names as you need. The filter name can be any of the following:
+    * `subregion_names` - (Optional) The names of the Subregions.
 
 ## Attribute Reference
 
 The following attributes are exported:
 
 * `subregions` - Information about one or more Subregions.
-  * `region_name` - The name of the Region containing the Subregion.
-  * `state` - The state of the Subregion (`available` \| `information` \| `impaired` \| `unavailable`).
-  * `subregion_name` - The name of the Subregion.
+    * `region_name` - The name of the Region containing the Subregion.
+    * `state` - The state of the Subregion (`available` \| `information` \| `impaired` \| `unavailable`).
+    * `subregion_name` - The name of the Subregion.
