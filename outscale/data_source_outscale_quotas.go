@@ -39,15 +39,19 @@ func dataSourceOutscaleOAPIQuotas() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"type": {
+						"quota_type": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"collection": {
+						"quota_collection": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"short_description": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"account_id": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -121,13 +125,16 @@ func dataSourceOutscaleOAPIQuotasRead(d *schema.ResourceData, meta interface{}) 
 			quotaMap["used_value"] = quota.GetUsedValue()
 
 			if quotaType.GetQuotaType() != "" {
-				quotaMap["type"] = quotaType.GetQuotaType()
+				quotaMap["quota_type"] = quotaType.GetQuotaType()
 			}
 			if quota.GetQuotaCollection() != "" {
-				quotaMap["collection"] = quota.GetQuotaCollection()
+				quotaMap["quota_collection"] = quota.GetQuotaCollection()
 			}
 			if quota.GetShortDescription() != "" {
 				quotaMap["short_description"] = quota.GetShortDescription()
+			}
+			if quota.GetAccountId() != "" {
+				quotaMap["account_id"] = quota.GetAccountId()
 			}
 
 			quotas = append(quotas, quotaMap)

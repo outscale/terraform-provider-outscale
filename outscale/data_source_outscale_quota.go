@@ -35,11 +35,11 @@ func dataSourceOutscaleOAPIQuota() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"type": {
+			"quota_type": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"collection": {
+			"quota_collection": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -48,6 +48,10 @@ func dataSourceOutscaleOAPIQuota() *schema.Resource {
 				Computed: true,
 			},
 			"request_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"account_id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -98,7 +102,7 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 	quotaType := resp.GetQuotaTypes()[0]
 
 	d.SetId(resource.UniqueId())
-	if err := d.Set("type", quotaType.GetQuotaType()); err != nil {
+	if err := d.Set("quota_type", quotaType.GetQuotaType()); err != nil {
 		return err
 	}
 	if len(quotaType.GetQuotas()) == 0 {
@@ -123,10 +127,13 @@ func dataSourceOutscaleOAPIQuotaRead(d *schema.ResourceData, meta interface{}) e
 	if err := d.Set("used_value", quota.GetUsedValue()); err != nil {
 		return err
 	}
-	if err := d.Set("collection", quota.GetShortDescription()); err != nil {
+	if err := d.Set("quota_collection", quota.GetShortDescription()); err != nil {
 		return err
 	}
 	if err := d.Set("short_description", quota.GetShortDescription()); err != nil {
+		return err
+	}
+	if err := d.Set("account_id", quota.GetAccountId()); err != nil {
 		return err
 	}
 
