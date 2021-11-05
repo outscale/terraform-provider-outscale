@@ -53,28 +53,30 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Computed: true,
 			},
 			"gateway_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: allowedTargets,
 			},
 			"nat_service_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: allowedTargets,
 			},
 			"nat_access_point": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"net_peering_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: allowedTargets,
 			},
 			"nic_id": {
 				Type:     schema.TypeString,
 				Optional: true,
 				// Computed: true,
+				ExactlyOneOf: allowedTargets,
 			},
 			"state": {
 				Type:     schema.TypeString,
@@ -90,8 +92,9 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				Computed: true,
 			},
 			"vm_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: allowedTargets,
 			},
 			"route_table_id": {
 				Type:     schema.TypeString,
@@ -248,7 +251,6 @@ func getTarget(d *schema.ResourceData) (n int, target string) {
 
 func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*OutscaleClient).OSCAPI
-	numTargets, target := getTarget(d)
 	nothingToDo := true
 	o, n := d.GetChange("")
 	os := o.(map[string]interface{})
@@ -272,14 +274,13 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 
 	replaceOpts := oscgo.UpdateRouteRequest{}
 
-	switch target {
-	case "vm_id":
-		if numTargets > 2 || (numTargets == 2 && len(d.Get("nic_id").(string)) == 0) {
-			return errOAPIRoute
-		}
-	default:
-		if numTargets > 1 {
-			return errOAPIRoute
+	var target string
+	for _, allowedTarget := range allowedTargets {
+		old_value := os[allowedTarget]
+		new_value := ns[allowedTarget]
+		if old_value == "" && new_value != "" {
+			target = allowedTarget
+			log.Printf("Possible new target is %v\n", target)
 		}
 	}
 
@@ -294,7 +295,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		replaceOpts = oscgo.UpdateRouteRequest{
 			RouteTableId:       d.Get("route_table_id").(string),
 			DestinationIpRange: d.Get("destination_ip_range").(string),
-			GatewayId:          pointy.String(d.Get("nat_service_id").(string)),
+			NatServiceId:       pointy.String(d.Get("nat_service_id").(string)),
 		}
 	case "vm_id":
 		replaceOpts = oscgo.UpdateRouteRequest{
