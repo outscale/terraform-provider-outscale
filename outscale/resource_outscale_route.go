@@ -73,9 +73,9 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 				ExactlyOneOf: allowedTargets,
 			},
 			"nic_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				// Computed: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
 				ExactlyOneOf: allowedTargets,
 			},
 			"state": {
@@ -94,6 +94,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"vm_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ExactlyOneOf: allowedTargets,
 			},
 			"route_table_id": {
@@ -218,7 +219,7 @@ func resourceOutscaleOAPIRouteSetResourceData(d *schema.ResourceData, route *osc
 	if err := d.Set("nat_service_id", route.GetNatServiceId()); err != nil {
 		return err
 	}
-	if err := d.Set("nic_id", route.NicId); err != nil {
+	if err := d.Set("nic_id", route.GetNicId()); err != nil {
 		return err
 	}
 	if err := d.Set("net_peering_id", route.GetNetPeeringId()); err != nil {
@@ -272,7 +273,8 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	replaceOpts := oscgo.UpdateRouteRequest{}
+	// Check for the new target
+	// With ExacltyOneOf, we know that it will only be one target new o none for nic_id
 
 	var target string
 	for _, allowedTarget := range allowedTargets {
@@ -283,6 +285,12 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 			log.Printf("Possible new target is %v\n", target)
 		}
 	}
+
+	if target == "" {
+		return nil
+	}
+
+	replaceOpts := oscgo.UpdateRouteRequest{}
 
 	switch target {
 	case "gateway_id":
