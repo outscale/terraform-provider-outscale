@@ -2,6 +2,8 @@ package outscale
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"testing"
 
 	oscgo "github.com/outscale/osc-sdk-go/v2"
@@ -95,16 +97,109 @@ func TestAccOutscaleOAPIRoute_changeTarget(t *testing.T) {
 		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: computeConfigTestChangeTarget("nat_service_id"),
+				Config: computeConfigTestChangeTarget([]string{"nat_service_id"}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
 				),
 			},
 			{
-				Config: computeConfigTestChangeTarget("gateway_id"),
+				Config: computeConfigTestChangeTarget([]string{"gateway_id"}),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPIRouteExists("outscale_route.rtnatdef", &route),
 				),
+			},
+		},
+	})
+}
+
+func TestAccOutscaleOAPIRoute_onlyOneTarget(t *testing.T) {
+	regex := regexp.MustCompile(".*")
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		PreCheck: func() {
+			testAccPreCheck(t)
+
+		},
+		CheckDestroy: testAccCheckOAPIOutscaleRouteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:             computeConfigTestChangeTarget([]string{"nat_service_id"}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             computeConfigTestChangeTarget([]string{"gateway_id"}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             computeConfigTestChangeTarget([]string{"vm_id"}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             computeConfigTestChangeTarget([]string{"nic_id"}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:             computeConfigTestChangeTarget([]string{"net_peering_id"}),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// net_peering_id with other
+			{
+				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "nat_service_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "gateway_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "vm_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"net_peering_id", "nic_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			// nat_service_id with other
+			{
+				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "gateway_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "vm_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"nat_service_id", "nic_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			// gateway_id with other
+			{
+				Config:      computeConfigTestChangeTarget([]string{"gateway_id", "vm_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			// vm_id with other
+			{
+				Config:      computeConfigTestChangeTarget([]string{"vm_id", "nic_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
+			},
+			{
+				Config:      computeConfigTestChangeTarget([]string{"gateway_id", "nic_id"}),
+				PlanOnly:    true,
+				ExpectError: regex,
 			},
 		},
 	})
@@ -269,18 +364,26 @@ var testAccOutscaleOAPIRouteWithNatService = fmt.Sprint(`
 	}
 `)
 
-func computeConfigTestChangeTarget(target string) string {
-	var extra_config string
-	switch target {
-	case "nat_service_id":
-		extra_config = "nat_service_id = outscale_nat_service.nat.nat_service_id"
-	case "gateway_id":
-		extra_config = "gateway_id = outscale_internet_service.igw.internet_service_id"
-	default:
-		extra_config = ""
+func computeConfigTestChangeTarget(targets []string) string {
+	var extra_configs []string
+	for _, target := range targets {
+		switch target {
+		case "nat_service_id":
+			extra_configs = append(extra_configs, "nat_service_id = outscale_nat_service.nat.nat_service_id")
+		case "gateway_id":
+			extra_configs = append(extra_configs, "gateway_id = outscale_internet_service.igw.internet_service_id")
+		case "vm_id":
+			extra_configs = append(extra_configs, "vm_id = \"toto\"")
+		case "nic_id":
+			extra_configs = append(extra_configs, "nic_id = \"toti\"")
+		case "net_peering_id":
+			extra_configs = append(extra_configs, "net_peering_id = \"toto\"")
+		default:
+			extra_configs = append(extra_configs, "")
+		}
 	}
 
-	return fmt.Sprintf(testAccOutscaleOAPIRouteTemplateChangeTarget, extra_config)
+	return fmt.Sprintf(testAccOutscaleOAPIRouteTemplateChangeTarget, strings.Join(extra_configs, "\n"))
 }
 
 var testAccOutscaleOAPIRouteTemplateChangeTarget = `
