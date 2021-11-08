@@ -61,7 +61,10 @@ func testAccOutscaleDHCPOptionsDatasourceConfigBasic(value string) string {
 		}
 
 		data "outscale_dhcp_options" "test" {
-			dhcp_options_set_ids = ["${outscale_dhcp_option.foo1.id}", "${outscale_dhcp_option.foo2.id}"]
+			filter {
+				name = "dhcp_options_set_ids"
+				values = ["${outscale_dhcp_option.foo1.id}", "${outscale_dhcp_option.foo2.id}"]
+			}
 		}
 	`, value)
 }

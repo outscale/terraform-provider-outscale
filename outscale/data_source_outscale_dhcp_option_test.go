@@ -91,8 +91,11 @@ func testAccClientDHCPOptionBasic(value string) string {
 		}
 
 		data "outscale_dhcp_option" "test" {
-                        dhcp_options_set_id = outscale_dhcp_option.foo.id
-                }
+			filter {
+				name = "dhcp_options_set_ids"
+				values = ["${outscale_dhcp_option.foo.id}"]
+			}
+		}
 
 	`, value)
 }
