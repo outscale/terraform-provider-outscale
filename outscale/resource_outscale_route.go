@@ -60,7 +60,6 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"nat_service_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
 				ExactlyOneOf: allowedTargets,
 			},
 			"nat_access_point": {
@@ -75,7 +74,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"nic_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Computed:     true, // Computed because if vm_id is set, and the nic is attached to a VM, it will be set
 				ExactlyOneOf: allowedTargets,
 			},
 			"state": {
@@ -94,7 +93,7 @@ func resourceOutscaleOAPIRoute() *schema.Resource {
 			"vm_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Computed:     true,
+				Computed:     true, // Computed because if nic_id is set, and the nic is attached to a VM, it will be set
 				ExactlyOneOf: allowedTargets,
 			},
 			"route_table_id": {
@@ -280,14 +279,14 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 	for _, allowedTarget := range allowedTargets {
 		old_value := os[allowedTarget]
 		new_value := ns[allowedTarget]
-		if old_value == "" && new_value != "" {
+		if new_value != "" && old_value != new_value {
 			target = allowedTarget
 			log.Printf("Possible new target is %v\n", target)
 		}
 	}
 
 	if target == "" {
-		return nil
+		return errors.New("no target found for the update")
 	}
 
 	replaceOpts := oscgo.UpdateRouteRequest{}
@@ -347,7 +346,7 @@ func resourceOutscaleOAPIRouteUpdate(d *schema.ResourceData, meta interface{}) e
 		return fmt.Errorf("error updating route: %s", utils.GetErrorResponse(err))
 	}
 
-	return nil
+	return resourceOutscaleOAPIRouteRead(d, meta)
 }
 
 func resourceOutscaleOAPIRouteDelete(d *schema.ResourceData, meta interface{}) error {
