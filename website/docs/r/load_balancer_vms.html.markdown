@@ -43,7 +43,7 @@ For more information on this resource actions, see the [API documentation](https
 #}
 
 resource "outscale_load_balancer_vms" "outscale_load_balancer_vms01" {
-    load_balancer_name = load-balancer-for-backend-vms
+    load_balancer_name = "load-balancer-for-backend-vms"
     backend_vm_ids     = [outscale_vm.outscale_vm01.vm_id,outscale_vm.outscale_vm_02.vm_id]
 }
 ```
