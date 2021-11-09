@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_load_balancer_attributes"
+page_title: "OUTSCALE: outscale_load_balancer_attributes"
 sidebar_current: "outscale-load-balancer-attributes"
 description: |-
   [Manages load balancer attributes.]
@@ -14,41 +14,45 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
+### Required resource
+
 ```hcl
-#resource "outscale_load_balancer" "load_balancer01" {
-#  load_balancer_name = "terraform-load-balancer"
-#  subregion_names    = ["eu-west-2a"]
-#  listeners {
-#      backend_port           = 80
-#      backend_protocol       = "HTTP"
-#      load_balancer_protocol = "HTTP"
-#      load_balancer_port     = 80
-#  }
-#  listeners {
-#      backend_port           = 8080
-#      backend_protocol       = "HTTPS"
-#      load_balancer_protocol = "HTTPS"
-#      load_balancer_port     = 8080
-#      server_certificate_id  = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
-#  }
-#  listeners {
-#      backend_port           = 1024
-#      backend_protocol       = "TCP"
-#      load_balancer_protocol = "TCP"
-#      load_balancer_port     = 1024
-#  }
-#  tags {
-#      key   = "name"
-#      value = "terraform-load-balancer"
-#  }
-#  tags {
-#      key   = "platform"
-#      value = "eu-west-2"
-#  }
-#}
+resource "outscale_load_balancer" "load_balancer01" {
+  load_balancer_name         = "terraform-load-balancer"
+  subregion_names            = ["eu-west-2a"]
+  listeners {
+      backend_port           = 80
+      backend_protocol       = "HTTP"
+      load_balancer_protocol = "HTTP"
+      load_balancer_port     = 80
+  }
+  listeners {
+      backend_port           = 8080
+      backend_protocol       = "HTTPS"
+      load_balancer_protocol = "HTTPS"
+      load_balancer_port     = 8080
+      server_certificate_id  = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
+  }
+  listeners {
+      backend_port           = 1024
+      backend_protocol       = "TCP"
+      load_balancer_protocol = "TCP"
+      load_balancer_port     = 1024
+  }
+  tags {
+      key   = "name"
+      value = "terraform-load-balancer"
+  }
+  tags {
+      key   = "platform"
+      value = "eu-west-2"
+  }
+}
+```
 
-# Update health check
+### Update health check
 
+```hcl
 resource "outscale_load_balancer_attributes" "attributes01" {
    load_balancer_name = outscale_load_balancer.load_balancer01.id
    health_check  {
@@ -61,9 +65,11 @@ resource "outscale_load_balancer_attributes" "attributes01" {
       unhealthy_threshold = 5
    }
 }
+```
 
-# Update access log
+### Update access log
 
+```hcl
 resource "outscale_load_balancer_attributes" "attributes02" {
   load_balancer_name = outscale_load_balancer.load_balancer01.id
   access_log {
@@ -71,25 +77,28 @@ resource "outscale_load_balancer_attributes" "attributes02" {
       is_enabled           = true
       osu_bucket_name      = "terraform-access-logs"
       osu_bucket_prefix    = "access-logs-01234"
-   }
+  }
 }
+```
 
-# Update policies
+### Update policies
 
+```hcl
 resource "outscale_load_balancer_attributes" "attributes03" {
   load_balancer_name = outscale_load_balancer.load_balancer01.id
   load_balancer_port = 80
   policy_names       = ["policy-name-01"]
 }
+```
 
-# Update SSL certificate
+### Update SSL certificate
 
+```hcl
 resource "outscale_load_balancer_attributes" "attributes04" {
   load_balancer_name    = outscale_load_balancer.load_balancer01.id
   load_balancer_port    = 8080
   server_certificate_id = "arn:aws:iam::012345678910:server-certificate/MyCertificates/Certificate"
 }
-
 ```
 
 ## Argument Reference
@@ -97,18 +106,18 @@ resource "outscale_load_balancer_attributes" "attributes04" {
 The following arguments are supported:
 
 * `access_log` - Information about access logs.
-  * `is_enabled` - (Optional) If true, access logs are enabled for your load balancer. If false, they are not. If you set this to true in your request, the `osu_bucket_name` parameter is required.
-  * `osu_bucket_name` - (Optional) The name of the OOS bucket for the access logs.
-  * `osu_bucket_prefix` - (Optional) The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
-  * `publication_interval` - (Optional) The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
+    * `is_enabled` - (Optional) If true, access logs are enabled for your load balancer. If false, they are not. If you set this to true in your request, the `osu_bucket_name` parameter is required.
+    * `osu_bucket_name` - (Optional) The name of the OOS bucket for the access logs.
+    * `osu_bucket_prefix` - (Optional) The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
+    * `publication_interval` - (Optional) The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
 * `health_check` - Information about the health check configuration.
-  * `check_interval` - (Optional) The number of seconds between two pings (between `5` and `600` both included).
-  * `healthy_threshold` - (Optional) The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-  * `path` - (Optional) If you use the HTTP or HTTPS protocols, the ping path.
-  * `port` - (Optional) The port number (between `1` and `65535`, both included).
-  * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-  * `timeout` - (Optional) The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-  * `unhealthy_threshold` - (Optional) The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
+    * `check_interval` - (Optional) The number of seconds between two pings (between `5` and `600` both included).
+    * `healthy_threshold` - (Optional) The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
+    * `path` - (Optional) If you use the HTTP or HTTPS protocols, the ping path.
+    * `port` - (Optional) The port number (between `1` and `65535`, both included).
+    * `protocol` - (Optional) The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+    * `timeout` - (Optional) The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
+    * `unhealthy_threshold` - (Optional) The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
 * `load_balancer_name` - (Required) The name of the load balancer.
 * `load_balancer_port` - (Optional) The port on which the load balancer is listening (between `1` and `65535`, both included). This parameter is required if you want to update the server certificate.
 * `policy_names` - (Optional) The name of the policy you want to enable for the listener.
@@ -118,47 +127,46 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `load_balancer` - Information about the load balancer.
-  * `access_log` - Information about access logs.
-      * `is_enabled` - If true, access logs are enabled for your load balancer. If false, they are not. If you set this to true in your request, the `osu_bucket_name` parameter is required.
-      * `osu_bucket_name` - The name of the OOS bucket for the access logs.
-      * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
-      * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
-  * `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
-      * `cookie_name` - The name of the application cookie used for stickiness.
-      * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
-  * `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
-  * `dns_name` - The DNS name of the load balancer.
-  * `health_check` - Information about the health check configuration.
-      * `check_interval` - The number of seconds between two pings (between `5` and `600` both included).
-      * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
-      * `path` - If you use the HTTP or HTTPS protocols, the ping path.
-      * `port` - The port number (between `1` and `65535`, both included).
-      * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-      * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
-      * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
-  * `listeners` - The listeners for the load balancer.
-      * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
-      * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-      * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
-      * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
-      * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
-      * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat).
-  * `load_balancer_name` - The name of the load balancer.
-  * `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
-      * `policy_name` - The name of the stickiness policy.
-  * `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
+* `access_log` - Information about access logs.
+    * `is_enabled` - If true, access logs are enabled for your load balancer. If false, they are not. If you set this to true in your request, the `osu_bucket_name` parameter is required.
+    * `osu_bucket_name` - The name of the OOS bucket for the access logs.
+    * `osu_bucket_prefix` - The path to the folder of the access logs in your OOS bucket (by default, the `root` level of your bucket).
+    * `publication_interval` - The time interval for the publication of access logs in the OOS bucket, in minutes. This value can be either 5 or 60 (by default, 60).
+* `application_sticky_cookie_policies` - The stickiness policies defined for the load balancer.
+    * `cookie_name` - The name of the application cookie used for stickiness.
+    * `policy_name` - The mnemonic name for the policy being created. The name must be unique within a set of policies for this load balancer.
+* `backend_vm_ids` - One or more IDs of back-end VMs for the load balancer.
+* `dns_name` - The DNS name of the load balancer.
+* `health_check` - Information about the health check configuration.
+    * `check_interval` - The number of seconds between two pings (between `5` and `600` both included).
+    * `healthy_threshold` - The number of consecutive successful pings before considering the VM as healthy (between `2` and `10` both included).
+    * `path` - If you use the HTTP or HTTPS protocols, the ping path.
+    * `port` - The port number (between `1` and `65535`, both included).
+    * `protocol` - The protocol for the URL of the VM (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+    * `timeout` - The maximum waiting time for a response before considering the VM as unhealthy, in seconds (between `2` and `60` both included).
+    * `unhealthy_threshold` - The number of consecutive failed pings before considering the VM as unhealthy (between `2` and `10` both included).
+* `listeners` - The listeners for the load balancer.
+    * `backend_port` - The port on which the back-end VM is listening (between `1` and `65535`, both included).
+    * `backend_protocol` - The protocol for routing traffic to back-end VMs (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+    * `load_balancer_port` - The port on which the load balancer is listening (between 1 and `65535`, both included).
+    * `load_balancer_protocol` - The routing protocol (`HTTP` \| `HTTPS` \| `TCP` \| `SSL`).
+    * `policy_names` - The names of the policies. If there are no policies enabled, the list is empty.
+    * `server_certificate_id` - The OUTSCALE Resource Name (ORN) of the server certificate. For more information, see [Resource Identifiers > OUTSCALE Resource Names (ORNs)](https://wiki.outscale.net/display/EN/Resource+Identifiers#ResourceIdentifiers-ORNFormat).
+* `load_balancer_name` - The name of the load balancer.
+* `load_balancer_sticky_cookie_policies` - The policies defined for the load balancer.
+    * `policy_name` - The name of the stickiness policy.
+* `load_balancer_type` - The type of load balancer. Valid only for load balancers in a Net.<br />
 If `load_balancer_type` is `internet-facing`, the load balancer has a public DNS name that resolves to a public IP address.<br />
 If `load_balancer_type` is `internal`, the load balancer has a public DNS name that resolves to a private IP address.
-  * `net_id` - The ID of the Net for the load balancer.
-  * `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
-  * `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
+* `net_id` - The ID of the Net for the load balancer.
+* `security_groups` - One or more IDs of security groups for the load balancers. Valid only for load balancers in a Net.
+* `source_security_group` - Information about the source security group of the load balancer, which you can use as part of your inbound rules for your registered VMs.<br />
 To only allow traffic from load balancers, add a security group rule that specifies this source security group as the inbound source.
-      * `security_group_account_id` - The account ID of the owner of the security group.
-      * `security_group_name` - The name of the security group.
-  * `subnets` - The IDs of the Subnets for the load balancer.
-  * `subregion_names` - One or more names of Subregions for the load balancer.
-  * `tags` - One or more tags associated with the load balancer.
-      * `key` - The key of the tag, with a minimum of 1 character.
-      * `value` - The value of the tag, between 0 and 255 characters.
+    * `security_group_account_id` - The account ID of the owner of the security group.
+    * `security_group_name` - The name of the security group.
+* `subnets` - The ID of the Subnet in which the load balancer was created.
+* `subregion_names` - The ID of the Subregion in which the load balancer was created.
+* `tags` - One or more tags associated with the load balancer.
+    * `key` - The key of the tag, with a minimum of 1 character.
+    * `value` - The value of the tag, between 0 and 255 characters.
 
