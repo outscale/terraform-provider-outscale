@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_flexible_gpu"
+page_title: "OUTSCALE: outscale_flexible_gpu"
 sidebar_current: "outscale-flexible-gpu"
 description: |-
   [Manages a flexible GPU.]
@@ -38,21 +38,20 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `flexible_gpu` - Information about the flexible GPU (fGPU).
-  * `delete_on_vm_deletion` - If true, the fGPU is deleted when the VM is terminated.
-  * `flexible_gpu_id` - The ID of the fGPU.
-  * `generation` - The compatible processor generation.
-  * `model_name` - The model of fGPU. For more information, see [About Flexible GPUs](https://wiki.outscale.net/display/EN/About+Flexible+GPUs).
-  * `state` - The state of the fGPU (`allocated` \| `attaching` \| `attached` \| `detaching`).
-  * `subregion_name` - The Subregion where the fGPU is located.
-  * `vm_id` - The ID of the VM the fGPU is attached to, if any.
+* `delete_on_vm_deletion` - If true, the fGPU is deleted when the VM is terminated.
+* `flexible_gpu_id` - The ID of the fGPU.
+* `generation` - The compatible processor generation.
+* `model_name` - The model of fGPU. For more information, see [About Flexible GPUs](https://wiki.outscale.net/display/EN/About+Flexible+GPUs).
+* `state` - The state of the fGPU (`allocated` \| `attaching` \| `attached` \| `detaching`).
+* `subregion_name` - The Subregion where the fGPU is located.
+* `vm_id` - The ID of the VM the fGPU is attached to, if any.
 
 ## Import
 
 A flexible GPU can be imported using its ID. For example:
 
-```
+```console
 
-terraform import outscale_flexible_gpu.imported_fgpu fgpu-12345678
+$ terraform import outscale_flexible_gpu.imported_fgpu fgpu-12345678
 
 ```

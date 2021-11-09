@@ -1,6 +1,6 @@
 ---
 layout: "outscale"
-page_title: "3DS OUTSCALE: outscale_vpn_connection_route"
+page_title: "OUTSCALE: outscale_vpn_connection_route"
 sidebar_current: "outscale-vpn-connection-route"
 description: |-
   [Manages a VPN connection route.]
@@ -14,17 +14,33 @@ For more information on this resource actions, see the [API documentation](https
 
 ## Example Usage
 
-```hcl
-#resource "outscale_vpn_connection" "vpn_connection01" {
-#	client_gateway_id  = "cgw-12345678"
-#	virtual_gateway_id = "vgw-12345678"
-#	connection_type    = "ipsec.1"
-#	static_routes_only = false
-#}
+### Required resources
 
+```hcl
+resource "outscale_client_gateway" "client_gateway01" {
+	bgp_asn         = 65000
+	public_ip       = "111.11.11.111"
+	connection_type = "ipsec.1"
+}
+
+resource "outscale_virtual_gateway" "virtual_gateway01" {
+	connection_type = "ipsec.1"
+}
+
+resource "outscale_vpn_connection" "vpn_connection01" {
+	client_gateway_id  = outscale_client_gateway.client_gateway01.client_gateway_id
+	virtual_gateway_id = outscale_virtual_gateway.virtual_gateway01.virtual_gateway_id
+	connection_type    = "ipsec.1"
+	static_routes_only = true
+}
+```
+
+### Create a static route to a VPN connection
+
+```hcl
 resource "outscale_vpn_connection_route" "vpn_connection_route01" {
 	vpn_connection_id    = outscale_vpn_connection.vpn_connection01.vpn_connection_id
-	destination_ip_range = "10.0.0.0/0"
+	destination_ip_range = "10.0.0.0/16"
 }
 ```
 
@@ -43,7 +59,7 @@ No attribute is exported.
 
 A VPN connection route can be imported using the VPN connection ID and the route destination IP range. For example:
 
-```
+```console
 
 $ terraform import outscale_vpn_connection_route.ImportedRoute vpn-12345678_10.0.0.0/0
 
