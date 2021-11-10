@@ -56,7 +56,7 @@ func TestAccOutscaleOAPIRoute_importBasic(t *testing.T) {
 				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
+				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
 			},
 		},
 	})
@@ -79,7 +79,7 @@ func TestAccOutscaleOAPIRoute_importWithNatService(t *testing.T) {
 				ImportStateIdFunc:       testAccCheckOutscaleOAPIRouteImportStateIDFunc(resourceName),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"request_id"},
+				ImportStateVerifyIgnore: []string{"request_id", "await_active_state"},
 			},
 		},
 	})
