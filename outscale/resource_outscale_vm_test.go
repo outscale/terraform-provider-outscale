@@ -19,7 +19,7 @@ import (
 func TestAccOutscaleOAPIVM_Basic(t *testing.T) {
 	var server oscgo.Vm
 	omi := os.Getenv("OUTSCALE_IMAGEID")
-	region := os.Getenv("OUTSCALE_REGION")
+	region := fmt.Sprintf("%sa", os.Getenv("OUTSCALE_REGION"))
 	keypair := os.Getenv("OUTSCALE_KEYPAIR")
 
 	resource.Test(t, resource.TestCase{
