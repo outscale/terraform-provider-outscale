@@ -1,3 +1,34 @@
+0.5.0 (November 12, 2021)
+========================
+
+FEATURES:
+---------
+
+* Import resource: outscale_security_group_rule (TPD-1892, TPD-1157)
+* Move all calls to the oAPI (TPD-1825)
+* New Data Source: outscale_server_certificate (TPD-1923)
+* Support tags for the resource outscale_subnet (TPD-1976)
+* Support new filters for the resource outscale_nic (TPD-1989)
+* Support new filters for the resource outscale_security_group (TPD-1990)
+* Support new filters for the resource outscale_image (TPD-1991)
+* Support new filters for the resource outscale_nat_service (TPD-1992)
+* Support new filters for the resource outscale_client_gateways (TPD-1993)
+* Support new filters for the resource outscale_subnet (TPD-1994)
+* Support new filters for the resource outscale_vpn_connection (TPD-1995)
+* Support new filters for the resource outscale_vm_state (TPD-1998)
+* Add nic_id attribute for the resource outscale_vm (TPD-2002, TPD-1989)
+* Choose the target state of the VM (TPD-2007)
+
+BUG FIXES:
+----------
+
+* Fix the update of route when whanging only the target (TPD-1963)
+* Fix descriptions filters for the resource outscale_image (TPD-1991)
+* Remove deprecated attribute dhcp_options_name from resource outscale_dhcp_option (TPD-1997)
+* Fix the update of the resource outscale_nat_service with new subnet_id/public_ip_id values (TPD-2013)
+* Remove the request_id from all Data Sources and Resources (TPD-2015)
+* Comply with the new oAPI attribute for the resource outscale_quota(s) (TPD-2024)
+
 0.4.1 (July 19, 2021)
 ========================
 
