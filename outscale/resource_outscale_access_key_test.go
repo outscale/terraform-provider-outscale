@@ -27,7 +27,6 @@ func TestAccOutscaleAccessKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
-					resource.TestCheckResourceAttrSet(resourceName, "request_id"),
 
 					resource.TestCheckResourceAttr(resourceName, "state", "ACTIVE"),
 				),
@@ -56,7 +55,6 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
-					resource.TestCheckResourceAttrSet(resourceName, "request_id"),
 
 					resource.TestCheckResourceAttr(resourceName, "state", state),
 				),
@@ -70,7 +68,6 @@ func TestAccOutscaleAccessKey_updatedToInactivedKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
-					resource.TestCheckResourceAttrSet(resourceName, "request_id"),
 
 					resource.TestCheckResourceAttr(resourceName, "state", stateUpdated),
 				),
@@ -99,7 +96,6 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
-					resource.TestCheckResourceAttrSet(resourceName, "request_id"),
 
 					resource.TestCheckResourceAttr(resourceName, "state", state),
 				),
@@ -113,7 +109,6 @@ func TestAccOutscaleAccessKey_updatedToActivedKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "last_modification_date"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret_key"),
 					resource.TestCheckResourceAttrSet(resourceName, "state"),
-					resource.TestCheckResourceAttrSet(resourceName, "request_id"),
 
 					resource.TestCheckResourceAttr(resourceName, "state", stateUpdated),
 				),

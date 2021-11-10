@@ -30,8 +30,6 @@ func TestAccOutscaleOAPILinkRouteTable_basic(t *testing.T) {
 						"outscale_route_table_link.foo", "link_route_table_id"),
 					resource.TestCheckResourceAttrSet(
 						"outscale_route_table_link.foo", "main"),
-					resource.TestCheckResourceAttrSet(
-						"outscale_route_table_link.foo", "request_id"),
 				),
 			},
 		},
