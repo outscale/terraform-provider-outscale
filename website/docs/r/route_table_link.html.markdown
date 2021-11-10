@@ -54,7 +54,7 @@ The following attributes are exported:
 * `link_route_table_id` - The ID of the association between the route table and the Subnet.
 * `main` - If true, the route table is the main one.
 * `route_table_id` - The ID of the route table.
-* `subnet_id` - The ID of the subnet.
+* `subnet_id` - The ID of the Subnet.
 
 ## Import
 

@@ -16,9 +16,9 @@ For more information on this resource actions, see the [API documentation](https
 
 ```hcl
 data "outscale_client_gateway" "data_client_gateway01" {
-filter {
-       name   = "client_gateway_ids"
-       values = ["cgw-12345678"]
+    filter {
+        name   = "client_gateway_ids"
+        values = ["cgw-12345678"]
     }
 }
 ```
