@@ -6,9 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform/helper/acctest"
 )
 
 func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
+	osuBucketNames := []string{
+		acctest.RandomWithPrefix("terraform-export-bucket-"),
+		acctest.RandomWithPrefix("terraform-export-bucket-"),
+	}
 	tags := `tags {
 		key = "test"
 		value = "test"
@@ -24,13 +29,13 @@ func TestAccOutscaleOAPISnapshotExportTask_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig(""),
+				Config: testAccOutscaleOAPISnapshotExportTaskConfig("", osuBucketNames[0]),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
 			},
 			{
-				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags),
+				Config: testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketNames[1]),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckOutscaleOAPISnapshotExportTaskExists("outscale_snapshot_export_task.outscale_snapshot_export_task"),
 				),
@@ -54,7 +59,7 @@ func testAccCheckOutscaleOAPISnapshotExportTaskExists(n string) resource.TestChe
 	}
 }
 
-func testAccOutscaleOAPISnapshotExportTaskConfig(tags string) string {
+func testAccOutscaleOAPISnapshotExportTaskConfig(tags, osuBucketName string) string {
 	return fmt.Sprintf(`
 		resource "outscale_volume" "outscale_volume_snap" {
     subregion_name   = "eu-west-2a"
@@ -67,10 +72,10 @@ resource "outscale_snapshot_export_task" "outscale_snapshot_export_task" {
 	snapshot_id                     = outscale_snapshot.outscale_snapshot.snapshot_id
 	osu_export {
 		disk_image_format = "qcow2"
-        osu_bucket        = "terraform-export-bucket"
+        osu_bucket        = "%[2]s"
         osu_prefix        = "new-export"
 	}
-	%s
+	%[1]s
 }
-	`, tags)
+	`, tags, osuBucketName)
 }

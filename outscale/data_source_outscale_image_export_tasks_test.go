@@ -2,9 +2,10 @@ package outscale
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
@@ -48,7 +49,7 @@ func testAccOutscaleOAPIImageExportTasksDataSourceConfig(omi, vmType, region, im
 	resource "outscale_image_export_task" "outscale_image_export_task" {
 		image_id                     = outscale_image.foo.id
 		osu_export {
-			osu_bucket        = "terraform-export"
+			osu_bucket        = "terraform-export-%s"
 			disk_image_format = "qcow2"
          }
 	}
@@ -59,5 +60,5 @@ func testAccOutscaleOAPIImageExportTasksDataSourceConfig(omi, vmType, region, im
 			values = [outscale_image_export_task.outscale_image_export_task.id]
 		}
 	}
-	`, omi, vmType, region, imageName)
+	`, omi, vmType, region, imageName, imageName)
 }
