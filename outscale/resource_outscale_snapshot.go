@@ -76,7 +76,7 @@ func resourceOutscaleOAPISnapshot() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"global_permission": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeBool,
 							Computed: true,
 						},
 						"account_id": {
